@@ -9,10 +9,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
 /**
@@ -23,33 +23,6 @@ import java.util.regex.Pattern;
 public class BcCausalInferenceTest {
 
     public BcCausalInferenceTest() {
-    }
-
-    /**
-     * Test of probConstraint method, of class BCCausalInference.
-     *
-     * @throws IOException
-     */
-    @Test
-    public void testProbConstraint() throws IOException {
-        Path casFile = Paths.get(getClass().getResource("/cooper.data/small_data.cas").getFile());
-        int[] nodeDimension = BcCausalInferenceTest.readInNodeDimension(casFile);
-        int[][] dataset = BcCausalInferenceTest.readInDataset(casFile);
-
-        float expected = 0.7650975f;
-        float result = (float) (new BCCausalInference(nodeDimension, dataset))
-                .probConstraint(BCCausalInference.OP.DEPENDENT, 3, 5, new int[]{0});  // returns P(node3 dependent node5 given {} | data)
-        Assert.assertEquals(expected, result, 0);
-
-        expected = 0.34093106f;
-        result = (float) (new BCCausalInference(nodeDimension, dataset))
-                .probConstraint(BCCausalInference.OP.INDEPENDENT, 1, 4, new int[]{2, 2, 3});
-        Assert.assertEquals(expected, result, 0);
-
-        expected = 0.9353456f;
-        result = (float) (new BCCausalInference(nodeDimension, dataset))
-                .probConstraint(BCCausalInference.OP.INDEPENDENT, 1, 5, new int[]{1, 3});
-        Assert.assertEquals(expected, result, 0);
     }
 
     private static int[][] readInDataset(Path casFile) throws IOException {
@@ -86,6 +59,33 @@ public class BcCausalInferenceTest {
 
             return nodeDimension;
         }
+    }
+
+    /**
+     * Test of probConstraint method, of class BCCausalInference.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testProbConstraint() throws IOException {
+        Path casFile = new File(getClass().getResource("/cooper.data/small_data.cas").getFile()).toPath();
+        int[] nodeDimension = BcCausalInferenceTest.readInNodeDimension(casFile);
+        int[][] dataset = BcCausalInferenceTest.readInDataset(casFile);
+
+        float expected = 0.7650975f;
+        float result = (float) (new BCCausalInference(nodeDimension, dataset))
+                .probConstraint(BCCausalInference.OP.DEPENDENT, 3, 5, new int[]{0});  // returns P(node3 dependent node5 given {} | data)
+        Assert.assertEquals(expected, result, 0);
+
+        expected = 0.34093106f;
+        result = (float) (new BCCausalInference(nodeDimension, dataset))
+                .probConstraint(BCCausalInference.OP.INDEPENDENT, 1, 4, new int[]{2, 2, 3});
+        Assert.assertEquals(expected, result, 0);
+
+        expected = 0.9353456f;
+        result = (float) (new BCCausalInference(nodeDimension, dataset))
+                .probConstraint(BCCausalInference.OP.INDEPENDENT, 1, 5, new int[]{1, 3});
+        Assert.assertEquals(expected, result, 0);
     }
 
 }

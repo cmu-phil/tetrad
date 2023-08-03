@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.score.DiscreteBicScore;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,14 +40,14 @@ import java.util.List;
  */
 public final class BayesProperties {
     private final DataSet dataSet;
-    private double chisq;
-    private double dof;
-    private double bic;
-    private double likelihood;
     private final List<Node> variables;
     private final int[][] data;
     private final int sampleSize;
     private final int[] numCategories;
+    private double chisq;
+    private double dof;
+    private double bic;
+    private double likelihood;
 
     public BayesProperties(DataSet dataSet) {
         if (dataSet == null) {
@@ -89,11 +90,13 @@ public final class BayesProperties {
         }
     }
 
-    public class LikelihoodRet {
-        public double p;
-        public double bic;
-        public double chiSq;
-        public double dof;
+    private static int getRowIndex(int[] dim, int[] values) {
+        int rowIndex = 0;
+        for (int i = 0; i < dim.length; i++) {
+            rowIndex *= dim[i];
+            rowIndex += values[i];
+        }
+        return rowIndex;
     }
 
     /**
@@ -230,7 +233,7 @@ public final class BayesProperties {
         int dof = 0;
 
         for (Node node : graph.getNodes()) {
-            List<Node> parents = graph.getParents(node);
+            List<Node> parents = new ArrayList<>(graph.getParents(node));
 
             int i = this.variables.indexOf(getVariable(node.getName()));
 
@@ -252,7 +255,7 @@ public final class BayesProperties {
         int dof = 0;
 
         for (Node node : graph.getNodes()) {
-            List<Node> parents = graph.getParents(node);
+            List<Node> parents = new ArrayList<>(graph.getParents(node));
 
             int i = this.variables.indexOf(getVariable(node.getName()));
 
@@ -356,24 +359,6 @@ public final class BayesProperties {
         return new Ret(lik, dof);
     }
 
-    private static class Ret {
-        private final double lik;
-        private final int dof;
-
-        public Ret(double lik, int dof) {
-            this.lik = lik;
-            this.dof = dof;
-        }
-
-        public double getLik() {
-            return this.lik;
-        }
-
-        public int getDof() {
-            return this.dof;
-        }
-    }
-
     private double getDofNode(int node, int[] parents) {
 
         // Number of categories for node.
@@ -396,16 +381,6 @@ public final class BayesProperties {
         return r * c;
     }
 
-
-    private static int getRowIndex(int[] dim, int[] values) {
-        int rowIndex = 0;
-        for (int i = 0; i < dim.length; i++) {
-            rowIndex *= dim[i];
-            rowIndex += values[i];
-        }
-        return rowIndex;
-    }
-
     public int getSampleSize() {
         return this.sampleSize;
     }
@@ -426,6 +401,31 @@ public final class BayesProperties {
         } else {
             return null;
         }
+    }
+
+    private static class Ret {
+        private final double lik;
+        private final int dof;
+
+        public Ret(double lik, int dof) {
+            this.lik = lik;
+            this.dof = dof;
+        }
+
+        public double getLik() {
+            return this.lik;
+        }
+
+        public int getDof() {
+            return this.dof;
+        }
+    }
+
+    public class LikelihoodRet {
+        public double p;
+        public double bic;
+        public double chiSq;
+        public double dof;
     }
 }
 

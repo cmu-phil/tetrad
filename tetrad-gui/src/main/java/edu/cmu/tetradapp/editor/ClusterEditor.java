@@ -53,8 +53,8 @@ public final class ClusterEditor extends JPanel {
     private ArrayList nameFields;
 
     /**
-     * Constructs an editor to allow the user to assign variables to clusters,
-     * showing a list of variables to choose from.
+     * Constructs an editor to allow the user to assign variables to clusters, showing a list of variables to choose
+     * from.
      */
     public ClusterEditor(Clusters clusters, List<String> varNames) {
         if (clusters == null) {
@@ -220,18 +220,80 @@ public final class ClusterEditor extends JPanel {
         return this.nameFields;
     }
 
+    public static class ListSelection implements Transferable {
+
+        /**
+         * The list of graph nodes that constitutes the selection.
+         */
+        private final List list;
+
+        /**
+         * Supported dataflavors--only one.
+         */
+        private final DataFlavor[] dataFlavors = {
+                new DataFlavor(ListSelection.class, "String List Selection")};
+
+        /**
+         * Constructs a new selection with the given list of graph nodes.
+         */
+        public ListSelection(List list) {
+            if (list == null) {
+                throw new NullPointerException(
+                        "List of list must " + "not be null.");
+            }
+
+            this.list = list;
+        }
+
+        /**
+         * @param flavor the requested flavor for the data
+         * @return an object which represents the data to be transferred. The class of the object returned is defined by
+         * the representation class of the flavor.
+         * @throws java.io.IOException                              if the data is no longer available in the requested
+         *                                                          flavor.
+         * @throws java.awt.datatransfer.UnsupportedFlavorException if the requested data flavor is not supported.
+         * @see java.awt.datatransfer.DataFlavor#getRepresentationClass
+         */
+        public Object getTransferData(DataFlavor flavor)
+                throws UnsupportedFlavorException, IOException {
+            if (!isDataFlavorSupported(flavor)) {
+                throw new UnsupportedFlavorException(flavor);
+            }
+
+            return this.list;
+        }
+
+        /**
+         * Returns whether or not the specified data flavor is supported for this object.
+         *
+         * @param flavor the requested flavor for the data
+         * @return boolean indicating whether or not the data flavor is supported
+         */
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return flavor.equals(getTransferDataFlavors()[0]);
+        }
+
+        /**
+         * Returns an array of DataFlavor objects indicating the flavors the data can be provided in. The array should
+         * be ordered according to preference for providing the data (from most richly descriptive to least
+         * descriptive).
+         *
+         * @return an array of data flavors in which this data can be transferred
+         */
+        public DataFlavor[] getTransferDataFlavors() {
+            return this.dataFlavors;
+        }
+    }
+
     public class DragDropList extends JList implements DropTargetListener,
             DragSourceListener, DragGestureListener {
 
-        private List movedList;
-
         /**
-         * This is the cluster that this particular component is representing,
-         * or -1 if it's the bin for unused variable names. It's needed so that
-         * dropped gadgets can cause variable names to be put into the correct
-         * cluster.
+         * This is the cluster that this particular component is representing, or -1 if it's the bin for unused variable
+         * names. It's needed so that dropped gadgets can cause variable names to be put into the correct cluster.
          */
         private final int cluster;
+        private List movedList;
 
         public DragDropList(List items, int cluster, int orientation) {
             if (cluster < -1) {
@@ -394,77 +456,6 @@ public final class ClusterEditor extends JPanel {
             for (Object element : elements) {
                 model.addElement(element);
             }
-        }
-    }
-
-    public static class ListSelection implements Transferable {
-
-        /**
-         * The list of graph nodes that constitutes the selection.
-         */
-        private final List list;
-
-        /**
-         * Supported dataflavors--only one.
-         */
-        private final DataFlavor[] dataFlavors = {
-                new DataFlavor(ListSelection.class, "String List Selection")};
-
-        /**
-         * Constructs a new selection with the given list of graph nodes.
-         */
-        public ListSelection(List list) {
-            if (list == null) {
-                throw new NullPointerException(
-                        "List of list must " + "not be null.");
-            }
-
-            this.list = list;
-        }
-
-        /**
-         * @param flavor the requested flavor for the data
-         * @return an object which represents the data to be transferred. The
-         * class of the object returned is defined by the representation class
-         * of the flavor.
-         * @throws java.io.IOException                              if the data is no longer available in the
-         *                                                          requested flavor.
-         * @throws java.awt.datatransfer.UnsupportedFlavorException if the
-         *                                                          requested data flavor is not supported.
-         * @see java.awt.datatransfer.DataFlavor#getRepresentationClass
-         */
-        public Object getTransferData(DataFlavor flavor)
-                throws UnsupportedFlavorException, IOException {
-            if (!isDataFlavorSupported(flavor)) {
-                throw new UnsupportedFlavorException(flavor);
-            }
-
-            return this.list;
-        }
-
-        /**
-         * Returns whether or not the specified data flavor is supported for
-         * this object.
-         *
-         * @param flavor the requested flavor for the data
-         * @return boolean indicating whether or not the data flavor is
-         * supported
-         */
-        public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return flavor.equals(getTransferDataFlavors()[0]);
-        }
-
-        /**
-         * Returns an array of DataFlavor objects indicating the flavors the
-         * data can be provided in. The array should be ordered according to
-         * preference for providing the data (from most richly descriptive to
-         * least descriptive).
-         *
-         * @return an array of data flavors in which this data can be
-         * transferred
-         */
-        public DataFlavor[] getTransferDataFlavors() {
-            return this.dataFlavors;
         }
     }
 }

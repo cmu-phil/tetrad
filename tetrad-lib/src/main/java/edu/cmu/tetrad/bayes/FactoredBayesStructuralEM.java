@@ -36,10 +36,9 @@ import java.util.Set;
 
 /**
  * <p>Implements the procedure Factored-Bayesian-SEM found on page 6 of "The
- * Bayesian Structural EM Algorithm" by Nir Friedman.&gt; 0 <p>The initial
- * implementation simplifies the algorithm somewhat by computing the score of
- * each model by using the BdeMetric score, which is implemented in the bayes
- * package of Tetrad-4.2.&gt; 0
+ * Bayesian Structural EM Algorithm" by Nir Friedman.&gt; 0 <p>The initial implementation simplifies the algorithm
+ * somewhat by computing the score of each model by using the BdeMetric score, which is implemented in the bayes package
+ * of Tetrad-4.2.&gt; 0
  *
  * @author Frank Wimberly
  * @author Robert Tillman (changes since 5-12-2008)
@@ -64,9 +63,8 @@ public final class FactoredBayesStructuralEM {
 
     private final BayesPm bayesPmM0;
     private final DataSet dataSet;
-    private double tolerance;
-
     private final int[] ncategories;
+    private double tolerance;
 
     public FactoredBayesStructuralEM(DataSet dataSet,
                                      BayesPm bayesPmM0) {
@@ -86,9 +84,27 @@ public final class FactoredBayesStructuralEM {
 
     }
 
+    private static double factorScoreMD(Dag dag, BdeMetricCache bdeMetricCache,
+                                        BayesPm bayesPm, BayesIm bayesIm) {
+        List<Node> nodes = dag.getNodes();
+
+        double score = 0.0;   //Fast test 11/29/04
+
+        for (Node node1 : nodes) {
+            List<Node> parents = dag.getParents(node1);
+            Set<Node> parentsSet = new HashSet<>(parents);
+            double fScore = bdeMetricCache.scoreLnGam(node1, parentsSet,
+                    bayesPm, bayesIm);
+
+            TetradLogger.getInstance().log("details", "Score for factor " + node1.getName() + " = " + fScore);
+
+            score += fScore;
+        }
+        return score;
+    }
+
     /**
-     * This method allows specification of the tolerance parameter used in Bayes
-     * EM estimation.
+     * This method allows specification of the tolerance parameter used in Bayes EM estimation.
      */
     public BayesIm maximization(double tolerance) {
         TetradLogger.getInstance().log("details", "FactoredBayesStructuralEM.maximization()");
@@ -97,11 +113,9 @@ public final class FactoredBayesStructuralEM {
     }
 
     /**
-     * This iterate2 method also uses BdeMetricCache but it uses the
-     * factorScoreMD method which can handle missing data and latent variables.
-     * Ths method iteratively score models and finds that which contains the
-     * graph of the highest scoring model (via its BaysPm) as well as parameters
-     * which yield the best score given the dataset by using the
+     * This iterate2 method also uses BdeMetricCache but it uses the factorScoreMD method which can handle missing data
+     * and latent variables. Ths method iteratively score models and finds that which contains the graph of the highest
+     * scoring model (via its BaysPm) as well as parameters which yield the best score given the dataset by using the
      * EmBayesEstimator class.
      *
      * @return the instantiated Bayes net (BayesIm)
@@ -135,6 +149,12 @@ public final class FactoredBayesStructuralEM {
         return emBayesEst.maximization(this.tolerance);
 
     }
+
+    /*
+     * This scoring method uses factor caching and the log gamma scoring function that
+     * handles missing data and latent variables.  The Bayes PM contains a graph which
+     * indicates which variables are latent.
+     */
 
     public void scoreTest() {
         TetradLogger.getInstance().log("details", "scoreTest");
@@ -229,31 +249,6 @@ public final class FactoredBayesStructuralEM {
 
     }
 
-    /*
-     * This scoring method uses factor caching and the log gamma scoring function that
-     * handles missing data and latent variables.  The Bayes PM contains a graph which
-     * indicates which variables are latent.
-     */
-
-    private static double factorScoreMD(Dag dag, BdeMetricCache bdeMetricCache,
-                                        BayesPm bayesPm, BayesIm bayesIm) {
-        List<Node> nodes = dag.getNodes();
-
-        double score = 0.0;   //Fast test 11/29/04
-
-        for (Node node1 : nodes) {
-            List<Node> parents = dag.getParents(node1);
-            Set<Node> parentsSet = new HashSet<>(parents);
-            double fScore = bdeMetricCache.scoreLnGam(node1, parentsSet,
-                    bayesPm, bayesIm);
-
-            TetradLogger.getInstance().log("details", "Score for factor " + node1.getName() + " = " + fScore);
-
-            score += fScore;
-        }
-        return score;
-    }
-
     public DataSet getDataSet() {
         return this.dataSet;
     }
@@ -261,11 +256,11 @@ public final class FactoredBayesStructuralEM {
     private class TimedIterate implements Runnable {
 
         final BdeMetricCache bdeMetricCache;
+        final double start;
         BayesPm bayesPmMnplus1;
         BayesPm bayesPmMn;
         double oldBestScore;
         int iteration;
-        final double start;
 
         public TimedIterate(BdeMetricCache bdeMetricCache, BayesPm bayesPmMnplus1, double oldBestScore, int iteration, double start) {
             this.bdeMetricCache = bdeMetricCache;

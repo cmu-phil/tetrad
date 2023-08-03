@@ -44,8 +44,6 @@ public class SemOptimizerPowell implements SemOptimizer {
 
     private int numRestarts;
 
-    //=========================CONSTRUCTORS============================//
-
     /**
      * Blank constructor.
      */
@@ -59,7 +57,6 @@ public class SemOptimizerPowell implements SemOptimizer {
         return new SemOptimizerPowell();
     }
 
-    //=========================PUBLIC METHODS==========================//
 
     public void optimize(SemIm semIm) {
         double min = Double.POSITIVE_INFINITY;
@@ -116,19 +113,18 @@ public class SemOptimizerPowell implements SemOptimizer {
     }
 
     @Override
-    public void setNumRestarts(int numRestarts) {
-        this.numRestarts = numRestarts;
-    }
-
-    @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
+    @Override
+    public void setNumRestarts(int numRestarts) {
+        this.numRestarts = numRestarts;
+    }
 
     /**
-     * Wraps the SEM maximum likelihood fitting function for purposes of being
-     * evaluated using the PAL ConjugateDirection optimizer.
+     * Wraps the SEM maximum likelihood fitting function for purposes of being evaluated using the PAL
+     * ConjugateDirection optimizer.
      *
      * @author josephramsey
      */
@@ -151,9 +147,8 @@ public class SemOptimizerPowell implements SemOptimizer {
 
 
         /**
-         * Computes the maximum likelihood function value for the given
-         * parameter values as given by the optimizer. These values are mapped to
-         * parameter values.
+         * Computes the maximum likelihood function value for the given parameter values as given by the optimizer.
+         * These values are mapped to parameter values.
          */
 
         @Override

@@ -36,12 +36,10 @@ public abstract class DataFileReader implements DataReader {
     protected static final byte LINE_FEED = '\n';
     protected static final byte CARRIAGE_RETURN = '\r';
     protected static final byte SPACE_CHAR = Delimiter.SPACE.getByteValue();
-
-    protected byte quoteCharacter;
-    protected String commentMarker;
-
     protected final Path dataFile;
     protected final Delimiter delimiter;
+    protected byte quoteCharacter;
+    protected String commentMarker;
 
     public DataFileReader(Path dataFile, Delimiter delimiter) {
         this.dataFile = dataFile;

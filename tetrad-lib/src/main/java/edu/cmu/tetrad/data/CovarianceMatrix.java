@@ -23,6 +23,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -30,61 +31,50 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Stores a covariance matrix together with variable names and sample size,
- * intended as a representation of a data set. When constructed from a
- * continuous data set, the matrix is not checked for positive definiteness;
- * however, when a covariance matrix is supplied, its positive definiteness is
- * always checked. If the sample size is less than the number of variables, the
- * positive definiteness is "spot-checked"--that is, checked for various
- * submatrices.
+ * Stores a covariance matrix together with variable names and sample size, intended as a representation of a data set.
+ * When constructed from a continuous data set, the matrix is not checked for positive definiteness; however, when a
+ * covariance matrix is supplied, its positive definiteness is always checked. If the sample size is less than the
+ * number of variables, the positive definiteness is "spot-checked"--that is, checked for various submatrices.
  *
  * @author josephramsey
  * @see edu.cmu.tetrad.data.CorrelationMatrix
  */
 public class CovarianceMatrix implements ICovarianceMatrix {
     static final long serialVersionUID = 23L;
-
+    /**
+     * The wrapped covariance matrix data.
+     */
+    private final Matrix _covariancesMatrix;
     /**
      * The name of the covariance matrix.
      *
      * @serial May be null.
      */
     private String name;
-
     /**
      * The variables (in order) for this covariance matrix.
      *
      * @serial Cannot be null.
      */
     private List<Node> variables;
-
     /**
      * The size of the sample from which this covariance matrix was calculated.
      *
      * @serial Range &gt; 0.
      */
     private int sampleSize;
-
     /**
      * The list of selected variables.
      *
      * @serial Cannot be null.
      */
     private Set<Node> selectedVariables = new HashSet<>();
-
     /**
      * The knowledge for this data.
      *
      * @serial Cannot be null.
      */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The wrapped covariance matrix data.
-     */
-    private final Matrix _covariancesMatrix;
-
-    //=============================CONSTRUCTORS=========================//
 
     /**
      * Constructs a new covariance matrix from the given data set.
@@ -107,18 +97,16 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
-     * Protected constructor to construct a new covariance matrix using the
-     * supplied continuous variables and the the given symmetric, positive
-     * definite matrix and sample size. The number of variables must equal the
-     * dimension of the array.
+     * Protected constructor to construct a new covariance matrix using the supplied continuous variables and the the
+     * given symmetric, positive definite matrix and sample size. The number of variables must equal the dimension of
+     * the array.
      *
-     * @param variables  the list of variables (in order) for the covariance
-     *                   matrix.
+     * @param variables  the list of variables (in order) for the covariance matrix.
      * @param matrix     an square array of containing covariances.
      * @param sampleSize the sample size of the data for these covariances.
-     * @throws IllegalArgumentException if the given matrix is not symmetric (to
-     *                                  a tolerance of 1.e-5) and positive definite, if the number of variables
-     *                                  does not equal the dimension of m, or if the sample size is not positive.
+     * @throws IllegalArgumentException if the given matrix is not symmetric (to a tolerance of 1.e-5) and positive
+     *                                  definite, if the number of variables does not equal the dimension of m, or if
+     *                                  the sample size is not positive.
      */
     public CovarianceMatrix(List<Node> variables, Matrix matrix, int sampleSize) {
         this(variables, matrix.toArray(), sampleSize);
@@ -165,13 +153,24 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         return new CovarianceMatrix(variables, matrix, 100);
     }
 
-    //============================PUBLIC METHODS=========================//
-
     /**
      * @return the list of variables (unmodifiable).
      */
     public final List<Node> getVariables() {
         return this.variables;
+    }
+
+    public void setVariables(List<Node> variables) {
+        if (variables.size() != this.variables.size()) {
+            throw new IllegalArgumentException("Wrong # of variables.");
+        }
+        for (int i = 0; i < variables.size(); i++) {
+            if (!variables.get(i).getName().equals(variables.get(i).getName())) {
+                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name "
+                        + "as the variable being substituted for it.");
+            }
+            this.variables = variables;
+        }
     }
 
     /**
@@ -216,6 +215,14 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         return this.sampleSize;
     }
 
+    public final void setSampleSize(int sampleSize) {
+        if (sampleSize <= 0) {
+            throw new IllegalArgumentException("Sample size must be > 0.");
+        }
+
+        this.sampleSize = sampleSize;
+    }
+
     /**
      * Gets the name of the covariance matrix.
      */
@@ -249,8 +256,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
-     * @return a submatrix of the covariance matrix with variables in the given
-     * order.
+     * @return a submatrix of the covariance matrix with variables in the given order.
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {
         List<Node> submatrixVars = new LinkedList<>();
@@ -329,18 +335,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         return this._covariancesMatrix.get(i, j);
     }
 
-    public void setMatrix(Matrix matrix) {
-        throw new IllegalStateException();
-    }
-
-    public final void setSampleSize(int sampleSize) {
-        if (sampleSize <= 0) {
-            throw new IllegalArgumentException("Sample size must be > 0.");
-        }
-
-        this.sampleSize = sampleSize;
-    }
-
     /**
      * @return the size of the square matrix.
      */
@@ -353,6 +347,10 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      */
     public final Matrix getMatrix() {
         return this._covariancesMatrix;
+    }
+
+    public void setMatrix(Matrix matrix) {
+        throw new IllegalStateException();
     }
 
     public final void select(Node variable) {
@@ -429,19 +427,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         return false;
     }
 
-    public void setVariables(List<Node> variables) {
-        if (variables.size() != this.variables.size()) {
-            throw new IllegalArgumentException("Wrong # of variables.");
-        }
-        for (int i = 0; i < variables.size(); i++) {
-            if (!variables.get(i).getName().equals(variables.get(i).getName())) {
-                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name "
-                        + "as the variable being substituted for it.");
-            }
-            this.variables = variables;
-        }
-    }
-
     @Override
     public Matrix getSelection(int[] rows, int[] cols) {
         return getMatrix().getSelection(rows, cols);
@@ -474,21 +459,17 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         throw new IllegalStateException();
     }
 
-    //========================PRIVATE METHODS============================//
-
     private Set<Node> getSelectedVariables() {
         return this.selectedVariables;
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -509,5 +490,15 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         if (this.selectedVariables == null) {
             this.selectedVariables = new HashSet<>();
         }
+    }
+
+    public boolean isSingular() {
+        try {
+            _covariancesMatrix.inverse();
+        } catch (SingularMatrixException e) {
+            return true;
+        }
+
+        return false;
     }
 }

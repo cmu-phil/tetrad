@@ -33,20 +33,18 @@ import java.io.ObjectInputStream;
  */
 public class LaggedFactor implements Comparable, TetradSerializable {
     static final long serialVersionUID = 23L;
-
-    /**
-     * The name of the factor.
-     *
-     * @serial
-     */
-    private String factor;
-
     /**
      * The number of time steps back for the lagged factor.
      *
      * @serial
      */
     private final int lag;
+    /**
+     * The name of the factor.
+     *
+     * @serial
+     */
+    private String factor;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -70,8 +68,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
     }
 
     /**
-     * Copy constructor- creates a new object with the same properties as the
-     * original
+     * Copy constructor- creates a new object with the same properties as the original
      */
     public LaggedFactor(LaggedFactor orig) {
         this.factor = orig.factor;
@@ -88,12 +85,10 @@ public class LaggedFactor implements Comparable, TetradSerializable {
     //=================================PUBLIC METHODS======================//
 
     /**
-     * Determines whether the given lagged factor is temporally prior to this
-     * lagged factor.
+     * Determines whether the given lagged factor is temporally prior to this lagged factor.
      *
      * @param o an Object, which should be a LaggedFactor.
-     * @return this lag minus the given lag, if the lagged factors have the same
-     * name; otherwise, 0.
+     * @return this lag minus the given lag, if the lagged factors have the same name; otherwise, 0.
      */
     public int compareTo(Object o) {
 
@@ -121,19 +116,19 @@ public class LaggedFactor implements Comparable, TetradSerializable {
     }
 
     /**
+     * Sets the name of the lagged factor
+     */
+    public void setFactor(String factor) {
+        this.factor = factor;
+    }
+
+    /**
      * Returns the number of time steps back for this lagged factor.
      *
      * @return the lag.
      */
     public int getLag() {
         return this.lag;
-    }
-
-    /**
-     * Sets the name of the lagged factor
-     */
-    public void setFactor(String factor) {
-        this.factor = factor;
     }
 
     /**
@@ -144,8 +139,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
     }
 
     /**
-     * Two lagged factors are equals just in case their factors are equals and
-     * their lags are equal.
+     * Two lagged factors are equals just in case their factors are equals and their lags are equal.
      */
     public boolean equals(Object o) {
         if (o == this) {
@@ -169,14 +163,12 @@ public class LaggedFactor implements Comparable, TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

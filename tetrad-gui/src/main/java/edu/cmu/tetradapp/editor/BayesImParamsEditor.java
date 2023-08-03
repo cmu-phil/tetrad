@@ -40,18 +40,9 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
     private Parameters params;
 
     /**
-     * Constructs a dialog to edit the given workbench Bayes simulation
-     * getMappings object.
+     * Constructs a dialog to edit the given workbench Bayes simulation getMappings object.
      */
     public BayesImParamsEditor() {
-    }
-
-    public void setParams(Parameters params) {
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -59,9 +50,8 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
     }
 
     /**
-     * Constructs the Gui used to edit properties; called from each constructor.
-     * Constructs labels and text fields for editing each property and adds
-     * appropriate listeners.
+     * Constructs the Gui used to edit properties; called from each constructor. Constructs labels and text fields for
+     * editing each property and adds appropriate listeners.
      */
     public void setup() {
         setLayout(new BorderLayout());
@@ -119,13 +109,21 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
     }
 
     /**
-     * Returns the getMappings object being edited. (This probably should not be
-     * public, but it is needed so that the textfields can edit the model.)
+     * Returns the getMappings object being edited. (This probably should not be public, but it is needed so that the
+     * textfields can edit the model.)
      *
      * @return the stored simulation parameters model.
      */
     private synchronized Parameters getParams() {
         return this.params;
+    }
+
+    public void setParams(Parameters params) {
+        if (params == null) {
+            throw new NullPointerException();
+        }
+
+        this.params = params;
     }
 }
 

@@ -36,8 +36,7 @@ interface WorkbenchModel {
     Node getNewModelNode();
 
     /**
-     * @return a new display node of type AbstractGraphNode given a model node
-     * of type modelNode.
+     * @return a new display node of type AbstractGraphNode given a model node of type modelNode.
      */
     DisplayNode getNewDisplayNode(Node modelNode);
 
@@ -52,8 +51,7 @@ interface WorkbenchModel {
     Edge getNewModelEdge(Node node1, Node node2);
 
     /**
-     * @return a new tracking edge for the given display node at the given
-     * location.
+     * @return a new tracking edge for the given display node at the given location.
      */
     IDisplayEdge getNewTrackingEdge(DisplayNode displayNode, Point mouseLoc);
 }

@@ -34,8 +34,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 /**
- * Copies a parentally closed selection of session nodes in the frontmost
- * session editor to the clipboard.
+ * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
  *
  * @author josephramsey
  */
@@ -46,8 +45,7 @@ class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
     private final GraphEditable graphEditor;
 
     /**
-     * Constucts an action for loading the session in the given '.tet' file into
-     * the desktop.
+     * Constucts an action for loading the session in the given '.tet' file into the desktop.
      */
     public PasteSubgraphAction(GraphEditable graphEditor) {
         super("Paste Selected Graph");
@@ -60,8 +58,7 @@ class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost
-     * session editor to the clipboard.
+     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         Transferable transferable = InternalClipboard.getInstance()
@@ -87,12 +84,10 @@ class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
 
 
     /**
-     * Notifies this object that it is no longer the owner of the contents of
-     * the clipboard.
+     * Notifies this object that it is no longer the owner of the contents of the clipboard.
      *
      * @param clipboard the clipboard that is no longer owned
-     * @param contents  the contents which this owner had placed on the
-     *                  clipboard
+     * @param contents  the contents which this owner had placed on the clipboard
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

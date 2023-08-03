@@ -35,17 +35,13 @@ import static org.junit.Assert.*;
 
 /**
  * <p>Tests the operation of the session node. The session node needs to be able
- * to:&gt; 0 <ul> <li>Add and remove parents or children without
- * violating the constraint that the set of models for the parents of a node at
- * any time should be a subset of the set of objects needed to constuct an
- * object of the given model class for some constructor of the model class. Note
- * that in adding parents or children, the lists of parents or children of other
- * nodes need to be adjusted and kept in sync. <li>Create a new model given
- * the parents of the node, provided the models of the node's parents can be
- * mapped unambiguously onto the objects required for some constructor of the
- * model class. <li>Fire events to listeners when any of the following
- * happens: (a) parents are added or removed; (b) models are created or
- * destroyed. The adding and removing of listeners must also be tested.
+ * to:&gt; 0 <ul> <li>Add and remove parents or children without violating the constraint that the set of models for the
+ * parents of a node at any time should be a subset of the set of objects needed to constuct an object of the given
+ * model class for some constructor of the model class. Note that in adding parents or children, the lists of parents or
+ * children of other nodes need to be adjusted and kept in sync. <li>Create a new model given the parents of the node,
+ * provided the models of the node's parents can be mapped unambiguously onto the objects required for some constructor
+ * of the model class. <li>Fire events to listeners when any of the following happens: (a) parents are added or removed;
+ * (b) models are created or destroyed. The adding and removing of listeners must also be tested.
  *
  * @author josephramsey
  */
@@ -58,8 +54,7 @@ public class TestSessionNode {
 
     /**
      * <p>Tests the <code>existsConstructor</code> method, which determines
-     * whether a constructor exists in the model class that accepts objects of
-     * the given classes as arguments.&gt; 0
+     * whether a constructor exists in the model class that accepts objects of the given classes as arguments.&gt; 0
      */
     @Test
     public void testExistsConstructor() {
@@ -80,8 +75,8 @@ public class TestSessionNode {
     }
 
     /**
-     * Tests whether the getValueCombination method is working. This method is
-     * used to generate combinations of parent model classes.
+     * Tests whether the getValueCombination method is working. This method is used to generate combinations of parent
+     * model classes.
      */
     @Test
     public void testGetValueCombination() {
@@ -98,8 +93,7 @@ public class TestSessionNode {
     }
 
     /**
-     * Helper method for testGetValueCombination to test whether the given array
-     * has the given three values in it.
+     * Helper method for testGetValueCombination to test whether the given array has the given three values in it.
      */
     private boolean isTheSame(int[] arr, int n1, int n2, int n3) {
         return (arr[0] == n1) && (arr[1] == n2) && (arr[2] == n3);
@@ -221,8 +215,7 @@ public class TestSessionNode {
     }
 
     /**
-     * Tests whether ClassA x = y for some ClassA in a list where x is of type
-     * ClassA and y is of type ClassB.
+     * Tests whether ClassA x = y for some ClassA in a list where x is of type ClassA and y is of type ClassB.
      */
     @Test
     public void testGetAssignableClass() {
@@ -284,9 +277,8 @@ public class TestSessionNode {
     }
 
     /**
-     * Tests whether the consistent model classes are calculated correctly. Note
-     * that this method should not return anything but null unless all of the
-     * parent classes have models in them.
+     * Tests whether the consistent model classes are calculated correctly. Note that this method should not return
+     * anything but null unless all of the parent classes have models in them.
      */
 //    @Test
     public void testGetConsistentModelClasses() throws Exception {
@@ -471,12 +463,12 @@ public class TestSessionNode {
         }
     }
 
-    private void setEventId(String eventId) {
-        this.eventId = eventId;
-    }
-
     private String getEventId() {
         return this.eventId;
+    }
+
+    private void setEventId(String eventId) {
+        this.eventId = eventId;
     }
 
     /**
@@ -505,12 +497,10 @@ public class TestSessionNode {
     }
 
     /**
-     * Tests whether the session can be serialized and reconstructed correctly.
-     * This only tests the skeletal form of the serialization--serialization of
-     * each specific model has to be tested separately in those models, since
-     * the session class itself is not supposed to have any knowledge of
-     * specific models. (For the test, we just make up a few classes and try
-     * serializing those.)
+     * Tests whether the session can be serialized and reconstructed correctly. This only tests the skeletal form of the
+     * serialization--serialization of each specific model has to be tested separately in those models, since the
+     * session class itself is not supposed to have any knowledge of specific models. (For the test, we just make up a
+     * few classes and try serializing those.)
      */
 //    @Test
     public void testSerialization() {

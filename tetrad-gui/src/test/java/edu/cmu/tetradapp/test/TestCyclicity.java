@@ -62,13 +62,11 @@ public class TestCyclicity {
     }
 
     /**
-     * Tests that a package dependency cycle does not exist for any of the
-     * analyzed packages.
+     * Tests that a package dependency cycle does not exist for any of the analyzed packages.
      * <p>
-     * NOTE: THIS NEEDS TO BE TURNED OFF UNTIL THE OLD CALCULATORWRAPPER CAN BE
-     * REMOVED FROM THE CODE (edu.cmu.tetrad.model.calculator.CalculatorWrapper).
-     * UNTIL THEN IT HAS TO BE RUN MANUALLY BY DELETING THE OLD CALCULATORWRAPPER
-     * RUNNING IT AND THEN RESTORING THE OLD CALCULATORWRAPPER. -Joe 2009/6/8
+     * NOTE: THIS NEEDS TO BE TURNED OFF UNTIL THE OLD CALCULATORWRAPPER CAN BE REMOVED FROM THE CODE
+     * (edu.cmu.tetrad.model.calculator.CalculatorWrapper). UNTIL THEN IT HAS TO BE RUN MANUALLY BY DELETING THE OLD
+     * CALCULATORWRAPPER RUNNING IT AND THEN RESTORING THE OLD CALCULATORWRAPPER. -Joe 2009/6/8
      */
     @Test
     public void testAllPackagesCycle() {

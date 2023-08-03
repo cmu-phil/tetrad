@@ -3,10 +3,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
@@ -37,6 +34,38 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             throw new NullPointerException();
         }
         this.randomGraph = randomGraph;
+    }
+
+    public static void topToBottomLayout(TimeLagGraph graph) {
+
+        final int xStart = 65;
+        final int yStart = 50;
+        final int xSpace = 100;
+        final int ySpace = 100;
+        List<Node> lag0Nodes = graph.getLag0Nodes();
+
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
+
+        int x = xStart - xSpace;
+
+        for (Node node : lag0Nodes) {
+            x += xSpace;
+            int y = yStart - ySpace;
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
+
+            for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
+                y += ySpace;
+                Node _node = graph.getNode(id.getName(), lag);
+
+                if (_node == null) {
+                    System.out.println("Couldn't find " + _node);
+                    continue;
+                }
+
+                _node.setCenterX(x);
+                _node.setCenterY(y);
+            }
+        }
     }
 
     @Override
@@ -73,6 +102,10 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             int numLags = ((TimeLagGraph) graph).getMaxLag();
 
             dataSet = TsUtils.createLagData(dataSet, numLags);
+
+            if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+            }
 
             dataSet.setName("" + (i + 1));
             dataSet.setKnowledge(this.knowledge.copy());
@@ -111,6 +144,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         parameters.add(Params.STANDARDIZE);
         parameters.add(Params.MEASUREMENT_VARIANCE);
         parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
@@ -138,38 +172,6 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    public static void topToBottomLayout(TimeLagGraph graph) {
-
-        final int xStart = 65;
-        final int yStart = 50;
-        final int xSpace = 100;
-        final int ySpace = 100;
-        List<Node> lag0Nodes = graph.getLag0Nodes();
-
-        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
-
-        int x = xStart - xSpace;
-
-        for (Node node : lag0Nodes) {
-            x += xSpace;
-            int y = yStart - ySpace;
-            TimeLagGraph.NodeId id = graph.getNodeId(node);
-
-            for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
-                y += ySpace;
-                Node _node = graph.getNode(id.getName(), lag);
-
-                if (_node == null) {
-                    System.out.println("Couldn't find " + _node);
-                    continue;
-                }
-
-                _node.setCenterX(x);
-                _node.setCenterY(y);
-            }
-        }
     }
 
 }

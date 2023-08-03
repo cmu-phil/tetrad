@@ -246,9 +246,9 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
 
 class CovCellRenderer extends DefaultTableCellRenderer {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private boolean positiveDefinite = true;
     private final ICovarianceMatrix covMatrix;
     private final Color selectedColor = new Color(204, 204, 255);
+    private boolean positiveDefinite = true;
 
     public CovCellRenderer(ICovarianceMatrix covMatrix) {
         if (covMatrix == null) {

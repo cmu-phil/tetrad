@@ -19,8 +19,8 @@ public interface Covariances {
     int size();
 
     /**
-     * Sets the covariance at (i, j) to a particular value. Not effective for implemetations that calculate
-     * covariances from data on the fly.
+     * Sets the covariance at (i, j) to a particular value. Not effective for implemetations that calculate covariances
+     * from data on the fly.
      */
     void setCovariance(int i, int j, double v);
 

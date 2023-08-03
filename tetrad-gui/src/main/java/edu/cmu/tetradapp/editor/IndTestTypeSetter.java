@@ -30,9 +30,9 @@ import edu.cmu.tetradapp.util.IndTestType;
  * @author josephramsey
  */
 interface IndTestTypeSetter {
-    void setTestType(IndTestType testType);
-
     IndTestType getTestType();
+
+    void setTestType(IndTestType testType);
 
     DataModel getDataModel();
 

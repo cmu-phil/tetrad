@@ -27,11 +27,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Provides a static method for sampling with replacement from a dataset to
- * create a new dataset with a sample size supplied by the user.
+ * Provides a static method for sampling with replacement from a dataset to create a new dataset with a sample size
+ * supplied by the user.
  * <p>
- * Since sampling is done with replacement, the output dataset can have more
- * samples than the input.
+ * Since sampling is done with replacement, the output dataset can have more samples than the input.
  *
  * @author Frank Wimberly
  */
@@ -50,14 +49,9 @@ public final class BootstrapSampler {
 
     }
 
-
-    //============================== Public methods ================================//
-
-
     /**
-     * This method takes a dataset and a sample size and creates a new dataset
-     * containing that number of samples by drawing with replacement from the
-     * original dataset.
+     * This method takes a dataset and a sample size and creates a new dataset containing that number of samples by
+     * drawing with replacement from the original dataset.
      */
     public DataSet sample(DataSet dataSet, int newSampleSize) {
         if (newSampleSize < 1) {

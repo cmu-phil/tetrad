@@ -38,9 +38,8 @@ import java.util.List;
 
 /**
  * <p>Tries to find a good shifting of variables to minimize average BIC for
- * time-series data. The idea is that the data one is presented with may have
- * the variables temporally shifted with respect to one another. ShiftSearch
- * attempts to find a shifting of the variables that reduces this temporal
+ * time-series data. The idea is that the data one is presented with may have the variables temporally shifted with
+ * respect to one another. ShiftSearch attempts to find a shifting of the variables that reduces this temporal
  * shifting.</p>
  *
  * @author josephramsey
@@ -54,6 +53,7 @@ public class ShiftSearch {
     private PrintStream out = System.out;
     private boolean scheduleStop;
     private boolean forwardSearch;
+    private boolean precomputeCovariances = false;
 
     public ShiftSearch(List<DataModel> dataSets) {
         this.dataSets = dataSets;
@@ -213,7 +213,7 @@ public class ShiftSearch {
     private double getAvgBic(List<DataModel> dataSets) {
         List<Score> scores = new ArrayList<>();
         for (DataModel dataSet : dataSets) {
-            SemBicScore _score = new SemBicScore((DataSet) dataSet);
+            SemBicScore _score = new SemBicScore((DataSet) dataSet, precomputeCovariances);
             scores.add(_score);
         }
 
@@ -222,6 +222,10 @@ public class ShiftSearch {
         images.setKnowledge(this.knowledge);
         images.search();
         return -images.getModelScore() / dataSets.size();
+    }
+
+    public void setPrecomputeCovariances(boolean precomputeCovariances) {
+        this.precomputeCovariances = precomputeCovariances;
     }
 }
 

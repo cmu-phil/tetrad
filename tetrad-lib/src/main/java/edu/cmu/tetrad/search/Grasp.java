@@ -5,10 +5,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,42 +16,35 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.util.Collections.shuffle;
 
 
 /**
  * <p>Implements the GRaSP algorithms, which uses a certain procedure to search
- * in the space of permutations of variables for ones that imply CPDAGs that are
- * especailly close to the CPDAG of the true model. The reference is here:</p>
+ * in the space of permutations of variables for ones that imply CPDAGs that are especially close to the CPDAG of the
+ * true model. The reference is here:</p>
  *
  * <p>Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations of
- * the sparsest permutation algorithm. In Uncertainty in Artificial Intelligence
- * (pp. 1052-1062). PMLR.</p>
+ * the sparsest permutation algorithm. In Uncertainty in Artificial Intelligence (pp. 1052-1062). PMLR.</p>
  *
  * <p>GRaSP can use either a score or an independence test; you can provide
- * both, though if you do you need to use the paremeters to choose which one will
- * be used. The score options is more scalable and accurate, though the independence
- * option is perhaps a little easier ot deal with theoretically and are useful for
- * generating unit test results.</p>
+ * both, though if you do you need to use the parameters to choose which one will be used. The score options is more
+ * scalable and accurate, though the independence option is perhaps a little easier ot deal with theoretically and are
+ * useful for generating unit test results.</p>
  *
  * <p>As shown the reference above, GRaSP generates results for the linear, Gaussian
- * case for N = 1000 with precisions for adjacencies and arrowheads near 1 and
- * recalls of about 0.85, when the linear, Gaussian BIC score is used with a penalty
- * of 2. For N = 10,000 recalls also rise up to about 1, so it can be an extraordinarily
- * accurate search for the linear, Gaussian case. But in principle, it can be used
- * with any sort of data, so long as a BIC score is available for that data. So
- * it can be used for the discrete case and for the mixed continuous/discrete case
- * as well.</p>
+ * case for N = 1000 with precisions for adjacencies and arrowheads near 1 and recalls of about 0.85, when the linear,
+ * Gaussian BIC score is used with a penalty of 2. For N = 10,000 recalls also rise up to about 1, so it can be an
+ * extraordinarily accurate search for the linear, Gaussian case. But in principle, it can be used with any sort of
+ * data, so long as a BIC score is available for that data. So it can be used for the discrete case and for the mixed
+ * continuous/discrete case as well.</p>
  *
  * <p>The version of GRaSP described in the above reference is limited to about 100
- * varibles in execution time, after which it become impracticably slow. Recent
- * optimizations allow it to scale further than that; hopefully these will be
- * written up soon and made available.</p>
+ * variables in execution time, after which it become impracticably slow. Recent optimizations allow it to scale further
+ * than that; hopefully these will be written up soon and made available.</p>
  *
  * <p>Knowledge can be used with this search. If tiered knowledge is used, then
- * the procedure is carried out for each tier separately, given the variable preceding
- * that tier, which allows the SP algorithm to address tiered (e.g., time series)
- * problems with larger numbers of variables.</p>
+ * the procedure is carried out for each tier separately, given the variable preceding that tier, which allows the SP
+ * algorithm to address tiered (e.g., time series) problems with larger numbers of variables.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -72,13 +65,14 @@ public class Grasp {
     private long start;
     private boolean useScore = true;
     private boolean useRaskuttiUhler;
-    private boolean ordered;
+    private boolean ordered = false;
     private boolean verbose;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
     private boolean useDataOrder = true;
     private int depth = 3;
     private int numStarts = 1;
+    private boolean allowInternalRandomness = false;
 
     /**
      * Constructor for a score.
@@ -103,8 +97,7 @@ public class Grasp {
     }
 
     /**
-     * Constructor that takes both a test and a score; only one is used--
-     * the parameter setting will decide which.
+     * Constructor that takes both a test and a score; only one is used-- the parameter setting will decide which.
      *
      * @param test  The test to use.
      * @param score The score to use.
@@ -112,13 +105,12 @@ public class Grasp {
     public Grasp(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
-        this.variables = new ArrayList<>(test.getVariables());
+        this.variables = new ArrayList<>(score.getVariables());
     }
 
     /**
-     * Given an initial permutation, 'order', of the variables, searches
-     * for a best permutation of the variables by rearranging the varialbes
-     * in 'order'.
+     * Given an initial permutation, 'order,' of the variables, searches for a best permutation of the variables by
+     * rearranging the variables in 'order.'
      *
      * @param order The initial permutation.
      * @return The discovered permutation at the end of the procedure.
@@ -149,7 +141,7 @@ public class Grasp {
             if (Thread.interrupted()) break;
 
             if ((r == 0 && !this.useDataOrder) || r > 0) {
-                shuffle(order);
+                RandomUtil.shuffle(order);
             }
 
             this.start = MillisecondTimes.timeMillis();
@@ -181,7 +173,7 @@ public class Grasp {
     }
 
     /**
-     * Returns the number of edges in the DAG implied by the discovered permuttion.
+     * Returns the number of edges in the DAG implied by the discovered permutation.
      *
      * @return This number.
      */
@@ -206,13 +198,12 @@ public class Grasp {
     }
 
     /**
-     * Sets the number of times the best order algorithm should be rerun with different
-     * starting permtutions in search of a best BIC scoring permutation.
+     * Sets the number of times the best order algorithm should be rerun with different starting permutations in search
+     * of a best BIC scoring permutation.
      *
-     * @param numStarts This number; if 1, it is run just once with the given
-     *                  starting permutation; if 2 or higher, it is rerun subsequently
-     *                  with random initial permutations and the best scoring
-     *                  discovered final permutation is reported.
+     * @param numStarts This number, if 1, it is run just once with the given starting permutation, if 2 or higher, it
+     *                  is rerun subsequently with random initial permutations, and the best scoring discovered final
+     *                  permutation is reported.
      * @see #setUseDataOrder(boolean)
      */
     public void setNumStarts(int numStarts) {
@@ -220,11 +211,10 @@ public class Grasp {
     }
 
     /**
-     * True if the order of the variables in the data should be used for an initial
-     * best-order search, false if a random permutation should be used. (Subsequence
-     * automatic best order runs will use random permutations.) This is included
-     * so that the algorithm will be capable of outputting the same results with the
-     * same data without any randomness.
+     * True if the order of the variables in the data should be used for an initial best-order search, false if a random
+     * permutation should be used. (Subsequence automatic best order runs will use random permutations.) This is
+     * included so that the algorithm will be capable of outputting the same results with the same data without any
+     * randomness.
      *
      * @param useDataOrder True if so
      */
@@ -244,7 +234,7 @@ public class Grasp {
     /**
      * Sets whether verbose output is printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -254,8 +244,8 @@ public class Grasp {
     }
 
     /**
-     * Sets the knowledge used in the search. The search is set up to honor all
-     * knowledge of forbidden or required directed edges, and tiered knowledge.
+     * Sets the knowledge used in the search. The search is set up to honor all knowledge of forbidden or required
+     * directed edges, and tiered knowledge.
      *
      * @param knowledge This knowledge.
      */
@@ -264,8 +254,8 @@ public class Grasp {
     }
 
     /**
-     * Sets the maximum depth of the depth first search that GRaSP perform while
-     * searching for a weakly increasing tuck sequence that improves the score.
+     * Sets the maximum depth of the depth-first search that GRaSP performs while searching for a weakly increasing tuck
+     * sequence that improves the score.
      *
      * @param depth This depth.
      */
@@ -275,8 +265,7 @@ public class Grasp {
     }
 
     /**
-     * Sets the maximum depth at which uncovered tucks can be performed within
-     * the depth first search of GRaSP.
+     * Sets the maximum depth at which uncovered tucks can be performed within the depth-first search of GRaSP.
      *
      * @param uncoveredDepth This depth.
      */
@@ -286,8 +275,7 @@ public class Grasp {
     }
 
     /**
-     * Sets the maximum depth at which singular tucks can be performed within
-     * the depth first search of GRaSP.
+     * Sets the maximum depth at which singular tucks can be performed within the depth-first search of GRaSP.
      *
      * @param nonSingularDepth This depth.
      */
@@ -297,18 +285,17 @@ public class Grasp {
     }
 
     /**
-     * True if the score should be used (if both a score and a test are provided),
-     * false if not.
+     * True if the score should be used (if both a score and a test are provided), false if not.
      *
-     * @param useScore True if so.
+     * @param useScore True, if so.
      */
     public void setUseScore(boolean useScore) {
         this.useScore = useScore;
     }
 
     /**
-     * True if GRasP0 should be performed before GRaSP1 and GRaSP1 before GRaSP2.
-     * False if this ordering should not be imposed.
+     * True if GRasP0 should be performed before GRaSP1 and GRaSP1 before GRaSP2. False if this ordering should not be
+     * imposed.
      *
      * @param ordered True if the ordering should be imposed.
      */
@@ -317,8 +304,7 @@ public class Grasp {
     }
 
     /**
-     * True if the Raskutti-Uhler method should be used, false if the Verma-Pearl
-     * method should be used.
+     * True if the Raskutti-Uhler method should be used, false if the Verma-Pearl method should be used.
      *
      * @param useRaskuttiUhler True if RU, false if VP.
      * @see #setNumStarts(int)
@@ -329,6 +315,18 @@ public class Grasp {
         if (this.useRaskuttiUhler) {
             this.useScore = false;
         }
+    }
+
+    /**
+     * Sets whether to allow internal randomness in the algorithm. Some steps in the algorithm do shuffling of variables
+     * if this is set to true, to help avoid local optima. However, this randomness can lead to different results on
+     * different runs of the algorithm, which may be undesirable.
+     *
+     * @param allowInternalRandomness True if internal randomness should be allowed, false otherwise. This is false by
+     *                                default.
+     */
+    public void setAllowInternalRandomness(boolean allowInternalRandomness) {
+        this.allowInternalRandomness = allowInternalRandomness;
     }
 
     private boolean violatesKnowledge(List<Node> order) {
@@ -400,10 +398,20 @@ public class Grasp {
 
     private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
                           Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
-        for (Node y : scorer.getShuffledVariables()) {
+        List<Node> vars = scorer.getPi();
+
+        if (allowInternalRandomness) {
+            RandomUtil.shuffle(vars);
+        }
+
+        for (Node y : vars) {
             Set<Node> ancestors = scorer.getAncestors(y);
             List<Node> parents = new ArrayList<>(scorer.getParents(y));
-            shuffle(parents);
+
+            if (allowInternalRandomness) {
+                RandomUtil.shuffle(parents);
+            }
+
             for (Node x : parents) {
 
                 boolean covered = scorer.coveredEdge(x, y);

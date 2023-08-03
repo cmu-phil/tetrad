@@ -64,9 +64,9 @@ class AdTreeHelper implements Serializable {
     }
 
     protected class CountNode implements Serializable {
-        private final int attr;
         protected final int count;
         protected final VaryNode[] vary;
+        private final int attr;
 
         protected CountNode(int attribute, int[][] array) {
             this.attr = attribute;

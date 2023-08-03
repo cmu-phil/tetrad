@@ -37,6 +37,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -44,8 +46,8 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Contains methods used by TestSerialization to ensure that previous "stable"
- * versions of Tetrad will by loadable by later "stable" versions of Tetrad.
+ * Contains methods used by TestSerialization to ensure that previous "stable" versions of Tetrad will by loadable by
+ * later "stable" versions of Tetrad.
  *
  * @author josephramsey
  * @see #safelySerializableTypes
@@ -54,18 +56,14 @@ public class TetradSerializableUtils {
 
     /**
      * <p>This is a list of types in the Java API that have been designated as
-     * "safely serializable". The collections classes are included here (even
-     * though they currently are way not safely serializable) since in JDK 1.5
-     * the types of objects they contain will be syntactically checkable. (The
-     * collections classes are included by designating the interfaces Collection
-     * and Map as safely serializable.) String and Class are clearly safely
-     * serializable, since are both immutable and do not have constructors that
-     * allow non-TetradSerializable objects to be passed to them, and therefore
-     * are in no danger of storing any objects in fields whose serializability
-     * can't be vouched for. When adding classes to this list, please use
-     * similar reasoning to vouch for their safety. Unfortunately, such safety
-     * cannot be automatically checked. Class, for instance, <p>We will
-     * move to JDK 1.5 as soon as it becomes available for Macs.&gt; 0
+     * "safely serializable". The collections classes are included here (even though they currently are way not safely
+     * serializable) since in JDK 1.5 the types of objects they contain will be syntactically checkable. (The
+     * collections classes are included by designating the interfaces Collection and Map as safely serializable.) String
+     * and Class are clearly safely serializable, since are both immutable and do not have constructors that allow
+     * non-TetradSerializable objects to be passed to them, and therefore are in no danger of storing any objects in
+     * fields whose serializability can't be vouched for. When adding classes to this list, please use similar reasoning
+     * to vouch for their safety. Unfortunately, such safety cannot be automatically checked. Class, for instance, <p>We
+     * will move to JDK 1.5 as soon as it becomes available for Macs.&gt; 0
      */
     private static final Class[] safelySerializableTypes = {
             String.class, Class.class, Date.class, Collection.class, Map.class,
@@ -76,26 +74,23 @@ public class TetradSerializableUtils {
     };
 
     /**
-     * The highest directory inside build/tetrad/classes that contains all of
-     * the TetradSerializable classes.
+     * The highest directory inside build/tetrad/classes that contains all the TetradSerializable classes.
      */
     private final String serializableScope;
 
     /**
-     * The directory to which serialized class instances from the
-     * currentDirectory build should be saved.
+     * The directory to which serialized class instances from the currentDirectory build should be saved.
      */
     private final String currentDirectory;
 
     /**
-     * The directory to which serialized classes from previous versions should
-     * be stored.
+     * The directory to which serialized classes from previous versions should be stored.
      */
     private final String archiveDirectory;
 
     /**
-     * Blank constructor. Please set the directory undirectedPaths that you will need
-     * using the relevant set methods before calling test methods.
+     * Blank constructor. Please set the directory undirectedPaths that you will need using the relevant set methods
+     * before calling test methods.
      */
     public TetradSerializableUtils(String serializableScope,
                                    String currentDirectory, String archiveDirectory) {
@@ -117,19 +112,14 @@ public class TetradSerializableUtils {
     }
 
     /**
-     * Checks all of the classes in the serialization scope that implement
-     * TetradSerializable to make sure all of their fields are either themselves
-     * (a) primitive, (b) TetradSerializable, or (c) assignable from types
-     * designated as safely serializable by virtue of being included in the
-     * safelySerializableTypes array (see), or are arrays whose lowest order
-     * component types satisfy either (a), (b), or (c). Safely serializable
-     * classes in the Java API currently include collections classes, plus
-     * String and Class. Collections classes are included, since their types
-     * will be syntactically checkable in JDK 1.5. String and Class are members
-     * of a broader type of Class whose safely can by checked by making sure
-     * there is no way to pass into them via constructor or method argument any
-     * object that is not TetradSerializable or safely serializable. But it's
-     * easy enough now to just make a list.
+     * Checks all of the classes in the serialization scope that implement TetradSerializable to make sure all of their
+     * fields are either themselves (a) primitive, (b) TetradSerializable, or (c) assignable from types designated as
+     * safely serializable by virtue of being included in the safelySerializableTypes array (see), or are arrays whose
+     * lowest order component types satisfy either (a), (b), or (c). Safely serializable classes in the Java API
+     * currently include collections classes, plus String and Class. Collections classes are included, since their types
+     * will be syntactically checkable in JDK 1.5. String and Class are members of a broader type of Class whose safely
+     * can by checked by making sure there is no way to pass into them via constructor or method argument any object
+     * that is not TetradSerializable or safely serializable. But it's easy enough now to just make a list.
      *
      * @see #safelySerializableTypes
      */
@@ -204,24 +194,20 @@ public class TetradSerializableUtils {
     }
 
     /**
-     * Finds all classes inside the stated scope that implement
-     * TetradSerializable and serializes them out to the getCurrentDirectory()
-     * directory. Abstract methods and interfaces are skipped over. For all
-     * other classes C, it is assumed that C has a static constructor of the
-     * following form:
+     * Finds all classes inside the stated scope that implement TetradSerializable and serializes them out to the
+     * getCurrentDirectory() directory. Abstract methods and interfaces are skipped over. For all other classes C, it is
+     * assumed that C has a static constructor of the following form:
      * <pre>
      *     public static C serializableInstance() {
      *         // Returns an instance of C. May be a mind-numbingly simple
      *         // instance, no need to get fancy.
      *     }
      * </pre>
-     * The instance returned may be mind-numbingly simple; there is no need to
-     * get fancy. It may change over time. The point is to make sure that
-     * instances serialized out with earlier versions load with the
-     * currentDirectory version.
+     * The instance returned may be mind-numbingly simple; there is no need to get fancy. It may change over time. The
+     * point is to make sure that instances serialized out with earlier versions load with the currentDirectory
+     * version.
      *
-     * @throws RuntimeException if clazz cannot be serialized. This exception
-     *                          has an informative message and wraps the
+     * @throws RuntimeException if clazz cannot be serialized. This exception has an informative message and wraps the
      *                          originally thrown exception as root cause.
      */
     public void serializeCurrentDirectory() throws RuntimeException {
@@ -341,14 +327,12 @@ public class TetradSerializableUtils {
     }
 
     /**
-     * Serializes the given class to the getCurrentDirectory() directory. The
-     * static serializedInstance() method of clazz will be called to get an
-     * examplar of clazz. This examplar will then be serialized out to a file
-     * stored in getCurrentDirectory().
+     * Serializes the given class to the getCurrentDirectory() directory. The static serializedInstance() method of
+     * clazz will be called to get an examplar of clazz. This examplar will then be serialized out to a file stored in
+     * getCurrentDirectory().
      *
      * @param clazz the class to serialize.
-     * @throws RuntimeException if clazz cannot be serialized. This exception
-     *                          has an informative message and wraps the
+     * @throws RuntimeException if clazz cannot be serialized. This exception has an informative message and wraps the
      *                          originally thrown exception as root cause.
      * @see #getCurrentDirectory()
      */
@@ -435,11 +419,9 @@ public class TetradSerializableUtils {
     }
 
     /**
-     * Deserializes all files in the given directory, as a test to make sure
-     * they can all be deserialized.
+     * Deserializes all files in the given directory, as a test to make sure they can all be deserialized.
      *
-     * @throws RuntimeException if clazz cannot be serialized. This exception
-     *                          has an informative message and wraps the
+     * @throws RuntimeException if clazz cannot be serialized. This exception has an informative message and wraps the
      *                          originally thrown exception as root cause.
      */
     public void deserializeCurrentDirectory() throws RuntimeException {
@@ -468,11 +450,9 @@ public class TetradSerializableUtils {
     }
 
     /**
-     * Deserializes the information in the given file, returning the object
-     * represented.
+     * Deserializes the information in the given file, returning the object represented.
      *
-     * @throws RuntimeException if clazz cannot be serialized. This exception
-     *                          has an informative message and wraps the
+     * @throws RuntimeException if clazz cannot be serialized. This exception has an informative message and wraps the
      *                          originally thrown exception as root cause.
      */
     private void deserializeClass(File file) throws RuntimeException {
@@ -495,11 +475,10 @@ public class TetradSerializableUtils {
     }
 
     /**
-     * Creates a zip archive of the currently serialized files in
-     * getCurrentDirectory(), placing the archive in getArchiveDirectory().
+     * Creates a zip archive of the currently serialized files in getCurrentDirectory(), placing the archive in
+     * getArchiveDirectory().
      *
-     * @throws RuntimeException if clazz cannot be serialized. This exception
-     *                          has an informative message and wraps the
+     * @throws RuntimeException if clazz cannot be serialized. This exception has an informative message and wraps the
      *                          originally thrown exception as root cause.
      * @see #getCurrentDirectory()
      * @see #getArchiveDirectory()
@@ -534,10 +513,12 @@ public class TetradSerializableUtils {
         byte[] buf = new byte[1024];
 
         try {
-            String version = Version.currentRepositoryVersion().toString();
+            LocalDate today = LocalDate.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String date = today.format(formatter);
 
             // Create the ZIP file
-            String outFilename = "serializedclasses-" + version + ".zip";
+            String outFilename = "serializedclasses-" + date + ".zip";
             File _file = new File(getArchiveDirectory(), outFilename);
             FileOutputStream fileOut = new FileOutputStream(_file);
             ZipOutputStream out = new ZipOutputStream(fileOut);
@@ -582,8 +563,7 @@ public class TetradSerializableUtils {
     /**
      * Deserializes examplars stored in archives in getArchiveDirectory().
      *
-     * @throws RuntimeException if clazz cannot be serialized. This exception
-     *                          has an informative message and wraps the
+     * @throws RuntimeException if clazz cannot be serialized. This exception has an informative message and wraps the
      *                          originally thrown exception as root cause.
      * @see #getArchiveDirectory()
      */
@@ -690,8 +670,8 @@ public class TetradSerializableUtils {
 
 
     /**
-     * @return a reference to the public static serializableInstance() method of
-     * clazz, if there is one; otherwise, returns null.
+     * @return a reference to the public static serializableInstance() method of clazz, if there is one; otherwise,
+     * returns null.
      */
     private Method serializableInstanceMethod(Class clazz) {
         Method[] methods = clazz.getMethods();
@@ -720,12 +700,11 @@ public class TetradSerializableUtils {
     }
 
     /**
-     * @return all of the classes x in the given directory (recursively) such
-     * that clazz.isAssignableFrom(x).
+     * @return all of the classes x in the given directory (recursively) such that clazz.isAssignableFrom(x).
      */
     private List<Class> getAssignableClasses(File path, Class<TetradSerializable> clazz) {
         if (!path.isDirectory()) {
-            throw new IllegalArgumentException("Not a directory: " + path);
+            throw new IllegalArgumentException("Not a directory: " + path.getAbsolutePath());
         }
 
         @SuppressWarnings("Convert2Diamond") List<Class> classes = new LinkedList<>();
@@ -742,9 +721,9 @@ public class TetradSerializableUtils {
                 String packagePath = file.getPath();
                 packagePath = packagePath.replace('\\', '.');
                 packagePath = packagePath.replace('/', '.');
-                packagePath = packagePath.substring(
-                        packagePath.indexOf("edu.cmu"));
-                int index = packagePath.indexOf(".class");
+                if (!packagePath.contains("edu.cmu")) continue;
+                packagePath = packagePath.substring(packagePath.indexOf("edu.cmu"));
+                int index = packagePath.indexOf(".ser");
 
                 if (index == -1) {
                     continue;

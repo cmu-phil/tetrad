@@ -28,8 +28,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * Represents an object with a name, node type, and position that can serve as a
- * node in a graph.
+ * Represents an object with a name, node type, and position that can serve as a node in a graph.
  *
  * @author josephramsey
  * @see NodeType
@@ -68,8 +67,7 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     NodeVariableType getNodeVariableType();
 
     /**
-     * Sets the type (domain, interventional status, interventional value..) for
-     * this node variable
+     * Sets the type (domain, interventional status, interventional value..) for this node variable
      */
     void setNodeVariableType(NodeVariableType nodeVariableType);
 

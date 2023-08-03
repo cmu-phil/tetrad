@@ -52,6 +52,7 @@ public final class Params {
     public static final String DO_DISCRIMINATING_PATH_TAIL_RULE = "doDiscriminatingPathTailRule";
     public static final String CONCURRENT_FAS = "concurrentFAS";
     public static final String CONFLICT_RULE = "conflictRule";
+    public static final String MEEK_PREVENT_CYCLES = "meekPreventCycles";
     public static final String CONNECTED = "connected";
     public static final String COV_HIGH = "covHigh";
     public static final String COV_LOW = "covLow";
@@ -73,7 +74,7 @@ public final class Params {
     public static final String FASK_ADJACENCY_METHOD = "faskAdjacencyMethod";
     public static final String FASK_NONEMPIRICAL = "faskNonempirical";
     public static final String FAITHFULNESS_ASSUMED = "faithfulnessAssumed";
-    public static final String FAS_HEURISTIC = "fasHeuristic";
+    //    public static final String PC_HEURISTIC = "pcHeuristic";
     public static final String FAS_RULE = "fasRule";
     public static final String FAST_ICA_A = "fastIcaA";
     public static final String FAST_ICA_MAX_ITER = "fastIcaMaxIter";
@@ -118,7 +119,6 @@ public final class Params {
     public static final String MAX_INDEGREE = "maxIndegree";
     public static final String MAX_ITERATIONS = "maxIterations";
     public static final String MAX_OUTDEGREE = "maxOutdegree";
-    public static final String MAX_P_ORIENTATION_MAX_PATH_LENGTH = "maxPOrientationMaxPathLength";
     public static final String MAX_PATH_LENGTH = "maxPathLength";
     public static final String MAXIT = "maxit";
     public static final String MEAN_HIGH = "meanHigh";
@@ -154,7 +154,7 @@ public final class Params {
     public static final String EBIC_GAMMA = "ebicGamma";
     public static final String PERCENT_DISCRETE = "percentDiscrete";
     public static final String PERCENT_RESAMPLE_SIZE = "percentResampleSize";
-    public static final String POSSIBLE_DSEP_DONE = "possibleDsepDone";
+    public static final String POSSIBLE_MSEP_DONE = "possibleMsepDone";
     public static final String PROB_CYCLE = "probCycle";
     public static final String PROB_TWO_CYCLE = "probTwoCycle";
     public static final String RANDOM_SELECTION_SIZE = "randomSelectionSize";
@@ -185,6 +185,7 @@ public final class Params {
     public static final String USE_CORR_DIFF_ADJACENCIES = "useCorrDiffAdjacencies";
     public static final String USE_FAS_ADJACENCIES = "useFasAdjacencies";
     public static final String USE_GAP = "useGap";
+    public static final String USE_MAX_P_HEURISTIC = "useMaxPHeuristic";
     public static final String USE_MAX_P_ORIENTATION_HEURISTIC = "useMaxPOrientationHeuristic";
     public static final String USE_SKEW_ADJACENCIES = "useSkewAdjacencies";
     public static final String USE_WISHART = "useWishart";
@@ -200,6 +201,7 @@ public final class Params {
     public static final String SEM_GIC_RULE = "semGicRule";
     public static final String SEM_BIC_STRUCTURE_PRIOR = "semBicStructurePrior";
     public static final String POISSON_LAMBDA = "poissonLambda";
+    public static final String USE_BES = "useBes";
     public static final String NUM_STARTS = "numStarts";
     public static final String CACHE_SCORES = "cacheScores";
     public static final String OTHER_PERM_METHOD = "otherPermMethod";
@@ -217,7 +219,7 @@ public final class Params {
     public static final String GRASP_USE_SCORE = "graspUseScore";
     public static final String GRASP_USE_RASKUTTI_UHLER = "graspUseRaskuttiUhler";
     public static final String GRASP_USE_DATA_ORDER = "graspUseDataOrder";
-    public static final String GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM = "graspAllowRandomnessIndideAlgorithm";
+    public static final String ALLOW_INTERNAL_RANDOMNESS = "allowInternalRandomness";
     public static final String GRASP_DEPTH = "graspDepth";
     public static final String GRASP_SINGULAR_DEPTH = "graspSingularDepth";
     public static final String GRASP_NONSINGULAR_DEPTH = "graspNonSingularDepth";
@@ -232,13 +234,25 @@ public final class Params {
     public static final String NUM_SUBSAMPLES = "numSubsamples";
     public static final String TARGETS = "targets";
     public static final String MB = "mb";
-    public static final String CSTAR_Q = "cstarQ";
+    public static final String TOP_BRACKET = "topBracket";
     public static final String TIME_LAG = "timeLag";
     public static final String PRECOMPUTE_COVARIANCES = "precomputeCovariances";
     public static final String IMAGES_META_ALG = "imagesMetaAlg";
 
     public static final String SEED = "seed";
     public static final String SIGNIFICANCE_CHECKED = "significanceChecked";
+    public static final String PROB_REMOVE_COLUMN = "probRemoveColumn";
+    public static final String SAVE_BOOTSTRAP_GRAPHS = "saveBootstrapGraphs";
+    public static final String LAMBDA1 = "lambda1";
+    public static final String W_THRESHOLD = "wThreshold";
+    public static final String CPDAG = "cpdag";
+    public static final String TRIMMING_STYLE = "trimmingStyle";
+    public static final String NUMBER_OF_EXPANSIONS = "numberOfExpansions";
+    public static final String CSTAR_CPDAG_ALGORITHM = "cstarCpdagAlgorithm";
+    public static final String FILE_OUT_PATH = "fileOutPath";
+    public static final String PI_THR = "piThr";
+    public static final String REMOVE_EFFECT_NODES = "removeEffectNodes";
+    public static final String SAMPLE_STYLE = "sampleStyle";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
@@ -259,7 +273,6 @@ public final class Params {
             Params.KERNEL_MULTIPLIER, Params.KERNEL_REGRESSION_SAMPLE_SIZE, Params.KERNEL_TYPE, Params.KERNEL_WIDTH,
             Params.LATENT_MEASURED_IMPURE_PARENTS, Params.LOWER_BOUND, Params.MAX_CATEGORIES, Params.MAX_DEGREE,
             Params.MAX_DISTINCT_VALUES_DISCRETE, Params.MAX_INDEGREE, Params.MAX_ITERATIONS, Params.MAX_OUTDEGREE,
-            Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH, Params.MAX_PATH_LENGTH, Params.MAXIT, Params.MEAN_HIGH,
             Params.MEAN_LOW, Params.MEASURED_MEASURED_IMPURE_ASSOCIATIONS, Params.MEASURED_MEASURED_IMPURE_PARENTS,
             Params.MEASUREMENT_MODEL_DEGREE, Params.MEASUREMENT_VARIANCE, Params.MGM_PARAM1, Params.MGM_PARAM2, Params.MGM_PARAM3,
             Params.MIN_CATEGORIES, Params.NO_RANDOMLY_DETERMINED_INDEPENDENCE, Params.NUM_BASIS_FUNCTIONS,
@@ -267,7 +280,7 @@ public final class Params {
             Params.NUM_LATENTS, Params.NUM_MEASURES, Params.NUM_RANDOMIZED_SEARCH_MODELS, Params.NUM_RUNS,
             Params.NUM_STRUCTURAL_EDGES, Params.NUM_STRUCTURAL_NODES, Params.NUMBER_RESAMPLING,
             Params.ORIENT_TOWARD_DCONNECTIONS, Params.ORIENT_VISIBLE_FEEDBACK_LOOPS, Params.OUTPUT_RBD,
-            Params.PENALTY_DISCOUNT, Params.PERCENT_DISCRETE, Params.PERCENT_RESAMPLE_SIZE, Params.POSSIBLE_DSEP_DONE,
+            Params.PENALTY_DISCOUNT, Params.PERCENT_DISCRETE, Params.PERCENT_RESAMPLE_SIZE, Params.POSSIBLE_MSEP_DONE,
             Params.PROB_CYCLE, Params.PROB_TWO_CYCLE, Params.RANDOM_SELECTION_SIZE, Params.RANDOMIZE_COLUMNS,
             Params.RCIT_NUM_FEATURES, Params.RESAMPLING_ENSEMBLE, Params.RESAMPLING_WITH_REPLACEMENT, Params.PRIOR_EQUIVALENT_SAMPLE_SIZE,
             Params.SAMPLE_SIZE, Params.SAVE_LATENT_VARS, Params.SCALE_FREE_ALPHA, Params.SCALE_FREE_BETA, Params.SCALE_FREE_DELTA_IN,
@@ -285,6 +298,7 @@ public final class Params {
             Params.PERCENT_RESAMPLE_SIZE,
 //            Params.RESAMPLING_ENSEMBLE,
             Params.RESAMPLING_WITH_REPLACEMENT,
+            Params.SAVE_BOOTSTRAP_GRAPHS,
             Params.SEED
     ));
 

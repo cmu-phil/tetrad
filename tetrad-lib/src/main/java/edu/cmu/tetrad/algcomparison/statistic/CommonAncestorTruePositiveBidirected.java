@@ -14,6 +14,28 @@ import edu.cmu.tetrad.graph.Node;
 public class CommonAncestorTruePositiveBidirected implements Statistic {
     static final long serialVersionUID = 23L;
 
+    public static boolean existsCommonAncestor(Graph trueGraph, Edge edge) {
+
+        // edge X*-*Y where there is a common ancestor of X and Y in the graph.
+
+        for (Node c : trueGraph.getNodes()) {
+//            if (c == edge.getNode1() || c == edge.getNode2()) continue;
+            if (trueGraph.paths().isAncestorOf(c, edge.getNode1())
+                    && trueGraph.paths().isAncestorOf(c, edge.getNode2())) {
+                return true;
+            }
+        }
+
+        return false;
+
+
+//        Set<Node> commonAncestors = new HashSet<>(trueGraph.getAncestors(Collections.singletonList(edge.getNode1())));
+//        commonAncestors.retainAll(trueGraph.getAncestors(Collections.singletonList(edge.getNode2())));
+//        commonAncestors.remove(edge.getNode1());
+//        commonAncestors.remove(edge.getNode2());
+//        return !commonAncestors.isEmpty();
+    }
+
     @Override
     public String getAbbreviation() {
         return "CATPB";
@@ -35,28 +57,6 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
         }
 
         return tp;
-    }
-
-    public static boolean existsCommonAncestor(Graph trueGraph, Edge edge) {
-
-        // edge X*-*Y where there is a common ancestor of X and Y in the graph.
-
-        for (Node c : trueGraph.getNodes()) {
-//            if (c == edge.getNode1() || c == edge.getNode2()) continue;
-            if (trueGraph.paths().isAncestorOf(c, edge.getNode1())
-                    && trueGraph.paths().isAncestorOf(c, edge.getNode2())) {
-                return true;
-            }
-        }
-
-        return false;
-
-
-//        Set<Node> commonAncestors = new HashSet<>(trueGraph.getAncestors(Collections.singletonList(edge.getNode1())));
-//        commonAncestors.retainAll(trueGraph.getAncestors(Collections.singletonList(edge.getNode2())));
-//        commonAncestors.remove(edge.getNode1());
-//        commonAncestors.remove(edge.getNode2());
-//        return !commonAncestors.isEmpty();
     }
 
     @Override

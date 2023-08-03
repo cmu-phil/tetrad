@@ -82,11 +82,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
 //        log(bayesIm);
     }
 
-    private void setBayesIm(BayesPm bayesPm, BayesIm oldBayesIm, int manual) {
-        this.bayesIms = new ArrayList<>();
-        this.bayesIms.add(new MlBayesIm(bayesPm, oldBayesIm, manual));
-    }
-
     public BayesImWrapper(Simulation simulation) {
         List<BayesIm> bayesIms = null;
 
@@ -159,7 +154,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
 //        log(bayesIm);
     }
 
-
     public BayesImWrapper(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
@@ -177,9 +171,19 @@ public class BayesImWrapper implements SessionModel, Memorable {
                 new Parameters());
     }
 
+    private void setBayesIm(BayesPm bayesPm, BayesIm oldBayesIm, int manual) {
+        this.bayesIms = new ArrayList<>();
+        this.bayesIms.add(new MlBayesIm(bayesPm, oldBayesIm, manual));
+    }
+
     //=============================PUBLIC METHODS=========================//
     public BayesIm getBayesIm() {
         return this.bayesIms.get(getModelIndex());
+    }
+
+    public void setBayesIm(BayesIm bayesIm) {
+        this.bayesIms = new ArrayList<>();
+        this.bayesIms.add(bayesIm);
     }
 
     public Graph getGraph() {
@@ -210,11 +214,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
         return getGraph().getNodes();
     }
 
-    public void setBayesIm(BayesIm bayesIm) {
-        this.bayesIms = new ArrayList<>();
-        this.bayesIms.add(bayesIm);
-    }
-
     public int getNumModels() {
         return this.numModels;
     }
@@ -223,25 +222,23 @@ public class BayesImWrapper implements SessionModel, Memorable {
         return this.modelIndex;
     }
 
-    public String getModelSourceName() {
-        return this.modelSourceName;
-    }
-
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return this.modelSourceName;
     }
 
     //============================== private methods ============================//
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

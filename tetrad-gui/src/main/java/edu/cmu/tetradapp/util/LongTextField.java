@@ -28,11 +28,9 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 
 /**
- * A text field which is specialized for displaying longs. Handles otherwise
- * annoying GUI-related functions like keeping the textbox the right size and
- * listening to itself. A filter may be specified as a way of, e.g., forcing
- * variables to be within a certain range; see the <code>setFilter</code>
- * method.
+ * A text field which is specialized for displaying longs. Handles otherwise annoying GUI-related functions like keeping
+ * the textbox the right size and listening to itself. A filter may be specified as a way of, e.g., forcing variables to
+ * be within a certain range; see the <code>setFilter</code> method.
  *
  * @author Kevin Bui
  */
@@ -44,19 +42,16 @@ public final class LongTextField extends JTextField {
     private long value;
 
     /**
-     * If set, checks whether the given value should be accepted; otherwise, the
-     * old value will be reinstated. May be null.
+     * If set, checks whether the given value should be accepted; otherwise, the old value will be reinstated. May be
+     * null.
      */
     private Filter filter;
 
-    //==========================CONSTRUCTORS=============================//
-
     /**
-     * Constructs a new long text field displaying the given default value,
-     * restricting the value to [lowerBound, upperBound].
+     * Constructs a new long text field displaying the given default value, restricting the value to [lowerBound,
+     * upperBound].
      *
-     * @param value The initial value. Must be between lowerBound and
-     *              upperBound.
+     * @param value The initial value. Must be between lowerBound and upperBound.
      * @param size  the number of columns in the textfield.
      */
     public LongTextField(long value, int size) {
@@ -110,9 +105,15 @@ public final class LongTextField extends JTextField {
         });
     }
 
-    //=============================PUBLIC METHODS=======================//
     public void setUnfilteredValue(long value) {
         setText(String.valueOf(value));
+    }
+
+    /**
+     * @return the long value currently displayed.
+     */
+    public long getValue() {
+        return this.value;
     }
 
     /**
@@ -135,13 +136,6 @@ public final class LongTextField extends JTextField {
     }
 
     /**
-     * @return the long value currently displayed.
-     */
-    public long getValue() {
-        return this.value;
-    }
-
-    /**
      * Sets whether the given value should be accepted.
      */
     public void setFilter(Filter filter) {
@@ -149,8 +143,8 @@ public final class LongTextField extends JTextField {
     }
 
     /**
-     * Convinces the text field to stay the right size in layouts that are
-     * trying to expand it like a balloon by returning the preferred size.
+     * Convinces the text field to stay the right size in layouts that are trying to expand it like a balloon by
+     * returning the preferred size.
      *
      * @return the maximum size.
      */
@@ -159,8 +153,7 @@ public final class LongTextField extends JTextField {
     }
 
     /**
-     * Convinces the text field to stay the right size in layouts that are
-     * trying to shrink it.
+     * Convinces the text field to stay the right size in layouts that are trying to shrink it.
      *
      * @return the maximum size.
      */
@@ -168,16 +161,11 @@ public final class LongTextField extends JTextField {
         return getPreferredSize();
     }
 
-    //==============================PRIVATE METHODS======================//
-
     /**
-     * Determines whether the given value is a legal value for this text field.
-     * The default behavior is to constrain the value to be within a certain
-     * range--in other words, in the range [lower bound, upper bound]. For any
-     * other behavior, this method should be overridden. This method is called
-     * by default by the setLabel() method; it may become irrelevant if
-     * setLabel() is overridden in a way that doesn't make a call to
-     * checkValue().
+     * Determines whether the given value is a legal value for this text field. The default behavior is to constrain the
+     * value to be within a certain range--in other words, in the range [lower bound, upper bound]. For any other
+     * behavior, this method should be overridden. This method is called by default by the setLabel() method; it may
+     * become irrelevant if setLabel() is overridden in a way that doesn't make a call to checkValue().
      */
     private long filter(long value, long oldValue) {
         if (this.filter == null) {
@@ -187,24 +175,18 @@ public final class LongTextField extends JTextField {
         return this.filter.filter(value, oldValue);
     }
 
-    //==============================Interfaces============================//
-
     /**
-     * Filters the given value, returning the value that should actually be
-     * displayed. Typical use is to return either the value or the old value,
-     * depending on whether the value is in range, though more complicated uses
-     * are permitted. Side effects (such as storing the value in the process of
-     * filtering it) are permitted.
+     * Filters the given value, returning the value that should actually be displayed. Typical use is to return either
+     * the value or the old value, depending on whether the value is in range, though more complicated uses are
+     * permitted. Side effects (such as storing the value in the process of filtering it) are permitted.
      */
     public interface Filter {
 
         /**
-         * Filters the given value, returning the new value that should be
-         * displayed.
+         * Filters the given value, returning the new value that should be displayed.
          *
          * @param value    The value entered by the user.
-         * @param oldValue The value previously displayed, in case it needs to
-         *                 be reverted to.
+         * @param oldValue The value previously displayed, in case it needs to be reverted to.
          */
         long filter(long value, long oldValue);
     }

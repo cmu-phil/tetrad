@@ -36,20 +36,15 @@ import static jgpml.covariancefunctions.MatrixOperations.exp;
 
 
 /**
- * Squared Exponential covariance function with Automatic Relevance Detemination
- * (ARD) distance measure. The covariance function is parameterized as:
+ * Squared Exponential covariance function with Automatic Relevance Detemination (ARD) distance measure. The covariance
+ * function is parameterized as:
  * <p>
  * k(x^p,x^q) = sf2 * exp(-(x^p - x^q)'*inv(P)*(x^p - x^q)/2)
  * <p>
- * where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where
- * D is the dimension of the input space and sf2 is the signal variance. The
- * hyperparameters are:
+ * where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where D is the dimension of the input space
+ * and sf2 is the signal variance. The hyperparameters are:
  * <p>
- * [ log(ell_1)
- * log(ell_2)
- * .
- * log(ell_D)
- * log(sqrt(sf2))]
+ * [ log(ell_1) log(ell_2) . log(ell_D) log(sqrt(sf2))]
  */
 public class CovSEard implements CovarianceFunction {
 
@@ -65,6 +60,30 @@ public class CovSEard implements CovarianceFunction {
     public CovSEard(int inputDimension) {
         this.D = inputDimension;
         this.numParameters = this.D + 1;
+    }
+
+    private static Matrix squareDist(Matrix a) {
+        return CovSEard.squareDist(a, a);
+    }
+
+    private static Matrix squareDist(Matrix a, Matrix b) {
+        Matrix C = new Matrix(a.getColumnDimension(), b.getColumnDimension());
+        int m = a.getColumnDimension();
+        int n = b.getColumnDimension();
+        int d = a.getRowDimension();
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                double z = 0.0;
+                for (int k = 0; k < d; k++) {
+                    double t = a.get(k, i) - b.get(k, j);
+                    z += t * t;
+                }
+                C.set(i, j, z);
+            }
+        }
+
+        return C;
     }
 
     /**
@@ -133,10 +152,9 @@ public class CovSEard implements CovarianceFunction {
         return new Matrix[]{A, B};
     }
 
-
     /**
-     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect
-     * to the hyperparameter with index <code>idx</code>
+     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
+     * <code>idx</code>
      *
      * @param loghyper hyperparameters
      * @param X        input dataset
@@ -176,30 +194,6 @@ public class CovSEard implements CovarianceFunction {
         }
 
         return A;
-    }
-
-    private static Matrix squareDist(Matrix a) {
-        return CovSEard.squareDist(a, a);
-    }
-
-    private static Matrix squareDist(Matrix a, Matrix b) {
-        Matrix C = new Matrix(a.getColumnDimension(), b.getColumnDimension());
-        int m = a.getColumnDimension();
-        int n = b.getColumnDimension();
-        int d = a.getRowDimension();
-
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                double z = 0.0;
-                for (int k = 0; k < d; k++) {
-                    double t = a.get(k, i) - b.get(k, j);
-                    z += t * t;
-                }
-                C.set(i, j, z);
-            }
-        }
-
-        return C;
     }
 
 }

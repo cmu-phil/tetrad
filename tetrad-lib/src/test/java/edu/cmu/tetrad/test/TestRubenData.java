@@ -10,7 +10,7 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphPersistence;
+import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.PermutationSearch;
@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class TestRubenData {
+    boolean precomputeCovariances = true;
 
     public static void main(String... arge) {
         new TestRubenData().test3();
@@ -50,11 +51,11 @@ public class TestRubenData {
                         "//",
                         '\"', "*", true, Delimiter.COMMA);
 
-                Graph graph = GraphPersistence.loadGraphTxt(new File(path2));
+                Graph graph = GraphSaveLoadUtils.loadGraphTxt(new File(path2));
 
                 graph = GraphSearchUtils.cpdagForDag(graph);
 
-                SemBicScore score = new SemBicScore(data);
+                SemBicScore score = new SemBicScore(data, precomputeCovariances);
                 score.setPenaltyDiscount(2);
 //                Fges alg = new Fges(score);
                 PermutationSearch alg = new PermutationSearch(new Boss(score));

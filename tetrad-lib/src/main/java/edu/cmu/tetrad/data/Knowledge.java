@@ -31,23 +31,18 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Stores information about required and forbidden edges and common causes for
- * use in algorithm. This information can be set edge by edge or else globally
- * via temporal tiers. When setting temporal tiers, all edges from later tiers
- * to earlier tiers are forbidden.
+ * Stores information about required and forbidden edges and common causes for use in algorithm. This information can be
+ * set edge by edge or else globally via temporal tiers. When setting temporal tiers, all edges from later tiers to
+ * earlier tiers are forbidden.
  * <p>
- * For this class, all variable names are referenced by name only. This is
- * because the same Knowledge object is intended to plug into different graphs
- * with MyNodes that possibly have the same names. Thus, if the Knowledge object
- * forbids the edge X --&gt; Y, then it forbids any edge which connects a MyNode
- * named "X" to a MyNode named "Y", even if the underlying MyNodes themselves
- * named "X" and "Y", respectively, are not the same.
+ * For this class, all variable names are referenced by name only. This is because the same Knowledge object is intended
+ * to plug into different graphs with MyNodes that possibly have the same names. Thus, if the Knowledge object forbids
+ * the edge X --&gt; Y, then it forbids any edge which connects a MyNode named "X" to a MyNode named "Y", even if the
+ * underlying MyNodes themselves named "X" and "Y", respectively, are not the same.
  * <p>
- * In place of variable names, wildcard expressions containing the wildcard '*'
- * may be substituted. These will be matched to as many myNodes as possible. The
- * '*' wildcard matches any string of consecutive characters up until the
- * following character is encountered. Thus, "X*a" will match "X123a" and
- * "X45a".
+ * In place of variable names, wildcard expressions containing the wildcard '*' may be substituted. These will be
+ * matched to as many myNodes as possible. The '*' wildcard matches any string of consecutive characters up until the
+ * following character is encountered. Thus, "X*a" will match "X123a" and "X45a".
  *
  * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -56,8 +51,8 @@ public final class Knowledge implements TetradSerializable {
 
     private static final long serialVersionUID = 23L;
 
-    private static final Pattern VARNAME_PATTERN = Pattern.compile("[A-Za-z0-9:_\\-.]+");
-    private static final Pattern SPEC_PATTERN = Pattern.compile("[A-Za-z0-9:-_,\\-.*]+");
+//    private static final Pattern VARNAME_PATTERN = Pattern.compile("[A-Za-z0-9:_\\-.]+");
+//    private static final Pattern SPEC_PATTERN = Pattern.compile("[A-Za-z0-9:-_,\\-.*]+");
     private static final Pattern COMMAN_DELIM = Pattern.compile(",");
     private final Set<String> variables;
     private final List<OrderedPair<Set<String>>> forbiddenRulesSpecs;
@@ -131,7 +126,7 @@ public final class Knowledge implements TetradSerializable {
 //                    + "string of such characters.");
 //        }
 
-        return spec.replace(".", "\\.");
+        return spec;//.replace(".", "\\.");
     }
 
     private Set<String> getExtent(String spec) {
@@ -164,11 +159,11 @@ public final class Knowledge implements TetradSerializable {
 
     private void ensureTiers(int tier) {
         for (int i = this.tierSpecs.size(); i <= tier; i++) {
-            this.tierSpecs.add(new LinkedHashSet<>());
+            this.tierSpecs.add(new HashSet<>());
 
-            for (int j = 0; j < i; j++) {
-                this.forbiddenRulesSpecs.add(new OrderedPair<>(this.tierSpecs.get(i), this.tierSpecs.get(j)));
-            }
+//            for (int j = 0; j < i; j++) {
+//                this.forbiddenRulesSpecs.add(new OrderedPair<>(this.tierSpecs.get(i), this.tierSpecs.get(j)));
+//            }
         }
     }
 
@@ -184,8 +179,8 @@ public final class Knowledge implements TetradSerializable {
         return new OrderedPair<>(fromExtent, toExtent);
     }
 
-    private Set<OrderedPair<Set<String>>> forbiddenTierRules() {
-        Set<OrderedPair<Set<String>>> rules = new HashSet<>();
+    private List<OrderedPair<Set<String>>> forbiddenTierRules() {
+        List<OrderedPair<Set<String>>> rules = new ArrayList<>();
 
         for (int i = 0; i < this.tierSpecs.size(); i++) {
             if (isTierForbiddenWithin(i)) {
@@ -211,8 +206,7 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Adds the given variable or wildcard cpdag to the given tier. The tier
-     * is a non-negative integer.
+     * Adds the given variable or wildcard cpdag to the given tier. The tier is a non-negative integer.
      */
     public void addToTier(int tier, String spec) {
         if (tier < 0) {
@@ -226,17 +220,21 @@ public final class Knowledge implements TetradSerializable {
         spec = checkSpec(spec);
         ensureTiers(tier);
 
-        getExtent(spec).stream()
-                .filter(this::checkVarName)
-                .forEach(e -> {
-                    this.variables.add(e);
-                    this.tierSpecs.get(tier).add(e);
-                });
+        Set<String> extent = getExtent(spec);
+
+        for (String var : extent) {
+            for (int i = 0; i < tierSpecs.size(); i++) {
+                if (i == tier) {
+                    this.tierSpecs.get(i).add(var);
+                } else {
+                    this.tierSpecs.get(i).remove(var);
+                }
+            }
+        }
     }
 
     /**
-     * Puts a variable into tier i if its name is xxx:ti for some xxx and some
-     * i.
+     * Puts a variable into tier i if its name is xxx:ti for some xxx and some i.
      */
     public void addToTiersByVarNames(List<String> varNames) {
         if (!this.variables.containsAll(varNames)) {
@@ -258,8 +256,8 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Adds a knowledge group. Legacy method, replaced by setForbidden,
-     * setRequired with cpdags. Needed for the interface.
+     * Adds a knowledge group. Legacy method, replaced by setForbidden, setRequired with cpdags. Needed for the
+     * interface.
      */
     public void addKnowledgeGroup(KnowledgeGroup group) {
         this.knowledgeGroups.add(group);
@@ -342,9 +340,9 @@ public final class Knowledge implements TetradSerializable {
         ensureTiers(tier);
 
         try {
-            return this.tierSpecs.get(tier).stream()
-                    .sorted()
-                    .collect(Collectors.toList());
+            List<String> list = new ArrayList<>(tierSpecs.get(tier));
+            Collections.sort(list);
+            return list;
         } catch (Exception e) {
             throw new RuntimeException("Unexpected knowledge configuration.", e);
         }
@@ -366,10 +364,13 @@ public final class Knowledge implements TetradSerializable {
     }
 
     private boolean isForbiddenByRules(String var1, String var2) {
-        return this.forbiddenRulesSpecs.stream()
-                .anyMatch(rule -> !var1.equals(var2)
-                        && rule.getFirst().contains(var1)
-                        && rule.getSecond().contains(var2));
+        for (OrderedPair<Set<String>> o : this.forbiddenRulesSpecs) {
+            if (o.getFirst().contains(var1) && o.getSecond().contains(var2)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -387,48 +388,60 @@ public final class Knowledge implements TetradSerializable {
      * Legacy.
      */
     public boolean isForbiddenByGroups(String var1, String var2) {
-        Set<OrderedPair<Set<String>>> s = this.knowledgeGroups.stream()
-                .filter(e -> e.getType() == KnowledgeGroup.FORBIDDEN)
-                .map(this::getGroupRule)
-                .collect(Collectors.toSet());
+        for (KnowledgeGroup group : this.knowledgeGroups) {
+            if (group.getType() == KnowledgeGroup.FORBIDDEN) {
+                OrderedPair<Set<String>> o = this.knowledgeGroupRules.get(group);
+                if (o.getFirst().contains(var1) && o.getSecond().contains(var2)) {
+                    return true;
+                }
+            }
+        }
 
-        return s.stream()
-                .anyMatch(rule -> rule.getFirst().contains(var1)
-                        && rule.getSecond().contains(var2));
+        return false;
     }
 
     /**
-     * Determines whether the edge var1 --&gt; var2 is forbidden by the temporal
-     * tiers.
+     * Determines whether the edge var1 --&gt; var2 is forbidden by the temporal tiers.
      */
     public boolean isForbiddenByTiers(String var1, String var2) {
-        return forbiddenTierRules().stream()
-                .anyMatch(rule -> rule.getFirst().contains(var1)
-                        && rule.getSecond().contains(var2));
+        for (int i = tierSpecs.size() - 1; i >= 0; i--) {
+            for (int j = i - 1; j >= 0; j--) {
+                if (tierSpecs.get(i).contains(var1) && tierSpecs.get(j).contains(var2)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
      * Determines whether the edge var1 --&gt; var2 is required.
      */
     public boolean isRequired(String var1, String var2) {
-        return this.requiredRulesSpecs.stream()
-                .anyMatch(rule -> !var1.equals(var2)
-                        && rule.getFirst().contains(var1)
-                        && rule.getSecond().contains(var2));
+        for (OrderedPair<Set<String>> o : this.requiredRulesSpecs) {
+            if (o.getFirst().contains(var1) && o.getSecond().contains(var2)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
      * Legacy.
      */
     public boolean isRequiredByGroups(String var1, String var2) {
-        Set<OrderedPair<Set<String>>> s = this.knowledgeGroups.stream()
-                .filter(e -> e.getType() == KnowledgeGroup.REQUIRED)
-                .map(this::getGroupRule)
-                .collect(Collectors.toSet());
+        for (KnowledgeGroup group : this.knowledgeGroups) {
+            if (group.getType() == KnowledgeGroup.REQUIRED) {
+                OrderedPair<Set<String>> o = this.knowledgeGroupRules.get(group);
+                if (o.getFirst().contains(var1) && o.getSecond().contains(var2)) {
+                    return true;
+                }
+            }
+        }
 
-        return s.stream()
-                .anyMatch(rule -> rule.getFirst().contains(var1)
-                        && rule.getSecond().contains(var2));
+        return false;
     }
 
     /**
@@ -441,8 +454,7 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Checks whether it is the case that any variable is forbidden by any other
-     * variable within a given tier.
+     * Checks whether it is the case that any variable is forbidden by any other variable within a given tier.
      */
     public boolean isTierForbiddenWithin(int tier) {
         ensureTiers(tier);
@@ -483,7 +495,13 @@ public final class Knowledge implements TetradSerializable {
         }
 
         spec = checkSpec(spec);
-        getExtent(spec).forEach(s -> this.tierSpecs.forEach(tier -> tier.remove(s)));
+        Set<String> extent = getExtent(spec);
+
+        for (Set<String> tier : this.tierSpecs) {
+            for (String s : extent) {
+                tier.remove(s);
+            }
+        }
     }
 
     /**
@@ -617,8 +635,7 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Forbids any variable from being parent of any other variable within the
-     * given tier, or cancels this forbidding.
+     * Forbids any variable from being parent of any other variable within the given tier, or cancels this forbidding.
      */
     public void setTierForbiddenWithin(int tier, boolean forbidden) {
         ensureTiers(tier);
@@ -632,8 +649,8 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * @return the largest indes of a tier in which every variable is forbidden
-     * by every other variable, or -1 if there is not such tier.
+     * @return the largest indes of a tier in which every variable is forbidden by every other variable, or -1 if there
+     * is not such tier.
      */
     public int getMaxTierForbiddenWithin() {
         for (int tier = this.tierSpecs.size(); tier >= 0; tier--) {
@@ -670,7 +687,7 @@ public final class Knowledge implements TetradSerializable {
     } // added by DMalinsky for tsFCI on 4/20/16
 
     public List<KnowledgeEdge> getListOfRequiredEdges() {
-        Set<KnowledgeEdge> edges = new LinkedHashSet<>();
+        Set<KnowledgeEdge> edges = new HashSet<>();
 
         this.requiredRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
             if (!e1.equals(e2)) {
@@ -686,7 +703,7 @@ public final class Knowledge implements TetradSerializable {
     }
 
     public List<KnowledgeEdge> getListOfForbiddenEdges() {
-        Set<KnowledgeEdge> edges = new LinkedHashSet<>();
+        Set<KnowledgeEdge> edges = new HashSet<>();
 
         this.forbiddenRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
             if (!e1.equals(e2)) {
@@ -699,7 +716,7 @@ public final class Knowledge implements TetradSerializable {
 
     public List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges() {
         Set<OrderedPair<Set<String>>> copy = new HashSet<>(this.forbiddenRulesSpecs);
-        copy.removeAll(forbiddenTierRules());
+        forbiddenTierRules().forEach(copy::remove);
 
         this.knowledgeGroups.forEach(e -> copy.remove(this.knowledgeGroupRules.get(e)));
 
@@ -763,8 +780,8 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Two Knowledge objects are equal just in case their forbidden and required
-     * edges are equal, and their tiers are equal.
+     * Two Knowledge objects are equal just in case their forbidden and required edges are equal, and their tiers are
+     * equal.
      */
     public boolean equals(Object o) {
         if (!(o instanceof Knowledge)) {

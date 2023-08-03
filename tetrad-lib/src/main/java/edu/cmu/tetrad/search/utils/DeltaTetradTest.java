@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.Tetrad;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -37,14 +36,14 @@ import java.util.*;
  * @author josephramsey
  */
 public class DeltaTetradTest {
-    private DataSet dataSet;
-    private double[][] data;
     private final int N;
     private final ICovarianceMatrix cov;
-    private int df;
-    private double chisq;
     private final List<Node> variables;
     private final Map<Node, Integer> variablesHash;
+    private DataSet dataSet;
+    private double[][] data;
+    private int df;
+    private double chisq;
 
     // As input we require a data set and a list of non-redundant Tetrads.
 
@@ -312,6 +311,34 @@ public class DeltaTetradTest {
         return 0.0;
     }
 
+    private double sxyzw(int x, int y, int z, int w) {
+        double sxyzw = 0.0;
+
+        double[] _x = this.data[x];
+        double[] _y = this.data[y];
+        double[] _z = this.data[z];
+        double[] _w = this.data[w];
+
+        int N = _x.length;
+
+        for (int j = 0; j < N; j++) {
+            sxyzw += _x[j] * _y[j] * _z[j] * _w[j];
+        }
+
+        return (1.0 / N) * sxyzw;
+    }
+
+    private double sxy(double[] array1, double[] array2, int N) {
+        int i;
+        double sum = 0.0;
+
+        for (i = 0; i < N; i++) {
+            sum += array1[i] * array2[i];
+        }
+
+        return (1.0 / N) * sum;
+    }
+
     private static class Sigma {
         private final Node a;
         private final Node b;
@@ -345,34 +372,6 @@ public class DeltaTetradTest {
         public String toString() {
             return "Sigma(" + getA() + ", " + getB() + ")";
         }
-    }
-
-    private double sxyzw(int x, int y, int z, int w) {
-        double sxyzw = 0.0;
-
-        double[] _x = this.data[x];
-        double[] _y = this.data[y];
-        double[] _z = this.data[z];
-        double[] _w = this.data[w];
-
-        int N = _x.length;
-
-        for (int j = 0; j < N; j++) {
-            sxyzw += _x[j] * _y[j] * _z[j] * _w[j];
-        }
-
-        return (1.0 / N) * sxyzw;
-    }
-
-    private double sxy(double[] array1, double[] array2, int N) {
-        int i;
-        double sum = 0.0;
-
-        for (i = 0; i < N; i++) {
-            sum += array1[i] * array2[i];
-        }
-
-        return (1.0 / N) * sum;
     }
 }
 

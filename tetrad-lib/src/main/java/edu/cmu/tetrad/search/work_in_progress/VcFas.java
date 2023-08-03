@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -52,30 +52,24 @@ public class VcFas {
      * The independence test. This should be appropriate to the types
      */
     private final IndependenceTest test;
-
+    /**
+     * The logger, by default the empty logger.
+     */
+    private final TetradLogger logger = TetradLogger.getInstance();
+    private final Map<Edge, Set<Node>> apparentlyNonadjacencies = new HashMap<>();
     /**
      * Specification of which edges are forbidden or required.
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
      * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
      */
     private int depth = 1000;
-
     /**
      * The number of independence tests.
      */
     private int numIndependenceTests;
-
-    /**
-     * The logger, by default the empty logger.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-
-    private final Map<Edge, List<Node>> apparentlyNonadjacencies = new HashMap<>();
-
     /**
      * The depth 0 graph, specified initially.
      */
@@ -185,7 +179,7 @@ public class VcFas {
     //==============================PRIVATE METHODS======================/
 
     private boolean searchAtDepth0(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
-        List<Node> empty = Collections.emptyList();
+        Set<Node> empty = Collections.emptySet();
         for (int i = 0; i < nodes.size(); i++) {
             if ((i + 1) % 100 == 0) System.out.println("Node # " + (i + 1));
 
@@ -284,7 +278,7 @@ public class VcFas {
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, ppx);
+                        Set<Node> condSet = GraphUtils.asSet(choice, ppx);
 
                         boolean independent;
 
@@ -337,7 +331,7 @@ public class VcFas {
         return this.numIndependenceTests;
     }
 
-    public Map<Edge, List<Node>> getApparentlyNonadjacencies() {
+    public Map<Edge, Set<Node>> getApparentlyNonadjacencies() {
         return this.apparentlyNonadjacencies;
     }
 

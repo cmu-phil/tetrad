@@ -34,11 +34,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Calculates updated structural equation models given evidence of the form
- * X1=x1',...,The main task of such and algorithm is to calculate P(X = x' |
- * evidence), where evidence takes the form of a Proposition over the variables
- * in the Bayes net, possibly with additional information about which variables
- * in the Bayes net have been manipulated.
+ * Calculates updated structural equation models given evidence of the form X1=x1',...,The main task of such and
+ * algorithm is to calculate P(X = x' | evidence), where evidence takes the form of a Proposition over the variables in
+ * the Bayes net, possibly with additional information about which variables in the Bayes net have been manipulated.
  *
  * @author josephramsey
  * @see edu.cmu.tetrad.bayes.Evidence
@@ -48,8 +46,8 @@ import java.util.List;
 public class SemUpdater implements TetradSerializable {
 
     static final long serialVersionUID = 23L;
-    private SemEvidence evidence;
     private final SemIm semIm;
+    private SemEvidence evidence;
 
     public SemUpdater(SemIm semIm) {
         if (semIm == null) {
@@ -73,8 +71,7 @@ public class SemUpdater implements TetradSerializable {
     }
 
     /**
-     * Sets new evidence for the updater. Once this is called, old updating
-     * results should not longer be available.
+     * Sets new evidence for the updater. Once this is called, old updating results should not longer be available.
      */
     public void setEvidence(SemEvidence evidence) {
         if (evidence == null) {

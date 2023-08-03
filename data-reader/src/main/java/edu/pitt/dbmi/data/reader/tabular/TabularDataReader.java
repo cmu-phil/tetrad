@@ -33,15 +33,12 @@ import java.io.IOException;
 public interface TabularDataReader extends DatasetReader {
 
     /**
-     * Analyze the column data to determine if it contains discrete data based
-     * on the number of categories. If the number of categories of a column is
-     * equal to or less than the given number of categories, it will be
-     * considered to have discrete data. Else, it is considered to have
-     * continuous data.
+     * Analyze the column data to determine if it contains discrete data based on the number of categories. If the
+     * number of categories of a column is equal to or less than the given number of categories, it will be considered
+     * to have discrete data. Else, it is considered to have continuous data.
      *
      * @param dataColumns
-     * @param numberOfCategories maximum number of categories to be considered
-     *                           discrete
+     * @param numberOfCategories maximum number of categories to be considered discrete
      * @param hasHeader
      * @throws IOException
      */

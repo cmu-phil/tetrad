@@ -1639,49 +1639,41 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h2>Data Information</h2>
 
-    <p>Under the Tools tab, there are options to view information about
-        your data in several different formats.</p>
+    <p>Under the Tools tab, there are options to view information about your data in several
+        formats.</p>
 
-    <p>The Histograms tool shows histograms of the variables in the data
-        set.</p>
+    <p>The Plot Matrix tool shows a grid of scatterplots and histograms for selected variables.
+        This may be used for continuous, discrete, or mixtures of continuous and discrete data.
+        To select which variables to include in the rows and columns of the grid, click the variable
+        lists to the right of the tool. To select multiple variables in these lists, use the shift
+        or control keys when clicking; shift-click select ranges, whereas control-click will select
+        additional single variables.</p>
 
+    <p>Histograms show the data distribution for a variable, with the width of each bar
+        representing a range of values and the height of each bar representing how many data
+        points fall into that range.</p>
 
-    <img alt="" src="images/data_box_8.png" width="650">
+    <p>Scatter plots show a plot of variables taken two at a time. They plot values of one
+        variable's values against another variable's values, point by point, and allow one
+        to see the distribution of points for the pair of variables.</p>
 
+    <p>If viewing a grid of plots, one wishes to view a single plot in this grid, double-click on
+        the desired plot, and it will be magnified so that it is in the only plot viewed.
+        Double-click on the magnified plot to return to the grid.</p>
 
-    <p>These show the distribution of data for each variable, with the
-        width of each bar representing a range of values, and height of each bar
-        representing how many data points fall into that range. Using histograms,
-        you can determine whether each variable has a distribution that is
-        approximately Normal. To select a variable to view, choose it from the
-        drop-down menu on the right. You can increase or decrease the number of
-        bars in the histogram (and therefore decrease or increase the range of
-        each bar, and increase or decrease the accuracy of the histogram) using
-        the menu on the right. You can also view only ranges with a certain
-        amount of the data using the “cull bins” menu.</p>
+    <p>The “Settings” menu contains some tools to control the output. One may add regression lines
+        to the scatterplots or select the number of bins to include in the histograms.</p>
 
-    <p>The Scatter Plots tool allows you to view scatter plots of two
-        variables plotted against each other.</p>
+    <p>Finally, one may condition on ranges of variables or particular discrete values by
+        selecting “Edit Conditioning Variables and Ranges.” This brings up a dialog that lets one
+        add conditioning variables with particular ranges for continuous variables or values for
+        discrete values. For continuous ranges, one may pick “Above Average,” “Below Average,” or
+        “In n-tile” (where n is specified) or give a particular range manually. One may add as many
+        conditions as one prefers; when one clicks “OK,” all plots will be updated to reflect these
+        conditioning choices.</p>
 
-    <img alt="" src="images/data_box_9.png" width="650">
-
-    <p>To view a variable as the x- or y-axis of the graph, select it
-        from one the drop-down menus to the right. To view the regression line of
-        the graph, check the box on the right.</p>
-
-    <p>You can see the correlation of two variables conditional on a
-        third variable by using the Add New Conditional Variable button at the
-        bottom of the window. This will open up a slider and a box in which you
-        can set the granularity of the slider. By moving the slider to the left
-        or right, you can change the range of values of the conditional variable
-        for which the scatter plot shows the correlation of the variables on the
-        x- and y- axes. You can increase and decrease the width of the ranges by
-        changing the granularity of the slider. A slider with granularity 1 will
-        break the values of the conditional variable into sections one unit long,
-        etc. The granularity cannot be set lower than one.</p>
-
-    <p>In a well-formed model, the scatter plot of a variable plotted
-        against itself should appear as a straight line along the line y = x.</p>
+    <img alt="" src="images/data_box_8b.png" width="650">
+    <img alt="" src="images/data_box_8a.png" width="650">
 
     <p>The Q-Q Plot tool is a test for normality of distribution. </p>
 
@@ -2542,6 +2534,11 @@ tabs will not appear.</p> -->
     </ul>
 
     <h2>Using the Search Box</h2>
+
+    <p><b>For more information that in included about the search algorithms than
+        is included in the text below, please see our
+        <a href="https://www.phil.cmu.edu/tetrad-javadocs/7.4.0/edu/cmu/tetrad/search/package-summary.html">
+            Javadocs for the Search package</a>.</b></p>
 
     <p>Using the search box requires you to select an algorithm
         (optionally select a test/score), confirm/change search parameters and
@@ -3517,9 +3514,9 @@ tabs will not appear.</p> -->
             numRestarts - By default 1; if > 1, additional random restarts are
             done, and the best of these results is returned.
         <p> TSP corresponds
-            to singular depth 0, singular depth 0. ESP corresponds to singular
-            depth > 0, singular depth = 0. GRaSP corresponds to singular depth >
-            0, singular depth > 0. In each case, an ordering option is available
+        to singular depth 0, nonsingular depth 0. ESP corresponds to singular
+        depth > 0, nonsingular depth = 0. GRaSP corresponds to singular depth >
+        0, nonsingular depth > 0. In each case, an ordering option is available
             to find best permutations from lower levels before proceeding to
             higher levels.
         <p> The algorithms works by building DAGs given
@@ -3540,12 +3537,83 @@ tabs will not appear.</p> -->
             Sebastian Thrun. Bayesian network induction via local neighborhoods.
             Advances in neural information processing systems, 12, 1999.
         <p>
+        Raskutti, G., & Uhler, C. (2018). Learning directed acyclic graph
+        models based on sparsest permutations. Stat, 7(1),
+        <e183 class=""></e183>
+        <p> Solus,
+            L., Wang, Y., Matejovicova, L., & Uhler, C. (2017). Consistency
+            guarantees for permutation-based causal inference algorithms. arXiv
+            preprint arXiv:1702.03530. </p>
+        <p> Lam, W. Y., Andrews, B., & Ramsey, J. (2022, August). Greedy relaxations
+            of the sparsest permutation algorithm. In Uncertainty in Artificial
+            Intelligence (pp. 1052-1062). PMLR.</p>
+
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Causal sufficiency</p>
+
+    <h4>Output Format</h4>
+
+    <p>The CPDAG equivalence class of DAGs representing estimated
+        possible causal structures over the set of variables.</p>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#graspDepth">graspDepth</a>, <a
+            href="#graspNonSingularDepth">graspNonSingularDepth</a> <a
+            href="#graspSingularDepth">graspSingularDepth</a> <a
+            href="#graspOrderedAlg">graspOrderedAlg</a> <a
+            href="#graspUseVermaPearl">graspUseVermaPearl</a> <a
+            href="#verbose">verbose</a> <a href="#numStarts">numStarts</a>
+
+    </p>
+
+    <h3>The BOSS Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="boss">
+
+        <p> BOSS (Best Order Score Search) is an algorithm that, like GRaSP,
+            generalizes and extends the GSP (Greedy Sparsest Permutation) algorithm.
+            It has been tested to 1000 variables with an average degree of 20
+            and gives near perfect precisions and recalls for N = 10,000 (with
+            recall that drop to 0.9 for N = 1000). The algorithms works by building DAGs given
+            permutations in ways similar to those described in Raskutti and Uhler
+            (ref?) and Solus et al.
+        <p> The parameters are as
+            follows:
+        <p> useBes - True if the final BES (Backward Equivalence Search)
+            step is used from the GES (Greedy Equivalence Search) algorithm.
+            This step is needed for correctness but for large models, since usually
+            nearly all edges are oriented in the CPDAG, it is heurically not needed.</p>
+        <p> numStarts - The number of times the algroithm should be re-run from different
+            random starting permutations. The model with the most optimal BIC score will
+            be selected.</p>
+        <p> allowInternalRandomness - If true, the algorithm allow the algorithm to
+            use certain heuristic random steps. This can improve performance, but
+            may make the algorithm non-deterministic.</p>
+        <p> timeLag - This creates a time-series model autimatically with a certain
+            number of lags.
+        <p> Knowledge of forbidden edges and required edges may be used with this
+            algorithm. Also, knowledge of tiers may be used. If tiered knowledge is
+            supplied, the algorithm will analyze the tiers in order, so that the
+            time required for the algorithm is linear in the number of tiers.
+        <p> Dimitris Margaritis and
+            Sebastian Thrun. Bayesian network induction via local neighborhoods.
+            Advances in neural information processing systems, 12, 1999.
+        <p>
             Raskutti, G., & Uhler, C. (2018). Learning directed acyclic graph
             models based on sparsest permutations. Stat, 7(1), e183.
         <p> Solus,
             L., Wang, Y., Matejovicova, L., & Uhler, C. (2017). Consistency
             guarantees for permutation-based causal inference algorithms. arXiv
             preprint arXiv:1702.03530. </p>
+        <p> Lam, W. Y., Andrews, B., & Ramsey, J. (2022, August). Greedy relaxations
+            of the sparsest permutation algorithm. In Uncertainty in Artificial
+            Intelligence (pp. 1052-1062). PMLR.</p>
 
     </div>
 
@@ -3634,6 +3702,13 @@ tabs will not appear.</p> -->
             In this way, one may recover causal structure over the latents.
             The more measures one has for each latent the better the result
             is, generally.
+
+            A reference for the Wishart and Delta Tetrad tests is: Bollen,
+            K. A., & Ting, K. F. (1993). Confirmatory tetrad analysis.
+            Sociological methodology, 147-175. The original reference for
+            the Delta Tetrad test is Bollen, K. A. (1990). Outlier screening
+            and a distribution-free test for vanishing tetrads. Sociological
+            Methods & Research, 19(1), 80-92.
 
         </p>
 
@@ -3742,11 +3817,11 @@ tabs will not appear.</p> -->
     <p><a href="#alpha">alpha</a>, <a href="#useWishart">useWishart</a>,
         <a href="#useGap">useGap</a></p>
 
-    <h3>The LiNGAM Algorithm</h3>
+    <h3>The ICA LiNGAM Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="lingam"><p>LiNGAM (Shimizu et al., 2006) was one of the
+    <div id="ica-lingam"><p>ICA LiNGAM (Shimizu et al., 2006) was one of the
         first of the algorithms that assumed linearity among the variables and
         non-Gaussianity of error term, and still one of the best for smaller
         models, for the basic algorithm, implemented here. The idea is to use the
@@ -3779,6 +3854,15 @@ tabs will not appear.</p> -->
 
         <p> Hyvärinen, A., Karhunen, J., & Oja, E. (2004). Independent
             component analysis (Vol. 46). John Wiley & Sons. </p></div>
+
+    <div id="direct-lingam"><p>Direct LiNGAM is an implemention of said algorithms as specified in this reference: </p>
+
+        <p> Shimizu, S., Inazumi, T., Sogawa, Y., Hyvarinen, A., Kawahara, Y., Washio, T., ... & Hoyer, P. (2011).
+            DirectLiNGAM: A direct method for learning a linear non-Gaussian structural equation model. Journal of
+            Machine Learning Research-JMLR, 12(Apr), 1225-1248. </p>
+
+        <p> This requires no parameters. This algorithm is applicable to data generated by linear, non-Gaussian
+            models.</p>
 
     <h3>The FASK Algorithm</h3>
 
@@ -3952,28 +4036,57 @@ tabs will not appear.</p> -->
 
     <div id="cstar">
 
-        <p>The CStaR algorithm (Causal Stability Ranking, Stekhoven,
-            D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L.,
-            Maathuis, M. H., & Bühlmann, P. 2012. Causal stability
-            ranking. Bioinformatics, 28(21), 2819-2823) calculates
-            lower bounds on estimated parameters for the causally
-            sufficient case. It first runs a CPDAG algorithm and then
-            for X->Y locally about Y finds all possible orientation of
-            the edges in the CPDAG and does an estimation for each of
-            these and finds their lower bound. In the interface,
-            all nodes that are found to have significant impace on
-            a given target nodes are marked as into that target node.
-            However, the more useful thing is to look at the CStaR
-            table produced by the procedure. To see this table, either
-            run CStaR on a dataset, specifying a target node, and the
-            table will be printed out, or run Tetrad using java -jar
-            and look at the console output, or if these methods are
-            not available, turn on logging in the interface before
-            running the methods, and the table will be printed out.
-            The table is to interpreted as in the Steckhoven et al.
-            paper cited above (see), and is in the same format.
-        </p>
+        <p>The CStaR algorithm (Causal Stability Ranking, Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L.,
+            Maathuis, M. H., & Bühlmann, P. 2012. Causal stability ranking. Bioinformatics, 28(21), 2819-2823)
+            calculates lower bounds on estimated parameters for the causally sufficient case. It first runs a CPDAG
+            algorithm and then for X->Y locally, about Y, finds all possible orientations of the edges in the CPDAG and
+            does an estimation for each of these, and finds their lower bound. In the interface, all nodes that are
+            found in the top bracket more than 50% of the time are marked as into that target node.</p>
+        <p>The procedure is best used, however, as a command line procedure, in py-causal, rpy-causal, or Causal
+            Command. Upon running the algorithm (even in the interface), a directory of result files will be produced as
+            a record, including the dataset used, the possible causes and effects used, all of the CPDAGs used and the
+            tables of their IDA effects, and the CStaR output table itself.</p>
+        <p></p>
+        <p>Parameters.</p>
+        <p>Algorithm. This is the algorithm to use to calculate bootstrapped CPDAGs. Current options are PC Stable,
+            FGES, BOSS, or Restricted BOSS. For large datasets, we recommend Restricted BOSS, which calculates variables
+            with marginal effect on one of the targets and then runs BOSS over this restricted set.</p>
+        <p>Results Output Path. A default is “cstar-out”, which will place result-files in a subdirectory of the current
+            directory named path = “cstar-out”.[n], where n is the first index for which no such directory exists. If a
+            directory already exists at the path, then any information available in path directory will be used to
+            generate results in the path-.[n] directory.</p>
+        <p>Number of Subsamples. CStaR finds CPDAGs over subsampled data of size n / 2; this specifies how many
+            subsamples to use.</p>
+        <p>Minimum effect size. This allows a shorter table to be produced. It this is set to a value m > 0, then only
+            records with PI > m will be displayed.</p>
+        <p>Target Names. A list of names of variables (comma or space separated) can be given that are considered
+            possible effects. These will be excluded from the list of possible causes, which will be all other variables
+            in the dataset.</p>
+        <p>Top Bracket. The CStaR algorithm tries to find possible causes that regularly sort into the top set of
+            variables by minimum IDA effect. This gives the number q of variables to include in the top bracket, where 1
+            <= q <= # possible causes.</p>
+        <p>Parallelized. Yes, if the search should be parallelized, no if not. Default no.</p>
+        <p>The main results of the algorithm is table in the format of Table 1 in Stekhoven et al. here is the beginning
+            of one such table.</p>
+        <pre>
+        # Potential Causes = 19
+        # Potential Effects = 1
+        Top Bracket ('q') = 10
 
+        Index  Cause  Effect      PI  Effect    PCER
+        1    X15     X20  0.9000  0.0691  0.0035
+        2     X4     X20  0.8800  0.0888  0.0146
+        3    X18     X20  0.7200  0.0451  0.0567
+        4    X17     X20  0.7000  0.0765  0.1108
+        5    X19     X20  0.6800  0.0559  0.1924
+        6     X1     X20  0.6600  0.0635  0.3116
+        7     X3     X20  0.6600  0.0438  0.4242
+        </pre>
+        <p>Here, the number of possible causes and the number of possible effects is listed, as well as the top bracket
+            (‘q’) used to generate the table. For each record considered, its cause and effect (e.g., X15 to X20). The
+            percentage of times this cause/effect pair ended up in the top bracket is given as PI, and the minimum IDA
+            effect size for it is given in Effect. The Per Comparison Error Rate (which can only be calculated for PI >
+            0.5) is given in PCER. See the Stekhoven paper for details.</p>
     </div>
 
     <h4>Input Assumptions</h4>
@@ -4042,9 +4155,9 @@ tabs will not appear.</p> -->
 
     <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
 
-    <h3>Kim et al. Scores</h3>
+    <h3>Generalized Information Criterion Scores</h3>
 
-    <div id="kim-bic-tests"><p>
+    <div id="gic-bic-tests"><p>
         This is a set of generalized information criterion (GIC) scores, used as tests,
         based on the paper, Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection
         criteria on high dimensions. The Journal 0of Machine Learning Research,
@@ -4126,16 +4239,19 @@ tabs will not appear.</p> -->
 
     <p><a href="#alpha">alpha</a></p>
 
-    <h3>D-Separation Test</h3>
+    <h3>M-Separation Test</h3>
 
-    <div id="d-sep-test"><p> This is the usual test of d-separation, a
+    <div id="m-sep-test"><p> This is the usual test of m-separation, a
         property of graphs, not distributions. It's not really a test, but it can
         be used in place of a test of the true graph is known. This is a way to
         find out, for constraint-based algorithms, or even for some score-based
         algorithms like FGES, what answer the algorithm would give if all of the
         statistical decisions made are correct. Just draw an edge from the true
-        graph to the algorithm--the d-separation option will appear, and you can
-        then just run the search as usual. </p></div>
+        graph to the algorithm--the m-separation option will appear, and you can
+        then just run the search as usual. Note that D-Separation and M-separation
+        use the same algorithm; we uniformly call the algorithm "M-Separation" for
+        clarity. D-Separation is M-Separation applied to DAGs.
+    </p></div>
 
     <h3>Discrete BIC Test</h3>
 
@@ -4244,7 +4360,7 @@ tabs will not appear.</p> -->
         final graph, and the "ensemble method," which can be set by the user in
         the parameter settings screen, determines how it will do that.</p>
 
-    <p>The three available ensemble methods are Preserved, Highest, and
+    <p>The four available ensemble methods are Preserved, Highest, and
         Majority. Preserved tends to return the densest graphs, then Highest, and
         finally Majority returns the sparsest. The Preserved ensemble method
         ensures that an edge that has been found by some portion of the
@@ -4338,9 +4454,9 @@ tabs will not appear.</p> -->
     <!--
     href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>-->
 
-    <h3>D-separation Score</h3>
+    <h3>M-separation Score</h3>
 
-    <div id="d-sep-score"><p> This uses d-separation to make something
+    <div id="m-sep-score"><p> This uses m-separation to make something
         that acts as a score if you know the true graph. A score in Tetrad, for
         FGES, say, is a function that for X and Y conditional on Z, returns a
         negative number if X _||_ Y | Z and a positive number otherwise. So to
@@ -4389,7 +4505,7 @@ tabs will not appear.</p> -->
         recommended depending on how many variables there are per sample. </p>
     </div>
 
-    <h3>Kim et al. Scores</h3>
+    <h3>GIC Scores</h3>
 
     <div id="kim-scores"><p>
         This is a set of generalized information criterion (GIC) scores based on
@@ -4423,12 +4539,12 @@ tabs will not appear.</p> -->
     </p>
     </div>
 
-    <h3>MAG SEM BIC Score</h3>
+    <!--    <h3>MAG SEM BIC Score</h3>-->
 
-    <div id="mag-sem-bic-score"><p>
-        This gives a BIC score for a Mixed Ancestral Graph (MAG).
-    </p>
-    </div>
+    <!--    <div id="mag-sem-bic-score"><p>-->
+    <!--        This gives a BIC score for a Mixed Ancestral Graph (MAG).-->
+    <!--    </p>-->
+    <!--    </div>-->
 
     <div id="parameters"><h2>Search Parameters</h2>
 
@@ -4437,6 +4553,177 @@ tabs will not appear.</p> -->
             Boolean.</p> <!-- Insert the parameter descriptions here, must follow
         the same structure and naming conventions -->
 
+        <h3 class="parameter_description"
+            id="sampleStyle">sampleStyle</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="sampleStyle_short_desc">Sample style: 1 = Subsample, 2 = Bootstrap</span></li>
+            <li>Long Description: <span
+                    id="sampleStyle_long_desc"> Sample style: 1 = Subsample, 2 = Bootstrap </span>
+            </li>
+            <li>Default Value: <span
+                    id="sampleStyle_default_value">1</span></li>
+            <li>Lower
+                Bound: <span id="sampleStyle_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="sampleStyle_upper_bound">2</span></li>
+            <li>Value Type:
+                <span id="sampleStyle_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="removeEffectNodes">removeEffectNodes</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="removeEffectNodes_short_desc">True if effect nodes should bre removed from possible causes </span></li>
+            <li>Long Description: <span
+                    id="removeEffectNodes_long_desc">True if effect nodes should be removed from possible causes </span></li>
+            <li>Default Value: <span
+                    id="removeEffectNodes_default_value">True</span></li>
+            <li>Lower
+                Bound: <span id="removeEffectNodes_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="removeEffectNodes_upper_bound"></span></li>
+            <li>Value Type:
+                <span id="removeEffectNodes_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="piThr">piThr</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="piThr_short_desc">A fixed threshold for calculating E[V] and PCER</span></li>
+            <li>Long Description: <span
+                    id="piThr_long_desc"> A fixed threshold, default 0.5 </span>
+            </li>
+            <li>Default Value: <span
+                    id="piThr_default_value">0.6</span></li>
+            <li>Lower
+                Bound: <span id="piThr_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="piThr_upper_bound">1</span></li>
+            <li>Value Type:
+                <span id="piThr_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="cstarCpdagAlgorithm">cstarCpdagAlgorithm</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="cstarCpdagAlgorithm_short_desc">Algorithm: 1 = PC Stable, 2 = FGES, 3 = BOSS, 4 = Restricted BOSS </span></li>
+            <li>Long Description: <span
+                    id="cstarCpdagAlgorithm_long_desc">The CPDAG algorithm to use: 1 = PC Stable, 2 = FGES, 3 = BOSS, 4 = Restricted BOSS </span>
+            </li>
+            <li>Default Value: <span
+                    id="cstarCpdagAlgorithm_default_value">4</span></li>
+            <li>Lower
+                Bound: <span id="cstarCpdagAlgorithm_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="cstarCpdagAlgorithm_upper_bound">4</span></li>
+            <li>Value Type:
+                <span id="cstarCpdagAlgorithm_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="trimmingStyle">trimmingStyle</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="trimmingStyle_short_desc">Trimming Style: 1 = None, 2 = Adjacencies, 3 = MB DAG, 4 = Semidirected paths</span></li>
+            <li>Long Description: <span
+                    id="trimmingStyle_long_desc">'Adjacencies' trims to the adjacencies the targets, MB DAGs to the Union(MB(targets)) U targets,
+                semidirected trims to nodes with semidirected paths to the targets. </span>
+            </li>
+            <li>Default Value: <span
+                    id="trimmingStyle_default_value">3</span></li>
+            <li>Lower
+                Bound: <span id="trimmingStyle_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="trimmingStyle_upper_bound">4</span></li>
+            <li>Value Type:
+                <span id="trimmingStyle_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="numberOfExpansions">numberOfExpansions</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="numberOfExpansions_short_desc">Number of expansions of the algorithm away from the target</span></li>
+            <li>Long Description: <span
+                    id="numberOfExpansions_long_desc">Each expansion iterates to concentrically more variables </span>
+            </li>
+            <li>Default Value: <span
+                    id="numberOfExpansions_default_value">2</span></li>
+            <li>Lower
+                Bound: <span id="numberOfExpansions_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="numberOfExpansions_upper_bound">1000</span></li>
+            <li>Value Type:
+                <span id="numberOfExpansions_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="lambda1">lambda1</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="lambda1_short_desc">lambda1</span></li>
+            <li>Long Description: <span
+                    id="lambda1_long_desc">Tuning parameter for DAGMA</span>
+            </li>
+            <li>Default Value: <span
+                    id="lambda1_default_value">0.05</span></li>
+            <li>Lower
+                Bound: <span id="lambda1_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="lambda1_upper_bound">Infinity</span></li>
+            <li>Value Type:
+                <span id="lambda1_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="cpdag">cpdag</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="cpdag_short_desc">True if a CPDAG should be returned, false if a DAG</span></li>
+            <li>Long Description: <span
+                    id="cpdag_long_desc">The algorithm returns a DAG; if this is
+                    set to True, this DAG is converted to a CPDAG</span>
+            </li>
+            <li>Default Value: <span
+                    id="cpdag_default_value">true</span></li>
+            <li>Lower
+                Bound: <span id="cpdag_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="cpdag_upper_bound"></span></li>
+            <li>Value Type:
+                <span id="cpdag_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="wThreshold">wThreshold</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="wThreshold_short_desc">wThreshold</span></li>
+            <li>Long Description: <span
+                    id="wThreshold_long_desc">Tuning parameter for DAGMA</span>
+            </li>
+            <li>Default Value: <span
+                    id="wThreshold_default_value">0.1</span></li>
+            <li>Lower
+                Bound: <span id="wThreshold_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="wThreshold_upper_bound">Infinity</span></li>
+            <li>Value Type:
+                <span id="wThreshold_value_type">Double</span></li>
+        </ul>
 
         <h3 class="parameter_description"
             id="addOriginalDataset">addOriginalDataset</h3>
@@ -4457,6 +4744,30 @@ tabs will not appear.</p> -->
                     id="addOriginalDataset_upper_bound"></span></li>
             <li>Value Type:
                 <span id="addOriginalDataset_value_type">Boolean</span></li>
+        </ul>
+
+
+
+        <h3 class="parameter_description"
+            id="saveBootstrapGraphs">saveBootstrapGraphs</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="saveBootstrapGraphs_short_desc">Yes if individual bootstrapping
+                    graphs should be saved</span></li>
+            <li>Long Description: <span
+                    id="saveBootstrapGraphs_long_desc"> Bootstrapping provides a summary
+                    over individual search graphs; select Yes here if these individual
+                    graphs should be saved</span>
+            </li>
+            <li>Default Value: <span
+                    id="saveBootstrapGraphs_default_value">false</span></li>
+            <li>Lower
+                Bound: <span id="saveBootstrapGraphs_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="saveBootstrapGraphs_upper_bound"></span></li>
+            <li>Value Type:
+                <span id="saveBootstrapGraphs_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="alpha">alpha</h3>
@@ -4782,24 +5093,44 @@ tabs will not appear.</p> -->
 
         <h3 class="parameter_description"
             id="conflictRule">conflictRule</h3>
-        <ul
-                class="parameter_description_list">
+        <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="conflictRule_short_desc">Collider conflicts: 1 = Overwrite, 2 =
-        Orient bidirected, 3 = Prioritize existing colliders</span></li>
+                    id="conflictRule_short_desc">Collider conflicts: 1 = Prioritize existing
+                colliders, 2 =
+        Orient bidirected, 3 = Overwrite existing colliders</span></li>
             <li>Long Description: <span id="conflictRule_long_desc"> 1 if the
         “overwrite” rule as introduced in the PCALG R package, 2 if all
         collider conflicts using bidirected edges, or 3 if existing colliders
         should be prioritized, ignoring subsequent conflicting
         information.</span></li>
             <li>Default Value: <span
-                    id="conflictRule_default_value">3</span></li>
+                    id="conflictRule_default_value">1</span></li>
             <li>Lower Bound: <span
                     id="conflictRule_lower_bound">1</span></li>
             <li>Upper Bound: <span
                     id="conflictRule_upper_bound">3</span></li>
             <li>Value Type: <span
                     id="conflictRule_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="meekPreventCycles">meekPreventCycles</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="meekPreventCycles_short_desc">
+                    Yes if cycles should be prevented in the application of the Meek rules</span></li>
+            <li>Long Description: <span id="meekPreventCycles_long_desc">
+            	It is possible due to unfaithfulness for the Meek rules to orient
+            	cycles; this does a cycle check before each orientation to
+            	prevent this.</span></li>
+            <li>Default Value: <span
+                    id="meekPreventCycles_default_value">true</span></li>
+            <li>Lower Bound: <span
+                    id="meekPreventCycles_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="meekPreventCycles_upper_bound"></span></li>
+            <li>Value Type: <span
+                    id="meekPreventCycles_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="connected">connected</h3>
@@ -4821,30 +5152,30 @@ tabs will not appear.</p> -->
                     id="connected_value_type">Boolean</span></li>
         </ul>
 
-        <h3 class="parameter_description" id="cstarQ">cstarQ</h3>
+        <h3 class="parameter_description" id="topBracket">topBracket</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="cstarQ_short_desc">Examine this q</span></li>
+                    id="topBracket_short_desc">Top bracket to look for causes in</span></li>
             <li>Long
-                Description: <span id="cstarQ_long_desc"></span></li>
+                Description: <span id="topBracket_long_desc">Top bracket, 'q'</span></li>
             <li>Default
-                Value: <span id="cstarQ_default_value">1</span></li>
+                Value: <span id="topBracket_default_value">1</span></li>
             <li>Lower Bound:
-                <span id="cstarQ_lower_bound">1</span></li>
+                <span id="topBracket_lower_bound">1</span></li>
             <li>Upper Bound: <span
-                    id="cstarQ_upper_bound">500000</span></li>
+                    id="topBracket_upper_bound">500000</span></li>
             <li>Value Type: <span
-                    id="cstarQ_value_type">Integer</span></li>
+                    id="topBracket_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
             id="targets">targets</h3>
         <ul class="targets_list">
             <li>Short Description: <span id="targets_short_desc">Target names
-        (comma separated)</span></li>
+        (comma or space separated)</span></li>
             <li>Long Description: <span
-                    id="targets_long_desc">Target names (comma separated).</span>
+                    id="targets_long_desc">Target names (comma or space separated).</span>
             </li>
             <li>Default Value: <span
                     id="targets_default_value"></span></li>
@@ -4854,6 +5185,23 @@ tabs will not appear.</p> -->
                     id="targets_upper_bound"></span></li>
             <li>Value Type: <span
                     id="targets_value_type">String</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="fileOutPath">fileOutPath</h3>
+        <ul class="fileOutPath_list">
+            <li>Short Description: <span id="fileOutPath_short_desc">Results output path</span></li>
+            <li>Long Description: <span
+                    id="fileOutPath_long_desc">Path to a directory in which results can be stored</span>
+            </li>
+            <li>Default Value: <span
+                    id="fileOutPath_default_value">cstar-out</span></li>
+            <li>Lower Bound: <span
+                    id="fileOutPath_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="fileOutPath_upper_bound"></span></li>
+            <li>Value Type: <span
+                    id="fileOutPath_value_type">String</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -4880,9 +5228,9 @@ tabs will not appear.</p> -->
             id="numSubsamples">numSubsamples</h3>
         <ul class="numSubsamples_list">
             <li>Short Description: <span id="numSubsamples_short_desc">Number of
-        sumbsamples.</span></li>
+        subsamples</span></li>
             <li>Long Description: <span
-                    id="numSubsamples_long_desc"></span></li>
+                    id="numSubsamples_long_desc">Number of subsamples</span></li>
             <li>Default Value: <span
                     id="numSubsamples_default_value">50</span></li>
             <li>Lower Bound:
@@ -5032,8 +5380,8 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="depth_short_desc">Maximum size of conditioning set (unlimited =
-        -1)</span></li>
+                    id="depth_short_desc">Maximum size of conditioning set ('depth', unlimited =-1)
+            </span></li>
             <li>Long Description: <span id="depth_long_desc">
         The depth of search for algorithms like the PC adjacency search,
         which is the maximum size of any conditioning set considered. In
@@ -5424,8 +5772,7 @@ tabs will not appear.</p> -->
 
         <h3 class="parameter_description"
             id="faithfulnessAssumed">faithfulnessAssumed</h3>
-        <ul
-                class="parameter_description_list">
+        <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="faithfulnessAssumed_short_desc">Yes if (one edge) faithfulness
         should be assumed</span></li>
@@ -5443,29 +5790,29 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="fasHeuristic">fasHeuristic</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="fasHeuristic_short_desc">Test ordering: 1 = PC-1 1, 2 = PC-2, 3 =
-        PC-3</span></li>
+            id="pcHeuristic">pcHeuristic</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="pcHeuristic_short_desc">
+                Heuristics in CPC to stabilize skeleton: 0 = None, 1 = Heuristic 1, 2 = Heuristic 2, 3 = Heuristic 3
+            </span></li>
             <li>Long Description: <span
-                    id="fasHeuristic_long_desc">PC-1 = sort nodes alphabetically; PC-1 = sort
-            edges by p-value; PC-3 = additionally sorted edges in reverse order using p-values
-            of associated independence facts. See manual.</span></li>
+                    id="pcHeuristic_long_desc">
+                NONE = no heuristic, PC-1 = sort nodes alphabetically;
+                PC-1 = sort edges by p-value; PC-3 = additionally sort edges in reverse order
+                using p-values of associated independence facts. See CPS.
+            </span></li>
             <li>Default Value: <span
-                    id="fasHeuristic_default_value">1</span></li>
+                    id="pcHeuristic_default_value">0</span></li>
             <li>Lower Bound: <span
-                    id="fasHeuristic_lower_bound">1</span></li>
+                    id="pcHeuristic_lower_bound">0</span></li>
             <li>Upper Bound: <span
-                    id="fasHeuristic_upper_bound">3</span></li>
+                    id="pcHeuristic_upper_bound">3</span></li>
             <li>Value Type: <span
-                    id="fasHeuristic_value_type">Integer</span></li>
+                    id="pcHeuristic_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="fasRule">fasRule</h3>
-        <ul
-                class="parameter_description_list">
+        <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="fasRule_short_desc">Adjacency search: 1 = PC, 2 = PC-Stable, 3 =f
         Concurrent PC-Stable</span></li>
@@ -5485,8 +5832,7 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description" id="fastIcaA">fastIcaA</h3>
-        <ul
-                class="parameter_description_list">
+        <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="fastIcaA_short_desc">Fast ICA 'a' parameter. </span></li>
             <li>Long Description: <span id="fastIcaA_long_desc"> This is the 'a'
@@ -5504,8 +5850,7 @@ tabs will not appear.</p> -->
 
         <h3 class="parameter_description"
             id="fastIcaMaxIter">fastIcaMaxIter</h3>
-        <ul
-                class="parameter_description_list">
+        <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="fastIcaMaxIter_short_desc">The maximum number of optimization
         iterations. </span></li>
@@ -5526,8 +5871,7 @@ tabs will not appear.</p> -->
 
         <h3 class="parameter_description"
             id="fastIcaTolerance">fastIcaTolerance</h3>
-        <ul
-                class="parameter_description_list">
+        <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="fastIcaTolerance_short_desc">Fast ICA tolerance parameter.
         </span></li>
@@ -5547,8 +5891,7 @@ tabs will not appear.</p> -->
 
         <h3 class="parameter_description"
             id="thresholdBHat">thresholdBHat</h3>
-        <ul
-                class="parameter_description_list">
+        <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="thresholdBHat_short_desc">Threshold on the B Hat matrix.
         </span></li>
@@ -5569,8 +5912,7 @@ tabs will not appear.</p> -->
 
         <h3 class="parameter_description"
             id="guaranteeAcyclic">guaranteeAcyclic</h3>
-        <ul
-                class="parameter_description_list">
+        <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="guaranteeAcyclic_short_desc">True if the output should be
                     guaranteed to be acyclic
@@ -6274,7 +6616,7 @@ tabs will not appear.</p> -->
                 <span id="maxIndegree_value_type">Integer</span></li>
         </ul>
 
-        <h3 id="zsMaxIndegree" class="parameter_description">zsMaxIndegree</h3>
+        <h3 class="parameter_description" id="zsMaxIndegree">zsMaxIndegree</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="zsMaxIndegree_short_desc">Maximum indegree of true graph (min = 0)</span>
             </li>
@@ -6780,8 +7122,7 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description" id="numRuns">numRuns</h3>
-        <ul
-                class="parameter_description_list">
+        <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="numRuns_short_desc">Number of runs (min = 1)</span></li>
             <li>Long
@@ -6797,6 +7138,27 @@ tabs will not appear.</p> -->
                     id="numRuns_upper_bound">2147483647</span></li>
             <li>Value Type: <span
                     id="numRuns_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="probRemoveColumn">probRemoveColumn</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="probRemoveColumn_short_desc">Probability of randomly removing a column from a dataset</span>
+            </li>
+            <li>Long
+                Description: <span id="probRemoveColumn_long_desc">
+                	For testing algorithms with overlapping variables, columns may be removed
+                	from datasets with this probability.
+        		</span>
+            </li>
+            <li>Default Value: <span
+                    id="probRemoveColumn_default_value">0.0</span></li>
+            <li>Lower Bound: <span
+                    id="probRemoveColumn_lower_bound">0.00</span></li>
+            <li>Upper Bound: <span
+                    id="probRemoveColumn_upper_bound">1.0</span></li>
+            <li>Value Type: <span
+                    id="probRemoveColumn_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6883,6 +7245,23 @@ tabs will not appear.</p> -->
                     id="numStarts_upper_bound">2147483647</span></li>
             <li>Value Type:
                 <span id="numStarts_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="useBes">useBes</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="useBes_short_desc">True if the optional BES step should be used</span></li>
+            <li>Long Description: <span
+                    id="useBes_long_desc">This algorithm can use the backward equivalence search
+                    from the GES algorithm as one of its steps.</span></li>
+            <li>Default Value: <span
+                    id="useBes_default_value">False</span></li>
+            <li>Lower Bound: <span
+                    id="useBes_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="useBes_upper_bound"></span></li>
+            <li>Value Type:
+                <span id="useBes_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7077,26 +7456,25 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="graspAllowRandomnessIndideAlgorithm">
-            graspAllowRandomnessIndideAlgorithm</h3>
+            id="allowInternalRandomness">
+            allowInternalRandomness</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="graspAllowRandomnessIndideAlgorithm_short_desc"> Allow randomness
-        inside algorithms </span></li>
+                    id="allowInternalRandomness_short_desc">Allow randomness
+        inside algorithm</span></li>
             <li>Long Description: <span
-                    id="graspAllowRandomnessIndideAlgorithm_long_desc"> This allows
-        variables orders to be shuffled in certain sports to speed up large
-        linear, Gaussain searches </span></li>
+                    id="allowInternalRandomness_long_desc">This allows
+        variables orders to be shuffled in certain sports to avoid local optima</span></li>
             <li>Default Value: <span
-                    id="graspAllowRandomnessIndideAlgorithm_default_value">false</span>
+                    id="allowInternalRandomness_default_value">false</span>
             </li>
             <li>Lower Bound: <span
-                    id="graspAllowRandomnessIndideAlgorithm_lower_bound"></span></li>
+                    id="allowInternalRandomness_lower_bound"></span></li>
             <li>Upper Bound: <span
-                    id="graspAllowRandomnessIndideAlgorithm_upper_bound"></span></li>
+                    id="allowInternalRandomness_upper_bound"></span></li>
             <li>Value Type: <span
-                    id="graspAllowRandomnessIndideAlgorithm_value_type">Boolean</span>
+                    id="allowInternalRandomness_value_type">Boolean</span>
             </li>
         </ul>
 
@@ -7146,7 +7524,7 @@ tabs will not appear.</p> -->
                 Description: <span id="graspDepth_long_desc"> This is the depth of
         recursion for the depth first search. </span></li>
             <li>Default
-                Value: <span id="graspDepth_default_value">4</span></li>
+                Value: <span id="graspDepth_default_value">3</span></li>
             <li>Lower
                 Bound: <span id="graspDepth_lower_bound">0</span></li>
             <li>Upper
@@ -7276,25 +7654,25 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="orientTowardDConnections">orientTowardDConnections</h3>
+            id="orientTowardMConnections">orientTowardMConnections</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="orientTowardDConnections_short_desc">Yes if Richardson's step C
+                    id="orientTowardMConnections_short_desc">Yes if Richardson's step C
         (orient toward d-connection) should be used</span></li>
             <li>Long
-                Description: <span id="orientTowardDConnections_long_desc"> Please
+                Description: <span id="orientTowardMConnections_long_desc"> Please
         see the description of this algorithm in Thomas Richardson and Peter
         Spirtes in Chapter 7 of Computation, Causation, & Discovery by
         Glymour and Cooper eds.</span></li>
             <li>Default Value: <span
-                    id="orientTowardDConnections_default_value">true</span></li>
+                    id="orientTowardMConnections_default_value">true</span></li>
             <li>Lower Bound: <span
-                    id="orientTowardDConnections_lower_bound"></span></li>
+                    id="orientTowardMConnections_lower_bound"></span></li>
             <li>Upper
-                Bound: <span id="orientTowardDConnections_upper_bound"></span></li>
+                Bound: <span id="orientTowardMConnections_upper_bound"></span></li>
             <li>Value Type: <span
-                    id="orientTowardDConnections_value_type">Boolean</span></li>
+                    id="orientTowardMConnections_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7403,7 +7781,7 @@ tabs will not appear.</p> -->
                     id="penaltyDiscountZs_value_type">Double</span></li>
         </ul>
 
-        <h3 id="zSRiskBound" class="parameter_description">zSRiskBound</h3>
+        <h3 class="parameter_description" id="zSRiskBound">zSRiskBound</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="zSRiskBound_short_desc">Risk bound</span></li>
             <li>Long Description: <span id="zSRiskBound_long_desc">
@@ -7578,24 +7956,24 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="possibleDsepDone">possibleDsepDone</h3>
+            id="possibleMsepDone">possibleMsepDone</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="possibleDsepDone_short_desc">Yes if the possible dsep search
+                    id="possibleMsepDone_short_desc">Yes if the possible msep search
         should be done</span></li>
             <li>Long Description: <span
-                    id="possibleDsepDone_long_desc"> This algorithm has a possible d-sep
+                    id="possibleMsepDone_long_desc"> This algorithm has a possible m-sep
         path search, which can be time-consuming. See Spirtes, Glymour, and
         Scheines (2000) for details.</span></li>
             <li>Default Value: <span
-                    id="possibleDsepDone_default_value">true</span></li>
+                    id="possibleMsepDone_default_value">true</span></li>
             <li>Lower Bound:
-                <span id="possibleDsepDone_lower_bound"></span></li>
+                <span id="possibleMsepDone_lower_bound"></span></li>
             <li>Upper Bound:
-                <span id="possibleDsepDone_upper_bound"></span></li>
+                <span id="possibleMsepDone_upper_bound"></span></li>
             <li>Value Type:
-                <span id="possibleDsepDone_value_type">Boolean</span></li>
+                <span id="possibleMsepDone_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="probCycle">probCycle</h3>
@@ -8049,8 +8427,10 @@ tabs will not appear.</p> -->
         <h3 class="parameter_description" id="stableFAS">stableFAS</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="stableFAS_short_desc">Yes if the 'stable' FAS should be
-        done</span></li>
+                    id="stableFAS_short_desc">
+                Yes if the Colombo et al. 'stable' FAS should be done, to
+                avoid skeleton order dependency
+            </span></li>
             <li>Long Description: <span
                     id="stableFAS_long_desc"> If Yes, the "stable" version of the PC
         adjacency search is used, which for k > 0 fixes the graph for depth k
@@ -8376,9 +8756,9 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="simulationErrorType_short_desc"> 1 = Usual LG SEM, 2 = Indep
-        U(lb, ub), 3 = Indep Exp(lambda), 4 = Indep Gumbel(mu,
-        beta)</span></li>
+                    id="simulationErrorType_short_desc"> 1 = Usual LG SEM, 2 =
+        U(lb, ub), 3 = Exp(lambda), 4 = Gumbel(mu,
+        beta), 5 = Gamma(shape, scale)</span></li>
             <li>Long Description: <span
                     id="simulationErrorType_long_desc">Exogenous error type</span></li>
             <li>Default Value: <span
@@ -8386,7 +8766,7 @@ tabs will not appear.</p> -->
             <li>Lower Bound:
                 <span id="simulationErrorType_lower_bound">1</span></li>
             <li>Upper
-                Bound: <span id="simulationErrorType_upper_bound">4</span></li>
+                Bound: <span id="simulationErrorType_upper_bound">5</span></li>
             <li>Value Type: <span
                     id="simulationErrorType_value_type">Integer</span></li>
         </ul>
@@ -8487,6 +8867,29 @@ tabs will not appear.</p> -->
             <li>Value Type: <span
                     id="useGap_value_type">Boolean</span></li>
         </ul>
+
+        <h3 class="parameter_description"
+            id="useMaxPHeuristic">useMaxPHeuristic</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="useMaxPHeuristic_short_desc">Yes if the max P
+                    heuristic should be used to orient unshielded colliders</span></li>
+            <li>Long Description: <span
+                    id="useMaxPHeuristic_long_desc">The max P heuristic orients
+                    X*-*Y*-*Z by considering whether Y is in the subset S of variables
+                    adjacent to X or Z that maximizes the p-value of X _||_ Y | S.</span></li>
+            <li>Default Value: <span
+                    id="useMaxPHeuristic_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="useMaxPHeuristic_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="useMaxPHeuristic_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="useMaxPHeuristic_value_type">Boolean</span></li>
+        </ul>
+
 
         <h3 class="parameter_description"
             id="useMaxPOrientationHeuristic">useMaxPOrientationHeuristic</h3>
@@ -9102,6 +9505,8 @@ ga.q = [];
 ga.l = +new Date;
 ga('create', 'UA-XXXXX-Y', 'auto');
 ga('send', 'pageview')
+
+
 
 
 

@@ -23,8 +23,8 @@ package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IMbSearch;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -58,17 +58,14 @@ public final class Mmmb implements IMbSearch {
      * The maximum number of variables conditioned on.
      */
     int depth;
-
-    /**
-     * Number of independence tests.
-     */
-    private int numIndTests;
-
     /**
      * The function from nodes to their sets of parents and children.
      */
     Map<Node, List<Node>> pc;
-
+    /**
+     * Number of independence tests.
+     */
+    private int numIndTests;
     /**
      * Set of trimmed nodes (for the symmetric implementation).
      */
@@ -109,7 +106,7 @@ public final class Mmmb implements IMbSearch {
      * @param target The name of the target node.
      * @return The Markov blanket of the target.
      */
-    public List<Node> findMb(Node target) {
+    public Set<Node> findMb(Node target) {
         TetradLogger.getInstance().log("info", "target = " + target);
         this.numIndTests = 0;
         long time = MillisecondTimes.timeMillis();
@@ -117,7 +114,7 @@ public final class Mmmb implements IMbSearch {
         this.pc = new HashMap<>();
         this.trimmed = new HashSet<>();
 
-        List<Node> nodes = mmmb(target);
+        Set<Node> nodes = mmmb(target);
 
         long time2 = MillisecondTimes.timeMillis() - time;
         TetradLogger.getInstance().log("info", "Number of seconds: " + (time2 / 1000.0));
@@ -130,7 +127,7 @@ public final class Mmmb implements IMbSearch {
 
     //===========================PRIVATE METHODS==========================//
 
-    private List<Node> mmmb(Node t) {
+    private Set<Node> mmmb(Node t) {
         // MB <- {}
         Set<Node> mb = new HashSet<>();
 
@@ -154,7 +151,7 @@ public final class Mmmb implements IMbSearch {
 
         //for each x in PCPC \ PC
         for (Node x : diff) {
-            List<Node> s = null;
+            Set<Node> s = null;
 
             // Find an S such PC such that x _||_ t | S
             SublistGenerator generator =
@@ -162,7 +159,7 @@ public final class Mmmb implements IMbSearch {
             int[] choice;
 
             while ((choice = generator.next()) != null) {
-                List<Node> _s = new LinkedList<>();
+                Set<Node> _s = new HashSet<>();
 
                 for (int index : choice) {
                     _s.add(pcpc.get(index));
@@ -193,7 +190,7 @@ public final class Mmmb implements IMbSearch {
             for (Node y : ySet) {
                 if (x == y) continue;
 
-                List<Node> _s = new LinkedList<>(s);
+                Set<Node> _s = new HashSet<>(s);
                 _s.add(y);
 
                 // If x NOT _||_ t | S U {y}
@@ -206,7 +203,7 @@ public final class Mmmb implements IMbSearch {
         }
 
         mb.addAll(getPc(t));
-        return new LinkedList<>(mb);
+        return new HashSet<>(mb);
     }
 
     private List<Node> mmpc(Node t) {
@@ -215,7 +212,7 @@ public final class Mmmb implements IMbSearch {
 
         // First optimization: Don't consider adding again variables that have
         // already been found independent of t.
-        List<Node> indepOfT = new LinkedList<>();
+        Set<Node> indepOfT = new HashSet<>();
 
         // Phase 1
         while (pcIncreased) {
@@ -223,7 +220,7 @@ public final class Mmmb implements IMbSearch {
 
             MaxMinAssocResult ret = maxMinAssoc(t, pc, indepOfT);
             Node f = ret.getNode();
-            List<Node> assocSet = ret.getAssocSet();
+            Set<Node> assocSet = ret.getAssocSet();
 
             if (f == null) {
                 break;
@@ -278,9 +275,9 @@ public final class Mmmb implements IMbSearch {
     }
 
     private MaxMinAssocResult maxMinAssoc(Node t, List<Node> pc,
-                                          List<Node> indepOfT) {
+                                          Set<Node> indepOfT) {
         Node f = null;
-        List<Node> maxAssocSet = null;
+        Set<Node> maxAssocSet = null;
         double maxAssoc = 0.0;
 
         for (Node v : this.variables) {
@@ -291,7 +288,7 @@ public final class Mmmb implements IMbSearch {
                 continue;
             }
 
-            List<Node> minAssoc = minAssoc(v, t, pc);
+            Set<Node> minAssoc = minAssoc(v, t, pc);
             double assoc = association(v, t, minAssoc);
 
             // If v is conditionally independent of t, don't consider it
@@ -311,9 +308,9 @@ public final class Mmmb implements IMbSearch {
         return new MaxMinAssocResult(f, maxAssocSet);
     }
 
-    private List<Node> minAssoc(Node x, Node target, List<Node> pc) {
+    private Set<Node> minAssoc(Node x, Node target, List<Node> pc) {
         double assoc = 1.0;
-        List<Node> set = new LinkedList<>();
+        Set<Node> set = new HashSet<>();
 
         if (pc.contains(x)) throw new IllegalArgumentException();
         if (pc.contains(target)) throw new IllegalArgumentException();
@@ -324,7 +321,7 @@ public final class Mmmb implements IMbSearch {
         int[] choice;
 
         while ((choice = generator.next()) != null) {
-            List<Node> s = new LinkedList<>();
+            Set<Node> s = new HashSet<>();
 
             for (int index : choice) {
                 s.add(pc.get(index));
@@ -353,7 +350,7 @@ public final class Mmmb implements IMbSearch {
             _pc.remove(x);
             _pc.remove(target);
 
-            List<Node> minAssoc = minAssoc(x, target, _pc);
+            Set<Node> minAssoc = minAssoc(x, target, _pc);
 
             this.numIndTests++;
 
@@ -363,7 +360,7 @@ public final class Mmmb implements IMbSearch {
         }
     }
 
-    private double association(Node x, Node target, List<Node> s) {
+    private double association(Node x, Node target, Set<Node> s) {
         this.numIndTests++;
 
         IndependenceResult result = this.independenceTest.checkIndependence(x, target, s);
@@ -398,9 +395,9 @@ public final class Mmmb implements IMbSearch {
 
     private static class MaxMinAssocResult {
         private final Node node;
-        private final List<Node> assocSet;
+        private final Set<Node> assocSet;
 
-        public MaxMinAssocResult(Node node, List<Node> assocSet) {
+        public MaxMinAssocResult(Node node, Set<Node> assocSet) {
             this.node = node;
             this.assocSet = assocSet;
         }
@@ -409,7 +406,7 @@ public final class Mmmb implements IMbSearch {
             return this.node;
         }
 
-        public List<Node> getAssocSet() {
+        public Set<Node> getAssocSet() {
             return this.assocSet;
         }
     }

@@ -101,6 +101,9 @@ public final class GSquareTest {
      */
     public Result calcGSquare(int[] testIndices) {
 
+        if (testIndices.length < 2)
+            throw new IllegalArgumentException("Need at least two variables for G Square test.");
+
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
         getCellTable().addToTable(getDataSet(), testIndices);
@@ -220,64 +223,10 @@ public final class GSquareTest {
     }
 
     /**
-     * Stores the parameters of the result returned by the G Square test and its p-value.
-     *
-     * @author Frank Wimberly
-     */
-    public static final class Result {
-
-        /**
-         * The g square value itself.
-         */
-        private final double gSquare;
-
-        /**
-         * The pValue of the result.
-         */
-        private final double pValue;
-
-        /**
-         * The adjusted degrees of freedom.
-         */
-        private final int df;
-
-        /**
-         * Whether the conditional independence holds or not. (True if it does, false if it doesn't.
-         */
-        private final boolean isIndep;
-
-        /**
-         * Constructs a new g square result using the given parameters.
-         */
-        public Result(double gSquare, double pValue, int df, boolean isIndep) {
-            this.gSquare = gSquare;
-            this.pValue = pValue;
-            this.df = df;
-            this.isIndep = isIndep;
-        }
-
-        public double getGSquare() {
-            return this.gSquare;
-        }
-
-        public double getPValue() {
-            return this.pValue;
-        }
-
-        public int getDf() {
-            return this.df;
-        }
-
-        public boolean isIndep() {
-            return this.isIndep;
-        }
-    }
-
-    /**
      * Returns the dimensions of the variables, in order.
      *
-     * @return These dimensions, as an int[] array. For instance, if the array is [2 3],
-     * then the first variable has 2 categories and second variable has 3 categories.
+     * @return These dimensions, as an int[] array. For instance, if the array is [2 3], then the first variable has 2
+     * categories and second variable has 3 categories.
      */
     public int[] getDims() {
         return this.dims;
@@ -324,8 +273,7 @@ public final class GSquareTest {
     }
 
     /**
-     * Returns a judgement of whether the variables index by 'testIndices'
-     * determine the variable index by 'p'.
+     * Returns a judgement of whether the variables index by 'testIndices' determine the variable index by 'p'.
      *
      * @param testIndices The indices of the conditioning variables.
      * @param p           The index of the child variable.
@@ -391,6 +339,60 @@ public final class GSquareTest {
         }
 
         return retArr;
+    }
+
+    /**
+     * Stores the parameters of the result returned by the G Square test and its p-value.
+     *
+     * @author Frank Wimberly
+     */
+    public static final class Result {
+
+        /**
+         * The g square value itself.
+         */
+        private final double gSquare;
+
+        /**
+         * The pValue of the result.
+         */
+        private final double pValue;
+
+        /**
+         * The adjusted degrees of freedom.
+         */
+        private final int df;
+
+        /**
+         * Whether the conditional independence holds or not. (True if it does, false if it doesn't.
+         */
+        private final boolean isIndep;
+
+        /**
+         * Constructs a new g square result using the given parameters.
+         */
+        public Result(double gSquare, double pValue, int df, boolean isIndep) {
+            this.gSquare = gSquare;
+            this.pValue = pValue;
+            this.df = df;
+            this.isIndep = isIndep;
+        }
+
+        public double getGSquare() {
+            return this.gSquare;
+        }
+
+        public double getPValue() {
+            return this.pValue;
+        }
+
+        public int getDf() {
+            return this.df;
+        }
+
+        public boolean isIndep() {
+            return this.isIndep;
+        }
     }
 }
 

@@ -40,8 +40,7 @@ import java.util.List;
 import java.util.*;
 
 /**
- * Wraps a Session as a Graph so that an AbstractWorkbench can be used to edit
- * it.
+ * Wraps a Session as a Graph so that an AbstractWorkbench can be used to edit it.
  *
  * @author josephramsey
  * @see edu.cmu.tetrad.session.Session
@@ -70,18 +69,15 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @serial Cannot be null.
      */
     private final Set<Edge> sessionEdges = new HashSet<>();
-
+    private final boolean highlighted = false;
     /**
      * The property change support.
      */
     private transient PropertyChangeSupport propertyChangeSupport;
-
     /**
-     * Handles incoming session events, basically by redirecting to any
-     * listeners of this session.
+     * Handles incoming session events, basically by redirecting to any listeners of this session.
      */
     private transient SessionHandler sessionHandler;
-    private final boolean highlighted = false;
     private boolean pag;
     private boolean CPDAG;
 
@@ -110,10 +106,9 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     //==================PUBLIC METHODS IMPLEMENTING Graph===========//
 
     /**
-     * Adds an edge to the workbench (cast as indicated) and fires a
-     * PropertyChangeEvent, property "edgeAdded," with the new edge as the
-     * newValue. The nodes connected by the edge must both be
-     * SessionNodeWrappers that already lie in the workbench.
+     * Adds an edge to the workbench (cast as indicated) and fires a PropertyChangeEvent, property "edgeAdded," with the
+     * new edge as the newValue. The nodes connected by the edge must both be SessionNodeWrappers that already lie in
+     * the workbench.
      *
      * @param edge the edge to be added.
      * @return true if the edge was added, false if not.
@@ -149,8 +144,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * Adds a node to the workbench and fires a PropertyChangeEvent for property
-     * "nodeAdded" with the new node as the new value.
+     * Adds a node to the workbench and fires a PropertyChangeEvent for property "nodeAdded" with the new node as the
+     * new value.
      *
      * @param node the node to be added.
      * @return true if nodes were added, false if not.
@@ -172,8 +167,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * Pastes a list of session elements (SessionNodeWrappers and SessionEdges)
-     * into the workbench.
+     * Pastes a list of session elements (SessionNodeWrappers and SessionEdges) into the workbench.
      */
     public void pasteSubsession(List sessionElements, Point upperLeft) {
 
@@ -235,8 +229,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * Indirect reference to session handler to avoid saving out listeners
-     * during serialization.
+     * Indirect reference to session handler to avoid saving out listeners during serialization.
      */
     private SessionHandler getSessionHandler() {
         if (this.sessionHandler == null) {
@@ -247,9 +240,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * Adjusts the name to avoid name conflicts in the new session and, if the
-     * name is adjusted, adjusts the position so the user can see the two
-     * nodes.
+     * Adjusts the name to avoid name conflicts in the new session and, if the name is adjusted, adjusts the position so
+     * the user can see the two nodes.
      *
      * @param wrapper             The wrapper which is being adjusted
      * @param sessionNodeWrappers a list of wrappers that the name might
@@ -270,8 +262,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * @return the substring of <code>name</code> up to but not including a
-     * contiguous string of digits at the end. For example, given "Graph123"
+     * @return the substring of <code>name</code> up to but not including a contiguous string of digits at the end. For
+     * example, given "Graph123"
      */
     private String extractBase(String name) {
 
@@ -291,10 +283,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * @param base                the string base of the name--for example,
-     *                            "Graph".
-     * @param sessionNodeWrappers list of wrappers with names that cannot be the
-     *                            next string in the sequence.
+     * @param base                the string base of the name--for example, "Graph".
+     * @param sessionNodeWrappers list of wrappers with names that cannot be the next string in the sequence.
      * @return the next string in the sequence--for example, "Graph1".
      */
     private String nextUniqueName(String base, List sessionNodeWrappers) {
@@ -347,8 +337,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * @return the list of edges in the workbench.  No particular ordering of
-     * the edges in the list is guaranteed.
+     * @return the list of edges in the workbench.  No particular ordering of the edges in the list is guaranteed.
      */
     public Set<Edge> getEdges() {
         return new HashSet<>(this.sessionEdges);
@@ -380,11 +369,11 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * @return the list of edges connected to a particular node. No particular
-     * ordering of the edges in the list is guaranteed.
+     * @return the list of edges connected to a particular node. No particular ordering of the edges in the list is
+     * guaranteed.
      */
     public List<Edge> getEdges(Node node) {
-        List<Edge> edgeList = new LinkedList<>();
+        List<Edge> edgeList = new ArrayList<>();
 
         for (Edge edge : this.sessionEdges) {
             if ((edge.getNode1() == node) || (edge.getNode2() == node)) {
@@ -396,9 +385,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * @return the node with the given string name.  In case of accidental
-     * duplicates, the first node encountered with the given name is returned.
-     * In case no node exists with the given name, null is returned.
+     * @return the node with the given string name.  In case of accidental duplicates, the first node encountered with
+     * the given name is returned. In case no node exists with the given name, null is returned.
      */
     public Node getNode(String name) {
         for (Node sessionNodeWrapper : this.sessionNodeWrappers) {
@@ -429,8 +417,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
     /**
      * @param node the node in question
-     * @return the number of edges in the workbench which are connected to a
-     * particular node.
+     * @return the number of edges in the workbench which are connected to a particular node.
      */
     public int getNumEdges(Node node) {
 
@@ -475,8 +462,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * Removes the edge connecting the two given nodes, provided there is
-     * exactly one such edge.
+     * Removes the edge connecting the two given nodes, provided there is exactly one such edge.
      */
     public boolean removeEdge(Node node1, Node node2) {
         return false;
@@ -529,9 +515,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * Iterates through the collection and removes any permissible nodes found.
-     * The order in which nodes are removed is the order in which they are
-     * presented in the iterator.
+     * Iterates through the collection and removes any permissible nodes found. The order in which nodes are removed is
+     * the order in which they are presented in the iterator.
      *
      * @param newNodes the Collection of nodes.
      * @return true if nodes were added, false if not.
@@ -541,9 +526,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * Iterates through the collection and removes any permissible edges found.
-     * The order in which edges are added is the order in which they are
-     * presented in the iterator.
+     * Iterates through the collection and removes any permissible edges found. The order in which edges are added is
+     * the order in which they are presented in the iterator.
      *
      * @param edges the Collection of edges.
      * @return true if edges were added, false if not.
@@ -560,9 +544,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * Removes all edges connecting node A to node B.  In most cases, this will
-     * remove at most one edge, but since multiple edges are permitted in some
-     * workbench implementations, the number will in some cases be greater than
+     * Removes all edges connecting node A to node B.  In most cases, this will remove at most one edge, but since
+     * multiple edges are permitted in some workbench implementations, the number will in some cases be greater than
      * one.
      */
     public boolean removeEdges(Node nodeA, Node nodeB) {
@@ -585,11 +568,9 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * Sets the endpoint type at the 'to' end of the edge from 'from' to 'to' to
-     * the given endpoint.
+     * Sets the endpoint type at the 'to' end of the edge from 'from' to 'to' to the given endpoint.
      *
-     * @throws UnsupportedOperationException since this graph may contains only
-     *                                       directed edges.
+     * @throws UnsupportedOperationException since this graph may contains only directed edges.
      */
     public boolean setEndpoint(Node from, Node to, Endpoint endPoint) {
         throw new UnsupportedOperationException();
@@ -659,33 +640,6 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * Handles <code>SessionEvent</code>s. Hides the handling of these from the
-     * API.
-     */
-    private static class SessionHandler extends SessionAdapter {
-
-        /**
-         * Allows the user to verify that an edge added to a node that already
-         * has a model in it is OK.
-         */
-        public void addingEdge(SessionEvent event) {
-            final String message =
-                    "Child node already created. If you add this edge,\n" +
-                            "the content of the child node will be made\n" +
-                            "consistent with the parent.";
-
-            int ret = JOptionPane.showConfirmDialog(
-                    JOptionUtils.centeringComp(), message, "Warning",
-                    JOptionPane.OK_CANCEL_OPTION);
-
-            if (ret == JOptionPane.CANCEL_OPTION) {
-                SessionNode sessionNode = (SessionNode) event.getSource();
-                sessionNode.setNextEdgeAddAllowed(false);
-            }
-        }
-    }
-
-    /**
      * @return the edges connecting node1 and node2.
      */
     public List<Edge> getEdges(Node node1, Node node2) {
@@ -716,14 +670,12 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -739,6 +691,31 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
         if (this.sessionEdges == null) {
             throw new NullPointerException();
+        }
+    }
+
+    /**
+     * Handles <code>SessionEvent</code>s. Hides the handling of these from the API.
+     */
+    private static class SessionHandler extends SessionAdapter {
+
+        /**
+         * Allows the user to verify that an edge added to a node that already has a model in it is OK.
+         */
+        public void addingEdge(SessionEvent event) {
+            final String message =
+                    "Child node already created. If you add this edge,\n" +
+                            "the content of the child node will be made\n" +
+                            "consistent with the parent.";
+
+            int ret = JOptionPane.showConfirmDialog(
+                    JOptionUtils.centeringComp(), message, "Warning",
+                    JOptionPane.OK_CANCEL_OPTION);
+
+            if (ret == JOptionPane.CANCEL_OPTION) {
+                SessionNode sessionNode = (SessionNode) event.getSource();
+                sessionNode.setNextEdgeAddAllowed(false);
+            }
         }
     }
 }

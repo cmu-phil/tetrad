@@ -58,6 +58,27 @@ public class JunctionTreeAlgorithmTest {
             {1, 1, 1}
     };
 
+    private static void printExampleProof(JunctionTreeAlgorithm jta, int[] values) {
+        final int v1 = 0;
+        final int v2 = 1;
+        final int v3 = 2;
+
+        double v1GivenV2 = jta.getConditionalProbability(v1, values[v1], new int[]{v2}, new int[]{values[v2]});
+        double v2Parent = jta.getMarginalProbability(v2, values[v2]);
+        double v3Givenv2 = jta.getConditionalProbability(v3, values[v3], new int[]{v2}, new int[]{values[v2]});
+
+        System.out.println(
+                Arrays.stream(values)
+                        .mapToObj(String::valueOf)
+                        .collect(Collectors.joining(",")));
+        System.out.println("--------------------------------------------------------------------------------");
+        System.out.printf("P(v1=0|v2=0) = %f%n", v1GivenV2);
+        System.out.printf("P(v2=0) = %f%n", v2Parent);
+        System.out.printf("P(v3=0|v2=0) = %f%n", v3Givenv2);
+        System.out.println("-------------------------------------------------");
+        System.out.printf("P(v1=0|v2=0)P(v2=0)P(v3=0|v2=0) = %f%n", v1GivenV2 * v2Parent * v3Givenv2);
+    }
+
     @Ignore
     @Test
     public void testJointProbGivenParents() throws IOException {
@@ -165,27 +186,6 @@ public class JunctionTreeAlgorithmTest {
         }
     }
 
-    private static void printExampleProof(JunctionTreeAlgorithm jta, int[] values) {
-        final int v1 = 0;
-        final int v2 = 1;
-        final int v3 = 2;
-
-        double v1GivenV2 = jta.getConditionalProbability(v1, values[v1], new int[]{v2}, new int[]{values[v2]});
-        double v2Parent = jta.getMarginalProbability(v2, values[v2]);
-        double v3Givenv2 = jta.getConditionalProbability(v3, values[v3], new int[]{v2}, new int[]{values[v2]});
-
-        System.out.println(
-                Arrays.stream(values)
-                        .mapToObj(String::valueOf)
-                        .collect(Collectors.joining(",")));
-        System.out.println("--------------------------------------------------------------------------------");
-        System.out.printf("P(v1=0|v2=0) = %f%n", v1GivenV2);
-        System.out.printf("P(v2=0) = %f%n", v2Parent);
-        System.out.printf("P(v3=0|v2=0) = %f%n", v3Givenv2);
-        System.out.println("-------------------------------------------------");
-        System.out.printf("P(v1=0|v2=0)P(v2=0)P(v3=0|v2=0) = %f%n", v1GivenV2 * v2Parent * v3Givenv2);
-    }
-
     private JunctionTreeAlgorithm getJunctionTreeAlgorithm(String graphFile, String dataFile) throws IOException {
         Graph graph = readInGraph(Paths.get(graphFile));
         DataModel dataModel = readInDiscreteData(Paths.get(dataFile));
@@ -250,7 +250,7 @@ public class JunctionTreeAlgorithmTest {
 
     private Graph readInGraph(Path file) throws IOException {
         try (Reader reader = Files.newBufferedReader(file)) {
-            return GraphPersistence.readerToGraphTxt(reader);
+            return GraphSaveLoadUtils.readerToGraphTxt(reader);
         }
     }
 

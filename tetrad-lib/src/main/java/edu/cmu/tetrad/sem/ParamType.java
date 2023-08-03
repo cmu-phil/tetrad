@@ -26,50 +26,45 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.io.ObjectStreamException;
 
 /**
- * A typesafe enum of the types of the types of freeParameters for SEM models (COEF,
- * MEAN, VAR, COVAR). COEF freeParameters are edge coefficients in the linear SEM
- * model; VAR parmaeters are variances among the error terms; COVAR freeParameters
- * are (non-variance) covariances among the error terms.
+ * A typesafe enum of the types of the types of freeParameters for SEM models (COEF, MEAN, VAR, COVAR). COEF
+ * freeParameters are edge coefficients in the linear SEM model; VAR parmaeters are variances among the error terms;
+ * COVAR freeParameters are (non-variance) covariances among the error terms.
  *
  * @author josephramsey
  */
 public class ParamType implements TetradSerializable {
-    static final long serialVersionUID = 23L;
-
     /**
      * A coefficient parameter.
      */
     public static final ParamType COEF = new ParamType("Linear Coefficient");
-
     /**
      * A mean parameter.
      */
     public static final ParamType MEAN = new ParamType("Variable Mean");
-
     /**
      * A variance parameter.
      */
     public static final ParamType VAR = new ParamType("Error Variance");
-
     /**
-     * A covariance parameter. (Does not include variance freeParameters; these are
-     * indicated using VAR.)
+     * A covariance parameter. (Does not include variance freeParameters; these are indicated using VAR.)
      */
     public static final ParamType COVAR = new ParamType("Error Covariance");
-
+    static final long serialVersionUID = 23L;
     /**
      * A parameter of a distribution.
      */
     private static final ParamType DIST = new ParamType("Distribution Parameter");
-
+    private static final ParamType[] TYPES = {ParamType.COEF, ParamType.MEAN, ParamType.VAR, ParamType.COVAR, ParamType.DIST};
+    // Declarations required for serialization.
+    private static int NEXT_ORDINAL;
     /**
      * The name of this type.
      */
     private final transient String name;
+    private final int ordinal = ParamType.NEXT_ORDINAL++;
 
     /**
-     * Protected constructor for the types; this allows for extension in case
-     * anyone wants to add formula types.
+     * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
     private ParamType(String name) {
         this.name = name;
@@ -88,11 +83,6 @@ public class ParamType implements TetradSerializable {
     public String toString() {
         return this.name;
     }
-
-    // Declarations required for serialization.
-    private static int NEXT_ORDINAL;
-    private final int ordinal = ParamType.NEXT_ORDINAL++;
-    private static final ParamType[] TYPES = {ParamType.COEF, ParamType.MEAN, ParamType.VAR, ParamType.COVAR, ParamType.DIST};
 
     Object readResolve() throws ObjectStreamException {
         return ParamType.TYPES[this.ordinal]; // Canonicalize.

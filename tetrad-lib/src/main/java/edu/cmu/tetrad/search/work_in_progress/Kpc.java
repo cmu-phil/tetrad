@@ -26,8 +26,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fas;
 import edu.cmu.tetrad.search.IGraphSearch;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestHsic;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -42,12 +42,12 @@ import java.util.Set;
 
 /**
  * <p>Kernelized PC algorithm. This is the same as the PC class, the nonparametric
- * kernel-based HSIC test is used for independence testing and the parameters for
- * this test can be set directly when Kpc is initialized.</p>
+ * kernel-based HSIC test is used for independence testing and the parameters for this test can be set directly when Kpc
+ * is initialized.</p>
  *
  * <p>Moving this to the work_in_progress package because it has not been tested
- * in a very long time, and there is another option available that has been
- * tested, namely, to run PC using the KCI test due to Kun Zhang.</p>
+ * in a very long time, and there is another option available that has been tested, namely, to run PC using the KCI test
+ * due to Kun Zhang.</p>
  *
  * @author Robert Tillman.
  */
@@ -57,43 +57,34 @@ public class Kpc implements IGraphSearch {
      * The independence test used for the PC search.
      */
     private final IndTestHsic independenceTest;
-
-    /**
-     * Forbidden and required edges for the search.
-     */
-    private Knowledge knowledge = new Knowledge();
-
-    /**
-     * Sepset information accumulated in the search.
-     */
-    private SepsetMap sepset;
-
-    /**
-     * The maximum number of nodes conditioned on in the search. The default it 1000.
-     */
-    private int depth = 1000;
-
-    /**
-     * The graph that's constructed during the search.
-     */
-    private Graph graph;
-
-    /**
-     * Elapsed time of the most recent search.
-     */
-    private long elapsedTime;
-
-    /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
-     */
-    private boolean aggressivelyPreventCycles;
-
     /**
      * The logger to use.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-
+    /**
+     * Forbidden and required edges for the search.
+     */
+    private Knowledge knowledge = new Knowledge();
+    /**
+     * Sepset information accumulated in the search.
+     */
+    private SepsetMap sepset;
+    /**
+     * The maximum number of nodes conditioned on in the search. The default it 1000.
+     */
+    private int depth = 1000;
+    /**
+     * The graph that's constructed during the search.
+     */
+    private Graph graph;
+    /**
+     * Elapsed time of the most recent search.
+     */
+    private long elapsedTime;
+    /**
+     * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large graphs).
+     */
+    private boolean meekPreventCycles;
     /**
      * In an enumeration of triple types, these are the collider triples.
      */
@@ -137,15 +128,15 @@ public class Kpc implements IGraphSearch {
     /**
      * @return true iff edges will not be added if they would create cycles.
      */
-    public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
+    public boolean isMeekPreventCycles() {
+        return this.meekPreventCycles;
     }
 
     /**
-     * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
+     * @param meekPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+    public void setMeekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
@@ -221,8 +212,8 @@ public class Kpc implements IGraphSearch {
 
     /**
      * Runs PC starting with a commplete graph over the given list of nodes, using the given independence test and
-     * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information
-     * is consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
+     * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information is
+     * consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
      * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
      * or due to statistical errors in conditional independence judgments.
      * <p>
@@ -262,11 +253,9 @@ public class Kpc implements IGraphSearch {
         GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
         GraphSearchUtils.orientCollidersUsingSepsets(this.sepset, this.knowledge, this.graph, this.verbose, true);
         MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+        rules.setMeekPreventCycles(this.meekPreventCycles);
         rules.setKnowledge(this.knowledge);
         rules.orientImplied(this.graph);
-
-        this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
@@ -302,7 +291,8 @@ public class Kpc implements IGraphSearch {
 
     /**
      * Sets whether verbose output should be printed.
-     * @param verbose True if so.
+     *
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -310,6 +300,13 @@ public class Kpc implements IGraphSearch {
 
 
     //===============================ADDED FOR KPC=========================//
+
+    /**
+     * Gets the getModel significance level.
+     */
+    public double getAlpha() {
+        return this.alpha;
+    }
 
     /**
      * Sets the significance level at which independence judgments should be made.
@@ -321,21 +318,6 @@ public class Kpc implements IGraphSearch {
 
         this.alpha = alpha;
         this.independenceTest.setAlpha(alpha);
-    }
-
-    /**
-     * Set the number of bootstrap samples to use
-     */
-    public void setPerms(int perms) {
-        this.perms = perms;
-        this.independenceTest.setPerms(perms);
-    }
-
-    /**
-     * Gets the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
     }
 
     /**
@@ -352,6 +334,14 @@ public class Kpc implements IGraphSearch {
         return this.perms;
     }
 
+    /**
+     * Set the number of bootstrap samples to use
+     */
+    public void setPerms(int perms) {
+        this.perms = perms;
+        this.independenceTest.setPerms(perms);
+    }
+
     //===============================PRIVATE METHODS=======================//
 
     private void enumerateTriples() {
@@ -359,7 +349,7 @@ public class Kpc implements IGraphSearch {
         this.unshieldedNoncolliders = new HashSet<>();
 
         for (Node y : this.graph.getNodes()) {
-            List<Node> adj = this.graph.getAdjacentNodes(y);
+            List<Node> adj = new ArrayList<>(this.graph.getAdjacentNodes(y));
 
             if (adj.size() < 2) {
                 continue;
@@ -372,7 +362,7 @@ public class Kpc implements IGraphSearch {
                 Node x = adj.get(choice[0]);
                 Node z = adj.get(choice[1]);
 
-                List<Node> nodes = this.sepset.get(x, z);
+                Set<Node> nodes = this.sepset.get(x, z);
 
                 // Note that checking adj(x, z) does not suffice when knowledge
                 // has been specified.

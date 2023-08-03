@@ -28,11 +28,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Implements the Anderson-Darling test against the given CDF, with P values calculated
- * as in R's ad.test method (in package nortest).
+ * Implements the Anderson-Darling test against the given CDF, with P values calculated as in R's ad.test method (in
+ * package nortest).
  * <p>
- * Note that in the calculation, points x such that log(1 - distributions.get(x)))
- * is infinite are ignored.
+ * Note that in the calculation, points x such that log(1 - distributions.get(x))) is infinite are ignored.
  *
  * @author josephramsey
  */
@@ -42,28 +41,22 @@ public class MultiGeneralAndersonDarlingTest {
      * The column of data being analyzed.
      */
     private final List<List<Double>> data;
-
-    /**
-     * The A^2 statistic for <code>data</code>
-     */
-    private double aSquared;
-
-    /**
-     * The A^2 statistic adjusted for sample size.
-     */
-    private double aSquaredStar;
-
-    /**
-     * The interpolated p value for the adjusted a squared.
-     */
-    private double p;
-
     /**
      * The reference CDF.
      */
     private final List<RealDistribution> distributions;
-
-    //============================CONSTRUCTOR===========================//
+    /**
+     * The A^2 statistic for <code>data</code>
+     */
+    private double aSquared;
+    /**
+     * The A^2 statistic adjusted for sample size.
+     */
+    private double aSquaredStar;
+    /**
+     * The interpolated p value for the adjusted a squared.
+     */
+    private double p;
 
     /**
      * Constructs an Anderson-Darling test for the given column of data.
@@ -84,8 +77,6 @@ public class MultiGeneralAndersonDarlingTest {
         runTest();
     }
 
-    //============================PUBLIC METHODS=========================//
-
     /**
      * @return the A^2 statistic.
      */
@@ -94,16 +85,14 @@ public class MultiGeneralAndersonDarlingTest {
     }
 
     /**
-     * @return the A^2* statistic, which is the A^2 statistic adjusted
-     * heuristically for sample size.
+     * @return the A^2* statistic, which is the A^2 statistic adjusted heuristically for sample size.
      */
     public double getASquaredStar() {
         return this.aSquaredStar;
     }
 
     /**
-     * @return the p value of the A^2* statistic, which is interpolated using
-     * exponential functions.
+     * @return the p value of the A^2* statistic, which is interpolated using exponential functions.
      */
     public double getP() {
         return this.p;

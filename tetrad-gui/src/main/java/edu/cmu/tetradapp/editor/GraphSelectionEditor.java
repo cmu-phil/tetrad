@@ -132,9 +132,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         JButton executeButton = new JButton("Graph It!");
 
         executeButton.addActionListener(e -> {
-            Window owner = (Window) getTopLevelAncestor();
-
-            new WatchedProcess(owner) {
+            class MyWatchedProcess extends WatchedProcess {
                 public void watch() {
                     GraphWorkbench workbench = getWorkbench();
                     List<DisplayNode> displayNodes = workbench.getSelectedNodes();
@@ -149,7 +147,10 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
                     tabbedPaneGraphs(wrapper);
                 }
-            };
+            }
+            ;
+
+            new MyWatchedProcess();
         });
 
         workbenchScrollsPanel.validate();
@@ -541,8 +542,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     }
 
     /**
-     * Puts up a panel showing some graph properties, e.g., number of nodes and
-     * edges in the graph, etc.
+     * Puts up a panel showing some graph properties, e.g., number of nodes and edges in the graph, etc.
      *
      * @author josephramsey
      */
@@ -557,8 +557,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         private JTextArea textArea;
 
         /**
-         * Creates a new copy subsession action for the given LayoutEditable and
-         * clipboard.
+         * Creates a new copy subsession action for the given LayoutEditable and clipboard.
          */
         public GraphSelectionTextInputAction(JComponent component, GraphSelectionWrapper wrapper,
                                              JList<Node> sourceList, JList<Node> selectedList) {
@@ -570,8 +569,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         }
 
         /**
-         * Copies a parentally closed selection of session nodes in the
-         * frontmost session editor to the clipboard.
+         * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
          */
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
@@ -654,8 +652,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     }
 
     /**
-     * Allows one to drop/drap variables from a source list to a response area
-     * and a selected list. Also lets one specify an alpha level.
+     * Allows one to drop/drap variables from a source list to a response area and a selected list. Also lets one
+     * specify an alpha level.
      *
      * @author Tyler Gibson
      * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -1145,8 +1143,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         }
 
         /**
-         * A basic model for the list (needed an addAll feature, which the
-         * detault model didn't have)
+         * A basic model for the list (needed an addAll feature, which the detault model didn't have)
          */
         public class VariableListModel extends AbstractListModel {
 

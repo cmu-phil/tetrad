@@ -28,9 +28,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the functionality of SessionSupport. SessionSupport has to be able to
- * add and remove listeners, construct SessionEvents, and fire the SessionEvents
- * correctly.
+ * Tests the functionality of SessionSupport. SessionSupport has to be able to add and remove listeners, construct
+ * SessionEvents, and fire the SessionEvents correctly.
  *
  * @author josephramsey
  */
@@ -282,8 +281,7 @@ public class TestSessionSupport {
     }
 
     /**
-     * Set in the test adapater to help determine whether an event was
-     * received.
+     * Set in the test adapater to help determine whether an event was received.
      */
     public void setEvent1Received(boolean event1Received) {
         this.event1Received = event1Received;
@@ -297,8 +295,7 @@ public class TestSessionSupport {
     }
 
     /**
-     * Set in the test adapater to help determine whether an event was
-     * received.
+     * Set in the test adapater to help determine whether an event was received.
      */
     public void setEvent2Received(boolean event2Received) {
         this.event2Received = event2Received;

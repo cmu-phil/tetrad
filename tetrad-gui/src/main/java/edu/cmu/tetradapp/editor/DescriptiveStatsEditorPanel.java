@@ -37,6 +37,8 @@ import java.awt.event.ItemEvent;
  */
 class DescriptiveStatsEditorPanel extends JPanel {
 
+    boolean precomputeCovariances = true;
+
 
     /**
      * Combo box of all the variables.
@@ -70,7 +72,8 @@ class DescriptiveStatsEditorPanel extends JPanel {
         this.variableBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 Node node = (Node) e.getItem();
-                changeDescriptiveStats(DescriptiveStats.generateDescriptiveStats(DescriptiveStatsEditorPanel.this.dataSet, node));
+                changeDescriptiveStats(DescriptiveStats.generateDescriptiveStats(
+                        DescriptiveStatsEditorPanel.this.dataSet, node, precomputeCovariances));
             }
         });
 
@@ -80,17 +83,15 @@ class DescriptiveStatsEditorPanel extends JPanel {
 
     //========================== Private Methods ================================//
 
-    private void changeDescriptiveStats(String test) {
-        // fire event
-        this.firePropertyChange("histogramChange", null, test);
-    }
-
-
     private static void setPreferredAsMax(JComponent component) {
         component.setMaximumSize(component.getPreferredSize());
 
     }
 
+    private void changeDescriptiveStats(String test) {
+        // fire event
+        this.firePropertyChange("histogramChange", null, test);
+    }
 
     private Box buildEditArea() {
         DescriptiveStatsEditorPanel.setPreferredAsMax(this.variableBox);

@@ -25,8 +25,7 @@ import javax.swing.*;
 
 
 /**
- * Displays a workbench editing workbench area together with a toolbench for
- * editing tetrad-style graphs.
+ * Displays a workbench editing workbench area together with a toolbench for editing tetrad-style graphs.
  *
  * @author Aaron Powers
  * @author josephramsey

@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.workbench;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.util.CopyLayoutAction;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
@@ -32,8 +33,7 @@ import javax.swing.*;
 import java.util.ArrayList;
 
 /**
- * Builds a menu for layout operations on graphs. Interacts with classes that
- * implement the LayoutEditable interface.
+ * Builds a menu for layout operations on graphs. Interacts with classes that implement the LayoutEditable interface.
  *
  * @author josephramsey
  */
@@ -123,18 +123,6 @@ public class LayoutMenu extends JMenu {
             LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
         });
 
-        if (this.getLayoutEditable().getKnowledge() != null) {
-            JMenuItem knowledgeTiersLayout = new JMenuItem("Knowledge Tiers");
-            this.add(knowledgeTiersLayout);
-
-            knowledgeTiersLayout.addActionListener(e -> {
-                LayoutUtils.knowledgeLayout(LayoutMenu.this.getLayoutEditable());
-
-                // Copy the laid out graph to the clipboard.
-                LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
-            });
-        }
-
 
         JMenuItem fruchtermanReingold = new JMenuItem("Fruchterman-Reingold");
         this.add(fruchtermanReingold);
@@ -188,6 +176,29 @@ public class LayoutMenu extends JMenu {
 
             // Copy the laid out graph to the clipboard.
             getCopyLayoutAction().actionPerformed(null);
+        });
+
+        if (this.getLayoutEditable().getKnowledge() != null) {
+            JMenuItem knowledgeTiersLayout = new JMenuItem("Layout by Knowledge");
+            this.add(knowledgeTiersLayout);
+
+            knowledgeTiersLayout.addActionListener(e -> {
+                GraphSearchUtils.arrangeByKnowledgeTiers(getLayoutEditable().getGraph(), getLayoutEditable().getKnowledge());
+                getLayoutEditable().layoutByGraph(getLayoutEditable().getGraph());
+
+                // Copy the laid out graph to the clipboard.
+                LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
+            });
+        }
+
+        JMenuItem knowledgeLayout = new JMenuItem("Layout by Knowledge Indices");
+        this.add(knowledgeLayout);
+
+        knowledgeLayout.addActionListener(e -> {
+            LayoutUtils.knowledgeLayout(LayoutMenu.this.getLayoutEditable());
+
+            // Copy the laid out graph to the clipboard.
+            LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
         });
 
         addSeparator();

@@ -23,8 +23,6 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.score.SemBicScore;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 
@@ -38,14 +36,14 @@ import java.util.Map;
 
 /**
  * <p>This implements the degenerate Gaussian BIC score for FGES. The degenerate Gaussian score
- * replaces each discrete variable in the data with a list of 0/1 continuous indicator columns for
- * each of the categories but one (the last one implied). This data, now all continuous, is given
- * to the SEM BIC score and methods used to help determine conditional independence for the
- * mixed continuous/discrete case from this information. The references is as follows:</p>
+ * replaces each discrete variable in the data with a list of 0/1 continuous indicator columns for each of the
+ * categories but one (the last one implied). This data, now all continuous, is given to the SEM BIC score and methods
+ * used to help determine conditional independence for the mixed continuous/discrete case from this information. The
+ * references is as follows:</p>
  *
  * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2019, July). Learning high-dimensional
- * directed acyclic graphs with mixed data-types. In The 2019 ACM SIGKDD Workshop on
- * Causal Discovery (pp. 4-21). PMLR.</p>
+ * directed acyclic graphs with mixed data-types. In The 2019 ACM SIGKDD Workshop on Causal Discovery (pp. 4-21).
+ * PMLR.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>
@@ -56,15 +54,12 @@ public class DegenerateGaussianScore implements Score {
     // The mixed variables of the original dataset.
     private final List<Node> variables;
 
-    // The structure prior.
-    private double structurePrior;
-
     // The embedding map.
     private final Map<Integer, List<Integer>> embedding;
 
     private final SemBicScore bic;
 
-    public DegenerateGaussianScore(DataSet dataSet) {
+    public DegenerateGaussianScore(DataSet dataSet, boolean precomputeCovariances) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -136,13 +131,13 @@ public class DegenerateGaussianScore implements Score {
         }
 
         RealMatrix D = new BlockRealMatrix(B_);
-        this.bic = new SemBicScore(new BoxDataSet(new DoubleDataBox(D.getData()), A));
+        this.bic = new SemBicScore(new BoxDataSet(new DoubleDataBox(D.getData()), A), precomputeCovariances);
         this.bic.setStructurePrior(0);
     }
 
     /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model.
-     *s
+     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model. s
+     *
      * @param i       The child indes.
      * @param parents The indices of the parents.
      */
@@ -163,7 +158,6 @@ public class DegenerateGaussianScore implements Score {
         for (Integer i_ : A) {
             score += this.bic.localScore(i_, parents_);
         }
-
 
         return score;
     }
@@ -193,11 +187,6 @@ public class DegenerateGaussianScore implements Score {
     }
 
     @Override
-    public boolean determines(List<Node> z, Node y) {
-        return false;
-    }
-
-    @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
         return "Degenerate Gaussian Score Penalty " + nf.format(this.bic.getPenaltyDiscount());
@@ -209,14 +198,5 @@ public class DegenerateGaussianScore implements Score {
 
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.bic.setPenaltyDiscount(penaltyDiscount);
-    }
-
-    public double getStructurePrior() {
-        return structurePrior;
-    }
-
-    public void setStructurePrior(double structurePrior) {
-        System.out.println("STRUCTURE PRIOR IS NOT IMPLEMENTED!");
-        this.structurePrior = structurePrior;
     }
 }

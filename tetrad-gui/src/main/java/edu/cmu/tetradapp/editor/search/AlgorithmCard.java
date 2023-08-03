@@ -272,10 +272,9 @@ public class AlgorithmCard extends JPanel {
     }
 
     /**
-     * This restore mechanism won't restore user selections other than selected
-     * algo name when user changes the upstream (after clicking the "Execute"
-     * button), because a new algo algorithmRunner is created and we lose the
-     * stored models from the old algorithmRunner - Zhou
+     * This restore mechanism won't restore user selections other than selected algo name when user changes the upstream
+     * (after clicking the "Execute" button), because a new algo algorithmRunner is created and we lose the stored
+     * models from the old algorithmRunner - Zhou
      * <p>
      * //     * @param models
      */
@@ -573,6 +572,7 @@ public class AlgorithmCard extends JPanel {
                 }
             }
             this.indTestComboBox.setSelectedItem(testModel);
+            this.indTestComboBox.getSelectedIndex();
         } else {
             this.indTestComboBox.setEnabled(false);
         }
@@ -829,8 +829,7 @@ public class AlgorithmCard extends JPanel {
         }
 
         /**
-         * Create new radio buttons and add them to both the radio button list
-         * and radio button group.
+         * Create new radio buttons and add them to both the radio button list and radio button group.
          */
         private void populateAlgoTypeOptions() {
             JRadioButton showAllRadBtn = new JRadioButton("show all");

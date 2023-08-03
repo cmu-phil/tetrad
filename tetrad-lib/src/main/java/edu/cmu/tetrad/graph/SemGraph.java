@@ -27,26 +27,20 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Represents the graphical structure of a structural equation model. The
- * linear structure of the structural equation model is constructed by adding
- * non-error nodes to the graph and connecting them with directed edges. As this
- * is done, the graph automatically maintains the invariant that endogenous
- * non-error nodes are associated with explicit error nodes in the graph and
- * exogenous non-error nodes are not. An associated error node for a node N is
- * an error node that has N as its only child, E--&gt;N. Error nodes for exogenous
- * nodes are always implicit in the graph. So as nodes become endogenous, error
- * nodes are added for them, and as they become exogenous, error nodes are
- * removed for them. Correlated errors are represented using directed edges
- * among exogenous nodes. Directed edges may therefore be added among any
- * exogenous nodes in the graph, though the easiest way to add (or remove)
- * exogenous nodes is to determine which non-exogenous nodes N1, N2 they are
- * representing correlated errors for and then to use this formulation:
+ * Represents the graphical structure of a structural equation model. The linear structure of the structural equation
+ * model is constructed by adding non-error nodes to the graph and connecting them with directed edges. As this is done,
+ * the graph automatically maintains the invariant that endogenous non-error nodes are associated with explicit error
+ * nodes in the graph and exogenous non-error nodes are not. An associated error node for a node N is an error node that
+ * has N as its only child, E--&gt;N. Error nodes for exogenous nodes are always implicit in the graph. So as nodes
+ * become endogenous, error nodes are added for them, and as they become exogenous, error nodes are removed for them.
+ * Correlated errors are represented using directed edges among exogenous nodes. Directed edges may therefore be added
+ * among any exogenous nodes in the graph, though the easiest way to add (or remove) exogenous nodes is to determine
+ * which non-exogenous nodes N1, N2 they are representing correlated errors for and then to use this formulation:
  * <pre>
  *     addBidirectedEdge(getExogenous(node1), getExogenous(node2));
  *     removeEdge(getExogenous(node1), getExogenous(node2));
  * </pre>
- * This avoids the problem of not knowing whether the exogenous node for a
- * node is itself or its associated error node.
+ * This avoids the problem of not knowing whether the exogenous node for a node is itself or its associated error node.
  *
  * @author josephramsey
  */
@@ -54,36 +48,29 @@ public final class SemGraph implements Graph {
     static final long serialVersionUID = 23L;
 
     /**
-     * The underlying graph that stores all the information. This needs to be an
-     * EdgeListGraph or something at least that can allow nodes to quickly be
-     * added or removed.
+     * The underlying graph that stores all the information. This needs to be an EdgeListGraph or something at least
+     * that can allow nodes to quickly be added or removed.
      *
      * @serial
      */
     private final Graph graph;
-
+    private final Map<String, Object> attributes = new HashMap<>();
+    private final Paths paths;
     /**
-     * A map from nodes to their error nodes, if they exist. This includes
-     * variables nodes to their error nodes and error nodes to themselves. Added
-     * because looking them up in the graph was not scalable.
+     * A map from nodes to their error nodes, if they exist. This includes variables nodes to their error nodes and
+     * error nodes to themselves. Added because looking them up in the graph was not scalable.
      *
      * @serial
      */
     private Map<Node, Node> errorNodes = new HashMap<>();
-
     /**
      * True if error terms for exogenous terms should be shown.
      *
      * @serial
      */
     private boolean showErrorTerms;
-
     private boolean pag;
     private boolean cpdag;
-
-    private final Map<String, Object> attributes = new HashMap<>();
-    private final Paths paths;
-
     private Set<Triple> underLineTriples = new HashSet<>();
     private Set<Triple> dottedUnderLineTriples = new HashSet<>();
     private Set<Triple> ambiguousTriples = new HashSet<>();
@@ -196,8 +183,15 @@ public final class SemGraph implements Graph {
     //============================PUBLIC METHODS==========================//
 
     /**
-     * @return the error node associated with the given node, or null if the
-     * node has no associated error node.
+     * @return true iff either node associated with edge is an error term.
+     */
+    public static boolean isErrorEdge(Edge edge) {
+        return (edge.getNode1().getNodeType() == NodeType.ERROR ||
+                (edge.getNode2().getNodeType() == NodeType.ERROR));
+    }
+
+    /**
+     * @return the error node associated with the given node, or null if the node has no associated error node.
      */
     public Node getErrorNode(Node node) {
         return this.errorNodes.get(node);
@@ -237,16 +231,8 @@ public final class SemGraph implements Graph {
     }
 
     /**
-     * @return true iff either node associated with edge is an error term.
-     */
-    public static boolean isErrorEdge(Edge edge) {
-        return (edge.getNode1().getNodeType() == NodeType.ERROR ||
-                (edge.getNode2().getNodeType() == NodeType.ERROR));
-    }
-
-    /**
-     * @return the variable node for this node--that is, the associated node, if
-     * this is an error node, or the node itself, if it is not.
+     * @return the variable node for this node--that is, the associated node, if this is an error node, or the node
+     * itself, if it is not.
      */
     public Node getVarNode(Node node) {
         boolean isError = node.getNodeType() == NodeType.ERROR;
@@ -313,6 +299,11 @@ public final class SemGraph implements Graph {
         return getGraph().getNodes();
     }
 
+    @Override
+    public void setNodes(List<Node> nodes) {
+        this.graph.setNodes(nodes);
+    }
+
     public boolean removeEdge(Node node1, Node node2) {
         List<Edge> edges = getEdges(node1, node2);
 
@@ -348,7 +339,6 @@ public final class SemGraph implements Graph {
     public Graph subgraph(List<Node> nodes) {
         return getGraph().subgraph(nodes);
     }
-
 
     public boolean addDirectedEdge(Node nodeA, Node nodeB) {
         return addEdge(Edges.directedEdge(nodeA, nodeB));
@@ -592,7 +582,6 @@ public final class SemGraph implements Graph {
         return getGraph().toString();
     }
 
-
     public boolean isShowErrorTerms() {
         return this.showErrorTerms;
     }
@@ -626,13 +615,8 @@ public final class SemGraph implements Graph {
     }
 
     @Override
-    public List<Node> getSepset(Node n1, Node n2) {
+    public Set<Node> getSepset(Node n1, Node n2) {
         return this.graph.getSepset(n1, n2);
-    }
-
-    @Override
-    public void setNodes(List<Node> nodes) {
-        this.graph.setNodes(nodes);
     }
 
     //========================PRIVATE METHODS===========================//
@@ -708,11 +692,9 @@ public final class SemGraph implements Graph {
     }
 
     /**
-     * If the specified node is exogenous and has an error node, moves any edges
-     * attached to its error node to the node itself and removes the error node.
-     * If the specified node is endogenous and has no error node, adds an error
-     * node and moves any bidirected edges attached to the node to its error
-     * node.
+     * If the specified node is exogenous and has an error node, moves any edges attached to its error node to the node
+     * itself and removes the error node. If the specified node is endogenous and has no error node, adds an error node
+     * and moves any bidirected edges attached to the node to its error node.
      */
     private void adjustErrorForNode(Node node) {
         Node errorNode = getErrorNode(node);
@@ -737,14 +719,12 @@ public final class SemGraph implements Graph {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.)
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.)
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -36,9 +36,8 @@ import java.util.*;
 /**
  * Parametric model for Structural Equation Models.
  * <p>
- * Note: Could not
- * get a copy constructor to work properly, so to copy SemPm objects, use object
- * serialization--e.g. java.rmu.MarshalledObject.
+ * Note: Could not get a copy constructor to work properly, so to copy SemPm objects, use object serialization--e.g.
+ * java.rmu.MarshalledObject.
  *
  * @author Donald Crimbchin
  * @author josephramsey
@@ -83,8 +82,7 @@ public final class SemPm implements Pm, TetradSerializable {
             new HashMap<>();
 
     /**
-     * The index of the most recent "T" parameter. (These are variance and
-     * covariance terms.)
+     * The index of the most recent "T" parameter. (These are variance and covariance terms.)
      *
      * @serial Range &gt;= 0.
      */
@@ -98,18 +96,15 @@ public final class SemPm implements Pm, TetradSerializable {
     private int mIndex;
 
     /**
-     * The index of the most recent "B" parameter. (These are edge
-     * coefficients.)
+     * The index of the most recent "B" parameter. (These are edge coefficients.)
      *
      * @serial Range &gt;= 0.
      */
     private int bIndex;
 
-    //===========================CONSTRUCTORS==========================//
-
     /**
-     * Constructs a BayesPm from the given Graph, which must be convertible
-     * first into a ProtoSemGraph and then into a SemGraph.
+     * Constructs a BayesPm from the given Graph, which must be convertible first into a ProtoSemGraph and then into a
+     * SemGraph.
      */
     public SemPm(Graph graph) {
         this(new SemGraph(graph));
@@ -199,8 +194,6 @@ public final class SemPm implements Pm, TetradSerializable {
         }
     }
 
-    //============================PUBLIC METHODS========================//
-
     /**
      * @return the structural model graph this SEM PM is using.
      */
@@ -209,16 +202,14 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * @return a list of all the freeParameters, including variance, covariance,
-     * coefficient, and mean freeParameters.
+     * @return a list of all the freeParameters, including variance, covariance, coefficient, and mean freeParameters.
      */
     public List<Parameter> getParameters() {
         return this.parameters;
     }
 
     /**
-     * @return the list of variable nodes--that is, node that are not error
-     * nodes.
+     * @return the list of variable nodes--that is, node that are not error nodes.
      */
     public List<Node> getVariableNodes() {
         return this.variableNodes;
@@ -255,8 +246,7 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * @return the first parameter encountered with the given name, or null if
-     * there is no such parameter.
+     * @return the first parameter encountered with the given name, or null if there is no such parameter.
      */
     public Parameter getParameter(String name) {
         for (Parameter parameter1 : getParameters()) {
@@ -289,13 +279,12 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Return the parameter for the variance of the error term for the given
-     * node, which is the variance of the node if the node is an error term,
-     * and the variance of the node's error term if not.
+     * Return the parameter for the variance of the error term for the given node, which is the variance of the node if
+     * the node is an error term, and the variance of the node's error term if not.
      */
     public Parameter getVarianceParameter(Node node) {
         if (node.getNodeType() == NodeType.ERROR) {
-            node = getGraph().getChildren(node).get(0);
+            node = getGraph().getChildren(node).iterator().next();
         }
 
         for (Parameter parameter : this.parameters) {
@@ -314,13 +303,13 @@ public final class SemPm implements Pm, TetradSerializable {
         if (nodeA.getNodeType() == NodeType.ERROR) {
             List<Node> children = getGraph().getChildren(nodeA);
             if (children == null || children.isEmpty()) return null;
-            nodeA = children.get(0);
+            nodeA = children.iterator().next();
         }
 
         if (nodeB.getNodeType() == NodeType.ERROR) {
             List<Node> children = getGraph().getChildren(nodeB);
             if (children == null || children.isEmpty()) return null;
-            nodeB = children.get(0);
+            nodeB = children.iterator().next();
         }
 
         for (Parameter parameter : this.parameters) {
@@ -363,8 +352,8 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * @return the list of measured variable names in the order in which they
-     * appear in the list of nodes. (This order is fixed.)
+     * @return the list of measured variable names in the order in which they appear in the list of nodes. (This order
+     * is fixed.)
      */
     public String[] getMeasuredVarNames() {
         List<Node> semPmVars = getVariableNodes();
@@ -466,8 +455,6 @@ public final class SemPm implements Pm, TetradSerializable {
 
         return buf.toString();
     }
-
-    //============================PRIVATE METHODS======================//
 
     private void initializeNodes(SemGraph graph) {
         this.nodes = Collections.unmodifiableList(graph.getNodes());
@@ -577,38 +564,33 @@ public final class SemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * @return a unique (for this PM) parameter name beginning with the Greek
-     * letter theta.
+     * @return a unique (for this PM) parameter name beginning with the Greek letter theta.
      */
     private String newTName() {
         return "T" + (++this.tIndex);
     }
 
     /**
-     * @return a unique (for this PM) parameter name beginning with the Greek
-     * letter mu.
+     * @return a unique (for this PM) parameter name beginning with the Greek letter mu.
      */
     private String newMName() {
         return "M" + (++this.mIndex);
     }
 
     /**
-     * @return a unique (for this PM) parameter name beginning with the letter
-     * "B".
+     * @return a unique (for this PM) parameter name beginning with the letter "B".
      */
     private String newBName() {
         return "B" + (++this.bIndex);
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

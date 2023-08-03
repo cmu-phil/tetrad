@@ -28,13 +28,12 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 
 /**
- * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial
- * steps of finding adjacencies and unshielded colliders.
+ * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial steps of finding adjacencies and
+ * unshielded colliders.
  * <p>
  * GFCI reference is this:
  * <p>
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016.
+ * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
  *
  * @author josephramsey
  */
@@ -79,10 +78,12 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
 
             BFci search = new BFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
+            search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             search.setKnowledge(knowledge);
@@ -98,7 +99,7 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();
-            this.bootstrapGraphs = search.getGraphs();
+            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             return graph;
         }
     }
@@ -123,10 +124,12 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
+        params.add(Params.USE_BES);
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
         params.add(Params.DEPTH);
+        params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 

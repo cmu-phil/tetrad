@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -44,8 +44,7 @@ import java.util.*;
  * discovery. Aaai Press.</p>
  *
  * <p>The graph takes continuous data from a cyclic model as input and returns a cyclic
- * PAG graphs, with various types of underlining, that represents a Markov equivalence of
- * the true DAG.</p>
+ * PAG graphs, with various types of underlining, that represents a Markov equivalence of the true DAG.</p>
  *
  * <p>This class is not configured to respect knowledge of forbidden and required
  * edges.</p>
@@ -70,16 +69,14 @@ public final class Ccd implements IGraphSearch {
         this.nodes = test.getVariables();
     }
 
-    //======================================== PUBLIC METHODS ====================================//
 
     /**
-     * The search method assumes that the IndependenceTest provided to the constructor is a
-     * conditional independence oracle for the SEM (or Bayes network) which describes the
-     * causal structure of the population. The method returns a PAG instantiated as a Tetrad
-     * GaSearchGraph which represents the equivalence class of digraphs which are d-separation
-     * equivalent to the digraph of the underlying model (SEM or BN). Although they are not
-     * returned by the search method it also computes two lists of triples which, respectively
-     * store the underlines and dotted underlines of the PAG.
+     * The search method assumes that the IndependenceTest provided to the constructor is a conditional independence
+     * oracle for the SEM (or Bayes network) which describes the causal structure of the population. The method returns
+     * a PAG instantiated as a Tetrad GaSearchGraph which represents the equivalence class of digraphs which are
+     * m-separation equivalent to the digraph of the underlying model (SEM or BN). Although they are not returned by the
+     * search method, it also computes two lists of triples which, respectively, store the underlines and dotted
+     * underlines of the PAG.
      *
      * @return The CCD cyclic PAG for the data.
      */
@@ -122,7 +119,6 @@ public final class Ccd implements IGraphSearch {
         this.applyR1 = applyR1;
     }
 
-    //======================================== PRIVATE METHODS ====================================//
 
     private void orientAwayFromArrow(Graph graph) {
         for (Edge edge : graph.getEdges()) {
@@ -171,7 +167,7 @@ public final class Ccd implements IGraphSearch {
     }
 
     private void doNodeCollider(Graph graph, Map<Triple, Double> colliders, Map<Triple, Double> noncolliders, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+        List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
         if (adjacentNodes.size() < 2) {
             return;
@@ -189,17 +185,17 @@ public final class Ccd implements IGraphSearch {
                 continue;
             }
 
-            List<Node> adja = graph.getAdjacentNodes(a);
+            List<Node> adja = new ArrayList<>(graph.getAdjacentNodes(a));
             double score = Double.POSITIVE_INFINITY;
-            List<Node> S = null;
+            Set<Node> S = null;
 
             SublistGenerator cg2 = new SublistGenerator(adja.size(), -1);
             int[] comb2;
 
             while ((comb2 = cg2.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb2, adja);
-                this.independenceTest.checkIndependence(a, c, s);
-                double _score = this.independenceTest.getScore();
+                Set<Node> s = GraphUtils.asSet(comb2, adja);
+                IndependenceResult result = this.independenceTest.checkIndependence(a, c, s);
+                double _score = result.getScore();
 
                 if (_score < score) {
                     score = _score;
@@ -207,15 +203,15 @@ public final class Ccd implements IGraphSearch {
                 }
             }
 
-            List<Node> adjc = graph.getAdjacentNodes(c);
+            List<Node> adjc = new ArrayList<>(graph.getAdjacentNodes(c));
 
             SublistGenerator cg3 = new SublistGenerator(adjc.size(), -1);
             int[] comb3;
 
             while ((comb3 = cg3.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb3, adjc);
-                this.independenceTest.checkIndependence(c, a, s);
-                double _score = this.independenceTest.getScore();
+                Set<Node> s = GraphUtils.asSet(comb3, adjc);
+                IndependenceResult result = this.independenceTest.checkIndependence(c, a, s);
+                double _score = result.getScore();
 
                 if (_score < score) {
                     score = _score;
@@ -272,7 +268,7 @@ public final class Ccd implements IGraphSearch {
                 }
 
                 //...X is not in sepset<A, Y>...
-                List<Node> sepset = sepsets.getSepset(a, y);
+                Set<Node> sepset = sepsets.getSepset(a, y);
 
                 if (sepset == null) {
                     continue;
@@ -304,7 +300,7 @@ public final class Ccd implements IGraphSearch {
 
     private void doNodeStepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets,
                              Map<Node, List<Node>> local, Node b) {
-        List<Node> adj = psi.getAdjacentNodes(b);
+        List<Node> adj = new ArrayList<>(psi.getAdjacentNodes(b));
 
         if (adj.size() < 2) {
             return;
@@ -320,7 +316,7 @@ public final class Ccd implements IGraphSearch {
 
             if (!psi.isDefCollider(a, b, c)) continue;
 
-            List<Node> S = sepsets.getSepset(a, c);
+            Set<Node> S = sepsets.getSepset(a, c);
             if (S == null) continue;
             ArrayList<Node> TT = new ArrayList<>(local.get(a));
             TT.removeAll(S);
@@ -336,7 +332,7 @@ public final class Ccd implements IGraphSearch {
                 B.addAll(S);
                 B.add(b);
 
-                if (sepsets.isIndependent(a, c, new ArrayList<>(B))) {
+                if (sepsets.isIndependent(a, c, new HashSet<>(B))) {
                     psi.addDottedUnderlineTriple(a, b, c);
                     supSepsets.put(new Triple(a, b, c), B);
                     break;
@@ -436,7 +432,7 @@ public final class Ccd implements IGraphSearch {
                 Set<Node> supSepUnionD = new HashSet<>();
                 supSepUnionD.add(d);
                 supSepUnionD.addAll(supSepsets.get(triple));
-                List<Node> listSupSepUnionD = new ArrayList<>(supSepUnionD);
+                Set<Node> listSupSepUnionD = new HashSet<>(supSepUnionD);
 
                 //If A and C are a pair of vertices d-connected given
                 //SupSepset<A,B,C> union {D} then orient Bo-oD or B-oD

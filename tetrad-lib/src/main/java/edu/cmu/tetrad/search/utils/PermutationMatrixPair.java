@@ -28,9 +28,8 @@ import edu.cmu.tetrad.util.Matrix;
 import java.util.Arrays;
 
 /**
- * Stores a matrix together with a row and column permutation. if either
- * of these is null in the constructor, the identity permtuation will be used.
- * Returns the matrix permuted by these row and column permutations.
+ * Stores a matrix together with a row and column permutation. if either of these is null in the constructor, the
+ * identity permtuation will be used. Returns the matrix permuted by these row and column permutations.
  *
  * @author josephramsey
  * @see IcaLingam
@@ -42,14 +41,11 @@ public class PermutationMatrixPair {
     private final Matrix M;
 
     /**
-     * Constructs with a given matrix M and a row and column permutation (which
-     * may be null).
+     * Constructs with a given matrix M and a row and column permutation (which may be null).
      *
      * @param M       The matrix to be permuted.
-     * @param rowPerm The row permutation for M; if null the identity permutation
-     *                ([0 1 2...#rows]) will be used.
-     * @param colPerm The row permutation for M; if null the identity permutation
-     *                ([0 1 2...#cols]) will be used.
+     * @param rowPerm The row permutation for M; if null the identity permutation ([0 1 2...#rows]) will be used.
+     * @param colPerm The row permutation for M; if null the identity permutation ([0 1 2...#cols]) will be used.
      */
     public PermutationMatrixPair(Matrix M, int[] rowPerm, int[] colPerm) {
         if (rowPerm == null) {
@@ -70,8 +66,7 @@ public class PermutationMatrixPair {
     /**
      * Returns W, permuted rowwise by the permutation passed in through the constructor.
      *
-     * @return The matrix, permuted columnwise and rowwise, by the specified column and
-     * row permutations.
+     * @return The matrix, permuted columnwise and rowwise, by the specified column and row permutations.
      */
     public Matrix getPermutedMatrix() {
         return M.getSelection(rowPerm, colPerm);

@@ -42,14 +42,11 @@ public interface OutputGraph {
     int[] getParents(int index);
 
     /**
-     * Returns the lags of the parent variables for the given variable, provided
-     * parents have associated time lags; otherwise, returns null. A lag is a
-     * number &gt;= 0, where 0 indicates the getModel time step and integers &gt; 0
-     * indicate that many time steps back into the past. If getLags(index) is
-     * non-null, the length of getLags(index) should be the same as the length
-     * of getParents(index), and getLags(i) should be the lag for the
-     * corresponding position in getParents(i), for i = 0,...,
-     * getParents(i).length.
+     * Returns the lags of the parent variables for the given variable, provided parents have associated time lags;
+     * otherwise, returns null. A lag is a number &gt;= 0, where 0 indicates the getModel time step and integers &gt; 0
+     * indicate that many time steps back into the past. If getLags(index) is non-null, the length of getLags(index)
+     * should be the same as the length of getParents(index), and getLags(i) should be the lag for the corresponding
+     * position in getParents(i), for i = 0,..., getParents(i).length.
      *
      * @param index the lags of the variable whose parents are requested.
      */

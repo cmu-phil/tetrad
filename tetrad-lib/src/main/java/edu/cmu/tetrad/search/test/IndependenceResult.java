@@ -7,7 +7,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
- * <p></p>Stores a single conditional independence result, e.g., whether
+ * <p>Stores a single conditional independence result, e.g., whether
  * X _||_ Y | Z1,..,Zn holds or does not, and the p-value of the test.</p>
  *
  * @author josephramsey
@@ -18,21 +18,21 @@ public final class IndependenceResult implements TetradSerializable {
     private final IndependenceFact fact;
     private final boolean indep;
     private final double pValue;
+    private final double score;
 
     /**
-     * Construtor.
+     * Constructor.
      *
      * @param fact   The fact itself.
-     * @param indep  The conditional independence result, true if the fact
-     *               holds, false if not.
-     * @param pValue The p-values of the independence result, under the null
-     *               (independence) hypothesis.
+     * @param indep  The conditional independence result, true if the fact holds, false if not.
+     * @param pValue The p-values of the independence result, under the null (independence) hypothesis.
      * @see IndependenceFact
      */
-    public IndependenceResult(IndependenceFact fact, boolean indep, double pValue) {
+    public IndependenceResult(IndependenceFact fact, boolean indep, double pValue, double score) {
         this.fact = fact;
         this.indep = indep;
         this.pValue = pValue;
+        this.score = score;
     }
 
     /**
@@ -43,7 +43,7 @@ public final class IndependenceResult implements TetradSerializable {
     public static IndependenceResult serializableInstance() {
         return new IndependenceResult(new IndependenceFact(
                 new ContinuousVariable("X"), new ContinuousVariable("Y")),
-                true, 0.0001);
+                true, 0.0001, 1.0);
     }
 
     /**
@@ -57,8 +57,7 @@ public final class IndependenceResult implements TetradSerializable {
     }
 
     /**
-     * Returns whether the fact holds--i.e., if the judgment is for
-     * independence.
+     * Returns whether the fact holds--i.e., if the judgment is for independence.
      *
      * @return True if the fact holds, false if ot.
      * @see #isDependent()
@@ -68,8 +67,8 @@ public final class IndependenceResult implements TetradSerializable {
     }
 
     /**
-     * Returns whether the fact fails to hold--i.e., if the judgment is for
-     * dependence. This is the negation of isIndependent.
+     * Returns whether the fact fails to hold--i.e., if the judgment is for dependence. This is the negation of
+     * isIndependent.
      *
      * @return True if the fact does not, false if it does.
      * @see #isIndependent()
@@ -79,12 +78,11 @@ public final class IndependenceResult implements TetradSerializable {
     }
 
     /**
-     * Returns the p-value of the fact under the null hypothesis of independence.
-     * A special case obtains is this fact is being used to store a d-separation
-     * fact, in which case the "p-value" is deemed to be 0 if the fact holds and
-     * 1 if it does not.
+     * Returns the p-value of the fact under the null hypothesis of independence. A special case obtains if this fact is
+     * being used to store a d-separation fact, in which case the "p-value" is deemed to be 0 if the fact holds and 1 if
+     * it does not.
      *
-     * @return The p-value of result under the null hypothesis.
+     * @return The p-value of the result under the null hypothesis.
      */
     public double getPValue() {
         return this.pValue;
@@ -98,5 +96,9 @@ public final class IndependenceResult implements TetradSerializable {
     public String toString() {
         return "Result: " + getFact() + "\t" + isIndependent() + "\t" +
                 NumberFormatUtil.getInstance().getNumberFormat().format(getPValue());
+    }
+
+    public double getScore() {
+        return score;
     }
 }

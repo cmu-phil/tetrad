@@ -26,8 +26,8 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * Tests the IndexedLagGraph class by constructing graphs with randomly chosen
- * parameters and seeing if they have the required properties.
+ * Tests the IndexedLagGraph class by constructing graphs with randomly chosen parameters and seeing if they have the
+ * required properties.
  *
  * @author josephramsey
  */
@@ -38,6 +38,17 @@ public class TestIndexedLagGraph extends TestCase {
      */
     public TestIndexedLagGraph(String name) {
         super(name);
+    }
+
+    /**
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
+     */
+    public static Test suite() {
+
+        // Edit the name of the class in the parens to match the name
+        // of this class.
+        return new TestSuite(TestIndexedLagGraph.class);
     }
 
     /**
@@ -72,17 +83,6 @@ public class TestIndexedLagGraph extends TestCase {
         assertEquals(2, indexedLagGraph.getParent(1, 0).getLag());
         assertEquals(3, indexedLagGraph.getParent(2, 0).getLag());
         assertEquals(4, indexedLagGraph.getParent(2, 1).getLag());
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestIndexedLagGraph.class);
     }
 }
 

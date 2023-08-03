@@ -1,28 +1,17 @@
 package edu.cmu.tetrad.util;
 
-import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.EdgeTypeProbability;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+
+import java.util.*;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 /**
  * A utility for computing frequency probabilities.
- *
+ * <p>
  * Jan 29, 2023 3:28:26 PM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
@@ -89,8 +78,8 @@ public final class GraphSampling {
     }
 
     /**
-     * Combine all the edges from the list of graphs onto one graph with the
-     * edge type that has the highest frequency probability.
+     * Combine all the edges from the list of graphs onto one graph with the edge type that has the highest frequency
+     * probability.
      *
      * @param graphs list of graphs
      * @return graph containing edges with edge type of the highest probability
@@ -202,6 +191,13 @@ public final class GraphSampling {
                     break;
                 case Majority:
                     if (noEdgeProb > maxEdgeProb || maxEdgeProb < .5) {
+                        highestEdgeTypeProb = null;
+                    }
+                    break;
+                case Threshold:
+                    double threshold = Preferences.userRoot().getDouble("edge.ensemble.threshold", .5);
+
+                    if (noEdgeProb > maxEdgeProb || maxEdgeProb < threshold) {
                         highestEdgeTypeProb = null;
                     }
                     break;

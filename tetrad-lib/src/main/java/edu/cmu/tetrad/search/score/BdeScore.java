@@ -41,7 +41,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @see BdeuScore
- * */
+ */
 public class BdeScore implements DiscreteScore {
     private final DataSet dataSet;
 
@@ -63,8 +63,8 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * Returns the score for the given parent given its parents, where these are
-     * specified as column indices into the dataset.
+     * Returns the score for the given parent given its parents, where these are specified as column indices into the
+     * dataset.
      *
      * @param i       The index of the variable.
      * @param parents The indices of the parents of the variables.
@@ -224,8 +224,8 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * Returns a judgment of whether the given bump in score allows one to conclude
-     * that the edge is an "effect edge" for FGES.
+     * Returns a judgment of whether the given bump in score allows one to conclude that the edge is an "effect edge"
+     * for FGES.
      *
      * @param bump The bump.
      * @return True iff so.
@@ -244,21 +244,6 @@ public class BdeScore implements DiscreteScore {
     @Override
     public int getMaxDegree() {
         return 1000;
-    }
-
-    /**
-     * A judgment of whether a node given its parents is determined is not available for this
-     * score.
-     *
-     * @param z The parents.
-     * @param y The node.
-     * @return The judgment
-     * @throws UnsupportedOperationException Since this method is not implemented for this score.
-     */
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        throw new UnsupportedOperationException("The BDe score does not make judgments of " +
-                "determinacy of a node given its parents.");
     }
 
     /**

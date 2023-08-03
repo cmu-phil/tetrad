@@ -30,7 +30,9 @@ import edu.cmu.tetrad.data.DataSet;
  */
 public interface DiscreteScore extends Score {
     void setStructurePrior(double structurePrior);
+
     void setSamplePrior(double samplePrior);
+
     DataSet getDataSet();
 }
 

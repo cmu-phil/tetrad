@@ -27,9 +27,9 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.GFci;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 
@@ -49,6 +49,12 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
  * @author josephramsey.
  */
 public class PerformanceTestsDan {
+    public static void main(String... args) {
+        System.out.println("Start ");
+
+        new PerformanceTestsDan().testIdaOutputForDan();
+    }
+
     private void testIdaOutputForDan() {
         final int numRuns = 100;
 
@@ -111,7 +117,7 @@ public class PerformanceTestsDan {
             out1.println("Alpha for FFCI = " + alphaGFci);
             out1.println("Penalty discount = " + penaltyDiscount);
             out1.println("Depth = " + depth);
-            out1.println("Maximum reachable path length for dsep search and discriminating undirectedPaths = " + maxPathLength);
+            out1.println("Maximum reachable path length for msep search and discriminating undirectedPaths = " + maxPathLength);
 
             List<Node> vars = new ArrayList<>();
             for (int i = 0; i < numVars; i++) vars.add(new GraphNode("X" + (i + 1)));
@@ -180,7 +186,7 @@ public class PerformanceTestsDan {
             gFci.setVerbose(false);
             gFci.setMaxDegree(depth);
             gFci.setMaxPathLength(maxPathLength);
-//            gFci.setPossibleDsepSearchDone(true);
+//            gFci.setPossibleMsepSearchDone(true);
             gFci.setCompleteRuleSetUsed(true);
 
             Graph pag = gFci.search();
@@ -248,13 +254,6 @@ public class PerformanceTestsDan {
         }
 
         out.println();
-    }
-
-    public static void main(String... args) {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
-        System.out.println("Start ");
-
-        new PerformanceTestsDan().testIdaOutputForDan();
     }
 }
 

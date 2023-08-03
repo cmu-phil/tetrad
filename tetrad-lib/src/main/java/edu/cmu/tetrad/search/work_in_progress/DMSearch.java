@@ -5,9 +5,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.File;
@@ -45,6 +45,8 @@ public class DMSearch {
     //If not subseting, should be set to the entire input set.
     private int[] trueInputs;
     private DataSet data;
+    private CovarianceMatrix cov;
+    private LatentStructure dmStructure;
 
     public void setMinDiscount(int minDiscount) {
         this.minDiscount = minDiscount;
@@ -54,48 +56,45 @@ public class DMSearch {
         return (this.minDiscount);
     }
 
-    public void setGesDepth(int gesDepth) {
-        this.gesDepth = gesDepth;
-    }
-
     public int getGesDepth() {
         return (gesDepth);
     }
 
-    public void setTrueInputs(int[] trueInputs) {
-        this.trueInputs = trueInputs;
-    }
-
-    public void setInputs(int[] inputs) {
-        this.inputs = inputs;
-    }
-
-    public void setOutputs(int[] outputs) {
-        this.outputs = outputs;
-    }
-
-    public void setData(DataSet data) {
-        this.data = data;
+    public void setGesDepth(int gesDepth) {
+        this.gesDepth = gesDepth;
     }
 
     public int[] getTrueInputs() {
         return (this.trueInputs);
     }
 
+    public void setTrueInputs(int[] trueInputs) {
+        this.trueInputs = trueInputs;
+    }
+
     public DataSet getData() {
         return (this.data);
+    }
+
+    public void setData(DataSet data) {
+        this.data = data;
     }
 
     public int[] getInputs() {
         return (inputs);
     }
 
+    public void setInputs(int[] inputs) {
+        this.inputs = inputs;
+    }
+
     public int[] getOutputs() {
         return (outputs);
     }
 
-    private CovarianceMatrix cov;
-    private LatentStructure dmStructure;
+    public void setOutputs(int[] outputs) {
+        this.outputs = outputs;
+    }
 
     public LatentStructure getDmStructure() {
         return (dmStructure);
@@ -644,13 +643,13 @@ public class DMSearch {
     }
 
 
-    //Finds any input set that dseps outputs for a pair of directly related latents, then adds input set to approp. set
+    //Finds any input set that mseps outputs for a pair of directly related latents, then adds input set to approp. set
     //Finally removes latent effect from list of latent effects.
     private void applySobersStep(SortedSet<Node> inputsLatent, SortedSet<Node> inputsLatentEffect,
                                  SortedSet<Node> outputsLatent, SortedSet<Node> outputsLatentEffect,
                                  Graph pattern, LatentStructure structure, Node latent, Node latentEffect) {
 
-        List<Node> latentList = new ArrayList<Node>();
+        Set<Node> latentList = new HashSet<>();
 
         latentList.addAll(inputsLatent);
 
@@ -661,7 +660,7 @@ public class DMSearch {
         try {
             testResult = test.checkIndependence(outputsLatent.first(), outputsLatentEffect.first(), latentList).isIndependent();
         } catch (SingularMatrixException error) {
-            System.out.println(error);
+            error.printStackTrace();
             System.out.println("SingularMatrixException Error!!!!!! Evaluated as:");
             System.out.println(testResult);
             System.out.println("outputsLatent.first()");

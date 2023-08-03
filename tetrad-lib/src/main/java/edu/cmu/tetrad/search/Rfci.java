@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.search.utils.SepsetsSet;
@@ -31,24 +30,18 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 
 /**
  * <p>Implements the Really Fast Causal Inference (RFCI) algorithm, which aims to
- * do a correct inference of inferrable causal structure under the assumption
- * that unmeasured common causes of variables in the data may exist. The graph
- * returned is slightly different from the partial ancestral graph (PAG) returned
- * by the FCI algorithm. The goal of of the algorithm is to avoid certain
- * expensive steps in the FCI procedure in a correct way. This was introduced
- * here:</p>
+ * do a correct inference of inferrable causal structure under the assumption that unmeasured common causes of variables
+ * in the data may exist. The graph returned is slightly different from the partial ancestral graph (PAG) returned by
+ * the FCI algorithm. The goal of of the algorithm is to avoid certain expensive steps in the FCI procedure in a correct
+ * way. This was introduced here:</p>
  *
  * <p>Colombo, D., Maathuis, M. H., Kalisch, M., & Richardson, T. S. (2012). Learning
- * high-dimensional directed acyclic graphs with latent and selection variables. The
- * Annals of Statistics, 294-321.</p>
+ * high-dimensional directed acyclic graphs with latent and selection variables. The Annals of Statistics, 294-321.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -63,53 +56,43 @@ import java.util.List;
 public final class Rfci implements IGraphSearch {
 
     /**
-     * The RFCI-PAG being constructed.
-     */
-    private Graph graph;
-
-    /**
-     * The SepsetMap being constructed.
-     */
-    private SepsetMap sepsets;
-
-    /**
-     * The background knowledge.
-     */
-    private Knowledge knowledge = new Knowledge();
-
-    /**
      * The variables to search over (optional)
      */
     private final List<Node> variables = new ArrayList<>();
-
     private final IndependenceTest independenceTest;
-
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
-    private int maxPathLength = -1;
-
-    /**
-     * The depth for the fast adjacency search.
-     */
-    private int depth = -1;
-
-    /**
-     * Elapsed time of last search.
-     */
-    private long elapsedTime;
-
     /**
      * The logger to use.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-
+    /**
+     * The RFCI-PAG being constructed.
+     */
+    private Graph graph;
+    /**
+     * The SepsetMap being constructed.
+     */
+    private SepsetMap sepsets;
+    /**
+     * The background knowledge.
+     */
+    private Knowledge knowledge = new Knowledge();
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
+    private int maxPathLength = -1;
+    /**
+     * The depth for the fast adjacency search.
+     */
+    private int depth = -1;
+    /**
+     * Elapsed time of last search.
+     */
+    private long elapsedTime;
     /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.
@@ -150,7 +133,6 @@ public final class Rfci implements IGraphSearch {
         this.variables.removeAll(remVars);
     }
 
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Runs the search and returns the RFCI PAG.
@@ -302,7 +284,7 @@ public final class Rfci implements IGraphSearch {
     /**
      * Returns whether verbose output should be printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean isVerbose() {
         return this.verbose;
@@ -311,7 +293,7 @@ public final class Rfci implements IGraphSearch {
     /**
      * Sets whether verbose output is printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -327,9 +309,7 @@ public final class Rfci implements IGraphSearch {
     }
 
 
-    //===========================PRIVATE METHODS=========================//
-
-    private List<Node> getSepset(Node i, Node k) {
+    private Set<Node> getSepset(Node i, Node k) {
         return this.sepsets.get(i, k);
     }
 
@@ -351,11 +331,11 @@ public final class Rfci implements IGraphSearch {
             Node j = thisTuple[1];
             Node k = thisTuple[2];
 
-            List<Node> nodes1 = getSepset(i, k);
+            Set<Node> nodes1 = getSepset(i, k);
 
             if (nodes1 == null) continue;
 
-            List<Node> sepSet = new ArrayList<>(nodes1);
+            Set<Node> sepSet = new HashSet<>(nodes1);
             sepSet.remove(j);
 
             boolean independent1 = false;
@@ -459,7 +439,7 @@ public final class Rfci implements IGraphSearch {
             Node j = thisTuple[1];
             Node k = thisTuple[2];
 
-            List<Node> sepset = getSepset(i, k);
+            Set<Node> sepset = getSepset(i, k);
 
             if (sepset == null) {
                 continue;
@@ -491,7 +471,7 @@ public final class Rfci implements IGraphSearch {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node j : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(j);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(j));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -520,9 +500,12 @@ public final class Rfci implements IGraphSearch {
     // set the sepSet of x and y to the minimal such subset of the given sepSet
     // and remove the edge <x, y> if background knowledge allows
     /////////////////////////////////////////////////////////////////////////////
-    private void setMinSepSet(List<Node> sepSet, Node x, Node y) {
-        List<Node> empty = Collections.emptyList();
+    private void setMinSepSet(Set<Node> _sepSet, Node x, Node y) {
+        Set<Node> empty = Collections.emptySet();
         boolean independent;
+
+        List<Node> sepSet = new ArrayList<>(_sepSet);
+        Collections.sort(sepSet);
 
         try {
             independent = this.independenceTest.checkIndependence(x, y, empty).isIndependent();
@@ -541,7 +524,7 @@ public final class Rfci implements IGraphSearch {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                List<Node> condSet = GraphUtils.asList(combination, sepSet);
+                Set<Node> condSet = GraphUtils.asSet(combination, sepSet);
 
                 independent = this.independenceTest.checkIndependence(x, y, condSet).isIndependent();
 

@@ -23,8 +23,7 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.special.Gamma;
@@ -35,9 +34,8 @@ import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * <p>Implements Poisson prior score, a novel (unpubished) score that replaces the
- * penalty term in BIC by the log of the Poisson distribution. The Poisson distribution
- * has a lambda parameter, which is made a parameter of this score and acts like
- * a structure prior for the score.</p>
+ * penalty term in BIC by the log of the Poisson distribution. The Poisson distribution has a lambda parameter, which is
+ * made a parameter of this score and acts like a structure prior for the score.</p>
  *
  * <p>Here is the Wikipedia page for the Poisson distribution, for reference:</p>
  *
@@ -51,16 +49,13 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public class PoissonPriorScore implements Score {
 
+    // The variables of the covariance matrix.
+    private final List<Node> variables;
+    // The sample size of the covariance matrix.
+    private final int sampleSize;
     private DataSet dataSet;
     // The covariance matrix.
     private ICovarianceMatrix covariances;
-
-    // The variables of the covariance matrix.
-    private final List<Node> variables;
-
-    // The sample size of the covariance matrix.
-    private final int sampleSize;
-
     // True if verbose output should be sent to out.
     private boolean verbose;
 
@@ -106,16 +101,16 @@ public class PoissonPriorScore implements Score {
         this.data = _dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            if (!precomputeCovariances) {
-                setCovariances(new CovarianceMatrixOnTheFly(dataSet));
-            } else {
-                setCovariances(new CovarianceMatrix(dataSet));
-            }
+            setCovariances(SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances));
             this.calculateRowSubsets = false;
         } else {
             this.calculateRowSubsets = true;
         }
 
+    }
+
+    private static double getP(int pn, int m0, double lambda) {
+        return 2 - pow(1 + (exp(-(lambda - 1) / 2.)) * sqrt(lambda), (double) pn - m0);
     }
 
     @Override
@@ -136,7 +131,8 @@ public class PoissonPriorScore implements Score {
         try {
             varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
         } catch (SingularMatrixException e) {
-            return Double.NaN;
+            throw new RuntimeException("Singularity encountered when scoring " +
+                    LogUtilsSearch.getScoreFact(i, parents, variables));
         }
 
         double r = k * log(lambda);
@@ -153,6 +149,33 @@ public class PoissonPriorScore implements Score {
 
     public ICovarianceMatrix getCovariances() {
         return this.covariances;
+    }
+
+    private void setCovariances(ICovarianceMatrix covariances) {
+        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
+        this.covariances = covariances;
+
+        boolean exists = false;
+
+        double correlationThreshold = 1.0;
+        for (int i = 0; i < correlations.getSize(); i++) {
+            for (int j = 0; j < correlations.getSize(); j++) {
+                if (i == j) continue;
+                double r = correlations.getValue(i, j);
+                if (abs(r) > correlationThreshold) {
+                    System.out.println("Absolute correlation too high: " + r);
+                    exists = true;
+                }
+            }
+        }
+
+        if (exists) {
+            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
+                    + ") in absolute value.");
+        }
+
+
+        this.N = covariances.getSampleSize();
     }
 
     public int getSampleSize() {
@@ -191,39 +214,8 @@ public class PoissonPriorScore implements Score {
     }
 
     public void setLambda(double lambda) {
-        if (lambda < 1.0) throw new IllegalArgumentException("Structure prior can't be < 1: " + lambda);
+        if (lambda < 1.0) throw new IllegalArgumentException("Poisso lambda can't be < 1: " + lambda);
         this.lambda = lambda;
-    }
-
-    private void setCovariances(ICovarianceMatrix covariances) {
-        CorrelationMatrixOnTheFly correlations = new CorrelationMatrixOnTheFly(covariances);
-        this.covariances = covariances;
-
-        boolean exists = false;
-
-        double correlationThreshold = 1.0;
-        for (int i = 0; i < correlations.getSize(); i++) {
-            for (int j = 0; j < correlations.getSize(); j++) {
-                if (i == j) continue;
-                double r = correlations.getValue(i, j);
-                if (abs(r) > correlationThreshold) {
-                    System.out.println("Absolute correlation too high: " + r);
-                    exists = true;
-                }
-            }
-        }
-
-        if (exists) {
-            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
-                    + ") in absolute value.");
-        }
-
-
-        this.N = covariances.getSampleSize();
-    }
-
-    private static double getP(int pn, int m0, double lambda) {
-        return 2 - pow(1 + (exp(-(lambda - 1) / 2.)) * sqrt(lambda), (double) pn - m0);
     }
 
     private int[] indices(List<Node> __adj) {

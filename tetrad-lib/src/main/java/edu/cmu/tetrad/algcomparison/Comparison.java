@@ -48,6 +48,7 @@ import org.reflections.Reflections;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -56,8 +57,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
 /**
- * Script to do a comparison of a list of algorithms using a list of statistics
- * and a list of parameters and their values.
+ * Script to do a comparison of a list of algorithms using a list of statistics and a list of parameters and their
+ * values.
  *
  * @author josephramsey
  * @author danielmalinsky
@@ -65,15 +66,6 @@ import java.util.concurrent.ForkJoinPool;
 public class Comparison {
 
     private boolean parallelized = false;
-
-    public void setParallelized(boolean parallelized) {
-        this.parallelized = parallelized;
-    }
-
-    public enum ComparisonGraph {
-        true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
-    }
-
     private boolean[] graphTypeUsed;
     private PrintStream out;
     private boolean tabDelimitedTables;
@@ -89,6 +81,10 @@ public class Comparison {
     private boolean savePags = false;
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
 
+    public void setParallelized(boolean parallelized) {
+        this.parallelized = parallelized;
+    }
+
     public void compareFromFiles(String filePath, Algorithms algorithms, Statistics statistics, Parameters parameters) {
         compareFromFiles(filePath, filePath, algorithms, statistics, parameters);
     }
@@ -96,8 +92,7 @@ public class Comparison {
     /**
      * Compares algorithms.
      *
-     * @param dataPath    Path to the directory where data and graph files have
-     *                    been saved.
+     * @param dataPath    Path to the directory where data and graph files have been saved.
      * @param resultsPath Path to the file where the results should be stored.
      * @param algorithms  The list of algorithms to be compared.
      */
@@ -193,11 +188,9 @@ public class Comparison {
      * Compares algorithms.
      *
      * @param resultsPath Path to the file where the output should be printed.
-     * @param simulations The list of simulationWrapper that is used to generate
-     *                    graphs and data for the comparison.
+     * @param simulations The list of simulationWrapper that is used to generate graphs and data for the comparison.
      * @param algorithms  The list of algorithms to be compared.
-     * @param statistics  The list of statistics on which to compare the
-     *                    algorithm, and their utility weights.
+     * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters) {
@@ -210,7 +203,7 @@ public class Comparison {
             File dir = new File(resultsPath);
             dir.mkdirs();
             File file = new File(dir, outputFileName);
-            this.out = new PrintStream(new FileOutputStream(file));
+            this.out = new PrintStream(Files.newOutputStream(file.toPath()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -491,8 +484,7 @@ public class Comparison {
     /**
      * Saves simulationWrapper data.
      *
-     * @param dataPath   The path to the directory where the simulationWrapper
-     *                   data should be saved.
+     * @param dataPath   The path to the directory where the simulationWrapper data should be saved.
      * @param simulation The simulate used to generate the graphs and data.
      * @param parameters The parameters to be used in the simulationWrapper.
      */
@@ -551,7 +543,7 @@ public class Comparison {
                     File file2 = new File(dir1, "graph." + (j + 1) + ".txt");
                     Graph graph = simulationWrapper.getTrueGraph(j);
 
-                    GraphPersistence.saveGraph(graph, file2, false);
+                    GraphSaveLoadUtils.saveGraph(graph, file2, false);
 
                     if (isSaveData()) {
                         File file = new File(dir2, "data." + (j + 1) + ".txt");
@@ -563,17 +555,17 @@ public class Comparison {
 
                     if (isSaveCPDAGs()) {
                         File file3 = new File(dir3, "cpdag." + (j + 1) + ".txt");
-                        GraphPersistence.saveGraph(GraphSearchUtils.cpdagForDag(graph), file3, false);
+                        GraphSaveLoadUtils.saveGraph(GraphSearchUtils.cpdagForDag(graph), file3, false);
                     }
 
                     if (isSavePags()) {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                        GraphPersistence.saveGraph(GraphSearchUtils.dagToPag(graph), file4, false);
+                        GraphSaveLoadUtils.saveGraph(GraphSearchUtils.dagToPag(graph), file4, false);
                     }
 
                 }
 
-                PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
+                PrintStream out = new PrintStream(Files.newOutputStream(new File(subdir, "parameters.txt").toPath()));
                 out.println(simulationWrapper.getDescription());
                 out.println(simulationWrapper.getSimulationSpecificParameters());
                 out.close();
@@ -586,8 +578,7 @@ public class Comparison {
     /**
      * Saves simulationWrapper data.
      *
-     * @param dataPath   The path to the directory where the simulationWrapper
-     *                   data should be saved.
+     * @param dataPath   The path to the directory where the simulationWrapper data should be saved.
      * @param simulation The simulate used to generate the graphs and data.
      * @param parameters The parameters to be used in the simulationWrapper.
      */
@@ -599,7 +590,7 @@ public class Comparison {
         dir.mkdirs();
 
         try {
-            PrintStream _out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
+            PrintStream _out = new PrintStream(Files.newOutputStream(new File(dir, "parameters.txt").toPath()));
             _out.println(simulation.getDescription());
             _out.println(parameters);
             _out.close();
@@ -640,7 +631,7 @@ public class Comparison {
                 File file2 = new File(dir1, "graph." + (j + 1) + ".txt");
                 Graph graph = simulation.getTrueGraph(j);
 
-                GraphPersistence.saveGraph(graph, file2, false);
+                GraphSaveLoadUtils.saveGraph(graph, file2, false);
 
                 File file = new File(dir2, "data." + (j + 1) + ".txt");
                 Writer out = new FileWriter(file);
@@ -650,12 +641,12 @@ public class Comparison {
 
                 if (isSaveCPDAGs()) {
                     File file3 = new File(dir3, "cpdag." + (j + 1) + ".txt");
-                    GraphPersistence.saveGraph(GraphSearchUtils.cpdagForDag(graph), file3, false);
+                    GraphSaveLoadUtils.saveGraph(GraphSearchUtils.cpdagForDag(graph), file3, false);
                 }
 
                 if (isSavePags()) {
                     File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                    GraphPersistence.saveGraph(GraphSearchUtils.dagToPag(graph), file4, false);
+                    GraphSaveLoadUtils.saveGraph(GraphSearchUtils.dagToPag(graph), file4, false);
                 }
             }
         } catch (IOException e) {
@@ -670,7 +661,7 @@ public class Comparison {
         try {
             new File(path).mkdirs();
 
-            PrintStream out = new PrintStream(new FileOutputStream(new File(path, "Configuration.txt")));
+            PrintStream out = new PrintStream(Files.newOutputStream(new File(path, "Configuration.txt").toPath()));
 
             Parameters allParams = new Parameters();
 
@@ -952,16 +943,14 @@ public class Comparison {
     }
 
     /**
-     * @return True iff a column of utilities marked "W" should be shown in the
-     * output.
+     * @return True iff a column of utilities marked "W" should be shown in the output.
      */
     public boolean isShowUtilities() {
         return this.showUtilities;
     }
 
     /**
-     * @param showUtilities True iff a column of utilities marked "W" should be
-     *                      shown in the output.
+     * @param showUtilities True iff a column of utilities marked "W" should be shown in the output.
      */
     public void setShowUtilities(boolean showUtilities) {
         this.showUtilities = showUtilities;
@@ -1006,10 +995,6 @@ public class Comparison {
         this.savePags = savePags;
     }
 
-    public void setSaveData(boolean saveData) {
-        this.saveData = saveData;
-    }
-
     /**
      * @return True if CPDAGs should be saved out.
      */
@@ -1017,27 +1002,22 @@ public class Comparison {
         return saveData;
     }
 
+    public void setSaveData(boolean saveData) {
+        this.saveData = saveData;
+    }
+
     /**
-     * @return True iff tables should be tab delimited (e.g. for easy pasting
-     * into Excel).
+     * @return True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public boolean isTabDelimitedTables() {
         return this.tabDelimitedTables;
     }
 
     /**
-     * @param tabDelimitedTables True iff tables should be tab delimited (e.g.
-     *                           for easy pasting into Excel).
+     * @param tabDelimitedTables True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public void setTabDelimitedTables(boolean tabDelimitedTables) {
         this.tabDelimitedTables = tabDelimitedTables;
-    }
-
-    /**
-     * @param saveGraphs True if all graphs should be saved to files.
-     */
-    public void setSaveGraphs(boolean saveGraphs) {
-        this.saveGraphs = saveGraphs;
     }
 
     /**
@@ -1045,6 +1025,13 @@ public class Comparison {
      */
     public boolean isSaveGraphs() {
         return this.saveGraphs;
+    }
+
+    /**
+     * @param saveGraphs True if all graphs should be saved to files.
+     */
+    public void setSaveGraphs(boolean saveGraphs) {
+        this.saveGraphs = saveGraphs;
     }
 
     /**
@@ -1062,38 +1049,6 @@ public class Comparison {
             throw new NullPointerException("Null compare graph.");
         }
         this.comparisonGraph = comparisonGraph;
-    }
-
-    private class AlgorithmTask implements Callable<Boolean> {
-
-        private final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
-        private final List<AlgorithmWrapper> algorithmWrappers;
-        private final List<SimulationWrapper> simulationWrappers;
-        private final Statistics statistics;
-        private final int numGraphTypes;
-        private final double[][][][] allStats;
-        private final Run run;
-        private final PrintStream stdout;
-
-        public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
-                             List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
-                             Statistics statistics, int numGraphTypes, double[][][][] allStats, Run run, PrintStream stdout) {
-            this.algorithmSimulationWrappers = algorithmSimulationWrappers;
-            this.simulationWrappers = simulationWrappers;
-            this.algorithmWrappers = algorithmWrappers;
-            this.statistics = statistics;
-            this.numGraphTypes = numGraphTypes;
-            this.allStats = allStats;
-            this.run = run;
-            this.stdout = stdout;
-        }
-
-        @Override
-        public Boolean call() throws Exception {
-            doRun(this.algorithmSimulationWrappers, this.algorithmWrappers,
-                    this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run, this.stdout);
-            return true;
-        }
     }
 
     private void printParameters(List<String> names, Parameters parameters, PrintStream out) {
@@ -1333,10 +1288,6 @@ public class Comparison {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-    }
-
-    private enum Mode {
-        Average, StandardDeviation, MinValue, MaxValue, MedianValue
     }
 
     private String getHeader(int u) {
@@ -1682,6 +1633,14 @@ public class Comparison {
         }
     }
 
+    public enum ComparisonGraph {
+        true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
+    }
+
+    private enum Mode {
+        Average, StandardDeviation, MinValue, MaxValue, MedianValue
+    }
+
     private static class AlgorithmWrapper implements Algorithm {
 
         static final long serialVersionUID = 23L;
@@ -1858,6 +1817,10 @@ public class Comparison {
             return this.simulation.getParameters();
         }
 
+        public void setParameters(Parameters parameters) {
+            this.parameters = new Parameters(parameters);
+        }
+
         public void setValue(String name, Object value) {
             if (!(value instanceof Number)) {
                 throw new IllegalArgumentException();
@@ -1878,10 +1841,6 @@ public class Comparison {
 
         public Simulation getSimulation() {
             return this.simulation;
-        }
-
-        public void setParameters(Parameters parameters) {
-            this.parameters = new Parameters(parameters);
         }
 
         public Parameters getSimulationSpecificParameters() {
@@ -1917,6 +1876,38 @@ public class Comparison {
 
         public AlgorithmSimulationWrapper getWrapper() {
             return this.wrapper;
+        }
+    }
+
+    private class AlgorithmTask implements Callable<Boolean> {
+
+        private final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
+        private final List<AlgorithmWrapper> algorithmWrappers;
+        private final List<SimulationWrapper> simulationWrappers;
+        private final Statistics statistics;
+        private final int numGraphTypes;
+        private final double[][][][] allStats;
+        private final Run run;
+        private final PrintStream stdout;
+
+        public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
+                             List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
+                             Statistics statistics, int numGraphTypes, double[][][][] allStats, Run run, PrintStream stdout) {
+            this.algorithmSimulationWrappers = algorithmSimulationWrappers;
+            this.simulationWrappers = simulationWrappers;
+            this.algorithmWrappers = algorithmWrappers;
+            this.statistics = statistics;
+            this.numGraphTypes = numGraphTypes;
+            this.allStats = allStats;
+            this.run = run;
+            this.stdout = stdout;
+        }
+
+        @Override
+        public Boolean call() throws Exception {
+            doRun(this.algorithmSimulationWrappers, this.algorithmWrappers,
+                    this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run, this.stdout);
+            return true;
         }
     }
 }

@@ -36,8 +36,7 @@ import java.util.List;
 
 
 /**
- * Holds a tetrad dag with all of the constructors necessary for it to serve as
- * a model for the tetrad application.
+ * Holds a tetrad dag with all of the constructors necessary for it to serve as a model for the tetrad application.
  *
  * @author josephramsey
  */
@@ -161,14 +160,12 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -181,6 +178,10 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
 
     public Graph getGraph() {
         return this.graph;
+    }
+
+    public void setGraph(TimeLagGraph graph) {
+        this.graph = graph;
     }
 
     public String getName() {
@@ -205,10 +206,6 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
 
     public List<Node> getVariables() {
         return getGraph().getNodes();
-    }
-
-    public void setGraph(TimeLagGraph graph) {
-        this.graph = graph;
     }
 
     public Knowledge getKnowledge() {

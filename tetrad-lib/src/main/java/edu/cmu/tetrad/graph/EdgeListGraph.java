@@ -30,13 +30,11 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
 
 /**
  * <p>
- * Stores a graph a list of lists of edges adjacent to each node in the graph,
- * with an additional list storing all of the edges in the graph. The edges are
- * of the form N1 *-# N2. Multiple edges may be added per node pair to this
- * graph, with the caveat that all edges of the form N1 *-# N2 will be
- * considered equal. For example, if the edge X --&gt; Y is added to the graph,
- * another edge X --&gt; Y may not be added, although an edge Y --&gt; X may be added.
- * Edges from nodes to themselves may also be added.&gt; 0
+ * Stores a graph a list of lists of edges adjacent to each node in the graph, with an additional list storing all of
+ * the edges in the graph. The edges are of the form N1 *-# N2. Multiple edges may be added per node pair to this graph,
+ * with the caveat that all edges of the form N1 *-# N2 will be considered equal. For example, if the edge X --&gt; Y is
+ * added to the graph, another edge X --&gt; Y may not be added, although an edge Y --&gt; X may be added. Edges from
+ * nodes to themselves may also be added.&gt; 0
  *
  * @author josephramsey
  * @author Erin Korber additions summer 2004
@@ -45,28 +43,24 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
 public class EdgeListGraph implements Graph, TripleClassifier {
 
     static final long serialVersionUID = 23L;
-
-    /**
-     * A list of the nodes in the graph, in the order in which they were added.
-     *
-     * @serial
-     */
-    private final List<Node> nodes;
-
     /**
      * The edges in the graph.
      *
      * @serial
      */
     final Set<Edge> edgesSet;
-
     /**
      * Map from each node to the List of edges connected to that node.
      *
      * @serial
      */
     final Map<Node, Set<Edge>> edgeLists;
-
+    /**
+     * A list of the nodes in the graph, in the order in which they were added.
+     *
+     * @serial
+     */
+    private final List<Node> nodes;
     /**
      * A hash from node names to nodes;
      */
@@ -100,10 +94,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * Constructs a EdgeListGraph using the nodes and edges of the given graph.
-     * If this cannot be accomplished successfully, an exception is thrown. Note
-     * that any graph constraints from the given graph are forgotten in the new
-     * graph.
+     * Constructs a EdgeListGraph using the nodes and edges of the given graph. If this cannot be accomplished
+     * successfully, an exception is thrown. Note that any graph constraints from the given graph are forgotten in the
+     * new graph.
      *
      * @param graph the graph from which nodes and edges are is to be extracted.
      * @throws IllegalArgumentException if a duplicate edge is added.
@@ -133,7 +126,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.nodes = new ArrayList<>(graph.nodes);
         this.edgeLists = new HashMap<>();
         for (Node node : nodes) {
-            edgeLists.put(node, Collections.synchronizedSet(new HashSet<>(graph.edgeLists.get(node))));
+            edgeLists.put(node, Collections.synchronizedSet(graph.edgeLists.get(node)));
         }
         this.edgesSet = new HashSet<>(graph.edgesSet);
         this.namesHash = new HashMap<>(graph.namesHash);
@@ -146,8 +139,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * Constructs a new graph, with no edges, using the given variable
-     * names.
+     * Constructs a new graph, with no edges, using the given variable names.
      */
     public EdgeListGraph(List<Node> nodes) {
         this();
@@ -235,8 +227,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * IllegalArgument exception raised (by isDirectedFromTo(getEndpoint) or by
-     * getEdge) if there are multiple edges between any of the node pairs.
+     * IllegalArgument exception raised (by isDirectedFromTo(getEndpoint) or by getEdge) if there are multiple edges
+     * between any of the node pairs.
      */
     @Override
     public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
@@ -319,8 +311,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the edge connecting node1 and node2, provided a unique such edge
-     * exists.
+     * @return the edge connecting node1 and node2, provided a unique such edge exists.
      */
     @Override
     public Edge getEdge(Node node1, Node node2) {
@@ -371,7 +362,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         Set<Edge> edges = this.edgeLists.get(node);
 
         if (edges == null) {
-            System.out.println();
+            throw new IllegalArgumentException("Node " + node + " is not in the graph.");
         }
 
         for (Edge edge : edges) {
@@ -444,16 +435,36 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     @Override
-    public List<Node> getSepset(Node x, Node y) {
+    public Set<Node> getSepset(Node x, Node y) {
         return new Paths(this).getSepset(x, y);
     }
 
-    public boolean isDSeparatedFrom(Node x, Node y, List<Node> z) {
-        return !new Paths(this).isDConnectedTo(x, y, z);
+    /**
+     * Determines whether x and y are d-separated given z.
+     *
+     * @return True if the nodes in x are all d-separated from nodes in y given  nodes in z, false if not.
+     */
+    public boolean isMSeparatedFrom(Node x, Node y, Set<Node> z) {
+        return !new Paths(this).isMConnectedTo(x, y, z);
     }
 
-    public boolean isDSeparatedFrom(List<Node> x, List<Node> y, List<Node> z) {
-        return !new Paths(this).isDConnectedTo(x, y, z);
+    /**
+     * Determines whether two nodes are d-separated given z.
+     *
+     * @return True if the nodes in x are all d-separated from nodes in y given  nodes in z, false if not.
+     */
+    public boolean isMSeparatedFrom(Set<Node> x, Set<Node> y, Set<Node> z) {
+        return !new Paths(this).isMConnectedTo(x, y, z);
+    }
+
+    /**
+     * Determines whether two nodes are d-separated given z.
+     *
+     * @param ancestors A map of ancestors for each node.
+     * @return True if the nodes are d-separated given z, false if not.
+     */
+    public boolean isMSeparatedFrom(Set<Node> x, Set<Node> y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
+        return !new Paths(this).isMConnectedTo(x, y, z, ancestors);
     }
 
     /**
@@ -480,14 +491,13 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * Transfers nodes and edges from one graph to another. One way this is used
-     * is to change graph types. One constructs a new graph based on the old
-     * graph, and this method is called to transfer the nodes and edges of the
+     * Transfers nodes and edges from one graph to another. One way this is used is to change graph types. One
+     * constructs a new graph based on the old graph, and this method is called to transfer the nodes and edges of the
      * old graph to the new graph.
      *
      * @param graph the graph from which nodes and edges are to be pilfered.
-     * @throws IllegalArgumentException This exception is thrown if adding some
-     *                                  node or edge violates one of the basicConstraints of this graph.
+     * @throws IllegalArgumentException This exception is thrown if adding some node or edge violates one of the
+     *                                  basicConstraints of this graph.
      */
     @Override
     public void transferNodesAndEdges(Graph graph)
@@ -533,10 +543,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the list of nodes adjacent to the given node. If there are
-     * multiple edges between X and Y, Y will show up twice in the list of
-     * adjacencies for X, for optimality; simply create a list an and array from
-     * these to eliminate the duplication.
+     * @return the set of nodes adjacent to the given node. If there are multiple edges between X and Y, Y will show up
+     * twice in the list of adjacencies for X, for optimality; simply create a list an and array from these to eliminate
+     * the duplication.
      */
     @Override
     public List<Node> getAdjacentNodes(Node node) {
@@ -589,14 +598,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * If there is currently an edge from node1 to node2, sets the endpoint at
-     * node2 to the given endpoint; if there is no such edge, adds an edge --#
-     * where # is the given endpoint. Setting an endpoint to null, provided
-     * there is exactly one edge connecting the given nodes, removes the edge.
-     * (If there is more than one edge, an exception is thrown.)
+     * If there is currently an edge from node1 to node2, sets the endpoint at node2 to the given endpoint; if there is
+     * no such edge, adds an edge --# where # is the given endpoint. Setting an endpoint to null, provided there is
+     * exactly one edge connecting the given nodes, removes the edge. (If there is more than one edge, an exception is
+     * thrown.)
      *
-     * @throws IllegalArgumentException if the edge with the revised endpoint
-     *                                  cannot be added to the graph.
+     * @throws IllegalArgumentException if the edge with the revised endpoint cannot be added to the graph.
      */
     @Override
     public boolean setEndpoint(Node from, Node to, Endpoint endPoint)
@@ -618,7 +625,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new ArrayList<>(4);
+        List<Node> nodes = new ArrayList<>();
         List<Edge> edges = getEdges(node);
 
         for (Edge edge : edges) {
@@ -635,7 +642,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public List<Node> getNodesOutTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new ArrayList<>(4);
+        List<Node> nodes = new ArrayList<>();
         List<Edge> edges = getEdges(node);
 
         for (Edge edge : edges) {
@@ -682,8 +689,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * Adds a node to the graph. Precondition: The proposed name of the node
-     * cannot already be used by any other node in the same graph.
+     * Adds a node to the graph. Precondition: The proposed name of the node cannot already be used by any other node in
+     * the same graph.
      *
      * @param node the node to be added.
      * @return true if the node was added, false if not.
@@ -720,8 +727,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the set of edges in the graph. No particular ordering of the
-     * edges in the list is guaranteed.
+     * @return the set of edges in the graph. No particular ordering of the edges in the list is guaranteed.
      */
     @Override
     public Set<Edge> getEdges() {
@@ -745,8 +751,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the list of edges connected to a particular node. No particular
-     * ordering of the edges in the list is guaranteed.
+     * @return the set of edges connected to a particular node. No particular ordering of the edges in the list is
+     * guaranteed.
      */
     @Override
     public List<Edge> getEdges(Node node) {
@@ -769,9 +775,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return true iff the given object is a graph that is equal to this graph,
-     * in the sense that it contains the same nodes and the edges are
-     * isomorphic.
+     * @return true iff the given object is a graph that is equal to this graph, in the sense that it contains the same
+     * nodes and the edges are isomorphic.
      */
     @Override
     public boolean equals(Object o) {
@@ -793,8 +798,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * Resets the graph so that it is fully connects it using #-# edges, where #
-     * is the given endpoint.
+     * Resets the graph so that it is fully connects it using #-# edges, where # is the given endpoint.
      */
     @Override
     public void fullyConnect(Endpoint endpoint) {
@@ -902,12 +906,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * Removes an edge from the graph. (Note: It is dangerous to make a
-     * recursive call to this method (as it stands) from a method containing
-     * certain types of iterators. The problem is that if one uses an iterator
-     * that iterates over the edges of node A or node B, and tries in the
-     * process to remove those edges using this method, a concurrent
-     * modification exception will be thrown.)
+     * Removes an edge from the graph. (Note: It is dangerous to make a recursive call to this method (as it stands)
+     * from a method containing certain types of iterators. The problem is that if one uses an iterator that iterates
+     * over the edges of node A or node B, and tries in the process to remove those edges using this method, a
+     * concurrent modification exception will be thrown.)
      *
      * @param edge the edge to remove.
      * @return true if the edge was removed, false if not.
@@ -1108,14 +1110,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.)
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.)
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

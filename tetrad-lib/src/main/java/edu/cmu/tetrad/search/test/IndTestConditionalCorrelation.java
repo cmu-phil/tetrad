@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -31,48 +32,42 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Checks conditional independence of variable in a continuous data set using a
- * conditional correlation test for the nonlinear nonGaussian with additive error
- * case. This is for additive (but otherwise general) models.
+ * Checks conditional independence of variable in a continuous data set using a conditional correlation test for the
+ * nonlinear nonGaussian with the additive error case. This is for additive (but otherwise general) models.
  *
  * @author josephramsey
  */
 public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
+     * Formats as 0.0000.
+     */
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    /**
      * The instance of CCI that is wrapped.
      */
     private final ConditionalCorrelationIndependence cci;
-
     /**
      * The variables of the covariance data, in order. (Unmodifiable list.)
      */
     private final List<Node> variables;
-
-    /**
-     * The significance level of the independence tests.
-     */
-    private double alpha;
-
-    /**
-     * Formats as 0.0000.
-     */
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
     /**
      * Stores a reference to the data set passed in through the constructor.
      */
     private final DataSet dataSet;
-
+    /**
+     * The significance level of the independence tests.
+     */
+    private double alpha;
     /**
      * True if verbose output should be printed.
      */
     private boolean verbose;
     private double score = Double.NaN;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
@@ -99,7 +94,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         this.dataSet = dataSet;
     }
 
-    //==========================PUBLIC METHODS=============================//
 
     /**
      * @throws UnsupportedOperationException This method is not implemented.
@@ -114,7 +108,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @return the result.
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
 
         double score = this.cci.isIndependent(x, y, z);
         this.score = score;
@@ -128,21 +122,30 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
     }
 
     /**
-     * Returns the p-value of the test,
+     * Returns the p-value of the test.
      *
      * @return The p-value.
      */
     public double getPValue() {
-        return this.cci.getPValue();
+        return this.cci.getPValue(score);
     }
 
     /**
-     * Sets the significance level at which independence judgments should be made.
-     * Affects the cutoff for partial correlations to be considered statistically equal to zero.
+     * Returns the model significance level.
+     *
+     * @return This level.
+     */
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    /**
+     * Sets the significance level at which independence judgments should be made. Affects the cutoff for partial
+     * correlations to be considered statistically equal to zero.
      *
      * @param alpha The alpha level.
      */
@@ -156,18 +159,8 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * Returns the model significance level.
-     *
-     * @return This level.
-     */
-    public double getAlpha() {
-        return this.alpha;
-    }
-
-    /**
-     * Returns the list of variables over which this independence checker is capable
-     * of determinine independence relations-- that is, all the variables in the given
-     * graph or the given data set.
+     * Returns the list of variables over which this independence checker is capable of determining independence
+     * relations-- that is, all the variables in the given graph or the given data set.
      *
      * @return This list.
      */
@@ -191,17 +184,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         return this.dataSet;
     }
 
-
-    /**
-     * Returns a number is more positive for stronger judgments of dependence.
-     *
-     * @return This number.
-     */
-    @Override
-    public double getScore() {
-        return this.score;
-    }
-
     /**
      * Returns a string representation of this test.
      *
@@ -223,14 +205,14 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Sets the number of orthogal functions to use to do the calculations.
+     * Sets the number of orthogonal functions to use to do the calculations.
      *
      * @param numFunctions This number.
      */
@@ -277,7 +259,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * Sets the kernal regression sample size.
+     * Sets the kernel regression sample size.
      *
      * @param size This size.
      */

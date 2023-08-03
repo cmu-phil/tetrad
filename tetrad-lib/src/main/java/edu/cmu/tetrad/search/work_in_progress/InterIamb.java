@@ -23,11 +23,13 @@ package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IMbSearch;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implements the Inter-IAMB algorithm.
@@ -58,8 +60,8 @@ public class InterIamb implements IMbSearch {
         this.variables = test.getVariables();
     }
 
-    public List<Node> findMb(Node target) {
-        List<Node> cmb = new LinkedList<>();
+    public Set<Node> findMb(Node target) {
+        Set<Node> cmb = new HashSet<>();
         boolean cont = true;
 
         // Forward phase.
@@ -111,7 +113,7 @@ public class InterIamb implements IMbSearch {
         return cmb;
     }
 
-    private double associationStrength(Node v, Node target, List<Node> cmb) {
+    private double associationStrength(Node v, Node target, Set<Node> cmb) {
         IndependenceResult result = this.independenceTest.checkIndependence(v, target, cmb);
         return 1.0 - result.getPValue();
     }

@@ -64,6 +64,17 @@ public final class TestDiscreteProbs extends TestCase {
                 StoredCellProbs.createRandomCellTable(variables);
     }
 
+    /**
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
+     */
+    public static Test suite() {
+
+        // Edit the name of the class in the parens to match the name
+        // of this class.
+        return new TestSuite(TestDiscreteProbs.class);
+    }
+
     public void testCreateUsingBayesIm() {
         Graph graph = GraphUtils.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
@@ -80,17 +91,6 @@ public final class TestDiscreteProbs extends TestCase {
         condition.setCategory(0, 1);
 
         cellProbs.getConditionalProb(assertion, condition);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestDiscreteProbs.class);
     }
 }
 

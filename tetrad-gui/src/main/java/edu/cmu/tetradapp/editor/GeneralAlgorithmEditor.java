@@ -64,11 +64,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     private final AlgorithmCard algorithmCard;
     private final ParameterCard parameterCard;
     private final GraphCard graphCard;
-
-    private String jsonResult;
-
     private final GeneralAlgorithmRunner algorithmRunner;
     private final TetradDesktop desktop;
+    private String jsonResult;
 
     public GeneralAlgorithmEditor(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
@@ -175,7 +173,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     }
 
     private void doSearch() {
-        new WatchedProcess((Window) getTopLevelAncestor()) {
+        class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
                 AlgorithmModel algoModel = GeneralAlgorithmEditor.this.algorithmCard.getSelectedAlgorithm();
@@ -198,8 +196,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
                 }
             }
-        };
+        }
 
+        new MyWatchedProcess();
     }
 
     @Override

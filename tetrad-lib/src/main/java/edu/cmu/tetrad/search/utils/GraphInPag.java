@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
 import java.util.ArrayList;
@@ -30,9 +30,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Contains methods which can be used to determine whether a directed graph
- * is in the equivalence class determined by the given PAG.  See p. 300 Def. 12.1.1 of
- * CPS for a specification.
+ * Contains methods which can be used to determine whether a directed graph is in the equivalence class determined by
+ * the given PAG.  See p. 300 Def. 12.1.1 of CPS for a specification.
  *
  * @author Frank Wimberly
  */
@@ -66,7 +65,7 @@ public final class GraphInPag {
         //If A and B are in O, there is an edge between A and B in gamma
         //iff for every W subset of O minus {A, B}, A and B are d-connected
         //given W in [every graph] in delta (dag).
-        IndTestDSep test = new IndTestDSep(pag);
+        MsepTest test = new MsepTest(pag);
 
         List<Node> V = new ArrayList<>(dag.getNodes());
 
@@ -82,9 +81,9 @@ public final class GraphInPag {
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                List<Node> S = GraphUtils.asList(choice, W);
+                Set<Node> S = GraphUtils.asSet(choice, W);
 
-                if (test.isDSeparated(A, B, S)) {
+                if (test.isMSeparated(A, B, S)) {
                     return false;
                 }
 

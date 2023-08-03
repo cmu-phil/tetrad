@@ -22,9 +22,8 @@ import java.util.List;
 /**
  * Wraps the IMaGES algorithm for continuous variables.
  * <p>
- * Requires that the parameter 'randomSelectionSize' be set to indicate how many
- * datasets should be taken at a time (randomly). This cannot given multiple
- * values.
+ * Requires that the parameter 'randomSelectionSize' be set to indicate how many datasets should be taken at a time
+ * (randomly). This cannot given multiple values.
  *
  * @author josephramsey
  */
@@ -96,7 +95,12 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
 
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
+        // Not used.
+    }
 
+    @Override
+    public void setIndTestWrapper(IndependenceWrapper test) {
+        // Not used.
     }
 
     @Override
@@ -162,12 +166,12 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
-        this.test = independenceWrapper;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return this.test;
     }
 
     @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 }

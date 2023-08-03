@@ -30,11 +30,12 @@ public class MagSemBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
+        boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
         edu.cmu.tetrad.search.work_in_progress.MagSemBicScore semBicScore;
 
         if (dataSet instanceof DataSet) {
-            semBicScore = new edu.cmu.tetrad.search.work_in_progress.MagSemBicScore((DataSet) this.dataSet);
+            semBicScore = new edu.cmu.tetrad.search.work_in_progress.MagSemBicScore((DataSet) this.dataSet, precomputeCovariances);
         } else if (dataSet instanceof ICovarianceMatrix) {
             semBicScore = new edu.cmu.tetrad.search.work_in_progress.MagSemBicScore((ICovarianceMatrix) this.dataSet);
         } else {
@@ -63,6 +64,7 @@ public class MagSemBicScore implements ScoreWrapper {
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.SEM_BIC_STRUCTURE_PRIOR);
         parameters.add(Params.SEM_BIC_RULE);
+        parameters.add(Params.PRECOMPUTE_COVARIANCES);
         return parameters;
     }
 

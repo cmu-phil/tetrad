@@ -21,22 +21,37 @@ public class SemBicScorer {
 
     /**
      * Scores the given DAG using the given data model, usimg a BIC score.
-     * @param dag The DAG.
+     *
+     * @param dag  The DAG.
      * @param data a continuous dataset or a covariance matrix.
      * @return The BIC score of the DAG.
      */
-    public static double scoreDag(Graph dag, DataModel data) {
+    public static double scoreDag(Graph dag, DataModel data, boolean precomputeCovariances) {
+        return scoreDag(dag, data, 1.0, precomputeCovariances);
+    }
+
+    /**
+     * Scores the given DAG using the given data model, usimg a BIC score.
+     *
+     * @param dag             The DAG.
+     * @param data            a continuous dataset or a covariance matrix.
+     * @param penaltyDiscount The penalty discount.
+     * @return The BIC score of the DAG.
+     */
+    public static double scoreDag(Graph dag, DataModel data, double penaltyDiscount, boolean precomputeCovariances) {
         if (dag == null) throw new NullPointerException("DAG not specified.");
 
-        Score score;
+        SemBicScore score;
 
         if (data instanceof ICovarianceMatrix) {
             score = new SemBicScore((ICovarianceMatrix) dag);
         } else if (data instanceof DataSet) {
-            score = new SemBicScore((DataSet) data);
+            score = new SemBicScore((DataSet) data, precomputeCovariances);
         } else {
             throw new IllegalArgumentException("Expecting a covariance matrix of a dataset.");
         }
+
+        score.setPenaltyDiscount(penaltyDiscount);
 
         dag = GraphUtils.replaceNodes(dag, data.getVariables());
 

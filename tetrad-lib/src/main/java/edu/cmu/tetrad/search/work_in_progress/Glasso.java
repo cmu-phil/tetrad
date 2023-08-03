@@ -33,18 +33,15 @@ import org.apache.commons.math3.util.FastMath;
 public class Glasso {
 
     /**
-     * Dimension of matrix.
-     */
-    private int n;
-
-    /**
      * Data covariance matrix.
      */
     private final Matrix ss;
-
     /**
-     * Regularization strength parameters for each element (must be symmetric, rho(i, j) = rho(j, i).
-     * False by default.
+     * Dimension of matrix.
+     */
+    private int n;
+    /**
+     * Regularization strength parameters for each element (must be symmetric, rho(i, j) = rho(j, i). False by default.
      */
     private Rho rho = (i, j) -> 0;
 
@@ -56,54 +53,31 @@ public class Glasso {
 
 
     /**
-     * Approximation flag. False if exact solution, true if Meinhausen-Buhlman approximation.
-     * False by default.
+     * Approximation flag. False if exact solution, true if Meinhausen-Buhlman approximation. False by default.
      */
     private boolean ia;
 
     /**
-     * Initialization flag. false if cold start, initialize using ss. True if warm start, initialize with
-     * previous solution stored in ww and wwi. False by default.
+     * Initialization flag. false if cold start, initialize using ss. True if warm start, initialize with previous
+     * solution stored in ww and wwi. False by default.
      */
     private boolean is;
 
     /**
-     * Trace flag. True if trace information printed. False if trace information not printed.
-     * False by default.
+     * Trace flag. True if trace information printed. False if trace information not printed. False by default.
      */
     private boolean itr;
 
     /**
-     * Diagonal penalty flag. True if diagonal is penalized. False if diagonal is not penalized.
-     * False by default.
+     * Diagonal penalty flag. True if diagonal is penalized. False if diagonal is not penalized. False by default.
      */
     private boolean ipen;
 
     /**
-     * Convergence threshold: Iterations stop when absolute average parameter change is less than
-     * thr * avg(abs(offdiagonal(ss)). (Suggested default 1.0e-4.)
+     * Convergence threshold: Iterations stop when absolute average parameter change is less than thr *
+     * avg(abs(offdiagonal(ss)). (Suggested default 1.0e-4.)
      */
     private double thr = 1.0e-4;
-
-    /**
-     * Return value of the algorithm.
-     */
-    public static class Result {
-
-        /**
-         * solution inverse covariance matrix estimate (ia = 0)
-         * = off-diagonal lasso coefficients (ia != 0)
-         */
-        private final Matrix wwi;
-
-        public Result(Matrix wwi) {
-            this.wwi = wwi;
-        }
-
-        public Matrix getWwi() {
-            return this.wwi;
-        }
-    }
 
     public Glasso(Matrix cov) {
         this.n = cov.getNumRows();
@@ -480,10 +454,6 @@ public class Glasso {
         }
     }
 
-    private interface Rho {
-        double get(int i, int j);
-    }
-
     public boolean isIa() {
         return this.ia;
     }
@@ -520,6 +490,12 @@ public class Glasso {
         return this.thr;
     }
 
+    public void setThr(double thr) {
+        if (thr < 0) throw new IllegalArgumentException("Threshold must be >= 0: " + thr);
+
+        this.thr = thr;
+    }
+
     public int getN() {
         return this.n;
     }
@@ -542,7 +518,6 @@ public class Glasso {
         this.rho = (i, j) -> rho;
     }
 
-
     public int getMaxit() {
         return this.maxit;
     }
@@ -553,10 +528,27 @@ public class Glasso {
         this.maxit = maxit;
     }
 
-    public void setThr(double thr) {
-        if (thr < 0) throw new IllegalArgumentException("Threshold must be >= 0: " + thr);
+    private interface Rho {
+        double get(int i, int j);
+    }
 
-        this.thr = thr;
+    /**
+     * Return value of the algorithm.
+     */
+    public static class Result {
+
+        /**
+         * solution inverse covariance matrix estimate (ia = 0) = off-diagonal lasso coefficients (ia != 0)
+         */
+        private final Matrix wwi;
+
+        public Result(Matrix wwi) {
+            this.wwi = wwi;
+        }
+
+        public Matrix getWwi() {
+            return this.wwi;
+        }
     }
 
 }

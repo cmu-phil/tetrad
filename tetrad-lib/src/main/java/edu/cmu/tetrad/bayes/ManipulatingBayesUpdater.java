@@ -24,10 +24,8 @@ package edu.cmu.tetrad.bayes;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * Interface for a Bayes updating algorithm that's capable of doing
- * manipulation. In general, manipulating a variable X will eliminate edges into
- * X, so the updating operation on the manipulated model will produce different
- * results.
+ * Interface for a Bayes updating algorithm that's capable of doing manipulation. In general, manipulating a variable X
+ * will eliminate edges into X, so the updating operation on the manipulated model will produce different results.
  *
  * @author josephramsey
  */
@@ -35,8 +33,7 @@ public interface ManipulatingBayesUpdater extends BayesUpdater {
     long serialVersionUID = 23L;
 
     /**
-     * @return the Bayes instantiated model after manipulations have been
-     * applied.
+     * @return the Bayes instantiated model after manipulations have been applied.
      */
     BayesIm getManipulatedBayesIm();
 
@@ -51,15 +48,13 @@ public interface ManipulatingBayesUpdater extends BayesUpdater {
     Evidence getEvidence();
 
     /**
-     * Sets new evidence for the updater. Once this is called, old updating
-     * results should not longer be available.
+     * Sets new evidence for the updater. Once this is called, old updating results should not longer be available.
      */
     void setEvidence(Evidence evidence);
 
     /**
-     * @return the updated Bayes IM--that is, the Bayes IM in which all
-     * probabilities of variables conditional on their parents have been
-     * updated.
+     * @return the updated Bayes IM--that is, the Bayes IM in which all probabilities of variables conditional on their
+     * parents have been updated.
      */
     BayesIm getUpdatedBayesIm();
 

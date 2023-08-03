@@ -24,8 +24,8 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.history;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * A distribution from which noise values are drawn.  Each call to nextRandom()
- * draws a new noise value from the distribution.
+ * A distribution from which noise values are drawn.  Each call to nextRandom() draws a new noise value from the
+ * distribution.
  *
  * @author josephramsey
  */

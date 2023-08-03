@@ -29,8 +29,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -42,11 +42,11 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or discrete.
- * This test is valid for both ordinal and non-ordinal discrete searchVariables.
+ * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or
+ * discrete. This test is valid for both ordinal and non-ordinal discrete searchVariables.
  * <p>
- * This logisticRegression makes multiple assumptions: 1. IIA 2. Large sample size (multiple regressions needed on subsets of
- * sample)
+ * This logisticRegression makes multiple assumptions: 1. IIA 2. Large sample size (multiple regressions needed on
+ * subsets of sample)
  *
  * @author josephramsey
  * @author Augustus Mayo.
@@ -55,11 +55,12 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     private final DataSet originalData;
     private final List<Node> searchVariables;
     private final DataSet internalData;
-    private double alpha;
-    private double lastP;
     private final Map<Node, List<Node>> variablesPerNode = new HashMap<>();
     private final LogisticRegression logisticRegression;
     private final RegressionDataset regression;
+    int[] _rows;
+    private double alpha;
+    private double lastP;
     private boolean verbose;
     private boolean preferLinear = true;
 
@@ -97,7 +98,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
             return isIndependentMultinomialLogisticRegression(x, y, z);
         } else if (x instanceof DiscreteVariable) {
@@ -114,7 +115,6 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
         }
     }
-
 
     /**
      * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
@@ -163,16 +163,6 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     * Returns alpha minus the last p-value calculated.
-     *
-     * @return Thsi.
-     */
-    @Override
-    public double getScore() {
-        return alpha - getPValue();
-    }
-
-    /**
      * @return a string representation of this test.
      */
     public String toString() {
@@ -192,7 +182,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -246,7 +236,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         return variables;
     }
 
-    private double[] dependencePvalsLogit(Node x, Node y, List<Node> z) {
+    private double[] dependencePvalsLogit(Node x, Node y, Set<Node> z) {
         if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
@@ -314,7 +304,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         return pVec;
     }
 
-    private IndependenceResult isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
+    private IndependenceResult isIndependentMultinomialLogisticRegression(Node x, Node y, Set<Node> z) {
         double p = dependencePvalsLogit(x, y, z)[0];
         boolean independent = p > this.alpha;
         //0 corresponds to y
@@ -327,10 +317,8 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
     }
-
-    int[] _rows;
 
     // This takes an inordinate amount of time. -jdramsey 20150929
     private int[] getNonMissingRows() {
@@ -343,7 +331,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         return this._rows;
     }
 
-    private double[] dependencePvalsLinear(Node x, Node y, List<Node> z) {
+    private double[] dependencePvalsLinear(Node x, Node y, Set<Node> z) {
         if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
@@ -410,7 +398,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         return pVec;
     }
 
-    private IndependenceResult isIndependentRegression(Node x, Node y, List<Node> z) {
+    private IndependenceResult isIndependentRegression(Node x, Node y, Set<Node> z) {
         double p = Objects.requireNonNull(dependencePvalsLinear(x, y, z))[0];
         //result.getP()[1];
         this.lastP = p;
@@ -424,6 +412,6 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
     }
 }

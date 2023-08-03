@@ -5,8 +5,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataWriter;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
@@ -105,7 +105,7 @@ public class HsimAutoRun {
 
             List<Node> queue = new ArrayList<>();
             queue.add(centroid);
-            List<Node> queueAdd = new ArrayList<>();
+            List<Node> queueAdd;
             //while queue has size less than the resim size, grow it
             //if (verbose) System.out.println(queue);
             while (queue.size() < resimSize) {

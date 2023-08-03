@@ -23,18 +23,16 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.history;
 
 
 /**
- * Instantiations of this interface know how to randomize lag graphs in
- * particular ways.
+ * Instantiations of this interface know how to randomize lag graphs in particular ways.
  *
  * @author josephramsey
  */
 public interface GraphInitializer {
 
     /**
-     * Randomizes the given lag graph--in other words, chooses random edges for
-     * the graph according to a particlar scheme (see instantiations). May or
-     * may not modify the factors in the graph, depending on the particular
-     * scheme. (Whether the factors are modified should be clearly documented.)
+     * Randomizes the given lag graph--in other words, chooses random edges for the graph according to a particlar
+     * scheme (see instantiations). May or may not modify the factors in the graph, depending on the particular scheme.
+     * (Whether the factors are modified should be clearly documented.)
      *
      * @param graph an lag graph.
      */

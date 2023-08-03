@@ -24,13 +24,13 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcMax;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * Tests to make sure the DelimiterType enumeration hasn't been tampered with.
@@ -53,6 +53,7 @@ public final class TestCopy {
         parameters.set("sampleSize", 200);
         parameters.set("alpha", 1e-4, 1e-3, 1e-2);
         parameters.set("penaltyDiscount", 1);
+        parameters.set(Params.USE_MAX_P_HEURISTIC, false, true);
 
         Statistics statistics = new Statistics();
 
@@ -67,7 +68,7 @@ public final class TestCopy {
         statistics.add(new MathewsCorrArrow());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
-        statistics.add(new Shd());
+        statistics.add(new StructuralHammingDistance());
         statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
@@ -76,7 +77,7 @@ public final class TestCopy {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new PcMax(new FisherZ()));
+        algorithms.add(new Pc(new FisherZ()));
 
         Simulations simulations = new Simulations();
 

@@ -25,11 +25,15 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import javax.help.UnsupportedOperationException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Checks conditional independence against a list of conditional independence facts, manually entered.
@@ -59,14 +63,16 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     /**
-     * Checks independence by looking up facts in the list of facts supplied in the
-     * constructor.
+     * Checks independence by looking up facts in the list of facts supplied in the constructor.
      *
      * @return the independence result.
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
-        Node[] _z = new Node[z.size()];
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> __z) {
+        List<Node> z = new ArrayList<Node>(__z);
+        Collections.sort(z);
+
+        Node[] _z = new Node[__z.size()];
 
         for (int i = 0; i < z.size(); i++) {
             _z[i] = z.get(i);
@@ -77,11 +83,11 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(x, y, __z, getPValue()));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, __z), independent, getPValue(), getAlpha() - getPValue());
     }
 
     /**
@@ -153,19 +159,9 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     /**
-     * Returns NaN.
-     *
-     * @return This.
-     */
-    @Override
-    public double getScore() {
-        return getPValue();
-    }
-
-    /**
      * Returns whether verbose output is to be printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean isVerbose() {
         return this.verbose;
@@ -174,7 +170,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     /**
      * Sets whether verbose output is to be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

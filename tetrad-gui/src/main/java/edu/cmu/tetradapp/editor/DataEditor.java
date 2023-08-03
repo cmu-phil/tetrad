@@ -40,28 +40,25 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Displays data objects and allows users to edit these objects as well as load
- * and save them.
+ * Displays data objects and allows users to edit these objects as well as load and save them.
  *
  * @author josephramsey
  */
 public final class DataEditor extends JPanel implements KnowledgeEditable,
         PropertyChangeListener {
 
+    private final Parameters parameters;
     /**
      * The data wrapper being displayed.
      */
     private DataWrapper dataWrapper;
-
     /**
-     * A tabbed pane containing displays for all data models and displaying
-     * 'dataModel' currently.
+     * A tabbed pane containing displays for all data models and displaying 'dataModel' currently.
      */
     private JTabbedPane tabbedPane = new JTabbedPane();
     private boolean showMenus = true;
-    private final Parameters parameters;
 
-    //==========================CONSTUCTORS===============================//
+    //==========================CONSTRUCTORS===============================//
 
     /**
      * Constructs the data editor with an empty list of data displays.
@@ -76,8 +73,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     }
 
     /**
-     * Constructs the data editor with an empty list of data displays, showing
-     * menus optionally.
+     * Constructs the data editor with an empty list of data displays, showing menus optionally.
      *
      * @param showMenus True if menus should be shown.
      */
@@ -128,7 +124,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
-                if (SwingUtilities.isRightMouseButton(e)) {
+                if (SwingUtilities.isRightMouseButton(e) || e.isControlDown()) {
                     Point point = e.getPoint();
                     int index = tabbedPane().indexAtLocation(point.x, point.y);
 
@@ -159,10 +155,33 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
     //==========================PUBLIC METHODS=============================//
 
+    //=============================PRIVATE METHODS======================//
+    private static void removeEmptyModels(DataModelList dataModelList) {
+        for (int i = dataModelList.size() - 1; i >= 0; i--) {
+            DataModel dataModel = dataModelList.get(i);
+
+            if (dataModel instanceof DataSet
+                    && ((DataSet) dataModel).getNumColumns() == 0) {
+                if (dataModelList.size() > 1) {
+                    dataModelList.remove(dataModel);
+                }
+            }
+        }
+    }
+
+    private static String tabName(Object dataModel, int i) {
+        String tabName = ((DataModel) dataModel).getName();
+
+        if (tabName == null) {
+            tabName = "Data Set " + i;
+        }
+
+        return tabName;
+    }
+
     /**
-     * Replaces the getModel Datamodels with the given one. Note, that by
-     * calling this you are removing ALL the getModel data-models, they will be
-     * lost forever!
+     * Replaces the Data models with the given one. Note, that by calling this you are removing ALL the getModel
+     * data-models, they will be lost forever!
      *
      * @param model - The model, must not be null
      */
@@ -373,20 +392,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
     }
 
-    //=============================PRIVATE METHODS======================//
-    private static void removeEmptyModels(DataModelList dataModelList) {
-        for (int i = dataModelList.size() - 1; i >= 0; i--) {
-            DataModel dataModel = dataModelList.get(i);
-
-            if (dataModel instanceof DataSet
-                    && ((DataSet) dataModel).getNumColumns() == 0) {
-                if (dataModelList.size() > 1) {
-                    dataModelList.remove(dataModel);
-                }
-            }
-        }
-    }
-
     private JTable getSelectedJTable() {
         Object display = tabbedPane().getSelectedComponent();
 
@@ -457,8 +462,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                 KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
 
         clearCells.addActionListener(e -> {
-            TabularDataJTable table
-                    = (TabularDataJTable) getSelectedJTable();
+            TabularDataJTable table = (TabularDataJTable) getSelectedJTable();
             assert table != null;
             table.clearSelected();
         });
@@ -642,12 +646,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         JMenu tools = new JMenu("Tools");
         menuBar.add(tools);
 
-//        tools.add(new CalculatorAction(this));
-        tools.add(new HistogramAction(this));
-        tools.add(new ScatterPlotAction(this));
-        tools.add(new QQPlotAction(this));
-        tools.add(new NormalityTestAction(this));
+        tools.add(new PlotMatrixAction(this));
         tools.add(new DescriptiveStatsAction(this));
+        tools.add(new QQPlotAction(this));
 
         final int vkBackSpace = KeyEvent.VK_BACK_SPACE;
         final int vkDelete = KeyEvent.VK_DELETE;
@@ -729,16 +730,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
             validate();
         }
-    }
-
-    private static String tabName(Object dataModel, int i) {
-        String tabName = ((DataModel) dataModel).getName();
-
-        if (tabName == null) {
-            tabName = "Data Set " + i;
-        }
-
-        return tabName;
     }
 
     /**

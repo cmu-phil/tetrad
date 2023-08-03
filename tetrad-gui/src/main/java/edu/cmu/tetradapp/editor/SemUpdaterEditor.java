@@ -79,6 +79,13 @@ public class SemUpdaterEditor extends JPanel {
         add(b1, BorderLayout.CENTER);
     }
 
+    /**
+     * Constructs a new instantiated model editor from a SEM IM wrapper.
+     */
+    public SemUpdaterEditor(SemUpdaterWrapper wrapper) {
+        this(wrapper.getSemUpdater());
+    }
+
     private Box getUpdatePanel() {
         SemEvidence evidence = this.semUpdater.getEvidence();
         this.focusTraversalOrder.clear();
@@ -252,13 +259,6 @@ public class SemUpdaterEditor extends JPanel {
         setFocusCycleRoot(true);
 
         return b;
-    }
-
-    /**
-     * Constructs a new instantiated model editor from a SEM IM wrapper.
-     */
-    public SemUpdaterEditor(SemUpdaterWrapper wrapper) {
-        this(wrapper.getSemUpdater());
     }
 
     //================================PUBLIC METHODS========================//

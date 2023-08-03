@@ -27,8 +27,8 @@ import static edu.cmu.tetrad.util.Params.*;
 /**
  * Wraps the IMaGES algorithm for continuous variables.
  * <p>
- * Requires that the parameter 'randomSelectionSize' be set to indicate how many
- * datasets should be taken at a time (randomly). This cannot given multiple values.
+ * Requires that the parameter 'randomSelectionSize' be set to indicate how many datasets should be taken at a time
+ * (randomly). This cannot given multiple values.
  *
  * @author josephramsey
  */
@@ -193,13 +193,13 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
-        this.test = independenceWrapper;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return this.test;
     }
 
     @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 
     @Override
@@ -207,14 +207,13 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         this.algorithm = algorithm;
     }
 
+    @Override
+    public ScoreWrapper getScoreWrapper() {
+        return this.score;
+    }
 
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
-    }
-
-    @Override
-    public ScoreWrapper getScoreWrapper() {
-        return this.score;
     }
 }

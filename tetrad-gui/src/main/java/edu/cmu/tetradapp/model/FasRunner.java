@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.Fas;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Parameters;
@@ -47,9 +47,8 @@ public class FasRunner extends AbstractAlgorithmRunner
     //============================CONSTRUCTORS============================//
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DataWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DataWrapper must contain a DataSet that is either a DataSet
+     * or a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public FasRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -118,7 +117,7 @@ public class FasRunner extends AbstractAlgorithmRunner
 
     public MeekRules getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        rules.setMeekPreventCycles(this.isMeekPreventCycles());
         rules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
         return rules;
     }
@@ -180,8 +179,7 @@ public class FasRunner extends AbstractAlgorithmRunner
     }
 
     /**
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
-     * for the given node.
+     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new ArrayList<>();
@@ -193,10 +191,10 @@ public class FasRunner extends AbstractAlgorithmRunner
 
     //========================== Private Methods ===============================//
 
-    private boolean isAggressivelyPreventCycles() {
+    private boolean isMeekPreventCycles() {
         Parameters params = getParams();
         if (params != null) {
-            return params.getBoolean("aggressivelyPreventCycles", true);
+            return params.getBoolean("MeekPreventCycles", true);
         }
         return false;
     }

@@ -63,8 +63,7 @@ public class BayesPmWrapper implements SessionModel {
     //==============================CONSTRUCTORS=========================//
 
     /**
-     * Creates a new BayesPm from the given DAG and uses it to construct a new
-     * BayesPm.
+     * Creates a new BayesPm from the given DAG and uses it to construct a new BayesPm.
      */
     public BayesPmWrapper(Graph graph, Parameters params) {
         if (graph == null) {
@@ -84,16 +83,6 @@ public class BayesPmWrapper implements SessionModel {
         } else {
             throw new IllegalStateException("Unrecognized type.");
         }
-    }
-
-    private void setBayesPm(Graph graph, int lowerBound, int upperBound) {
-        BayesPm b = new BayesPm(graph, lowerBound, upperBound);
-        setBayesPm(b);
-    }
-
-    private void setBayesPm(BayesPm b) {
-        this.bayesPms = new ArrayList<>();
-        this.bayesPms.add(b);
     }
 
     public BayesPmWrapper(Simulation simulation) {
@@ -158,11 +147,9 @@ public class BayesPmWrapper implements SessionModel {
     }
 
     /**
-     * Creates a new BayesPm from the given workbench and uses it to construct a
-     * new BayesPm.
+     * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
      *
-     * @throws RuntimeException If the parent graph cannot be converted into a
-     *                          DAG.
+     * @throws RuntimeException If the parent graph cannot be converted into a DAG.
      */
     public BayesPmWrapper(GraphWrapper graphWrapper, Parameters params) {
         if (graphWrapper == null) {
@@ -273,11 +260,9 @@ public class BayesPmWrapper implements SessionModel {
     }
 
     /**
-     * Creates a new BayesPm from the given workbench and uses it to construct a
-     * new BayesPm.
+     * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
      *
-     * @throws RuntimeException If the parent graph cannot be converted into a
-     *                          DAG.
+     * @throws RuntimeException If the parent graph cannot be converted into a DAG.
      */
     public BayesPmWrapper(DagWrapper dagWrapper, Parameters params) {
         if (dagWrapper == null) {
@@ -390,20 +375,28 @@ public class BayesPmWrapper implements SessionModel {
         return new BayesPmWrapper(Dag.serializableInstance(), new Parameters());
     }
 
+    private void setBayesPm(Graph graph, int lowerBound, int upperBound) {
+        BayesPm b = new BayesPm(graph, lowerBound, upperBound);
+        setBayesPm(b);
+    }
+
     //=============================PUBLIC METHODS========================//
     public BayesPm getBayesPm() {
         return this.bayesPms.get(getModelIndex());
     }
 
+    private void setBayesPm(BayesPm b) {
+        this.bayesPms = new ArrayList<>();
+        this.bayesPms.add(b);
+    }
+
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -453,11 +446,11 @@ public class BayesPmWrapper implements SessionModel {
         return this.modelIndex;
     }
 
-    public String getModelSourceName() {
-        return this.modelSourceName;
-    }
-
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return this.modelSourceName;
     }
 }

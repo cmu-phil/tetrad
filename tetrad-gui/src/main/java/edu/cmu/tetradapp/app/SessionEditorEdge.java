@@ -33,12 +33,11 @@ import java.awt.*;
  */
 final class SessionEditorEdge extends DisplayEdge {
 
+    /* Modes */
+    public static final int UNRANDOMIZED = 0;
     /* Colors */
     private static final Color DIE_BACKGROUND = Color.red;
     private static final Color DIE_DOT = Color.black;
-
-    /* Modes */
-    public static final int UNRANDOMIZED = 0;
     private static final int RANDOMIZED = 1;
 
     /* States */
@@ -47,13 +46,12 @@ final class SessionEditorEdge extends DisplayEdge {
     private int sessionEdgeMode;
 
     /**
-     * Constructs a new SessionEditorEdge connecting two components, 'node1' and
-     * 'node2'.  The anchor component will be node1.
+     * Constructs a new SessionEditorEdge connecting two components, 'node1' and 'node2'.  The anchor component will be
+     * node1.
      *
      * @param node1           the 'from' component.
      * @param node2           the 'to' component.
-     * @param sessionEdgeMode the sessionEdgeMode of the edge, either
-     *                        UNRANDOMIZED or RANDOMIZED.
+     * @param sessionEdgeMode the sessionEdgeMode of the edge, either UNRANDOMIZED or RANDOMIZED.
      */
     public SessionEditorEdge(SessionEditorNode node1, SessionEditorNode node2,
                              int sessionEdgeMode) {
@@ -68,12 +66,10 @@ final class SessionEditorEdge extends DisplayEdge {
     }
 
     /**
-     * Constructs a new unanchored session edge.  The end of the edge at 'node1'
-     * is anchored, but the other end tracks a mouse point. The mouse point
-     * should be updated by the parent component using repeated calls to
-     * 'updateTrackPoint'; this process is finished by finally anchoring the
-     * second end of the of edge using 'anchorSecondEnd'.  Once this is done,
-     * the edge is considered anchored and will not be able to track a mouse
+     * Constructs a new unanchored session edge.  The end of the edge at 'node1' is anchored, but the other end tracks a
+     * mouse point. The mouse point should be updated by the parent component using repeated calls to
+     * 'updateTrackPoint'; this process is finished by finally anchoring the second end of the of edge using
+     * 'anchorSecondEnd'.  Once this is done, the edge is considered anchored and will not be able to track a mouse
      * point any longer.
      *
      * @param node1           the 'from' component.
@@ -85,12 +81,10 @@ final class SessionEditorEdge extends DisplayEdge {
     }
 
     /**
-     * Constructs a new unanchored session edge.  The end of the edge a 'node1'
-     * is anchored, but the other end tracks a mouse point. The mouse point
-     * should be updated by the parent component using repeated calls to
-     * 'updateTrackPoint'; this process is finished by finally anchoring the
-     * second end of the of edge using 'anchorSecondEnd'.  Once this is done,
-     * the edge is considered anchored and will not be able to track a mouse
+     * Constructs a new unanchored session edge.  The end of the edge a 'node1' is anchored, but the other end tracks a
+     * mouse point. The mouse point should be updated by the parent component using repeated calls to
+     * 'updateTrackPoint'; this process is finished by finally anchoring the second end of the of edge using
+     * 'anchorSecondEnd'.  Once this is done, the edge is considered anchored and will not be able to track a mouse
      * point any longer.
      *
      * @param node1           the 'from' component.

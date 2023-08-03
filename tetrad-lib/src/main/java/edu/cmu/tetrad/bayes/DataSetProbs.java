@@ -46,10 +46,8 @@ public final class DataSetProbs implements DiscreteProbs {
     private final DataSet dataSet;
 
     /**
-     * An array whose length is the number of dimensions of the cell and whose
-     * contents, for each value dims[i], are the numbers of values for each
-     * i'th dimension. Each of these dimensions must be an integer greater than
-     * zero.
+     * An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
+     * numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
      *
      * @serial
      */
@@ -63,8 +61,7 @@ public final class DataSetProbs implements DiscreteProbs {
     private final int numRows;
 
     /**
-     * True iff a missing value case was found on the last run through the
-     * data.
+     * True iff a missing value case was found on the last run through the data.
      *
      * @serial
      */
@@ -95,8 +92,8 @@ public final class DataSetProbs implements DiscreteProbs {
     //===========================PUBLIC METHODS=========================//
 
     /**
-     * @return the estimated probability for the given cell. The order of the
-     * variable values is the order of the variables in getVariable().
+     * @return the estimated probability for the given cell. The order of the variable values is the order of the
+     * variables in getVariable().
      */
     public double getCellProb(int[] variableValues) {
         int[] point = new int[this.dims.length];
@@ -152,8 +149,7 @@ public final class DataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated conditional probability for the given assertion
-     * conditional on the given condition.
+     * @return the estimated conditional probability for the given assertion conditional on the given condition.
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
@@ -212,8 +208,7 @@ public final class DataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the list of variables for the dataset that this is estimating
-     * probabilities for.
+     * @return the list of variables for the dataset that this is estimating probabilities for.
      */
     public List<Node> getVariables() {
         return null;

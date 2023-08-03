@@ -25,12 +25,10 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Provides the methods for computing mutual information between expression
- * levels between genes and, for a given gene, between points in time determined
- * by a lag value. The methods implemented here follow the definitions
- * given in the paper "Reveal, a  General Reverse Engineering Algorithm for
- * Inference of Genetic Network Architectures" by Liang, Fuhrman and Somogyi,
- * Pacific Symposium on Biocomputing 3:18-29 (1998).
+ * Provides the methods for computing mutual information between expression levels between genes and, for a given gene,
+ * between points in time determined by a lag value. The methods implemented here follow the definitions given in the
+ * paper "Reveal, a  General Reverse Engineering Algorithm for Inference of Genetic Network Architectures" by Liang,
+ * Fuhrman and Somogyi, Pacific Symposium on Biocomputing 3:18-29 (1998).
  *
  * @author Frank Wimberly
  */
@@ -49,10 +47,9 @@ public class RevealEvaluator {
     }
 
     /**
-     * This method computes the cross tablulation (table) of values of a gene
-     * and its possible parent.  This should help evaluate whether the two are
-     * related by a canalyzing function.  The third argument is the time lag
-     * between cause and effect, as usual.
+     * This method computes the cross tablulation (table) of values of a gene and its possible parent.  This should help
+     * evaluate whether the two are related by a canalyzing function.  The third argument is the time lag between cause
+     * and effect, as usual.
      */
     public int[][] crossTab(int child, int parent, int lag) {
         int[][] ns = new int[2][2];
@@ -72,10 +69,9 @@ public class RevealEvaluator {
     }
 
     /**
-     * This method computes the mutual information between a gene and a set of
-     * presumptive causes (other genes).  There must be at least one cause but
-     * there may be only one.  The third argument is the time lag between the
-     * cause(s) and the effect.  See Fig. 5 in the Liang et al. paper.
+     * This method computes the mutual information between a gene and a set of presumptive causes (other genes).  There
+     * must be at least one cause but there may be only one.  The third argument is the time lag between the cause(s)
+     * and the effect.  See Fig. 5 in the Liang et al. paper.
      */
     public double mutualInformation(int child, int[] parents, int lag) {
 
@@ -130,10 +126,9 @@ public class RevealEvaluator {
     }
 
     /**
-     * This method computes the mutual information between a gene and a set of
-     * presumptive causes (other genes).  There must be at least one cause but
-     * there may be only one.  The third argument is the time lag between the
-     * cause(s) and the effect.  See Fig. 5 in the Liang et al. paper.
+     * This method computes the mutual information between a gene and a set of presumptive causes (other genes).  There
+     * must be at least one cause but there may be only one.  The third argument is the time lag between the cause(s)
+     * and the effect.  See Fig. 5 in the Liang et al. paper.
      */
     public double mutualInformation(int child, int[] parents, int[] lags) {
 
@@ -201,10 +196,8 @@ public class RevealEvaluator {
     }
 
     /**
-     * This method computes the entropy of a binary signal stored in an int
-     * array.  It assume that the values in the array are 0's and 1's. (Actually
-     * 1's may be replaced by any nonzero value)  See page 20 of the Liang
-     * paper.
+     * This method computes the entropy of a binary signal stored in an int array.  It assume that the values in the
+     * array are 0's and 1's. (Actually 1's may be replaced by any nonzero value)  See page 20 of the Liang paper.
      */
     public double entropy(int[] x) {
         double h = 0.0;
@@ -229,11 +222,10 @@ public class RevealEvaluator {
     }
 
     /**
-     * This method implements the same definition of entropy as above but this
-     * specialized version is intended to be used by the mutualInformation
-     * method (viz).  This method computes the entropy of a gene's binarized
-     * expressions from a point in time until the end of the data signal.  This
-     * is useful in the normalization of the mutual information.
+     * This method implements the same definition of entropy as above but this specialized version is intended to be
+     * used by the mutualInformation method (viz).  This method computes the entropy of a gene's binarized expressions
+     * from a point in time until the end of the data signal.  This is useful in the normalization of the mutual
+     * information.
      */
     public double entropy(int g, int lag) {
         double h = 0.0;
@@ -259,8 +251,8 @@ public class RevealEvaluator {
     }
 
     /**
-     * This method computes the joint entropy of two arrays. The values stored
-     * in those arrays are assumed to be restricted to {0,1}.
+     * This method computes the joint entropy of two arrays. The values stored in those arrays are assumed to be
+     * restricted to {0,1}.
      */
     public double jointEntropy(int[] x, int[] y) {
         double h;
@@ -371,8 +363,8 @@ public class RevealEvaluator {
     }
 
     /**
-     * Computes a byte vector which corresponds to the argument ind.  rep[0] is
-     * the high order bit. E.g.  if n=3 and ind=6 the vector will be (1, 1, 0).
+     * Computes a byte vector which corresponds to the argument ind.  rep[0] is the high order bit. E.g.  if n=3 and
+     * ind=6 the vector will be (1, 1, 0).
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];

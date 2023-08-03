@@ -21,9 +21,9 @@ package edu.pitt.dbmi.data.reader.preview;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -43,7 +43,7 @@ public class BasicDataPreviewerTest {
      */
     @Test
     public void testGetPreviews() throws IOException {
-        Path dataFile = Paths.get(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile());
+        Path dataFile = new File(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile()).toPath();
 
         DataPreviewer dataPreviewer = new BasicDataPreviewer(dataFile);
 

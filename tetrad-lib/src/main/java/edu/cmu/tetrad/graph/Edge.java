@@ -31,45 +31,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents an edge node1 *-# node2 where * and # are endpoints of type
- * Endpoint--that is, Endpoint.TAIL, Endpoint.ARROW, or Endpoint.CIRCLE.
+ * Represents an edge node1 *-# node2 where * and # are endpoints of type Endpoint--that is, Endpoint.TAIL,
+ * Endpoint.ARROW, or Endpoint.CIRCLE.
  * <p>
- * Note that because speed is of the essence, and Edge cannot be compared to an
- * object of any other type; this will throw an exception.
+ * Note that because speed is of the essence, and Edge cannot be compared to an object of any other type; this will
+ * throw an exception.
  *
  * @author josephramsey
  */
 public class Edge implements TetradSerializable, Comparable<Edge> {
     static final long serialVersionUID = 23L;
-
-
-    public enum Property {
-        dd, nl, pd, pl
-    }
-
     private final Node node1;
     private final Node node2;
     private Endpoint endpoint1;
     private Endpoint endpoint2;
-
     // Usual coloring--set to something else for a special line color.
     private transient Color lineColor;
-
     private boolean bold = false;
-
     private boolean highlighted = false;
-
     private List<Property> properties = new ArrayList<>();
-
     private List<EdgeTypeProbability> edgeTypeProbabilities = new ArrayList<>();
-
     private double probability;
 
-    // =========================CONSTRUCTORS============================//
-
     /**
-     * Constructs a new edge by specifying the nodes it connects and the
-     * endpoint types.
+     * Constructs a new edge by specifying the nodes it connects and the endpoint types.
      *
      * @param node1     the first node
      * @param node2     the second node _
@@ -99,6 +84,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         }
     }
 
+    // =========================CONSTRUCTORS============================//
+
     public Edge(Edge edge) {
         this(edge.node1, edge.node2, edge.endpoint1, edge.endpoint2);
         this.lineColor = edge.getLineColor();
@@ -117,14 +104,14 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
                 Endpoint.ARROW);
     }
 
-    // ==========================PUBLIC METHODS===========================//
-
     /**
      * @return the A node.
      */
     public final Node getNode1() {
         return this.node1;
     }
+
+    // ==========================PUBLIC METHODS===========================//
 
     /**
      * @return the B node.
@@ -140,15 +127,15 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         return this.endpoint1;
     }
 
+    public final void setEndpoint1(Endpoint e) {
+        this.endpoint1 = e;
+    }
+
     /**
      * @return the endpoint of the edge at the B node.
      */
     public final Endpoint getEndpoint2() {
         return this.endpoint2;
-    }
-
-    public final void setEndpoint1(Endpoint e) {
-        this.endpoint1 = e;
     }
 
     public final void setEndpoint2(Endpoint e) {
@@ -184,8 +171,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
-     * Traverses the edge in an undirected fashion--given one node along the
-     * edge, returns the node at the opposite end of the edge.
+     * Traverses the edge in an undirected fashion--given one node along the edge, returns the node at the opposite end
+     * of the edge.
      */
     public final Node getDistalNode(Node node) {
         if (this.node1 == node) {
@@ -207,8 +194,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
-     * @return true just in case the edge is pointing toward the given node--
-     * that is, x --&gt; node or x o--&gt; node.
+     * @return true just in case the edge is pointing toward the given node-- that is, x --&gt; node or x o--&gt; node.
      */
     public boolean pointsTowards(Node node) {
         Endpoint proximal = getProximalEndpoint(node);
@@ -335,53 +321,32 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
-     * Two edges are equal just in case they connect the same nodes and have the
-     * same endpoints proximal to each node.
+     * Two edges are equal just in case they connect the same nodes and have the same endpoints proximal to each node.
      */
     public final boolean equals(Object o) {
-        if (o == this)
-            return true;
+        if (o == null)
+            return false;
         if (!(o instanceof Edge))
             return false;
 
         Edge edge = (Edge) o;
 
-        if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
-            Node node1 = this.getNode1();
-            Node node2 = this.getNode2();
-            Node node1b = edge.getNode1();
-            Node node2b = edge.getNode2();
+        String name1 = getNode1().getName();
+        String name2 = getNode2().getName();
+        String name1b = edge.getNode1().getName();
+        String name2b = edge.getNode2().getName();
 
-            Endpoint end1 = this.getEndpoint1();
-            Endpoint end2 = this.getEndpoint2();
-            Endpoint end1b = edge.getEndpoint1();
-            Endpoint end2b = edge.getEndpoint2();
+        Endpoint end1 = getEndpoint1();
+        Endpoint end2 = getEndpoint2();
+        Endpoint end1b = edge.getEndpoint1();
+        Endpoint end2b = edge.getEndpoint2();
 
-            boolean equal;
-
-            if (node1 == node1b && node2 == node2b) {
-                equal = end1 == end1b && end2 == end2b;
-            } else
-                equal = node1 == node2b && node2 == node1b && end1 == end2b && end2 == end1b;
-
-            return equal;
-        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            String name1 = getNode1().getName();
-            String name2 = getNode2().getName();
-            String name1b = edge.getNode1().getName();
-            String name2b = edge.getNode2().getName();
-
-            Endpoint end1 = getEndpoint1();
-            Endpoint end2 = getEndpoint2();
-            Endpoint end1b = edge.getEndpoint1();
-            Endpoint end2b = edge.getEndpoint2();
-
-            if (name1.equals(name1b) && name2.equals(name2b)) {
-                return end1 == end1b && end2 == end2b;
-            } else
-                return name1.equals(name2b) && name2.equals(name1b) && end1 == end2b && end2 == end1b;
+        if (name1.hashCode() == name1b.hashCode() && name2.hashCode() == name2b.hashCode()
+                && name1.equals(name1b) && name2.equals(name2b)) {
+            return end1 == end1b && end2 == end2b;
         } else {
-            throw new IllegalStateException();
+            return name1.hashCode() == name2b.hashCode() && name2.hashCode() == name1b.hashCode()
+                    && name1.equals(name2b) && name2.equals(name1b) && end1 == end2b && end2 == end1b;
         }
     }
 
@@ -395,21 +360,19 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         return getNode2().compareTo(_edge.getNode2());
     }
 
-    // ===========================PRIVATE METHODS===========================//
-
     private boolean pointingLeft(Endpoint endpoint1, Endpoint endpoint2) {
         return (endpoint1 == Endpoint.ARROW && (endpoint2 == Endpoint.TAIL || endpoint2 == Endpoint.CIRCLE));
     }
 
+    // ===========================PRIVATE METHODS===========================//
+
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.)
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.)
      */
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -473,5 +436,9 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
     public void setHighlighted(boolean highlighted) {
         this.highlighted = highlighted;
+    }
+
+    public enum Property {
+        dd, nl, pd, pl
     }
 }

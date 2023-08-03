@@ -40,10 +40,12 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
+public class SemEstimatorWrapper implements SessionModel {
+    ;//}, Unmarshallable {
 
     static final long serialVersionUID = 23L;
     private final Parameters params;
+    private final SemPm semPm;
     /**
      * @serial Can be null.
      */
@@ -52,14 +54,12 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
      * @serial Cannot be null.
      */
     private SemEstimator semEstimator;
-    private final SemPm semPm;
 
     //==============================CONSTRUCTORS==========================//
 
     /**
-     * Private constructor for serialization only. Problem is, for the real
-     * constructors, I'd like to call the degrees of freedom check, which pops
-     * up a dialog. This is irritating when running unit tests. jdramsey 8/29/07
+     * Private constructor for serialization only. Problem is, for the real constructors, I'd like to call the degrees
+     * of freedom check, which pops up a dialog. This is irritating when running unit tests. jdramsey 8/29/07
      */
     public SemEstimatorWrapper(DataModel dataModel, SemPm semPm, Parameters params) {
         this.params = params;
@@ -189,14 +189,12 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

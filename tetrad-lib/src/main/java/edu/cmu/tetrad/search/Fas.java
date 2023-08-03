@@ -23,7 +23,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -33,29 +34,27 @@ import java.io.PrintStream;
 import java.util.*;
 
 /**
- * <p>Implements the adjacency search of the PC algorithm (see), which is a useful algorithm
- * in many contexts, including as the first step of FCI (see). Se we call it the "Fast
- * Adjacency Search" (FAS), to give it a name.</p>
+ * <p>Implements the Fast Adjacency Search (FAS), which is the adjacency search of the PC algorithm (see). This is a
+ * useful algorithm in many contexts, including as the first step of FCI (see).</p>
  *
  * <p>The idea of FAS is that at a given stage of the search, an edge X*-*Y is removed from the
- * graph if X _||_ Y | S, where S is a subset of size d either of adj(X) or of adj(Y), where d
- * is the depth of the search. The fast adjacency search performs this procedure for each pair
- * of adjacent edges in the graph and for each depth d = 0, 1, 2, ..., d1, where d1 is either
- * the maximum depth or else the first such depth at which no edges can be removed. The
- * interpretation of this adjacency search is different for different algorithm, depending on
- * the assumptions of the algorithm. A mapping from {x, y} to S({x, y}) is returned for edges
- * x *-* y that have been removed.</p>
+ * graph if X _||_ Y | S, where S is a subset of size d either of adj(X) or of adj(Y), where d is the depth of the
+ * search. The fast adjacency search performs this procedure for each pair of adjacent edges in the graph and for each
+ * depth d = 0, 1, 2, ..., d1, where d1 is either the maximum depth or else the first such depth at which no edges can
+ * be removed. The interpretation of this adjacency search is different for different algorithm, depending on the
+ * assumptions of the algorithm. A mapping from {x, y} to S({x, y}) is returned for edges x *-* y that have been
+ * removed.</p>
  *
- * <p>Optionally uses Heuristic 3 from Causation, Prediction and Search, which (like FAS-Stable)
- * renders the output invariant to the order of the input variables (See Tsagris).</p>
+ * <p>FAS may optionally use a heuristic from Causation, Prediction and Search, which (like PC-Stable)
+ * renders the output invariant to the order of the input variables.</p>
  *
  * <p>This algorithm was described in the earlier edition of this book:</p>
  *
- * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
- * prediction, and search. MIT press.</p>
+ * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT
+ * press.</p>
  *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.</p>
  *
  * @author peterspirtes
  * @author clarkglymour
@@ -65,49 +64,18 @@ import java.util.*;
  * @see Knowledge
  */
 public class Fas implements IFas {
-
-    /**
-     * The independence test. This should be appropriate to the types
-     */
     private final IndependenceTest test;
-
-    /**
-     * The logger, by default the empty logger.
-     */
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * Specification of which edges are forbidden or required.
-     */
     private Knowledge knowledge = new Knowledge();
-    /**
-     * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
-     * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
-     */
-    private int depth = 1000;
     private int numIndependenceTests;
-
-    /**
-     * The sepsets found during the search.
-     */
     private SepsetMap sepset = new SepsetMap();
-    /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose;
-
-    /**
-     * Which heuristic to use to fix variable order (1, 2, 3, or 0 = none).
-     */
-    private int heuristic;
-
-    /**
-     * FAS-Stable.
-     */
-    private boolean stable;
+    private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
+    private int depth = 1000;
+    private boolean stable = true;
     private long elapsedTime = 0L;
+    private PrintStream out = System.out;
+    private boolean verbose = false;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructor.
@@ -118,7 +86,6 @@ public class Fas implements IFas {
         this.test = test;
     }
 
-    //==========================PUBLIC METHODS===========================//
 
     /**
      * Runs the search and returns the resulting (undirected) graph.
@@ -132,21 +99,23 @@ public class Fas implements IFas {
 
     /**
      * Discovers all adjacencies in data.  The procedure is to remove edges in the graph which connect pairs of
-     * variables which are independent conditional on some other set of variables in the graph (the "sepset"). These are
+     * variables which are independent, conditional on some other set of variables in the graph (the "sepset"). These are
      * removed in tiers.  First, edges which are independent conditional on zero other variables are removed, then edges
      * which are independent conditional on one other variable are removed, then two, then three, and so on, until no
      * more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
      * adjacencies in the data.
      *
      * @param nodes A list of nodes to search over.
-     * @return An undirected graph that summarizes the conditional independendencies that obtain in the data.
+     * @return An undirected graph that summarizes the conditional independencies that obtain in the data.
      */
     public Graph search(List<Node> nodes) {
         long startTime = MillisecondTimes.timeMillis();
         nodes = new ArrayList<>(nodes);
 
+        this.logger.addOutputStream(out);
+
         if (verbose) {
-            this.logger.log("info", "Starting Fast Adjacency Search.");
+            this.logger.forceLogMessage("Starting Fast Adjacency Search.");
         }
 
         this.test.setVerbose(this.verbose);
@@ -162,7 +131,7 @@ public class Fas implements IFas {
         List<Edge> edges = new ArrayList<>();
         Map<Edge, Double> scores = new HashMap<>();
 
-        if (this.heuristic == 1) {
+        if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_1) {
             Collections.sort(nodes);
         }
 
@@ -173,11 +142,11 @@ public class Fas implements IFas {
         }
 
         for (Edge edge : edges) {
-            this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new ArrayList<>());
-            scores.put(edge, this.test.getScore());
+            IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
+            scores.put(edge, result.getScore());
         }
 
-        if (this.heuristic == 2 || this.heuristic == 3) {
+        if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_2 || this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_3) {
             edges.sort(Comparator.comparing(scores::get));
         }
 
@@ -201,11 +170,13 @@ public class Fas implements IFas {
                 edges.remove(edge);
                 adjacencies.get(edge.getNode1()).remove(edge.getNode2());
                 adjacencies.get(edge.getNode2()).remove(edge.getNode1());
-                this.sepset.set(edge.getNode1(), edge.getNode2(), new ArrayList<>());
+                this.sepset.set(edge.getNode1(), edge.getNode2(), new HashSet<>());
             }
         }
 
         for (int d = 0; d <= _depth; d++) {
+            System.out.println("Depth: " + d);
+
             boolean more;
 
             if (this.stable) {
@@ -225,8 +196,8 @@ public class Fas implements IFas {
             }
         }
 
-        // The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
-        // x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
+        // The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node
+        // x. It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
         Graph graph = new EdgeListGraph(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
@@ -241,7 +212,7 @@ public class Fas implements IFas {
         }
 
         if (verbose) {
-            this.logger.log("info", "Finishing Fast Adjacency Search.");
+            this.logger.forceLogMessage("Finishing Fast Adjacency Search.");
         }
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
@@ -250,8 +221,8 @@ public class Fas implements IFas {
     }
 
     /**
-     * Sets the depth of the search, which is the maximum number of variables that ben be conditioned
-     * on in any conditional independence test.
+     * Sets the depth of the search, which is the maximum number of variables that ben be conditioned on in any
+     * conditional independence test.
      *
      * @param depth This maximum.
      */
@@ -265,9 +236,9 @@ public class Fas implements IFas {
     }
 
     /**
-     * Sets the knowledge to be used int the search.
+     * Sets the knowledge to be used in the search.
      *
-     * @param knowledge This knoweldge.
+     * @param knowledge This knowledge.
      * @see Knowledge
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -275,7 +246,7 @@ public class Fas implements IFas {
     }
 
     /**
-     * Returns the nubmer of independence tests that were done.
+     * Returns the number of independence tests that were done.
      *
      * @return This number.
      */
@@ -333,26 +304,28 @@ public class Fas implements IFas {
     }
 
     /**
-     * This is not used here.
-     *
      * @param out This print stream.
      */
     @Override
     public void setOut(PrintStream out) {
-        throw new UnsupportedOperationException("Print to out for FAS is not used.");
+        this.out = out;
     }
 
     /**
-     * Sets the heuristic to use to fix variable order (1, 2, 3, or 0 = none).
-     *
-     * @param heuristic This heuristic.
+     * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search). Default is
+     *                    PcHeuristicType.NONE.
+     * @see PcCommon.PcHeuristicType
      */
-    public void setHeuristic(int heuristic) {
-        this.heuristic = heuristic;
+    public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristic) {
+        this.heuristic = pcHeuristic;
     }
 
     /**
-     * Sets whether the stable algorithm shoudl be used.
+     * <p>Sets whether the stable adjacency search should be used. Default is false. Default is false. See the
+     * following reference for this:</p>
+     *
+     * <p>Colombo, D., & Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J. Mach.
+     * Learn. Res., 15(1), 3741-3782.</p>
      *
      * @param stable True iff the case.
      */
@@ -404,7 +377,7 @@ public class Fas implements IFas {
         List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
         _adjx.remove(y);
 
-        if (this.heuristic == 1 || this.heuristic == 2) {
+        if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_1 || this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_2) {
             Collections.sort(_adjx);
         }
 
@@ -417,7 +390,7 @@ public class Fas implements IFas {
             scores2.put(node, _score);
         }
 
-        if (this.heuristic == 3) {
+        if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_3) {
             ppx.sort(Comparator.comparing(scores2::get));
             Collections.reverse(ppx);
         }
@@ -431,13 +404,13 @@ public class Fas implements IFas {
                     break;
                 }
 
-                List<Node> Z = GraphUtils.asList(choice, ppx);
+                Set<Node> Z = GraphUtils.asSet(choice, ppx);
 
                 this.numIndependenceTests++;
+
                 boolean independent = test.checkIndependence(x, y, Z).isIndependent();
 
-                boolean noEdgeRequired =
-                        this.knowledge.noEdgeRequired(x.getName(), y.getName());
+                boolean noEdgeRequired = this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
                 if (independent && noEdgeRequired) {
                     adjacencies.get(x).remove(y);
@@ -447,7 +420,6 @@ public class Fas implements IFas {
 
                     return true;
                 }
-
             }
         }
 

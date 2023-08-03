@@ -24,15 +24,16 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
- * Gives a method of interpreting a test as a score. Various independence tests
- * will calculate p-values; they simply report alpha - p as a score, which will
- * be higher for greater dependence. This class wraps such an independence test
+ * Gives a method of interpreting a test as a score. Various independence tests will calculate p-values; they simply
+ * report alpha - p as a score, which will be higher for greater dependence. This class wraps such an independence test
  * and returns the score reported by that test.
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
@@ -85,8 +86,8 @@ public class IndTestScore implements Score {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        this.test.checkIndependence(this.variables.get(x), this.variables.get(y), getVariableList(z));
-        return this.test.getScore();
+        IndependenceResult result = this.test.checkIndependence(this.variables.get(x), this.variables.get(y), new HashSet<>(getVariableList(z)));
+        return result.getScore();
     }
 
     /**

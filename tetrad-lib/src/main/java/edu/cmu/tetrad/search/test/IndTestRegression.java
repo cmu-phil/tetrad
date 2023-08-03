@@ -32,21 +32,21 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Checks independence of X _||_ Y | Z for variables X and Y and list Z of variables by
- * regressing X on {Y} U Z and testing whether the coefficient for Y is zero.
+ * Checks independence of X _||_ Y | Z for variables X and Y and list Z of variables by regressing X on {Y} U Z and
+ * testing whether the coefficient for Y is zero.
  *
  * @author josephramsey
  * @author Frank Wimberly
@@ -54,33 +54,28 @@ import java.util.List;
 public final class IndTestRegression implements IndependenceTest {
 
     /**
+     * The standard number formatter for Tetrad.
+     */
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    /**
      * The correlation matrix.
      */
     private final DoubleMatrix2D data;
-
     /**
      * The variables of the correlation matrix, in order. (Unmodifiable list.)
      */
     private final List<Node> variables;
-
+    private final DataSet dataSet;
     /**
      * The significance level of the independence tests.
      */
     private double alpha;
-
     /**
      * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
      */
     private double fishersZ;
-
-    /**
-     * The standard number formatter for Tetrad.
-     */
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private final DataSet dataSet;
     private boolean verbose;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation matrix implied by the
@@ -100,7 +95,6 @@ public final class IndTestRegression implements IndependenceTest {
         setAlpha(alpha);
     }
 
-    //==========================PUBLIC METHODS=============================//
 
     /**
      * Creates a new IndTestCramerT instance for a subset of the variables.
@@ -118,7 +112,7 @@ public final class IndTestRegression implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node xVar, Node yVar, List<Node> zList) {
+    public IndependenceResult checkIndependence(Node xVar, Node yVar, Set<Node> zList) {
         if (zList == null) {
             throw new NullPointerException();
         }
@@ -143,7 +137,7 @@ public final class IndTestRegression implements IndependenceTest {
             result = regression.regress(xVar, regressors);
         } catch (Exception e) {
             return new IndependenceResult(new IndependenceFact(xVar, yVar, zList),
-                    false, Double.NaN);
+                    false, Double.NaN, Double.NaN);
         }
 
         double p = result.getP()[1];
@@ -166,14 +160,14 @@ public final class IndTestRegression implements IndependenceTest {
         }
 
         return new IndependenceResult(new IndependenceFact(xVar, yVar, zList),
-                independent, p);
+                independent, p, getAlpha() - p);
     }
 
     /**
-     * @return the probability associated with the most recently computed independence test.
+     * Gets the getModel significance level.
      */
-    public double getPValue() {
-        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(this.fishersZ)));
+    public double getAlpha() {
+        return this.alpha;
     }
 
     /**
@@ -189,13 +183,6 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     /**
-     * Gets the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
-    }
-
-    /**
      * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
@@ -208,7 +195,6 @@ public final class IndTestRegression implements IndependenceTest {
         return "Linear Regression Test, alpha = " + IndTestRegression.nf.format(getAlpha());
     }
 
-    //==========================PRIVATE METHODS============================//
 
     public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {
@@ -279,12 +265,6 @@ public final class IndTestRegression implements IndependenceTest {
 
     public DataSet getData() {
         return this.dataSet;
-    }
-
-
-    @Override
-    public double getScore() {
-        return getPValue();
     }
 
     public boolean isVerbose() {

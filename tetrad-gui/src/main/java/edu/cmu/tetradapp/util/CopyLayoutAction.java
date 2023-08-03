@@ -30,8 +30,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 
 /**
- * Copies the getModel graph in a given container, storing it so that another
- * container can be laid out the same way.
+ * Copies the getModel graph in a given container, storing it so that another container can be laid out the same way.
  *
  * @author josephramsey
  */
@@ -43,8 +42,7 @@ public class CopyLayoutAction extends AbstractAction implements ClipboardOwner {
     private final LayoutEditable layoutEditable;
 
     /**
-     * Creates a new copy subsession action for the given LayoutEditable and
-     * clipboard.
+     * Creates a new copy subsession action for the given LayoutEditable and clipboard.
      */
     public CopyLayoutAction(LayoutEditable layoutEditable) {
         super("Copy Layout");
@@ -57,8 +55,7 @@ public class CopyLayoutAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost
-     * session editor to the clipboard.
+     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         Graph layoutGraph = this.layoutEditable.getGraph();

@@ -22,8 +22,8 @@
 package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -36,10 +36,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Implements the DCI (Distributed Causal Inference) algorithm for learning causal structure over a set of variable from
- * multiple datasets that each may only measure proper overlapping subsets of that sets, or datasets with some
- * variables in common and others not. The algorithm currently takes as input a set of PAGs (presumably learned using a
- * local learning algorithm such as FCI) and returns a complete set of PAGs over every variable included a dataset that
- * are consistent with all of the PAGs (same d-separations and d-connections)
+ * multiple datasets that each may only measure proper overlapping subsets of that sets, or datasets with some variables
+ * in common and others not. The algorithm currently takes as input a set of PAGs (presumably learned using a local
+ * learning algorithm such as FCI) and returns a complete set of PAGs over every variable included a dataset that are
+ * consistent with all the PAGs (same d-separations and d-connections)
  *
  * @author Robert Tillman
  */
@@ -65,58 +65,49 @@ public class Dci {
      * The sets of variables in each "marginal" dataset
      */
     private final List<Set<Node>> marginalVars = new ArrayList<>();
-
+    /**
+     * Definite noncolliders from every dataset
+     */
+    private final Set<Triple> definiteNoncolliders = new HashSet<>();
+    /**
+     * Definite colliders from every dataset
+     */
+    private final Set<Triple> definiteColliders = new HashSet<>();
+    private final List<Graph> discrimGraphs = new ArrayList<>();
+    private final List<Graph> currentDiscrimGraphs = new ArrayList<>();
+    private final List<Graph> finalGraphs = new ArrayList<>();
+    private final List<Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>> currentNecessaryTreks = new ArrayList<>();
+    /**
+     * Keeps up with getModel set of colliders being considered
+     */
+    private final Set<Triple> currentPossibleColliders = new HashSet<>();
+    private final Lock lock = new ReentrantLock();
     /**
      * The SepsetMaps constructed for each dataset
      */
     private List<SepsetMapDci> sepsetMaps = new ArrayList<>();
     private List<SepsetMapDci> minimalSepsetMaps;
-
     /**
      * Search depth for the fast adjacency search
      */
     private int depth = 3;
-
     /**
      * All triples of nodes
      */
     private Set<Triple> allTriples;
-
-    /**
-     * Definite noncolliders from every dataset
-     */
-    private final Set<Triple> definiteNoncolliders = new HashSet<>();
-
-    /**
-     * Definite colliders from every dataset
-     */
-    private final Set<Triple> definiteColliders = new HashSet<>();
-
     /**
      * Graph change status and sets of graphs resulting from initial and final orientation rules
      */
     private boolean changeFlag = true;
-    private final List<Graph> discrimGraphs = new ArrayList<>();
-    private final List<Graph> currentDiscrimGraphs = new ArrayList<>();
-    private final List<Graph> finalGraphs = new ArrayList<>();
-
     /**
      * Edge sequences ensuring treks
      */
     private Map<List<Node>, Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>> necessaryTreks;
-    private final List<Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>> currentNecessaryTreks = new ArrayList<>();
-
     /**
      * Keeps up with getModel graph while searching for possible unshielded sets and
      */
     private Graph currentGraph;
     private Graph oldGraph;
-
-    /**
-     * Keeps up with getModel set of colliders being considered
-     */
-    private final Set<Triple> currentPossibleColliders = new HashSet<>();
-
     /**
      * Current set of nodePairs
      */
@@ -125,15 +116,12 @@ public class Dci {
      * Current marginal set of variables
      */
     private Set<Node> currentMarginalSet;
-
     /**
      * The pooling method to use to resolve inconsitencies
      */
     private ResolveSepsets.Method method;
-
     private int totalThreads;
     private int currentThread;
-    private final Lock lock = new ReentrantLock();
     private Map<Integer, Map<List<Node>, Set<Node>>> allPaths;
 
 
@@ -178,789 +166,6 @@ public class Dci {
     }
 
     //============================= Public Methods ============================//
-
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + depth);
-        }
-
-        this.depth = depth;
-    }
-
-    public long getElapsedTime() {
-        return elapsedTime;
-    }
-
-    /**
-     * Gets the resulting sepsets
-     */
-    public List<SepsetMapDci> getSepset() {
-        return this.sepsetMaps;
-    }
-
-    /**
-     * Begins the DCI search procedure, described at each step
-     */
-    public List<Graph> search() {
-        this.elapsedTime = MillisecondTimes.timeMillis();
-
-        /*
-         * Step 1 - Create the complete graph
-         */
-        Graph graph = new EdgeListGraph(this.variables);
-        graph.fullyConnect(Endpoint.CIRCLE);
-
-        /*
-         * Step 2 - Construct a new Fast Adjacency Search for each dataset
-         *  to find definite nonadjacencies and sepsetMaps
-         */
-        // first find sepsetMaps
-        System.out.println("Finding sepsets...");
-        findSepsets(this.independenceTests);
-        double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
-
-        // now resolve inconsitencies resulting from independencies that follow
-        // from combinations of independence statements that have already been
-        // resolved
-        if (this.method != null) {
-            System.out.println("Resolving conflicting independence/dependence constraints");
-            resolveResultingIndependenciesC();
-        }
-        // now remove edges
-        removeNonadjacencies(graph, this.sepsetMaps);
-        System.out.println("Removed edges");
-
-        /*
-         * Step 3 - Orient definite colliders using the sepsetMap and propagate
-         * these orientations using the rules in propagateInitialOrientations
-         */
-        orientColliders(graph);
-        System.out.println("Oriented ColliderDiscovery");
-        propagateInitialOrientations(graph);
-        System.out.println("Propagated initial orientations");
-        System.out.println(graph);
-
-        /*
-         * Step 4 - Finds every graph skeleton for which there is some orienation
-         * of the edges such that every d-connection in an input PAG is preserved.
-         */
-        getTriplesDefiniteColliders(graph);
-        // find set of minmal spanning treks and for each trek, its ensuring undirectedPaths
-        ensureMinimalSpanningTreks(graph);
-        System.out.println("Found ways of ensuring minimal spanning treks");
-        System.out.println("Paths ensuring Treks: \n" + this.necessaryTreks);
-        // find all graph skeletons that ensure every trek
-        Map<Set<Edge>, Set<Map<Triple, List<Set<Edge>>>>> possibleSkeletons = findPossibleSkeletons(graph);
-        currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
-
-        /*
-         * Step 5 - For each possible skeleton from Step 4 finds every combination
-         * of orienting unshield possible colliders and possible discriminating path
-         * colliders which preserve every d-connection and add only those that
-         * preserve every d-separation to the output set.
-         */
-        Iterator<Set<Edge>> itr = possibleSkeletons.keySet().iterator();
-        while (itr.hasNext()) {
-            Set<Edge> edgesToRemove = itr.next();
-            Set<Map<Triple, List<Set<Edge>>>> colliderSets = possibleSkeletons.get(edgesToRemove);
-            Graph newGraph = new EdgeListGraph(graph);
-            newGraph.removeEdges(new ArrayList<>(edgesToRemove));
-            this.oldGraph = newGraph;
-            if (colliderSets.isEmpty()) {
-                allColliderCombinations(newGraph, edgesToRemove, new HashSet<>(), possibleSkeletons.size());
-            } else {
-                for (Map<Triple, List<Set<Edge>>> colliderSet : colliderSets) {
-                    for (Graph newNewGraph : generateSkeletons(newGraph, colliderSet)) {
-                        allColliderCombinations(newNewGraph, edgesToRemove, colliderSet.keySet(), possibleSkeletons.size());
-                    }
-                }
-            }
-            System.out.println("Current Size: " + this.output.size());
-            currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-            if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
-            itr.remove();
-        }
-
-        /*
-         * Step 6 - returns the output set of consistent graphs
-         */
-        this.elapsedTime = MillisecondTimes.timeMillis() - this.elapsedTime;
-        System.out.println(this.output.size());
-        return new ArrayList<>(this.output);
-    }
-
-    //============================= Private Methods ============================//
-
-    private void findSepsets(List<IndependenceTest> independenceTests) {
-        for (int k = 0; k < this.marginalVars.size(); k++) {
-            IndependenceTest independenceTest = independenceTests.get(k);
-            FasDci adj;
-            Graph marginalGraph = new EdgeListGraph(new ArrayList<>(this.marginalVars.get(k)));
-            marginalGraph.fullyConnect(Endpoint.CIRCLE);
-            if (this.method != null) {
-                adj = new FasDci(marginalGraph, independenceTest,
-                        this.method, this.marginalVars, independenceTests, null, null);
-            } else {
-                adj = new FasDci(marginalGraph, independenceTest);
-            }
-            adj.setDepth(this.depth);
-            this.sepsetMaps.add(adj.search());
-        }
-        // set minimalSepsetMaps to sepsetMaps if pooling is not beging used
-        if (this.method == null) {
-            this.minimalSepsetMaps = this.sepsetMaps;
-        } else {
-            this.minimalSepsetMaps = new ArrayList<>();
-        }
-    }
-
-    /**
-     * Removes edges between variables independent in some dataset
-     */
-    private void removeNonadjacencies(Graph graph, List<SepsetMapDci> sepsetMaps) {
-        List<Node> nodes = graph.getNodes();
-        ChoiceGenerator cg = new ChoiceGenerator(nodes.size(), 2);
-        int[] combination;
-        while ((combination = cg.next()) != null) {
-            Node x = graph.getNode(nodes.get(combination[0]).getName());
-            Node y = graph.getNode(nodes.get(combination[1]).getName());
-            for (SepsetMapDci sepset : sepsetMaps) {
-                if (sepset.get(x, y) != null && graph.isAdjacentTo(x, y)) {
-                    graph.removeEdge(x, y);
-                    break;
-                }
-            }
-        }
-    }
-
-    /**
-     * Orients colliders using the sepsetMap
-     */
-    private void orientColliders(Graph graph) {
-        for (int k = 0; k < this.marginalVars.size(); k++) {
-            Set<Node> marginalSet = this.marginalVars.get(k);
-            SepsetMapDci sepset = this.sepsetMaps.get(k);
-            for (Node b : marginalSet) {
-                List<Node> adjacentNodes = new ArrayList<>();
-                for (Node node : graph.getAdjacentNodes(graph.getNode(b.getName()))) {
-                    if (marginalSet.contains(node)) {
-                        adjacentNodes.add(node);
-                    }
-                }
-                if (adjacentNodes.size() < 2) {
-                    continue;
-                }
-                ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-                int[] combination;
-                while ((combination = cg.next()) != null) {
-                    Node a = adjacentNodes.get(combination[0]);
-                    Node c = adjacentNodes.get(combination[1]);
-                    // Skip triples that are shielded.
-                    if (sepset.get(a, c) == null) {
-                        continue;
-                    }
-                    if (!sepset.get(a, c).contains(b)) {
-                        if (!isArrowheadAllowed(graph, a, b)) {
-                            continue;
-                        }
-                        if (!isArrowheadAllowed(graph, c, b)) {
-                            continue;
-                        }
-                        System.out.println("Check here " + k + "\n " + sepset.get(a, c) +
-                                "\n" + graph + "\n" + b);
-                        graph.setEndpoint(a, graph.getNode(b.getName()), Endpoint.ARROW);
-                        graph.setEndpoint(c, graph.getNode(b.getName()), Endpoint.ARROW);
-                        //logger.colliderOrientations(SearchLogUtils.colliderOrientedMsg(a, b, c));
-                    } else {
-                        this.definiteNoncolliders.add(new Triple(a, b, c));
-                    }
-                }
-            }
-        }
-    }
-
-    /*
-     * Propagates orientations that are consequences of the definite colliders
-     * that are initially oriented
-     */
-
-    private void propagateInitialOrientations(Graph graph) {
-        while (this.changeFlag) {
-            this.changeFlag = false;
-            initialDoubleTriangle(graph);
-            initialAwayFromColliderAncestorCycle(graph);
-            initialDiscrimPaths(graph);
-        }
-        this.changeFlag = true;
-    }
-
-    /**
-     * Implements the double-triangle orientation rule for the initial graph with only definite colliders from each
-     * dataset oriented, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-*D*-*C is a noncollider, which A, B and C jointly
-     * measured and A, D and C joinly measured, then D*-&gt;B.
-     */
-    private void initialDoubleTriangle(Graph graph) {
-        List<Node> nodes = graph.getNodes();
-
-        for (Node B : nodes) {
-
-            List<Node> intoBArrows = graph.getNodesInTo(B, Endpoint.ARROW);
-            List<Node> intoBCircles = graph.getNodesInTo(B, Endpoint.CIRCLE);
-
-            //possible A's and C's are those with arrows into B
-            List<Node> possA = new LinkedList<>(intoBArrows);
-            List<Node> possC = new LinkedList<>(intoBArrows);
-
-            //possible D's are those with circles into B
-            for (Node D : intoBCircles) {
-                for (Node A : possA) {
-                    for (Node C : possC) {
-                        if (C == A) {
-                            continue;
-                        }
-
-                        //skip anything not a double triangle
-                        if (!graph.isAdjacentTo(A, D) ||
-                                !graph.isAdjacentTo(C, D)) {
-                            continue;
-                        }
-
-                        //skip if A,D,C is a collider
-                        if (graph.isDefCollider(A, D, C)) {
-                            continue;
-                        }
-
-                        //skip if A,B,C and A,D,C not measured jointly
-                        boolean checkABC = false;
-                        final boolean checkADC = false;
-                        for (Set<Node> marginalSet : this.marginalVars) {
-                            if (marginalSet.contains(A) && marginalSet.contains(B) &&
-                                    marginalSet.contains(C)) {
-                                checkABC = true;
-                            }
-                            if (marginalSet.contains(A) && marginalSet.contains(D) &&
-                                    marginalSet.contains(C)) {
-                                checkABC = true;
-                            }
-                        }
-                        if (true) {
-                            continue;
-                        }
-
-                        //if all of the previous tests pass, orient D*-oB as D*-&gt;B
-                        if (!isArrowheadAllowed(graph, D, B)) {
-                            continue;
-                        }
-
-                        graph.setEndpoint(D, B, Endpoint.ARROW);
-                        this.changeFlag = true;
-                    }
-                }
-            }
-        }
-    }
-
-    private boolean isArrowheadAllowed(Graph graph, Node x, Node y) {
-        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
-
-        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
-            return false;
-        }
-
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            graph.getEndpoint(x, y);
-        }
-        return true;
-    }
-
-    // Does all 3 of these rules at once instead of going through all
-    // triples multiple times per iteration of doFinalOrientation.
-
-    private void initialAwayFromColliderAncestorCycle(Graph graph) {
-        List<Node> nodes = graph.getNodes();
-
-        for (Node B : nodes) {
-            List<Node> adj = graph.getAdjacentNodes(B);
-
-            if (adj.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node A = adj.get(combination[0]);
-                Node C = adj.get(combination[1]);
-
-                //choice gen doesnt do diff orders, so must switch A & C around.
-                //only do awayFromCollider if A,B,C measured jointly
-                boolean checkABC = false;
-                for (Set<Node> marginalSet : this.marginalVars) {
-                    if (marginalSet.contains(A) && marginalSet.contains(B) &&
-                            marginalSet.contains(C)) {
-                        checkABC = true;
-                        break;
-                    }
-                }
-                if (checkABC) {
-                    awayFromCollider(graph, A, B, C);
-                    awayFromCollider(graph, C, B, A);
-                }
-                awayFromAncestor(graph, A, B, C);
-                awayFromAncestor(graph, C, B, A);
-                awayFromCycle(graph, A, B, C);
-                awayFromCycle(graph, C, B, A);
-            }
-        }
-    }
-
-    // if a*-&gt;Bo-oC and not a*-*c, then a*-&gt;b-->c
-    // (orient either circle if present, don't need both)
-
-    private void awayFromCollider(Graph graph, Node a, Node b, Node c) {
-        Endpoint BC = graph.getEndpoint(b, c);
-        Endpoint CB = graph.getEndpoint(c, b);
-
-        if (!(graph.isAdjacentTo(a, c)) &&
-                (graph.getEndpoint(a, b) == Endpoint.ARROW)) {
-            if (CB == Endpoint.CIRCLE || CB == Endpoint.TAIL) {
-                if (BC == Endpoint.CIRCLE) {
-                    if (!isArrowheadAllowed(graph, b, c)) {
-                        return;
-                    }
-
-                    graph.setEndpoint(b, c, Endpoint.ARROW);
-                    this.changeFlag = true;
-                }
-            }
-
-            if (BC == Endpoint.CIRCLE || BC == Endpoint.ARROW) {
-                if (CB == Endpoint.CIRCLE) {
-                    graph.setEndpoint(c, b, Endpoint.TAIL);
-                    this.changeFlag = true;
-                }
-            }
-        }
-    }
-
-    //if a*-oC and either a-->b*-&gt;c or a*-&gt;b-->c, then a*-&gt;c
-
-    private void awayFromAncestor(Graph graph, Node a, Node b, Node c) {
-        if ((graph.isAdjacentTo(a, c)) &&
-                (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
-
-            if ((graph.getEndpoint(a, b) == Endpoint.ARROW) &&
-                    (graph.getEndpoint(b, c) == Endpoint.ARROW) && (
-                    (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
-                            (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
-
-                if (!isArrowheadAllowed(graph, a, c)) {
-                    return;
-                }
-
-                graph.setEndpoint(a, c, Endpoint.ARROW);
-                this.changeFlag = true;
-            }
-        }
-    }
-
-    //if Ao->c and a-->b-->c, then a-->c
-
-    private void awayFromCycle(Graph graph, Node a, Node b, Node c) {
-        if ((graph.isAdjacentTo(a, c)) &&
-                (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
-                (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
-            if (graph.paths().isDirectedFromTo(a, b) && graph.paths().isDirectedFromTo(b, c)) {
-                graph.setEndpoint(c, a, Endpoint.TAIL);
-                this.changeFlag = true;
-            }
-        }
-    }
-
-    /**
-     * Finds the discriminating undirectedPaths relative only to variables measured jointly after the initial definite colliders
-     * have been oriented.
-     * <p>
-     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
-     * <pre>
-     *          B
-     *         xo           x is either an arrowhead or a circle
-     *        /  \
-     *       v    v
-     * L....A --> C
-     * </pre>
-     */
-    private void initialDiscrimPaths(Graph graph) {
-        List<Node> nodes = graph.getNodes();
-
-        for (Node b : nodes) {
-
-            //potential A and C candidate pairs are only those
-            // that look like this:   A&lt;-oBo->C  or  A&lt;-&gt;Bo->C
-            List<Node> possAandC = graph.getNodesOutTo(b, Endpoint.ARROW);
-
-            //keep arrows and circles
-            List<Node> possA = new LinkedList<>(possAandC);
-            possA.removeAll(graph.getNodesInTo(b, Endpoint.TAIL));
-
-            //keep only circles
-            List<Node> possC = new LinkedList<>(possAandC);
-            possC.retainAll(graph.getNodesInTo(b, Endpoint.CIRCLE));
-
-            for (Node a : possA) {
-                for (Node c : possC) {
-                    if (!graph.isParentOf(a, c)) {
-                        continue;
-                    }
-
-                    // check only those jointly measured
-                    boolean checkABC = false;
-                    for (Set<Node> marginalSet : this.marginalVars) {
-                        if (marginalSet.contains(a) && marginalSet.contains(b) &&
-                                marginalSet.contains(c)) {
-                            checkABC = true;
-                            break;
-                        }
-                    }
-                    if (!checkABC) {
-                        continue;
-                    }
-
-                    LinkedList<Node> reachable = new LinkedList<>();
-                    reachable.add(a);
-                    reachablePathFind(graph, a, b, c, reachable);
-                }
-            }
-        }
-    }
-
-    /**
-     * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of
-     * a DDP consists of colliders that are parents of c. This only considers discriminating undirectedPaths that are completely
-     * jointly measured.
-     */
-    private void reachablePathFind(Graph graph, Node a, Node b, Node c,
-                                   LinkedList<Node> reachable) {
-        Set<Node> cParents = new HashSet<>(graph.getParents(c));
-
-        // Needed to avoid cycles in failure case.
-        Set<Node> visited = new HashSet<>();
-        visited.add(b);
-        visited.add(c);
-
-        // We don't want to include a,b,or c on the path, so they are added to
-        // the "visited" set.  b and c are added explicitly here; a will be
-        // added in the first while iteration.
-        while (reachable.size() > 0) {
-            Node x = reachable.removeFirst();
-            visited.add(x);
-
-            // Possible DDP path endpoints.
-            List<Node> pathExtensions = graph.getNodesInTo(x, Endpoint.ARROW);
-            pathExtensions.removeAll(visited);
-
-            for (Node l : pathExtensions) {
-
-                // check only those jointly measured
-                boolean checkABCL = false;
-                for (Set<Node> marginalSet : this.marginalVars) {
-                    if (marginalSet.contains(a) && marginalSet.contains(b) &&
-                            marginalSet.contains(c) && marginalSet.contains(l)) {
-                        checkABCL = true;
-                        break;
-                    }
-                }
-                if (!checkABCL) {
-                    continue;
-                }
-
-                // If l is reachable and not adjacent to c, its a DDP
-                // endpoint, so do DDP orientation. Otherwise, if l &lt;-&gt; c,
-                // add l to the list of reachable nodes.
-                if (!graph.isAdjacentTo(l, c)) {
-
-                    // Check whether <a, b, c> should be reoriented given
-                    // that l is not adjacent to c; if so, orient and stop.
-                    doDdpOrientation(graph, l, a, b, c);
-                    return;
-                } else if (cParents.contains(l)) {
-                    if (graph.getEndpoint(x, l) == Endpoint.ARROW) {
-                        reachable.add(l);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Orients the edges inside the definte discriminating path triangle. Takes the left endpoint, and a,b,c as
-     * arguments.
-     */
-    private void doDdpOrientation(Graph graph, Node l, Node a, Node b, Node c) {
-        Set<Node> sepset = new HashSet<>();
-        for (SepsetMapDci msepset : this.sepsetMaps) {
-            List<Node> condSet = msepset.get(l, c);
-            if (condSet != null) {
-                sepset.addAll(condSet);
-            }
-        }
-
-        if (sepset.contains(b)) {
-            graph.setEndpoint(c, b, Endpoint.TAIL);
-        } else {
-            if (!isArrowheadAllowed(graph, a, b)) {
-                return;
-            }
-
-            if (!isArrowheadAllowed(graph, c, b)) {
-                return;
-            }
-
-            graph.setEndpoint(a, b, Endpoint.ARROW);
-            graph.setEndpoint(c, b, Endpoint.ARROW);
-        }
-        this.changeFlag = true;
-    }
-
-    /**
-     * Finds a minimal spanning set of treks for the nodes in a particular "marginal" dataset
-     */
-    private Map<List<Node>, Set<Node>> minimalSpanningTreks(Graph graph, Set<Node> marginalNodes) {
-        System.out.println("minspan\n" + graph + "\n" + marginalNodes);
-        int size = marginalNodes.size();
-        System.out.println("Graph now\n" + graph);
-        this.currentGraph = graph;
-        this.currentMarginalSet = marginalNodes;
-        this.allPaths = Collections.synchronizedMap(new HashMap<>());
-        for (int k = 2; k <= size; k++) {
-            this.allPaths.put(k, new HashMap<>());
-        }
-        this.currentNodePairs = allNodePairs(new ArrayList<>(marginalNodes));
-        this.totalThreads = this.currentNodePairs.size();
-        List<FindMinimalSpanningTrek> threads = new ArrayList<>();
-        /**
-         * For multithreading
-         */
-        int maxThreads = 1;
-        for (int k = 0; k < maxThreads; k++) {
-            threads.add(new FindMinimalSpanningTrek());
-        }
-        for (FindMinimalSpanningTrek thread : threads) {
-            if (thread.thisThread.isAlive()) {
-                try {
-                    thread.thisThread.join();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e.getMessage());
-                }
-            }
-        }
-        this.currentThread = 0;
-        System.out.println("allpaths \n" + this.allPaths);
-        Map<List<Node>, Set<Node>> minimalSpanningTreks = new HashMap<>();
-        for (int k = 2; k < size; k++) {
-            Map<List<Node>, Set<Node>> smaller = this.allPaths.get(k);
-            Map<List<Node>, Set<Node>> larger = this.allPaths.get(k + 1);
-            for (List<Node> subpath : smaller.keySet()) {
-                boolean isSubpath = false;
-                for (List<Node> path : larger.keySet()) {
-                    if (isSubpath(path, subpath)) {
-                        isSubpath = true;
-                        break;
-                    }
-                }
-                if (!isSubpath) {
-                    minimalSpanningTreks.put(subpath, smaller.get(subpath));
-                }
-            }
-            if (larger.isEmpty()) {
-                break;
-            } else if (k == size - 1) {
-                minimalSpanningTreks.putAll(larger);
-            }
-        }
-        if (size == 2) {
-            minimalSpanningTreks.putAll(this.allPaths.get(2));
-        }
-        System.out.println("Found minimal spanning treks");
-        System.out.println(minimalSpanningTreks);
-        return minimalSpanningTreks;
-    }
-
-    private int nextThread() {
-        this.lock.lock();
-        this.currentThread++;
-        this.lock.unlock();
-        return this.currentThread;
-    }
-
-    private class FindMinimalSpanningTrek implements Runnable {
-
-        Thread thisThread;
-
-        FindMinimalSpanningTrek() {
-            this.thisThread = new Thread(this);
-            this.thisThread.start();
-        }
-
-        public void run() {
-            while (Dci.this.currentThread < Dci.this.totalThreads) {
-                int threadNum = nextThread();
-                if (threadNum >= Dci.this.totalThreads) {
-                    break;
-                }
-                int size = Dci.this.currentMarginalSet.size();
-                NodePair nodePair = Dci.this.currentNodePairs.get(threadNum);
-                System.out.println("Finding minmal spanning treks... " + threadNum + " of " + Dci.this.totalThreads);
-                if (Dci.this.currentGraph.isAdjacentTo(Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()))) {
-                    Set<Node> otherNodes = new HashSet<>(Dci.this.currentMarginalSet);
-                    List<Node> adjacency = new ArrayList<>();
-                    adjacency.add(nodePair.getFirst());
-                    adjacency.add(nodePair.getSecond());
-                    otherNodes.removeAll(adjacency);
-                    Dci.this.allPaths.get(2).put(adjacency, otherNodes);
-                    continue;
-                }
-                Map<Integer, Map<List<Node>, Set<Node>>> newPaths = new HashMap<>();
-                for (int k = 2; k <= size; k++) {
-                    newPaths.put(k, new HashMap<>());
-                }
-                for (List<Node> trek : Dci.this.currentGraph.paths().treks(Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()), -1)) {
-                    boolean inMarginal = true;
-                    for (Node node : trek) {
-                        if (!Dci.this.currentMarginalSet.contains(node)) {
-                            inMarginal = false;
-                            break;
-                        }
-                    }
-                    if (!inMarginal) {
-                        continue;
-                    }
-                    Set<Node> otherNodes = new HashSet<>(Dci.this.currentMarginalSet);
-                    trek.forEach(otherNodes::remove);
-//                  allPaths.get(trek.size()).put(trek, otherNodes);
-                    newPaths.get(trek.size()).put(trek, otherNodes);
-                }
-                List<List<Node>> remove = new ArrayList<>();
-                for (int k = 2; k < size; k++) {
-                    Map<List<Node>, Set<Node>> trekMap = newPaths.get(k);
-                    for (int l = k + 1; l <= size; l++) {
-                        Map<List<Node>, Set<Node>> trekMapNext = newPaths.get(l);
-                        for (List<Node> trek : trekMap.keySet()) {
-                            for (List<Node> trekNext : trekMapNext.keySet()) {
-                                if (trekMap.get(trek).containsAll(trekMapNext.get(trekNext)) &&
-                                        isSubtrek(trekNext, trek)) {
-                                    remove.add(trekNext);
-                                }
-                            }
-                        }
-                        for (List<Node> nodes : remove) {
-                            trekMapNext.remove(nodes);
-                        }
-                        remove.clear();
-                    }
-                }
-                for (int k = 2; k <= size; k++) {
-                    Dci.this.allPaths.get(k).putAll(newPaths.get(k));
-                }
-            }
-        }
-    }
-
-    /**
-     * Determines whether one trek is a subtrek of another trek
-     */
-    public boolean isSubtrek(List<Node> trek, List<Node> subtrek) {
-        int l = 0;
-        for (Node node : subtrek) {
-            while (!node.equals(trek.get(l))) {
-                l++;
-                if (l >= trek.size()) {
-                    return false;
-                }
-            }
-            if (l >= trek.size()) {
-                return false;
-            }
-            l++;
-        }
-        return true;
-    }
-
-    /**
-     * Checks where one open path is a subpath of another open path
-     */
-    private boolean isSubpath(List<Node> path, List<Node> subpath) {
-        boolean isSubpath = false;
-        int subpathLast = subpath.size() - 1;
-        for (int k = 0; k < path.size() - subpathLast; k++) {
-            if (path.get(k).equals(subpath.get(0))) {
-                isSubpath = true;
-                for (int m = 1; m < subpath.size(); m++) {
-                    if (!path.get(k + m).equals(subpath.get(m))) {
-                        isSubpath = false;
-                        break;
-                    }
-                }
-                if (isSubpath) {
-                    break;
-                }
-            }
-            if (path.get(k).equals(subpath.get(subpathLast))) {
-                isSubpath = true;
-                for (int m = subpathLast - 1; m >= 0; m--) {
-                    if (!path.get(k + subpathLast - m).equals(subpath.get(m))) {
-                        isSubpath = false;
-                        break;
-                    }
-                }
-                if (isSubpath) {
-                    break;
-                }
-            }
-        }
-        return isSubpath;
-    }
-
-    /*
-     * @return all triples in a graph
-     */
-
-    private Set<Triple> getAllTriples(Graph graph) {
-        Set<Triple> triples = new HashSet<>();
-        for (Node node : graph.getNodes()) {
-            List<Node> adjNodes = graph.getAdjacentNodes(node);
-            for (int i = 0; i < adjNodes.size() - 1; i++) {
-                for (int j = i + 1; j < adjNodes.size(); j++) {
-                    triples.add(new Triple(adjNodes.get(i), node, adjNodes.get(j)));
-                }
-            }
-        }
-        return triples;
-    }
-
-    /**
-     * Initializes set of all triples of nodes and finds definite colliders
-     */
-    private void getTriplesDefiniteColliders(Graph graph) {
-        this.allTriples = getAllTriples(graph);
-        for (Triple triple : this.allTriples) {
-            if (graph.isDefCollider(triple.getX(), triple.getY(), triple.getZ())) {
-                this.definiteColliders.add(triple);
-            }
-        }
-    }
 
     /**
      * Finds all edge sequences that ensure a particular trek. Returns the edge sequence with necessary colliders along
@@ -1074,6 +279,715 @@ public class Dci {
         }
     }
 
+    public int getDepth() {
+        return depth;
+    }
+
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException(
+                    "Depth must be -1 (unlimited) or >= 0: " + depth);
+        }
+
+        this.depth = depth;
+    }
+
+    public long getElapsedTime() {
+        return elapsedTime;
+    }
+
+    //============================= Private Methods ============================//
+
+    /**
+     * Gets the resulting sepsets
+     */
+    public List<SepsetMapDci> getSepset() {
+        return this.sepsetMaps;
+    }
+
+    /**
+     * Begins the DCI search procedure, described at each step
+     */
+    public List<Graph> search() {
+        this.elapsedTime = MillisecondTimes.timeMillis();
+
+        /*
+         * Step 1 - Create the complete graph
+         */
+        Graph graph = new EdgeListGraph(this.variables);
+        graph.fullyConnect(Endpoint.CIRCLE);
+
+        /*
+         * Step 2 - Construct a new Fast Adjacency Search for each dataset
+         *  to find definite nonadjacencies and sepsetMaps
+         */
+        // first find sepsetMaps
+        System.out.println("Finding sepsets...");
+        findSepsets(this.independenceTests);
+        double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
+
+        // now resolve inconsitencies resulting from independencies that follow
+        // from combinations of independence statements that have already been
+        // resolved
+        if (this.method != null) {
+            System.out.println("Resolving conflicting independence/dependence constraints");
+            resolveResultingIndependenciesC();
+        }
+        // now remove edges
+        removeNonadjacencies(graph, this.sepsetMaps);
+        System.out.println("Removed edges");
+
+        /*
+         * Step 3 - Orient definite colliders using the sepsetMap and propagate
+         * these orientations using the rules in propagateInitialOrientations
+         */
+        orientColliders(graph);
+        System.out.println("Oriented ColliderDiscovery");
+        propagateInitialOrientations(graph);
+        System.out.println("Propagated initial orientations");
+        System.out.println(graph);
+
+        /*
+         * Step 4 - Finds every graph skeleton for which there is some orienation
+         * of the edges such that every d-connection in an input PAG is preserved.
+         */
+        getTriplesDefiniteColliders(graph);
+        // find set of minmal spanning treks and for each trek, its ensuring undirectedPaths
+        ensureMinimalSpanningTreks(graph);
+        System.out.println("Found ways of ensuring minimal spanning treks");
+        System.out.println("Paths ensuring Treks: \n" + this.necessaryTreks);
+        // find all graph skeletons that ensure every trek
+        Map<Set<Edge>, Set<Map<Triple, List<Set<Edge>>>>> possibleSkeletons = findPossibleSkeletons(graph);
+        currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
+
+        /*
+         * Step 5 - For each possible skeleton from Step 4 finds every combination
+         * of orienting unshield possible colliders and possible discriminating path
+         * colliders which preserve every d-connection and add only those that
+         * preserve every d-separation to the output set.
+         */
+        Iterator<Set<Edge>> itr = possibleSkeletons.keySet().iterator();
+        while (itr.hasNext()) {
+            Set<Edge> edgesToRemove = itr.next();
+            Set<Map<Triple, List<Set<Edge>>>> colliderSets = possibleSkeletons.get(edgesToRemove);
+            Graph newGraph = new EdgeListGraph(graph);
+            newGraph.removeEdges(new ArrayList<>(edgesToRemove));
+            this.oldGraph = newGraph;
+            if (colliderSets.isEmpty()) {
+                allColliderCombinations(newGraph, edgesToRemove, new HashSet<>(), possibleSkeletons.size());
+            } else {
+                for (Map<Triple, List<Set<Edge>>> colliderSet : colliderSets) {
+                    for (Graph newNewGraph : generateSkeletons(newGraph, colliderSet)) {
+                        allColliderCombinations(newNewGraph, edgesToRemove, colliderSet.keySet(), possibleSkeletons.size());
+                    }
+                }
+            }
+            System.out.println("Current Size: " + this.output.size());
+            currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
+            itr.remove();
+        }
+
+        /*
+         * Step 6 - returns the output set of consistent graphs
+         */
+        this.elapsedTime = MillisecondTimes.timeMillis() - this.elapsedTime;
+        System.out.println(this.output.size());
+        return new ArrayList<>(this.output);
+    }
+
+    private void findSepsets(List<IndependenceTest> independenceTests) {
+        for (int k = 0; k < this.marginalVars.size(); k++) {
+            IndependenceTest independenceTest = independenceTests.get(k);
+            FasDci adj;
+            Graph marginalGraph = new EdgeListGraph(new ArrayList<>(this.marginalVars.get(k)));
+            marginalGraph.fullyConnect(Endpoint.CIRCLE);
+            if (this.method != null) {
+                adj = new FasDci(marginalGraph, independenceTest,
+                        this.method, this.marginalVars, independenceTests, null, null);
+            } else {
+                adj = new FasDci(marginalGraph, independenceTest);
+            }
+            adj.setDepth(this.depth);
+            this.sepsetMaps.add(adj.search());
+        }
+        // set minimalSepsetMaps to sepsetMaps if pooling is not beging used
+        if (this.method == null) {
+            this.minimalSepsetMaps = this.sepsetMaps;
+        } else {
+            this.minimalSepsetMaps = new ArrayList<>();
+        }
+    }
+
+    /*
+     * Propagates orientations that are consequences of the definite colliders
+     * that are initially oriented
+     */
+
+    /**
+     * Removes edges between variables independent in some dataset
+     */
+    private void removeNonadjacencies(Graph graph, List<SepsetMapDci> sepsetMaps) {
+        List<Node> nodes = graph.getNodes();
+        ChoiceGenerator cg = new ChoiceGenerator(nodes.size(), 2);
+        int[] combination;
+        while ((combination = cg.next()) != null) {
+            Node x = graph.getNode(nodes.get(combination[0]).getName());
+            Node y = graph.getNode(nodes.get(combination[1]).getName());
+            for (SepsetMapDci sepset : sepsetMaps) {
+                if (sepset.get(x, y) != null && graph.isAdjacentTo(x, y)) {
+                    graph.removeEdge(x, y);
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Orients colliders using the sepsetMap
+     */
+    private void orientColliders(Graph graph) {
+        for (int k = 0; k < this.marginalVars.size(); k++) {
+            Set<Node> marginalSet = this.marginalVars.get(k);
+            SepsetMapDci sepset = this.sepsetMaps.get(k);
+            for (Node b : marginalSet) {
+                List<Node> adjacentNodes = new ArrayList<>();
+                for (Node node : graph.getAdjacentNodes(graph.getNode(b.getName()))) {
+                    if (marginalSet.contains(node)) {
+                        adjacentNodes.add(node);
+                    }
+                }
+                if (adjacentNodes.size() < 2) {
+                    continue;
+                }
+                ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+                int[] combination;
+                while ((combination = cg.next()) != null) {
+                    Node a = adjacentNodes.get(combination[0]);
+                    Node c = adjacentNodes.get(combination[1]);
+                    // Skip triples that are shielded.
+                    if (sepset.get(a, c) == null) {
+                        continue;
+                    }
+                    if (!sepset.get(a, c).contains(b)) {
+                        if (!isArrowheadAllowed(graph, a, b)) {
+                            continue;
+                        }
+                        if (!isArrowheadAllowed(graph, c, b)) {
+                            continue;
+                        }
+                        System.out.println("Check here " + k + "\n " + sepset.get(a, c) +
+                                "\n" + graph + "\n" + b);
+                        graph.setEndpoint(a, graph.getNode(b.getName()), Endpoint.ARROW);
+                        graph.setEndpoint(c, graph.getNode(b.getName()), Endpoint.ARROW);
+                        //logger.colliderOrientations(SearchLogUtils.colliderOrientedMsg(a, b, c));
+                    } else {
+                        this.definiteNoncolliders.add(new Triple(a, b, c));
+                    }
+                }
+            }
+        }
+    }
+
+    private void propagateInitialOrientations(Graph graph) {
+        while (this.changeFlag) {
+            this.changeFlag = false;
+            initialDoubleTriangle(graph);
+            initialAwayFromColliderAncestorCycle(graph);
+            initialDiscrimPaths(graph);
+        }
+        this.changeFlag = true;
+    }
+
+    // Does all 3 of these rules at once instead of going through all
+    // triples multiple times per iteration of doFinalOrientation.
+
+    /**
+     * Implements the double-triangle orientation rule for the initial graph with only definite colliders from each
+     * dataset oriented, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-*D*-*C is a noncollider, which A, B and C
+     * jointly measured and A, D and C joinly measured, then D*-&gt;B.
+     */
+    private void initialDoubleTriangle(Graph graph) {
+        List<Node> nodes = graph.getNodes();
+
+        for (Node B : nodes) {
+
+            List<Node> intoBArrows = graph.getNodesInTo(B, Endpoint.ARROW);
+            List<Node> intoBCircles = graph.getNodesInTo(B, Endpoint.CIRCLE);
+
+            //possible A's and C's are those with arrows into B
+            List<Node> possA = new LinkedList<>(intoBArrows);
+            List<Node> possC = new LinkedList<>(intoBArrows);
+
+            //possible D's are those with circles into B
+            for (Node D : intoBCircles) {
+                for (Node A : possA) {
+                    for (Node C : possC) {
+                        if (C == A) {
+                            continue;
+                        }
+
+                        //skip anything not a double triangle
+                        if (!graph.isAdjacentTo(A, D) ||
+                                !graph.isAdjacentTo(C, D)) {
+                            continue;
+                        }
+
+                        //skip if A,D,C is a collider
+                        if (graph.isDefCollider(A, D, C)) {
+                            continue;
+                        }
+
+                        //skip if A,B,C and A,D,C not measured jointly
+                        boolean checkABC = false;
+                        final boolean checkADC = false;
+                        for (Set<Node> marginalSet : this.marginalVars) {
+                            if (marginalSet.contains(A) && marginalSet.contains(B) &&
+                                    marginalSet.contains(C)) {
+                                checkABC = true;
+                            }
+                            if (marginalSet.contains(A) && marginalSet.contains(D) &&
+                                    marginalSet.contains(C)) {
+                                checkABC = true;
+                            }
+                        }
+                        if (true) {
+                            continue;
+                        }
+
+                        //if all of the previous tests pass, orient D*-oB as D*-&gt;B
+                        if (!isArrowheadAllowed(graph, D, B)) {
+                            continue;
+                        }
+
+                        graph.setEndpoint(D, B, Endpoint.ARROW);
+                        this.changeFlag = true;
+                    }
+                }
+            }
+        }
+    }
+
+    // if a*-&gt;Bo-oC and not a*-*c, then a*-&gt;b-->c
+    // (orient either circle if present, don't need both)
+
+    private boolean isArrowheadAllowed(Graph graph, Node x, Node y) {
+        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
+            return true;
+        }
+
+        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
+            return false;
+        }
+
+        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
+            graph.getEndpoint(x, y);
+        }
+        return true;
+    }
+
+    //if a*-oC and either a-->b*-&gt;c or a*-&gt;b-->c, then a*-&gt;c
+
+    private void initialAwayFromColliderAncestorCycle(Graph graph) {
+        List<Node> nodes = graph.getNodes();
+
+        for (Node B : nodes) {
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
+
+            if (adj.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node A = adj.get(combination[0]);
+                Node C = adj.get(combination[1]);
+
+                //choice gen doesnt do diff orders, so must switch A & C around.
+                //only do awayFromCollider if A,B,C measured jointly
+                boolean checkABC = false;
+                for (Set<Node> marginalSet : this.marginalVars) {
+                    if (marginalSet.contains(A) && marginalSet.contains(B) &&
+                            marginalSet.contains(C)) {
+                        checkABC = true;
+                        break;
+                    }
+                }
+                if (checkABC) {
+                    awayFromCollider(graph, A, B, C);
+                    awayFromCollider(graph, C, B, A);
+                }
+                awayFromAncestor(graph, A, B, C);
+                awayFromAncestor(graph, C, B, A);
+                awayFromCycle(graph, A, B, C);
+                awayFromCycle(graph, C, B, A);
+            }
+        }
+    }
+
+    //if Ao->c and a-->b-->c, then a-->c
+
+    private void awayFromCollider(Graph graph, Node a, Node b, Node c) {
+        Endpoint BC = graph.getEndpoint(b, c);
+        Endpoint CB = graph.getEndpoint(c, b);
+
+        if (!(graph.isAdjacentTo(a, c)) &&
+                (graph.getEndpoint(a, b) == Endpoint.ARROW)) {
+            if (CB == Endpoint.CIRCLE || CB == Endpoint.TAIL) {
+                if (BC == Endpoint.CIRCLE) {
+                    if (!isArrowheadAllowed(graph, b, c)) {
+                        return;
+                    }
+
+                    graph.setEndpoint(b, c, Endpoint.ARROW);
+                    this.changeFlag = true;
+                }
+            }
+
+            if (BC == Endpoint.CIRCLE || BC == Endpoint.ARROW) {
+                if (CB == Endpoint.CIRCLE) {
+                    graph.setEndpoint(c, b, Endpoint.TAIL);
+                    this.changeFlag = true;
+                }
+            }
+        }
+    }
+
+    private void awayFromAncestor(Graph graph, Node a, Node b, Node c) {
+        if ((graph.isAdjacentTo(a, c)) &&
+                (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
+
+            if ((graph.getEndpoint(a, b) == Endpoint.ARROW) &&
+                    (graph.getEndpoint(b, c) == Endpoint.ARROW) && (
+                    (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
+                            (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
+
+                if (!isArrowheadAllowed(graph, a, c)) {
+                    return;
+                }
+
+                graph.setEndpoint(a, c, Endpoint.ARROW);
+                this.changeFlag = true;
+            }
+        }
+    }
+
+    private void awayFromCycle(Graph graph, Node a, Node b, Node c) {
+        if ((graph.isAdjacentTo(a, c)) &&
+                (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
+                (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
+            if (graph.paths().isDirectedFromTo(a, b) && graph.paths().isDirectedFromTo(b, c)) {
+                graph.setEndpoint(c, a, Endpoint.TAIL);
+                this.changeFlag = true;
+            }
+        }
+    }
+
+    /**
+     * Finds the discriminating undirectedPaths relative only to variables measured jointly after the initial definite
+     * colliders have been oriented.
+     * <p>
+     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
+     * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
+     * <pre>
+     *          B
+     *         xo           x is either an arrowhead or a circle
+     *        /  \
+     *       v    v
+     * L....A --> C
+     * </pre>
+     */
+    private void initialDiscrimPaths(Graph graph) {
+        List<Node> nodes = graph.getNodes();
+
+        for (Node b : nodes) {
+
+            //potential A and C candidate pairs are only those
+            // that look like this:   A&lt;-oBo->C  or  A&lt;-&gt;Bo->C
+            List<Node> possAandC = graph.getNodesOutTo(b, Endpoint.ARROW);
+
+            //keep arrows and circles
+            List<Node> possA = new LinkedList<>(possAandC);
+            possA.removeAll(graph.getNodesInTo(b, Endpoint.TAIL));
+
+            //keep only circles
+            List<Node> possC = new LinkedList<>(possAandC);
+            possC.retainAll(graph.getNodesInTo(b, Endpoint.CIRCLE));
+
+            for (Node a : possA) {
+                for (Node c : possC) {
+                    if (!graph.isParentOf(a, c)) {
+                        continue;
+                    }
+
+                    // check only those jointly measured
+                    boolean checkABC = false;
+                    for (Set<Node> marginalSet : this.marginalVars) {
+                        if (marginalSet.contains(a) && marginalSet.contains(b) &&
+                                marginalSet.contains(c)) {
+                            checkABC = true;
+                            break;
+                        }
+                    }
+                    if (!checkABC) {
+                        continue;
+                    }
+
+                    LinkedList<Node> reachable = new LinkedList<>();
+                    reachable.add(a);
+                    reachablePathFind(graph, a, b, c, reachable);
+                }
+            }
+        }
+    }
+
+    /**
+     * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
+     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
+     * consists of colliders that are parents of c. This only considers discriminating undirectedPaths that are
+     * completely jointly measured.
+     */
+    private void reachablePathFind(Graph graph, Node a, Node b, Node c,
+                                   LinkedList<Node> reachable) {
+        Set<Node> cParents = new HashSet<>(graph.getParents(c));
+
+        // Needed to avoid cycles in failure case.
+        Set<Node> visited = new HashSet<>();
+        visited.add(b);
+        visited.add(c);
+
+        // We don't want to include a,b,or c on the path, so they are added to
+        // the "visited" set.  b and c are added explicitly here; a will be
+        // added in the first while iteration.
+        while (reachable.size() > 0) {
+            Node x = reachable.removeFirst();
+            visited.add(x);
+
+            // Possible DDP path endpoints.
+            List<Node> pathExtensions = graph.getNodesInTo(x, Endpoint.ARROW);
+            pathExtensions.removeAll(visited);
+
+            for (Node l : pathExtensions) {
+
+                // check only those jointly measured
+                boolean checkABCL = false;
+                for (Set<Node> marginalSet : this.marginalVars) {
+                    if (marginalSet.contains(a) && marginalSet.contains(b) &&
+                            marginalSet.contains(c) && marginalSet.contains(l)) {
+                        checkABCL = true;
+                        break;
+                    }
+                }
+                if (!checkABCL) {
+                    continue;
+                }
+
+                // If l is reachable and not adjacent to c, its a DDP
+                // endpoint, so do DDP orientation. Otherwise, if l &lt;-&gt; c,
+                // add l to the list of reachable nodes.
+                if (!graph.isAdjacentTo(l, c)) {
+
+                    // Check whether <a, b, c> should be reoriented given
+                    // that l is not adjacent to c; if so, orient and stop.
+                    doDdpOrientation(graph, l, a, b, c);
+                    return;
+                } else if (cParents.contains(l)) {
+                    if (graph.getEndpoint(x, l) == Endpoint.ARROW) {
+                        reachable.add(l);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Orients the edges inside the definte discriminating path triangle. Takes the left endpoint, and a,b,c as
+     * arguments.
+     */
+    private void doDdpOrientation(Graph graph, Node l, Node a, Node b, Node c) {
+        Set<Node> sepset = new HashSet<>();
+        for (SepsetMapDci msepset : this.sepsetMaps) {
+            Set<Node> condSet = msepset.get(l, c);
+            if (condSet != null) {
+                sepset.addAll(condSet);
+            }
+        }
+
+        if (sepset.contains(b)) {
+            graph.setEndpoint(c, b, Endpoint.TAIL);
+        } else {
+            if (!isArrowheadAllowed(graph, a, b)) {
+                return;
+            }
+
+            if (!isArrowheadAllowed(graph, c, b)) {
+                return;
+            }
+
+            graph.setEndpoint(a, b, Endpoint.ARROW);
+            graph.setEndpoint(c, b, Endpoint.ARROW);
+        }
+        this.changeFlag = true;
+    }
+
+    /**
+     * Finds a minimal spanning set of treks for the nodes in a particular "marginal" dataset
+     */
+    private Map<List<Node>, Set<Node>> minimalSpanningTreks(Graph graph, Set<Node> marginalNodes) {
+        System.out.println("minspan\n" + graph + "\n" + marginalNodes);
+        int size = marginalNodes.size();
+        System.out.println("Graph now\n" + graph);
+        this.currentGraph = graph;
+        this.currentMarginalSet = marginalNodes;
+        this.allPaths = Collections.synchronizedMap(new HashMap<>());
+        for (int k = 2; k <= size; k++) {
+            this.allPaths.put(k, new HashMap<>());
+        }
+        this.currentNodePairs = allNodePairs(new ArrayList<>(marginalNodes));
+        this.totalThreads = this.currentNodePairs.size();
+        List<FindMinimalSpanningTrek> threads = new ArrayList<>();
+        /**
+         * For multithreading
+         */
+        int maxThreads = 1;
+        for (int k = 0; k < maxThreads; k++) {
+            threads.add(new FindMinimalSpanningTrek());
+        }
+        for (FindMinimalSpanningTrek thread : threads) {
+            if (thread.thisThread.isAlive()) {
+                try {
+                    thread.thisThread.join();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e.getMessage());
+                }
+            }
+        }
+        this.currentThread = 0;
+        System.out.println("allpaths \n" + this.allPaths);
+        Map<List<Node>, Set<Node>> minimalSpanningTreks = new HashMap<>();
+        for (int k = 2; k < size; k++) {
+            Map<List<Node>, Set<Node>> smaller = this.allPaths.get(k);
+            Map<List<Node>, Set<Node>> larger = this.allPaths.get(k + 1);
+            for (List<Node> subpath : smaller.keySet()) {
+                boolean isSubpath = false;
+                for (List<Node> path : larger.keySet()) {
+                    if (isSubpath(path, subpath)) {
+                        isSubpath = true;
+                        break;
+                    }
+                }
+                if (!isSubpath) {
+                    minimalSpanningTreks.put(subpath, smaller.get(subpath));
+                }
+            }
+            if (larger.isEmpty()) {
+                break;
+            } else if (k == size - 1) {
+                minimalSpanningTreks.putAll(larger);
+            }
+        }
+        if (size == 2) {
+            minimalSpanningTreks.putAll(this.allPaths.get(2));
+        }
+        System.out.println("Found minimal spanning treks");
+        System.out.println(minimalSpanningTreks);
+        return minimalSpanningTreks;
+    }
+
+    private int nextThread() {
+        this.lock.lock();
+        this.currentThread++;
+        this.lock.unlock();
+        return this.currentThread;
+    }
+
+    /**
+     * Determines whether one trek is a subtrek of another trek
+     */
+    public boolean isSubtrek(List<Node> trek, List<Node> subtrek) {
+        int l = 0;
+        for (Node node : subtrek) {
+            while (!node.equals(trek.get(l))) {
+                l++;
+                if (l >= trek.size()) {
+                    return false;
+                }
+            }
+            if (l >= trek.size()) {
+                return false;
+            }
+            l++;
+        }
+        return true;
+    }
+
+    /*
+     * @return all triples in a graph
+     */
+
+    /**
+     * Checks where one open path is a subpath of another open path
+     */
+    private boolean isSubpath(List<Node> path, List<Node> subpath) {
+        boolean isSubpath = false;
+        int subpathLast = subpath.size() - 1;
+        for (int k = 0; k < path.size() - subpathLast; k++) {
+            if (path.get(k).equals(subpath.get(0))) {
+                isSubpath = true;
+                for (int m = 1; m < subpath.size(); m++) {
+                    if (!path.get(k + m).equals(subpath.get(m))) {
+                        isSubpath = false;
+                        break;
+                    }
+                }
+                if (isSubpath) {
+                    break;
+                }
+            }
+            if (path.get(k).equals(subpath.get(subpathLast))) {
+                isSubpath = true;
+                for (int m = subpathLast - 1; m >= 0; m--) {
+                    if (!path.get(k + subpathLast - m).equals(subpath.get(m))) {
+                        isSubpath = false;
+                        break;
+                    }
+                }
+                if (isSubpath) {
+                    break;
+                }
+            }
+        }
+        return isSubpath;
+    }
+
+    private Set<Triple> getAllTriples(Graph graph) {
+        Set<Triple> triples = new HashSet<>();
+        for (Node node : graph.getNodes()) {
+            List<Node> adjNodes = new ArrayList<>(graph.getAdjacentNodes(node));
+            for (int i = 0; i < adjNodes.size() - 1; i++) {
+                for (int j = i + 1; j < adjNodes.size(); j++) {
+                    triples.add(new Triple(adjNodes.get(i), node, adjNodes.get(j)));
+                }
+            }
+        }
+        return triples;
+    }
+
+    /**
+     * Initializes set of all triples of nodes and finds definite colliders
+     */
+    private void getTriplesDefiniteColliders(Graph graph) {
+        this.allTriples = getAllTriples(graph);
+        for (Triple triple : this.allTriples) {
+            if (graph.isDefCollider(triple.getX(), triple.getY(), triple.getZ())) {
+                this.definiteColliders.add(triple);
+            }
+        }
+    }
 
     /**
      * For each necessary trek in a marginal graph, finds the treks in the getModel graph that traverse each node in the
@@ -1142,8 +1056,9 @@ public class Dci {
         Node last = start;
         Node current = start;
         for (int k = 1; k < newGraph.getNumNodes(); k++) {
-            List<Edge> adjEdges = newGraph.getEdges(current);
+            List<Edge> adjEdges = new ArrayList<>(newGraph.getEdges(current));
             next = adjEdges.get(0).getDistalNode(current);
+            assert next != null;
             if (next.equals(last)) {
                 next = adjEdges.get(1).getDistalNode(current);
             }
@@ -1153,12 +1068,6 @@ public class Dci {
         }
         return path;
     }
-
-    /*
-     * Finds all skeletons for which some orientation of the edges preserves
-     * every d-connection present in an input graph using the skeletonSearch
-     * procedure described below
-     */
 
     private Map<Set<Edge>, Set<Map<Triple, List<Set<Edge>>>>> findPossibleSkeletons(Graph graph) {
         Set<Edge> allEdges = new HashSet<>(graph.getEdges());
@@ -1267,8 +1176,9 @@ public class Dci {
     }
 
     /*
-     * Tries to orient all collider/noncollider combination of triples accepting
-     * only those that ensure all treks and preserve all d-separations
+     * Finds all skeletons for which some orientation of the edges preserves
+     * every d-connection present in an input graph using the skeletonSearch
+     * procedure described below
      */
 
     private void allColliderCombinations(Graph graph, Set<Edge> removedEdges, Set<Triple> newColliders, int skeletonsLeft) {
@@ -1375,6 +1285,11 @@ public class Dci {
         this.currentPossibleColliders.clear();
         this.currentNecessaryTreks.clear();
     }
+
+    /*
+     * Tries to orient all collider/noncollider combination of triples accepting
+     * only those that ensure all treks and preserve all d-separations
+     */
 
     private void simpleColliderIterator(int skeletonsLeft) {
         Set<Set<Triple>> necessaryEdges = new HashSet<>();
@@ -1514,10 +1429,6 @@ public class Dci {
         return possible;
     }
 
-    /*
-     * Does the final set of orientations after colliders have been oriented
-     */
-
     private void doFinalOrientation(Graph graph) {
         this.discrimGraphs.clear();
         this.finalGraphs.clear();
@@ -1541,6 +1452,10 @@ public class Dci {
         }
         this.changeFlag = true;
     }
+
+    /*
+     * Does the final set of orientations after colliders have been oriented
+     */
 
     /**
      * Implements the double-triangle orientation rule, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-*D*-*C is a
@@ -1590,15 +1505,13 @@ public class Dci {
         }
     }
 
-    // Does only the ancestor and cycle rules of these repeatedly until no changes
-
     private void awayFromAncestorCycle(Graph graph) {
         while (this.changeFlag) {
             this.changeFlag = false;
             List<Node> nodes = graph.getNodes();
 
             for (Node B : nodes) {
-                List<Node> adj = graph.getAdjacentNodes(B);
+                List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
 
                 if (adj.size() < 2) {
                     continue;
@@ -1622,14 +1535,13 @@ public class Dci {
         this.changeFlag = true;
     }
 
-    // Does all 3 of these rules at once instead of going through all
-    // triples multiple times per iteration of doFinalOrientation.
+    // Does only the ancestor and cycle rules of these repeatedly until no changes
 
     private void awayFromColliderAncestorCycle(Graph graph) {
         List<Node> nodes = graph.getNodes();
 
         for (Node B : nodes) {
-            List<Node> adj = graph.getAdjacentNodes(B);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
 
             if (adj.size() < 2) {
                 continue;
@@ -1653,6 +1565,8 @@ public class Dci {
         }
     }
 
+    // Does all 3 of these rules at once instead of going through all
+    // triples multiple times per iteration of doFinalOrientation.
 
     /**
      * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
@@ -1701,8 +1615,8 @@ public class Dci {
 
     /**
      * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of
-     * a DDP consists of colliders that are parents of c.
+     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
+     * consists of colliders that are parents of c.
      */
     private boolean reachablePathFindOrient(Graph graph, Node a, Node b, Node c,
                                             LinkedList<Node> reachable) {
@@ -1753,7 +1667,7 @@ public class Dci {
         this.changeFlag = true;
         List<Node> sepset = new ArrayList<>();
         for (SepsetMapDci msepset : this.sepsetMaps) {
-            List<Node> condSet = msepset.get(l, c);
+            Set<Node> condSet = msepset.get(l, c);
             if (condSet != null) {
                 sepset.addAll(condSet);
             }
@@ -1795,8 +1709,8 @@ public class Dci {
                     if (sepset.get(x, y) == null) {
                         continue;
                     }
-                    for (List<Node> condSet : sepset.getSet(x, y)) {
-                        if (!graph.paths().isDSeparatedFrom(x, y, condSet)) {
+                    for (Set<Node> condSet : sepset.getSet(x, y)) {
+                        if (!graph.paths().isMSeparatedFrom(x, y, condSet)) {
                             return true;
                         }
                     }
@@ -1827,8 +1741,8 @@ public class Dci {
                     continue;
                 }
                 int c = 1;
-                List<List<Node>> conds = consSepset.getSet(x, y);
-                for (List<Node> z : conds) {
+                Set<Set<Node>> conds = consSepset.getSet(x, y);
+                for (Set<Node> z : conds) {
                     System.out.println("Resolving inconsistencies... " + c + " of " + conds.size() + " (" + p + " of " + pairs.size() + " pairs and )" + (k + 1) + " of " + this.marginalVars.size() + " datasets)");
                     if (this.marginalVars.get(k).containsAll(z)) {
                         newSepset.set(x, y, z);
@@ -1915,11 +1829,11 @@ public class Dci {
             for (Set<Node> set : new PowerSet<>(condSet)) {
                 System.out.println("Resolving inconsistencies... " + c + " of " + cs + " (" + p + " of " + pairs.size() + " pairs)");
                 c++;
-                List<Node> z = new ArrayList<>(set);
-                if (allInd.paths().isDConnectedTo(pair.getFirst(), pair.getSecond(), z)) {
+                Set<Node> z = new HashSet<>(set);
+                if (allInd.paths().isMConnectedTo(pair.getFirst(), pair.getSecond(), z)) {
                     continue;
                 }
-                combinedSepset.set(pair.getFirst(), pair.getSecond(), new ArrayList<>(set));
+                combinedSepset.set(pair.getFirst(), pair.getSecond(), new HashSet<>(set));
 
             }
             p++;
@@ -1934,8 +1848,8 @@ public class Dci {
                 if (combinedSepset.getSet(x, y) == null) {
                     continue;
                 }
-                List<List<Node>> conds = combinedSepset.getSet(x, y);
-                for (List<Node> z : conds) {
+                Set<Set<Node>> conds = combinedSepset.getSet(x, y);
+                for (Set<Node> z : conds) {
                     if (marginalVar.containsAll(z)) {
                         newSepset.set(x, y, z);
                     }
@@ -1972,7 +1886,7 @@ public class Dci {
                 if (fciSepset.get(x, y) == null) {
                     continue;
                 }
-                List<Node> set = fciSepset.get(x, y);
+                Set<Node> set = fciSepset.get(x, y);
                 List<Node> currentset = new ArrayList<>();
                 if (newSepset.get(x, y) != null) {
                     currentset.addAll(newSepset.get(x, y));
@@ -1987,9 +1901,9 @@ public class Dci {
                     possibleCond.remove(node);
                     PowerSet<Node> pset = new PowerSet<>(possibleCond);
                     for (Set<Node> inpset : pset) {
-                        List<Node> cond = new ArrayList<>(inpset);
+                        Set<Node> cond = new HashSet<>(inpset);
                         cond.add(node);
-                        if (fciResult.paths().isDSeparatedFrom(x, y, cond)) {
+                        if (fciResult.paths().isMSeparatedFrom(x, y, cond)) {
                             newSepset.set(x, y, cond);
                         }
                     }
@@ -2000,7 +1914,6 @@ public class Dci {
         this.sepsetMaps = allSepsets;
         System.out.println(this.sepsetMaps);
     }
-
 
     /**
      * Encodes every possible separation in a graph in the sepset
@@ -2022,8 +1935,8 @@ public class Dci {
             int ps = (int) FastMath.pow(2, possibleNodes.size());
             for (Set<Node> condSet : new PowerSet<>(possibleNodes)) {
                 System.out.println("Getting closure set... " + c + " of " + ps + "(" + p + " of " + pairs.size() + " remaining)");
-                if (graph.paths().isDSeparatedFrom(x, y, new ArrayList<>(condSet))) {
-                    sepset.set(x, y, new ArrayList<>(condSet));
+                if (graph.paths().isMSeparatedFrom(x, y, new HashSet<>(condSet))) {
+                    sepset.set(x, y, new HashSet<>(condSet));
                 }
                 c++;
             }
@@ -2041,7 +1954,7 @@ public class Dci {
                 Object[] pairArray = pair.toArray();
                 Node x = (Node) pairArray[0];
                 Node y = (Node) pairArray[1];
-                for (List<Node> condSet : sepset.getSet(x, y)) {
+                for (Set<Node> condSet : sepset.getSet(x, y)) {
                     allSepsets.set(x, y, condSet);
                 }
             }
@@ -2144,6 +2057,79 @@ public class Dci {
 
             }
 
+        }
+    }
+
+    private class FindMinimalSpanningTrek implements Runnable {
+
+        Thread thisThread;
+
+        FindMinimalSpanningTrek() {
+            this.thisThread = new Thread(this);
+            this.thisThread.start();
+        }
+
+        public void run() {
+            while (Dci.this.currentThread < Dci.this.totalThreads) {
+                int threadNum = nextThread();
+                if (threadNum >= Dci.this.totalThreads) {
+                    break;
+                }
+                int size = Dci.this.currentMarginalSet.size();
+                NodePair nodePair = Dci.this.currentNodePairs.get(threadNum);
+                System.out.println("Finding minmal spanning treks... " + threadNum + " of " + Dci.this.totalThreads);
+                if (Dci.this.currentGraph.isAdjacentTo(Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()))) {
+                    Set<Node> otherNodes = new HashSet<>(Dci.this.currentMarginalSet);
+                    List<Node> adjacency = new ArrayList<>();
+                    adjacency.add(nodePair.getFirst());
+                    adjacency.add(nodePair.getSecond());
+                    otherNodes.removeAll(adjacency);
+                    Dci.this.allPaths.get(2).put(adjacency, otherNodes);
+                    continue;
+                }
+                Map<Integer, Map<List<Node>, Set<Node>>> newPaths = new HashMap<>();
+                for (int k = 2; k <= size; k++) {
+                    newPaths.put(k, new HashMap<>());
+                }
+                for (List<Node> trek : Dci.this.currentGraph.paths().treks(Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()), -1)) {
+                    boolean inMarginal = true;
+                    for (Node node : trek) {
+                        if (!Dci.this.currentMarginalSet.contains(node)) {
+                            inMarginal = false;
+                            break;
+                        }
+                    }
+                    if (!inMarginal) {
+                        continue;
+                    }
+                    Set<Node> otherNodes = new HashSet<>(Dci.this.currentMarginalSet);
+                    trek.forEach(otherNodes::remove);
+//                  allPaths.get(trek.size()).put(trek, otherNodes);
+                    newPaths.get(trek.size()).put(trek, otherNodes);
+                }
+                List<List<Node>> remove = new ArrayList<>();
+                for (int k = 2; k < size; k++) {
+                    Map<List<Node>, Set<Node>> trekMap = newPaths.get(k);
+                    for (int l = k + 1; l <= size; l++) {
+                        Map<List<Node>, Set<Node>> trekMapNext = newPaths.get(l);
+                        for (List<Node> trek : trekMap.keySet()) {
+                            for (List<Node> trekNext : trekMapNext.keySet()) {
+                                if (trekMap.get(trek).containsAll(trekMapNext.get(trekNext)) &&
+                                        isSubtrek(trekNext, trek)) {
+                                    remove.add(trekNext);
+                                }
+                            }
+                        }
+                        for (List<Node> nodes : remove) {
+                            trekMapNext.remove(nodes);
+                        }
+                        remove.clear();
+                    }
+                }
+                for (int k = 2; k <= size; k++) {
+                    Dci.this.allPaths.get(k).putAll(newPaths.get(k));
+                }
+            }
         }
     }
 }

@@ -23,9 +23,9 @@ import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -43,10 +43,10 @@ public class TabularColumnFileReaderTest {
     private final String commentMarker = "//";
 
     private final Path[] dataFiles = {
-            Paths.get(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile())
+            new File(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile()).toPath()
     };
 
     public TabularColumnFileReaderTest() {

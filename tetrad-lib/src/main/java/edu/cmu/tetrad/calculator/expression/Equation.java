@@ -22,8 +22,7 @@
 package edu.cmu.tetrad.calculator.expression;
 
 /**
- * Represents an equation of the form Variable = Expression, where the Variable represents
- * a column in some dataset.
+ * Represents an equation of the form Variable = Expression, where the Variable represents a column in some dataset.
  *
  * @author Tyler Gibson
  */

@@ -38,6 +38,10 @@ import edu.cmu.tetrad.util.Params;
  */
 public class TestSimulatedFmri2 {
 
+    public static void main(String... args) {
+        new TestSimulatedFmri2().TestCycles_Data_fMRI_FASK();
+    }
+
     public void TestCycles_Data_fMRI_FASK() {
         Parameters parameters = new Parameters();
         parameters.set(Params.PENALTY_DISCOUNT, 8);
@@ -131,10 +135,6 @@ public class TestSimulatedFmri2 {
         final String directory = "comparison_testing_nonconcat";
 
         comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
-    }
-
-    public static void main(String... args) {
-        new TestSimulatedFmri2().TestCycles_Data_fMRI_FASK();
     }
 }
 

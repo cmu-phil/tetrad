@@ -47,9 +47,8 @@ import java.util.*;
 import static edu.cmu.tetrad.util.StatUtils.sd;
 
 /**
- * Represents a generalized SEM instantiated model. The parameteric form of this
- * model allows arbitrary equations for variables. This instantiated model
- * gives values for all of the parameters of the parameterized model.
+ * Represents a generalized SEM instantiated model. The parameteric form of this model allows arbitrary equations for
+ * variables. This instantiated model gives values for all of the parameters of the parameterized model.
  *
  * @author josephramsey
  */
@@ -62,15 +61,15 @@ public class GeneralizedSemIm implements Im, Simulator {
     private final GeneralizedSemPm pm;
 
     /**
-     * A map from freeParameters names to their values--these form the context for evaluating expressions.
-     * Variables do not appear in this list. All freeParameters are double-valued.
+     * A map from freeParameters names to their values--these form the context for evaluating expressions. Variables do
+     * not appear in this list. All freeParameters are double-valued.
      */
     private final Map<String, Double> parameterValues;
     private boolean guaranteeIid = true;
 
     /**
-     * Constructs a new GeneralizedSemIm from the given GeneralizedSemPm by picking values for each of
-     * the freeParameters from their initial distributions.
+     * Constructs a new GeneralizedSemIm from the given GeneralizedSemPm by picking values for each of the
+     * freeParameters from their initial distributions.
      *
      * @param pm the GeneralizedSemPm. Includes all of the equations and distributions of the model.
      */
@@ -375,9 +374,8 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
-     * This simulates data by picking random values for the exogenous terms and
-     * percolating this information down through the SEM, assuming it is
-     * acyclic. Fast for large simulations but hangs for cyclic models.
+     * This simulates data by picking random values for the exogenous terms and percolating this information down
+     * through the SEM, assuming it is acyclic. Fast for large simulations but hangs for cyclic models.
      *
      * @param sampleSize &gt; 0.
      * @return the simulated data set.
@@ -738,32 +736,26 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
-     * Simulates data using the model of R. A. Fisher, for a linear model. Shocks are
-     * applied every so many steps. A data point is recorded before each shock is
-     * administered. If convergence happens before that number of steps has been reached,
-     * a data point is recorded and a new shock immediately applied. The model may be
-     * cyclic. If cyclic, all eigenvalues for the coefficient matrix must be less than 1,
-     * though this is not checked. Uses an interval between shocks of 50 and a convergence
-     * threshold of 1e-5. Uncorrelated Gaussian shocks are used.
+     * Simulates data using the model of R. A. Fisher, for a linear model. Shocks are applied every so many steps. A
+     * data point is recorded before each shock is administered. If convergence happens before that number of steps has
+     * been reached, a data point is recorded and a new shock immediately applied. The model may be cyclic. If cyclic,
+     * all eigenvalues for the coefficient matrix must be less than 1, though this is not checked. Uses an interval
+     * between shocks of 50 and a convergence threshold of 1e-5. Uncorrelated Gaussian shocks are used.
      *
-     * @param sampleSize The number of samples to be drawn. Must be a positive
-     *                   integer.
+     * @param sampleSize The number of samples to be drawn. Must be a positive integer.
      */
     public synchronized DataSet simulateDataFisher(int sampleSize) {
         return simulateDataFisher(sampleSize, 50, 1e-10);
     }
 
     /**
-     * Simulates data using the model of R. A. Fisher, for a linear model. Shocks are
-     * applied every so many steps. A data point is recorded before each shock is
-     * administered. If convergence happens before that number of steps has been reached,
-     * a data point is recorded and a new shock immediately applied. The model may be
-     * cyclic. If cyclic, all eigenvalues for the coefficient matrix must be less than 1,
-     * though this is not checked.
+     * Simulates data using the model of R. A. Fisher, for a linear model. Shocks are applied every so many steps. A
+     * data point is recorded before each shock is administered. If convergence happens before that number of steps has
+     * been reached, a data point is recorded and a new shock immediately applied. The model may be cyclic. If cyclic,
+     * all eigenvalues for the coefficient matrix must be less than 1, though this is not checked.
      *
      * @param sampleSize            The number of samples to be drawn.
-     * @param intervalBetweenShocks External shock is applied every this many steps.
-     *                              Must be positive integer.
+     * @param intervalBetweenShocks External shock is applied every this many steps. Must be positive integer.
      * @param epsilon               The convergence criterion; |xi.t - xi.t-1| &lt; epsilon.
      */
     public synchronized DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,

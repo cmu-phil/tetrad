@@ -37,28 +37,22 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 
 /**
- * Compares a target workbench with a reference workbench by counting errors of
- * omission and commission.  (for edge presence only, not orientation).
+ * Compares a target workbench with a reference workbench by counting errors of omission and commission.  (for edge
+ * presence only, not orientation).
  *
  * @author josephramsey
  * @author Erin Korber (added remove latents functionality July 2004)
  */
 public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
-
-    public enum ComparisonType {DAG, CPDAG, PAG}
-
     private final Graph targetGraph;
     private final Graph referenceGraph;
     private final Parameters params;
     private String name;
 
-
-    //=============================CONSTRUCTORS==========================//
-
     /**
-     * Compares the results of a PC to a reference workbench by counting errors
-     * of omission and commission. The counts can be retrieved using the methods
+     * Compares the results of a PC to a reference workbench by counting errors of omission and commission. The counts
+     * can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
     public EdgewiseComparisonModel(GraphSource model1, GraphSource model2, Parameters params) {
@@ -92,6 +86,27 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
 
     }
 
+
+    //=============================CONSTRUCTORS==========================//
+
+    public static Graph getComparisonGraph(Graph graph, Parameters params) {
+        String type = params.getString("graphComparisonType");
+
+        if ("DAG".equals(type)) {
+            params.set("graphComparisonType", "DAG");
+            return new EdgeListGraph(graph);
+        } else if ("CPDAG".equals(type)) {
+            params.set("graphComparisonType", "CPDAG");
+            return GraphSearchUtils.cpdagForDag(graph);
+        } else if ("PAG".equals(type)) {
+            params.set("graphComparisonType", "PAG");
+            return dagToPag(graph);
+        } else {
+            params.set("graphComparisonType", "DAG");
+            return new EdgeListGraph(graph);
+        }
+    }
+
     //==============================PUBLIC METHODS========================//
 
     public DataSet getDataSet() {
@@ -112,19 +127,17 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
 
         Graph comparisonGraph = getComparisonGraph(referenceGraph, params);
 
-        return GraphSearchUtils.graphComparisonString(refName, comparisonGraph,
-                targetName, this.targetGraph, false);
+        return GraphSearchUtils.getEdgewiseComparisonString(refName, comparisonGraph,
+                targetName, this.targetGraph);
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -135,23 +148,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
         return this.params;
     }
 
-    public static Graph getComparisonGraph(Graph graph, Parameters params) {
-        String type = params.getString("graphComparisonType");
-
-        if ("DAG".equals(type)) {
-            params.set("graphComparisonType", "DAG");
-            return new EdgeListGraph(graph);
-        } else if ("CPDAG".equals(type)) {
-            params.set("graphComparisonType", "CPDAG");
-            return GraphSearchUtils.cpdagForDag(graph);
-        } else if ("PAG".equals(type)) {
-            params.set("graphComparisonType", "PAG");
-            return dagToPag(graph);
-        } else {
-            params.set("graphComparisonType", "DAG");
-            return new EdgeListGraph(graph);
-        }
-    }
+    public enum ComparisonType {DAG, CPDAG, PAG}
 }
 
 

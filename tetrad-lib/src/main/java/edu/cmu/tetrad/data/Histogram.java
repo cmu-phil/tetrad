@@ -29,56 +29,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.math3.util.FastMath.ceil;
-import static org.apache.commons.math3.util.FastMath.log;
-
 /**
  * Model for a conditional histogram for mixed continuous and discrete variables.
  *
  * @author josephramsey
  */
 public class Histogram {
-    private Node target;
-    private int numBins = 8;
     private final DataSet dataSet;
+    private Node target;
+    private int numBins = 10;
     private Map<Node, double[]> continuousIntervals;
     private Map<Node, Integer> discreteValues;
-
-    //==========================================CONSTRUCTORS==================================//
 
     /**
      * This histogram is for variables in a particular data set. These may be continuous or discrete.
      */
-    public Histogram(DataSet dataSet) {
+    public Histogram(DataSet dataSet, String target) {
         if (dataSet.getVariables().size() < 1) {
             throw new IllegalArgumentException("Can't do histograms for an empty data sets.");
         }
 
         this.dataSet = dataSet;
-        setTarget(dataSet.getVariable(0).getName());
-    }
-
-    //========================================PUBLIC METHODS=================================//
-
-    /**
-     * Sets the target. Setting the target removes all conditioning variables and sets the number of
-     * bins to the default (using Sturges' formula).
-     *
-     * @param target The name of the target in the data set.
-     */
-    public void setTarget(String target) {
-        Node _target;
-
-        if (target == null) {
-            _target = this.dataSet.getVariable(0);
-        } else {
-            _target = this.dataSet.getVariable(target);
-        }
-
-        this.target = _target;
-        this.continuousIntervals = new HashMap<>();
-        this.discreteValues = new HashMap<>();
-        this.numBins = (int) ceil(log(this.dataSet.getNumRows()) / log(2) + 1);
+        setTarget(target);
     }
 
     /**
@@ -92,7 +64,6 @@ public class Histogram {
         if (!(low < high)) throw new IllegalArgumentException("Low must be less than high: " + low + " >= " + high);
 
         Node node = this.dataSet.getVariable(variable);
-        if (node == this.target) throw new IllegalArgumentException("Conditioning node may not be the target.");
         if (!(node instanceof ContinuousVariable)) throw new IllegalArgumentException("Variable must be continuous.");
         if (this.continuousIntervals.containsKey(node))
             throw new IllegalArgumentException("Please remove conditioning variable first.");
@@ -108,7 +79,7 @@ public class Histogram {
      */
     public void addConditioningVariable(String variable, int value) {
         Node node = this.dataSet.getVariable(variable);
-        if (node == this.target) throw new IllegalArgumentException("Conditioning node may not be the target.");
+//        if (node == this.target) throw new IllegalArgumentException("Conditioning node may not be the target.");
         if (!(node instanceof DiscreteVariable)) throw new IllegalArgumentException("Variable must be discrete.");
         this.discreteValues.put(node, value);
     }
@@ -120,17 +91,12 @@ public class Histogram {
      */
     public void removeConditioningVariable(String variable) {
         Node node = this.dataSet.getVariable(variable);
-        if (node == this.target) throw new IllegalArgumentException("The target cannot be a conditioning node.");
+//        if (node == this.target) throw new IllegalArgumentException("The target cannot be a conditioning node.");
         if (!(this.continuousIntervals.containsKey(node) || this.discreteValues.containsKey(node))) {
             throw new IllegalArgumentException("Not a conditioning node: " + variable);
         }
         this.continuousIntervals.remove(node);
         this.discreteValues.remove(node);
-    }
-
-    public void removeConditioningVariables() {
-        this.continuousIntervals = new HashMap<>();
-        this.discreteValues = new HashMap<>();
     }
 
     /**
@@ -192,8 +158,7 @@ public class Histogram {
     }
 
     /**
-     * For a continuous target, returns the maximum value of the values histogrammed,
-     * for the unconditioned data.
+     * For a continuous target, returns the maximum value of the values histogrammed, for the unconditioned data.
      */
     public double getMax() {
         List<Double> conditionedDataContinuous = getUnconditionedDataContinuous();
@@ -202,8 +167,7 @@ public class Histogram {
     }
 
     /**
-     * For a continuous target, returns the minimum value of the values histogrammed,
-     * for the unconditioned data.
+     * For a continuous target, returns the minimum value of the values histogrammed, for the unconditioned data.
      */
     public double getMin() {
         List<Double> conditionedDataContinuous = getUnconditionedDataContinuous();
@@ -212,8 +176,8 @@ public class Histogram {
     }
 
     /**
-     * For a continuous target, returns the number of values histogrammed. This may be
-     * less than the sample size of the data set because of conditioning.
+     * For a continuous target, returns the number of values histogrammed. This may be less than the sample size of the
+     * data set because of conditioning.
      */
     public int getN() {
         List<Double> conditionedDataContinuous = getConditionedDataContinuous();
@@ -221,8 +185,7 @@ public class Histogram {
     }
 
     /**
-     * A convenience method to return the data for a particular named continuous
-     * variable.
+     * A convenience method to return the data for a particular named continuous variable.
      *
      * @param variable The name of the variable.
      */
@@ -252,20 +215,34 @@ public class Histogram {
     }
 
     /**
-     * @return the number of bins for a continuous target.
+     * Sets the target. Setting the target removes all conditioning variables and sets the number of bins to the default
+     * (using Sturges' formula).
+     *
+     * @param target The name of the target in the data set.
      */
-    public int getNumBins() {
-        if (this.target instanceof DiscreteVariable) {
-            return ((DiscreteVariable) this.target).getNumCategories();
+    private void setTarget(String target) {
+        Node _target;
+
+        if (target == null) {
+            _target = this.dataSet.getVariable(0);
         } else {
-            return this.numBins;
+            _target = this.dataSet.getVariable(target);
         }
+
+        this.target = _target;
+        this.continuousIntervals = new HashMap<>();
+        this.discreteValues = new HashMap<>();
+//        this.numBins = (int) ceil(log(this.dataSet.getNumRows()) / log(2) + 1);
     }
 
-    //======================================PRIVATE METHODS=======================================//
+    public Node getTargetNode() {
+        return this.target;
+    }
 
     private double[] getBreakpoints(List<Double> data, int numBins) {
         double[] _data = asDoubleArray(data);
+
+        if (data.isEmpty()) throw new IllegalArgumentException("No data.");
 
         double max = StatUtils.max(_data);
         double min = StatUtils.min(_data);
@@ -337,7 +314,7 @@ public class Histogram {
                 double[] range = this.continuousIntervals.get(node);
                 int index = this.dataSet.getColumn(node);
                 double value = this.dataSet.getDouble(i, index);
-                if (!(value > range[0] && value < range[1])) {
+                if (!(value >= range[0] && value <= range[1])) {
                     continue I;
                 }
             }
@@ -356,11 +333,6 @@ public class Histogram {
 
         return rows;
     }
-
-    public Node getTargetNode() {
-        return this.target;
-    }
-
 }
 
 

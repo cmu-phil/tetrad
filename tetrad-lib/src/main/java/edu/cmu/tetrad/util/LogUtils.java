@@ -27,10 +27,9 @@ import java.util.Map;
 import java.util.logging.*;
 
 /**
- * Sets up streams for logging via the Java logging API. To add a stream to the
- * logging, call addStream(stream, level). The formatter will be a simple
- * formatter that outputs the text of the logging messages only. To remove the
- * stream, call removeStream(stream).
+ * Sets up streams for logging via the Java logging API. To add a stream to the logging, call addStream(stream, level).
+ * The formatter will be a simple formatter that outputs the text of the logging messages only. To remove the stream,
+ * call removeStream(stream).
  *
  * @author josephramsey
  */

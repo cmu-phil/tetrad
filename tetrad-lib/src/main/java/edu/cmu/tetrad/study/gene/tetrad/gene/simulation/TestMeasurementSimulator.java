@@ -32,8 +32,8 @@ import junit.framework.TestSuite;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Tests the MeasurementSimulator class using diagnostics devised by Richard
- * Scheines. The diagnostics are described in the Javadocs, below.
+ * Tests the MeasurementSimulator class using diagnostics devised by Richard Scheines. The diagnostics are described in
+ * the Javadocs, below.
  *
  * @author josephramsey
  */
@@ -59,11 +59,9 @@ public class TestMeasurementSimulator extends TestCase {
     private BooleanGlassFunction updateFunction;
 
     /**
-     * The history object used to simulate data by the simulator. A reference to
-     * it is stored at the class level in case its parameters need to be
-     * changed. (Since different history objects have different parameters, it
-     * doesn't make sense to edit these parameters through the timulator
-     * itself.)
+     * The history object used to simulate data by the simulator. A reference to it is stored at the class level in case
+     * its parameters need to be changed. (Since different history objects have different parameters, it doesn't make
+     * sense to edit these parameters through the timulator itself.)
      */
     private GeneHistory history;
 
@@ -75,17 +73,24 @@ public class TestMeasurementSimulator extends TestCase {
     }
 
     /**
-     * Sets up a GeneHistory object in the format for Richard's diagnostic. The
-     * graph consists of three genes--1, 2, 3. In addition to the standard edges
-     * from each gene one time step back to itself in the getModel time step,
-     * there is an edge from G1:1 to G2:0, from G1:1 to G3:0, and from G2:1 to
-     * G3:0. A Glass function is created using this graph and randomized. A
-     * Glass history is created using this Glass function. This Glass history
-     * will be the object of all tests in this suite. Also note that parameters
-     * have default values for the tests in these suites; these default values
-     * are set here. Note that gene and time step numbers are 1-indexed in the
-     * Javadocs and variable names for this class but 0-indexed in array
-     * indices.
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
+     */
+    public static Test suite() {
+
+        // Edit the name of the class in the parens to match the name
+        // of this class.
+        return new TestSuite(TestMeasurementSimulator.class);
+    }
+
+    /**
+     * Sets up a GeneHistory object in the format for Richard's diagnostic. The graph consists of three genes--1, 2, 3.
+     * In addition to the standard edges from each gene one time step back to itself in the getModel time step, there is
+     * an edge from G1:1 to G2:0, from G1:1 to G3:0, and from G2:1 to G3:0. A Glass function is created using this graph
+     * and randomized. A Glass history is created using this Glass function. This Glass history will be the object of
+     * all tests in this suite. Also note that parameters have default values for the tests in these suites; these
+     * default values are set here. Note that gene and time step numbers are 1-indexed in the Javadocs and variable
+     * names for this class but 0-indexed in array indices.
      */
     public void setUp() {
 
@@ -179,9 +184,8 @@ public class TestMeasurementSimulator extends TestCase {
     }
 
     /**
-     * Save out the raw data using default parameters and make sure that
-     * Gene1:t2 has the specified standard deviation. Should be 0.05. (Gene1 has
-     * only itself as parent.)
+     * Save out the raw data using default parameters and make sure that Gene1:t2 has the specified standard deviation.
+     * Should be 0.05. (Gene1 has only itself as parent.)
      */
     public void testTranscriptionError() {
 
@@ -213,10 +217,9 @@ public class TestMeasurementSimulator extends TestCase {
     }
 
     /**
-     * Turn on dish-to-dish variability error, turn off all other sources of
-     * error, simulate 100 dishes of data with 1 sample per dish, and look to
-     * see whether in the aggregated data Gene2:t1 and Gene3:t1 have standard
-     * deviations that are 10% of their respective means.
+     * Turn on dish-to-dish variability error, turn off all other sources of error, simulate 100 dishes of data with 1
+     * sample per dish, and look to see whether in the aggregated data Gene2:t1 and Gene3:t1 have standard deviations
+     * that are 10% of their respective means.
      */
     public void testDishToDishVariability() {
 
@@ -262,10 +265,9 @@ public class TestMeasurementSimulator extends TestCase {
     }
 
     /**
-     * Turn on sample-to-sample error, turn off all other sources of error,
-     * simulate 1 dish of data with 1000 samples per dish, and look to see
-     * whether in the aggregated data the standard deviations of Gene2:t1 and
-     * Gene3:t1 are 0.2.
+     * Turn on sample-to-sample error, turn off all other sources of error, simulate 1 dish of data with 1000 samples
+     * per dish, and look to see whether in the aggregated data the standard deviations of Gene2:t1 and Gene3:t1 are
+     * 0.2.
      */
     public void testSampleToSampleError() {
 
@@ -306,10 +308,9 @@ public class TestMeasurementSimulator extends TestCase {
     }
 
     /**
-     * Turn on chip to chip error, turn off all other sources of error, simulate
-     * 1 dish of data with 1000 samples per dish and look to see whether in the
-     * aggregated data the standard deviations for Gene2:t1, Gene3:t1, and
-     * Gene1:t2 are 0.3.
+     * Turn on chip to chip error, turn off all other sources of error, simulate 1 dish of data with 1000 samples per
+     * dish and look to see whether in the aggregated data the standard deviations for Gene2:t1, Gene3:t1, and Gene1:t2
+     * are 0.3.
      */
     public void testChipToChipError() {
 
@@ -359,10 +360,9 @@ public class TestMeasurementSimulator extends TestCase {
     }
 
     /**
-     * Turn on pixel digitalization error, turn off all other sources of error,
-     * simulate 1 dish of data with 1000 samples per dish and look to see
-     * whether in the aggregated data the standard deviations for Gene2:t1,
-     * Gene3:t1 and Gene1:t2 are 0.3.
+     * Turn on pixel digitalization error, turn off all other sources of error, simulate 1 dish of data with 1000
+     * samples per dish and look to see whether in the aggregated data the standard deviations for Gene2:t1, Gene3:t1
+     * and Gene1:t2 are 0.3.
      */
     public void testPixelError() {
 
@@ -409,17 +409,6 @@ public class TestMeasurementSimulator extends TestCase {
         TestCase.assertEquals(0.3, gene2time1sd, 0.1);
         TestCase.assertEquals(0.3, gene3time1sd, 0.1);
         TestCase.assertEquals(0.3, gene1time2sd, 0.1);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestMeasurementSimulator.class);
     }
 }
 

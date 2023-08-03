@@ -30,14 +30,14 @@ import java.util.*;
 
 /**
  * This is the same as the usual SepsetMap described below, but also keeps up with the individual sets of conditioning
- * nodes for d-separation relations for use with the Distributed Causal Inference (DCI) algorithm.  <p>Stores a map
- * from pairs of nodes to separating sets--that is, for each unordered pair of nodes {node1, node2} in a graph, stores a
- * set of nodes conditional on which node1 and node2 are independent (where the nodes are considered as variables) or
- * stores null if the pair was not judged to be independent. (Note that if a sepset is non-null and empty, that should
- * means that the compared nodes were found to be independent conditional on the empty set, whereas if a sepset is null,
- * that should mean that no set was found yet conditional on which the compared nodes are independent. So at the end of
- * the search, a null sepset carries different information from an empty sepset.)&gt; 0 <p>We cast the variable-like
- * objects to Node to allow them either to be variables explicitly or else to be graph nodes that in some model could be
+ * nodes for d-separation relations for use with the Distributed Causal Inference (DCI) algorithm.  <p>Stores a map from
+ * pairs of nodes to separating sets--that is, for each unordered pair of nodes {node1, node2} in a graph, stores a set
+ * of nodes conditional on which node1 and node2 are independent (where the nodes are considered as variables) or stores
+ * null if the pair was not judged to be independent. (Note that if a sepset is non-null and empty, that should means
+ * that the compared nodes were found to be independent conditional on the empty set, whereas if a sepset is null, that
+ * should mean that no set was found yet conditional on which the compared nodes are independent. So at the end of the
+ * search, a null sepset carries different information from an empty sepset.)&gt; 0 <p>We cast the variable-like objects
+ * to Node to allow them either to be variables explicitly or else to be graph nodes that in some model could be
  * considered as variables. This allows us to use d-separation as a graphical indicator of what independendence in
  * models ideally should be.&gt; 0
  *
@@ -45,17 +45,14 @@ import java.util.*;
  */
 public final class SepsetMapDci {
     static final long serialVersionUID = 23L;
-
+    private final Map<Node, LinkedHashSet<Node>> parents = new HashMap<>();
     /**
      * @serial
      */
-    private Map<Set<Node>, List<Node>> sepsets =
+    private Map<Set<Node>, Set<Node>> sepsets =
             new HashMap<>();
-
-    private Map<Set<Node>, List<List<Node>>> sepsetSets =
+    private Map<Set<Node>, Set<Set<Node>>> sepsetSets =
             new HashMap<>();
-
-    private final Map<Node, LinkedHashSet<Node>> parents = new HashMap<>();
 
     //=============================CONSTRUCTORS===========================//
 
@@ -79,31 +76,30 @@ public final class SepsetMapDci {
     /**
      * Sets the sepset for {x, y} to be z. Note that {x, y} is unordered.
      */
-    public void set(Node x, Node y, List<Node> z) {
+    public void set(Node x, Node y, Set<Node> z) {
         Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
         if (this.sepsets.get(pair) == null) {
             this.sepsets.put(pair, z);
         } else {
-            List<Node> newSet = new ArrayList<>(this.sepsets.get(pair));
+            Set<Node> newSet = new HashSet<>(this.sepsets.get(pair));
             newSet.addAll(z);
             this.sepsets.put(pair, newSet);
         }
         if (this.sepsetSets.containsKey(pair)) {
-            this.sepsetSets.get(pair).add(new ArrayList<>(z));
+            this.sepsetSets.get(pair).add(new HashSet<>(z));
         } else {
-            List<List<Node>> condSets = new ArrayList<>();
-            condSets.add(new ArrayList<>(z));
+            Set<Set<Node>> condSets = new HashSet<>();
+            condSets.add(new HashSet<>(z));
             this.sepsetSets.put(pair, condSets);
         }
     }
 
     /**
-     * Retrieves the sepset previously set for {x, y}, or null if no such set
-     * was previously set.
+     * Retrieves the sepset previously set for {x, y}, or null if no such set was previously set.
      */
-    public List<Node> get(Node x, Node y) {
+    public Set<Node> get(Node x, Node y) {
         Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
@@ -111,10 +107,9 @@ public final class SepsetMapDci {
     }
 
     /**
-     * Retrieves the set of all condioning sets for {x, y} or null if no such
-     * set was ever set
+     * Retrieves the set of all condioning sets for {x, y} or null if no such set was ever set
      */
-    public List<List<Node>> getSet(Node x, Node y) {
+    public Set<Set<Node>> getSet(Node x, Node y) {
         Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
@@ -148,14 +143,12 @@ public final class SepsetMapDci {
 
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

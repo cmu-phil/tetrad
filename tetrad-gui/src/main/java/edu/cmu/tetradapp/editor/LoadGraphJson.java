@@ -1,8 +1,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphPersistence;
-import edu.cmu.tetrad.graph.LayoutUtil;
+import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,6 +33,16 @@ public class LoadGraphJson extends AbstractAction {
         this.graphEditable = graphEditable;
     }
 
+    private static JFileChooser getJFileChooser() {
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation =
+                Preferences.userRoot().get("fileSaveLocation", "");
+        chooser.setCurrentDirectory(new File(sessionSaveLocation));
+        chooser.resetChoosableFileFilters();
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        return chooser;
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         JFileChooser chooser = LoadGraphJson.getJFileChooser();
@@ -49,22 +58,12 @@ public class LoadGraphJson extends AbstractAction {
 
         Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
-        Graph graph = GraphPersistence.loadGraphJson(file);
+        Graph graph = GraphSaveLoadUtils.loadGraphJson(file);
 
         // The saved node positions should be used instead of just arranging the
         // nodes in a circle.
 //        LayoutUtil.circleLayout(graph, 200, 200, 150);
         this.graphEditable.setGraph(graph);
-    }
-
-    private static JFileChooser getJFileChooser() {
-        JFileChooser chooser = new JFileChooser();
-        String sessionSaveLocation =
-                Preferences.userRoot().get("fileSaveLocation", "");
-        chooser.setCurrentDirectory(new File(sessionSaveLocation));
-        chooser.resetChoosableFileFilters();
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        return chooser;
     }
 
 }

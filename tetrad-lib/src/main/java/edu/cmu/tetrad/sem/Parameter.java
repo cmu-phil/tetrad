@@ -32,8 +32,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 /**
- * Stores information about the identity of a SEM parameter--its name, its type
- * (COEF, COVAR), and the node(s) it is associated with.
+ * Stores information about the identity of a SEM parameter--its name, its type (COEF, COVAR), and the node(s) it is
+ * associated with.
  *
  * @author Don Crimbchin (djc2@andrew.cmu.edu)
  * @author josephramsey
@@ -42,8 +42,7 @@ public final class Parameter implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
-     * The default distribution from which initial values are drawn for this
-     * distribution.
+     * The default distribution from which initial values are drawn for this distribution.
      */
     private static final Distribution DEFAULT_DISTRIBUTION =
             new Normal(0.0, 1.0);
@@ -61,22 +60,18 @@ public final class Parameter implements TetradSerializable {
      * @serial Cannot be null.
      */
     private final Node nodeB;
-
+    /**
+     * The type of parameter--coefficient, covariance, or variance.
+     *
+     * @serial Cannot be null. Should be ParamType.VAR if nodeA != nodeB and ParamType.COVAR if nodeA == nodeB.
+     */
+    private final ParamType type;
     /**
      * The name of the parameter.
      *
      * @serial Cannot be null.
      */
     private String name;
-
-    /**
-     * The type of parameter--coefficient, covariance, or variance.
-     *
-     * @serial Cannot be null. Should be ParamType.VAR if nodeA != nodeB and
-     * ParamType.COVAR if nodeA == nodeB.
-     */
-    private final ParamType type;
-
     /**
      * True iff this parameter is fixed in estimation.
      *
@@ -92,31 +87,25 @@ public final class Parameter implements TetradSerializable {
     private boolean initializedRandomly = true;
 
     /**
-     * If this parameter is initialized randomly, the initial value is drawn
-     * from this distribution.
+     * If this parameter is initialized randomly, the initial value is drawn from this distribution.
      *
      * @serial Cannot be null.
      */
     private Distribution distribution = Parameter.DEFAULT_DISTRIBUTION;
 
     /**
-     * If this parameter is either fixed or not initialized randomly, returns
-     * its starting value.
+     * If this parameter is either fixed or not initialized randomly, returns its starting value.
      *
      * @serial Any value.
      */
     private double startingValue = 1.0d;
 
-    //================================CONSTRUCTORS=======================//
-
     /**
      * @param name  The name of the parameter.
-     * @param type  The type of the parameter--ParamType.COEF, ParamType.VAR, or
-     *              ParamType.COVAR.
+     * @param type  The type of the parameter--ParamType.COEF, ParamType.VAR, or ParamType.COVAR.
      * @param nodeA The "from" node.
-     * @param nodeB The "to" node. (For variance freeParameters, this must be the
-     *              same as the "from" node. For covariance freeParameters, it must
-     *              be different from the "from" node.)
+     * @param nodeB The "to" node. (For variance freeParameters, this must be the same as the "from" node. For
+     *              covariance freeParameters, it must be different from the "from" node.)
      */
     public Parameter(String name, ParamType type, Node nodeA, Node nodeB) {
         if (name == null) {
@@ -158,8 +147,6 @@ public final class Parameter implements TetradSerializable {
                 new GraphNode("Y"));
     }
 
-    //================================PUBLIC METHODS===================//
-
     /**
      * @return the name of the parameter.
      */
@@ -170,8 +157,7 @@ public final class Parameter implements TetradSerializable {
     /**
      * Sets the name for this parameter.
      *
-     * @throws IllegalArgumentException if the name does not begin with a
-     *                                  letter.
+     * @throws IllegalArgumentException if the name does not begin with a letter.
      */
     public void setName(String name) {
         if (name == null) {
@@ -209,25 +195,22 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
-     * @return the type of this parameter--ParamType.COEF or ParamType.COVAR.
-     * This is set at construction time.
+     * @return the type of this parameter--ParamType.COEF or ParamType.COVAR. This is set at construction time.
      */
     public ParamType getType() {
         return this.type;
     }
 
     /**
-     * @return the distributions that initial values should be drawn from for
-     * this parameter.
+     * @return the distributions that initial values should be drawn from for this parameter.
      */
     public Distribution getDistribution() {
         return this.distribution;
     }
 
     /**
-     * Sets the distribution that initial values should be drawn from for this
-     * parameter. To set the parameter to always use the same initial value,
-     * use tetrad.util.SingleValue.
+     * Sets the distribution that initial values should be drawn from for this parameter. To set the parameter to always
+     * use the same initial value, use tetrad.util.SingleValue.
      *
      * @see edu.cmu.tetrad.util.dist.SingleValue
      */
@@ -269,30 +252,28 @@ public final class Parameter implements TetradSerializable {
     }
 
     /**
-     * @return true iff this parameter should be initialized randomly by drawing
-     * an initial value from its preset random distribution.
+     * @return true iff this parameter should be initialized randomly by drawing an initial value from its preset random
+     * distribution.
      */
     public boolean isInitializedRandomly() {
         return this.initializedRandomly;
     }
 
     /**
-     * Set to true iff this parameter should be initialized randomly by drawing
-     * an initial value from its preset random distribution.
+     * Set to true iff this parameter should be initialized randomly by drawing an initial value from its preset random
+     * distribution.
      */
     public void setInitializedRandomly(boolean initializedRandomly) {
         this.initializedRandomly = initializedRandomly;
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

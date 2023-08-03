@@ -33,28 +33,30 @@ import java.util.List;
  */
 public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     static final long serialVersionUID = 23L;
-
+    /**
+     * The BayesIm which this updater modifies.
+     *
+     * @serial Cannot be null.
+     */
+    private final BayesIm bayesIm;
     /**
      * Stores evidence for all variables.
      *
      * @serial Cannot be null.
      */
     private Evidence evidence;
-
     /**
      * The last manipulated BayesIm.
      *
      * @serial Can be null.
      */
     private BayesIm manipulatedBayesIm;
-
     /**
      * The BayesIm after update, if this was calculated.
      *
      * @serial Can be null.
      */
     private BayesIm updatedBayesIm;
-
     /**
      * Calculates probabilities from the manipulated Bayes IM.
      *
@@ -62,13 +64,6 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
      */
 //    private BayesImProbs bayesImProbs;
     private JunctionTreeAlgorithm jta;
-
-    /**
-     * The BayesIm which this updater modifies.
-     *
-     * @serial Cannot be null.
-     */
-    private final BayesIm bayesIm;
 
     public JunctionTreeUpdater(BayesIm bayesIm) {
         this(bayesIm, Evidence.tautology(bayesIm));
@@ -282,9 +277,8 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
                 Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
                 List<Node> parents = updatedGraph.getParents(node);
 
-                for (Object parent1 : parents) {
-                    Node parent = (Node) parent1;
-                    updatedGraph.removeEdge(node, parent);
+                for (Node parent1 : parents) {
+                    updatedGraph.removeEdge(node, parent1);
                 }
             }
         }
@@ -293,14 +287,12 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

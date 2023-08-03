@@ -36,8 +36,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -46,17 +44,15 @@ import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.min;
 
 /**
- * <p>Imlements the Fast Greedy Equivalence Search (GGES) algorithm. This is
- * an implementation of the Greedy Equivalence Search algroithm, originally
- * due to Chris Meek but developed significantly by Max Chickering. FGES uses
- * with some optimizations that allow it to scale accurately to thousands
- * of variables accurately for the sparse case. The reference for FGES is this:</p>
+ * <p>Implements the Fast Greedy Equivalence Search (FGES) algorithm. This is
+ * an implementation of the Greedy Equivalence Search algorithm, originally due to Chris Meek but developed
+ * significantly by Max Chickering. FGES uses with some optimizations that allow it to scale accurately to thousands of
+ * variables accurately for the sparse case. The reference for FGES is this:</p>
  *
  * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017).
- * A million variables and more: the fast greedy equivalence search algorithm
- * for learning high-dimensional graphical causal models, with an application
- * to functional magnetic resonance images. International journal of data science
- * and analytics, 3, 121-129.</p>
+ * A million variables and more: the fast greedy equivalence search algorithm for learning high-dimensional graphical
+ * causal models, with an application to functional magnetic resonance images. International journal of data science and
+ * analytics, 3, 121-129.</p>
  *
  * <p>The reference for Chickering's GES is this:</p>
  *
@@ -64,18 +60,16 @@ import static org.apache.commons.math3.util.FastMath.min;
  * Journal of Machine Learning Research.</p>
  *
  * <p>FGES works for the continuous case, the discrete case, and the mixed
- * continuous/discrete case, so long as a BIC score is available for the type
- * of data in question.</p>
+ * continuous/discrete case, so long as a BIC score is available for the type of data in question.</p>
  *
  * <p>To speed things up, it has been assumed that variables X and Y with zero
- * correlation do not correspond to edges in the graph. This is a restricted
- * form of the heuristic speedup assumption, something GES does not assume.
- * This heuristic speedup assumption needs to be explicitly turned on using
+ * correlation do not correspond to edges in the graph. This is a restricted form of the heuristic speedup assumption,
+ * something GES does not assume. This heuristic speedup assumption needs to be explicitly turned on using
  * setHeuristicSpeedup(true).</p>
  *
  * <p>Also, edges to be added or remove from the graph in the forward or
- * backward phase, respectively are cached, together with the ancillary information
- * needed to do the additions or removals, to reduce rescoring.</p>
+ * backward phase, respectively are cached, together with the ancillary information needed to do the additions or
+ * removals, to reduce rescoring.</p>
  *
  * <p>A number of other optimizations were also. See code for details.</p>
  *
@@ -165,20 +159,16 @@ public final class Fges implements IGraphSearch, DagScorer {
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
 
-    // True if FGES should run in a single thread, no if parallelized.
+    // True, if FGES should run in a single thread, no if parallelized.
     private boolean parallelized = false;
 
     /**
-     * Constroctor. Construct a Score and pass it in here. The totalScore should return a
-     * positive value in case of conditional dependence and a negative values in
-     * case of conditional independence. See Chickering (2002), locally
-     * consistent scoring criterion. This by default uses all the processors on
-     * the machine.
+     * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
+     * conditional dependence and a negative values in case of conditional independence. See Chickering (2002), locally
+     * consistent scoring criterion. This by default uses all the processors on the machine.
      *
-     * @param score The score to use. The score should yield better scores for
-     *              more correct local models. The algorithm as given by
-     *              Chickering assumes the score will be a BIC score of some
-     *              sort.
+     * @param score The score to use. The score should yield better scores for more correct local models. The algorithm
+     *              as given by Chickering assumes the score will be a BIC score of some sort.
      */
     public Fges(Score score) {
         if (score == null) {
@@ -189,12 +179,25 @@ public final class Fges implements IGraphSearch, DagScorer {
         this.graph = new EdgeListGraph(getVariables());
     }
 
-    //==========================PUBLIC METHODS==========================//
+
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+
+        return null;
+    }
 
     /**
-     * Greedy equivalence search: Start from the empty graph, add edges till
-     * model is significant. Then start deleting edges till a minimum is
-     * achieved.
+     * Greedy equivalence search: Start from the empty graph, add edges till the model is significant.
+     * Then start deleting edges till a minimum is achieved.
      *
      * @return the resulting Pattern.
      */
@@ -244,12 +247,11 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Sets whether one-edge faithfulness should be assumed. This assumption is that if X and Y
-     * are unconditionally depedendent, then there is an edge between X and Y in the graph.
-     * This could in principle be false, as for a path cancelation wheter one path is A->B->C->D
-     * and the other path is A->D.
+     * Sets whether one-edge faithfulness should be assumed. This assumption is that if X and Y are unconditionally
+     * dependent, then there is an edge between X and Y in the graph. This could in principle be false, as for a path
+     * cancellation whether one path is A->B->C->D and the other path is A->D.
      *
-     * @param faithfulnessAssumed True if so.
+     * @param faithfulnessAssumed True, if so.
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
         this.faithfulnessAssumed = faithfulnessAssumed;
@@ -267,8 +269,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     /**
      * Sets the background knowledge.
      *
-     * @param knowledge the knowledge object, specifying forbidden and required
-     *                  edges.
+     * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -294,33 +295,8 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Sets the initial graph.
-     *
-     * @param initialGraph This graph.
-     */
-    public void setInitialGraph(Graph initialGraph) {
-        if (initialGraph == null) {
-            this.initialGraph = null;
-            return;
-        }
-
-        initialGraph = GraphUtils.replaceNodes(initialGraph, variables);
-
-        if (verbose) {
-            out.println("External graph variables: " + initialGraph.getNodes());
-            out.println("Data set variables: " + variables);
-        }
-
-        if (!new HashSet<>(initialGraph.getNodes()).equals(new HashSet<>(variables))) {
-            throw new IllegalArgumentException("Variables aren't the same.");
-        }
-
-        this.initialGraph = initialGraph;
-    }
-
-    /**
-     * Sets whether verbose output should be produced. Verbose output generated
-     * by the Meek rules is treated separately.
+     * Sets whether verbose output should be produced. Verbose output generated by the Meek rules is treated
+     * separately.
      *
      * @param verbose True iff the case.
      * @see #setMeekVerbose(boolean)
@@ -339,16 +315,14 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * @return the output stream that output (except for log output) should be
-     * sent to.
+     * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
         return out;
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent
-     * to. By detault System.out.
+     * Sets the output stream that output (except for log output) should be sent to. By default System.out.
      *
      * @param out This print stream.
      */
@@ -370,7 +344,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * The maximum of parents any nodes can have in output pattern.
+     * The maximum of parents any nodes can have in the output pattern.
      *
      * @return -1 for unlimited.
      */
@@ -379,7 +353,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * The maximum of parents any nodes can have in output pattern.
+     * The maximum of parents any nodes can have in the output pattern.
      *
      * @param maxDegree -1 for unlimited.
      */
@@ -391,8 +365,8 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Sets whether the first step of the procedure will score both X->Y and Y->X and prefer the
-     * higher score (for adding X--Y to the graph).
+     * Sets whether the first step of the procedure will score both X->Y and Y->X and prefer the higher score (for
+     * adding X--Y to the graph).
      *
      * @param symmetricFirstStep True iff the case.
      */
@@ -400,16 +374,6 @@ public final class Fges implements IGraphSearch, DagScorer {
         this.symmetricFirstStep = symmetricFirstStep;
     }
 
-    /**
-     * Makes a string for the edge Bayes factors to log.
-     *
-     * @param dag The DAG to logs the factors for.
-     * @return The string to log.
-     */
-    public String logEdgeBayesFactorsString(Graph dag) {
-        Map<Edge, Double> factors = logEdgeBayesFactors(dag);
-        return logBayesPosteriorFactorsString(factors);
-    }
 
     /**
      * Returns the score of the final search model.
@@ -418,24 +382,6 @@ public final class Fges implements IGraphSearch, DagScorer {
      */
     public double getModelScore() {
         return modelScore;
-    }
-
-    //===========================PRIVATE METHODS========================//
-
-
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-
-        return null;
     }
 
     //Sets the discrete scoring function to use.
@@ -556,7 +502,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         return !knowledge.isEmpty();
     }
 
-    // Calcuates new arrows based on changes in the graph for the forward search.
+    // Calculates new arrows based on changes in the graph for the forward search.
     private void reevaluateForward(final Set<Node> nodes) {
         class AdjTask implements Callable<Boolean> {
 
@@ -1025,7 +971,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     private Set<Node> revertToCPDAG() {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
-        rules.setAggressivelyPreventCycles(true);
+        rules.setMeekPreventCycles(true);
         rules.setVerbose(meekVerbose);
         return rules.orientImplied(graph);
     }
@@ -1103,54 +1049,13 @@ public final class Fges implements IGraphSearch, DagScorer {
         return variables;
     }
 
-    private Map<Edge, Double> logEdgeBayesFactors(Graph dag) {
-        Map<Edge, Double> logBayesFactors = new HashMap<>();
-        double withEdge = scoreDag(dag);
-
-        for (Edge edge : dag.getEdges()) {
-            dag.removeEdge(edge);
-            double withoutEdge = scoreDag(dag);
-            double difference = withEdge - withoutEdge;
-            logBayesFactors.put(edge, difference);
-            dag.addEdge(edge);
-        }
-
-        return logBayesFactors;
-    }
-
-    private String logBayesPosteriorFactorsString(final Map<Edge, Double> factors) {
-        NumberFormat nf = new DecimalFormat("0.00");
-        StringBuilder builder = new StringBuilder();
-
-        List<Edge> edges = new ArrayList<>(factors.keySet());
-
-        edges.sort((o1, o2) -> -Double.compare(factors.get(o1), factors.get(o2)));
-
-        builder.append("Edge Posterior Log Bayes Factors:\n\n");
-
-        builder.append("For a DAG in the IMaGES pattern with model totalScore m, for each edge e in the "
-                + "DAG, the model totalScore that would result from removing each edge, calculating "
-                + "the resulting model totalScore m(e), and then reporting m - m(e). The totalScore used is "
-                + "the IMScore, L - SUM_i{kc ln n(i)}, L is the maximum likelihood of the model, "
-                + "k isthe number of parameters of the model, n(i) is the sample size of the ith "
-                + "data set, and c is the penalty penaltyDiscount. Note that the more negative the totalScore, "
-                + "the more important the edge is to the posterior probability of the IMaGES model. "
-                + "Edges are given in order of their importance so measured.\n\n");
-
-        int i = 0;
-
-        for (Edge edge : edges) {
-            builder.append(++i).append(". ").append(edge).append(" ").append(nf.format(factors.get(edge))).append("\n");
-        }
-
-        return builder.toString();
-    }
-
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
     }
 
-    //===========================SCORING METHODS===================//
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
 
     /**
      * Internal.
@@ -1170,20 +1075,12 @@ public final class Fges implements IGraphSearch, DagScorer {
             this.setParents(parents);
         }
 
-        public Set<Node> getT() {
-            return T;
-        }
-
         public void setT(Set<Node> t) {
             T = t;
         }
 
         public void setNayx(Set<Node> nayx) {
             this.nayx = nayx;
-        }
-
-        public Set<Node> getParents() {
-            return parents;
         }
 
         public void setParents(Set<Node> parents) {
@@ -1208,7 +1105,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
     // For the forward direction, TNeighbors neighbors are needed; for the backward direction, H neighbors are needed.
     // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
-    // as the "bump".
+    // as the "bump."
     private static class Arrow implements Comparable<Arrow> {
 
         private final double bump;
@@ -1254,10 +1151,10 @@ public final class Fges implements IGraphSearch, DagScorer {
 
         // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
         // to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
-        // bump, we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
+        // bump), we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
         // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
-        // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
-        // not equal to zero by keeping a list. This last part is commened out by default.
+        // same hash code but not be equal. If we're paranoid, in this case, we calculate a determinate comparison
+        // not equal to zero by keeping a list. This last part is commented out by default.
         public int compareTo(@NotNull Arrow arrow) {
 
             final int compare = Double.compare(arrow.getBump(), getBump());

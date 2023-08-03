@@ -30,13 +30,12 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
- * An example script to load in data sets and graphs from files and analyze them. The
- * files loaded must be in the same format as
+ * An example script to load in data sets and graphs from files and analyze them. The files loaded must be in the same
+ * format as
  * <p>
  * new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
  * <p>
- * saves them. For other formats, specialty data loaders can be written to implement the
- * Simulation interface.
+ * saves them. For other formats, specialty data loaders can be written to implement the Simulation interface.
  *
  * @author josephramsey
  */
@@ -66,7 +65,7 @@ public class ExampleCompareFromFiles {
         statistics.add(new MathewsCorrArrow());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
-        statistics.add(new Shd());
+        statistics.add(new StructuralHammingDistance());
         statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);

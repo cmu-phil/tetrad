@@ -40,31 +40,24 @@ import java.util.*;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * Stores an instantiated structural equation model (SEM), with error covariance
- * terms, possibly cyclic, suitable for estimation and simulation. For
- * estimation, the maximum likelihood fitting function and the negative log
- * likelihood function (Bollen 1989, p. 109) are calculated; these can be
- * maximized by an estimator to estimate optimal parameter values. The values of
- * freeParameters are set as indicated in their corresponding Parameter objects
- * as initial values for estimation. Provides multiple ways to get and set the
- * values of free freeParameters. For simulation, cyclic and acyclic methods are
- * provided; the cyclic method is used by default, although the acyclic method
- * is considerably faster for large data sets.
+ * Stores an instantiated structural equation model (SEM), with error covariance terms, possibly cyclic, suitable for
+ * estimation and simulation. For estimation, the maximum likelihood fitting function and the negative log likelihood
+ * function (Bollen 1989, p. 109) are calculated; these can be maximized by an estimator to estimate optimal parameter
+ * values. The values of freeParameters are set as indicated in their corresponding Parameter objects as initial values
+ * for estimation. Provides multiple ways to get and set the values of free freeParameters. For simulation, cyclic and
+ * acyclic methods are provided; the cyclic method is used by default, although the acyclic method is considerably
+ * faster for large data sets.
  * <p>
- * Let V be the set of variables in the model. The freeParameters of the model
- * are as follows: (a) the list of linear coefficients for all edges u--&gt;v in
- * the model, where u, v are in V, (b) the list of variances for all variables
- * in V, (c) the list of all error covariances d&lt;-&gt;e, where d an e are
- * exogenous terms in the model (either exogenous variables or error terms for
- * endogenous variables), and (d) the list of means for all variables in V.
+ * Let V be the set of variables in the model. The freeParameters of the model are as follows: (a) the list of linear
+ * coefficients for all edges u--&gt;v in the model, where u, v are in V, (b) the list of variances for all variables in
+ * V, (c) the list of all error covariances d&lt;-&gt;e, where d an e are exogenous terms in the model (either exogenous
+ * variables or error terms for endogenous variables), and (d) the list of means for all variables in V.
  * <p>
- * It is important to note that the likelihood functions this class calculates
- * do not depend on variable means. They depend only on edge coefficients and
- * error covariances. Hence, variable means are treated differently from edge
+ * It is important to note that the likelihood functions this class calculates do not depend on variable means. They
+ * depend only on edge coefficients and error covariances. Hence, variable means are treated differently from edge
  * coefficients and error covariances in the model.
  * <p>
- * Reference: Bollen, K. A. (1989). Structural Equations with Latent Variables.
- * New York: John Wiley and Sons.
+ * Reference: Bollen, K. A. (1989). Structural Equations with Latent Variables. New York: John Wiley and Sons.
  *
  * @author Frank Wimberly
  * @author Ricardo Silva
@@ -74,18 +67,15 @@ public final class SemIm implements Im, ISemIm {
 
     static final long serialVersionUID = 23L;
     /**
-     * The Sem PM containing the graph and the freeParameters to be estimated.
-     * For now a defensive copy of this is not being constructed, since it is
-     * not used anywhere in the code except in the the constructor and in its
-     * accessor method. If somebody changes it, it's their own fault, but it
-     * won't affect this class.
+     * The Sem PM containing the graph and the freeParameters to be estimated. For now a defensive copy of this is not
+     * being constructed, since it is not used anywhere in the code except in the the constructor and in its accessor
+     * method. If somebody changes it, it's their own fault, but it won't affect this class.
      *
      * @serial Cannot be null.
      */
     private final SemPm semPm;
     /**
-     * The list of measured and latent variableNodes for the semPm.
-     * (Unmodifiable.)
+     * The list of measured and latent variableNodes for the semPm. (Unmodifiable.)
      *
      * @serial Cannot be null.
      */
@@ -97,10 +87,9 @@ public final class SemIm implements Im, ISemIm {
      */
     private final List<Node> measuredNodes;
     /**
-     * Matrix of edge coefficients. edgeCoefC[i][j] is the coefficient of the
-     * edge from getVariableNodes().get(i) to getVariableNodes().get(j), or 0.0
-     * if this edge is not in the graph. The values of these may be changed, but
-     * the array itself may not.
+     * Matrix of edge coefficients. edgeCoefC[i][j] is the coefficient of the edge from getVariableNodes().get(i) to
+     * getVariableNodes().get(j), or 0.0 if this edge is not in the graph. The values of these may be changed, but the
+     * array itself may not.
      *
      * @serial Cannot be null.
      */
@@ -112,45 +101,38 @@ public final class SemIm implements Im, ISemIm {
      */
     private final double[] variableMeansStdDev;
     /**
-     * The list of free freeParameters (Unmodifiable). This must be in the same
-     * order as this.freeMappings.
+     * The list of free freeParameters (Unmodifiable). This must be in the same order as this.freeMappings.
      *
      * @serial Cannot be null.
      */
     private List<Parameter> freeParameters;
     /**
-     * The list of fixed freeParameters (Unmodifiable). This must be in the same
-     * order as this.fixedMappings.
+     * The list of fixed freeParameters (Unmodifiable). This must be in the same order as this.fixedMappings.
      *
      * @serial Cannot be null.
      */
     private List<Parameter> fixedParameters;
     /**
-     * The list of mean freeParameters (Unmodifiable). This must be in the same
-     * order as variableMeans.
+     * The list of mean freeParameters (Unmodifiable). This must be in the same order as variableMeans.
      */
     private List<Parameter> meanParameters;
     /**
-     * Matrix of error covariances. errCovar[i][j] is the covariance of the
-     * error term of getExoNodes().get(i) and getExoNodes().get(j), with the
-     * special case (duh!) that errCovar[i][i] is the variance of
-     * getExoNodes.get(i). The values of these may be changed, but the array
-     * itself may not.
+     * Matrix of error covariances. errCovar[i][j] is the covariance of the error term of getExoNodes().get(i) and
+     * getExoNodes().get(j), with the special case (duh!) that errCovar[i][i] is the variance of getExoNodes.get(i). The
+     * values of these may be changed, but the array itself may not.
      *
      * @serial Cannot be null.
      */
     private Matrix errCovar;
     /**
-     * Means of variables. These will not be counted for purposes of calculating
-     * degrees of freedom, since the increase in dof is exactly balanced by a
-     * decrease in dof.
+     * Means of variables. These will not be counted for purposes of calculating degrees of freedom, since the increase
+     * in dof is exactly balanced by a decrease in dof.
      *
      * @serial Cannot be null.
      */
     private double[] variableMeans;
     /**
-     * Replaced by sampleCovar. Please do not delete. Required for serialization
-     * backward compatibility.
+     * Replaced by sampleCovar. Please do not delete. Required for serialization backward compatibility.
      *
      * @serial
      */
@@ -162,23 +144,20 @@ public final class SemIm implements Im, ISemIm {
      */
     private int sampleSize;
     /**
-     * Replaced by implCovarC. Please do not delete. Required for serialization
-     * backward compatibility.
+     * Replaced by implCovarC. Please do not delete. Required for serialization backward compatibility.
      *
      * @serial
      */
     private Matrix implCovar;
     /**
-     * The list of freeMappings. This is an unmodifiable list. It is fixed (up
-     * to order) by the SemPm. This must be in the same order as
-     * this.freeParameters.
+     * The list of freeMappings. This is an unmodifiable list. It is fixed (up to order) by the SemPm. This must be in
+     * the same order as this.freeParameters.
      *
      * @serial Cannot be null.
      */
     private List<Mapping> freeMappings;
     /**
-     * The list of fixed freeParameters (Unmodifiable). This must be in the same
-     * order as this.fixedParameters.
+     * The list of fixed freeParameters (Unmodifiable). This must be in the same order as this.fixedParameters.
      *
      * @serial Cannot be null.
      */
@@ -238,20 +217,17 @@ public final class SemIm implements Im, ISemIm {
         this(semPm, null, new Parameters());
     }
 
-    //=============================CONSTRUCTORS============================//
-
     /**
-     * Constructs a new SEM IM from the given SEM PM, using the given params
-     * object to guide the choice of parameter values.
+     * Constructs a new SEM IM from the given SEM PM, using the given params object to guide the choice of parameter
+     * values.
      */
     public SemIm(SemPm semPm, Parameters params) {
         this(semPm, null, params);
     }
 
     /**
-     * Constructs a new SEM IM from the given SEM PM, using the old SEM IM and
-     * params object to guide the choice of parameter values. If old values are
-     * retained, they are gotten from the old SEM IM.
+     * Constructs a new SEM IM from the given SEM PM, using the old SEM IM and params object to guide the choice of
+     * parameter values. If old values are retained, they are gotten from the old SEM IM.
      */
     public SemIm(SemPm semPm, SemIm oldSemIm, Parameters parameters) {
         if (semPm == null) {
@@ -314,8 +290,7 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * Constructs a SEM model using the given SEM PM and sample covariance
-     * matrix.
+     * Constructs a SEM model using the given SEM PM and sample covariance matrix.
      */
     public SemIm(SemPm semPm, ICovarianceMatrix covMatrix) {
         this(semPm);
@@ -362,8 +337,7 @@ public final class SemIm implements Im, ISemIm {
     /**
      * Copy constructor.
      *
-     * @throws RuntimeException if the given SemIm cannot be serialized and
-     *                          deserialized correctly.
+     * @throws RuntimeException if the given SemIm cannot be serialized and deserialized correctly.
      */
     public SemIm(SemIm semIm) {
         try {
@@ -399,6 +373,14 @@ public final class SemIm implements Im, ISemIm {
         }
     }
 
+    public SemIm(SemPm semPm, List<Node> variableNodes, List<Node> measuredNodes, Matrix edgeCoef, double[] variableMeansStdDev) {
+        this.semPm = semPm;
+        this.variableNodes = new ArrayList<>(variableNodes);
+        this.measuredNodes = new ArrayList<>(measuredNodes);
+        this.edgeCoef = new Matrix(edgeCoef);
+        this.variableMeansStdDev = Arrays.copyOf(variableMeansStdDev, variableMeansStdDev.length);
+    }
+
     public static List<String> getParameterNames() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.COEF_LOW);
@@ -413,9 +395,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * Constructs a new SEM IM with the given graph, retaining parameter values
-     * from <code>semIm</code> for nodes of the same name and edges connecting
-     * nodes of the same names.
+     * Constructs a new SEM IM with the given graph, retaining parameter values from <code>semIm</code> for nodes of the
+     * same name and edges connecting nodes of the same names.
      *
      * @param semIm The old SEM IM.
      * @param graph The graph for the new SEM IM.
@@ -448,19 +429,15 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return a variant of the getModel model with the given covariance matrix
-     * and means. Used for updating.
+     * @return a variant of the getModel model with the given covariance matrix and means. Used for updating.
      */
     public SemIm updatedIm(Matrix covariances, Vector means) {
         return new SemIm(this, covariances, means);
     }
 
-    //==============================PUBLIC METHODS=========================//
-
     /**
-     * Sets the sample covariance matrix for this Sem as a submatrix of the
-     * given matrix. The variable names used in the SemPm for this model must
-     * all appear in this CovarianceMatrix.
+     * Sets the sample covariance matrix for this Sem as a submatrix of the given matrix. The variable names used in the
+     * SemPm for this model must all appear in this CovarianceMatrix.
      */
     public void setCovMatrix(ICovarianceMatrix covMatrix) {
         if (covMatrix == null) {
@@ -481,9 +458,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * Calculates the covariance matrix of the given DataSet and sets the sample
-     * covariance matrix for this model to a subset of it. The measured variable
-     * names used in the SemPm for this model must all appear in this data set.
+     * Calculates the covariance matrix of the given DataSet and sets the sample covariance matrix for this model to a
+     * subset of it. The measured variable names used in the SemPm for this model must all appear in this data set.
      */
     public void setDataSet(DataSet dataSet) {
         setCovMatrix(new CovarianceMatrix(dataSet));
@@ -497,9 +473,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return an array containing the getModel values for the free
-     * freeParameters, in the order in which the freeParameters appear in
-     * getFreeParameters(). That is, getFreeParamValues()[i] is the value for
+     * @return an array containing the getModel values for the free freeParameters, in the order in which the
+     * freeParameters appear in getFreeParameters(). That is, getFreeParamValues()[i] is the value for
      * getFreeParameters()[i].
      */
     public double[] getFreeParamValues() {
@@ -514,9 +489,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * Sets the values of the free freeParameters (in the order in which they
-     * appear in getFreeParameters()) to the values contained in the given
-     * array. That is, params[i] is the value for getFreeParameters()[i].
+     * Sets the values of the free freeParameters (in the order in which they appear in getFreeParameters()) to the
+     * values contained in the given array. That is, params[i] is the value for getFreeParameters()[i].
      */
     public void setFreeParamValues(double[] params) {
         if (params.length != getNumFreeParams()) {
@@ -531,11 +505,9 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * Gets the value of a single free parameter, or Double.NaN if the parameter
-     * is not in this
+     * Gets the value of a single free parameter, or Double.NaN if the parameter is not in this
      *
-     * @throws IllegalArgumentException if the given parameter is not a free
-     *                                  parameter in this model.
+     * @throws IllegalArgumentException if the given parameter is not a free parameter in this model.
      */
     public double getParamValue(Parameter parameter) {
         if (parameter == null) {
@@ -563,8 +535,7 @@ public final class SemIm implements Im, ISemIm {
     /**
      * Sets the value of a single free parameter to the given value.
      *
-     * @throws IllegalArgumentException if the given parameter is not a free
-     *                                  parameter in this model.
+     * @throws IllegalArgumentException if the given parameter is not a free parameter in this model.
      */
     public void setParamValue(Parameter parameter, double value) {
         if (getFreeParameters().contains(parameter)) {
@@ -585,8 +556,7 @@ public final class SemIm implements Im, ISemIm {
     /**
      * Sets the value of a single free parameter to the given value.
      *
-     * @throws IllegalArgumentException if the given parameter is not a free
-     *                                  parameter in this model.
+     * @throws IllegalArgumentException if the given parameter is not a free parameter in this model.
      */
     public void setFixedParamValue(Parameter parameter, double value) {
         if (!getFixedParameters().contains(parameter)) {
@@ -718,14 +688,6 @@ public final class SemIm implements Im, ISemIm {
         }
     }
 
-    public SemIm(SemPm semPm, List<Node> variableNodes, List<Node> measuredNodes, Matrix edgeCoef, double[] variableMeansStdDev) {
-        this.semPm = semPm;
-        this.variableNodes = new ArrayList<>(variableNodes);
-        this.measuredNodes = new ArrayList<>(measuredNodes);
-        this.edgeCoef = new Matrix(edgeCoef);
-        this.variableMeansStdDev = Arrays.copyOf(variableMeansStdDev, variableMeansStdDev.length);
-    }
-
     /**
      * @return the intercept, for acyclic models, or Double.NaN otherwise.
      * @throws UnsupportedOperationException if called on a cyclic SEM.
@@ -810,24 +772,20 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return the value of the standard deviation associated with the given
-     * node.
+     * @return the value of the standard deviation associated with the given node.
      */
     public double getStdDev(Node node, Matrix implCovar) {
         return sqrt(getVariance(node, implCovar));
     }
 
     /**
-     * Gets the value of a single free parameter to the given value, where the
-     * free parameter is specified by the endpoint nodes of its edge in the w
-     * graph. Note that coefficient freeParameters connect elements of
-     * getVariableNodes(), whereas variance and covariance freeParameters
-     * connect elements of getExogenousNodes(). (For variance freeParameters,
-     * nodeA and nodeB are the same.)
+     * Gets the value of a single free parameter to the given value, where the free parameter is specified by the
+     * endpoint nodes of its edge in the w graph. Note that coefficient freeParameters connect elements of
+     * getVariableNodes(), whereas variance and covariance freeParameters connect elements of getExogenousNodes(). (For
+     * variance freeParameters, nodeA and nodeB are the same.)
      *
-     * @throws IllegalArgumentException if the given parameter is not a free
-     *                                  parameter in this model or if there is no parameter connecting nodeA with
-     *                                  nodeB in this model.
+     * @throws IllegalArgumentException if the given parameter is not a free parameter in this model or if there is no
+     *                                  parameter connecting nodeA with nodeB in this model.
      */
     public double getParamValue(Node nodeA, Node nodeB) {
         Parameter parameter = null;
@@ -856,16 +814,13 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * Sets the value of a single free parameter to the given value, where the
-     * free parameter is specified by the endpoint nodes of its edge in the
-     * graph. Note that coefficient freeParameters connect elements of
-     * getVariableNodes(), whereas variance and covariance freeParameters
-     * connect elements of getExogenousNodes(). (For variance freeParameters,
-     * nodeA and nodeB are the same.)
+     * Sets the value of a single free parameter to the given value, where the free parameter is specified by the
+     * endpoint nodes of its edge in the graph. Note that coefficient freeParameters connect elements of
+     * getVariableNodes(), whereas variance and covariance freeParameters connect elements of getExogenousNodes(). (For
+     * variance freeParameters, nodeA and nodeB are the same.)
      *
-     * @throws IllegalArgumentException if the given parameter is not a free
-     *                                  parameter in this model or if there is no parameter connecting nodeA with
-     *                                  nodeB in this model, or if value is Double.NaN.
+     * @throws IllegalArgumentException if the given parameter is not a free parameter in this model or if there is no
+     *                                  parameter connecting nodeA with nodeB in this model, or if value is Double.NaN.
      */
     public void setParamValue(Node nodeA, Node nodeB, double value) {
         if (Double.isNaN(value)) {
@@ -950,30 +905,25 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return the sample size (that is, the sample size of the CovarianceMatrix
-     * provided at construction time).
+     * @return the sample size (that is, the sample size of the CovarianceMatrix provided at construction time).
      */
     public int getSampleSize() {
         return this.sampleSize;
     }
 
     /**
-     * @return a copy of the matrix of edge coefficients. Note that
-     * edgeCoefC[i][j] is the coefficient of the edge from
-     * getVariableNodes().get(i) to getVariableNodes().get(j), or 0.0 if this
-     * edge is not in the graph. The values of these may be changed, but the
-     * array itself may not.
+     * @return a copy of the matrix of edge coefficients. Note that edgeCoefC[i][j] is the coefficient of the edge from
+     * getVariableNodes().get(i) to getVariableNodes().get(j), or 0.0 if this edge is not in the graph. The values of
+     * these may be changed, but the array itself may not.
      */
     public Matrix getEdgeCoef() {
         return this.edgeCoef.copy();
     }
 
     /**
-     * @return a copy of the matrix of error covariances. Note that
-     * errCovar[i][j] is the covariance of the error term of
-     * getExoNodes().get(i) and getExoNodes().get(j), with the special case
-     * (duh!) that errCovar[i][i] is the variance of getExoNodes.get(i). The
-     * values of these may be changed, but the array itself may not.
+     * @return a copy of the matrix of error covariances. Note that errCovar[i][j] is the covariance of the error term
+     * of getExoNodes().get(i) and getExoNodes().get(j), with the special case (duh!) that errCovar[i][i] is the
+     * variance of getExoNodes.get(i). The values of these may be changed, but the array itself may not.
      */
     public Matrix getErrCovar() {
         return errCovar().copy();
@@ -991,24 +941,22 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return a copy of the implied covariance matrix over the measured
-     * variables only.
+     * @return a copy of the implied covariance matrix over the measured variables only.
      */
     public Matrix getImplCovarMeas() {
         return implCovarMeas().copy();
     }
 
     /**
-     * @return a copy of the sample covariance matrix, or null if no sample
-     * covar has been set.
+     * @return a copy of the sample covariance matrix, or null if no sample covar has been set.
      */
     public Matrix getSampleCovar() {
-        return this.sampleCovarC;
+        return this.sampleCovarC == null ? null : this.sampleCovarC.copy();
     }
 
     /**
-     * The value of the maximum likelihood function for the getModel the model
-     * (Bollen 107). To optimize, this should be minimized.
+     * The value of the maximum likelihood function for the getModel the model (Bollen 107). To optimize, this should be
+     * minimized.
      */
     public double getScore() {
         if (this.scoreType == ScoreType.Fml) {
@@ -1063,10 +1011,9 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * The negative of the log likelihood function for the getModel model, with
-     * the constant chopped off. (Bollen 134). This is an alternative, more
-     * efficient, optimization function to Fml which produces the same result
-     * when minimized.
+     * The negative of the log likelihood function for the getModel model, with the constant chopped off. (Bollen 134).
+     * This is an alternative, more efficient, optimization function to Fml which produces the same result when
+     * minimized.
      */
     public double getTruncLL() {
         // Formula Bollen p. 263.
@@ -1081,8 +1028,7 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return BIC score, calculated as chisq - dof. This is equal to
-     * getFullBicScore() up to a constant.
+     * @return BIC score, calculated as chisq - dof. This is equal to getFullBicScore() up to a constant.
      */
     public double getBicScore() {
         int dof = getSemPm().getDof();
@@ -1145,9 +1091,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * This simulate method uses the implied covariance metrix directly to
-     * simulate data, instead of going tier by tier. It should work for cyclic
-     * graphs as well as acyclic graphs.
+     * This simulate method uses the implied covariance metrix directly to simulate data, instead of going tier by tier.
+     * It should work for cyclic graphs as well as acyclic graphs.
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         if (this.semPm.getGraph().isTimeLagModel()) {
@@ -1201,7 +1146,10 @@ public final class SemIm implements Im, ISemIm {
 
                 for (Node parent : parents) {
                     if (parent.getNodeType() == NodeType.ERROR) {
-                        Node child = semGraph.getChildren(parent).get(0);
+                        if (semGraph.getChildren(parent).size() != 1) {
+                            continue;
+                        }
+                        Node child = semGraph.getChildren(parent).iterator().next();
                         double paramValue = getParamValue(child, child);
                         sum += RandomUtil.getInstance().nextNormal(0.0, paramValue);
                     } else {
@@ -1244,9 +1192,8 @@ public final class SemIm implements Im, ISemIm {
 //    }
 
     /**
-     * Simulates data from this Sem using a Cholesky decomposition of the
-     * implied covariance matrix. This method works even when the underlying
-     * graph is cyclic.
+     * Simulates data from this Sem using a Cholesky decomposition of the implied covariance matrix. This method works
+     * even when the underlying graph is cyclic.
      *
      * @param sampleSize      the number of rows of data to simulate.
      * @param latentDataSaved True iff data for latents should be saved.
@@ -1329,9 +1276,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * This simulates data by picking random values for the exogenous terms and
-     * percolating this information down through the SEM, assuming it is
-     * acyclic. Fast for large simulations but hangs for cyclic models.
+     * This simulates data by picking random values for the exogenous terms and percolating this information down
+     * through the SEM, assuming it is acyclic. Fast for large simulations but hangs for cyclic models.
      *
      * @param sampleSize > 0.
      * @return the simulated data set.
@@ -1367,7 +1313,7 @@ public final class SemIm implements Im, ISemIm {
 
         for (int i = 0; i < variableNodes.size(); i++) {
             Node node = variableNodes.get(i);
-            List<Node> parents = graph.getParents(node);
+            List<Node> parents = new ArrayList<>(graph.getParents(node));
 
             parents.removeIf(_node -> _node.getNodeType() == NodeType.ERROR);
 
@@ -1398,6 +1344,9 @@ public final class SemIm implements Im, ISemIm {
                     exoData[i] = RandomUtil.getInstance().nextExponential(this.errorParam1);
                 } else if (errorType == 4) {
                     exoData[i] = RandomUtil.getInstance().nextGumbel(this.errorParam1,
+                            this.errorParam2);
+                } else if (errorType == 5) {
+                    exoData[i] = RandomUtil.getInstance().nextGamma(this.errorParam1,
                             this.errorParam2);
                 }
             }
@@ -1528,6 +1477,8 @@ public final class SemIm implements Im, ISemIm {
                     e.set(i, RandomUtil.getInstance().nextExponential(errorParam1));
                 } else if (errorType == 4) {
                     e.set(i, RandomUtil.getInstance().nextGumbel(errorParam1, errorParam2));
+                } else if (errorType == 5) {
+                   e.set(i, RandomUtil.getInstance().nextGamma(errorParam1, errorParam2));
                 }
             }
 
@@ -1577,8 +1528,7 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * Iterates through all freeParameters, picking values for them from the
-     * distributions that have been set for them.
+     * Iterates through all freeParameters, picking values for them from the distributions that have been set for them.
      */
     public void initializeValues() {
         for (Mapping fixedMapping : this.fixedMappings) {
@@ -1815,7 +1765,6 @@ public final class SemIm implements Im, ISemIm {
         return buf.toString();
     }
 
-    //==============================PRIVATE METHODS====================//
     private void retainPreviousValues(SemIm oldSemIm) {
         if (oldSemIm == null) {
             System.out.println("old sem im null");
@@ -1928,8 +1877,7 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return a random value from the appropriate distribution for the given
-     * parameter.
+     * @return a random value from the appropriate distribution for the given parameter.
      */
     private double initialValue(Parameter parameter) {
         if (!getSemPm().getParameters().contains(parameter)) {
@@ -1971,8 +1919,7 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return A submatrix of <code>covMatrix</code> with the order of its
-     * variables the same as in <code>semPm</code>.
+     * @return A submatrix of <code>covMatrix</code> with the order of its variables the same as in <code>semPm</code>.
      * @throws IllegalArgumentException if not all of the variables of
      *                                  <code>semPm</code> are in <code>covMatrix</code>.
      */
@@ -1990,8 +1937,7 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * Creates an unmodifiable list of freeMappings in the same order as the
-     * given list of freeParameters.
+     * Creates an unmodifiable list of freeMappings in the same order as the given list of freeParameters.
      */
     private List<Mapping> createMappings(List<Parameter> parameters) {
         List<Mapping> mappings = new ArrayList<>();
@@ -2106,14 +2052,12 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

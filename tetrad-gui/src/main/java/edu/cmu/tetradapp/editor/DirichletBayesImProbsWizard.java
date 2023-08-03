@@ -34,11 +34,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Allows the user to choose a variable in a Bayes net and edit the parameters
- * associated with that variable. Parameters are of the form
- * P(Node=value1|Parent1=value2, Parent2=value2,...); values for these
- * parameters are probabilities ranging from 0.0 to 1.0. For a given combination
- * of parent values for node N, the probabilities for the values of N
+ * Allows the user to choose a variable in a Bayes net and edit the parameters associated with that variable. Parameters
+ * are of the form P(Node=value1|Parent1=value2, Parent2=value2,...); values for these parameters are probabilities
+ * ranging from 0.0 to 1.0. For a given combination of parent values for node N, the probabilities for the values of N
  * conditional on that combination of parent values must sum to 1.0
  *
  * @author josephramsey
@@ -50,9 +48,8 @@ final class DirichletBayesImProbsWizard extends JPanel {
     private final DirichletBayesIm bayesIm;
     private final JComboBox<Node> varNamesComboBox;
     private final GraphWorkbench workbench;
-    private DirichletBayesImNodeProbsTable editingTable;
     private final JPanel tablePanel;
-
+    private DirichletBayesImNodeProbsTable editingTable;
     private boolean enableEditing = true;
 
     public DirichletBayesImProbsWizard(DirichletBayesIm bayesIm, GraphWorkbench workbench) {
@@ -174,8 +171,7 @@ final class DirichletBayesImProbsWizard extends JPanel {
     }
 
     /**
-     * Sets the getModel display to reflect the stored values of the getModel
-     * node.
+     * Sets the getModel display to reflect the stored values of the getModel node.
      */
     private void setCurrentNode(Node node) {
         TableCellEditor cellEditor = this.editingTable.getCellEditor();

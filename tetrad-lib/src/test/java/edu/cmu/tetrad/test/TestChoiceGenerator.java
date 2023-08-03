@@ -31,8 +31,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
- * Implements basic tests of the choice generator. The choice generator should visit every
- * choice in a choose b exactly once, and then return null.
+ * Implements basic tests of the choice generator. The choice generator should visit every choice in a choose b exactly
+ * once, and then return null.
  *
  * @author josephramsey
  */
@@ -86,8 +86,7 @@ public class TestChoiceGenerator {
     }
 
     /**
-     * Tests to make sure the ChoiceGenerator is output the correct number of choices
-     * for various values of and b.
+     * Tests to make sure the ChoiceGenerator is output the correct number of choices for various values of and b.
      */
     @Test
     public void testChoiceGeneratorCounts() {

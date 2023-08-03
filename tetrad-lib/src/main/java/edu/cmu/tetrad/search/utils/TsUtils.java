@@ -25,8 +25,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
@@ -43,8 +43,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Contains some utilities for doing autoregression. Should probably be improved
- * by somebody.
+ * Contains some utilities for doing autoregression. Should probably be improved by somebody.
  *
  * @author josephramsey
  * @author danielmalinsky (some improvements)
@@ -52,10 +51,9 @@ import java.util.List;
 public class TsUtils {
 
     /**
-     * @return the VAR residuals of the given time series with the given number
-     * of lags. That is, every variable at the model lag is regressed onto every
-     * variable at previous lags, up to the given number of lags, and the
-     * residuals of these regressions for each variable are returned.
+     * @return the VAR residuals of the given time series with the given number of lags. That is, every variable at the
+     * model lag is regressed onto every variable at previous lags, up to the given number of lags, and the residuals of
+     * these regressions for each variable are returned.
      */
     public static DataSet ar(DataSet timeSeries, int numLags) {
         DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);
@@ -137,24 +135,6 @@ public class TsUtils {
         }
 
         return new BoxDataSet(new DoubleDataBox(residuals.toArray()), timeSeries.getVariables());
-    }
-
-    private int[] eliminateMissing(int[] parents, int dataIndex, DataSet dataSet, List<Node> missingVariables) {
-        List<Integer> _parents = new ArrayList<>();
-
-        for (int k : parents) {
-            if (!missingVariables.contains(dataSet.getVariable(k))) {
-                _parents.add(k);
-            }
-        }
-
-        int[] _parents2 = new int[_parents.size()];
-
-        for (int i = 0; i < _parents.size(); i++) {
-            _parents2[i] = _parents.get(i);
-        }
-
-        return _parents2;
     }
 
     public static VarResult structuralVar(DataSet timeSeries, int numLags) {
@@ -265,28 +245,6 @@ public class TsUtils {
         return new BoxDataSet(new DoubleDataBox(shiftedData.toArray()), data.getVariables());
     }
 
-    /**
-     * Gives a result consisting of the residuals and collapsed var graphs.
-     */
-    public static class VarResult {
-
-        private final DataSet residuals;
-        private final Graph collapsedVarGraph;
-
-        public VarResult(DataSet dataSet, Graph collapsedVarGraph) {
-            this.residuals = dataSet;
-            this.collapsedVarGraph = collapsedVarGraph;
-        }
-
-        public DataSet getResiduals() {
-            return this.residuals;
-        }
-
-        public Graph getCollapsedVarGraph() {
-            return this.collapsedVarGraph;
-        }
-    }
-
     public static double[] getSelfLoopCoefs(DataSet timeSeries) {
         DataSet timeLags = TsUtils.createLagData(timeSeries, 1);
 
@@ -339,10 +297,9 @@ public class TsUtils {
     }
 
     /**
-     * Calculates the dth difference of the given data. If d = 0, the original
-     * data is returned. If d = 1, the data (with one fewer rows) is returned,
-     * with each row subtracted from its successor. If d = 1, the same operation
-     * is applied to the result of d = 1. And so on.
+     * Calculates the dth difference of the given data. If d = 0, the original data is returned. If d = 1, the data
+     * (with one fewer rows) is returned, with each row subtracted from its successor. If d = 1, the same operation is
+     * applied to the result of d = 1. And so on.
      *
      * @param data the data to be differenced.
      * @param d    the number of differences to take, &gt;= 0.
@@ -371,8 +328,7 @@ public class TsUtils {
     }
 
     /**
-     * Creates new time series dataset from the given one (fixed to deal with
-     * mixed datasets)
+     * Creates new time series dataset from the given one (fixed to deal with mixed datasets)
      */
     public static DataSet createLagData(DataSet data, int numLags) {
         List<Node> variables = data.getVariables();
@@ -452,8 +408,7 @@ public class TsUtils {
     }
 
     /**
-     * Creates new time series dataset from the given one with index variable
-     * (e.g., time)
+     * Creates new time series dataset from the given one with index variable (e.g., time)
      */
     public static DataSet addIndex(DataSet data) {
         data = data.copy();
@@ -645,6 +600,46 @@ public class TsUtils {
             }
         }
         return true;
+    }
+
+    private int[] eliminateMissing(int[] parents, int dataIndex, DataSet dataSet, List<Node> missingVariables) {
+        List<Integer> _parents = new ArrayList<>();
+
+        for (int k : parents) {
+            if (!missingVariables.contains(dataSet.getVariable(k))) {
+                _parents.add(k);
+            }
+        }
+
+        int[] _parents2 = new int[_parents.size()];
+
+        for (int i = 0; i < _parents.size(); i++) {
+            _parents2[i] = _parents.get(i);
+        }
+
+        return _parents2;
+    }
+
+    /**
+     * Gives a result consisting of the residuals and collapsed var graphs.
+     */
+    public static class VarResult {
+
+        private final DataSet residuals;
+        private final Graph collapsedVarGraph;
+
+        public VarResult(DataSet dataSet, Graph collapsedVarGraph) {
+            this.residuals = dataSet;
+            this.collapsedVarGraph = collapsedVarGraph;
+        }
+
+        public DataSet getResiduals() {
+            return this.residuals;
+        }
+
+        public Graph getCollapsedVarGraph() {
+            return this.collapsedVarGraph;
+        }
     }
 
 }

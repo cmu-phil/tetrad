@@ -26,8 +26,10 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
@@ -41,10 +43,9 @@ import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * <p>Implements the linear, Gaussian BIC score, with a 'penalty discount' multiplier
- * on the BIC penalty. The formula used for the score is BIC = 2L - ck ln n, where
- * c is the penalty discount and L is the linear, Gaussian log likelihood--that is,
- * the sum of the log likelihoods of the individual records, which are assumed to
- * be i.i.d.</p>
+ * on the BIC penalty. The formula used for the score is BIC = 2L - ck ln n, where c is the penalty discount and L is
+ * the linear, Gaussian log likelihood--that is, the sum of the log likelihoods of the individual records, which are
+ * assumed to be i.i.d.</p>
  *
  * <p>For FGES, Chickering uses the standard linear, Gaussian BIC score, so we will
  * for lack of a better reference give his paper:</p>
@@ -55,13 +56,11 @@ import static org.apache.commons.math3.util.FastMath.log;
  * <p>The version of the score due to Nandy et al. is given in this reference:</p>
  *
  * <p>Nandy, P., Hauser, A., & Maathuis, M. H. (2018). High-dimensional consistency
- * in score-based and hybrid structure learning. The Annals of Statistics, 46(6A),
- * 3151-3183.</p>
+ * in score-based and hybrid structure learning. The Annals of Statistics, 46(6A), 3151-3183.</p>
  *
  * <p>This score may be used anywhere though where a linear, Gaussian score is needed.
- * Anectodally, the score is fairly robust to non-Gaussianity, though with some
- * additional unfaithfulness over and above waht the score would give for Guassian
- * data, a detriment that can be overcome to an extent by use a permutation
+ * Anectodally, the score is fairly robust to non-Gaussianity, though with some additional unfaithfulness over and above
+ * waht the score would give for Guassian data, a detriment that can be overcome to an extent by use a permutation
  * algorithm such as SP, GRaSP, or BOSS</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
@@ -75,16 +74,11 @@ import static org.apache.commons.math3.util.FastMath.log;
  */
 public class SemBicScore implements Score {
 
-    /**
-     * Gives two options for calculating the BIC score, one describe by Chickering and the
-     * other due to Nandy et al.
-     */
-    public enum RuleType {CHICKERING, NANDY}
-
     // The sample size of the covariance matrix.
     private final int sampleSize;
     // A  map from variable names to their indices.
     private final Map<Node, Integer> indexMap;
+    private final double logN;
     private boolean calculateRowSubsets;
     // The dataset.
     private DataModel dataModel;
@@ -107,7 +101,6 @@ public class SemBicScore implements Score {
 
     // The rule type to use.
     private RuleType ruleType = RuleType.CHICKERING;
-    private final double logN;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -127,7 +120,7 @@ public class SemBicScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScore(DataSet dataSet) {
+    public SemBicScore(DataSet dataSet, boolean precomputeCovariances) {
 
         if (dataSet == null) {
             throw new NullPointerException();
@@ -137,7 +130,7 @@ public class SemBicScore implements Score {
         this.data = dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            setCovariances(getiCovarianceMatrix(dataSet));
+            setCovariances(getCovarianceMatrix(dataSet, precomputeCovariances));
 
             this.variables = this.covariances.getVariables();
             this.sampleSize = this.covariances.getSampleSize();
@@ -154,11 +147,6 @@ public class SemBicScore implements Score {
         this.logN = log(sampleSize);
     }
 
-    @NotNull
-    private ICovarianceMatrix getiCovarianceMatrix(DataSet dataSet) {
-        return SimpleDataLoader.getCovarianceMatrix(dataSet);
-    }
-
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets)
             throws SingularMatrixException {
         int[] all = SemBicScore.concat(i, parents);
@@ -167,7 +155,7 @@ public class SemBicScore implements Score {
         Matrix covxx = cov.getSelection(pp, pp);
         Matrix covxy = cov.getSelection(pp, new int[]{0});
         Matrix b = (covxx.inverse().times(covxy));
-        Matrix bStar = SemBicScore.bStar(b);
+        Matrix bStar = bStar(b);
         return (bStar.transpose().times(cov).times(bStar).get(0, 0));
     }
 
@@ -247,6 +235,10 @@ public class SemBicScore implements Score {
         return rows;
     }
 
+    @NotNull
+    private ICovarianceMatrix getCovarianceMatrix(DataSet dataSet, boolean precomputeCovariances) {
+        return SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances);
+    }
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -279,9 +271,6 @@ public class SemBicScore implements Score {
                 - 2.0 * (sp1 - sp2);
     }
 
-
-//    private final Map<List<Integer>, Double> cache = new ConcurrentHashMap<>();
-
     /**
      * @param i       The index of the node.
      * @param parents The indices of the node's parents.
@@ -297,7 +286,9 @@ public class SemBicScore implements Score {
             double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
             lik = -(double) (this.sampleSize / 2.0) * log(varey);
         } catch (SingularMatrixException e) {
-            lik = NaN;
+            System.out.println("Singularity encountered when scoring " +
+                    LogUtilsSearch.getScoreFact(i, parents, variables));
+            return Double.NaN;
         }
 
 
@@ -317,6 +308,9 @@ public class SemBicScore implements Score {
             throw new IllegalStateException("That rule type is not implemented: " + this.ruleType);
         }
     }
+
+
+//    private final Map<List<Integer>, Double> cache = new ConcurrentHashMap<>();
 
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
@@ -385,7 +379,6 @@ public class SemBicScore implements Score {
         this.variables = variables;
     }
 
-
     @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(log(this.sampleSize));
@@ -401,9 +394,14 @@ public class SemBicScore implements Score {
             k[t] = this.variables.indexOf(z.get(t));
         }
 
-        double v = localScore(i, k);
+        try {
+            localScore(i, k);
+        } catch (RuntimeException e) {
+            TetradLogger.getInstance().forceLogMessage(e.getMessage());
+            return true;
+        }
 
-        return Double.isNaN(v);
+        return false;
     }
 
     //    @Override
@@ -545,6 +543,15 @@ public class SemBicScore implements Score {
         ICovarianceMatrix cov = getCovariances().getSubmatrix(cols);
         return new SemBicScore(cov);
     }
+
+    public String toString() {
+        return "SEM BIC Score";
+    }
+
+    /**
+     * Gives two options for calculating the BIC score, one describe by Chickering and the other due to Nandy et al.
+     */
+    public enum RuleType {CHICKERING, NANDY}
 }
 
 

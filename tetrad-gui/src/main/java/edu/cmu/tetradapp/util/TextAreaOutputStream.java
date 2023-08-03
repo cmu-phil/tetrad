@@ -49,11 +49,9 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
     private int lengthWritten;
 
     /**
-     * Creates a text area output stream, for writing text to the given
-     * text area. It is assumed that the text area is blank to b egin with
-     * and that nothing else writes to it. The reason is that the length
-     * of the text in the text area is tracked separately so that the text
-     * area can quickly be scrolled to the end of the text stored. (The
+     * Creates a text area output stream, for writing text to the given text area. It is assumed that the text area is
+     * blank to b egin with and that nothing else writes to it. The reason is that the length of the text in the text
+     * area is tracked separately so that the text area can quickly be scrolled to the end of the text stored. (The
      * internal mechanism for keeping track of text area length is slow.)
      *
      * @param textArea The text area written to.
@@ -82,8 +80,8 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
     }
 
     /**
-     * Converts the buffer's contents into a string, translating bytes into
-     * characters according to the platform's default character encoding.
+     * Converts the buffer's contents into a string, translating bytes into characters according to the platform's
+     * default character encoding.
      *
      * @return String translated from the buffer's contents.
      */

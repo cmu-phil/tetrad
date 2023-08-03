@@ -29,10 +29,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 /**
- * Wraps the Apache math3 linear algebra library for most uses in Tetrad.
- * Specialized uses will still have to use the library directly. One issue
- * this fixes is that a BlockRealMatrix cannot represent a matrix with zero
- * rows; this uses an Array2DRowRealMatrix to represent that case.
+ * Wraps the Apache math3 linear algebra library for most uses in Tetrad. Specialized uses will still have to use the
+ * library directly. One issue this fixes is that a BlockRealMatrix cannot represent a matrix with zero rows; this uses
+ * an Array2DRowRealMatrix to represent that case.
  *
  * @author josephramsey
  */
@@ -43,14 +42,18 @@ public class Matrix implements TetradSerializable {
     private int m, n;
 
     public Matrix(double[][] data) {
+        this.m = data.length;
+        this.n = this.m == 0 ? 0 : data[0].length;
+
         if (data.length == 0) {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
-            this.apacheData = new BlockRealMatrix(data);
+            if (m * n <= 4096) {
+                apacheData = (RealMatrix) new Array2DRowRealMatrix(data);
+            } else {
+                apacheData = (RealMatrix) new BlockRealMatrix(data);
+            }
         }
-
-        this.m = data.length;
-        this.n = this.m == 0 ? 0 : data[0].length;
     }
 
     public Matrix(RealMatrix data) {
@@ -64,7 +67,11 @@ public class Matrix implements TetradSerializable {
         if (m == 0 || n == 0) {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
-            this.apacheData = new BlockRealMatrix(m, n);
+            if (m * n <= 4096) {
+                apacheData = (RealMatrix) new Array2DRowRealMatrix(m, n);
+            } else {
+                apacheData = (RealMatrix) new BlockRealMatrix(m, n);
+            }
         }
 
         this.m = m;
@@ -73,6 +80,21 @@ public class Matrix implements TetradSerializable {
 
     public Matrix(Matrix m) {
         this(m.apacheData.copy());
+    }
+
+    public static Matrix identity(int rows) {
+        return new Matrix(org.apache.commons.math3.linear.MatrixUtils.createRealIdentityMatrix(rows));
+    }
+
+    public static Matrix sparseMatrix(int m, int n) {
+        return new Matrix(new OpenMapRealMatrix(m, n).getData());
+    }
+
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     */
+    public static Matrix serializableInstance() {
+        return new Matrix(0, 0);
     }
 
     public void assign(Matrix matrix) {
@@ -102,22 +124,12 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix getSelection(int[] rows, int[] cols) {
-        Matrix m = new Matrix(rows.length, cols.length);
-
-        for (int i = 0; i < rows.length; i++) {
-            for (int j = 0; j < cols.length; j++) {
-                m.set(i, j, this.apacheData.getEntry(rows[i], cols[j]));
-            }
+        if (rows.length == 0 || cols.length == 0) {
+            return new Matrix(rows.length, cols.length);
         }
 
-        return m;
-
-//        if (rows.length == 0 || cols.length == 0) {
-//            return new Matrix(rows.length, cols.length);
-//        }
-//
-//        RealMatrix subMatrix = this.apacheData.getSubMatrix(rows, cols);
-//        return new Matrix(subMatrix.getData());
+        RealMatrix subMatrix = this.apacheData.getSubMatrix(rows, cols);
+        return new Matrix(subMatrix.getData());
     }
 
     public Matrix copy() {
@@ -194,13 +206,19 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix inverse() throws SingularMatrixException {
-        if (!isSquare()) throw new IllegalArgumentException("I can only invert square matrices.");
-
-        if (getNumRows() == 0) {
+        if (m == 0 || n == 0) {
             return new Matrix(0, 0);
+        } else {
+            return new Matrix(org.apache.commons.math3.linear.MatrixUtils.inverse(this.apacheData));
         }
 
-        return new Matrix(new LUDecomposition(this.apacheData, 1e-10).getSolver().getInverse());
+//        if (!isSquare()) throw new IllegalArgumentException("I can only invert square matrices.");
+//
+//        if (getNumRows() == 0) {
+//            return new Matrix(0, 0);
+//        }
+//
+//        return new Matrix(new LUDecomposition(this.apacheData, 1e-10).getSolver().getInverse());
     }
 
     public Matrix symmetricInverse() {
@@ -218,12 +236,6 @@ public class Matrix implements TetradSerializable {
         }
 
         return new Matrix(MatrixUtils.pseudoInverse(data));
-    }
-
-    public static Matrix identity(int rows) {
-        Matrix m = new Matrix(rows, rows);
-        for (int i = 0; i < rows; i++) m.set(i, i, 1);
-        return m;
     }
 
     public void assignRow(int row, Vector doubles) {
@@ -247,7 +259,6 @@ public class Matrix implements TetradSerializable {
         return new Matrix(this.apacheData.transpose());
     }
 
-
     public boolean equals(Matrix m, double tolerance) {
         for (int i = 0; i < this.apacheData.getRowDimension(); i++) {
             for (int j = 0; j < this.apacheData.getColumnDimension(); j++) {
@@ -267,7 +278,6 @@ public class Matrix implements TetradSerializable {
     public boolean isSymmetric(double tolerance) {
         return edu.cmu.tetrad.util.MatrixUtils.isSymmetric(this.apacheData.getData(), tolerance);
     }
-
 
     public Matrix minus(Matrix mb) {
         if (mb.getNumRows() == 0 || mb.getNumColumns() == 0) return this;
@@ -313,11 +323,6 @@ public class Matrix implements TetradSerializable {
         for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
         RealMatrix sqrt = U.multiply(S).multiply(V);
         return new Matrix(sqrt);
-    }
-
-
-    public static Matrix sparseMatrix(int m, int n) {
-        return new Matrix(new OpenMapRealMatrix(m, n).getData());
     }
 
     public Vector sum(int direction) {
@@ -371,14 +376,12 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -386,13 +389,6 @@ public class Matrix implements TetradSerializable {
 
         if (this.m == 0) this.m = this.apacheData.getRowDimension();
         if (this.n == 0) this.n = this.apacheData.getColumnDimension();
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-    public static Matrix serializableInstance() {
-        return new Matrix(0, 0);
     }
 
 

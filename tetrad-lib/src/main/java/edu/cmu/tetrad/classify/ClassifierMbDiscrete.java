@@ -29,11 +29,11 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.MbUtils;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.PcMb;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.MbUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -41,8 +41,7 @@ import edu.pitt.dbmi.data.reader.Delimiter;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Performs a Bayesian classification of a test set based on a given training set. PC-MB is used to select a Markov
@@ -96,6 +95,29 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
         }
     }
 
+    /**
+     * Runs MbClassify using moves-line arguments. The syntax is:
+     * <pre>
+     * java MbClassify train.dat test.dat target alpha depth
+     * </pre>
+     *
+     * @param args train.dat test.dat alpha depth dirichlet_prior max_missing
+     */
+    public static void main(String[] args) {
+        String trainPath = args[0];
+        String testPath = args[1];
+        String targetString = args[2];
+        String alphaString = args[3];
+        String depthString = args[4];
+        String priorString = args[5];
+        String maxMissingString = args[6];
+
+        new ClassifierMbDiscrete(trainPath, testPath, targetString, alphaString, depthString,
+                priorString, maxMissingString);
+    }
+
+    //============================PUBLIC METHODS=========================//
+
     private void setup(DataSet train, DataSet test, Node target, double alpha,
                        int depth, double prior, int maxMissing) {
         this.train = train;
@@ -114,16 +136,13 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
         }
     }
 
-    //============================PUBLIC METHODS=========================//
-
     /**
      * Classifies the test data by Bayesian updating. The procedure is as follows. First, PC-MB is run on the training
-     * data to estimate an MB CPDAG. Bidirected edges are removed; an MB DAG G is selected from the CPDAG that
-     * remains. Second, a Bayes model B is estimated using this G and the training data. Third, for each case in the
-     * test data, the marginal for the target variable in B is calculated conditioning on values of the other varialbes
-     * in B in the test data; these are reported as classifications. Estimation of B is done using a Dirichlet
-     * estimator, with a symmetric prior, with the given alpha value. Updating is done using a row-summing exact
-     * updater.
+     * data to estimate an MB CPDAG. Bidirected edges are removed; an MB DAG G is selected from the CPDAG that remains.
+     * Second, a Bayes model B is estimated using this G and the training data. Third, for each case in the test data,
+     * the marginal for the target variable in B is calculated conditioning on values of the other varialbes in B in the
+     * test data; these are reported as classifications. Estimation of B is done using a Dirichlet estimator, with a
+     * symmetric prior, with the given alpha value. Updating is done using a row-summing exact updater.
      * <p>
      * One consequence of using the row-summing exact updater is that classification will be fast except for cases in
      * which there are lots of missing values. The reason for this is that for such cases the number of rows that need
@@ -138,10 +157,12 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
 
         PcMb search = new PcMb(indTest, this.depth);
         search.setDepth(this.depth);
-        List<Node> mbPlusTarget = search.findMb(this.target);
+        Set<Node> mbPlusTarget = search.findMb(this.target);
         mbPlusTarget.add(this.target);
 
-        DataSet subset = this.train.subsetColumns(mbPlusTarget);
+        ArrayList<Node> vars = new ArrayList<>(mbPlusTarget);
+        Collections.sort(vars);
+        DataSet subset = this.train.subsetColumns(vars);
 
         System.out.println("subset vars = " + subset.getVariables());
 
@@ -365,27 +386,6 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
      */
     public double getPercentCorrect() {
         return this.percentCorrect;
-    }
-
-    /**
-     * Runs MbClassify using moves-line arguments. The syntax is:
-     * <pre>
-     * java MbClassify train.dat test.dat target alpha depth
-     * </pre>
-     *
-     * @param args train.dat test.dat alpha depth dirichlet_prior max_missing
-     */
-    public static void main(String[] args) {
-        String trainPath = args[0];
-        String testPath = args[1];
-        String targetString = args[2];
-        String alphaString = args[3];
-        String depthString = args[4];
-        String priorString = args[5];
-        String maxMissingString = args[6];
-
-        new ClassifierMbDiscrete(trainPath, testPath, targetString, alphaString, depthString,
-                priorString, maxMissingString);
     }
 }
 

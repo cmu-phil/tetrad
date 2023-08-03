@@ -30,8 +30,9 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -56,7 +57,7 @@ public class TestIndTestGSquare {
 
             Node x = v.get(0);
             Node y = v.get(1);
-            ArrayList<Node> z = new ArrayList<>();
+            Set<Node> z = new HashSet<>();
             z.add(v.get(2));
             assertTrue(test.checkIndependence(x, y, z).isIndependent());
 
@@ -76,7 +77,7 @@ public class TestIndTestGSquare {
             IndTestGSquare test = new IndTestGSquare(dataSet, 0.05);
 
             Node x = dataSet.getVariable("X4");
-            ArrayList<Node> z = new ArrayList<>();
+            Set<Node> z = new HashSet<>();
 
             test.setDeterminationP(0.99);
             assertFalse(test.determines(z, x));

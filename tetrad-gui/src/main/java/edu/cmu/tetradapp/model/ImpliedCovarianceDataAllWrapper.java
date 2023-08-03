@@ -34,8 +34,8 @@ import java.util.List;
 
 
 /**
- * Wraps a data model so that a random sample will automatically be drawn on
- * construction from a SemIm. Includes latents.
+ * Wraps a data model so that a random sample will automatically be drawn on construction from a SemIm. Includes
+ * latents.
  *
  * @author josephramsey
  */
@@ -64,10 +64,6 @@ public class ImpliedCovarianceDataAllWrapper extends DataWrapper {
         LogDataUtils.logDataModelList("Data simulated from a linear structural equation model.", getDataModelList());
     }
 
-    public SemIm getSemIm() {
-        return this.semIm;
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -75,6 +71,10 @@ public class ImpliedCovarianceDataAllWrapper extends DataWrapper {
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
+    }
+
+    public SemIm getSemIm() {
+        return this.semIm;
     }
 }
 

@@ -27,10 +27,9 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.util.List;
 
 /**
- * Inteface implemented by classes, instantiations of which are associated with
- * lists of variables. Such lists of variables are used for a number of
- * purposes--creating data sets, creating graphs, comparing one data to another,
- * and so on.
+ * Inteface implemented by classes, instantiations of which are associated with lists of variables. Such lists of
+ * variables are used for a number of purposes--creating data sets, creating graphs, comparing one data to another, and
+ * so on.
  *
  * @author josephramsey
  */

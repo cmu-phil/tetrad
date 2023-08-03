@@ -23,8 +23,8 @@ import edu.pitt.dbmi.data.reader.validation.ValidationResult;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,7 +37,7 @@ public class LowerCovarianceDataFileValidationTest {
 
     private final Delimiter delimiter = Delimiter.SPACE;
 
-    private final Path dataFile = Paths.get(getClass().getResource("/data/covariance/bad_spartina.txt").getFile());
+    private final Path dataFile = new File(getClass().getResource("/data/covariance/bad_spartina.txt").getFile()).toPath();
 
     public LowerCovarianceDataFileValidationTest() {
     }

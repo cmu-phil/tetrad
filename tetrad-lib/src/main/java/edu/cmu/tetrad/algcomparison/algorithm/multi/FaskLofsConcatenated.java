@@ -1,14 +1,15 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.work_in_progress.FasLofs;
 import edu.cmu.tetrad.search.Lofs;
+import edu.cmu.tetrad.search.work_in_progress.FasLofs;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -20,9 +21,8 @@ import java.util.List;
 /**
  * Wraps the IMaGES algorithm for continuous variables.
  * <p>
- * Requires that the parameter 'randomSelectionSize' be set to indicate how many
- * datasets should be taken at a time (randomly). This cannot given multiple
- * values.
+ * Requires that the parameter 'randomSelectionSize' be set to indicate how many datasets should be taken at a time
+ * (randomly). This cannot given multiple values.
  *
  * @author josephramsey
  */
@@ -77,7 +77,12 @@ public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge
 
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
+        // Not used.
+    }
 
+    @Override
+    public void setIndTestWrapper(IndependenceWrapper test) {
+        // Not used.
     }
 
     private Graph getGraph(FasLofs search) {

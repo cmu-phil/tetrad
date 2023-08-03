@@ -33,12 +33,10 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * Calculates the discrete BIC score. The likelihood for this score is calculated
- * as SUM(ln(P(X | Z) P(Z)) across all cells in all conditional probability tables
- * for the discrete model. The parameters are counted as SUM(rows * (cols - 1))
- * for all conditional probability tables in the model. Then the BIC score is
- * calculated as 2L - ck ln N, where c is a multiplier on the penalty ("penalty
- * discount").
+ * Calculates the discrete BIC score. The likelihood for this score is calculated as SUM(ln(P(X | Z) P(Z)) across all
+ * cells in all conditional probability tables for the discrete model. The parameters are counted as SUM(rows * (cols -
+ * 1)) for all conditional probability tables in the model. Then the BIC score is calculated as 2L - ck ln N, where c is
+ * a multiplier on the penalty ("penalty discount").
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>
@@ -47,11 +45,11 @@ import static org.apache.commons.math3.util.FastMath.log;
  */
 public class DiscreteBicScore implements DiscreteScore {
     private final DataSet dataSet;
-    private List<Node> variables;
     private final int[][] data;
     private final int sampleSize;
-    private double penaltyDiscount = 1;
     private final int[] numCategories;
+    private List<Node> variables;
+    private double penaltyDiscount = 1;
     private double structurePrior = 1;
 
     /**
@@ -93,6 +91,15 @@ public class DiscreteBicScore implements DiscreteScore {
         for (int i = 0; i < variables.size(); i++) {
             this.numCategories[i] = getVariable(i).getNumCategories();
         }
+    }
+
+    private static int getRowIndex(int[] dim, int[] values) {
+        int rowIndex = 0;
+        for (int i = 0; i < dim.length; i++) {
+            rowIndex *= dim[i];
+            rowIndex += values[i];
+        }
+        return rowIndex;
     }
 
     /**
@@ -212,6 +219,22 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
+     * Sets the variables to a new list of the same size.
+     *
+     * @param variables The new list of variables.
+     */
+    public void setVariables(List<Node> variables) {
+        for (int i = 0; i < variables.size(); i++) {
+            if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
+                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
+                        "as the variable being substituted for it.");
+            }
+        }
+
+        this.variables = variables;
+    }
+
+    /**
      * Returns the sample size.
      *
      * @return This size.
@@ -261,22 +284,6 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * Sets the variables to a new list of the same size.
-     *
-     * @param variables The new list of variables.
-     */
-    public void setVariables(List<Node> variables) {
-        for (int i = 0; i < variables.size(); i++) {
-            if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
-                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
-                        "as the variable being substituted for it.");
-            }
-        }
-
-        this.variables = variables;
-    }
-
-    /**
      * Sets the penalty discount, which is a multiplier on the penalty term of BIC.
      *
      * @param penaltyDiscount This discount.
@@ -296,17 +303,6 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * This method is not used; a method for calculating whether nodes Z determind node y has not
-     * been implemented here.
-     *
-     * @throws UnsupportedOperationException Since this method is not used.
-     */
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        throw new UnsupportedOperationException("This method is not used.");
-    }
-
-    /**
      * Returns a string representation of this score.
      *
      * @return This string.
@@ -314,15 +310,6 @@ public class DiscreteBicScore implements DiscreteScore {
     @Override
     public String toString() {
         return "BIC Score";
-    }
-
-    private static int getRowIndex(int[] dim, int[] values) {
-        int rowIndex = 0;
-        for (int i = 0; i < dim.length; i++) {
-            rowIndex *= dim[i];
-            rowIndex += values[i];
-        }
-        return rowIndex;
     }
 
     private double getPriorForStructure(int parents) {

@@ -55,6 +55,8 @@ import static org.apache.commons.math3.util.FastMath.abs;
  */
 
 public final class TetradTestContinuous implements TetradTest {
+    private final DataSet dataSet;
+    DeltaTetradTest deltaTest;
     private double sig;
     private double[] prob;
     private ICovarianceMatrix covMatrix;
@@ -62,13 +64,11 @@ public final class TetradTestContinuous implements TetradTest {
     private Matrix rho;
     private BpcTestType sigTestType;
     private int sampleSize;
-    private final DataSet dataSet;
     private OneFactorEstimator oneFactorEst4, oneFactorEst5, oneFactorEst6;
     private TwoFactorsEstimator twoFactorsEst4, twoFactorsEst5, twoFactorsEst6;
     private Matrix bufferMatrix;
     //    private Map<Tetrad, Double> tetradDifference;
     private List<Node> variables;
-    DeltaTetradTest deltaTest;
 
     public TetradTestContinuous(DataSet dataSet, BpcTestType sigTestType,
                                 double sig) {
@@ -167,6 +167,10 @@ public final class TetradTestContinuous implements TetradTest {
 //        return corrMatrix;
     }
 
+    public void setCovMatrix(ICovarianceMatrix covMatrix) {
+        this.covMatrix = covMatrix;
+    }
+
     public String[] getVarNames() {
         return this.covMatrix.getVariableNames().toArray(new String[0]);
     }
@@ -242,10 +246,8 @@ public final class TetradTestContinuous implements TetradTest {
         return this.prob[0];
     }
 
-
     /**
-     * --------------------------------------------------------------------------
-     * PRIVATE METHODS
+     * -------------------------------------------------------------------------- PRIVATE METHODS
      */
 
     private void evalTetradDifferences(int i, int j, int k, int l) {
@@ -285,7 +287,6 @@ public final class TetradTestContinuous implements TetradTest {
     private void evalTetradDifference(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2) {
         wishartEvalTetradDifference(i1, j1, k1, l1, i2, j2, k2, l2);
     }
-
 
     /**
      * The asymptotic Wishart test for multivariate normal variables. See Wishart (1928).
@@ -481,7 +482,6 @@ public final class TetradTestContinuous implements TetradTest {
         this.prob[2] = this.deltaTest.getPValue();
     }
 
-
     private void bollenEvalTetradDifference(int i, int j, int k, int l) {
 
         Node ci = getVariables().get(i);
@@ -507,10 +507,6 @@ public final class TetradTestContinuous implements TetradTest {
 
     }
 
-    public void setCovMatrix(ICovarianceMatrix covMatrix) {
-        this.covMatrix = covMatrix;
-    }
-
     public void setBollenTest(DeltaTetradTest deltaTest) {
         this.deltaTest = deltaTest;
     }
@@ -519,6 +515,37 @@ public final class TetradTestContinuous implements TetradTest {
      * This class is a easy, fast way of reusing one-factor models for
      * significance testing
      */
+
+    public boolean oneFactorTest(int v1, int v2, int v3, int v4) {
+        int[] indices = {v1, v2, v3, v4};
+        this.oneFactorEst4.init(indices);
+        return this.oneFactorEst4.isSignificant();
+    }
+
+    public boolean oneFactorTest(int v1, int v2, int v3, int v4, int v5) {
+        int[] indices = {v1, v2, v3, v4, v5};
+        this.oneFactorEst5.init(indices);
+        return this.oneFactorEst5.isSignificant();
+    }
+
+    public boolean twoFactorTest(int v1, int v2, int v3, int v4) {
+        int[] indices = {v1, v2, v3, v4};
+        this.twoFactorsEst4.init(indices, 2);
+        return this.twoFactorsEst4.isSignificant();
+    }
+
+    public boolean twoFactorTest(int v1, int v2, int v3, int v4, int v5) {
+        int[] indices = {v1, v2, v3, v4, v5};
+        this.twoFactorsEst5.init(indices, 3);
+        return this.twoFactorsEst5.isSignificant();
+    }
+
+    public boolean twoFactorTest(int v1, int v2, int v3, int v4, int v5,
+                                 int v6) {
+        int[] indices = {v1, v2, v3, v4, v5, v6};
+        this.twoFactorsEst6.init(indices, 3);
+        return this.twoFactorsEst6.isSignificant();
+    }
 
     abstract static class SimpleFactorEstimator {
         ICovarianceMatrix sampleCov, subSampleCov;
@@ -631,37 +658,6 @@ public final class TetradTestContinuous implements TetradTest {
             this.semPm = new SemPm(graph);
             return this.semPm;
         }
-    }
-
-    public boolean oneFactorTest(int v1, int v2, int v3, int v4) {
-        int[] indices = {v1, v2, v3, v4};
-        this.oneFactorEst4.init(indices);
-        return this.oneFactorEst4.isSignificant();
-    }
-
-    public boolean oneFactorTest(int v1, int v2, int v3, int v4, int v5) {
-        int[] indices = {v1, v2, v3, v4, v5};
-        this.oneFactorEst5.init(indices);
-        return this.oneFactorEst5.isSignificant();
-    }
-
-    public boolean twoFactorTest(int v1, int v2, int v3, int v4) {
-        int[] indices = {v1, v2, v3, v4};
-        this.twoFactorsEst4.init(indices, 2);
-        return this.twoFactorsEst4.isSignificant();
-    }
-
-    public boolean twoFactorTest(int v1, int v2, int v3, int v4, int v5) {
-        int[] indices = {v1, v2, v3, v4, v5};
-        this.twoFactorsEst5.init(indices, 3);
-        return this.twoFactorsEst5.isSignificant();
-    }
-
-    public boolean twoFactorTest(int v1, int v2, int v3, int v4, int v5,
-                                 int v6) {
-        int[] indices = {v1, v2, v3, v4, v5, v6};
-        this.twoFactorsEst6.init(indices, 3);
-        return this.twoFactorsEst6.isSignificant();
     }
 
 }

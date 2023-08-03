@@ -31,13 +31,7 @@ import java.util.Arrays;
  */
 public class BCCausalInference {
 
-    public enum OP {
-        DEPENDENT,
-        INDEPENDENT
-    }
-
     private static final double PESS_VALUE = 1.0;
-
     private final int numberOfNodes;
     private final int numberOfCases;
     private final int maximumNodes;
@@ -46,9 +40,7 @@ public class BCCausalInference {
     private final int maximumParents;
     private final int maximumCells;
     private final double[] logFactorial;
-
     private final int scoreFn;  // score function
-
     private final int[] nodeDimension;
     private final int[][] cases;
 
@@ -67,21 +59,38 @@ public class BCCausalInference {
     }
 
     /**
-     * This function takes a constraint, which has a value of either
-     * OP.dependent or OP.independent, of the form "X independent Y given Z" or
-     * "X dependent Y given Z" and returns a probability for that constraint
-     * given the data in cases and assumed prior probability for that constraint
-     * given the data in cases and assumed prior probabilities. Currently, it
-     * assumes uniform parameter priors and a structure prior of 0.5. A
-     * structure prior of 0.5 means taht a priori we have that P(X independent Y
-     * given Z) = P(X dependent Y given Z) = 0.5.
+     * Takes ln(x) and ln(y) as input, and returns ln(x + y)
+     *
+     * @param lnX is natural log of x
+     * @param lnY is natural log of y
+     * @return natural log of x plus y
+     */
+    private static double lnXpluslnY(double lnX, double lnY) {
+        if (lnY > lnX) {
+            double temp = lnX;
+            lnX = lnY;
+            lnY = temp;
+        }
+
+        double lnYminusLnX = lnY - lnX;
+
+        return (lnYminusLnX < Double.MIN_EXPONENT)
+                ? lnX
+                : FastMath.log1p(FastMath.exp(lnYminusLnX)) + lnX;
+    }
+
+    /**
+     * This function takes a constraint, which has a value of either OP.dependent or OP.independent, of the form "X
+     * independent Y given Z" or "X dependent Y given Z" and returns a probability for that constraint given the data in
+     * cases and assumed prior probability for that constraint given the data in cases and assumed prior probabilities.
+     * Currently, it assumes uniform parameter priors and a structure prior of 0.5. A structure prior of 0.5 means taht
+     * a priori we have that P(X independent Y given Z) = P(X dependent Y given Z) = 0.5.
      * <p>
-     * Z[0] is the length of the set represented by array Z. For an example,
-     * Z[0] = 1 represents the set Z of size 1. Z[0] = 0 represents an empty
-     * set.
+     * Z[0] is the length of the set represented by array Z. For an example, Z[0] = 1 represents the set Z of size 1.
+     * Z[0] = 0 represents an empty set.
      * <p>
-     * Set Z with two elements: Z = {3, 2} Z[0] = 2 // set Z has two elements
-     * (length of 2) Z[1] = 3 // first element Z[2] = 2 // second element.
+     * Set Z with two elements: Z = {3, 2} Z[0] = 2 // set Z has two elements (length of 2) Z[1] = 3 // first element
+     * Z[2] = 2 // second element.
      * <p>
      * Empty set: Z = {} Z[0] = 0
      *
@@ -89,8 +98,7 @@ public class BCCausalInference {
      * @param x          node x
      * @param y          node y
      * @param z          set of nodes
-     * @return P(x dependent y given z | data) or P(x independent y given z |
-     * data)
+     * @return P(x dependent y given z | data) or P(x independent y given z | data)
      */
     public double probConstraint(OP constraint, int x, int y, int[] z) {
         double probability = 0;
@@ -200,8 +208,7 @@ public class BCCausalInference {
     /**
      * @param node
      * @param instancePtr
-     * @param q           is the number of possible joint instantiation of the parents of
-     *                    the parents of the node.
+     * @param q           is the number of possible joint instantiation of the parents of the parents of the node.
      * @return
      */
     private double scoringFn1(int node, int instancePtr, double q, CountsTracker countsTracker) {
@@ -356,11 +363,9 @@ public class BCCausalInference {
     }
 
     /**
-     * This function returns the prior probability that X independent Y given Z.
-     * It currently simply returns the uniform prior of 0.5. It can be revised
-     * to return an informative prior. The code that calls priorIndependent()
-     * currently assumes that it returns a value in (0, 1), and thus, does not
-     * return 0 or 1.
+     * This function returns the prior probability that X independent Y given Z. It currently simply returns the uniform
+     * prior of 0.5. It can be revised to return an informative prior. The code that calls priorIndependent() currently
+     * assumes that it returns a value in (0, 1), and thus, does not return 0 or 1.
      *
      * @param x
      * @param y
@@ -379,27 +384,6 @@ public class BCCausalInference {
         }
 
         return logFact;
-    }
-
-    /**
-     * Takes ln(x) and ln(y) as input, and returns ln(x + y)
-     *
-     * @param lnX is natural log of x
-     * @param lnY is natural log of y
-     * @return natural log of x plus y
-     */
-    private static double lnXpluslnY(double lnX, double lnY) {
-        if (lnY > lnX) {
-            double temp = lnX;
-            lnX = lnY;
-            lnY = temp;
-        }
-
-        double lnYminusLnX = lnY - lnX;
-
-        return (lnYminusLnX < Double.MIN_EXPONENT)
-                ? lnX
-                : FastMath.log1p(FastMath.exp(lnYminusLnX)) + lnX;
     }
 
     private double gammln(double xx) {
@@ -440,6 +424,11 @@ public class BCCausalInference {
         }
 
         return tmp + FastMath.log(stp * ser);
+    }
+
+    public enum OP {
+        DEPENDENT,
+        INDEPENDENT
     }
 
     private static class CountsTracker {

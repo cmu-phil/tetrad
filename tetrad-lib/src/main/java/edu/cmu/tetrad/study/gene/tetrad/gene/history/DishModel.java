@@ -29,39 +29,34 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 /**
- * Models the manner in which gene models are initialized differentially
- * depending on the dishes that the cells are in. The basic idea of the model is
- * that cells are grown in different dishes, and as a result may be initialized
- * differently. (They may also grow differently, although that is not being
- * modelled currently.) Causes of differentiation may be nutrition, temperature,
- * etc.
+ * Models the manner in which gene models are initialized differentially depending on the dishes that the cells are in.
+ * The basic idea of the model is that cells are grown in different dishes, and as a result may be initialized
+ * differently. (They may also grow differently, although that is not being modelled currently.) Causes of
+ * differentiation may be nutrition, temperature, etc.
  *
  * @author josephramsey
  */
 public class DishModel implements TetradSerializable {
     static final long serialVersionUID = 23L;
-
-    /**
-     * The number of the getModel dish.
-     *
-     * @serial
-     */
-    private int dishNumber;
-
-    /**
-     * The standard deviation of the normal distribution from which dish bump
-     * values are drawn, in percent. The distribution has a mean of 100%.
-     *
-     * @serial
-     */
-    private double dishBumpStDev = 10.0;
-
     /**
      * An array of dish bumps for each dish.
      *
      * @serial
      */
     private final double[] dishBumps;
+    /**
+     * The number of the getModel dish.
+     *
+     * @serial
+     */
+    private int dishNumber;
+    /**
+     * The standard deviation of the normal distribution from which dish bump values are drawn, in percent. The
+     * distribution has a mean of 100%.
+     *
+     * @serial
+     */
+    private double dishBumpStDev = 10.0;
 
     //===============================CONSTRUCTORS========================//
 
@@ -120,8 +115,7 @@ public class DishModel implements TetradSerializable {
     }
 
     /**
-     * Bumps the given expression value in the manner prescribed for the
-     * getModel dish.
+     * Bumps the given expression value in the manner prescribed for the getModel dish.
      */
     public double bumpInitialization(double expressionLevel) {
 
@@ -138,14 +132,12 @@ public class DishModel implements TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

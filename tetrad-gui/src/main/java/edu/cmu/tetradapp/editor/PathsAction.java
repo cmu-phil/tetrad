@@ -285,7 +285,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 List<Node> parents = graph.getParents(node1);
                 List<Node> children = graph.getChildren(node1);
 
-                List<Node> ambiguous = graph.getAdjacentNodes(node1);
+                List<Node> ambiguous = new ArrayList<>(graph.getAdjacentNodes(node1));
                 ambiguous.removeAll(parents);
                 ambiguous.removeAll(children);
 
@@ -298,7 +298,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 List<Node> parents2 = graph.getParents(node2);
                 List<Node> children2 = graph.getChildren(node2);
 
-                List<Node> ambiguous2 = graph.getAdjacentNodes(node2);
+                List<Node> ambiguous2 = new ArrayList<>(graph.getAdjacentNodes(node2));
                 ambiguous2.removeAll(parents2);
                 ambiguous2.removeAll(children2);
 
@@ -310,10 +310,12 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
-    private String niceList(List<Node> nodes) {
-        if (nodes.isEmpty()) {
+    private String niceList(List<Node> _nodes) {
+        if (_nodes.isEmpty()) {
             return "--NONE--";
         }
+
+        List<Node> nodes = new ArrayList<>(_nodes);
 
         Collections.sort(nodes);
 

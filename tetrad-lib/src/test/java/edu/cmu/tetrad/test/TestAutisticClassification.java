@@ -28,8 +28,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fas;
-import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.File;
@@ -45,9 +45,11 @@ import java.util.*;
  * @author josephramsey
  */
 public class TestAutisticClassification {
-    enum Type {LEAVE_ONE_OUT, TRAIN_TEST}
-
     private final Type type = Type.LEAVE_ONE_OUT;
+
+    public static void main(String... args) {
+        new TestAutisticClassification().testAutistic();
+    }
 
     public void testAutistic() {
         Parameters parameters = new Parameters();
@@ -493,9 +495,7 @@ public class TestAutisticClassification {
         }
     }
 
-    public static void main(String... args) {
-        new TestAutisticClassification().testAutistic();
-    }
+    enum Type {LEAVE_ONE_OUT, TRAIN_TEST}
 }
 
 

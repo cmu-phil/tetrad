@@ -22,8 +22,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndTestDSep;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.TimeLagGraphWrapper;
@@ -51,8 +51,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Displays a workbench editing workbench area together with a toolbench for
- * editing tetrad-style graphs.
+ * Displays a workbench editing workbench area together with a toolbench for editing tetrad-style graphs.
  *
  * @author Aaron Powers
  * @author josephramsey
@@ -62,13 +61,10 @@ public final class TimeLagGraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
 
     private static final long serialVersionUID = -2425361202348129265L;
-
-    private TimeLagGraphWorkbench workbench;
     private final LayoutEditable layoutEditable;
-
     private final JScrollPane graphEditorScroll = new JScrollPane();
-
     private final EdgeTypeTable edgeTypeTable;
+    private TimeLagGraphWorkbench workbench;
 
     //===========================CONSTRUCTOR========================//
     public TimeLagGraphEditor(TimeLagGraphWrapper timeLagGraphWrapper) {
@@ -92,11 +88,9 @@ public final class TimeLagGraphEditor extends JPanel
     }
 
     /**
-     * @return a list of all the SessionNodeWrappers (TetradNodes) and
-     * SessionNodeEdges that are model components for the respective
-     * SessionNodes and SessionEdges selected in the workbench. Note that the
-     * workbench, not the SessionEditorNodes themselves, keeps track of the
-     * selection.
+     * @return a list of all the SessionNodeWrappers (TetradNodes) and SessionNodeEdges that are model components for
+     * the respective SessionNodes and SessionEdges selected in the workbench. Note that the workbench, not the
+     * SessionEditorNodes themselves, keeps track of the selection.
      */
     @Override
     public List getSelectedModelComponents() {
@@ -146,6 +140,11 @@ public final class TimeLagGraphEditor extends JPanel
     }
 
     @Override
+    public void setGraph(Graph graph) {
+        getWorkbench().setGraph(graph);
+    }
+
+    @Override
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
@@ -153,11 +152,6 @@ public final class TimeLagGraphEditor extends JPanel
     @Override
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
-    }
-
-    @Override
-    public void setGraph(Graph graph) {
-        getWorkbench().setGraph(graph);
     }
 
     @Override
@@ -316,8 +310,7 @@ public final class TimeLagGraphEditor extends JPanel
     }
 
     /**
-     * Creates the "file" menu, which allows the user to load, save, and post
-     * workbench models.
+     * Creates the "file" menu, which allows the user to load, save, and post workbench models.
      *
      * @return this menu.
      */
@@ -433,7 +426,7 @@ public final class TimeLagGraphEditor extends JPanel
     public IndependenceTest getIndependenceTest() {
         Graph graph = getWorkbench().getGraph();
         EdgeListGraph listGraph = new EdgeListGraph(graph);
-        return new IndTestDSep(listGraph);
+        return new MsepTest(listGraph);
     }
 
     private LayoutEditable getLayoutEditable() {

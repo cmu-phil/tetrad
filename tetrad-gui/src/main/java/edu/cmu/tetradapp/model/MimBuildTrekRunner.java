@@ -25,9 +25,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.MimbuildTrek;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.search.utils.MimUtils;
-import edu.cmu.tetrad.search.MimbuildTrek;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -39,8 +39,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Extends AbstractAlgorithmRunner to produce a wrapper for the MIMBuild
- * algorithm.
+ * Extends AbstractAlgorithmRunner to produce a wrapper for the MIMBuild algorithm.
  *
  * @author Ricardo Silva
  */
@@ -103,10 +102,6 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
         params.set("knowledge", knowledgeBox.getKnowledge());
     }
 
-    public ICovarianceMatrix getCovMatrix() {
-        return this.covMatrix;
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -116,11 +111,14 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
         return PcRunner.serializableInstance();
     }
 
+    public ICovarianceMatrix getCovMatrix() {
+        return this.covMatrix;
+    }
+
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     /**
-     * Executes the algorithm, producing (at least) a result workbench. Must be
-     * implemented in the extending class.
+     * Executes the algorithm, producing (at least) a result workbench. Must be implemented in the extending class.
      */
     public void execute() throws Exception {
         DataSet data = this.dataSet;
@@ -207,8 +205,8 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
         for (Node latent : latents) {
             List<Node> children = graph.getChildren(latent);
-            children.removeAll(latents);
-            Collections.sort(children);
+            latents.forEach(children::remove);
+//            Collections.sort(children);
 
             builder.append(latent.getName()).append(": ");
 
@@ -222,15 +220,11 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
         return builder;
     }
 
-    private void setFullGraph(Graph fullGraph) {
-        this.fullGraph = fullGraph;
-    }
-
-    //===========================PRIVATE METHODS==========================//
-
     public Graph getGraph() {
         return getResultGraph();
     }
+
+    //===========================PRIVATE METHODS==========================//
 
     public SemPm getSemPm() {
         Graph graph = getResultGraph();
@@ -239,6 +233,10 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
     public Graph getFullGraph() {
         return this.fullGraph;
+    }
+
+    private void setFullGraph(Graph fullGraph) {
+        this.fullGraph = fullGraph;
     }
 }
 

@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.work_in_progress.MnlrLikelihood;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
@@ -52,9 +51,10 @@ public class MnlrScore implements Score {
 
     /**
      * Constructor.
-     * @param dataSet The mixed dataset being analyzed.
+     *
+     * @param dataSet        The mixed dataset being analyzed.
      * @param structurePrior The structure prior
-     * @param fDegree The f degree.
+     * @param fDegree        The f degree.
      */
     public MnlrScore(DataSet dataSet, double structurePrior, int fDegree) {
 
@@ -95,6 +95,7 @@ public class MnlrScore implements Score {
 
     /**
      * Returns the sample size.
+     *
      * @return This size.
      */
     public int getSampleSize() {
@@ -102,10 +103,10 @@ public class MnlrScore implements Score {
     }
 
     /**
-     * A method for FGES returning a judgment of whether an edge with a given
-     * bump counts as a effect edge.
+     * A method for FGES returning a judgment of whether an edge with a given bump counts as a effect edge.
+     *
      * @param bump The bump.
-     * @return True if so.
+     * @return True, if so.
      * @see edu.cmu.tetrad.search.Fges
      */
     @Override
@@ -115,6 +116,7 @@ public class MnlrScore implements Score {
 
     /**
      * Returns the variables.
+     *
      * @return This lsit.
      */
     @Override
@@ -124,21 +126,13 @@ public class MnlrScore implements Score {
 
     /**
      * Returns a maximum degree used by some algorithms.
+     *
      * @return This maximum.
      */
     @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(FastMath.log(this.dataSet.getNumRows()));
     }
-
-    /**
-     * @throws UnsupportedOperationException Method not implemented.
-     */
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
 }
 
 

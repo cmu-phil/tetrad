@@ -22,9 +22,9 @@
 package edu.cmu.tetrad.study.gene.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.study.gene.tetrad.gene.graph.DisplayNameHandler;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.study.gene.tetrad.gene.graph.DisplayNameHandler;
 import edu.cmu.tetrad.study.gene.tetrad.gene.history.*;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
@@ -77,12 +77,10 @@ public class BooleanGlassGeneIm implements SessionModel {
     //============================CONSTRUCTORS============================//
 
     /**
-     * Obtains a boolean Glass function from the boolean Glass gene PM provided
-     * and uses it to create a Glass history and a measurement simulator.
-     * Editing this IM consists in editing the wrapped measurement simulator.
+     * Obtains a boolean Glass function from the boolean Glass gene PM provided and uses it to create a Glass history
+     * and a measurement simulator. Editing this IM consists in editing the wrapped measurement simulator.
      *
-     * @param genePm the BooleanGlassGenePm from which the BooleanGlassFunction
-     *               is extracted.
+     * @param genePm the BooleanGlassGenePm from which the BooleanGlassFunction is extracted.
      */
     public BooleanGlassGeneIm(BooleanGlassGenePm genePm, Parameters parameters) {
         try {
@@ -123,9 +121,8 @@ public class BooleanGlassGeneIm implements SessionModel {
     }
 
     /**
-     * Returns the list of parents of the given factor as String's formatted in
-     * the style used by the Tetrad IV display-- e.g. "V1:L2" for factor "V1" at
-     * a lag of 2.
+     * Returns the list of parents of the given factor as String's formatted in the style used by the Tetrad IV
+     * display-- e.g. "V1:L2" for factor "V1" at a lag of 2.
      *
      * @param factor the factor, e.g. "V3", for which parents are requested.
      * @return the list of lagged factors which are parents of 'factor'.
@@ -149,8 +146,8 @@ public class BooleanGlassGeneIm implements SessionModel {
     }
 
     /**
-     * Returns the MeasurementSimulator. The simulation parameters can be edited
-     * directly with this. (Needs to be cast to MeasurementSimulator.)
+     * Returns the MeasurementSimulator. The simulation parameters can be edited directly with this. (Needs to be cast
+     * to MeasurementSimulator.)
      */
     public Object getSimulationParams() {
         return this.simulator;
@@ -169,8 +166,7 @@ public class BooleanGlassGeneIm implements SessionModel {
     }
 
     /**
-     * Returns the value in the given row of the boolean table for the given
-     * factor.
+     * Returns the value in the given row of the boolean table for the given factor.
      *
      * @return true or false.
      */
@@ -179,8 +175,7 @@ public class BooleanGlassGeneIm implements SessionModel {
     }
 
     /**
-     * Sets the value in the given row of the boolean table for the given
-     * factor to the given value (true/false).
+     * Sets the value in the given row of the boolean table for the given factor to the given value (true/false).
      */
     public void setRowValueAt(int factor, int row, boolean value) {
         getBooleanGlassFunction().getSubFunction(factor).setValue(row, value);
@@ -192,13 +187,11 @@ public class BooleanGlassGeneIm implements SessionModel {
     }
 
     /**
-     * Uses the MeasurementSimulator class to simulate a set of measurement data
-     * and optionally a set of raw cell expression data. For details of the
-     * measurement simulator, see that class.
+     * Uses the MeasurementSimulator class to simulate a set of measurement data and optionally a set of raw cell
+     * expression data. For details of the measurement simulator, see that class.
      *
-     * @return a DataModelList containing either one or two models, depending on
-     * whether measurement data alone is saved or whether raw data is
-     * additionally saved.
+     * @return a DataModelList containing either one or two models, depending on whether measurement data alone is saved
+     * or whether raw data is additionally saved.
      */
     public DataModelList simulateData() {
 
@@ -357,9 +350,8 @@ public class BooleanGlassGeneIm implements SessionModel {
     }
 
     /**
-     * Sets the error distribution for the given factor to the given
-     * distribution. Values for the transcription error for this factor will be
-     * drawn from this distribution.
+     * Sets the error distribution for the given factor to the given distribution. Values for the transcription error
+     * for this factor will be drawn from this distribution.
      */
     public void setErrorDistribution(int factor, Distribution distribution) {
         getBooleanGlassFunction().setErrorDistribution(factor, distribution);
@@ -375,14 +367,12 @@ public class BooleanGlassGeneIm implements SessionModel {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -87,6 +87,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
             rowCount /= 10;
             max++;
         }
+
         // add cell renderer for columns 2-7
         // int vColIndex = 2;
         // TableColumn col = this.getColumnModel().getColumn(vColIndex);
@@ -435,8 +436,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
     }
 
     /**
-     * @return true iff the given token is a legitimate value for the cell at
-     * (row, col) in the table.
+     * @return true iff the given token is a legitimate value for the cell at (row, col) in the table.
      */
     public boolean checkValueAt(String token, int col) {
         if (col < getNumLeadingCols()) {
@@ -455,14 +455,14 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         }
     }
 
-    public void setShowCategoryNames(boolean selected) {
-        TabularDataTable table = (TabularDataTable) getModel();
-        table.setCategoryNamesShown(selected);
-    }
-
     public boolean isShowCategoryNames() {
         TabularDataTable table = (TabularDataTable) getModel();
         return table.isCategoryNamesShown();
+    }
+
+    public void setShowCategoryNames(boolean selected) {
+        TabularDataTable table = (TabularDataTable) getModel();
+        table.setCategoryNamesShown(selected);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

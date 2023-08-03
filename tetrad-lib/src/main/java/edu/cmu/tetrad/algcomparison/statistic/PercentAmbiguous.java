@@ -6,11 +6,11 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The adjacency precision. The true positives are the number of adjacencies in both
- * the true and estimated graphs.
+ * The adjacency precision. The true positives are the number of adjacencies in both the true and estimated graphs.
  *
  * @author josephramsey
  */
@@ -36,7 +36,7 @@ public class PercentAmbiguous implements Statistic {
         List<Node> nodes = estGraph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjb = estGraph.getAdjacentNodes(b);
+            List<Node> adjb = new ArrayList<>(estGraph.getAdjacentNodes(b));
 
             if (adjb.size() < 2) continue;
 

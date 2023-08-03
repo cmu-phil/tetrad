@@ -25,14 +25,14 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.GFci;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndTestDSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.SemIm;
@@ -58,6 +58,7 @@ import static org.junit.Assert.assertTrue;
  * @author josephramsey
  */
 public class TestGFci {
+    boolean precomputeCovariances = true;
 
     public void test1() {
         RandomUtil.getInstance().setSeed(1450189593459L);
@@ -152,7 +153,7 @@ public class TestGFci {
         g1.addDirectedEdge(L, x2);
         g1.addDirectedEdge(L, x3);
 
-        GFci gfci = new GFci(new IndTestDSep(g1), new GraphScore(g1));
+        GFci gfci = new GFci(new MsepTest(g1), new GraphScore(g1));
 
         Graph pag = gfci.search();
 
@@ -183,7 +184,7 @@ public class TestGFci {
             Graph dag = RandomGraph.randomGraph(numNodes, numLatents, numNodes,
                     10, 10, 10, false);
 
-            GFci gfci = new GFci(new IndTestDSep(dag), new GraphScore(dag));
+            GFci gfci = new GFci(new MsepTest(dag), new GraphScore(dag));
             gfci.setCompleteRuleSetUsed(true);
             gfci.setFaithfulnessAssumed(true);
             Graph pag1 = gfci.search();
@@ -223,7 +224,7 @@ public class TestGFci {
 //        System.out.println(data.getCorrelationMatrix());
 
         IndependenceTest test = new IndTestFisherZ(data, 0.001);
-        SemBicScore score = new SemBicScore(data);
+        SemBicScore score = new SemBicScore(data, precomputeCovariances);
         score.setRuleType(SemBicScore.RuleType.CHICKERING);
         score.setPenaltyDiscount(2);
         GFci gFci = new GFci(test, score);

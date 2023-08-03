@@ -26,11 +26,13 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fci;
+import edu.cmu.tetrad.search.IGraphSearch;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestDSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -124,7 +126,7 @@ public class TestFci {
     }
 
     /**
-     * A specific graph. This is the test case from p. 142-144 that tests the possible Dsep step of FCI. This doesn't
+     * A specific graph. This is the test case from p. 142-144 that tests the possible Msep step of FCI. This doesn't
      * work in the optimized FCI algorithm. It works in the updated version (FciSearch).  (ekorber)
      */
     @Test
@@ -160,7 +162,7 @@ public class TestFci {
         knowledge.addToTier(2, "X3");
 
         checkSearch("Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3",
-                "X1o->X2,X2<->X3", knowledge);
+                "X1o->X2,X2<-oX3", knowledge);
     }
 
     @Test
@@ -191,7 +193,7 @@ public class TestFci {
         Dag trueGraph = new Dag(RandomGraph.randomGraph(nodes, 10, numEdges,
                 7, 5, 5, false));
 
-        IndependenceTest test = new IndTestDSep(trueGraph);
+        IndependenceTest test = new MsepTest(trueGraph);
 
         Fci fci = new Fci(test);
 
@@ -220,10 +222,10 @@ public class TestFci {
         System.out.println("Graph = " + graph);
 
         // Set up search.
-        IndependenceTest independence = new IndTestDSep(graph);
+        IndependenceTest independence = new MsepTest(graph);
 
         Fci fci = new Fci(independence);
-        fci.setPossibleDsepSearchDone(true);
+        fci.setPossibleMsepSearchDone(true);
         fci.setCompleteRuleSetUsed(true);
         fci.setDoDiscriminatingPathRule(true);
         fci.setMaxPathLength(-1);

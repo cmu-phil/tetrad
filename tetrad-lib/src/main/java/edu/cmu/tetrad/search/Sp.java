@@ -9,20 +9,17 @@ import java.util.*;
 
 /**
  * <p>Implements the SP (Sparsest Permutation) algorithm. This procedure goes through every
- * permutation of the variables (so can be slow for more than 11 variables with no knowledge)
- * looking for a permutation such that when a DAG is built it has the fewest number of
- * edges (i.e., is a most 'frugal' or a 'sparsest' DAG). The procedure can in principle
- * return all such sparsest permutations and their corresponding DAGs, but in this version
- * it return one of them, and converts the result into a CPDAG.</p>
+ * permutation of the variables (so can be slow for more than 11 variables with no knowledge) looking for a permutation
+ * such that when a DAG is built it has the fewest number of edges (i.e., is a most 'frugal' or a 'sparsest' DAG). The
+ * procedure can in principle return all such sparsest permutations and their corresponding DAGs, but in this version it
+ * return one of them, and converts the result into a CPDAG.</p>
  *
  * <p>Note that SP considers all permutations of the algorithm, which is exponential in the
- * number of variables. So SP without knowledge is limited to about 10 variables per
- * knowledge tier.</p>
+ * number of variables. So SP without knowledge is limited to about 10 variables per knowledge tier.</p>
  *
  * <p>However, notably, tiered Knowledge can be used with this search. If tiered knowledge
- * is used, then the procedure is carried out for each tier separately, given the variable
- * preceding that tier, which allows the SP algorithm to address tiered (e.g., time series)
- * problems with more than 11 variables.</p>
+ * is used, then the procedure is carried out for each tier separately, given the variable preceding that tier, which
+ * allows the SP algorithm to address tiered (e.g., time series) problems with more than 11 variables.</p>
  *
  * <p>This class is meant to be used in the context of the PermutationSearch class (see).
  * the proper use is PermutationSearch search = new PermutationSearch(new Sp(score));</p>
@@ -44,10 +41,8 @@ public class Sp implements SuborderSearch {
     private final Score score;
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
-    private final Map<Node, Double> scores;
     private Map<Node, GrowShrinkTree> gsts;
     private Knowledge knowledge = new Knowledge();
-
 
     /**
      * This algorithm will work with an arbitrary score.
@@ -58,7 +53,6 @@ public class Sp implements SuborderSearch {
         this.score = score;
         this.variables = score.getVariables();
         this.parents = new HashMap<>();
-        this.scores = new HashMap<>();
 
         for (Node node : this.variables) {
             this.parents.put(node, new HashSet<>());
@@ -68,10 +62,10 @@ public class Sp implements SuborderSearch {
     /**
      * This is the method called by PermutationSearch per tier.
      *
-     * @param prefix   The variable preceding the suborder variables in the permutation, including
-     *                 all variables from previous tiers.
-     * @param suborder The suborder of the variables list beign searched over. Only the order of the
-     *                 variables in this suborder will be modified.
+     * @param prefix   The variable preceding the suborder variables in the permutation, including all variables from
+     *                 previous tiers.
+     * @param suborder The suborder of the variable list beign searched over. Only the order of the variables in this
+     *                 suborder will be modified.
      * @param gsts     The GrowShrinkTree used for the search. This is an optimized score-caching class.
      */
     @Override
@@ -176,10 +170,10 @@ public class Sp implements SuborderSearch {
 
 
     static class SwapIterator implements Iterator<int[]> {
-        private int[] next;
         private final int n;
         private final int[] perm;
         private final int[] dirs;
+        private int[] next;
 
         public SwapIterator(int size) {
             this.n = size;
@@ -195,6 +189,12 @@ public class Sp implements SuborderSearch {
                 }
                 this.dirs[0] = 0;
             }
+        }
+
+        private static void swap(int i, int j, int[] arr) {
+            int x = arr[i];
+            arr[i] = arr[j];
+            arr[j] = x;
         }
 
         @Override
@@ -242,12 +242,6 @@ public class Sp implements SuborderSearch {
                     this.dirs[j] = (j < k) ? +1 : -1;
 
             return this.next;
-        }
-
-        private static void swap(int i, int j, int[] arr) {
-            int x = arr[i];
-            arr[i] = arr[j];
-            arr[j] = x;
         }
     }
 }

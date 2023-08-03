@@ -24,11 +24,9 @@ package edu.cmu.tetrad.util;
 import java.util.Iterator;
 
 /**
- * Iterates through all the posible combinations for a set of variables (each
- * with a different number of possible values). For example, if the number
- * of values for each variable is two, this would iterate through a truth table.
- * Not to be confused with a combinatorial (taking n values from m possible
- * values).
+ * Iterates through all the posible combinations for a set of variables (each with a different number of possible
+ * values). For example, if the number of values for each variable is two, this would iterate through a truth table. Not
+ * to be confused with a combinatorial (taking n values from m possible values).
  *
  * @author Juan Casares
  */
@@ -39,11 +37,9 @@ public class CombinationIterator implements Iterator {
     private boolean hasNext;
 
     /**
-     * Creates a combination set for a set of variables with the given number of
-     * maxValues
+     * Creates a combination set for a set of variables with the given number of maxValues
      *
-     * @param maxValues An int array consisting of the maximum values of each variable,
-     *                  in order.
+     * @param maxValues An int array consisting of the maximum values of each variable, in order.
      */
     public CombinationIterator(int[] maxValues) {
         this.numValues = maxValues.length;
@@ -53,8 +49,7 @@ public class CombinationIterator implements Iterator {
     }
 
     /**
-     * @return true iff there is still a combination that has not been returned
-     * by the next() method.
+     * @return true iff there is still a combination that has not been returned by the next() method.
      */
     public boolean hasNext() {
         return this.hasNext;

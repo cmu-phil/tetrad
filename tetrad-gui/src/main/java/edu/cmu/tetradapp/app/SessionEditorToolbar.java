@@ -34,9 +34,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Displays a vertical list of buttons that determine the next action the user
- * can take in the session editor workbench, whether it's selecting and moving a
- * node, adding a node of a particular type, or adding an edge.
+ * Displays a vertical list of buttons that determine the next action the user can take in the session editor workbench,
+ * whether it's selecting and moving a node, adding a node of a particular type, or adding an edge.
  *
  * @author josephramsey
  * @see SessionEditor
@@ -44,35 +43,27 @@ import java.util.Map;
  */
 final class SessionEditorToolbar extends JPanel {
 
-    //=========================MEMBER FIELDS============================//
+    /**
+     * The node type of the button that is used for the Select/Move tool.
+     */
+    private final String selectType = "Select";
+    private final String edgeSelectType = "Edge";
+    /**
+     * \ The map from JToggleButtons to String node types.
+     */
+    private final Map<JToggleButton, String> nodeTypes = new HashMap<>();
+    /**
+     * The workbench this toolbar controls.
+     */
+    private final SessionEditorWorkbench workbench;
     /**
      * True iff the toolbar is responding to events.
      */
     private boolean respondingToEvents = true;
     /**
-     * The node type of the button that is used for the Select/Move tool.
-     */
-    private final String selectType = "Select";
-
-    private final String edgeSelectType = "Edge";
-
-    /**
-     * \
-     * The map from JToggleButtons to String node types.
-     */
-    private final Map<JToggleButton, String> nodeTypes = new HashMap<>();
-
-    /**
      * True iff the shift key was down on last click.
      */
     private boolean shiftDown;
-
-    /**
-     * The workbench this toolbar controls.
-     */
-    private final SessionEditorWorkbench workbench;
-
-    //=============================CONSTRUCTORS==========================//
 
     /**
      * Constructs a new session toolbar.
@@ -245,16 +236,14 @@ final class SessionEditorToolbar extends JPanel {
     }
 
     /**
-     * True iff the toolbar is responding to events. This may need to be turned
-     * off temporarily.
+     * True iff the toolbar is responding to events. This may need to be turned off temporarily.
      */
     private boolean isRespondingToEvents() {
         return this.respondingToEvents;
     }
 
     /**
-     * Sets whether the toolbar should react to events. This may need to be
-     * turned off temporarily.
+     * Sets whether the toolbar should react to events. This may need to be turned off temporarily.
      */
     public void setRespondingToEvents(boolean respondingToEvents) {
         this.respondingToEvents = respondingToEvents;
@@ -265,19 +254,14 @@ final class SessionEditorToolbar extends JPanel {
         super.processKeyEvent(e);
     }
 
-    //===========================PRIVATE METHODS=========================//
-
     /**
-     * Constructs the button with the given node type and image prefix. If the
-     * node type is "Select", constructs a button that allows nodes to be
-     * selected and moved. If the node type is "Edge", constructs a button that
-     * allows edges to be drawn. For other node types, constructs buttons that
-     * allow those type of nodes to be added to the workbench. If a non-null
-     * image prefix is provided, images for <prefix>Up.gif, <prefix>Down.gif,
+     * Constructs the button with the given node type and image prefix. If the node type is "Select", constructs a
+     * button that allows nodes to be selected and moved. If the node type is "Edge", constructs a button that allows
+     * edges to be drawn. For other node types, constructs buttons that allow those type of nodes to be added to the
+     * workbench. If a non-null image prefix is provided, images for <prefix>Up.gif, <prefix>Down.gif,
      * <prefix>Off.gif and <prefix>Roll.gif are loaded from the /images
-     * directory relative to this compiled class and used to provide up, down,
-     * off, and rollover images for the constructed button. On construction,
-     * nodes are mapped to their node types in the Map, <code>nodeTypes</code>.
+     * directory relative to this compiled class and used to provide up, down, off, and rollover images for the
+     * constructed button. On construction, nodes are mapped to their node types in the Map, <code>nodeTypes</code>.
      * Listeners are added to the node.
      *
      * @param buttonInfo contains the info needed to construct the button.
@@ -351,8 +335,7 @@ final class SessionEditorToolbar extends JPanel {
     }
 
     /**
-     * @return the JToggleButton for the given node type, or null if no such
-     * button exists.
+     * @return the JToggleButton for the given node type, or null if no such button exists.
      */
     private JToggleButton getButtonForType(String nodeType) {
         for (JToggleButton o : this.nodeTypes.keySet()) {
@@ -378,8 +361,7 @@ final class SessionEditorToolbar extends JPanel {
     private static final class ButtonInfo {
 
         /**
-         * This is the name used to construct nodes on the graph of this type.
-         * Need to coordinate with session.
+         * This is the name used to construct nodes on the graph of this type. Need to coordinate with session.
          */
         private final String nodeTypeName;
 

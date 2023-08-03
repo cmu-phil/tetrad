@@ -40,8 +40,8 @@ import java.util.List;
  * each case (record) in  the DataSet it uses the values of all variables but the target variable to update the
  * distributions of all the variables.  It then computes an estimated value for the target variable by selecting the
  * value with the greatest probability in the updated distribution.  The method returns a crosstabulation table in the
- * form of a two-dimensional integer array in which coefs of observed versus estimated values of the target variable
- * are stored. Note that the variables must be the same in the dataset and the Bayes net.
+ * form of a two-dimensional integer array in which coefs of observed versus estimated values of the target variable are
+ * stored. Note that the variables must be the same in the dataset and the Bayes net.
  *
  * @author Frank Wimberly based on a specification by Clark Glymour
  */
@@ -50,8 +50,7 @@ public final class ClassifierBayesUpdaterDiscrete
     static final long serialVersionUID = 23L;
 
     /**
-     * The BayesIm instance used to create an updater.  Supplied as an argument
-     * to the constructor.
+     * The BayesIm instance used to create an updater.  Supplied as an argument to the constructor.
      *
      * @serial
      */
@@ -63,22 +62,6 @@ public final class ClassifierBayesUpdaterDiscrete
      * @serial
      */
     private final DataSet testData;
-
-    /**
-     * The percentage of correct estimates of the target variable.  This will be
-     * set to a meaningful value upon completion of the crossTabulate method.
-     *
-     * @serial
-     */
-    private double percentCorrect;
-
-    /**
-     * The target variable (inferred from its name).
-     *
-     * @serial
-     */
-    private DiscreteVariable targetVariable;
-
     /*
      * The variables in the dataset to be classified.  These should be
      * the same variables as in the training dataset according to the
@@ -86,7 +69,19 @@ public final class ClassifierBayesUpdaterDiscrete
      * @serial
      */
     private final List<Node> bayesImVars;
-
+    /**
+     * The percentage of correct estimates of the target variable.  This will be set to a meaningful value upon
+     * completion of the crossTabulate method.
+     *
+     * @serial
+     */
+    private double percentCorrect;
+    /**
+     * The target variable (inferred from its name).
+     *
+     * @serial
+     */
+    private DiscreteVariable targetVariable;
     /**
      * @serial
      */
@@ -167,8 +162,8 @@ public final class ClassifierBayesUpdaterDiscrete
     }
 
     /**
-     * Computes and returns the cross-tabulation of observed versus estimated
-     * values of the target variable as described above.
+     * Computes and returns the cross-tabulation of observed versus estimated values of the target variable as described
+     * above.
      *
      * @return this cross-tabulation.
      */
@@ -301,13 +296,11 @@ public final class ClassifierBayesUpdaterDiscrete
     }
 
     /**
-     * Computes the "confusion matrix" of coefs of the number of cases
-     * associated with each combination of estimated and observed values in the
-     * test dataset.  Each row, column i,j corresponds to the ith and jth
-     * categories of the target variable.
+     * Computes the "confusion matrix" of coefs of the number of cases associated with each combination of estimated and
+     * observed values in the test dataset.  Each row, column i,j corresponds to the ith and jth categories of the
+     * target variable.
      *
-     * @return an int[][] array containing the coefs, or null if the target
-     * variable is not in the test data.
+     * @return an int[][] array containing the coefs, or null if the target variable is not in the test data.
      */
     public int[][] crossTabulation() {
         int[] estimatedValues = classify();
@@ -363,8 +356,7 @@ public final class ClassifierBayesUpdaterDiscrete
     }
 
     /**
-     * @return the percentage of cases in which the target variable is correctly
-     * classified.
+     * @return the percentage of cases in which the target variable is correctly classified.
      */
     public double getPercentCorrect() {
         if (Double.isNaN(this.percentCorrect)) {
@@ -447,14 +439,12 @@ public final class ClassifierBayesUpdaterDiscrete
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.)
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.)
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

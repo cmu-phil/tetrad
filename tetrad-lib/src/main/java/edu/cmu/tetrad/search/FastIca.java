@@ -32,104 +32,85 @@ import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * <p>Translates a version of the FastICA algorithm used in R from Fortran
- * into Java for use in Tetrad. This can be used in various algorithms that
- * assume linearity and non-gaussianity, as for example LiNGAM and LiNG-D.
- * There is one difference from the R, in that in R FastICA can operate over
- * complex numbers, whereeas here it is restricted to real numbers. A
- * useful reference is this:</p>
+ * into Java for use in Tetrad. This can be used in various algorithms that assume linearity and non-gaussianity, as for
+ * example LiNGAM and LiNG-D. There is one difference from the R, in that in R FastICA can operate over complex numbers,
+ * whereas here it is restricted to real numbers. A useful reference is this:</p>
  *
  * <p>Oja, E., &amp; Hyvarinen, A. (2000). Independent component analysis:
  * algorithms and applications. Neural networks, 13(4-5), 411-430.</p>
  *
- * <p>The documention of the R version is as follows, all of which is true of this
- * translation (so far as I know) except for its being in R and its allowing
- * complex values.
+ * <p>The documentation of the R version is as follows, all of which is true of this
+ * translation (so far as I know) except for its being in R and its allowing complex values.
  * <p>
  * Description:
  * <p>
- * This is an R and C code implementation of the FastICA algorithm of Aapo
- * Hyvarinen et al. (URL: http://www.cis.hut.fi/aapo/) to perform Independent
- * Component Analysis (ICA) and Projection Pursuit.
+ * This is an R and C code implementation of the FastICA algorithm of Aapo Hyvarinen et al. (URL:
+ * <a href="http://www.cis.hut.fi/aapo/">http://www.cis.hut.fi/aapo/</a>) to perform Independent Component Analysis (ICA) and Projection Pursuit.
  * <p>
  * Usage:
  * <p>
- * fastICA(X, n.comp, alg.typ = c("parallel","deflation"), fun =
- * c("logcosh","exp"), alpha = 1.0, method = c("R","C"), row.norm = FALSE, maxit
- * = 200, tol = 1e-04, verbose = FALSE, w.init = NULL)
+ * fastICA(X, n.comp, alg.typ = c("parallel","deflation"), fun = c("logcosh","exp"), alpha = 1.0, method = c("R","C"),
+ * row.norm = FALSE, maxit = 200, tol = 1e-04, verbose = FALSE, w.init = NULL)
  * <p>
  * Arguments:
  * <p>
- * X: a data matrix with n rows representing observations and p columns
- * representing variables.
+ * X: a data matrix with n rows representing observations and p columns representing variables.
  * <p>
  * n.comp: number of components to be extracted
  * <p>
- * alg.typ: if 'alg.typ == "parallel"' the components are extracted
- * simultaneously (the default). if 'alg.typ == "deflation"' the components are
- * extracted one at a time.
+ * alg.typ: if 'alg.typ == "parallel"' the components are extracted simultaneously (the default). if 'alg.typ ==
+ * "deflation"' the components are extracted one at a time.
  * <p>
- * fun: the functional form of the G function used in the approximation to
- * neg-entropy (see details)
+ * fun: the functional form of the G function used in the approximation to neg-entropy (see details)
  * <p>
- * alpha: constant in range [1, 2] used in approximation to neg-entropy when
- * 'fun == "logcosh"'
+ * alpha: constant in range [1, 2] used in approximation to neg-entropy when 'fun == "logcosh"'
  * <p>
- * method: if 'method == "R"' then computations are done exclusively in R
- * (default). The code allows the interested R user to see exactly what the
- * algorithm does. if 'method == "C"' then C code is used to perform most of the
- * computations, which makes the algorithm run faster. During compilation the C
- * code is linked to an optimized BLAS library if present, otherwise stand-alone
- * BLAS routines are compiled.
+ * method: if 'method == "R"' then computations are done exclusively in R (default). The code allows the interested R
+ * user to see exactly what the algorithm does. if 'method == "C"' then C code is used to perform most of the
+ * computations, which makes the algorithm run faster. During compilation the C code is linked to an optimized BLAS
+ * library if present, otherwise stand-alone BLAS routines are compiled.
  * <p>
- * row.norm: a logical value indicating whether rows of the data matrix 'X'
- * should be standardized beforehand.
+ * row.norm: a logical value indicating whether rows of the data matrix 'X' should be standardized beforehand.
  * <p>
  * maxit: maximum number of iterations to perform
  * <p>
- * tol: a positive scalar giving the tolerance at which the un-mixing The data
- * matrix X is considered to be a linear combination of non-Gaussian
- * (independent) components i.e. X = SA where columns of S contain the
- * independent components and A is a linear mixing matrix. In short ICA attempts
- * to `un-mix' the data by estimating an un-mixing matrix W where XW = S.
+ * tol: a positive scalar giving the tolerance at which the un-mixing The data matrix X is considered to be a linear
+ * combination of non-Gaussian (independent) components i.e. X = SA where columns of S contain the independent
+ * components and A is a linear mixing matrix. In short ICA attempts to `un-mix' the data by estimating an un-mixing
+ * matrix W where XW = S.
  * <p>
- * Under this generative model the measured `signals' in X will tend to be `more
- * Gaussian' than the source components (in S) due to the Central Limit Theorem.
- * Thus, in order to extract the independent components/sources we search for an
- * un-mixing matrix W that maximizes the non-gaussianity of the sources.
+ * Under this generative model the measured `signals' in X will tend to be `more Gaussian' than the source components
+ * (in S) due to the Central Limit Theorem. Thus, in order to extract the independent components/sources we search for
+ * an un-mixing matrix W that maximizes the non-gaussianity of the sources.
  * <p>
- * In FastICA, non-gaussianity is measured using approximations to neg-entropy
- * (J) which are more robust than kurtosis based measures and fast to compute.
+ * In FastICA, non-gaussianity is measured using approximations to neg-entropy (J) which are more robust than kurtosis
+ * based measures and fast to compute.
  * <p>
  * The approximation takes the form
  * <p>
  * J(y)=[E{G(y)}-E{G(v)}]^2 where v is a N(0,1) r.v.
  * <p>
- * The following choices of G are included as options G(u)=frac{1}{alpha} log
- * cosh (alpha u) and G(u)=-exp(frac{-u^2}{2})
+ * The following choices of G are included as options G(u)=frac{1}{alpha} log cosh (alpha u) and
+ * G(u)=-exp(frac{-u^2}{2})
  * <p>
  * Algorithm*
  * <p>
- * First, the data is centered by subtracting the mean of each column of the
- * data matrix X.
+ * First, the data is centered by subtracting the mean of each column of the data matrix X.
  * <p>
- * The data matrix is then `whitened' by projecting the data onto it's principle
- * component directions i.e. X -&gt; XK where K is a pre-whitening matrix. The
- * number of components can be specified by the user.
+ * The data matrix is then `whitened' by projecting the data onto it's principle component directions i.e. X -&gt; XK
+ * where K is a pre-whitening matrix.
+ * The user can specify the number of components.
  * <p>
- * The ICA algorithm then estimates a matrix W s.t XKW = S . W is chosen to
- * maximize the neg-entropy approximation under the constraints that W is an
- * orthonormal matrix. This constraint ensures that the estimated components are
- * uncorrelated. The algorithm is based on a fixed-point iteration scheme for
- * maximizing the neg-entropy.
+ * The ICA algorithm then estimates a matrix W s.t XKW = S . W is chosen to maximize the neg-entropy approximation under
+ * the constraints that W is an orthonormal matrix. This constraint ensures that the estimated components are
+ * uncorrelated. The algorithm is based on a fixed-point iteration scheme for maximizing the neg-entropy.
  * <p>
  * Projection Pursuit*
  * <p>
- * In the absence of a generative model for the data the algorithm can be used
- * to find the projection pursuit directions. Projection pursuit is a technique
- * for finding `interesting' directions in multi-dimensional datasets. These
- * projections and are useful for visualizing the dataset and in density
- * estimation and regression. Interesting directions are those which show the
- * least Gaussian distribution, which is what the FastICA algorithm does.
+ * In the absence of a generative model for the data the algorithm can be used to find the projection pursuit
+ * directions. Projection pursuit is a technique for finding `interesting' directions in multi-dimensional datasets.
+ * These projections and are useful for visualizing the dataset and in density estimation and regression. Interesting
+ * directions are those which show the least Gaussian distribution, which is what the FastICA algorithm does.
  * <p>
  * Author(s):
  * <p>
@@ -137,8 +118,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * References:
  * <p>
- * A. Hyvarinen and E. Oja (2000) Independent Component Analysis: Algorithms and
- * Applications, _Neural Networks_, *13(4-5)*:411-430
+ * A. Hyvarinen and E. Oja (2000) Independent Component Analysis: Algorithms and Applications, _Neural Networks_,
+ * *13(4-5)*:411-430
  * <p>
  *
  * @author josephramsey
@@ -156,20 +137,17 @@ public class FastIca {
     public static int DEFLATION = 1;
 
     /**
-     * One of the function types that can be used to approximate negative
-     * entropy.
+     * One of the function types that can be used to approximate negative entropy.
      */
     public static int LOGCOSH = 2;
 
     /**
-     * The other function type that can be used to approximate negative
-     * entropy.
+     * The other function type that can be used to approximate negative entropy.
      */
     public static int EXP = 3;
 
     /**
-     * A data matrix with n rows representing observations and p columns
-     * representing variables.
+     * A data matrix with n rows representing observations and p columns representing variables.
      */
     private final Matrix X;
 
@@ -179,9 +157,8 @@ public class FastIca {
     private int numComponents;
 
     /**
-     * If algorithmType == PARALLEL the components are extracted simultaneously
-     * (the default). if algorithmType == DEFLATION the components are extracted
-     * one at a time.
+     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default).
+     * if algorithmType == DEFLATION, the components are extracted one at a time.
      */
     private int algorithmType = FastIca.PARALLEL;
 
@@ -191,14 +168,13 @@ public class FastIca {
     private int function = FastIca.LOGCOSH;
 
     /**
-     * Constant in range [1, 2] used in approximation to neg-entropy when 'fun
-     * == "logcosh". Default = 1.0.
+     * Constant in range [1, 2] used in approximation to neg-entropy when 'fun == "logcosh". Default = 1.0.
      */
     private double alpha = 1.1;
 
     /**
-     * A logical value indicating whether rows of the data matrix 'X' should be
-     * standardized beforehand. Default = false.
+     * A logical value indicating whether rows of the data matrix 'X' should be standardized beforehand. Default =
+     * false.
      */
     private boolean rowNorm;
 
@@ -208,45 +184,37 @@ public class FastIca {
     private int maxIterations = 200;
 
     /**
-     * A positive scalar giving the tolerance at which the un-mixing matrix is
-     * considered to have converged. Default = 1e-04.
+     * A positive scalar giving the tolerance at which the un-mixing matrix is considered to have converged. Default =
+     * 1e-04.
      */
     private double tolerance = 1e-04;
 
     /**
-     * A logical value indicating the level of output as the algorithm runs.
-     * Default = false.
+     * A logical value indicating the level of output as the algorithm runs. Default = false.
      */
     private boolean verbose;
 
     /**
-     * Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default)
-     * then a matrix of normal r.v.'s is used.
+     * Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default), then a matrix of normal r.v.'s is used.
      */
     private Matrix wInit;
 
-    //============================CONSTRUCTOR===========================//
 
     /**
-     * Constructs an instance of the Fast ICA algorithm, taking as arguments the
-     * two arguments that cannot be defaulted: the data matrix itself and the
-     * number of components to be extracted.
+     * Constructs an instance of the Fast ICA algorithm, taking as arguments the two arguments that cannot be defaulted:
+     * the data matrix itself and the number of components to be extracted.
      *
-     * @param X A 2D matrix, rows being cases, columns being
-     *          variables. It is assumed that there are no missing
-     *          values.
+     * @param X A 2D matrix, rows being cases, columns being variables. It is assumed that there are no missing values.
      */
     public FastIca(Matrix X, int numComponents) {
         this.X = X;
         this.numComponents = numComponents;
     }
 
-    //=============================PUBLIC METHODS=======================//
 
     /**
-     * If algorithmType == PARALLEL the components are extracted simultaneously
-     * (the default). if algorithmType == DEFLATION the components are extracted
-     * one at a time.
+     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default).
+     * if algorithmType == DEFLATION, the components are extracted one at a time.
      *
      * @param algorithmType This type.
      */
@@ -272,8 +240,7 @@ public class FastIca {
     }
 
     /**
-     * Sets the FastICA alpha constant in range [1, 2] used in approximation to neg-entropy when 'fun
-     * == "logcosh"'
+     * Sets the FastICA alpha constant in range [1, 2] used in approximation to neg-entropy when 'fun == "logcosh"'
      *
      * @param alpha this constant.
      */
@@ -286,10 +253,9 @@ public class FastIca {
     }
 
     /**
-     * A logical value indicating whether rows of the data matrix 'X' should be
-     * standardized beforehand.
+     * A logical value indicating whether rows of the data matrix 'X' should be standardized beforehand.
      *
-     * @param rowNorm True if so.
+     * @param rowNorm True, if so.
      */
     public void setRowNorm(boolean rowNorm) {
         this.rowNorm = rowNorm;
@@ -309,8 +275,7 @@ public class FastIca {
     }
 
     /**
-     * Sets a positive scalar giving the tolerance at which the un-mixing matrix is
-     * considered to have converged.
+     * Sets a positive scalar giving the tolerance at which the un-mixing matrix is considered to have converged.
      *
      * @param tolerance This value.
      */
@@ -325,15 +290,15 @@ public class FastIca {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Sets the initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
-     * then a random matrix of normal r.v.'s is used.
+     * Sets the initial un-mixing matrix of dimension (n.comp,n.comp).
+     * If NULL (default), then a random matrix of normal r.v.'s is used.
      *
      * @param wInit This matrix.
      */
@@ -342,10 +307,10 @@ public class FastIca {
     }
 
     /**
-     * Runs the Fast ICA algorithm (following the R version) and returns the
-     * list of result items that the R version returns.
+     * Runs the Fast ICA algorithm (following the R version) and returns the list of result items that the R version
+     * returns.
      *
-     * @return this list, as an FastIca.IcaResult object.
+     * @return this list, as a FastIca.IcaResult object.
      */
     public IcaResult findComponents() {
         int n = this.X.getNumColumns();
@@ -417,7 +382,6 @@ public class FastIca {
 
     }
 
-    //==============================PRIVATE METHODS==========================//
 
     private Matrix icaDeflation(Matrix X,
                                 double tolerance, int function, double alpha,
@@ -678,15 +642,12 @@ public class FastIca {
     }
 
 
-    //===============================CLASSES============================//
-
     /**
      * A list containing the following components
      * <p>
      * X: pre-processed data matrix
      * <p>
-     * K: pre-whitening matrix that projects data onto th first n.comp principal
-     * components.
+     * K: pre-whitening matrix that projects data onto the first n.comp principal components.
      * <p>
      * W: estimated un-mixing matrix (see definition in details)
      * <p>

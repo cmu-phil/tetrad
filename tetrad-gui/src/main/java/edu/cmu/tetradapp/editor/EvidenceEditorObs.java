@@ -36,9 +36,8 @@ import java.awt.event.ActionEvent;
 import java.util.HashMap;
 
 /**
- * Edits evidence for a Bayes net--that is, which categories (perhaps
- * disjunctive) are known for which variables, and which variables are
- * manipulated.
+ * Edits evidence for a Bayes net--that is, which categories (perhaps disjunctive) are known for which variables, and
+ * which variables are manipulated.
  *
  * @author josephramsey
  */

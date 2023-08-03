@@ -27,8 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Stores a triple (x, y, z) of nodes. Note that (x, y, z) = (z, y, x). Useful
- * for marking graphs.
+ * Stores a triple (x, y, z) of nodes. Note that (x, y, z) = (z, y, x). Useful for marking graphs.
  *
  * @author josephramsey, after Frank Wimberly.
  */
@@ -60,6 +59,14 @@ public final class Triple implements TetradSerializable {
      */
     public static Triple serializableInstance() {
         return new Triple(new GraphNode("X"), new GraphNode("Y"), new GraphNode("Z"));
+    }
+
+    public static String pathString(Graph graph, Node x, Node y, Node z) {
+        List<Node> path = new ArrayList<>();
+        path.add(x);
+        path.add(y);
+        path.add(z);
+        return GraphUtils.pathString(graph, path);
     }
 
     public Node getX() {
@@ -99,14 +106,6 @@ public final class Triple implements TetradSerializable {
 
     public boolean alongPathIn(Graph graph) {
         return graph.isAdjacentTo(this.x, this.y) && graph.isAdjacentTo(this.y, this.z) && this.x != this.z;
-    }
-
-    public static String pathString(Graph graph, Node x, Node y, Node z) {
-        List<Node> path = new ArrayList<>();
-        path.add(x);
-        path.add(y);
-        path.add(z);
-        return GraphUtils.pathString(graph, path);
     }
 }
 

@@ -28,9 +28,11 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.utils.BpcTestType;
 import edu.cmu.tetrad.search.Bpc;
+import edu.cmu.tetrad.search.Fofc;
+import edu.cmu.tetrad.search.Mimbuild;
+import edu.cmu.tetrad.search.MimbuildTrek;
+import edu.cmu.tetrad.search.utils.BpcTestType;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MimUtils;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
@@ -145,13 +147,14 @@ public class TestMimbuild {
                     continue;
                 }
 
-                List<Node> _children = full.getChildren(node);
+                List<Node> _children = new ArrayList<>(full.getChildren(node));
 
                 _children.removeAll(ReidentifyVariables.getLatents(full));
 
                 List<String> childNames = getNames(_children);
 
                 if (new HashSet<>(childNames).equals(new HashSet<>(d))) {
+                    assert g2 != null;
                     g2.getNode(node.getName()).setName(latentName);
                 }
             }

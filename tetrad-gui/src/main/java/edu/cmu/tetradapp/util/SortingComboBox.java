@@ -24,17 +24,15 @@ package edu.cmu.tetradapp.util;
 import javax.swing.*;
 
 /**
- * Extends JComboBox so that the items it contains are automatically sorted as
- * they are added.
+ * Extends JComboBox so that the items it contains are automatically sorted as they are added.
  *
  * @author josephramsey
  */
 public class SortingComboBox extends JComboBox {
 
     /**
-     * Overrides the addItem() method of JComboBox to automatically sort items
-     * as they are added.  Items are sorted by the strings they return in their
-     * toString() methods.
+     * Overrides the addItem() method of JComboBox to automatically sort items as they are added.  Items are sorted by
+     * the strings they return in their toString() methods.
      *
      * @param anItem the item to add.
      */

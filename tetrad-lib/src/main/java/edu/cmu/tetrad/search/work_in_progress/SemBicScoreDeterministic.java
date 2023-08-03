@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -41,15 +42,12 @@ import static org.apache.commons.math3.util.FastMath.log;
  */
 public class SemBicScoreDeterministic implements Score {
 
-    // The covariance matrix.
-    private ICovarianceMatrix covariances;
-
-    // The variables of the covariance matrix.
-    private List<Node> variables;
-
     // The sample size of the covariance matrix.
     private final int sampleSize;
-
+    // The covariance matrix.
+    private ICovarianceMatrix covariances;
+    // The variables of the covariance matrix.
+    private List<Node> variables;
     // The penalty penaltyDiscount.
     private double penaltyDiscount = 1.0;
 
@@ -86,6 +84,7 @@ public class SemBicScoreDeterministic implements Score {
         try {
             s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
         } catch (SingularMatrixException e) {
+            System.out.println(LogUtilsSearch.getScoreFact(i, parents, variables));
             s2 = 0;
         }
 
@@ -138,8 +137,16 @@ public class SemBicScoreDeterministic implements Score {
         return this.penaltyDiscount;
     }
 
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
     public ICovarianceMatrix getCovariances() {
         return this.covariances;
+    }
+
+    private void setCovariances(ICovarianceMatrix covariances) {
+        this.covariances = covariances;
     }
 
     public int getSampleSize() {
@@ -155,10 +162,6 @@ public class SemBicScoreDeterministic implements Score {
         throw new UnsupportedOperationException();
     }
 
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
     public boolean isVerbose() {
         return this.verbose;
     }
@@ -172,19 +175,14 @@ public class SemBicScoreDeterministic implements Score {
         return this.variables;
     }
 
-    private Matrix getSelection(ICovarianceMatrix cov, int[] rows, int[] cols) {
-        return cov.getSelection(rows, cols);
-    }
-
-    private void setCovariances(ICovarianceMatrix covariances) {
-        this.covariances = covariances;
-    }
-
     public void setVariables(List<Node> variables) {
         this.covariances.setVariables(variables);
         this.variables = variables;
     }
 
+    private Matrix getSelection(ICovarianceMatrix cov, int[] rows, int[] cols) {
+        return cov.getSelection(rows, cols);
+    }
 
     @Override
     public int getMaxDegree() {
@@ -214,7 +212,9 @@ public class SemBicScoreDeterministic implements Score {
                 return true;
             }
         } catch (SingularMatrixException ignored) {
-            throw new RuntimeException("Singular");
+            System.out.println("Singularity encountered when scoring " +
+                    LogUtilsSearch.getScoreFact(y, z));
+            return true;
         }
 
         return false;

@@ -35,16 +35,14 @@ import java.util.Arrays;
 import static jgpml.covariancefunctions.MatrixOperations.exp;
 
 /**
- * Squared Exponential covariance function with isotropic distance measure. The
- * covariance function is parameterized as:
+ * Squared Exponential covariance function with isotropic distance measure. The covariance function is parameterized
+ * as:
  * <p>
  * k(x^p,x^q) = sf2 * exp(-(x^p - x^q)'*inv(P)*(x^p - x^q)/2)
  * <p>
- * where the P matrix is ell^2 times the unit matrix and sf2 is the signal
- * variance. The hyperparameters are:
+ * where the P matrix is ell^2 times the unit matrix and sf2 is the signal variance. The hyperparameters are:
  * <p>
- * [ log(ell)
- * log(sqrt(sf2)) ]
+ * [ log(ell) log(sqrt(sf2)) ]
  */
 
 public class CovSEiso implements CovarianceFunction {
@@ -52,6 +50,41 @@ public class CovSEiso implements CovarianceFunction {
     public CovSEiso() {
     }
 
+    private static Matrix squareDist(Matrix a) {
+        return CovSEiso.squareDist(a, a);
+    }
+
+    private static Matrix squareDist(Matrix a, Matrix b) {
+        Matrix C = new Matrix(a.getColumnDimension(), b.getColumnDimension());
+        int m = a.getColumnDimension();
+        int n = b.getColumnDimension();
+        int d = a.getRowDimension();
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                double z = 0.0;
+                for (int k = 0; k < d; k++) {
+                    double t = a.get(k, i) - b.get(k, j);
+                    z += t * t;
+                }
+                C.set(i, j, z);
+            }
+        }
+
+        return C;
+    }
+
+    public static void main(String[] args) {
+
+        CovSEiso cf = new CovSEiso();
+
+        Matrix X = Matrix.identity(6, 6);
+        Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}});
+
+        Matrix d = cf.computeDerivatives(logtheta, X, 1);
+
+        d.print(d.getColumnDimension(), 8);
+    }
 
     /**
      * Returns the number of hyperparameters of this<code>CovarianceFunction</code>
@@ -106,8 +139,8 @@ public class CovSEiso implements CovarianceFunction {
     }
 
     /**
-     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect
-     * to the hyperparameter with index <code>idx</code>
+     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
+     * <code>idx</code>
      *
      * @param loghyper hyperparameters
      * @param X        input dataset
@@ -133,43 +166,6 @@ public class CovSEiso implements CovarianceFunction {
         }
 
         return A;
-    }
-
-
-    private static Matrix squareDist(Matrix a) {
-        return CovSEiso.squareDist(a, a);
-    }
-
-    private static Matrix squareDist(Matrix a, Matrix b) {
-        Matrix C = new Matrix(a.getColumnDimension(), b.getColumnDimension());
-        int m = a.getColumnDimension();
-        int n = b.getColumnDimension();
-        int d = a.getRowDimension();
-
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                double z = 0.0;
-                for (int k = 0; k < d; k++) {
-                    double t = a.get(k, i) - b.get(k, j);
-                    z += t * t;
-                }
-                C.set(i, j, z);
-            }
-        }
-
-        return C;
-    }
-
-    public static void main(String[] args) {
-
-        CovSEiso cf = new CovSEiso();
-
-        Matrix X = Matrix.identity(6, 6);
-        Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}});
-
-        Matrix d = cf.computeDerivatives(logtheta, X, 1);
-
-        d.print(d.getColumnDimension(), 8);
     }
 }
 

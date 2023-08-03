@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -32,13 +33,13 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable,
- * and X and Y are discrete variable not in S, by applying a conditional Chi Square test.
- * A description of such a test is given in Fienberg, "The Analysis of Cross-Classified
- * Categorical Data," 2nd edition. The formula for degrees of freedom used in this test are
- * equivalent to the formulation on page 142 of Fienberg.
+ * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
+ * variable not in S, by applying a conditional Chi Square test. A description of such a test is given in Fienberg, "The
+ * Analysis of Cross-Classified Categorical Data," 2nd edition.
+ * The formulas for the degrees of freedom used in this test are equivalent to the formulation on page 142 of Fienberg.
  *
  * @author josephramsey
  * @see ChiSquareTest
@@ -51,7 +52,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     private final ChiSquareTest chiSquareTest;
 
     /**
-     * The variables in the discrete data sets for which conditional independence judgements are desired.
+     * The variables in the discrete data sets for which conditional independence judgments are desired.
      */
     private final List<Node> variables;
 
@@ -61,7 +62,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     private final DataSet dataSet;
 
     /**
-     * The G Square value associted with a particular call of isIndependent. Set in that method and not in the
+     * The G Square value associated with a particular call of isIndependent. Set in that method and not in the
      * constructor.
      */
     private double xSquare;
@@ -71,8 +72,6 @@ public final class IndTestChiSquare implements IndependenceTest {
      * constructor.
      */
     private int df;
-
-    private double pValue;
 
     private boolean verbose;
 
@@ -154,29 +153,23 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * Returns the p value associated with the most recent call of isIndependent.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.pValue;
-    }
-
-    /**
      * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
      *
      * @return True iff x _||_ y | z.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
-        if (z == null) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        if (_z == null) {
             throw new NullPointerException();
         }
 
-        for (Node v : z) {
+        for (Node v : _z) {
             if (v == null) {
                 throw new NullPointerException();
             }
         }
+
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
@@ -189,7 +182,7 @@ public final class IndTestChiSquare implements IndependenceTest {
             testIndices[i + 2] = this.variables.indexOf(z.get(i));
         }
 
-        // the following is lame code--need a better test
+        // the following is not great code--need a better test
         for (int i = 0; i < testIndices.length; i++) {
             if (testIndices[i] < 0) {
                 throw new IllegalArgumentException("Variable " + i +
@@ -200,23 +193,23 @@ public final class IndTestChiSquare implements IndependenceTest {
         ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices);
         this.xSquare = result.getXSquare();
         this.df = result.getDf();
-        this.pValue = result.getPValue();
+        double pValue = result.getPValue();
 
         if (verbose) {
             if (result.isIndep()) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, this.pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
-        IndependenceFact fact = new IndependenceFact(x, y, z);
-        return new IndependenceResult(fact, result.isIndep(), result.getPValue());
+        IndependenceFact fact = new IndependenceFact(x, y, _z);
+        return new IndependenceResult(fact, result.isIndep(), result.getPValue(), getAlpha() - pValue);
     }
 
     /**
-     * Returns True if the variables z determing the variable z.
+     * Returns True if the variables z determining the variable z.
      *
-     * @param z  The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
+     * @param z The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
      * @param x The one variable whose determination by z we want to know.
      * @return true if it is estimated that z determines x or z determines y.
      */
@@ -240,7 +233,7 @@ public final class IndTestChiSquare implements IndependenceTest {
             testIndices[i + 1] = this.variables.indexOf(z.get(i));
         }
 
-        // the following is lame code--need a better test
+        // the following is not great code--need a better test
         for (int i = 0; i < testIndices.length; i++) {
             if (testIndices[i] < 0) {
                 throw new IllegalArgumentException(
@@ -294,8 +287,8 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variables over which this independence checker is capable of determinine
-     * independence relations-- that is, all the variables in the given graph or the given data set.
+     * Returns the list of variables over which this independence checker is capable of determining independence
+     * relations-- that is, all the variables in the given graph or the given data set.
      *
      * @return This list.
      */
@@ -323,16 +316,6 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * Returns a number which is more positive for more dependent test tesults.
-     *
-     * @return This number.
-     */
-    @Override
-    public double getScore() {
-        return -(getPValue() - getAlpha());
-    }
-
-    /**
      * Returns true if verbose output should be printed.
      *
      * @return This.
@@ -345,7 +328,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -355,7 +338,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     private double getDeterminationP() {
         /*
          * The lower bound of percentages of observation of some category in the data, given some particular combination of
-         * values of conditioning variables, that coefs as 'determining."
+         * values of conditioning variables, that coefs as 'determining.'
          */
         return 0.99;
     }

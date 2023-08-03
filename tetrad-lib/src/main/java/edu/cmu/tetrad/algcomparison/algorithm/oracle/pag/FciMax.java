@@ -30,7 +30,7 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FCI-Max",
-        command = "fcimax",
+        command = "fci-max",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
@@ -41,7 +41,6 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
-
 
     public FciMax() {
     }
@@ -63,13 +62,33 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
                 knowledge = timeSeries.getKnowledge();
             }
 
+//            PcCommon.PcHeuristicType pcHeuristicType;
+//
+//            switch (parameters.getInt(Params.PC_HEURISTIC)) {
+//                case 0:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+//                    break;
+//                case 1:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
+//                    break;
+//                case 2:
+//                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_2;
+//                    break;
+//                case 3:
+//                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_3;
+//                    break;
+//                default:
+//                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+//            }
+
             edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(this.test.getTest(dataModel, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
-            search.setPossibleDsepSearchDone(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
+            search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
+//            search.setPcHeuristicType(pcHeuristicType);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
@@ -83,7 +102,7 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();
-            this.bootstrapGraphs = search.getGraphs();
+            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             return graph;
         }
     }
@@ -110,7 +129,8 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
-        parameters.add(Params.POSSIBLE_DSEP_DONE);
+        parameters.add(Params.POSSIBLE_MSEP_DONE);
+//        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
@@ -124,7 +144,7 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     @Override

@@ -27,7 +27,6 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Histogram;
-import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
@@ -48,7 +47,6 @@ import static org.junit.Assert.assertEquals;
  * @author josephramsey
  */
 public final class TestHistogram {
-    private Knowledge knowledge;
 
     @Test
     public void testHistogram() {
@@ -68,15 +66,15 @@ public final class TestHistogram {
         SemIm semIm = new SemIm(semPm);
         DataSet data = semIm.simulateData(sampleSize, false);
 
-        Histogram histogram = new Histogram(data);
-        histogram.setTarget("X1");
+        Histogram histogram = new Histogram(data, "X1");
+//        histogram.setTarget("X1");
         histogram.setNumBins(20);
 
         assertEquals(3.65, histogram.getMax(), 0.01);
         assertEquals(-3.46, histogram.getMin(), 0.01);
         assertEquals(1000, histogram.getN());
 
-        histogram.setTarget("X1");
+//        histogram.setTarget("X1");
         histogram.setNumBins(10);
         histogram.addConditioningVariable("X3", 0, 1);
         histogram.addConditioningVariable("X4", 0, 1);
@@ -99,14 +97,14 @@ public final class TestHistogram {
         // values when all of the unit tests are run are
         // once. TODO They produce stable values when
         // this particular test is run repeatedly.
-        Histogram histogram2 = new Histogram(data2);
-        histogram2.setTarget("X1");
-        int[] frequencies1 = histogram2.getFrequencies();
+        Histogram histogram2 = new Histogram(data2, "X1");
+//        histogram2.setTarget("X1");
+        histogram2.getFrequencies();
 
-        histogram2.setTarget("X1");
+//        histogram2.setTarget("X1");
         histogram2.addConditioningVariable("X2", 0);
         histogram2.addConditioningVariable("X3", 1);
-        int[] frequencies = histogram2.getFrequencies();
+        histogram2.getFrequencies();
     }
 }
 

@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Represents a transformation on some dataset. For instance if the
- * equation is X = Z + W, where Z and W are columns in the data set,
+ * Represents a transformation on some dataset. For instance if the equation is X = Z + W, where Z and W are columns in
+ * the data set,
  *
  * @author Tyler Gibson
  */
@@ -52,13 +52,11 @@ public class Transformation {
 
 
     /**
-     * Transforms the given data using the given representations of transforming
-     * equations.
+     * Transforms the given data using the given representations of transforming equations.
      *
      * @param data      - The data that is being transformed.
      * @param equations - The equations used to transform the data.
-     * @throws ParseException - Throws a parse exception if any of the given equations isn't
-     *                        "valid".
+     * @throws ParseException - Throws a parse exception if any of the given equations isn't "valid".
      */
     public static void transform(DataSet data, String... equations) throws ParseException {
         if (equations.length == 0) {

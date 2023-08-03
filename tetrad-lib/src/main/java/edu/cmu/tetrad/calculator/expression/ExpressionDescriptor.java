@@ -31,20 +31,6 @@ import edu.cmu.tetrad.util.TetradSerializable;
 public interface ExpressionDescriptor extends TetradSerializable {
     long serialVersionUID = 23L;
 
-
-    enum Position implements TetradSerializable {
-        NEITHER,
-        INFIX,
-        PREFIX,
-        BOTH;
-
-        static final long serialVersionUID = 23L;
-
-        public static Position serializableInstance() {
-            return Position.NEITHER;
-        }
-    }
-
     /**
      * @return the name that the expressions is known under.
      */
@@ -65,12 +51,24 @@ public interface ExpressionDescriptor extends TetradSerializable {
      */
     Position getPosition();
 
-
     /**
-     * Creates the actual expression that can be used to evaluate matters from the given
-     * expressions.
+     * Creates the actual expression that can be used to evaluate matters from the given expressions.
      */
     Expression createExpression(Expression... expressions) throws ExpressionInitializationException;
+
+
+    enum Position implements TetradSerializable {
+        NEITHER,
+        INFIX,
+        PREFIX,
+        BOTH;
+
+        static final long serialVersionUID = 23L;
+
+        public static Position serializableInstance() {
+            return Position.NEITHER;
+        }
+    }
 
 
 }

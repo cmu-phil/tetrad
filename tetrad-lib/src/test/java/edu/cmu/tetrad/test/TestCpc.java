@@ -25,10 +25,11 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.Cpc;
+import edu.cmu.tetrad.search.IGraphSearch;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import org.junit.Test;
@@ -115,7 +116,7 @@ public class TestCpc {
         Graph graph = GraphUtils.convert(inputGraph);
 
         // Set up search.
-        IndependenceTest independence = new IndTestDSep(graph);
+        IndependenceTest independence = new MsepTest(graph);
         IGraphSearch search = new Cpc(independence);
 
         // Run search
@@ -141,7 +142,7 @@ public class TestCpc {
         Graph graph = GraphUtils.convert(input);
 
         // Set up search.
-        IndependenceTest independence = new IndTestDSep(graph);
+        IndependenceTest independence = new MsepTest(graph);
         Cpc cpc = new Cpc(independence);
 
         // Set up search.

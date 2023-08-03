@@ -29,8 +29,7 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Stores a triple (x, y, z) of nodes. Note that (x, y, z) = (z, y, x). Useful
- * for marking graphs.
+ * Stores a triple (x, y, z) of nodes. Note that (x, y, z) = (z, y, x). Useful for marking graphs.
  *
  * @author josephramsey
  */
@@ -41,19 +40,6 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
     private final Node x;
     private final Node y;
     private final Set<Node> _z;
-
-    /**
-     * Constructs a triple of nodes.
-     */
-    public IndependenceFact(Node x, Node y, List<Node> z) {
-        if (x == null || y == null || z == null) {
-            throw new NullPointerException();
-        }
-
-        this.x = x;
-        this.y = y;
-        this._z = new HashSet<>(z);
-    }
 
     public IndependenceFact(Node x, Node y, Set<Node> z) {
         if (x == null || y == null || z == null) {
@@ -96,8 +82,8 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
         return this.y;
     }
 
-    public List<Node> getZ() {
-        return new LinkedList<>(this._z);
+    public Set<Node> getZ() {
+        return new HashSet<>(this._z);
     }
 
     public int hashCode() {
@@ -158,9 +144,9 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
     }
 
     /**
-     * Note that this compareTo method gives a lexical ordering for independence facts and doesn't
-     * reflect independence fact equality. So sorted sets should not be used to check for
-     * independence fact existence, for instance. -jdramsey.
+     * Note that this compareTo method gives a lexical ordering for independence facts and doesn't reflect independence
+     * fact equality. So sorted sets should not be used to check for independence fact existence, for instance.
+     * -jdramsey.
      */
     public int compareTo(IndependenceFact fact) {
         int c = getX().getName().compareTo(fact.getX().getName());
@@ -171,8 +157,12 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
 
         if (c != 0) return c;
 
-        List<Node> z = getZ();
-        List<Node> factZ = fact.getZ();
+        Set<Node> _z = getZ();
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+        Set<Node> _factZ = fact.getZ();
+        List<Node> factZ = new ArrayList<>(_factZ);
+        Collections.sort(factZ);
 
         int max = FastMath.max(z.size(), factZ.size());
 
@@ -195,14 +185,12 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -26,14 +26,11 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.io.ObjectStreamException;
 
 /**
- * A typesafe enum of the types of the types of nodes in a graph (MEASURED,
- * LATENT, ERROR).
+ * A typesafe enum of the types of the types of nodes in a graph (MEASURED, LATENT, ERROR).
  *
  * @author josephramsey
  */
 public final class NodeType implements TetradSerializable {
-    static final long serialVersionUID = 23L;
-
     public static final NodeType MEASURED = new NodeType("Measured");
     public static final NodeType LATENT = new NodeType("Latent");
     public static final NodeType ERROR = new NodeType("Error");
@@ -41,15 +38,18 @@ public final class NodeType implements TetradSerializable {
     public static final NodeType RANDOMIZE = new NodeType("Randomize");
     public static final NodeType LOCK = new NodeType("Lock");
     public static final NodeType NO_TYPE = new NodeType("No type");
-
+    public static final NodeType[] TYPES = {NodeType.MEASURED, NodeType.LATENT, NodeType.ERROR, NodeType.NO_TYPE, NodeType.RANDOMIZE, NodeType.LOCK};
+    static final long serialVersionUID = 23L;
+    // Declarations required for serialization.
+    private static int nextOrdinal;
     /**
      * The name of this type.
      */
     private final transient String name;
+    private final int ordinal = NodeType.nextOrdinal++;
 
     /**
-     * Protected constructor for the types; this allows for extension in case
-     * anyone wants to add formula types.
+     * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
     private NodeType(String name) {
         this.name = name;
@@ -68,11 +68,6 @@ public final class NodeType implements TetradSerializable {
     public String toString() {
         return this.name;
     }
-
-    // Declarations required for serialization.
-    private static int nextOrdinal;
-    private final int ordinal = NodeType.nextOrdinal++;
-    public static final NodeType[] TYPES = {NodeType.MEASURED, NodeType.LATENT, NodeType.ERROR, NodeType.NO_TYPE, NodeType.RANDOMIZE, NodeType.LOCK};
 
     Object readResolve() throws ObjectStreamException {
         return NodeType.TYPES[this.ordinal]; // Canonicalize.

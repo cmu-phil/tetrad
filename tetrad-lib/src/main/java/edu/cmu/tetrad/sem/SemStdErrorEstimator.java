@@ -28,9 +28,8 @@ import java.util.List;
 
 /**
  * <p>Includes methods for estimating the standard errors of the freeParameters of
- * an estimated SEM.  The standard errors are the square roots of the diagonal
- * elements of the inverse of the "information matrix" (see Bollen page
- * 135). <p>This class resembles the SemOptimizer implementations.
+ * an estimated SEM.  The standard errors are the square roots of the diagonal elements of the inverse of the
+ * "information matrix" (see Bollen page 135). <p>This class resembles the SemOptimizer implementations.
  *
  * @author Frank Wimberly
  */
@@ -49,11 +48,9 @@ public class SemStdErrorEstimator {
 
     /**
      * <p>This method computes the information matrix or Hessian matrix of
-     * second order partial derivatives of the fitting function (4B_2 on page
-     * 135 of Bollen) with respect to the free freeParameters of the estimated SEM.
-     * It then computes the inverse of the the information matrix and calculates
-     * the standard errors of the freeParameters as the square roots of the diagonal
-     * elements of that matrix.
+     * second order partial derivatives of the fitting function (4B_2 on page 135 of Bollen) with respect to the free
+     * freeParameters of the estimated SEM. It then computes the inverse of the the information matrix and calculates
+     * the standard errors of the freeParameters as the square roots of the diagonal elements of that matrix.
      *
      * @param estSem the estimated SEM.
      */
@@ -174,17 +171,15 @@ public class SemStdErrorEstimator {
     }
 
     /**
-     * @return the array of standard errors for the free paramaeters of the
-     * SEM.
+     * @return the array of standard errors for the free paramaeters of the SEM.
      */
     public double[] getStdErrors() {
         return this.stdErrs;
     }
 
     /**
-     * This method straightforwardly applies the standard definition of the
-     * numerical estimates of the second order partial derivatives.  See for
-     * example Section 5.7 of Numerical Recipes in C.
+     * This method straightforwardly applies the standard definition of the numerical estimates of the second order
+     * partial derivatives.  See for example Section 5.7 of Numerical Recipes in C.
      */
     private double secondPartialDerivative(FittingFunction f, int i, int j,
                                            double[] p, double delt) {
@@ -236,8 +231,7 @@ public class SemStdErrorEstimator {
     interface FittingFunction {
 
         /**
-         * @return the value of the function for the given array of parameter
-         * values.
+         * @return the value of the function for the given array of parameter values.
          */
         double evaluate(double[] argument);
 
@@ -248,8 +242,7 @@ public class SemStdErrorEstimator {
     }
 
     /**
-     * Wraps a Sem for purposes of calculating its fitting function for given
-     * parameter values.
+     * Wraps a Sem for purposes of calculating its fitting function for given parameter values.
      *
      * @author josephramsey
      */
@@ -268,9 +261,8 @@ public class SemStdErrorEstimator {
         }
 
         /**
-         * Computes the maximum likelihood function value for the given
-         * freeParameters values as given by the optimizer. These values are mapped
-         * to parameter values.
+         * Computes the maximum likelihood function value for the given freeParameters values as given by the optimizer.
+         * These values are mapped to parameter values.
          */
         public double evaluate(double[] parameters) {
             List<Parameter> _parameters = this.sem.getSemPm().getFreeParameters();
@@ -293,8 +285,7 @@ public class SemStdErrorEstimator {
         }
 
         /**
-         * @return the number of arguments. Required by the MultivariateFunction
-         * interface.
+         * @return the number of arguments. Required by the MultivariateFunction interface.
          */
         public int getNumParameters() {
             return this.sem.getNumFreeParams();

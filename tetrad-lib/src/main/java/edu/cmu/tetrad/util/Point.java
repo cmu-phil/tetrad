@@ -61,8 +61,7 @@ public class Point implements Comparable<Point> {
     }
 
     /**
-     * True iff the given object is a point with the same coordinates as
-     * this one.
+     * True iff the given object is a point with the same coordinates as this one.
      *
      * @param p Ibid.
      * @return Ibid.

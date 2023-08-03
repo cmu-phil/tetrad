@@ -31,8 +31,8 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
 
@@ -69,7 +69,7 @@ public final class TestIndependenceFacts {
         assertTrue(_facts.isIndependent(x4, x2, x1, x2));
         assertTrue(_facts.isIndependent(x4, x2, x5, x3, x1));
 
-        List<Node> l = new ArrayList<>();
+        Set<Node> l = new HashSet<>();
         l.add(x1);
         l.add(x2);
 

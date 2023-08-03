@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -39,8 +38,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 /**
- * Puts up a panel showing some graph properties, e.g., number of nodes and
- * edges in the graph, etc.
+ * Puts up a panel showing some graph properties, e.g., number of nodes and edges in the graph, etc.
  *
  * @author josephramsey
  */
@@ -48,8 +46,7 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
     private final GraphWorkbench workbench;
 
     /**
-     * Creates a new copy subsession action for the given LayoutEditable and
-     * clipboard.
+     * Creates a new copy subsession action for the given LayoutEditable and clipboard.
      */
     public AllPathsAction(GraphWorkbench workbench) {
         super("All Paths");
@@ -57,8 +54,7 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost
-     * session editor to the clipboard.
+     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         Box b = Box.createVerticalBox();
@@ -84,12 +80,8 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
-        Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
-
-        new WatchedProcess(owner) {
+        class MyWatchedProcess extends WatchedProcess {
             public void watch() {
-                if (isCanceled()) return;
-
                 for (int i = 0; i < graph.getNodes().size(); i++) {
                     for (int j = 0; j < graph.getNodes().size(); j++) {
 
@@ -100,8 +92,10 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
                     }
                 }
             }
-        };
+        }
+        ;
 
+        new MyWatchedProcess();
     }
 
     private void addTreks(Node node1, Node node2, Graph graph, JTextArea textArea) {

@@ -84,17 +84,15 @@ class NormalityTestEditorPanel extends JPanel {
 
     //========================== Private Methods ================================//
 
-    private void changeNormalityTest(String test) {
-        // fire event
-        this.firePropertyChange("histogramChange", null, test);
-    }
-
-
     private static void setPreferredAsMax(JComponent component) {
         component.setMaximumSize(component.getPreferredSize());
 
     }
 
+    private void changeNormalityTest(String test) {
+        // fire event
+        this.firePropertyChange("histogramChange", null, test);
+    }
 
     private Box buildEditArea() {
         NormalityTestEditorPanel.setPreferredAsMax(this.variableBox);

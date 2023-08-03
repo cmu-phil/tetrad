@@ -33,8 +33,8 @@ import java.beans.PropertyChangeSupport;
 import java.util.List;
 
 /**
- * Wraps a covMatrix which is possibly smaller than the display window in a
- * larger AbstractTableModel which will fill the window.
+ * Wraps a covMatrix which is possibly smaller than the display window in a larger AbstractTableModel which will fill
+ * the window.
  *
  * @author josephramsey
  */
@@ -44,23 +44,19 @@ class CovMatrixTable extends AbstractTableModel {
      * The wrapped CovarianceMatrix.
      */
     private final ICovarianceMatrix covMatrix;
-
-    /**
-     * The matrix being edited. Since covariance matrices must be positive
-     * definite, this must be kept separately while editing and only set when
-     * the user clicks the accept button.
-     */
-    private Matrix editingMatrix;
-
-    /**
-     * True iff the editing table is positive definite.
-     */
-    private boolean editingMatrixPositiveDefinite;
-
     /**
      * Fires property change events.
      */
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    /**
+     * The matrix being edited. Since covariance matrices must be positive definite, this must be kept separately while
+     * editing and only set when the user clicks the accept button.
+     */
+    private Matrix editingMatrix;
+    /**
+     * True iff the editing table is positive definite.
+     */
+    private boolean editingMatrixPositiveDefinite;
 
     /**
      * Constructs a new DisplayTableModel to wrap the given covMatrix.
@@ -75,8 +71,7 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the number of rows in the wrapper table model. Guarantees that
-     * this number will be at least 100.
+     * Returns the number of rows in the wrapper table model. Guarantees that this number will be at least 100.
      *
      * @return the row count of the wrapped model or 100, whichever is larger.
      */
@@ -85,23 +80,19 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     /**
-     * Returns the number of columns in the wrapper table model. Guarantees that
-     * this number will be at least 30.
+     * Returns the number of columns in the wrapper table model. Guarantees that this number will be at least 30.
      *
-     * @return the column count of the wrapped model or 30, whichever is
-     * larger.
+     * @return the column count of the wrapped model or 30, whichever is larger.
      */
     public int getColumnCount() {
         return (getNumVariables() < 30) ? 30 : getNumVariables() + 1;
     }
 
     /**
-     * @return the value at the given (row, column) coordinates of the table
-     * as an Object.  If the variable for the column is a DiscreteVariable, the
-     * String value (as opposed to the integer index value) is extracted
-     * and returned.  If the coordinates are out of range of the wrapped table
-     * model, 'null' is returned. Otherwise, the value stored in the wrapped
-     * table model at the given coordinates is returned.
+     * @return the value at the given (row, column) coordinates of the table as an Object.  If the variable for the
+     * column is a DiscreteVariable, the String value (as opposed to the integer index value) is extracted and returned.
+     * If the coordinates are out of range of the wrapped table model, 'null' is returned. Otherwise, the value stored
+     * in the wrapped table model at the given coordinates is returned.
      */
     public Object getValueAt(int row, int col) {
         final int firstDataRow = 4;
@@ -245,7 +236,11 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     private String getVariableName(int matrixRow) {
-        return getCovMatrix().getVariableName(matrixRow);
+        try {
+            return getCovMatrix().getVariableName(matrixRow);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private double getValue(int matrixRow, int matrixCol) {

@@ -22,11 +22,10 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
- * FGES (the heuristic version).
+ * FGES-MB (the heuristic version).
  *
  * @author josephramsey
  */
@@ -56,22 +55,45 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+            int trimmingStyle = parameters.getInt(Params.TRIMMING_STYLE);
+
             Score score = this.score.getScore(dataSet, parameters);
             edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
+            search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
+            search.setNumExpansions(parameters.getInt(Params.NUMBER_OF_EXPANSIONS));
+            search.setTrimmingStyle(trimmingStyle);
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
 
             Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);
             }
 
-            this.targetName = parameters.getString(Params.TARGET_NAME);
-            Node target = this.score.getVariable(this.targetName);
+            String string = parameters.getString(Params.TARGETS);
+            String[] _targets;
 
-            return search.search(Collections.singletonList(target));
+            if (string.contains(",")) {
+                _targets = string.split(",");
+            } else {
+                _targets = string.split(" ");
+            }
+
+            List<Node> targets = new ArrayList<>();
+
+            for (String _target : _targets) {
+                Node variable = dataSet.getVariable(_target);
+
+                if (variable == null) {
+                    throw new IllegalArgumentException("Target not in data: " + _target);
+                }
+
+                targets.add(variable);
+            }
+
+
+            return search.search(targets);
         } else {
             FgesMb fgesMb = new FgesMb(this.score);
 
@@ -81,7 +103,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();
-            this.bootstrapGraphs = search.getGraphs();
+            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             return graph;
         }
     }
@@ -89,12 +111,12 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Node target = graph.getNode(this.targetName);
-        return GraphUtils.markovBlanketDag(target, new EdgeListGraph(graph));
+        return GraphUtils.markovBlanketSubgraph(target, new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "FGES (Fast Greedy Search) using " + this.score.getDescription();
+        return "FGES-MB (Fast Greedy Search MB) using " + this.score.getDescription();
     }
 
     @Override
@@ -105,9 +127,11 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.TARGET_NAME);
+        parameters.add(Params.TARGETS);
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_DEGREE);
+        parameters.add(Params.TRIMMING_STYLE);
+        parameters.add(Params.NUMBER_OF_EXPANSIONS);
         parameters.add(Params.VERBOSE);
 
         return parameters;
@@ -120,7 +144,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     @Override

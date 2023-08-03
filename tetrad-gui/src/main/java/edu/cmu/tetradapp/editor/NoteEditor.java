@@ -30,8 +30,8 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 
 /**
- * Provides a little display/editor for notes in the session workbench. This
- * may be elaborated in the future to allow marked up text.
+ * Provides a little display/editor for notes in the session workbench. This may be elaborated in the future to allow
+ * marked up text.
  *
  * @author josephramsey
  */
@@ -90,8 +90,8 @@ public class NoteEditor extends JPanel {
 
     private class FieldListener extends FocusAdapter {
 
-        private String current;
         private final JTextField field;
+        private String current;
 
         public FieldListener(JTextField field) {
             this.field = field;

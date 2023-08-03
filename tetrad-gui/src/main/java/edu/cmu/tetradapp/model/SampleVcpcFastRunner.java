@@ -23,10 +23,10 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.work_in_progress.SampleVcpcFast;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
+import edu.cmu.tetrad.search.work_in_progress.SampleVcpcFast;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IndTestType;
@@ -53,9 +53,8 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     //============================CONSTRUCTORS============================//
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DataWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DataWrapper must contain a DataSet that is either a DataSet
+     * or a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public SampleVcpcFastRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -152,7 +151,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         SampleVcpcFast sfvcpc = new SampleVcpcFast(getIndependenceTest());
 
         sfvcpc.setKnowledge(knowledge);
-        sfvcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        sfvcpc.setMeekPreventCycles(this.isMeekPreventCycles());
         sfvcpc.setDepth(params.getInt("depth", -1));
 
         sfvcpc.setSemIm(this.semIm);
@@ -224,7 +223,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
 
     public MeekRules getMeekRules() {
         MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        meekRules.setMeekPreventCycles(this.isMeekPreventCycles());
         meekRules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
         return meekRules;
     }
@@ -240,10 +239,10 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
 
     //========================== Private Methods ===============================//
 
-    private boolean isAggressivelyPreventCycles() {
+    private boolean isMeekPreventCycles() {
         Parameters params = getParams();
         if (params != null) {
-            return params.getBoolean("aggressivelyPreventCycles", false);
+            return params.getBoolean("MeekPreventCycles", false);
         }
         return false;
     }

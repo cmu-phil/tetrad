@@ -6,8 +6,8 @@ package edu.cmu.tetrad.data;
 public interface IDataReader {
 
     /**
-     * The delimiter between entries in a line, one of DelimiterType.WHITESPACE,
-     * DelimiterType.TAB, DelimiterType.COMMA, DelimiterType.COLON
+     * The delimiter between entries in a line, one of DelimiterType.WHITESPACE, DelimiterType.TAB, DelimiterType.COMMA,
+     * DelimiterType.COLON
      */
     void setDelimiter(DelimiterType delimiterType);
 

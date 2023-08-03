@@ -34,18 +34,9 @@ public class SimulationParamsEditor extends JPanel implements ParameterEditor {
     private Parameters params = new Parameters();
 
     /**
-     * Constructs a dialog to edit the given workbench randomization
-     * parameters.
+     * Constructs a dialog to edit the given workbench randomization parameters.
      */
     public SimulationParamsEditor() {
-    }
-
-    public void setParams(Parameters params) {
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -59,11 +50,19 @@ public class SimulationParamsEditor extends JPanel implements ParameterEditor {
     }
 
     /**
-     * @return the getMappings object being edited. (This probably should not be
-     * public, but it is needed so that the textfields can edit the model.)
+     * @return the getMappings object being edited. (This probably should not be public, but it is needed so that the
+     * textfields can edit the model.)
      */
     private synchronized Parameters getParams() {
         return this.params;
+    }
+
+    public void setParams(Parameters params) {
+        if (params == null) {
+            throw new NullPointerException();
+        }
+
+        this.params = params;
     }
 }
 

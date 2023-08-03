@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndTestGSquare;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -36,31 +35,26 @@ import java.util.*;
 
 /**
  * <p>Implements the Build Pure Clusters (BPC) algorithm, which allows one to identify
- * clusters of measured variables in a dataset that are explained by a single latent.
- * The algorithm outputs these clusters, which can then be used for further analysis,
- * such as inferring structure over the latents. For the latter, see for instance the
- * MimBuild algorithm.</p>
+ * clusters of measured variables in a dataset that are explained by a single latent. The algorithm outputs these
+ * clusters, which can then be used for further analysis, such as inferring structure over the latents. For the latter,
+ * see for instance the MimBuild algorithm.</p>
  *
  * <p>The reference for BPC is this:</p>
  *
  * <p>Silva, R., Scheines, R., Glymour, C., Spirtes, P., &amp; Chickering, D. M. (2006).
- * Learning the Structure of Linear Latent Variable Models. Journal of Machine Learning
- * Research, 7(2).</p>
+ * Learning the Structure of Linear Latent Variable Models. Journal of Machine Learning Research, 7(2).</p>
  *
  * <p>For a more detailed description of the algorithm, see the paper above. The
- * algorithm is based on the idea of finding cliques in the graph of the covariance
- * matrix. The algorithm is initialized by finding all maximal cliques in the graph
- * of the covariance matrix. Then, the algorithm iterates over the cliques, and
- * for each clique, it tests whether the clique is explained by a single latent.
- * If so, the clique is added to the set of clusters. If not, the clique is
- * partitioned into smaller cliques, and the process is repeated for each of the
+ * algorithm is based on the idea of finding cliques in the graph of the covariance matrix. The algorithm is initialized
+ * by finding all maximal cliques in the graph of the covariance matrix. Then, the algorithm iterates over the cliques,
+ * and for each clique, it tests whether the clique is explained by a single latent. If so, the clique is added to the
+ * set of clusters. If not, the clique is partitioned into smaller cliques, and the process is repeated for each of the
  * smaller cliques. The algorithm stops when all cliques have been tested.</p>
  *
  * <p>Some more References:</p>
  *
  * <p>Silva, R.; Scheines, R.; Spirtes, P.; Glymour, C. (2003). "Learning measurement models".
- * Technical report CMU-CALD-03-100, Center for Automated Learning and Discovery, Carnegie Mellon
- * University.</p>
+ * Technical report CMU-CALD-03-100, Center for Automated Learning and Discovery, Carnegie Mellon University.</p>
  *
  * <p>Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads."
  * Sociological Methods and Research 19, 80-92.</p>
@@ -79,15 +73,6 @@ import java.util.*;
  * @see Ftfc
  */
 public final class Bpc {
-    private boolean outputMessage;
-
-    private ICovarianceMatrix covarianceMatrix;
-    private int numVariables;
-
-    private BpcTestType sigTestType;
-    private int[] labels;
-    private boolean scoreTestMode;
-
     /*
      * Color code for the different edges that show up during search
      */
@@ -98,7 +83,12 @@ public final class Bpc {
     final int EDGE_YELLOW = 4;
     final int EDGE_RED = 4;
     final int MAX_CLIQUE_TRIALS = 50;
-
+    private boolean outputMessage;
+    private ICovarianceMatrix covarianceMatrix;
+    private int numVariables;
+    private BpcTestType sigTestType;
+    private int[] labels;
+    private boolean scoreTestMode;
     private TetradTest tetradTest;
     private IndependenceTest independenceTest;
     private DataSet dataSet;
@@ -146,8 +136,8 @@ public final class Bpc {
 
 
     /**
-     * Runs the search and returns the graph, or null if there is no model. This
-     * will be a graph with clusters having their latents as parents.
+     * Runs the search and returns the graph, or null if there is no model. This will be a graph with clusters having
+     * their latents as parents.
      *
      * @return This graph.
      */
@@ -173,8 +163,6 @@ public final class Bpc {
 
         ClusterUtils.logClusters(clusters, variables);
         Graph graph = convertSearchGraph(clustering);
-
-        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
 
         long stop = MillisecondTimes.timeMillis();
         long elapsed = stop - start;
@@ -590,10 +578,6 @@ public final class Bpc {
 
     private List<int[]> findComponents(int[][] graph, int size) {
         boolean[] marked = new boolean[size];
-
-        for (int i = 0; i < size; i++) {
-            marked[i] = false;
-        }
 
         int numMarked = 0;
         List<int[]> output = new ArrayList<>();

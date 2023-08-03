@@ -58,6 +58,10 @@ public final class ScoreModels {
         initDefaultModelMap();
     }
 
+    public static ScoreModels getInstance() {
+        return ScoreModels.INSTANCE;
+    }
+
     private void initModelMap() {
         // initialize enum map
         DataType[] dataTypes = DataType.values();
@@ -123,10 +127,6 @@ public final class ScoreModels {
             default:
                 return null;
         }
-    }
-
-    public static ScoreModels getInstance() {
-        return ScoreModels.INSTANCE;
     }
 
     public List<ScoreModel> getModels() {

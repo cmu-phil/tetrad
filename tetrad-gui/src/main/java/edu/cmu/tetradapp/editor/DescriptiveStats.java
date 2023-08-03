@@ -21,9 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.StatUtils;
@@ -32,6 +30,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Contains some descriptive stats.
@@ -44,7 +43,8 @@ class DescriptiveStats {
      * Constructs a readable table of normality test results
      */
 
-    public static String generateDescriptiveStats(DataSet dataSet, Node variable) {
+    public static String generateDescriptiveStats(DataSet dataSet, Node variable,
+                                                  boolean precomputeCovariances) {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         int col = dataSet.getColumn(variable);
@@ -71,6 +71,8 @@ class DescriptiveStats {
             }
         }
 
+        int numVars = dataSet.getNumRows();
+
         StringBuilder b = new StringBuilder();
 
         b.append("Descriptive Statistics for: ").append(variable.getName()).append("\n\n");
@@ -78,16 +80,13 @@ class DescriptiveStats {
         double[] normalValues = DescriptiveStats.normalParams(data);
         TextTable table;
 
-        if (continuous) {
-            table = new TextTable(10, 2);
-        } else {
-            table = new TextTable(6, 2);
-        }
+        int numRows = continuous ? 13 : 9;
+        table = new TextTable(numVars, numRows);
 
         int rowindex = 0;
 
         table.setToken(rowindex, 0, "Sample Size:");
-        table.setToken(rowindex++, 1, "" + dataSet.getNumRows());
+        table.setToken(rowindex++, 1, String.valueOf(dataSet.getNumRows()));
 
         table.setToken(rowindex, 0, "Mean:");
         table.setToken(rowindex++, 1, nf.format(normalValues[0]));
@@ -104,7 +103,6 @@ class DescriptiveStats {
         table.setToken(rowindex, 0, "Kurtosis:");
         table.setToken(rowindex++, 1, nf.format(StatUtils.kurtosis(data)));
 
-
         if (continuous) {
             double[] median = DescriptiveStats.median(data);
 
@@ -118,8 +116,19 @@ class DescriptiveStats {
             table.setToken(rowindex++, 1, nf.format(median[1]));
 
             table.setToken(rowindex, 0, "Maximum:");
-            table.setToken(rowindex, 1, nf.format(median[2]));
+            table.setToken(rowindex++, 1, nf.format(median[2]));
         }
+
+        table.setToken(rowindex, 0, "Constant Columns:");
+        List<Node> constantColumns = DataUtils.getConstantColumns(dataSet);
+        table.setToken(rowindex++, 1, constantColumns.isEmpty() ? "None" : constantColumns.toString());
+
+        table.setToken(rowindex, 0, "Example Nonsingular (2 - 3 vars):");
+
+//        CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
+        ICovarianceMatrix covarianceMatrix = SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances);
+        List<Node> exampleNonsingular = DataUtils.getExampleNonsingular(covarianceMatrix, 3);
+        table.setToken(rowindex, 1, exampleNonsingular == null ? "None" : exampleNonsingular.toString());
 
         b.append(table);
 
@@ -129,7 +138,7 @@ class DescriptiveStats {
     /*
         Returns the median in index 0, but also returns the min and max in 1 and 2 respectively.
      */
-    private static double[] median(double[] data) {
+    public static double[] median(double[] data) {
         Arrays.sort(data);
 
         double[] result = new double[3];
@@ -149,7 +158,7 @@ class DescriptiveStats {
         return result;
     }
 
-    private static double standardErrorMean(double stdDev, double sampleSize) {
+    public static double standardErrorMean(double stdDev, double sampleSize) {
         return stdDev / (FastMath.sqrt(sampleSize));
     }
 
@@ -159,7 +168,7 @@ class DescriptiveStats {
      * @return [0] -&gt; mean, [1] -&gt; standard deviation, [2] -&gt; variance
      */
 
-    private static double[] normalParams(double[] data) {
+    public static double[] normalParams(double[] data) {
         double mean = 0.0;
         double sd = 0.0;
 

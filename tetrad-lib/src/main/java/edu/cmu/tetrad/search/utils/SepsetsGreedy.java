@@ -21,16 +21,20 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import org.apache.commons.math3.util.FastMath;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Provides a SepsetProcuder that selects the first sepset it comes to from
@@ -47,28 +51,33 @@ public class SepsetsGreedy implements SepsetProducer {
     private int depth;
     private boolean verbose;
     private IndependenceResult result;
+    private Knowledge knowledge = new Knowledge();
 
-    public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
+    public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth, Knowledge knowledge) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.extraSepsets = extraSepsets;
         this.depth = depth;
+
+        if (knowledge != null) {
+            this.knowledge = knowledge;
+        }
     }
 
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest score value.
      */
-    public List<Node> getSepset(Node i, Node k) {
+    public Set<Node> getSepset(Node i, Node k) {
         return getSepsetGreedy(i, k);
     }
 
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        List<Node> set = getSepsetGreedy(i, k);
+        Set<Node> set = getSepsetGreedy(i, k);
         return set != null && !set.contains(j);
     }
 
     @Override
-    public boolean isIndependent(Node a, Node b, List<Node> c) {
+    public boolean isIndependent(Node a, Node b, Set<Node> c) {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
         this.result = result;
         return result.isIndependent();
@@ -94,8 +103,8 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     public Graph getDag() {
-        if (this.independenceTest instanceof IndTestDSep) {
-            return ((IndTestDSep) this.independenceTest).getGraph();
+        if (this.independenceTest instanceof MsepTest) {
+            return ((MsepTest) this.independenceTest).getGraph();
         } else {
             return null;
         }
@@ -105,17 +114,17 @@ public class SepsetsGreedy implements SepsetProducer {
         this.depth = depth;
     }
 
-    private List<Node> getSepsetGreedy(Node i, Node k) {
+    private Set<Node> getSepsetGreedy(Node i, Node k) {
         if (this.extraSepsets != null) {
-            List<Node> v = this.extraSepsets.get(i, k);
+            Set<Node> v = this.extraSepsets.get(i, k);
 
             if (v != null) {
                 return v;
             }
         }
 
-        List<Node> adji = this.graph.getAdjacentNodes(i);
-        List<Node> adjk = this.graph.getAdjacentNodes(k);
+        List<Node> adji = new ArrayList<>(this.graph.getAdjacentNodes(i));
+        List<Node> adjk = new ArrayList<>(this.graph.getAdjacentNodes(k));
         adji.remove(k);
         adjk.remove(i);
 
@@ -125,7 +134,9 @@ public class SepsetsGreedy implements SepsetProducer {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v = GraphUtils.asList(choice, adji);
+                    Set<Node> v = GraphUtils.asSet(choice, adji);
+
+                    v = possibleParents(i, v, this.knowledge, k);
 
                     if (this.independenceTest.checkIndependence(i, k, v).isIndependent()) {
                         return v;
@@ -138,7 +149,10 @@ public class SepsetsGreedy implements SepsetProducer {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v = GraphUtils.asList(choice, adjk);
+                    Set<Node> v = GraphUtils.asSet(choice, adjk);
+
+                    v = possibleParents(k, v, this.knowledge, i);
+
 
                     if (this.independenceTest.checkIndependence(i, k, v).isIndependent()) {
                         return v;
@@ -148,6 +162,28 @@ public class SepsetsGreedy implements SepsetProducer {
         }
 
         return null;
+    }
+
+    private Set<Node> possibleParents(Node x, Set<Node> adjx,
+                                      Knowledge knowledge, Node y) {
+        Set<Node> possibleParents = new HashSet<>();
+        String _x = x.getName();
+
+        for (Node z : adjx) {
+            if (z == x) continue;
+            if (z == y) continue;
+            String _z = z.getName();
+
+            if (possibleParentOf(_z, _x, knowledge)) {
+                possibleParents.add(z);
+            }
+        }
+
+        return possibleParents;
+    }
+
+    private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
+        return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
 }

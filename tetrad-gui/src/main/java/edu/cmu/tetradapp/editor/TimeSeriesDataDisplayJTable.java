@@ -74,8 +74,8 @@ public class TimeSeriesDataDisplayJTable extends JTable
 }
 
 /**
- * Wraps a dataSet which is possibly smaller than the display window in a larger
- * AbstractTableModel which will fill the window.
+ * Wraps a dataSet which is possibly smaller than the display window in a larger AbstractTableModel which will fill the
+ * window.
  *
  * @author josephramsey
  */
@@ -125,28 +125,24 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     }
 
     /**
-     * @return the number of rows in the wrapper table model. Guarantees that
-     * this number will be at least 100.
+     * @return the number of rows in the wrapper table model. Guarantees that this number will be at least 100.
      */
     public int getRowCount() {
         return FastMath.max(this.maxRowCount, 100);
     }
 
     /**
-     * @return the number of columns in the wrapper table model. Guarantees that
-     * this number will be at least 30.
+     * @return the number of columns in the wrapper table model. Guarantees that this number will be at least 30.
      */
     public int getColumnCount() {
         return (this.colCount < 30) ? 30 : this.colCount + 1;
     }
 
     /**
-     * @return the value at the given (row, column) coordinates of the table
-     * as an Object.  If the variable for the column is a DiscreteVariable, the
-     * String value (as opposed to the integer index value) is extracted
-     * and returned.  If the coordinates are out of range of the wrapped table
-     * model, 'null' is returned. Otherwise, the value stored in the wrapped
-     * table model at the given coordinates is returned.
+     * @return the value at the given (row, column) coordinates of the table as an Object.  If the variable for the
+     * column is a DiscreteVariable, the String value (as opposed to the integer index value) is extracted and returned.
+     * If the coordinates are out of range of the wrapped table model, 'null' is returned. Otherwise, the value stored
+     * in the wrapped table model at the given coordinates is returned.
      */
     public Object getValueAt(int row, int column) {
         if (column == 0) {

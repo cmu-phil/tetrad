@@ -29,21 +29,22 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Ccd;
-import edu.cmu.tetrad.search.work_in_progress.IndTestCramerT;
 import edu.cmu.tetrad.search.Pc;
+import edu.cmu.tetrad.search.work_in_progress.IndTestCramerT;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * <p>This version (in the urchin/newdata directory) differs from the version in
- * the batchsearch directory.  It will create both a doc file and an xls file.
- * The latter corresponds to the "verbose = false" segments of the earlier
- * version.  Also this version will deal with the situation where there are many
- * time steps, which raises question about the time interval used to decide
- * whether there is an adjacency between two variables (= gene/time pairs).
+ * the batchsearch directory.  It will create both a doc file and an xls file. The latter corresponds to the "verbose =
+ * false" segments of the earlier version.  Also this version will deal with the situation where there are many time
+ * steps, which raises question about the time interval used to decide whether there is an adjacency between two
+ * variables (= gene/time pairs).
  * <p>Also all the GA code has been removed.
  */
 
@@ -82,7 +83,7 @@ public class YeastPcCcdSearchWrapper {
         OutputStream s2 = null;
 
         try {
-            s1 = new FileOutputStream(outverbosefile);
+            s1 = Files.newOutputStream(Paths.get(outverbosefile));
         } catch (IOException e) {
             System.out.println("Cannot open file file " + outverbosefile);
             System.exit(0);
@@ -91,7 +92,7 @@ public class YeastPcCcdSearchWrapper {
         DataOutputStream d1 = new DataOutputStream(s1);
 
         try {
-            s2 = new FileOutputStream(outsummaryfile);
+            s2 = Files.newOutputStream(Paths.get(outsummaryfile));
         } catch (IOException e) {
             System.out.println("Cannot open file file " + outsummaryfile);
             System.exit(0);

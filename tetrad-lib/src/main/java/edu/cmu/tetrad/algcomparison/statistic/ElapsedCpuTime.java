@@ -5,9 +5,8 @@ import edu.cmu.tetrad.graph.Graph;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Records the elapsed time of the algorithm in seconds. This is a placeholder, really;
- * the elapsed time is calculated by the comparison class and recorded if this statistic is
- * used.
+ * Records the elapsed time of the algorithm in seconds. This is a placeholder, really; the elapsed time is calculated
+ * by the comparison class and recorded if this statistic is used.
  *
  * @author josephramsey
  */

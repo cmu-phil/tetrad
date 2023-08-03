@@ -29,8 +29,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -40,11 +40,11 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or discrete.
- * This test is valid for both ordinal and non-ordinal discrete searchVariables.
+ * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or
+ * discrete. This test is valid for both ordinal and non-ordinal discrete searchVariables.
  * <p>
- * This logisticRegression makes multiple assumptions: 1. IIA 2. Large sample size (multiple regressions needed on subsets of
- * sample)
+ * This logisticRegression makes multiple assumptions: 1. IIA 2. Large sample size (multiple regressions needed on
+ * subsets of sample)
  *
  * @author josephramsey
  * @author Augustus Mayo.
@@ -53,11 +53,12 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
     private final DataSet originalData;
     private final List<Node> searchVariables;
     private final DataSet internalData;
-    private double alpha;
-    private double lastP;
     private final Map<Node, List<Node>> variablesPerNode = new HashMap<>();
     private final LogisticRegression logisticRegression;
     private final RegressionDataset regression;
+    int[] _rows;
+    private double alpha;
+    private double lastP;
     private boolean verbose;
 
     public IndTestMultinomialLogisticRegression(DataSet data, double alpha) {
@@ -90,7 +91,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (x instanceof DiscreteVariable) {
             return isIndependentMultinomialLogisticRegression(x, y, z);
         } else if (y instanceof DiscreteVariable) {
@@ -146,7 +147,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         return variables;
     }
 
-    private IndependenceResult isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
+    private IndependenceResult isIndependentMultinomialLogisticRegression(Node x, Node y, Set<Node> z) {
         if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
@@ -215,10 +216,8 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
     }
-
-    int[] _rows;
 
     private int[] getNonMissingRows() {
         if (this._rows == null) {
@@ -229,7 +228,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         return this._rows;
     }
 
-    private IndependenceResult isIndependentRegression(Node x, Node y, List<Node> z) {
+    private IndependenceResult isIndependentRegression(Node x, Node y, Set<Node> z) {
         if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
@@ -259,7 +258,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         try {
             result = this.regression.regress(x, regressors);
         } catch (Exception e) {
-            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN, Double.NaN);
         }
 
         double p = result.getP()[1];
@@ -275,7 +274,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), indep, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), indep, p, alpha - p);
     }
 
     /**
@@ -319,12 +318,6 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
     public DataSet getData() {
         return this.originalData;
-    }
-
-
-    @Override
-    public double getScore() {
-        return 0;
     }
 
     /**

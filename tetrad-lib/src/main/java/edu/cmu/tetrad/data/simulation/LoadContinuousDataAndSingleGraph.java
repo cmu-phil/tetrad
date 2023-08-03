@@ -8,7 +8,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphPersistence;
+import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -25,10 +25,10 @@ import java.util.List;
 public class LoadContinuousDataAndSingleGraph implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
     private final String path;
-    private Graph graph;
-    private List<DataSet> dataSets = new ArrayList<>();
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
+    private Graph graph;
+    private List<DataSet> dataSets = new ArrayList<>();
 
     public LoadContinuousDataAndSingleGraph(String path) {
         this.path = path;
@@ -72,7 +72,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             File file = files[0];
 
             System.out.println("Loading graph from " + file.getAbsolutePath());
-            this.graph = GraphPersistence.loadGraphTxt(file);
+            this.graph = GraphSaveLoadUtils.loadGraphTxt(file);
 
             LayoutUtil.circleLayout(this.graph, 225, 200, 150);
         }

@@ -23,9 +23,8 @@ import java.util.List;
 /**
  * Wraps the MultiFask algorithm for continuous variables.
  * <p>
- * Requires that the parameter 'randomSelectionSize' be set to indicate how many
- * datasets should be taken at a time (randomly). This cannot given multiple
- * values.
+ * Requires that the parameter 'randomSelectionSize' be set to indicate how many datasets should be taken at a time
+ * (randomly). This cannot given multiple values.
  *
  * @author mglymour
  * @author josephramsey
@@ -156,8 +155,8 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     }
 
     @Override
-    public void setScoreWrapper(ScoreWrapper score) {
-        this.score = score;
+    public void setIndTestWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 
     @Override
@@ -166,12 +165,17 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
-        this.test = independenceWrapper;
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 }

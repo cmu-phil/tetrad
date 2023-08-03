@@ -24,13 +24,15 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IMbSearch;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MbUtils;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA. User: jdramsey Date: Jan 26, 2006 Time: 10:29:07 PM To change this template use File |
@@ -62,8 +64,8 @@ public class IambnPc implements IMbSearch {
         this.variables = test.getVariables();
     }
 
-    public List<Node> findMb(Node target) {
-        List<Node> cmb = new LinkedList<>();
+    public Set<Node> findMb(Node target) {
+        Set<Node> cmb = new HashSet<>();
         Pc pc = new Pc(this.independenceTest);
         boolean cont = true;
 
@@ -107,13 +109,13 @@ public class IambnPc implements IMbSearch {
 
         MbUtils.trimToMbNodes(graph, target, false);
 //        cmb = DataGraphUtils.markovBlanketDag(target, graph).getNodes();
-        cmb = graph.getNodes();
+        cmb = new HashSet<>(graph.getNodes());
         cmb.remove(target);
 
         return cmb;
     }
 
-    private double associationStrength(Node v, Node target, List<Node> cmb) {
+    private double associationStrength(Node v, Node target, Set<Node> cmb) {
         IndependenceResult result = this.independenceTest.checkIndependence(v, target, cmb);
         return 1.0 - result.getPValue();
     }

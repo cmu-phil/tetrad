@@ -29,17 +29,13 @@ import org.apache.commons.math3.util.FastMath;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
- * Represents a Bayes IM in which all of the conditional probability tables have
- * been updated to take into account evidence. Updated conditional probability
- * values of variables with respect to comabinations of their parent values are
- * calculated on the fly. Values that do not change due to being d-separated
- * from a variable conditional on its parents are not calculated; rather, these
- * are simply looked up in the underlying Bayes IM and returned.
+ * Represents a Bayes IM in which all of the conditional probability tables have been updated to take into account
+ * evidence. Updated conditional probability values of variables with respect to comabinations of their parent values
+ * are calculated on the fly. Values that do not change due to being d-separated from a variable conditional on its
+ * parents are not calculated; rather, these are simply looked up in the underlying Bayes IM and returned.
  *
  * @author josephramsey
  */
@@ -49,8 +45,7 @@ public final class UpdatedBayesIm implements BayesIm {
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;
 
     /**
-     * The wrapped BayesIm. Unmodified conditional probability values will be
-     * retrieved from here.
+     * The wrapped BayesIm. Unmodified conditional probability values will be retrieved from here.
      *
      * @serial Cannot be null; must be evidence.getEstIm().
      */
@@ -64,16 +59,15 @@ public final class UpdatedBayesIm implements BayesIm {
     private final Evidence evidence;
 
     /**
-     * Stores probs that change with respect to the underlying bayesIm,
-     * calculated on the fly.
+     * Stores probs that change with respect to the underlying bayesIm, calculated on the fly.
      *
      * @serial Cannot be null.
      */
     private final double[][][] changedProbs;
 
     /**
-     * A boolean array that is true at a position if the node at that index is
-     * an ancestor or a child of one of the evidence variables.
+     * A boolean array that is true at a position if the node at that index is an ancestor or a child of one of the
+     * evidence variables.
      *
      * @serial Cannot be null.
      */
@@ -82,8 +76,7 @@ public final class UpdatedBayesIm implements BayesIm {
     //===========================CONSTRUCTORS===========================//
 
     /**
-     * Constructs Bayes net in which CPT's updated for the given evidence are
-     * calculated on the fly.
+     * Constructs Bayes net in which CPT's updated for the given evidence are calculated on the fly.
      */
     public UpdatedBayesIm(BayesIm bayesIm) {
 
@@ -91,8 +84,7 @@ public final class UpdatedBayesIm implements BayesIm {
     }
 
     /**
-     * Constructs Bayes net in which CPT's updated for the given evidence are
-     * calculated on the fly.
+     * Constructs Bayes net in which CPT's updated for the given evidence are calculated on the fly.
      */
     public UpdatedBayesIm(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) {
@@ -120,6 +112,23 @@ public final class UpdatedBayesIm implements BayesIm {
      */
     public static UpdatedBayesIm serializableInstance() {
         return new UpdatedBayesIm(MlBayesIm.serializableInstance());
+    }
+
+    private static boolean hasNextValue(Proposition proposition, int variable,
+                                        int curIndex) {
+        return UpdatedBayesIm.nextValue(proposition, variable, curIndex) != -1;
+    }
+
+    private static int nextValue(Proposition proposition, int variable,
+                                 int curIndex) {
+        for (int i = curIndex + 1;
+             i < proposition.getNumCategories(variable); i++) {
+            if (proposition.isAllowed(variable, i)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     //===============================PUBLIC METHODS=======================//
@@ -188,9 +197,8 @@ public final class UpdatedBayesIm implements BayesIm {
     }
 
     /**
-     * Calculates the probability for the given node, at the given row and
-     * column of the conditional probability table (CPT), updated for the
-     * evidence provided in the constuctor.
+     * Calculates the probability for the given node, at the given row and column of the conditional probability table
+     * (CPT), updated for the evidence provided in the constuctor.
      */
     public double getProbability(int nodeIndex, int rowIndex, int colIndex) {
         if (!this.affectedVars[nodeIndex]) {
@@ -270,6 +278,10 @@ public final class UpdatedBayesIm implements BayesIm {
         return getBayesIm().isIncomplete(nodeIndex, rowIndex);
     }
 
+//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+//        return getBayesIm().simulateData(sampleSize, seed, latentDataSaved);
+//    }
+
     public boolean isIncomplete(int nodeIndex) {
         return getBayesIm().isIncomplete(nodeIndex);
     }
@@ -277,10 +289,6 @@ public final class UpdatedBayesIm implements BayesIm {
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         return getBayesIm().simulateData(sampleSize, latentDataSaved);
     }
-
-//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-//        return getBayesIm().simulateData(sampleSize, seed, latentDataSaved);
-//    }
 
     public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
         throw new UnsupportedOperationException();
@@ -386,8 +394,7 @@ public final class UpdatedBayesIm implements BayesIm {
     }
 
     /**
-     * Calculates the set of variables whose CPT's change in response to the
-     * evidence provided.
+     * Calculates the set of variables whose CPT's change in response to the evidence provided.
      */
     private boolean[] ancestorsOfEvidence(Evidence evidence) {
         List<Node> variablesInEvidence = evidence.getVariablesInEvidence();
@@ -500,28 +507,10 @@ public final class UpdatedBayesIm implements BayesIm {
         return assertionTrue / conditionTrue;
     }
 
-    private static boolean hasNextValue(Proposition proposition, int variable,
-                                        int curIndex) {
-        return UpdatedBayesIm.nextValue(proposition, variable, curIndex) != -1;
-    }
-
-    private static int nextValue(Proposition proposition, int variable,
-                                 int curIndex) {
-        for (int i = curIndex + 1;
-             i < proposition.getNumCategories(variable); i++) {
-            if (proposition.isAllowed(variable, i)) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
     /**
-     * Calculates the probability in the given cell from the conditional
-     * probabilities in the BayesIm. It's the product of the probabilities that
-     * each variable takes on the value it does given that the other variables
-     * take on the values they do in that cell.
+     * Calculates the probability in the given cell from the conditional probabilities in the BayesIm. It's the product
+     * of the probabilities that each variable takes on the value it does given that the other variables take on the
+     * values they do in that cell.
      */
     private double getCellProb(int[] variableValues) {
         double p = 1.0;
@@ -545,8 +534,8 @@ public final class UpdatedBayesIm implements BayesIm {
     }
 
     /**
-     * Calculates the set of descendants of the given node that are d-connected
-     * to the node given its parents and all evidence variables.
+     * Calculates the set of descendants of the given node that are d-connected to the node given its parents and all
+     * evidence variables.
      */
     private boolean[] calcRelevantVars(int nodeIndex) {
         boolean[] relevantVars = new boolean[this.evidence.getNumNodes()];
@@ -561,8 +550,8 @@ public final class UpdatedBayesIm implements BayesIm {
             nodesInEvidence.add(this.bayesIm.getBayesPm().getNode(_node.getName()));
         }
 
-        List<Node> conditionedNodes
-                = new LinkedList<>(nodesInEvidence);
+        Set<Node> conditionedNodes
+                = new HashSet<>(nodesInEvidence);
         conditionedNodes.addAll(this.bayesIm.getDag().getParents(node));
 
         for (int i = 0; i < this.bayesIm.getNumNodes(); i++) {
@@ -570,7 +559,7 @@ public final class UpdatedBayesIm implements BayesIm {
 
             // Added the condition node == node2 since the updater was corrected to exclude this.
             // jdramsey 12.13.2014
-            if (node == node2 || this.bayesIm.getDag().paths().isDConnectedTo(node, node2, conditionedNodes)) {
+            if (node == node2 || this.bayesIm.getDag().paths().isMConnectedTo(node, node2, conditionedNodes)) {
                 relevantVars[i] = true;
             }
         }
@@ -579,14 +568,12 @@ public final class UpdatedBayesIm implements BayesIm {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -52,8 +52,7 @@ import static org.junit.Assert.assertFalse;
 public class TestStatUtils {
 
     /**
-     * Tests that the unconditional correlations and covariances are correct,
-     * at least for the unconditional tests.
+     * Tests that the unconditional correlations and covariances are correct, at least for the unconditional tests.
      */
     @Test
     public void testConditionalCorrelation() {
@@ -632,7 +631,7 @@ public class TestStatUtils {
         double[] x = {1, 2, 3, 4, 5};
 
         double maxEnt = StatUtils.maxEntApprox(x);
-        assertEquals(1.75, maxEnt, 0.01);
+        assertEquals(1.3, maxEnt, 0.01);
     }
 
     public void test2() {

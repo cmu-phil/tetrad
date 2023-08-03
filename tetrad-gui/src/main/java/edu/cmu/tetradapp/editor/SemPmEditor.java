@@ -57,16 +57,14 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
         LayoutEditable {
 
     private final SemPmWrapper semPmWrapper;
-
-    /**
-     * The graphical editor for the SemPm.
-     */
-    private SemPmGraphicalEditor graphicalEditor;
-
     /**
      * A reference to the error terms menu item so it can be reset.
      */
     private final JMenuItem errorTerms;
+    /**
+     * The graphical editor for the SemPm.
+     */
+    private SemPmGraphicalEditor graphicalEditor;
 
     //========================CONSTRUCTORS===========================//
 
@@ -498,14 +496,11 @@ class SemPmGraphicalEditor extends JPanel {
     }
 
     /**
-     * @return the parameter for the given edge, or null if the edge does not
-     * have a parameter associated with it in the model. The edge must be either
-     * directed or bidirected, since it has to come from a SemGraph. For
-     * directed edges, this method automatically adjusts if the user has changed
-     * the endpoints of an edge X1 --> X2 to X1 &lt;-- X2 and returns the correct
-     * parameter.
-     * @throws IllegalArgumentException if the edge is neither directed nor
-     *                                  bidirected.
+     * @return the parameter for the given edge, or null if the edge does not have a parameter associated with it in the
+     * model. The edge must be either directed or bidirected, since it has to come from a SemGraph. For directed edges,
+     * this method automatically adjusts if the user has changed the endpoints of an edge X1 --> X2 to X1 &lt;-- X2 and
+     * returns the correct parameter.
+     * @throws IllegalArgumentException if the edge is neither directed nor bidirected.
      */
     private Parameter getEdgeParameter(Edge edge) {
         if (Edges.isDirectedEdge(edge)) {

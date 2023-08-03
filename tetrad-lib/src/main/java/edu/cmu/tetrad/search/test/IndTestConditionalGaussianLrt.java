@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.ConditionalGaussianLikelihood;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -33,37 +34,31 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
- * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables
- * are either continuous or discrete. This test is valid for both ordinal and non-ordinal
- * discrete searchVariables.
+ * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or
+ * discrete. This test is valid for both ordinal and non-ordinal discrete searchVariables.
  * <p>
- * Assumes a conditional Gaussain model and uses a likelihood ratio test.
+ * Assumes a conditional Gaussian model and uses a likelihood ratio test.
  *
  * @author josephramsey
  */
 public class IndTestConditionalGaussianLrt implements IndependenceTest {
     private final DataSet data;
     private final Map<Node, Integer> nodesHash;
-    private double alpha;
-
     // Likelihood function
     private final ConditionalGaussianLikelihood likelihood;
-    private double pValue = Double.NaN;
-
+    private double alpha;
     private boolean verbose;
     private int numCategoriesToDiscretize = 3;
 
     /**
-     * Consstructor.
+     * Constructor.
      *
      * @param data       The data to analyze.
-     * @param alpha      The signifcance level.
+     * @param alpha      The significance level.
      * @param discretize Whether discrete children of continuous parents should be discretized.
      */
     public IndTestConditionalGaussianLrt(DataSet data, double alpha, boolean discretize) {
@@ -89,14 +84,16 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Returns and independence result that states whetehr x _||_y | z and what the
-     * p-value of the test is.
+     * Returns and independence result that states whether x _||_y | z and what the p-value of the test is.
      *
      * @return an independence result (see)
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         this.likelihood.setNumCategoriesToDiscretize(this.numCategoriesToDiscretize);
+
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         List<Node> allVars = new ArrayList<>(z);
         allVars.add(x);
@@ -113,9 +110,9 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         list0[0] = _x;
 
         for (int i = 0; i < z.size(); i++) {
-            int _z = this.nodesHash.get(z.get(i));
-            list0[i + 1] = _z;
-            list2[i] = _z;
+            int __z = this.nodesHash.get(z.get(i));
+            list0[i + 1] = __z;
+            list2[i] = __z;
         }
 
         ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihood(_y, list0);
@@ -124,11 +121,13 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         double lik0 = ret1.getLik() - ret2.getLik();
         double dof0 = ret1.getDof() - ret2.getDof();
 
-        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
-        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
-        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
+        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
+        if (this.alpha == 0)
+            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
+        if (this.alpha == 1)
+            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
         if (lik0 == Double.POSITIVE_INFINITY)
-            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
 
         double pValue;
 
@@ -138,26 +137,16 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
             pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
         }
 
-        this.pValue = pValue;
-
-        boolean independent = this.pValue > this.alpha;
+        boolean independent = pValue > this.alpha;
 
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, this.pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
-    }
-
-    /**
-     * Returns the probability associated with the most recently executed independence test,
-     * or Double.NaN if p value is not meaningful for this test.
-     */
-    public double getPValue() {
-        return this.pValue;
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, getAlpha() - pValue);
     }
 
     /**
@@ -173,7 +162,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     /**
      * Returns true if y is determined the variable in z.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
@@ -207,17 +196,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Returns a number that is higher for stronger judgments of dependence
-     * and negative for judgments of independence.
-     *
-     * @return This number.
-     */
-    @Override
-    public double getScore() {
-        return getAlpha() - getPValue();
-    }
-
-    /**
      * Returns a string representation of this test.
      *
      * @return This string.
@@ -240,7 +218,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -248,7 +226,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Sets the nubmer of categories used to discretize variables.
+     * Sets the number of categories used to discretize variables.
      *
      * @param numCategoriesToDiscretize This number, by default 3.
      */
@@ -256,16 +234,16 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
 
-    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodeHash) {
         List<Integer> rows = new ArrayList<>();
 
         K:
         for (int k = 0; k < this.data.getNumRows(); k++) {
             for (Node node : allVars) {
                 if (node instanceof ContinuousVariable) {
-                    if (Double.isNaN(this.data.getDouble(k, nodesHash.get(node)))) continue K;
+                    if (Double.isNaN(this.data.getDouble(k, nodeHash.get(node)))) continue K;
                 } else if (node instanceof DiscreteVariable) {
-                    if (this.data.getInt(k, nodesHash.get(node)) == -99) continue K;
+                    if (this.data.getInt(k, nodeHash.get(node)) == -99) continue K;
                 }
             }
 

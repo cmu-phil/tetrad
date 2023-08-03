@@ -41,18 +41,9 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
     private Parameters params;
 
     /**
-     * Constructs a dialog to edit the given workbench Bayes simulation
-     * getMappings object.
+     * Constructs a dialog to edit the given workbench Bayes simulation getMappings object.
      */
     public DirichletEstimatorParamsEditor() {
-    }
-
-    public void setParams(Parameters params) {
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -64,9 +55,8 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
     }
 
     /**
-     * Constructs the Gui used to edit properties; called from each constructor.
-     * Constructs labels and text fields for editing each property and adds
-     * appropriate listeners.
+     * Constructs the Gui used to edit properties; called from each constructor. Constructs labels and text fields for
+     * editing each property and adds appropriate listeners.
      */
     public void setup() {
         setLayout(new BorderLayout());
@@ -113,11 +103,19 @@ public class DirichletEstimatorParamsEditor extends JPanel implements ParameterE
     }
 
     /**
-     * @return the getMappings object being edited. (This probably should not be
-     * public, but it is needed so that the textfields can edit the model.)
+     * @return the getMappings object being edited. (This probably should not be public, but it is needed so that the
+     * textfields can edit the model.)
      */
     protected synchronized Parameters getParams() {
         return this.params;
+    }
+
+    public void setParams(Parameters params) {
+        if (params == null) {
+            throw new NullPointerException();
+        }
+
+        this.params = params;
     }
 }
 

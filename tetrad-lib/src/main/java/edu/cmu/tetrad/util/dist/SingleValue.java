@@ -22,8 +22,7 @@
 package edu.cmu.tetrad.util.dist;
 
 /**
- * A pretend distribution that always returns the given value when
- * nextRandom() is called.
+ * A pretend distribution that always returns the given value when nextRandom() is called.
  *
  * @author josephramsey
  */

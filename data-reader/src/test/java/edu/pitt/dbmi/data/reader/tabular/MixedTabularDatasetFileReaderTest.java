@@ -24,9 +24,9 @@ import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -46,10 +46,10 @@ public class MixedTabularDatasetFileReaderTest {
     private final int numberOfDiscreteCategories = 4;
 
     private final Path[] dataFiles = {
-            Paths.get(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile())
+            new File(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile()).toPath()
     };
 
     public MixedTabularDatasetFileReaderTest() {
@@ -62,7 +62,7 @@ public class MixedTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataWithNoHeader() throws IOException {
-        Path dataFile = Paths.get(getClass().getResource("/data/tabular/mixed/no_header_sim_test_data.csv").getFile());
+        Path dataFile = new File(getClass().getResource("/data/tabular/mixed/no_header_sim_test_data.csv").getFile()).toPath();
         MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
         dataReader.setCommentMarker(this.commentMarker);
         dataReader.setQuoteCharacter(this.quoteCharacter);
@@ -111,7 +111,7 @@ public class MixedTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataWithNoHeaderExcludingVariableByColumnNumbers() throws IOException {
-        Path dataFile = Paths.get(getClass().getResource("/data/tabular/mixed/no_header_sim_test_data.csv").getFile());
+        Path dataFile = new File(getClass().getResource("/data/tabular/mixed/no_header_sim_test_data.csv").getFile()).toPath();
         MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
         dataReader.setCommentMarker(this.commentMarker);
         dataReader.setQuoteCharacter(this.quoteCharacter);

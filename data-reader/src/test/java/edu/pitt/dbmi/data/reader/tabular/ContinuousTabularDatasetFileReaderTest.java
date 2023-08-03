@@ -25,9 +25,9 @@ import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -46,10 +46,10 @@ public class ContinuousTabularDatasetFileReaderTest {
     private final boolean hasHeader = true;
 
     private final Path[] dataFiles = {
-            Paths.get(getClass().getResource("/data/tabular/continuous/dos_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/continuous/mac_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/continuous/quotes_sim_test_data.csv").getFile())
+            new File(getClass().getResource("/data/tabular/continuous/dos_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/continuous/mac_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/continuous/quotes_sim_test_data.csv").getFile()).toPath()
     };
 
     public ContinuousTabularDatasetFileReaderTest() {
@@ -62,7 +62,7 @@ public class ContinuousTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataWithNoHeaderExcludingVariableByColumnNumbers() throws IOException {
-        Path dataFile = Paths.get(getClass().getResource("/data/tabular/continuous/no_header_sim_test_data.csv").getFile());
+        Path dataFile = new File(getClass().getResource("/data/tabular/continuous/no_header_sim_test_data.csv").getFile()).toPath();
         ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
         dataReader.setCommentMarker(this.commentMarker);
         dataReader.setQuoteCharacter(this.quoteCharacter);
@@ -97,7 +97,7 @@ public class ContinuousTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataWithNoHeader() throws IOException {
-        Path dataFile = Paths.get(getClass().getResource("/data/tabular/continuous/no_header_sim_test_data.csv").getFile());
+        Path dataFile = new File(getClass().getResource("/data/tabular/continuous/no_header_sim_test_data.csv").getFile()).toPath();
         ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
         dataReader.setCommentMarker(this.commentMarker);
         dataReader.setQuoteCharacter(this.quoteCharacter);

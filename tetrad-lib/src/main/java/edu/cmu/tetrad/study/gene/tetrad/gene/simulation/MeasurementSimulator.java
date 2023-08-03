@@ -36,24 +36,18 @@ import java.util.Arrays;
 
 /**
  * <p>Simulates measurement genetic data using an underlying GeneHistory object
- * to generate individual cell data. The GeneHistory object must be passed to
- * the MeasurementSimulator in the constructor; all other parameters are given
- * default values at time of construction but may be set using accessor methods
- * after construction. The <code>simulate</code> method generates two
- * three-dimensional sets of data: (1) a raw data set, consisting of expression
- * levels at specified time steps for all of the factors that the history
- * generates data for and for each individual cell that is simulated, where
- * these cells are organized into various petri dishes, and (2) a measurement
- * data set, in which various types of noise are added to aggregated expression
- * levels for each dish, to produce a specified number of samples for each dish
- * of the raw data. Both raw data and measured data may optionally be saved out;
- * the purpose of allowing these options is to avoid memory overflows for large
- * data sets, especially for the raw data set. A simulation with 1,000,000 cells
- * where each cell has 1000 genes, for instance, can take quite a long time and
- * can easily overflow RAM in Java if all of the raw expression levels are saved
- * out.&gt; 0 <p>For examples of how to use the measurement simulator code,
- * see the TestMeasurementSimulator class. This is a JUnit test class that
- * contains several examples of code use.&gt; 0
+ * to generate individual cell data. The GeneHistory object must be passed to the MeasurementSimulator in the
+ * constructor; all other parameters are given default values at time of construction but may be set using accessor
+ * methods after construction. The <code>simulate</code> method generates two three-dimensional sets of data: (1) a raw
+ * data set, consisting of expression levels at specified time steps for all of the factors that the history generates
+ * data for and for each individual cell that is simulated, where these cells are organized into various petri dishes,
+ * and (2) a measurement data set, in which various types of noise are added to aggregated expression levels for each
+ * dish, to produce a specified number of samples for each dish of the raw data. Both raw data and measured data may
+ * optionally be saved out; the purpose of allowing these options is to avoid memory overflows for large data sets,
+ * especially for the raw data set. A simulation with 1,000,000 cells where each cell has 1000 genes, for instance, can
+ * take quite a long time and can easily overflow RAM in Java if all of the raw expression levels are saved out.&gt; 0
+ * <p>For examples of how to use the measurement simulator code, see the TestMeasurementSimulator class. This is a
+ * JUnit test class that contains several examples of code use.&gt; 0
  *
  * @author josephramsey
  * @see TestMeasurementSimulator
@@ -61,40 +55,28 @@ import java.util.Arrays;
 public class MeasurementSimulator implements TetradSerializable {
     static final long serialVersionUID = 23L;
     private final Parameters parameters;
-
-    /**
-     * @serial
-     */
-    private GeneHistory history;
+    private final int numDishes = 1;
 
     // Adjustable parameters: for descriptions of these, see the
     // corresponding accessor methods. These parameters control how
     // the simulation is performed. Note that all of these parameters
     // are set to their default values as given in the spec.
-
-    private final int numDishes = 1;
-
     private final int numCellsPerDish = 10000;
-
     private final int stepsGenerated = 4;
-
     private final int firstStepStored = 1;
-
     private final int interval = 1;
-
     private final double dishDishVariability = 10.0;
-
     private final int numSamplesPerDish = 4;
-
     private final double sampleSampleVariability = 0.025;
-
     private final double chipChipVariability = 0.1;
-
     private final double pixelDigitalization = 0.025;
+    /**
+     * @serial
+     */
+    private GeneHistory history;
 
     // Constructed parameters available for retrieval after data has
     // been simulated.
-
     /**
      * @serial
      */
@@ -126,8 +108,8 @@ public class MeasurementSimulator implements TetradSerializable {
     //=============================CONSTRUCTORS============================//
 
     /**
-     * Constructs a measurement simulator using the given history. The history
-     * will be used to do the simulation of each cell.
+     * Constructs a measurement simulator using the given history. The history will be used to do the simulation of each
+     * cell.
      *
      * @throws NullPointerException if the history argument is null.
      */
@@ -164,9 +146,16 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Sets the number of dishes that are to be simulated. This value is
-     * passed to a dish model that determines how expression levels for genes in
-     * cells are bumped up or down depending on which dish the cells are in.
+     * Returns the number of dishes that are to be simulated.
+     */
+    public int getNumDishes() {
+        return this.parameters.getInt("numDishes", this.numDishes);
+//        return numDishes;
+    }
+
+    /**
+     * Sets the number of dishes that are to be simulated. This value is passed to a dish model that determines how
+     * expression levels for genes in cells are bumped up or down depending on which dish the cells are in.
      */
     public void setNumDishes(int numDishes) {
 
@@ -177,14 +166,6 @@ public class MeasurementSimulator implements TetradSerializable {
             throw new IllegalArgumentException(
                     "Number of dishes must be > 0: " + numDishes);
         }
-    }
-
-    /**
-     * Returns the number of dishes that are to be simulated.
-     */
-    public int getNumDishes() {
-        return this.parameters.getInt("numDishes", this.numDishes);
-//        return numDishes;
     }
 
     public boolean isIncludeDishAndChipColumns() {
@@ -199,8 +180,15 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Sets the number of cells per dish. It is assumed that each dish has the
-     * same number of cells.
+     * Returns the number of cells per dish.
+     */
+    public int getNumCellsPerDish() {
+        return this.parameters.getInt("numCellsPerDish", this.numCellsPerDish);
+//        return this.numCellsPerDish;
+    }
+
+    /**
+     * Sets the number of cells per dish. It is assumed that each dish has the same number of cells.
      */
     public void setNumCellsPerDish(int numCellsPerDish) {
 
@@ -214,17 +202,18 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Returns the number of cells per dish.
+     * Returns the number of steps generated.
+     *
+     * @see #setStepsGenerated
      */
-    public int getNumCellsPerDish() {
-        return this.parameters.getInt("numCellsPerDish", this.numCellsPerDish);
-//        return this.numCellsPerDish;
+    public int getStepsGenerated() {
+        return this.parameters.getInt("stepsGenerated", this.stepsGenerated);
+//        return this.stepsGenerated;
     }
 
     /**
-     * Sets the number of time steps to generate. Note that this is the actual
-     * number of time steps generated, regardless of how many time steps are
-     * actually stored out. Which time steps are actually stored depends on this
+     * Sets the number of time steps to generate. Note that this is the actual number of time steps generated,
+     * regardless of how many time steps are actually stored out. Which time steps are actually stored depends on this
      * parameter together with the parameters <code>firstStepStored</code> and
      * <code>interval</code>.
      */
@@ -242,21 +231,16 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Returns the number of steps generated.
-     *
-     * @see #setStepsGenerated
+     * Returns the index of the first step to actually be stored out.
      */
-    public int getStepsGenerated() {
-        return this.parameters.getInt("stepsGenerated", this.stepsGenerated);
-//        return this.stepsGenerated;
+    public int getFirstStepStored() {
+        return this.parameters.getInt("firstStepStored", this.firstStepStored);
     }
 
     /**
-     * Sets the index of the first step to actually be stored out. Any steps
-     * prior to this in the model for a particular cell will be computed, but
-     * their values will not be saved. Note that if the value of this
-     * parameter is greater than the value of 'stepsGenerated', no steps will
-     * be saved.
+     * Sets the index of the first step to actually be stored out. Any steps prior to this in the model for a particular
+     * cell will be computed, but their values will not be saved. Note that if the value of this parameter is greater
+     * than the value of 'stepsGenerated', no steps will be saved.
      */
     public void setFirstStepStored(int firstStepStored) {
 
@@ -272,10 +256,13 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Returns the index of the first step to actually be stored out.
+     * Sets the interval (in time steps) between time steps stored out. For instance, if the first step stored is 5 and
+     * the interval is 3, then the series 5, 8, 11, 14, ..., will be stored out; this series will be stopped at the
+     * first index in the series that exceeds 'stepsGenerated'.
      */
-    public int getFirstStepStored() {
-        return this.parameters.getInt("firstStepStored", this.firstStepStored);
+    public int getInterval() {
+        return this.parameters.getInt("interval", this.interval);
+//        return this.interval;
     }
 
     /**
@@ -297,30 +284,7 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Sets the interval (in time steps) between time steps stored out. For
-     * instance, if the first step stored is 5 and the interval is 3, then the
-     * series 5, 8, 11, 14, ..., will be stored out; this series will be stopped
-     * at the first index in the series that exceeds 'stepsGenerated'.
-     */
-    public int getInterval() {
-        return this.parameters.getInt("interval", this.interval);
-//        return this.interval;
-    }
-
-    /**
-     * Sets whether the raw data that is generated should be saved beyond what's
-     * needed for the getModel cell being simulated. It's usually a good idea to
-     * set this to 'false' since for any reasonably sized simulation only the
-     * measurement data is needed and the raw data can get to be way big.
-     */
-    public void setRawDataSaved(boolean rawDataSaved) {
-        this.parameters.set("rawDataSaved", rawDataSaved);
-//        this.rawDataSaved = rawDataSaved;
-    }
-
-    /**
-     * Returns true if raw data is being saved in the getModel simulation, false
-     * if not.
+     * Returns true if raw data is being saved in the getModel simulation, false if not.
      *
      * @see #setRawDataSaved
      */
@@ -331,18 +295,17 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Sets whether measured data should be saved out for this simulation. The
-     * default value is 'true'; should only be set to 'false' if only the raw
-     * data is needed for a particular task.
+     * Sets whether the raw data that is generated should be saved beyond what's needed for the getModel cell being
+     * simulated. It's usually a good idea to set this to 'false' since for any reasonably sized simulation only the
+     * measurement data is needed and the raw data can get to be way big.
      */
-    public void setMeasuredDataSaved(boolean measuredDataSaved) {
-        this.parameters.set("measuredDataSaved", measuredDataSaved);
-//        this.measuredDataSaved = measuredDataSaved;
+    public void setRawDataSaved(boolean rawDataSaved) {
+        this.parameters.set("rawDataSaved", rawDataSaved);
+//        this.rawDataSaved = rawDataSaved;
     }
 
     /**
-     * Returns 'true' if measured data is being saved out for the getModel
-     * simulation, 'false' if not.
+     * Returns 'true' if measured data is being saved out for the getModel simulation, 'false' if not.
      *
      * @see #setMeasuredDataSaved
      */
@@ -353,20 +316,36 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Sets whether the expression levels of cells should be synchronized on
-     * initialization. How this synchronization happens specifically is governed
-     * by the GeneHistory object. The basic idea though is that in many
-     * microarray experiments it is helpful to coordinate the initial expression
-     * levels of cells so that the development of expression levels proceed
-     * approximately in lockstep, at least for the genes of interest. See the
-     * specific GeneHistory object used for more information about how this is
-     * accomplished in simulation. The GeneHistory object also governs how cells
-     * are initialized randomly; see the GeneHistory object for more specific
-     * information about this as well.
+     * Sets whether measured data should be saved out for this simulation. The default value is 'true'; should only be
+     * set to 'false' if only the raw data is needed for a particular task.
+     */
+    public void setMeasuredDataSaved(boolean measuredDataSaved) {
+        this.parameters.set("measuredDataSaved", measuredDataSaved);
+//        this.measuredDataSaved = measuredDataSaved;
+    }
+
+    /**
+     * Returns 'true' if cells in the simulation will be synchronized, 'false' if not.
      *
-     * @param initSync true if cells should be initialized synchronously, false
-     *                 if expression levels for cells of each gene should be
-     *                 initialized randomly.
+     * @see #setInitSync
+     */
+    public boolean isInitSync() {
+        boolean initSync = true;
+        return this.parameters.getBoolean("initSync", initSync);
+//        return this.initSync;
+    }
+
+    /**
+     * Sets whether the expression levels of cells should be synchronized on initialization. How this synchronization
+     * happens specifically is governed by the GeneHistory object. The basic idea though is that in many microarray
+     * experiments it is helpful to coordinate the initial expression levels of cells so that the development of
+     * expression levels proceed approximately in lockstep, at least for the genes of interest. See the specific
+     * GeneHistory object used for more information about how this is accomplished in simulation. The GeneHistory object
+     * also governs how cells are initialized randomly; see the GeneHistory object for more specific information about
+     * this as well.
+     *
+     * @param initSync true if cells should be initialized synchronously, false if expression levels for cells of each
+     *                 gene should be initialized randomly.
      * @see GeneHistory
      */
     public void setInitSync(boolean initSync) {
@@ -375,15 +354,12 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Returns 'true' if cells in the simulation will be synchronized, 'false'
-     * if not.
-     *
-     * @see #setInitSync
+     * Returns true iff the antilog of each expression level should be calculated.
      */
-    public boolean isInitSync() {
-        boolean initSync = true;
-        return this.parameters.getBoolean("initSync", initSync);
-//        return this.initSync;
+    public boolean isAntilogCalculated() {
+        boolean antilogCalculated = false;
+        return this.parameters.getBoolean("antilogCalculated", antilogCalculated);
+//        return this.antilogCalculated;
     }
 
     /**
@@ -395,21 +371,19 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Returns true iff the antilog of each expression level should be
-     * calculated.
+     * Returns the standard deviation in percent of random dish bump values away from 100%.
+     *
+     * @see #setDishDishVariability
      */
-    public boolean isAntilogCalculated() {
-        boolean antilogCalculated = false;
-        return this.parameters.getBoolean("antilogCalculated", antilogCalculated);
-//        return this.antilogCalculated;
+    public double getDishDishVariability() {
+        return this.parameters.getDouble("dishDishVariability", this.dishDishVariability);
+//        return this.dishDishVariability;
     }
 
     /**
-     * Sets the standard deviation sd% (in <i>percent</i>) of the distribution
-     * N(100.0, sd%), from which errors will be drawn for the dish model. This
-     * will determine how much expression levels will get bumped up or down
-     * depending on the dish particular cells are in. See the dish model for
-     * details of how this is done.
+     * Sets the standard deviation sd% (in <i>percent</i>) of the distribution N(100.0, sd%), from which errors will be
+     * drawn for the dish model. This will determine how much expression levels will get bumped up or down depending on
+     * the dish particular cells are in. See the dish model for details of how this is done.
      *
      * @see DishModel
      */
@@ -425,24 +399,21 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Returns the standard deviation in percent of random dish bump values away
-     * from 100%.
+     * Returns the number of samples generated per dish in the measurement model.
      *
-     * @see #setDishDishVariability
+     * @see #setNumSamplesPerDish
      */
-    public double getDishDishVariability() {
-        return this.parameters.getDouble("dishDishVariability", this.dishDishVariability);
-//        return this.dishDishVariability;
+    public int getNumSamplesPerDish() {
+        return this.parameters.getInt("numChipsPerDish", this.numSamplesPerDish);
+//        return this.numSamplesPerDish;
     }
 
     /**
-     * Sets the number of samples that will be generated in the measured data
-     * for each dish. This number does not depend in any way on the number of
-     * cells simulated in the dish. The idea is that a number of cells from the
-     * dish are separated off into another container, ground up so that their
-     * DNA mixes together. This ground up mixture is then pipetted onto a number
-     * of microarrays. The number of samples per dish is the number of
-     * microarrays that this ground up mixture is pipetted onto.
+     * Sets the number of samples that will be generated in the measured data for each dish. This number does not depend
+     * in any way on the number of cells simulated in the dish. The idea is that a number of cells from the dish are
+     * separated off into another container, ground up so that their DNA mixes together. This ground up mixture is then
+     * pipetted onto a number of microarrays. The number of samples per dish is the number of microarrays that this
+     * ground up mixture is pipetted onto.
      */
     public void setNumSamplesPerDish(int numSamplesPerDish) {
 
@@ -456,42 +427,8 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Returns the number of samples generated per dish in the measurement
-     * model.
-     *
-     * @see #setNumSamplesPerDish
-     */
-    public int getNumSamplesPerDish() {
-        return this.parameters.getInt("numChipsPerDish", this.numSamplesPerDish);
-//        return this.numSamplesPerDish;
-    }
-
-    /**
-     * Sets the sample to sample variability. It is assumed that when when the
-     * DNA mixture from a dish is pipetted onto different microarrays, there
-     * will be a variability in the measured expression of particular genes due
-     * to the particular microarray--in other words, the measured expressions
-     * across an entire microarray will be bumped up or down by a set amount.
-     * This amount is chosen from a normal distribution with mean 0 and standard
-     * deviation of the given value, <code>sampleSampleVariability</code>.
-     * This error is added to other measurement errors.
-     */
-    public void setSampleSampleVariability(double sampleSampleVariability) {
-
-        if ((sampleSampleVariability > 0.0) && (sampleSampleVariability < 1.0)) {
-            this.parameters.set("sampleSampleVariability", sampleSampleVariability);
-//            this.sampleSampleVariability = sampleSampleVariability;
-        } else {
-            throw new IllegalArgumentException("Sample variability must be " +
-                    "> 0.0: " + sampleSampleVariability);
-        }
-    }
-
-    /**
-     * Returns the sample to sample variability, which is the standard deviation
-     * of a normal distribution with mean 0 from which errors in measured
-     * expression levels due to the microarray being used for measurement are
-     * drawn.
+     * Returns the sample to sample variability, which is the standard deviation of a normal distribution with mean 0
+     * from which errors in measured expression levels due to the microarray being used for measurement are drawn.
      *
      * @see #setSampleSampleVariability
      */
@@ -501,22 +438,20 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Sets the chip to chip variability. This is included for future expansion.
-     * The idea is that chips are reused (as they typically are), one expects a
-     * degradation in quality of measurement with each reuse. In the getModel
-     * model, no chip reuse is assumed. We simply pick a value from a normal
-     * with mean 0 and standard deviation <code>chipChipVariability</code> and
-     * bump all measured expressions on the dish by that amount. This error is
-     * added to other measurement errors.
+     * Sets the sample to sample variability. It is assumed that when when the DNA mixture from a dish is pipetted onto
+     * different microarrays, there will be a variability in the measured expression of particular genes due to the
+     * particular microarray--in other words, the measured expressions across an entire microarray will be bumped up or
+     * down by a set amount. This amount is chosen from a normal distribution with mean 0 and standard deviation of the
+     * given value, <code>sampleSampleVariability</code>. This error is added to other measurement errors.
      */
-    public void setChipChipVariability(double chipChipVariability) {
+    public void setSampleSampleVariability(double sampleSampleVariability) {
 
-        if ((chipChipVariability > 0.0) && (chipChipVariability < 1.0)) {
-            this.parameters.set("chipChipVariability", chipChipVariability);
-//            this.chipChipVariability = chipChipVariability;
+        if ((sampleSampleVariability > 0.0) && (sampleSampleVariability < 1.0)) {
+            this.parameters.set("sampleSampleVariability", sampleSampleVariability);
+//            this.sampleSampleVariability = sampleSampleVariability;
         } else {
-            throw new IllegalArgumentException("Chip to chip variability " +
-                    "must be > 0.0 and < 1.0: " + chipChipVariability);
+            throw new IllegalArgumentException("Sample variability must be " +
+                    "> 0.0: " + sampleSampleVariability);
         }
     }
 
@@ -531,20 +466,20 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Sets the pixel digitalization error. An error value is drawn for each
-     * individual expression measurement fron a normal distribution with normal
-     * 0 and standard deviation <code>pixelDigitalization</code>. This error is
-     * added to the other errors for measurement.
+     * Sets the chip to chip variability. This is included for future expansion. The idea is that chips are reused (as
+     * they typically are), one expects a degradation in quality of measurement with each reuse. In the getModel model,
+     * no chip reuse is assumed. We simply pick a value from a normal with mean 0 and standard deviation
+     * <code>chipChipVariability</code> and bump all measured expressions on the dish by that amount. This error is
+     * added to other measurement errors.
      */
-    public void setPixelDigitalization(double pixelDigitalization) {
+    public void setChipChipVariability(double chipChipVariability) {
 
-        if ((pixelDigitalization > 0.0) && (pixelDigitalization < 1.0)) {
-            this.parameters.set("pixelDigitalization", pixelDigitalization);
-
-//            this.pixelDigitalization = pixelDigitalization;
+        if ((chipChipVariability > 0.0) && (chipChipVariability < 1.0)) {
+            this.parameters.set("chipChipVariability", chipChipVariability);
+//            this.chipChipVariability = chipChipVariability;
         } else {
-            throw new IllegalArgumentException("Pixel digitalization " +
-                    "must be > 0.0 and <" + " 1.0: " + pixelDigitalization);
+            throw new IllegalArgumentException("Chip to chip variability " +
+                    "must be > 0.0 and < 1.0: " + chipChipVariability);
         }
     }
 
@@ -559,18 +494,31 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
+     * Sets the pixel digitalization error. An error value is drawn for each individual expression measurement fron a
+     * normal distribution with normal 0 and standard deviation <code>pixelDigitalization</code>. This error is added to
+     * the other errors for measurement.
+     */
+    public void setPixelDigitalization(double pixelDigitalization) {
+
+        if ((pixelDigitalization > 0.0) && (pixelDigitalization < 1.0)) {
+            this.parameters.set("pixelDigitalization", pixelDigitalization);
+
+//            this.pixelDigitalization = pixelDigitalization;
+        } else {
+            throw new IllegalArgumentException("Pixel digitalization " +
+                    "must be > 0.0 and <" + " 1.0: " + pixelDigitalization);
+        }
+    }
+
+    /**
      * <p>Returns the raw data that is the result of a simulation, in the form
-     * of a three-dimensional double array. If rawData = getRawData(), then
-     * rawData[i][j][k] is the expression level for the i'th factor in the
-     * GeneHistory at the j'th time step stored out for the k'th individual
-     * cell. To determine which factor is the i'th factor, look at
-     * getHistory().getFactor(). To determine which time step is the j'th time
-     * step, look at getTimeSteps(). The k'th individual is in dish (k /
-     * numCellsPerDish).&gt; 0 <p>If raw data is not saved out, this method
-     * returns null.&gt; 0
+     * of a three-dimensional double array. If rawData = getRawData(), then rawData[i][j][k] is the expression level for
+     * the i'th factor in the GeneHistory at the j'th time step stored out for the k'th individual cell. To determine
+     * which factor is the i'th factor, look at getHistory().getFactor(). To determine which time step is the j'th time
+     * step, look at getTimeSteps(). The k'th individual is in dish (k / numCellsPerDish).&gt; 0 <p>If raw data is not
+     * saved out, this method returns null.&gt; 0
      *
-     * @return the three dimensional double array of raw data, if raw data is
-     * saved, or null, if raw data is not saved.
+     * @return the three dimensional double array of raw data, if raw data is saved, or null, if raw data is not saved.
      */
     public double[][][] getRawData() {
         return this.rawData;
@@ -578,26 +526,22 @@ public class MeasurementSimulator implements TetradSerializable {
 
     /**
      * <p>Returns the measured data that is the result of a simulation, in the
-     * form of a three-dimensional double array. If measuredData =
-     * getMeasuredData(), then measuredData[i][j][k] is the expression level for
-     * the i'th factor in the GeneHistory at the j'th time step stored out for
-     * the k'th sample. To determine which factor is the i'th factor, look at
-     * getHistory().getFactor(). To determine which time step is the j'th time
-     * step, look at getTimeSteps(). The k'th sample is drawn from dish (k /
-     * numSamplesPerDish).&gt; 0 <p>If measured data is not saved out, this
-     * method returns null.&gt; 0
+     * form of a three-dimensional double array. If measuredData = getMeasuredData(), then measuredData[i][j][k] is the
+     * expression level for the i'th factor in the GeneHistory at the j'th time step stored out for the k'th sample. To
+     * determine which factor is the i'th factor, look at getHistory().getFactor(). To determine which time step is the
+     * j'th time step, look at getTimeSteps(). The k'th sample is drawn from dish (k / numSamplesPerDish).&gt; 0 <p>If
+     * measured data is not saved out, this method returns null.&gt; 0
      *
-     * @return the three dimensional double array of measured data, if measured
-     * data is saved, or null, if measured data is not saved.
+     * @return the three dimensional double array of measured data, if measured data is saved, or null, if measured data
+     * is not saved.
      */
     public double[][][] getMeasuredData() {
         return this.measuredData;
     }
 
     /**
-     * Constructs an array of integers that indicate the time steps of the data
-     * that will be simulated. Integers in this array must be >= 1 and must be
-     * in strictly increasing order--in other words, <code>timeSteps[i] <
+     * Constructs an array of integers that indicate the time steps of the data that will be simulated. Integers in this
+     * array must be >= 1 and must be in strictly increasing order--in other words, <code>timeSteps[i] <
      * timeSteps[i+1]</code> for i = 0, ..., timeSteps.length - 1.
      */
     private void constructTimeSteps() {
@@ -617,17 +561,14 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Returns the time steps that will be stored in the simulation. These time
-     * steps are iterations of the <code>update</code> method of the
-     * GeneHistory; it is presumed that each such iteration represents a uniform
-     * interval of time, so that the time steps 1, 2, 3, ..., n are equally
-     * spaced. The array returned by this method represents a subset of the
-     * steps 1, 2, 3, ..., n, for instance, 2, 4, 6, ..., n. All of the time
-     * steps are simulated; these are the time steps that are stored out to the
-     * raw data array and the measured data array. The parameters of this class
-     * allow only subsets of the time steps that are themselves equally spaced.
-     * (This is not necessary; it's just how the getModel parameters
-     * work--<code>firstStepStored</code>, <code>stepsGenerated</code>,
+     * Returns the time steps that will be stored in the simulation. These time steps are iterations of the
+     * <code>update</code> method of the GeneHistory; it is presumed that each such iteration represents a uniform
+     * interval of time, so that the time steps 1, 2, 3, ..., n are equally spaced. The array returned by this method
+     * represents a subset of the steps 1, 2, 3, ..., n, for instance, 2, 4, 6, ..., n. All of the time steps are
+     * simulated; these are the time steps that are stored out to the raw data array and the measured data array. The
+     * parameters of this class allow only subsets of the time steps that are themselves equally spaced. (This is not
+     * necessary; it's just how the getModel parameters work--<code>firstStepStored</code>,
+     * <code>stepsGenerated</code>,
      * <code>interval</code>. Note that the the time steps in this array are &gt;=
      * 1, are in increasing order, and (as explained above) are equally spaced.
      */
@@ -636,10 +577,9 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * While the simulate() method is being executed, returns the dish number of
-     * the cell currently being simulated, zero indexed. This is exported from
-     * the simulate() method to allow progress of the simulation to be reported.
-     * For the total number of dishes, call <code>getNumDishes()</code>.
+     * While the simulate() method is being executed, returns the dish number of the cell currently being simulated,
+     * zero indexed. This is exported from the simulate() method to allow progress of the simulation to be reported. For
+     * the total number of dishes, call <code>getNumDishes()</code>.
      *
      * @see #getNumDishes
      */
@@ -648,10 +588,9 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * While the simulate() method is being executed, returns the cell number of
-     * the cell currently being simulated in a particular dish, zero indexed.
-     * This is exported from the simulate() method to allos progress of the
-     * simulation to be reported. For the total number of dishes, call
+     * While the simulate() method is being executed, returns the cell number of the cell currently being simulated in a
+     * particular dish, zero indexed. This is exported from the simulate() method to allos progress of the simulation to
+     * be reported. For the total number of dishes, call
      * <code>getNumCellsPerDish()</code>.
      *
      * @see #getNumDishes
@@ -661,19 +600,16 @@ public class MeasurementSimulator implements TetradSerializable {
     }
 
     /**
-     * Simulates (optionally) neither, either, or both of two three-dimensionaly
-     * data sets, rawData and measuredData. For the form of the first set, see
+     * Simulates (optionally) neither, either, or both of two three-dimensionaly data sets, rawData and measuredData.
+     * For the form of the first set, see
      * <code>getRawData</code>; for the form of the second set, see
      * <code>getMeasuredData</code>.  The idea of the simulation is that cells
-     * are grown in different dishes and periodically sampled. When they are
-     * sampled, their DNA is ground up and then pipetted in aggregate onto a
-     * number of microarray chips. Each indivual cell is simulated separately;
-     * the simulated cells are grouped into dishes. Expression levels of cells
-     * in each dish are aggregated and then random noise is added to this
-     * aggregate expression level representing various sources of noise: sample
-     * to sample variation, chip to chip variation, and pixellation measurement
-     * variation. For more information, see the Genetic Simulator spec, which
-     * this method implements.
+     * are grown in different dishes and periodically sampled. When they are sampled, their DNA is ground up and then
+     * pipetted in aggregate onto a number of microarray chips. Each indivual cell is simulated separately; the
+     * simulated cells are grouped into dishes. Expression levels of cells in each dish are aggregated and then random
+     * noise is added to this aggregate expression level representing various sources of noise: sample to sample
+     * variation, chip to chip variation, and pixellation measurement variation. For more information, see the Genetic
+     * Simulator spec, which this method implements.
      *
      * @see #getRawData
      * @see #getMeasuredData
@@ -904,14 +840,12 @@ public class MeasurementSimulator implements TetradSerializable {
         */
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

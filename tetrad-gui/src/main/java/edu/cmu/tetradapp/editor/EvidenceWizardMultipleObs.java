@@ -39,8 +39,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Lets the user visually add and remove evidence, perform updates, and view
- * Bayes updating results.
+ * Lets the user visually add and remove evidence, perform updates, and view Bayes updating results.
  *
  * @author William Taysom -- Jun 14, 2003
  * @author josephramsey
@@ -52,8 +51,8 @@ class EvidenceWizardMultipleObs extends JPanel {
     private JTextArea textArea = new JTextArea("Nothing to display");
 
     /**
-     * This is the wizard for the BayesUpdateEditor class.  It allows you to add
-     * and remove evidence, and to updater based on it.
+     * This is the wizard for the BayesUpdateEditor class.  It allows you to add and remove evidence, and to updater
+     * based on it.
      */
     public EvidenceWizardMultipleObs(UpdaterWrapper updaterWrapper,
                                      GraphWorkbench workbench) {

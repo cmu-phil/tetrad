@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.Kernel;
 import edu.cmu.tetrad.search.utils.KernelGaussian;
 import edu.cmu.tetrad.search.utils.KernelUtils;
@@ -41,11 +42,12 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Checks the conditional independence X _||_ Y | S, where S is a set of continuous variable,
- * and X and Y are discrete variable not in S, using the Hilbert-Schmidth Independence
- * Criterion (HSIC), a kernel based nonparametric test for conditional independence.</p>
+ * and X and Y are discrete variable not in S, using the Hilbert-Schmidth Independence Criterion (HSIC), a kernel based
+ * nonparametric test for conditional independence.</p>
  *
  * <p>The Kpc algorithm by Tillman had run PC using this test; to run Kpc, simply select this test
  * for PC.</p>
@@ -57,30 +59,25 @@ import java.util.List;
 public final class IndTestHsic implements IndependenceTest {
 
     /**
-     * The variables of the covariance matrix, in order. (Unmodifiable list.)
-     */
-    private final List<Node> variables;
-
-    /**
-     * The significance level of the independence tests.
-     */
-    private double alpha;
-
-    /**
-     * The cutoff value for 'alpha'
-     */
-    private double thresh = Double.NaN;
-
-    /**
      * Formats as 0.0000.
      */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
+    /**
+     * The variables of the covariance matrix, in order. (Unmodifiable list.)
+     */
+    private final List<Node> variables;
     /**
      * Stores a reference to the dataset being analyzed.
      */
     private final DataSet dataSet;
-
+    /**
+     * The significance level of the independence tests.
+     */
+    private double alpha;
+    /**
+     * The cutoff value for 'alpha'
+     */
+    private double thresh = Double.NaN;
     /**
      * A stored p value, if the deterministic test was used.
      */
@@ -102,7 +99,6 @@ public final class IndTestHsic implements IndependenceTest {
     private double useIncompleteCholesky = 1e-18;
     private boolean verbose;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new HSIC Independence test. The given significance level is used.
@@ -140,8 +136,6 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
 
-    //==========================PUBLIC METHODS=============================//
-
     /**
      * Creates a new IndTestHsic instance for a subset of the variables.
      *
@@ -172,12 +166,14 @@ public final class IndTestHsic implements IndependenceTest {
     /**
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
-     * @param x the one variable being compared.
-     * @param y the second variable being compared.
-     * @param z the list of conditioning variables.
+     * @param x  the one variable being compared.
+     * @param y  the second variable being compared.
+     * @param _z the list of conditioning variables.
      * @return True iff x _||_ y | z.
      */
-    public IndependenceResult checkIndependence(Node y, Node x, List<Node> z) {
+    public IndependenceResult checkIndependence(Node y, Node x, Set<Node> _z) {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         int m = sampleSize();
 
@@ -334,11 +330,11 @@ public final class IndTestHsic implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, this.pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, this.pValue, alpha - pValue);
     }
 
     /**
@@ -518,31 +514,8 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
-     * Returns the probability associated with the most recently computed independence test.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.pValue;
-    }
-
-    /**
-     * Sets the significance level at which independence judgments should be made.
-     *
-     * @param alpha This alpha.
-     */
-    public void setAlpha(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Significance out of range.");
-        }
-
-        this.alpha = alpha;
-        this.thresh = Double.NaN;
-    }
-
-    /**
-     * Sets the precision for the Incomplete Choleksy factorization method for approximating Gram matrices. A value &lt;= 0
-     * indicates that the Incomplete Cholesky method should not be used and instead use the exact matrices.
+     * Sets the precision for the Incomplete Choleksy factorization method for approximating Gram matrices. A value
+     * &lt;= 0 indicates that the Incomplete Cholesky method should not be used and instead use the exact matrices.
      *
      * @param precision This precision.
      */
@@ -575,6 +548,20 @@ public final class IndTestHsic implements IndependenceTest {
      */
     public double getAlpha() {
         return this.alpha;
+    }
+
+    /**
+     * Sets the significance level at which independence judgments should be made.
+     *
+     * @param alpha This alpha.
+     */
+    public void setAlpha(double alpha) {
+        if (alpha < 0.0 || alpha > 1.0) {
+            throw new IllegalArgumentException("Significance out of range.");
+        }
+
+        this.alpha = alpha;
+        this.thresh = Double.NaN;
     }
 
     /**
@@ -612,17 +599,6 @@ public final class IndTestHsic implements IndependenceTest {
         return this.dataSet;
     }
 
-
-    /**
-     * Returns the score for this this test, alpha - p.
-     *
-     * @return This score.
-     */
-    @Override
-    public double getScore() {
-        return alpha - getPValue();
-    }
-
     /**
      * Returns a string representation of this test.
      *
@@ -638,8 +614,6 @@ public final class IndTestHsic implements IndependenceTest {
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Method not implemented");
     }
-
-    //==========================PRIVATE METHODS============================//
 
 
     private int sampleSize() {

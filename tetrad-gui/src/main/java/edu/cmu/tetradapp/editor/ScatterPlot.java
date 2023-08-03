@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.Matrix;
@@ -36,12 +36,10 @@ import java.awt.geom.Point2D;
 import java.util.*;
 
 import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * This is the scatterplot model class holding the necessary information to
- * create a scatterplot. It uses Point2D to hold the pair of values need to
- * create the scatterplot.
+ * This is the scatterplot model class holding the necessary information to create a scatterplot. It uses Point2D to
+ * hold the pair of values need to create the scatterplot.
  *
  * @author Adrian Tang
  * @author josephramsey
@@ -51,36 +49,43 @@ public class ScatterPlot {
     private final String y;
     private final boolean includeLine;
     private final DataSet dataSet;
-    private Map<Node, double[]> continuousIntervals;
+    private final Map<Node, double[]> continuousIntervals;
+    private final Map<Node, Integer> discreteValues;
+    private final Node _x;
+    private final Node _y;
+    private JitterStyle jitterStyle = JitterStyle.None;
 
     /**
      * Constructor.
      *
-     * @param includeLine whether or not to include the regression line in the
-     *                    plot.
+     * @param includeLine whether to include the regression line in the plot.
      * @param x           y-axis variable name.
      * @param y           x-axis variable name.
      */
-    public ScatterPlot(
-            DataSet dataSet,
-            boolean includeLine,
-            String x,
-            String y) {
+    public ScatterPlot(DataSet dataSet, boolean includeLine, String x, String y) {
         this.dataSet = dataSet;
         this.x = x;
         this.y = y;
+        _x = this.dataSet.getVariable(this.x);
+        _y = this.dataSet.getVariable(this.y);
         this.includeLine = includeLine;
         this.continuousIntervals = new HashMap<>();
+        this.discreteValues = new HashMap<>();
+    }
+
+    public void setJitterStyle(JitterStyle jitterStyle) {
+        this.jitterStyle = jitterStyle;
     }
 
     private RegressionResult getRegressionResult() {
         List<Node> regressors = new ArrayList<>();
-        regressors.add(this.dataSet.getVariable(this.x));
-        Node target = this.dataSet.getVariable(this.y);
-        Regression regression = new RegressionDataset(this.dataSet);
-        RegressionResult result = regression.regress(target, regressors);
-        System.out.println(result);
-        return result;
+        regressors.add(_x);
+        RegressionDataset regression = new RegressionDataset(this.dataSet);
+        List<Integer> conditionedRows = getConditionedRows();
+        int[] _conditionedRows = new int[conditionedRows.size()];
+        for (int i = 0; i < conditionedRows.size(); i++) _conditionedRows[i] = conditionedRows.get(i);
+        regression.setRows(_conditionedRows);
+        return regression.regress(_y, regressors);
     }
 
     public double getCorrelationCoeff() {
@@ -171,8 +176,7 @@ public class ScatterPlot {
     }
 
     /**
-     * Seives through the sample values and grabs only the values for the
-     * response and predictor variables.
+     * Sieves through the sample values and grabs only the values for the response and predictor variables.
      *
      * @return a vector containing the filtered values.
      */
@@ -202,15 +206,14 @@ public class ScatterPlot {
     }
 
     /**
-     * @return whether or not to include the regression line.
+     * @return whether to include the regression line.
      */
     public boolean isIncludeLine() {
         return this.includeLine;
     }
 
     /**
-     * Calculates the regression coefficient for the variables
-     * return a regression coeff
+     * Calculates the regression coefficient for the variables return a regression coefficient.
      */
     public double getRegressionCoeff() {
         return getRegressionResult().getCoef()[1];
@@ -226,9 +229,6 @@ public class ScatterPlot {
     public DataSet getDataSet() {
         return this.dataSet;
     }
-
-
-    //========================================PUBLIC METHODS=================================//
 
     /**
      * Adds a continuous conditioning variables, conditioning on a range of values.
@@ -249,54 +249,16 @@ public class ScatterPlot {
     }
 
     /**
-     * Removes a conditioning variable.
+     * Adds a discrete conditioning variable, conditioning on a particular value.
      *
-     * @param variable The name of the conditioning variable to remove.
+     * @param variable The name of the variable in the data set.
+     * @param value    The value to condition on.
      */
-    public void removeConditioningVariable(String variable) {
+    public void addConditioningVariable(String variable, int value) {
         Node node = this.dataSet.getVariable(variable);
-        if (!(this.continuousIntervals.containsKey(node))) {
-            throw new IllegalArgumentException("Not a conditioning node: " + variable);
-        }
-        this.continuousIntervals.remove(node);
-    }
-
-    public void removeConditioningVariables() {
-        this.continuousIntervals = new HashMap<>();
-    }
-
-    /**
-     * For a continuous target, returns the number of values histogrammed. This may be
-     * less than the sample size of the data set because of conditioning.
-     */
-    public int getN(String target) {
-        List<Double> conditionedDataContinuous = getConditionedDataContinuous(target);
-        return conditionedDataContinuous.size();
-    }
-
-    /**
-     * A convenience method to return the data for a particular named continuous
-     * variable.
-     *
-     * @param variable The name of the variable.
-     */
-    public double[] getContinuousData(String variable) {
-        int index = this.dataSet.getColumn(this.dataSet.getVariable(variable));
-        List<Double> _data = new ArrayList<>();
-
-        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-            _data.add(this.dataSet.getDouble(i, index));
-        }
-
-        return asDoubleArray(_data);
-    }
-
-    //======================================PRIVATE METHODS=======================================//
-
-    private double[] asDoubleArray(List<Double> data) {
-        double[] _data = new double[data.size()];
-        for (int i = 0; i < data.size(); i++) _data[i] = data.get(i);
-        return _data;
+//        if (node == this.target) throw new IllegalArgumentException("Conditioning node may not be the target.");
+        if (!(node instanceof DiscreteVariable)) throw new IllegalArgumentException("Variable must be discrete.");
+        this.discreteValues.put(node, value);
     }
 
     private List<Double> getUnconditionedDataContinuous(String target) {
@@ -310,6 +272,8 @@ public class ScatterPlot {
 
         return _data;
     }
+
+    //======================================PRIVATE METHODS=======================================//
 
     private List<Double> getConditionedDataContinuous(String target) {
         if (this.continuousIntervals == null) return getUnconditionedDataContinuous(target);
@@ -337,7 +301,16 @@ public class ScatterPlot {
                 double[] range = this.continuousIntervals.get(node);
                 int index = this.dataSet.getColumn(node);
                 double value = this.dataSet.getDouble(i, index);
-                if (!(value > range[0] && value < range[1])) {
+                if (!(value >= range[0] && value <= range[1])) {
+                    continue I;
+                }
+            }
+
+            for (Node node : this.discreteValues.keySet()) {
+                int value = this.discreteValues.get(node);
+                int index = this.dataSet.getColumn(node);
+                int _value = this.dataSet.getInt(i, index);
+                if (!(value == _value)) {
                     continue I;
                 }
             }
@@ -355,15 +328,48 @@ public class ScatterPlot {
         List<Double> _x = getConditionedDataContinuous(x);
         List<Double> _y = getConditionedDataContinuous(y);
 
+        double spreadx = getRange(_x);
+        double spready = getRange(_y);
+
         for (int row = 0; row < _x.size(); row++) {
             pt = new Point2D.Double();
-            pt.setLocation(_x.get(row), _y.get(row));
+            double x1 = _x.get(row);
+            double y1 = _y.get(row);
+
+            double v = 0.03;
+
+            if (jitterStyle == JitterStyle.Gaussian) {
+                x1 += RandomUtil.getInstance().nextNormal(0, spreadx * v);
+            } else if (jitterStyle == JitterStyle.Uniform) {
+                x1 += RandomUtil.getInstance().nextUniform(-2 * spreadx * v, 2 * spreadx * v);
+            }
+
+            if (jitterStyle == JitterStyle.Gaussian) {
+                y1 += RandomUtil.getInstance().nextNormal(0, spready * v);
+            } else if (jitterStyle == JitterStyle.Uniform) {
+                y1 += RandomUtil.getInstance().nextUniform(-2 * spready * v, 2 * spready * v);
+            }
+
+            pt.setLocation(x1, y1);
             cleanedVals.add(pt);
         }
 
         return cleanedVals;
     }
 
+    private double getRange(List<Double> x) {
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+
+        for (Double d : x) {
+            if (d < min) min = d;
+            if (d > max) max = d;
+        }
+
+        return max - min;
+    }
+
+    public enum JitterStyle {None, Gaussian, Uniform}
 }
 
 

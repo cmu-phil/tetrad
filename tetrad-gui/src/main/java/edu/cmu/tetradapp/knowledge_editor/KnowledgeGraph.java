@@ -30,11 +30,9 @@ import java.beans.PropertyChangeListener;
 import java.util.*;
 
 /**
- * This class represents a directed acyclic graph.  In addition to the
- * constraints imposed by Graph, the following (mostly redundant)
- * basicConstraints are in place: (a) The graph may contain only measured and
- * latent variables (no error variables). (b) The graph may contain only
- * directed edges (c) The graph may contain no directed cycles.
+ * This class represents a directed acyclic graph.  In addition to the constraints imposed by Graph, the following
+ * (mostly redundant) basicConstraints are in place: (a) The graph may contain only measured and latent variables (no
+ * error variables). (b) The graph may contain only directed edges (c) The graph may contain no directed cycles.
  *
  * @author josephramsey
  */
@@ -114,13 +112,8 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     @Override
-    public List<Node> getSepset(Node n1, Node n2) {
+    public Set<Node> getSepset(Node n1, Node n2) {
         return this.graph.getSepset(n1, n2);
-    }
-
-    @Override
-    public void setNodes(List<Node> nodes) {
-        this.graph.setNodes(nodes);
     }
 
     public List<String> getNodeNames() {
@@ -149,6 +142,11 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     public List<Node> getNodes() {
         return getGraph().getNodes();
+    }
+
+    @Override
+    public void setNodes(List<Node> nodes) {
+        this.graph.setNodes(nodes);
     }
 
     public boolean removeEdge(Node node1, Node node2) {

@@ -2,11 +2,11 @@
 <html>
 <head>
     <title>Search Algorithms: PC</title>
-    <meta http-equiv="Content-Type"
-          content="text/html; charset=iso-8859-1">
+    <meta content="text/html; charset=iso-8859-1"
+          http-equiv="Content-Type">
 </head>
 <body>
-<table width="95%" border="1" bgcolor="maroon">
+<table bgcolor="maroon" border="1" width="95%">
     <tbody>
     <tr>
         <td>
@@ -32,7 +32,7 @@
     algorithm. As a way of getting one's head around how the algorithm
     should behave in the ideal, when independence tests always give
     correct answers, one may also use a DAG as an input to the algorithm,
-    in which case graphical d-separation will be substituted for an actual
+    in which case graphical m-separation will be substituted for an actual
     independence test. </p>
 
 <p>In the case where a continuous dataset is used as input, the
@@ -72,9 +72,9 @@
 <p>Consider the following &quot;true&quot; causal hypothesis (a
     DAG):</p>
 <blockquote>
-    <p><font color="#000000"><img src="../../images/pcsearch1.png"
-                                  alt="" width="508" height="470" style="width: 508px; height:
-  470px;"></font></p>
+    <p><font color="#000000"><img alt=""
+                                  height="470" src="../../images/pcsearch1.png" style="width: 508px; height:
+  470px;" width="508"></font></p>
 </blockquote>
 <p>When the PC algorithm is chosen from the Search dropdown, window
     appears in which on may enter an <em>depErrorsAlpha value</em> and edit
@@ -96,8 +96,8 @@
     like the following: </p>
 
 <p align="center"><font color="#000000"><img
-        src="../../images/pcsearch2.png" alt="" width="588" height="519"
-        style="height: 519px; width: 588px;"><b><br> </b></font></p>
+        alt="" height="519" src="../../images/pcsearch2.png" style="height: 519px; width: 588px;"
+        width="588"><b><br> </b></font></p>
 
 <p align="left"><font color="#000000"><b>Interpreting the
     output</b></font></p>
@@ -105,15 +105,17 @@
     appear in PC output:</p>
 <ul>
     <li><strong>a directed edge: </strong>
-        <p><font color="#000000"><img src="../../images/directedEdge.png" alt="" width="236" height="53"
-                                      style="height: 53px; width: 236px;"></font></p>
+        <p><font color="#000000"><img alt="" height="53" src="../../images/directedEdge.png"
+                                      style="height: 53px; width: 236px;"
+                                      width="236"></font></p>
         <p><font color="#000000">In this case, the PC algorithm deduced
             that A is a direct cause of B, i.e., the causal effect goes from A to B
             and it is not intermediated by any of the other observed variable</font></p>
     </li>
     <li><font color="#000000"><strong>a undirected edge:</strong></font>
-        <p><font color="#000000"><img src="../../images/undirected_edge.png" alt="" width="236" height="53"
-                                      style="height: 53px; width: 236px;"></font></p>
+        <p><font color="#000000"><img alt="" height="53" src="../../images/undirected_edge.png"
+                                      style="height: 53px; width: 236px;"
+                                      width="236"></font></p>
         <p><font color="#000000">In this case, the PC algorithm cannot tell
             if A causes B or if B causes A.</font></p>
     </li>
@@ -134,8 +136,9 @@
 
 <p>Finally, a triplet of nodes may assume the following CPDAG:</p>
 <blockquote>
-    <p><font color="#000000"><img src="../../images/pcsearch3.png" alt="" width="295" height="185"
-                                  style="height: 185px; width: 295px;"></font></p>
+    <p><font color="#000000"><img alt="" height="185" src="../../images/pcsearch3.png"
+                                  style="height: 185px; width: 295px;"
+                                  width="295"></font></p>
 </blockquote>
 <p>In other words, in such patterns, A and B are connected by an
     undirected edge, A and C are connected by an undirected edge, and B and

@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphPersistence;
+import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetradapp.model.EditorUtils;
 
 import javax.swing.*;
@@ -46,18 +46,14 @@ public class SaveGraph extends AbstractAction {
      * The component whose image is to be saved.
      */
     private final GraphEditable graphEditable;
-
-    /**
-     * A reference to the title, to be used a dialog title.
-     */
-    private String title;
-
     /**
      * True if the graph should be saved in XML, false if in text.
      */
     private final Type type;
-
-    public enum Type {text, xml, json, r, dot, pcalg, lavaan}
+    /**
+     * A reference to the title, to be used a dialog title.
+     */
+    private String title;
 
     public SaveGraph(GraphEditable graphEditable, String title, Type type) {
         super(title);
@@ -88,7 +84,7 @@ public class SaveGraph extends AbstractAction {
                 return;
             }
 
-            PrintWriter out = GraphPersistence.saveGraph(graph, file, true);
+            PrintWriter out = GraphSaveLoadUtils.saveGraph(graph, file, true);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
             out.close();
         } else if (this.type == Type.text) {
@@ -99,7 +95,7 @@ public class SaveGraph extends AbstractAction {
                 return;
             }
 
-            PrintWriter out = GraphPersistence.saveGraph(graph, file, false);
+            PrintWriter out = GraphSaveLoadUtils.saveGraph(graph, file, false);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
             out.close();
         } else if (this.type == Type.r) {
@@ -111,7 +107,7 @@ public class SaveGraph extends AbstractAction {
             }
 
             try {
-                String text = GraphPersistence.graphRMatrixTxt(graph);
+                String text = GraphSaveLoadUtils.graphRMatrixTxt(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
@@ -158,7 +154,7 @@ public class SaveGraph extends AbstractAction {
             }
 
             try {
-                String text = GraphPersistence.graphToDot(graph);
+                String text = GraphSaveLoadUtils.graphToDot(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
@@ -181,7 +177,7 @@ public class SaveGraph extends AbstractAction {
             }
 
             try {
-                String text = GraphPersistence.graphToPcalg(graph);
+                String text = GraphSaveLoadUtils.graphToPcalg(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
@@ -204,7 +200,7 @@ public class SaveGraph extends AbstractAction {
             }
 
             try {
-                String text = GraphPersistence.graphToLavaan(graph);
+                String text = GraphSaveLoadUtils.graphToLavaan(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
@@ -224,6 +220,8 @@ public class SaveGraph extends AbstractAction {
     private GraphEditable getGraphEditable() {
         return this.graphEditable;
     }
+
+    public enum Type {text, xml, json, r, dot, pcalg, lavaan}
 }
 
 

@@ -26,8 +26,8 @@ import org.apache.commons.math3.util.FastMath;
 
 /**
  * <p>Implements a number of important functions from probability and
- * statistics.&gt; 0 <p>We don't know who wrote this class; we didn't.  All we
- * added was the documentation. -Joe Ramsey, jdramsey@andrew.cmu.edu&gt; 0
+ * statistics.&gt; 0 <p>We don't know who wrote this class; we didn't.  All we added was the documentation. -Joe Ramsey,
+ * jdramsey@andrew.cmu.edu&gt; 0
  *
  * @author Unknown, but thanks
  */
@@ -155,11 +155,99 @@ public class ProbUtils {
             .06748919242099969956446575, .06720697157459026913544459,
             .06692709102543307719554012, .06664952190691442013000059,
             .06637423582325018469784634};
+    private static final double[] cof = {76.18009172947146, -86.50532032941677,
+            24.01409824083091, -1.231739572450155, 0.1208650973866179e-2,
+            -0.5395239384953e-5};
+    // From Numerical Recipes, with normal approximation from Appl. Stat. 239
+    private static final double EPSILON = 1.0e-14, LARGE_A = 10000.0;
+    private static final int ITMAX = 1000;
+    private static final double TWOVRPI = 0.636619772367581343, HALF_PI =
+            1.5707963268, TOL = .000001;
+    private static final double sae = -30.0, zero = 0.0, one = 1.0, two =
+            2.0, three = 3.0, four = 4.0, five = 5.0, six = 6.0;
+    private static final double aa = .6931471806;
+    private static final double c1 = .01;
+    private static final double c2 = .222222;
+    private static final double c3 = .32;
+    private static final double c4 = .4;
+    private static final double c5 = 1.24;
+    private static final double c6 = 2.2;
+    private static final double c7 = 4.67;
+    private static final double c8 = 6.66;
+    private static final double c9 = 6.73;
+    private static final double e = 5e-7;
+    private static final double c10 = 13.32;
+    private static final double c11 = 60.0;
+    private static final double c12 = 70.0;
+    private static final double c13 = 84.0;
+    private static final double c14 = 105.0;
+
+    //
+    // xinbta.f -- translated by f2c and modified
+    //
+    // algorithm as 109 appl. statist. (1977), vol.26, no.1
+    // (replacing algorithm as 64  appl. statist. (1973), vol.22, no.3)
+    //
+    // Remark AS R83 has been incorporated in this version.
+    //
+    // Computes inverse of the incomplete beta function
+    // ratio for given positive values of the arguments
+    // p and q, alpha between zero and one.
+    // log of complete beta function, beta, is assumed to be known.
+    //
+    // Auxiliary function required: binc
+    //
+    // SAE below is the most negative decimal exponent which does not
+    // cause an underflow; a value of -308 or thereabouts will often be
+    //
+    private static final double c15 = 120.0;
+    private static final double c16 = 127.0;
+    private static final double c17 = 140.0;
+    private static final double c18 = 1175.0;
+    private static final double c19 = 210.0;
+    private static final double c20 = 252.0;
+    private static final double c21 = 2264.0;
+    private static final double c22 = 294.0;
+    private static final double c23 = 346.0;
+    private static final double c24 = 420.0;
+    private static final double c25 = 462.0;
+    private static final double c26 = 606.0;
+    private static final double c27 = 672.0;
+    private static final double c28 = 707.0;
+    private static final double c29 = 735.0;
+    private static final double c30 = 889.0;
+    private static final double c31 = 932.0;
+    private static final double c32 = 966.0;
+    private static final double c33 = 1141.0;
+    private static final double c34 = 1182.0;
+    private static final double c35 = 1278.0;
+    private static final double c36 = 1740.0;
+    private static final double c37 = 2520.0;
+    private static final double c38 = 5040.0;
+    private static final double half = .5;
+    private static final double split = 0.42e0;
+    private static final double a0 = 2.50662823884;
+    private static final double a1 = -18.61500062529;
+    private static final double a2 = 41.39119773534;
+    private static final double a3 = -25.44106049637;
+    private static final double b1 = -8.47351093090;
+    private static final double b2 = 23.08336743743;
+    private static final double b3 = -21.06224101826;
+    private static final double b4 = 3.13082909833;
+    private static final double cc0 = -2.78718931138, cc1 =
+            -2.29796479134, cc2 = 4.85014127135, cc3 = 2.32121276850;
+    private static final double d1 = 3.54388924762;
+    private static final double d2 = 1.63706781897;
+    private static final long MASK = 4294967295L;
+    /**
+     * Virtual Machine Epsilon.
+     */
+    private static double vm_epsilon = 1.0;
+    private static long seedi = 123456789L, seedj = 362436069L;
 
     /**
-     * Normal cumulative distribution function (the value which results by
-     * integrating the normal distribution function from negative infinity up to
-     * y).
+     * Normal cumulative distribution function (the value which results by integrating the normal distribution function
+     * from negative infinity up to y).
      *
      * @param y the upper limit of integration.
      * @return the area accumulated in the integration.
@@ -207,11 +295,6 @@ public class ProbUtils {
     }
 
     /**
-     * Virtual Machine Epsilon.
-     */
-    private static double vm_epsilon = 1.0;
-
-    /**
      * Method declaration
      *
      * @return result.
@@ -227,16 +310,10 @@ public class ProbUtils {
         return ProbUtils.vm_epsilon;
     }
 
-    private static final double[] cof = {76.18009172947146, -86.50532032941677,
-            24.01409824083091, -1.231739572450155, 0.1208650973866179e-2,
-            -0.5395239384953e-5};
-
     /**
-     * This is a more literal (that is, exact) copy of the log gamma method from
-     * Numerical Recipes than the following one.  It was created by cutting and
-     * pasting from the PDF version of the book and then converting C syntax to
-     * Java. The static double array above goes with this. Converted
-     * to Java by Frank Wimberly
+     * This is a more literal (that is, exact) copy of the log gamma method from Numerical Recipes than the following
+     * one.  It was created by cutting and pasting from the PDF version of the book and then converting C syntax to
+     * Java. The static double array above goes with this. Converted to Java by Frank Wimberly
      *
      * @return the value ln[?(xx)] for xx &gt; 0
      */
@@ -269,11 +346,27 @@ public class ProbUtils {
     public static double logbeta(double p, double q) {
         return (ProbUtils.lngamma(p) + ProbUtils.lngamma(q) - ProbUtils.lngamma(p + q));
     }
+    //    private static final double pmin = 0.0;
+    //    private static final double pmax = 1.0;
+
+    //
+    // ppchi2.f -- translated by f2c and modified
+    //
+    // Algorithm AS 91   Appl. Statist. (1975) Vol.24, P.35
+    // To evaluate the percentage points of the chi-squared
+    // probability distribution function.
+    //
+    // p must lie in the range 0.000002 to 0.999998,
+    // (but I am using it for 0 < p < 1 - seems to work)
+    // v must be positive,
+    // g must be supplied and should be equal to ln(gamma(v/2.0))
+    //
+    // Auxiliary routines required: ppnd = AS 111 (or AS 241) and gammad.
+    //
 
     /**
-     * Incomplete Beta function. Translated from FORTRAN july 1977 edition.
-     * w. fullerton, c3, los alamos scientific lab. based on bosten and
-     * battiste, remark on algorithm 179, comm. acm, v 17, p 153, (1974).
+     * Incomplete Beta function. Translated from FORTRAN july 1977 edition. w. fullerton, c3, los alamos scientific lab.
+     * based on bosten and battiste, remark on algorithm 179, comm. acm, v 17, p 153, (1974).
      *
      * @param x   upper limit of integration.  x must be in (0,1) inclusive.
      * @param pin first beta distribution parameter.  p must be gt 0.0.
@@ -469,10 +562,6 @@ public class ProbUtils {
         return (1.0 - ProbUtils.betaCdf(df2 / (df2 + df1 * x), 0.5 * df2, 0.5 * df1));
     }
 
-    // From Numerical Recipes, with normal approximation from Appl. Stat. 239
-    private static final double EPSILON = 1.0e-14, LARGE_A = 10000.0;
-    private static final int ITMAX = 1000;
-
     /**
      * Compute gamma cdf by a normal approximation
      */
@@ -606,10 +695,6 @@ public class ProbUtils {
         return (dp);
     }
 
-
-    private static final double TWOVRPI = 0.636619772367581343, HALF_PI =
-            1.5707963268, TOL = .000001;
-
     /**
      * CACM Algorithm 395, by G. W. Hill
      */
@@ -706,29 +791,6 @@ public class ProbUtils {
 
         return cdf;
     }
-
-
-    private static final double sae = -30.0, zero = 0.0, one = 1.0, two =
-            2.0, three = 3.0, four = 4.0, five = 5.0, six = 6.0;
-
-    //
-    // xinbta.f -- translated by f2c and modified
-    //
-    // algorithm as 109 appl. statist. (1977), vol.26, no.1
-    // (replacing algorithm as 64  appl. statist. (1973), vol.22, no.3)
-    //
-    // Remark AS R83 has been incorporated in this version.
-    //
-    // Computes inverse of the incomplete beta function
-    // ratio for given positive values of the arguments
-    // p and q, alpha between zero and one.
-    // log of complete beta function, beta, is assumed to be known.
-    //
-    // Auxiliary function required: binc
-    //
-    // SAE below is the most negative decimal exponent which does not
-    // cause an underflow; a value of -308 or thereabouts will often be
-    //
 
     @SuppressWarnings({"SameParameterValue", "WeakerAccess"})
     public static double betaQuantile(double alpha, double p, double q) {
@@ -966,65 +1028,6 @@ public class ProbUtils {
         return FastMath.tan(FastMath.PI * (x - 0.5));
     }
 
-    private static final double aa = .6931471806;
-    private static final double c1 = .01;
-    private static final double c2 = .222222;
-    private static final double c3 = .32;
-    private static final double c4 = .4;
-    private static final double c5 = 1.24;
-    private static final double c6 = 2.2;
-    private static final double c7 = 4.67;
-    private static final double c8 = 6.66;
-    private static final double c9 = 6.73;
-    private static final double e = 5e-7;
-    private static final double c10 = 13.32;
-    private static final double c11 = 60.0;
-    private static final double c12 = 70.0;
-    private static final double c13 = 84.0;
-    private static final double c14 = 105.0;
-    private static final double c15 = 120.0;
-    private static final double c16 = 127.0;
-    private static final double c17 = 140.0;
-    private static final double c18 = 1175.0;
-    private static final double c19 = 210.0;
-    private static final double c20 = 252.0;
-    private static final double c21 = 2264.0;
-    private static final double c22 = 294.0;
-    private static final double c23 = 346.0;
-    private static final double c24 = 420.0;
-    private static final double c25 = 462.0;
-    private static final double c26 = 606.0;
-    private static final double c27 = 672.0;
-    private static final double c28 = 707.0;
-    private static final double c29 = 735.0;
-    private static final double c30 = 889.0;
-    private static final double c31 = 932.0;
-    private static final double c32 = 966.0;
-    private static final double c33 = 1141.0;
-    private static final double c34 = 1182.0;
-    private static final double c35 = 1278.0;
-    private static final double c36 = 1740.0;
-    private static final double c37 = 2520.0;
-    private static final double c38 = 5040.0;
-    private static final double half = .5;
-    //    private static final double pmin = 0.0;
-    //    private static final double pmax = 1.0;
-
-    //
-    // ppchi2.f -- translated by f2c and modified
-    //
-    // Algorithm AS 91   Appl. Statist. (1975) Vol.24, P.35
-    // To evaluate the percentage points of the chi-squared
-    // probability distribution function.
-    //
-    // p must lie in the range 0.000002 to 0.999998,
-    // (but I am using it for 0 < p < 1 - seems to work)
-    // v must be positive,
-    // g must be supplied and should be equal to ln(gamma(v/2.0))
-    //
-    // Auxiliary routines required: ppnd = AS 111 (or AS 241) and gammad.
-    //
-
     @SuppressWarnings("UnusedAssignment")
     public static double chisqQuantile(double p, double v) {
 
@@ -1131,6 +1134,14 @@ public class ProbUtils {
         return ret_val;
     }
 
+    //
+    // Algorithm as 111 Applied statistics (1977), vol 26 no 1 page 121
+    // Produces normal deviate corresponding to lower tail area of p
+    // the hash sums are the sums of the moduli of the coefficients
+    // they nave no inherent meanings but are incuded for use in
+    // checking transcriptions.  Functions abs,alog and sqrt are used.
+    //
+
     public static double fQuantile(double p, double df1, double df2) {
 
         double dx;
@@ -1147,28 +1158,6 @@ public class ProbUtils {
     public static double gammaQuantile(double a, double p) {
         return (0.5 * ProbUtils.chisqQuantile(p, 2.0 * a));
     }
-
-    private static final double split = 0.42e0;
-    private static final double a0 = 2.50662823884;
-    private static final double a1 = -18.61500062529;
-    private static final double a2 = 41.39119773534;
-    private static final double a3 = -25.44106049637;
-    private static final double b1 = -8.47351093090;
-    private static final double b2 = 23.08336743743;
-    private static final double b3 = -21.06224101826;
-    private static final double b4 = 3.13082909833;
-    private static final double cc0 = -2.78718931138, cc1 =
-            -2.29796479134, cc2 = 4.85014127135, cc3 = 2.32121276850;
-    private static final double d1 = 3.54388924762;
-    private static final double d2 = 1.63706781897;
-
-    //
-    // Algorithm as 111 Applied statistics (1977), vol 26 no 1 page 121
-    // Produces normal deviate corresponding to lower tail area of p
-    // the hash sums are the sums of the moduli of the coefficients
-    // they nave no inherent meanings but are incuded for use in
-    // checking transcriptions.  Functions abs,alog and sqrt are used.
-    //
 
     public static double normalQuantile(double p) {
 
@@ -1404,9 +1393,6 @@ public class ProbUtils {
                 0.5 * (a + 1)) - ProbUtils.lngamma(0.5 * a) -
                 0.5 * (a + 1) * FastMath.log(1.0 + x * x / a)));
     }
-
-    private static final long MASK = 4294967295L;
-    private static long seedi = 123456789L, seedj = 362436069L;
 
     public static void uniformSeeds(long a, long b) {
         ProbUtils.seedi = a & ProbUtils.MASK;
@@ -1703,9 +1689,8 @@ public class ProbUtils {
     }
 
     /**
-     * Bivariate normal CDF. Adapted from statlib, file general/gaut.c, by Ajay
-     * Shah. Adaptation for Java found in http://www.geocities.com/optionpage/utility.html
-     * --November 1st 2003, Ricardo Silva
+     * Bivariate normal CDF. Adapted from statlib, file general/gaut.c, by Ajay Shah. Adaptation for Java found in
+     * http://www.geocities.com/optionpage/utility.html --November 1st 2003, Ricardo Silva
      *
      * @param ah upper bound 1
      * @param ak upper bound 1
@@ -1872,13 +1857,10 @@ public class ProbUtils {
 
 
     /**
-     * Compute the probability over a rectangular region with correlation matrix
-     * c. Algorithm extracted from Alan Genz: Numerical Computation of
-     * Multivariate Normal Probabilities; revised version published in J. Comp.
-     * Graph Stat. 1 (1992), pp. 141-149. http://www.math.wsu.edu/faculty/genz/homepage
-     * Warning: this method has the side effect of changing the order of
-     * the elements in the arrays given as input. --November 3st 2003,
-     * Ricardo Silva
+     * Compute the probability over a rectangular region with correlation matrix c. Algorithm extracted from Alan Genz:
+     * Numerical Computation of Multivariate Normal Probabilities; revised version published in J. Comp. Graph Stat. 1
+     * (1992), pp. 141-149. http://www.math.wsu.edu/faculty/genz/homepage Warning: this method has the side effect of
+     * changing the order of the elements in the arrays given as input. --November 3st 2003, Ricardo Silva
      *
      * @param a lower bounds (use Double.NEGATIVE_INFINITY if necessary)
      * @param b upper bounds (use Double.POSITIVE_INFINITY if necessary)

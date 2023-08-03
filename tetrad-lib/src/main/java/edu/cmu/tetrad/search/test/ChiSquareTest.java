@@ -58,7 +58,6 @@ public class ChiSquareTest {
      */
     private double alpha;
 
-    //==============================CONSTRUCTORS=========================//
 
     /**
      * Constructs a test using the given data set and significance level.
@@ -87,7 +86,7 @@ public class ChiSquareTest {
     }
 
     /**
-     * Calculates chi square for a conditional crosstabulation table for independence question 0 _||_ 1 | 2, 3, ...max
+     * Calculates chi square for a conditional cross-tabulation table for independence question 0 _||_ 1 | 2, 3, ...max
      * by summing up chi square and degrees of freedom for each conditional table in turn, where rows or columns that
      * consist entirely of zeros have been removed.
      *
@@ -120,8 +119,7 @@ public class ChiSquareTest {
         int numRows = this.getCellTable().getNumValues(0);
         int numCols = this.getCellTable().getNumValues(1);
 
-        CombinationIterator combinationIterator =
-                new CombinationIterator(condDims);
+        CombinationIterator combinationIterator = new CombinationIterator(condDims);
 
         // Make a chi square table for each condition combination, strike zero rows and columns and calculate
         // chi square and degrees of freedom for the remaining rows and columns in the table. See Friedman.
@@ -187,7 +185,7 @@ public class ChiSquareTest {
             }
         }
 
-        // If df == 0, this is definitely an indepedent table.
+        // If df == 0, this is definitely an independent table.
         if (df == 0) {
             final double pValue = 1.0;
             return new Result(xSquare, pValue, 0, true);
@@ -280,7 +278,6 @@ public class ChiSquareTest {
         this.alpha = alpha;
     }
 
-    //================================PRIVATE==============================//
 
     private int[] selectFromArray(int[] arr, int[] indices) {
         int[] retArr = new int[indices.length];
@@ -304,7 +301,6 @@ public class ChiSquareTest {
         return this.cellTable;
     }
 
-    //===============================CLASSES==============================//
 
     /**
      * Simple class to store the parameters of the result returned by the G Square test.

@@ -33,9 +33,8 @@ import java.awt.event.FocusEvent;
 import java.util.List;
 
 /**
- * Represents a measured (observed) variable in the workbench. Appears as an
- * rectangle with the variable name in it. Clicking on the rectangle pops up a
- * dialog that lets the user modify the name of the variable and whether the
+ * Represents a measured (observed) variable in the workbench. Appears as an rectangle with the variable name in it.
+ * Clicking on the rectangle pops up a dialog that lets the user modify the name of the variable and whether the
  * variable is latent.
  *
  * @author josephramsey
@@ -64,8 +63,8 @@ public class GraphNodeMeasured extends DisplayNode {
     }
 
     /**
-     * Constructs a new display node for measured variables that doesn't bind to
-     * a model node, and instead has the name set manually.
+     * Constructs a new display node for measured variables that doesn't bind to a model node, and instead has the name
+     * set manually.
      */
     public GraphNodeMeasured(String name) {
         setName(name);
@@ -180,8 +179,8 @@ public class GraphNodeMeasured extends DisplayNode {
     }
 
     /**
-     * Launches an dialog allowing the user to pick a new name for this
-     * variable, where no constraints are placed on the name.
+     * Launches an dialog allowing the user to pick a new name for this variable, where no constraints are placed on the
+     * name.
      */
     public void doDoubleClickAction() {
         doDoubleClickAction(null);

@@ -40,23 +40,21 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Extends AbstractAlgorithmRunner to produce a wrapper for the Regression
- * algorithm.
+ * Extends AbstractAlgorithmRunner to produce a wrapper for the Regression algorithm.
  *
  * @author Frank Wimberly after Joe Ramsey's PcRunner
  */
 public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     static final long serialVersionUID = 23L;
+    private final Parameters params;
+    private final DataModelList dataModels;
+    private final List<String> variableNames;
     private List<String> regressorNames;
     private String name;
-    private final Parameters params;
     private String targetName;
-    private final DataModelList dataModels;
     private Graph outGraph;
     private RegressionResult result;
     private Map<String, String> allParamsSettings;
-    private final List<String> variableNames;
-
     private int numModels = 1;
     private int modelIndex;
     private String modelSourceName;
@@ -64,9 +62,8 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     //=========================CONSTRUCTORS===============================//
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DataWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DataWrapper must contain a DataSet that is either a DataSet
+     * or a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public RegressionRunner(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
@@ -160,8 +157,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
 
     /**
-     * Executes the algorithm, producing (at least) a result workbench. Must be
-     * implemented in the extending class.
+     * Executes the algorithm, producing (at least) a result workbench. Must be implemented in the extending class.
      */
     public void execute() {
         if (this.regressorNames.size() == 0 || this.targetName == null) {
@@ -221,11 +217,11 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
         throw new UnsupportedOperationException();
     }
 
-    public void setExternalGraph(Graph graph) {
-    }
-
     public Graph getExternalGraph() {
         return null;
+    }
+
+    public void setExternalGraph(Graph graph) {
     }
 
     @Override
@@ -266,14 +262,12 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -305,10 +299,9 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     }
 
     /**
-     * @param node The node that the classifications are for. All triple from adjacencies to this
-     *             node to adjacencies to this node through the given node will be considered.
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
-     * for the given node.
+     * @param node The node that the classifications are for. All triple from adjacencies to this node to adjacencies to
+     *             this node through the given node will be considered.
+     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<>();
@@ -321,15 +314,14 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
         return paramSettings;
     }
 
+    @Override
+    public Map<String, String> getAllParamSettings() {
+        return this.allParamsSettings;
+    }
 
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamsSettings = paramSettings;
-    }
-
-    @Override
-    public Map<String, String> getAllParamSettings() {
-        return this.allParamsSettings;
     }
 
     public int getNumModels() {
@@ -340,12 +332,12 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
         return this.modelIndex;
     }
 
-    public String getModelSourceName() {
-        return this.modelSourceName;
-    }
-
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return this.modelSourceName;
     }
 
     @Override

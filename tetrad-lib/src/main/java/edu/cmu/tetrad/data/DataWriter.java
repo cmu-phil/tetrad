@@ -39,9 +39,8 @@ import java.util.List;
 public final class DataWriter {
 
     /**
-     * Writes a dataset to file. The dataset may have continuous and/or discrete
-     * columns. Note that <code>out</code> is not closed by this method, so
-     * the close method on <code>out</code> will need to be called externally.
+     * Writes a dataset to file. The dataset may have continuous and/or discrete columns. Note that <code>out</code> is
+     * not closed by this method, so the close method on <code>out</code> will need to be called externally.
      *
      * @param dataSet   The data set to save.
      * @param out       The writer to write the output to.
@@ -153,14 +152,12 @@ public final class DataWriter {
         buf.append("\naddtemporal\n");
 
         for (int i = 0; i < knowledge.getNumTiers(); i++) {
-
             String forbiddenWithin = knowledge.isTierForbiddenWithin(i) ? "*" : "";
             String onlyCanCauseNextTier = knowledge.isOnlyCanCauseNextTier(i) ? "-" : "";
-            buf.append("\n").append(i).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
-
-
             List<String> tier = knowledge.getTier(i);
-            if (!(tier == null || tier.isEmpty())) {
+
+            if (!tier.isEmpty()) {
+                buf.append("\n").append(i).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
                 buf.append(" ");
                 buf.append(String.join(" ", tier));
             }
@@ -168,9 +165,9 @@ public final class DataWriter {
 
         buf.append("\n\nforbiddirect");
 
-        for (Iterator<KnowledgeEdge> i
-             = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
-            KnowledgeEdge pair = i.next();
+        for (KnowledgeEdge pair : knowledge.getListOfExplicitlyForbiddenEdges()) {
+//        for (Iterator<KnowledgeEdge> i = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
+//            KnowledgeEdge pair = i.next();
             String from = pair.getFrom();
             String to = pair.getTo();
 

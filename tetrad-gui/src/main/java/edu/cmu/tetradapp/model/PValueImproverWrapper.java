@@ -23,11 +23,11 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.work_in_progress.HbsmsBeam;
-import edu.cmu.tetrad.search.work_in_progress.Hbsms;
-import edu.cmu.tetrad.search.work_in_progress.HbsmsGes;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
+import edu.cmu.tetrad.search.work_in_progress.Hbsms;
+import edu.cmu.tetrad.search.work_in_progress.HbsmsBeam;
+import edu.cmu.tetrad.search.work_in_progress.HbsmsGes;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.*;
 
@@ -46,37 +46,26 @@ import java.util.List;
  */
 public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     static final long serialVersionUID = 23L;
-
-    public enum AlgorithmType {
-        BEAM, FGES
-    }
-
-    private AlgorithmType algorithmType = AlgorithmType.BEAM;
-
-    private String name;
-    private Graph externalGraph;
-    private Graph graph;
-    private transient List<PropertyChangeListener> listeners;
     private final DataWrapper dataWrapper;
-
     private final Parameters params = new Parameters();
-    private Parameters params2;
-    private SemIm estSem;
-    private Graph trueDag;
-
     /**
      * @deprecated
      */
     private final double alpha = 0.05;
+    private AlgorithmType algorithmType = AlgorithmType.BEAM;
+    private String name;
+    private Graph externalGraph;
+    private Graph graph;
+    private transient List<PropertyChangeListener> listeners;
+    private Parameters params2;
+    private SemIm estSem;
+    private Graph trueDag;
     private SemIm originalSemIm;
     private SemIm newSemIm;
-
     /**
      * @deprecated
      */
     private SemIm semIm;
-
-    //============================CONSTRUCTORS============================//
 
     public PValueImproverWrapper(DataWrapper dataWrapper,
                                  Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -86,17 +75,14 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         this.graph = new EdgeListGraph(dataWrapper.getSelectedDataModel().getVariables());
     }
 
+    //============================CONSTRUCTORS============================//
+
     public PValueImproverWrapper(DataWrapper dataWrapper,
                                  Parameters params) {
         super(dataWrapper, params, null);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
         setGraph(new EdgeListGraph(dataWrapper.getSelectedDataModel().getVariables()));
-    }
-
-    private void setGraph(EdgeListGraph graph) {
-        this.graph = new EdgeListGraph(graph);
-        this.externalGraph = new EdgeListGraph(graph);
     }
 
     public PValueImproverWrapper(GraphWrapper graphWrapper,
@@ -180,19 +166,22 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         return PcRunner.serializableInstance();
     }
 
-    //============================PUBLIC METHODS==========================//
-
-
     public AlgorithmType getAlgorithmType() {
         return this.algorithmType;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setAlgorithmType(AlgorithmType algorithmType) {
+        this.algorithmType = algorithmType;
     }
+
+    //============================PUBLIC METHODS==========================//
 
     public String getName() {
         return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public boolean isShuffleMoves() {
@@ -281,12 +270,8 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         return "BFF";
     }
 
-    public void setAlgorithmType(AlgorithmType algorithmType) {
-        this.algorithmType = algorithmType;
-    }
-
-    private boolean isAggressivelyPreventCycles() {
-        return this.params.getBoolean("aggressivelyPreventCycles", false);
+    private boolean isMeekPreventCycles() {
+        return this.params.getBoolean("MeekPreventCycles", false);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -301,6 +286,11 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
 
     public Graph getGraph() {
         return getResultGraph();
+    }
+
+    private void setGraph(EdgeListGraph graph) {
+        this.graph = new EdgeListGraph(graph);
+        this.externalGraph = new EdgeListGraph(graph);
     }
 
     /**
@@ -319,14 +309,12 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         return new LinkedList<>();
     }
 
-
     private List<PropertyChangeListener> getListeners() {
         if (this.listeners == null) {
             this.listeners = new ArrayList<>();
         }
         return this.listeners;
     }
-
 
     public DataSet simulateDataCholesky(int sampleSize, Matrix covar, List<Node> variableNodes) {
 
@@ -383,13 +371,6 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         return DataUtils.restrictToMeasured(fullDataSet);
     }
 
-    private void setOriginalSemIm(SemIm originalSemIm) {
-        if (this.originalSemIm == null) {
-            this.originalSemIm = originalSemIm;
-        }
-    }
-
-
     /**
      * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
      * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
@@ -414,12 +395,22 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         return this.originalSemIm;
     }
 
+    private void setOriginalSemIm(SemIm originalSemIm) {
+        if (this.originalSemIm == null) {
+            this.originalSemIm = originalSemIm;
+        }
+    }
+
     public SemIm getNewSemIm() {
         return this.newSemIm;
     }
 
     public void setNewSemIm(SemIm newSemIm) {
         this.newSemIm = newSemIm;
+    }
+
+    public enum AlgorithmType {
+        BEAM, FGES
     }
 }
 

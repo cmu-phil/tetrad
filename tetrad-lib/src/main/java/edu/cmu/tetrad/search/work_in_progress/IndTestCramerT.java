@@ -27,15 +27,18 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Checks conditional independence for continuous variables using Cramer's T-test formula (Cramer, Mathematical Methods
@@ -46,10 +49,9 @@ import java.util.List;
 public final class IndTestCramerT implements IndependenceTest {
 
     /**
-     * The data set over which conditional independence judgements are being formed.
+     * Formats as 0.0000.
      */
-    private DataSet dataSet;
-
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     /**
      * The correlation matrix.
      */
@@ -59,31 +61,26 @@ public final class IndTestCramerT implements IndependenceTest {
      * The variables of the correlation matrix, in order. (Unmodifiable list.)
      */
     private final List<Node> variables;
-
+    /**
+     * The data set over which conditional independence judgements are being formed.
+     */
+    private DataSet dataSet;
     /**
      * The significance level of the independence tests.
      */
     private double alpha;
-
     /**
      * The last used partial correlation distribution function.
      */
     private PartialCorrelationPdf pdf;
-
     /**
      * The cutoff value for 'alpha' area in the two tails of the partial correlation distribution function.
      */
     private double cutoff;
-
     /**
      * The last calculated partial correlation, needed to calculate relative strength.
      */
     private double storedR;
-
-    /**
-     * Formats as 0.0000.
-     */
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
@@ -163,22 +160,25 @@ public final class IndTestCramerT implements IndependenceTest {
     /**
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
-     * @param x the one variable being compared.
-     * @param y the second variable being compared.
-     * @param z the list of conditioning variables.
+     * @param x  the one variable being compared.
+     * @param y  the second variable being compared.
+     * @param _z the list of conditioning variables.
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
-        if (z == null) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        if (_z == null) {
             throw new NullPointerException();
         }
 
-        for (Node node : z) {
+        for (Node node : _z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
+
+        List<Node> z = new ArrayList<>();
+        Collections.sort(z);
 
         // Precondition: this.variables, this.corrMatrix properly set up.
         //
@@ -220,17 +220,12 @@ public final class IndTestCramerT implements IndependenceTest {
                     "Please remove or impute missing values first.");
         }
 
-        // Invert submatrix.
-        if (submatrix.rank() != submatrix.getNumRows()) {
-//            if (TetradAlgebra.rank(submatrix) != submatrix.rows()) {
-            throw new IllegalArgumentException(
-                    "Matrix singularity detected while using correlations " +
-                            "\nto check for independence; probably due to collinearity " +
-                            "\nin the data. The independence fact being checked was " +
-                            "\n" + x + " _||_ " + y + " | " + z + ".");
+        try {
+            submatrix = submatrix.inverse();
+        } catch (SingularMatrixException e) {
+            throw new RuntimeException("Singularity encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, _z));
         }
-
-        submatrix = submatrix.inverse();
 
         double a = -1.0 * submatrix.get(0, 1);
         double b = FastMath.sqrt(submatrix.get(0, 0) * submatrix.get(1, 1));
@@ -242,7 +237,7 @@ public final class IndTestCramerT implements IndependenceTest {
         }
 
         if (Double.isNaN(this.storedR)) {
-            throw new IllegalArgumentException("Conditional correlation cannot be computed: " + LogUtilsSearch.independenceFact(x, y, z));
+            throw new IllegalArgumentException("Conditional correlation cannot be computed: " + LogUtilsSearch.independenceFact(x, y, _z));
         }
 
         // Determine whether this partial correlation is statistically
@@ -253,11 +248,11 @@ public final class IndTestCramerT implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, alpha - pValue);
     }
 
     /**
@@ -265,6 +260,13 @@ public final class IndTestCramerT implements IndependenceTest {
      */
     public double getPValue() {
         return 2.0 * Integrator.getArea(pdf(), FastMath.abs(this.storedR), 1.0, 100);
+    }
+
+    /**
+     * @return the getModel significance level.
+     */
+    public double getAlpha() {
+        return this.alpha;
     }
 
     /**
@@ -276,13 +278,6 @@ public final class IndTestCramerT implements IndependenceTest {
         }
 
         this.alpha = alpha;
-    }
-
-    /**
-     * @return the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
     }
 
     private ICovarianceMatrix covMatrix() {
@@ -340,13 +335,6 @@ public final class IndTestCramerT implements IndependenceTest {
     public DataSet getData() {
         return this.dataSet;
     }
-
-
-    @Override
-    public double getScore() {
-        return -(getPValue() - getAlpha());
-    }
-
 
     /**
      * @return a string representation of this test.

@@ -38,13 +38,11 @@ import java.util.List;
 import java.util.TreeSet;
 
 /**
- * Estimates a SemIm given a CovarianceMatrix and a SemPm. (A DataSet may be
- * substituted for the CovarianceMatrix.) Uses regression to do the estimation,
- * so this is only for DAG models. But the DAG model may be reset on the fly
- * and the estimation redone. Variables whose parents have not changed will
- * not be reestimated. Intended to speed up estimation for algorithm that
- * require repeated estimation of DAG models over the same variables.
- * Assumes all variables are measured.
+ * Estimates a SemIm given a CovarianceMatrix and a SemPm. (A DataSet may be substituted for the CovarianceMatrix.) Uses
+ * regression to do the estimation, so this is only for DAG models. But the DAG model may be reset on the fly and the
+ * estimation redone. Variables whose parents have not changed will not be reestimated. Intended to speed up estimation
+ * for algorithm that require repeated estimation of DAG models over the same variables. Assumes all variables are
+ * measured.
  *
  * @author josephramsey
  */
@@ -52,24 +50,22 @@ public final class DagScorer implements TetradSerializable, Scorer {
     static final long serialVersionUID = 23L;
 
     private final ICovarianceMatrix covMatrix;
-    private DataSet dataSet;
     private final Matrix edgeCoef;
     private final Matrix errorCovar;
-    private Graph dag;
     private final List<Node> variables;
-    private Matrix implCovarMeasC;
     private final Matrix sampleCovar;
+    private DataSet dataSet;
+    private Graph dag;
+    private Matrix implCovarMeasC;
     private double logDetSample;
     private double fml = Double.NaN;
 
 
-    //=============================CONSTRUCTORS============================//
-
     /**
      * Constructs a new SemEstimator that uses the specified optimizer.
      *
-     * @param dataSet a DataSet, all of whose variables are contained in
-     *                the given SemPm. (They are identified by name.)
+     * @param dataSet a DataSet, all of whose variables are contained in the given SemPm. (They are identified by
+     *                name.)
      */
     public DagScorer(DataSet dataSet) {
         this(new CovarianceMatrix(dataSet));
@@ -79,9 +75,8 @@ public final class DagScorer implements TetradSerializable, Scorer {
     /**
      * Constructs a new SemEstimator that uses the specified optimizer.
      *
-     * @param covMatrix a covariance matrix, all of whose variables are
-     *                  contained in the given SemPm. (They are identified by
-     *                  name.)
+     * @param covMatrix a covariance matrix, all of whose variables are contained in the given SemPm. (They are
+     *                  identified by name.)
      */
     public DagScorer(ICovarianceMatrix covMatrix) {
         if (covMatrix == null) {
@@ -105,11 +100,9 @@ public final class DagScorer implements TetradSerializable, Scorer {
         return new DagScorer(CovarianceMatrix.serializableInstance());
     }
 
-    //==============================PUBLIC METHODS=========================//
-
     /**
-     * Runs the estimator on the data and SemPm passed in through the
-     * constructor. Returns the fml score of the resulting model.
+     * Runs the estimator on the data and SemPm passed in through the constructor. Returns the fml score of the
+     * resulting model.
      */
     public double score(Graph dag) {
         List<Node> changedNodes = getChangedNodes(dag);
@@ -126,7 +119,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
             }
 
             int idx = indexOf(node);
-            List<Node> parents = dag.getParents(node);
+            List<Node> parents = new ArrayList<>(dag.getParents(node));
 
             for (int i = 0; i < parents.size(); i++) {
                 Node nextParent = parents.get(i);
@@ -217,11 +210,9 @@ public final class DagScorer implements TetradSerializable, Scorer {
         return "\nSemEstimator";
     }
 
-    //============================PRIVATE METHODS==========================//
-
     /**
-     * The value of the maximum likelihood function for the getModel the model
-     * (Bollen 107). To optimize, this should be minimized.
+     * The value of the maximum likelihood function for the getModel the model (Bollen 107). To optimize, this should be
+     * minimized.
      */
     public double getFml() {
         if (!Double.isNaN(this.fml)) {
@@ -286,15 +277,12 @@ public final class DagScorer implements TetradSerializable, Scorer {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This
-     * method must have the standard signature for a readObject method, and
-     * the body of the method must begin with "s.defaultReadObject();".
-     * Other than that, any semantic checks can be specified and do not need
-     * to stay the same from version to version. A readObject method of this
-     * form may be added to any class, even if Tetrad sessions were
-     * previously saved out using a version of the class that didn't include
-     * it. (That's what the "s.defaultReadObject();" is for. See J. Bloch,
-     * Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject
     (ObjectInputStream

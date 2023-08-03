@@ -326,8 +326,8 @@ public class LTestReveal {
     }
 
     /**
-     * Computes a byte vector which corresponds to the argument ind.  rep[0] is
-     * the high order bit. E.g.  if n=3 and ind=6 the vector will be (1, 1, 0).
+     * Computes a byte vector which corresponds to the argument ind.  rep[0] is the high order bit. E.g.  if n=3 and
+     * ind=6 the vector will be (1, 1, 0).
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];

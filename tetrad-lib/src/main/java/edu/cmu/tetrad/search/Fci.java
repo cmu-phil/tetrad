@@ -25,8 +25,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -39,9 +39,9 @@ import java.util.Set;
 
 /**
  * <p>Implements the Fast Causal Inference (FCI) algorithm due to Peter Spirtes, which addressed
- * the case where latent common causes cannot be assumed not to exist with respect to the data set
- * being analyzed. That is, it is assumed that there may be variables that are not included in the
- * data that nonetheless may be causes of two or more variables that are included in data.</p>
+ * the case where latent common causes cannot be assumed not to exist with respect to the data set being analyzed. That
+ * is, it is assumed that there may be variables that are not included in the data that nonetheless may be causes of two
+ * or more variables that are included in data.</p>
  *
  * <p>Two alternatives are provided for doing the final orientation step, one due to Peter Spirtes,
  * which is arrow complete, and another due to Jiji Zhang, which is arrow and tail complete.</p>
@@ -72,22 +72,21 @@ import java.util.Set;
  * @see Knowledge
  */
 public final class Fci implements IGraphSearch {
-    private SepsetMap sepsets;
-    private Knowledge knowledge = new Knowledge();
     private final List<Node> variables = new ArrayList<>();
     private final IndependenceTest independenceTest;
+    private final TetradLogger logger = TetradLogger.getInstance();
+    private SepsetMap sepsets;
+    private Knowledge knowledge = new Knowledge();
     private boolean completeRuleSetUsed = true;
-    private boolean possibleDsepSearchDone = true;
+    private boolean possibleMsepSearchDone = true;
     private int maxPathLength = -1;
     private int depth = -1;
     private long elapsedTime;
-    private final TetradLogger logger = TetradLogger.getInstance();
     private boolean verbose;
-    private int heuristic;
-    private boolean stable;
+    private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
+    private boolean stable = true;
     private boolean doDiscriminatingPathRule = true;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructor.
@@ -137,7 +136,6 @@ public final class Fci implements IGraphSearch {
         this.variables.removeAll(remVars);
     }
 
-    //========================PUBLIC METHODS==========================//
 
     public Graph search() {
         long start = MillisecondTimes.timeMillis();
@@ -148,10 +146,9 @@ public final class Fci implements IGraphSearch {
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
-        fas.setHeuristic(this.heuristic);
+        fas.setPcHeuristicType(this.heuristic);
         fas.setVerbose(this.verbose);
         fas.setStable(this.stable);
-        fas.setHeuristic(this.heuristic);
 
         //The PAG being constructed.
         Graph graph = fas.search();
@@ -160,12 +157,12 @@ public final class Fci implements IGraphSearch {
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
-        // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
+        // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
         SepsetsSet sepsets1 = new SepsetsSet(this.sepsets, this.independenceTest);
 
-        if (this.possibleDsepSearchDone) {
+        if (this.possibleMsepSearchDone) {
             new FciOrient(sepsets1).ruleR0(graph);
-            graph.paths().removeByPossibleDsep(independenceTest, sepsets);
+            graph.paths().removeByPossibleMsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
@@ -194,8 +191,7 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets the depth of search, which is the maximum number of variables conditioned on
-     * in any test.
+     * Sets the depth of search, which is the maximum number of variables conditioned on in any test.
      *
      * @param depth This maximum.
      */
@@ -250,22 +246,22 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the Zhang complete rule set should be used; if false if only R1-R4 (the rule
-     * set of the original FCI) should be used. False by default.
+     * Sets whether the Zhang complete rule set should be used; false if only R1-R4 (the rule set of the original
+     * FCI) should be used. False by default.
      *
-     * @param completeRuleSetUsed True for the complete Zhang ruleset.
+     * @param completeRuleSetUsed True for the complete Zhang rule set.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
-     * Sets whether the (time-consuming) possible dsep step should be done.
+     * Sets whether the (time-consuming) possible msep step should be done.
      *
-     * @param possibleDsepSearchDone True if so.
+     * @param possibleMsepSearchDone True, if so.
      */
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
+    public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
+        this.possibleMsepSearchDone = possibleMsepSearchDone;
     }
 
     /**
@@ -284,7 +280,7 @@ public final class Fci implements IGraphSearch {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -300,19 +296,19 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets which PC heuristic should be used in the intitial adjacency search.
+     * Sets which PC heuristic type should be used in the initial adjacency search.
      *
-     * @param heuristic The neuristic option.
-     * @see Pc
+     * @param heuristic The heuristic type.
+     * @see edu.cmu.tetrad.search.utils.PcCommon.PcHeuristicType
      */
-    public void setHeuristic(int heuristic) {
+    public void setPcHeuristicType(PcCommon.PcHeuristicType heuristic) {
         this.heuristic = heuristic;
     }
 
     /**
-     * Sets whether the stable options hould be used in the initial adjacency search.
+     * Sets whether the stable options should be used in the initial adjacency search.
      *
-     * @param stable True if so.
+     * @param stable True, if so.
      * @see Pc
      */
     public void setStable(boolean stable) {
@@ -322,7 +318,7 @@ public final class Fci implements IGraphSearch {
     /**
      * Sets whether the discriminating path rule should be used.
      *
-     * @param doDiscriminatingPathRule True if so.
+     * @param doDiscriminatingPathRule True, if so.
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;

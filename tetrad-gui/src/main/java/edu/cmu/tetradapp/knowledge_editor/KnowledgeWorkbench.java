@@ -32,8 +32,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- * Extends AbstractWorkbench in the ways needed to display required and
- * forbidden edges and edit a Knowledge object.
+ * Extends AbstractWorkbench in the ways needed to display required and forbidden edges and edit a Knowledge object.
  *
  * @author josephramsey
  * @see edu.cmu.tetradapp.workbench.AbstractWorkbench
@@ -69,6 +68,21 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     }
 
     /**
+     * Sets the edge mode to the given mode.
+     */
+    public void setEdgeMode(int edgeMode) {
+        switch (edgeMode) {
+            case KnowledgeWorkbench.FORBIDDEN_EDGE:
+                // Falls through!
+            case KnowledgeWorkbench.REQUIRED_EDGE:
+                this.edgeMode = edgeMode;
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
+
+    /**
      * Creates a new model node for the workbench.
      */
     public Node getNewModelNode() {
@@ -77,8 +91,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Creates a new display node for the workbench based on the given model
-     * node.
+     * Creates a new display node for the workbench based on the given model node.
      *
      * @param modelNode the model node.
      * @return the new display node.
@@ -100,8 +113,8 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Creates a new model edge for the workbench connecting the two given model
-     * nodes and using the edge type from #getEdgeType().
+     * Creates a new model edge for the workbench connecting the two given model nodes and using the edge type from
+     * #getEdgeType().
      *
      * @param node1 the one model node.
      * @param node2 the other model node.
@@ -124,8 +137,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Creates a new display edge for the workbench based on the given model
-     * edge.
+     * Creates a new display edge for the workbench based on the given model edge.
      *
      * @param modelEdge the model edge.
      * @return the new display edge.
@@ -149,9 +161,8 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Gets a new "tracking edge"--that is, an edge which is anchored at one end
-     * to a node but tracks the mouse at the other end.  Used for drawing new
-     * edges.
+     * Gets a new "tracking edge"--that is, an edge which is anchored at one end to a node but tracks the mouse at the
+     * other end.  Used for drawing new edges.
      *
      * @param node     the node to anchor to.
      * @param mouseLoc the location of the mouse.
@@ -167,21 +178,6 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
                         KnowledgeDisplayEdge.REQUIRED);
             default:
                 throw new IllegalStateException();
-        }
-    }
-
-    /**
-     * Sets the edge mode to the given mode.
-     */
-    public void setEdgeMode(int edgeMode) {
-        switch (edgeMode) {
-            case KnowledgeWorkbench.FORBIDDEN_EDGE:
-                // Falls through!
-            case KnowledgeWorkbench.REQUIRED_EDGE:
-                this.edgeMode = edgeMode;
-                break;
-            default:
-                throw new IllegalArgumentException();
         }
     }
 }

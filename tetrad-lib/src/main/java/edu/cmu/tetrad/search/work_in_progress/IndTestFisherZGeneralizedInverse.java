@@ -30,16 +30,17 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Checks independence of X _||_ Y | Z for variables X and Y and list Z of variables. Partial correlations are
@@ -52,35 +53,30 @@ import java.util.List;
 public final class IndTestFisherZGeneralizedInverse implements IndependenceTest {
 
     /**
+     * Formats as 0.0000.
+     */
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    /**
      * The correlation matrix.
      */
     private final DoubleMatrix2D data;
-
     /**
      * The variables of the correlation matrix, in order. (Unmodifiable list.)
      */
     private final List<Node> variables;
-
+    private final DataSet dataSet;
     /**
      * The significance level of the independence tests.
      */
     private double alpha;
-
     /**
      * The cutoff value for 'alpha' area in the two tails of the partial correlation distribution function.
      */
     private double thresh = Double.NaN;
-
     /**
      * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
      */
     private double fishersZ;
-
-    /**
-     * Formats as 0.0000.
-     */
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private final DataSet dataSet;
     private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
@@ -118,20 +114,23 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      *
      * @param xVar the one variable being compared.
      * @param yVar the second variable being compared.
-     * @param z    the list of conditioning variables.
+     * @param _z   the list of conditioning variables.
      * @return True iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node xVar, Node yVar, List<Node> z) {
-        if (z == null) {
+    public IndependenceResult checkIndependence(Node xVar, Node yVar, Set<Node> _z) {
+        if (_z == null) {
             throw new NullPointerException();
         }
 
-        for (Node node : z) {
+        for (Node node : _z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
+
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         int size = z.size();
         int[] zCols = new int[size];
@@ -179,9 +178,9 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 
         if (Double.isNaN(r)) {
             if (this.verbose) {
-                TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, z, getPValue()));
+                TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, getPValue()));
             }
-            return new IndependenceResult(new IndependenceFact(xVar, yVar, z), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(xVar, yVar, _z), false, Double.NaN, Double.NaN);
         }
 
         if (r > 1) r = 1;
@@ -203,17 +202,17 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         //Two sided
 
         if (this.verbose) {
-            TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, z, getPValue()));
+            TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, getPValue()));
         }
 
         if (this.verbose) {
             if (indFisher) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(xVar, yVar, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, getPValue()));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(xVar, yVar, z), indFisher, getPValue());
+        return new IndependenceResult(new IndependenceFact(xVar, yVar, _z), indFisher, getPValue(), getAlpha() - getPValue());
     }
 
     /**
@@ -221,6 +220,13 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      */
     public double getPValue() {
         return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(this.fishersZ)));
+    }
+
+    /**
+     * Gets the getModel significance level.
+     */
+    public double getAlpha() {
+        return this.alpha;
     }
 
     /**
@@ -233,13 +239,6 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         }
 
         this.alpha = alpha;
-    }
-
-    /**
-     * Gets the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
     }
 
     /**
@@ -269,17 +268,6 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     }
 
     /**
-     * Returns the score of the data.
-     *
-     * @return A number that's great than zero iff dependent.
-     * @see Fges
-     */
-    @Override
-    public double getScore() {
-        return alpha - getPValue();
-    }
-
-    /**
      * Returns True just in case verbose output should be printed.
      *
      * @return This.
@@ -291,7 +279,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -300,7 +288,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     /**
      * Returns true just in case the varialbe in zList determine xVar.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {

@@ -7,13 +7,13 @@
     <title>Search Algorithms: Purify</title>
 
 
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
 </head>
 
 
 <body>
 
-<table width="95%" border="1" bgcolor="maroon">
+<table bgcolor="maroon" border="1" width="95%">
 
     <tr>
 
@@ -29,7 +29,7 @@
 <p><font color="#000000"><b><a href="#Interpretation">Interpreting the output</a></b>
     <br>
 </font></p>
-<p><font color="#000000"><b><a name="Introduction" id="Introduction"></a><br>
+<p><font color="#000000"><b><a id="Introduction" name="Introduction"></a><br>
 </b><b>Introduction </b></font></p>
 <p>Purify is one of the three algorithms in Tetrad designed to build <font color="#000000"><b><a
         href="../../definitions/measurement_structural_graph.html">pure
@@ -53,14 +53,14 @@
     as input. For general information about model building algorithms, consult the
     <font color="#000000"><b><a href="../../search/../search.html">Search Algorithms</a></b></font>
     page.</font></p>
-<p><font color="#000000"><b><a name="Introduction" id="Introduction"></a><br>
+<p><font color="#000000"><b><a id="Introduction" name="Introduction"></a><br>
     Entering Purify parameters</b></font></p>
 <p>Create a new <font color="#000000">Search
     nodes</font> as described in the <font color="#000000"><b><a href="../../search/../search.html">Search
     Algorithms</a></b></font> page, but in order to follow this tutorial, use the
     following graph to generate a simulated continuous data set:</p>
 <blockquote>
-    <p><font color="#000000"><img src="../../images/purify1.png" width="790" height="470"></font></p>
+    <p><font color="#000000"><img height="470" src="../../images/purify1.png" width="790"></font></p>
 </blockquote>
 <p>Notice that, in this example, X4, X5 and X7 are in impure relations. Notice
     also that X4 is not an impurity anymore when X7 is removed, but X5 and X7 cannot
@@ -68,7 +68,7 @@
 <p>When the Purify algorithm is chosen from the Search Object combo box, the following
     window appears:</p>
 <blockquote>
-    <p><font color="#000000"><img src="../../images/purify2.png" width="297" height="309"></font></p>
+    <p><font color="#000000"><img height="309" src="../../images/purify2.png" width="297"></font></p>
 </blockquote>
 <p>The parameters that are used by Purify can be specified in this window. The
     parameters are as follows:</p>
@@ -91,7 +91,7 @@
         editor of the <font color="#000000"><b><a href="mimbuild.html">MIM Build algorithm</a></b></font>.
         Consult its documentation for details. In our example, we should create the
         following clustering:
-        <p><font color="#000000"><img src="../../images/purify3.png" width="590" height="319"></font></p>
+        <p><font color="#000000"><img height="319" src="../../images/purify3.png" width="590"></font></p>
     </li>
     <li><strong>statistical test</strong>: as stated before, automated model building
         is done by testing statistical hypothesis. Purify provides two basic statistical
@@ -116,7 +116,7 @@
 </ul>
 <p>Execute the search as explained in the <font color="#000000"><b><a href="../../search/../search.html">Search
     Algorithms</a></b></font> page.</p>
-<p><font color="#000000"><b><a name="Interpretation" id="Interpretation"></a><br>
+<p><font color="#000000"><b><a id="Interpretation" name="Interpretation"></a><br>
 </b><b>Interpreting the output</b></font></p>
 <p><font color="#000000">Although a given measurement model may have many different
     pure submodels, the Purify algorithm has a deterministic output: it will basically
@@ -125,7 +125,7 @@
     a pure measurement model. In our example, the outcome should be as follows if
     the sample is representative of the population:</font></p>
 <blockquote>
-    <p><font color="#000000"><img src="../../images/purify4.png" width="392" height="371"></font></p>
+    <p><font color="#000000"><img height="371" src="../../images/purify4.png" width="392"></font></p>
 </blockquote>
 <p>Edges with circles at the endpoints are added only to distinguish latent variables
     from the indicators. Purify does not make any claims about the causal relationships

@@ -31,10 +31,9 @@ import java.util.SortedSet;
 
 /**
  * <p>Stores a "shapshot" of the indexedLagGraph of a lag graph, using indices
- * rather than Strings to refer to factors. Since lag graphs are dynamic, they
- * can't do this directly, as the indices might change from one time to the
- * next. However, for certain uses of lag graphs, the graph itself may be
- * assumed to be static, so this optimization is useful.
+ * rather than Strings to refer to factors. Since lag graphs are dynamic, they can't do this directly, as the indices
+ * might change from one time to the next. However, for certain uses of lag graphs, the graph itself may be assumed to
+ * be static, so this optimization is useful.
  *
  * @author josephramsey
  */
@@ -58,20 +57,17 @@ public class IndexedLagGraph implements TetradSerializable {
     //===============================CONSTRUCTORS=========================//
 
     /**
-     * Constructs an indexed lag graph for the getModel state of the given lag
-     * graph, including all edges.
+     * Constructs an indexed lag graph for the getModel state of the given lag graph, including all edges.
      */
     public IndexedLagGraph(LagGraph lagGraph) {
         this(lagGraph, false);
     }
 
     /**
-     * Constructs an indexed lag graph for the getModel state of the given lag
-     * graph.
+     * Constructs an indexed lag graph for the getModel state of the given lag graph.
      *
-     * @param excludeSelfOneBack excludes from the lag graph any edge from a
-     *                           gene one time step back to the same gene in the
-     *                           getModel time step.
+     * @param excludeSelfOneBack excludes from the lag graph any edge from a gene one time step back to the same gene in
+     *                           the getModel time step.
      */
     public IndexedLagGraph(LagGraph lagGraph, boolean excludeSelfOneBack) {
         if (lagGraph == null) {
@@ -151,9 +147,8 @@ public class IndexedLagGraph implements TetradSerializable {
     }
 
     /**
-     * Returns the index of the parent of the given factor that is equal to the
-     * given IndexedParent, or -1 if the given IndexedParent is not equal to any
-     * parent.
+     * Returns the index of the parent of the given factor that is equal to the given IndexedParent, or -1 if the given
+     * IndexedParent is not equal to any parent.
      */
     public int getIndex(int factor, IndexedParent parent) {
         for (int i = 0; i < this.parents[factor].length; i++) {
@@ -165,8 +160,7 @@ public class IndexedLagGraph implements TetradSerializable {
     }
 
     /**
-     * Returns the number of parents of the given factor. Each parent is a
-     * factor at a given lag.
+     * Returns the number of parents of the given factor. Each parent is a factor at a given lag.
      */
     public int getNumParents(int factor) {
         return this.parents[factor].length;
@@ -180,8 +174,7 @@ public class IndexedLagGraph implements TetradSerializable {
     }
 
     /**
-     * Returns a string representation of the graph, indicating for each factor
-     * which lagged factors map into it.
+     * Returns a string representation of the graph, indicating for each factor which lagged factors map into it.
      *
      * @return this string.
      */
@@ -213,14 +206,12 @@ public class IndexedLagGraph implements TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

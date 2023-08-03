@@ -33,8 +33,7 @@ import java.util.List;
 import java.util.*;
 
 /**
- * Lays out a graph by placing springs between the nodes and letting the system
- * settle (one node at a time).
+ * Lays out a graph by placing springs between the nodes and letting the system settle (one node at a time).
  *
  * @author josephramsey
  */

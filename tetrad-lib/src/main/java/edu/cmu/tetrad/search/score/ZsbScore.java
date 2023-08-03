@@ -27,9 +27,9 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,26 +41,19 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Zhang and Shen. It adapts Theorem 1 in the following reference:</p>
  *
  * <p>Zhang, Y., &amp; Shen, X. (2010). Model selection procedure for
- * high‐dimensional data. Statistical Analysis and Data Mining: The
- * ASA Data Science Journal, 3(5), 350-358</p>
+ * high‐dimensional data. Statistical Analysis and Data Mining: The ASA Data Science Journal, 3(5), 350-358</p>
  *
  * <p>The score uses Theorem 1 in the above to numerically search
- * for a lambda value that is bounded by a given probability risk,
- * between 0 and 1, if outputting a local false positive parent for
- * a variable. There is a parameter m0, which is a maximum number
- * of parents for a particular variable, which is free. The solution
- * of this score is to increase m0 from 0 upward, re-evaluating
- * with each scoring that is done using that variable as a target
- * node. Thus, over time, a lower bound on m0 is estimated with
- * more and more precision. So as the score is used in the context
- * of FGES or GRaSP, for instance, so long as the score for a given
- * node is visited more than once, the scores output by the procedure
- * can be expected to improve, though setting m0 to 0 for all variables
- * does not give bad results even by itself.</p>
+ * for a lambda value that is bounded by a given probability risk, between 0 and 1, if outputting a local false positive
+ * parent for a variable. There is a parameter m0, which is a maximum number of parents for a particular variable, which
+ * is free. The solution of this score is to increase m0 from 0 upward, re-evaluating with each scoring that is done
+ * using that variable as a target node. Thus, over time, a lower bound on m0 is estimated with more and more precision.
+ * So as the score is used in the context of FGES or GRaSP, for instance, so long as the score for a given node is
+ * visited more than once, the scores output by the procedure can be expected to improve, though setting m0 to 0 for all
+ * variables does not give bad results even by itself.</p>
  *
  * <p>This score is conservative for large, dense models and faster
- * than other available scores in this package. The risk bound is
- * easily interpreted.</p>
+ * than other available scores in this package. The risk bound is easily interpreted.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence,
  * and negative scores indicate independence.</p>
@@ -71,13 +64,13 @@ public class ZsbScore implements Score {
 
     // The variables of the covariance matrix.
     private final List<Node> variables;
-    private double riskBound = 0.001;
     // The running maximum score, for estimating the true minimal model.
     double[] maxScores;
     // The running estimate of the number of parents in the true minimal model.
     int[] estMaxParents;
     // The running estimate of the residual variance of the true minimal model.
     double[] estMaxVarRys;
+    private double riskBound = 0.001;
     // The covariance matrix.
     private ICovarianceMatrix covariances;
     // The sample size of the covariance matrix.
@@ -110,9 +103,34 @@ public class ZsbScore implements Score {
      *
      * @param dataSet The data set.
      */
-    public ZsbScore(DataSet dataSet) {
-        this(SimpleDataLoader.getCovarianceMatrix(dataSet));
+    public ZsbScore(DataSet dataSet, boolean precomputeCovariances) {
+        this(SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances));
         this.data = dataSet.getDoubleData();
+    }
+
+    private static double zhangShenLambda(int m0, double pn, double riskBound) {
+        if (m0 > pn) throw new IllegalArgumentException("m0 should not be > pn; m0 = " + m0 + " pn = " + pn);
+
+        double high = 10000.0;
+        double low = 0.0;
+
+        while (high - low > 1e-13) {
+            double lambda = (high + low) / 2.0;
+
+            double p = getP(pn, m0, lambda);
+
+            if (p < 1.0 - riskBound) {
+                low = lambda;
+            } else {
+                high = lambda;
+            }
+        }
+
+        return low;
+    }
+
+    private static double getP(double pn, double m0, double lambda) {
+        return 2. - pow((1. + (exp(-(lambda - 1.) / 2.)) * sqrt(lambda)), pn - m0);
     }
 
     /**
@@ -141,7 +159,14 @@ public class ZsbScore implements Score {
         }
 
         final int pi = parents.length;
-        double varRy = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets);
+        double varRy;
+
+        try {
+            varRy = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets);
+        } catch (SingularMatrixException e) {
+            throw new RuntimeException("Singularity encountered when scoring " +
+                    LogUtilsSearch.getScoreFact(i, parents, variables));
+        }
 
         int m0 = estMaxParents[i];
 
@@ -201,6 +226,7 @@ public class ZsbScore implements Score {
 
     /**
      * Returns the sample size.
+     *
      * @return This size.
      */
     public int getSampleSize() {
@@ -208,10 +234,10 @@ public class ZsbScore implements Score {
     }
 
     /**
-     * Returns a judgement for FGES for whether a certain bump in score gives
-     * efidence of an effect edges.
+     * Returns a judgement for FGES for whether a certain bump in score gives efidence of an effect edges.
+     *
      * @param bump The bump.
-     * @return True if so.
+     * @return True, if so.
      * @see Fges
      */
     @Override
@@ -221,6 +247,7 @@ public class ZsbScore implements Score {
 
     /**
      * Returns the variables.
+     *
      * @return This list.
      */
     @Override
@@ -230,6 +257,7 @@ public class ZsbScore implements Score {
 
     /**
      * Returns a judgment of max degree for some algorithms.
+     *
      * @return This maximum.
      * @see Fges
      */
@@ -240,7 +268,8 @@ public class ZsbScore implements Score {
 
     /**
      * Returns true if the variable in Z determine y.
-     * @return True if so.
+     *
+     * @return True, if so.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {
@@ -255,31 +284,11 @@ public class ZsbScore implements Score {
 
     /**
      * Sets the risk bound for the Zhang Shen Bound score.
+     *
      * @param riskBound The risk bound.
      */
     public void setRiskBound(double riskBound) {
         this.riskBound = riskBound;
-    }
-
-    private static double zhangShenLambda(int m0, double pn, double riskBound) {
-        if (m0 > pn) throw new IllegalArgumentException("m0 should not be > pn; m0 = " + m0 + " pn = " + pn);
-
-        double high = 10000.0;
-        double low = 0.0;
-
-        while (high - low > 1e-13) {
-            double lambda = (high + low) / 2.0;
-
-            double p = getP(pn, m0, lambda);
-
-            if (p < 1.0 - riskBound) {
-                low = lambda;
-            } else {
-                high = lambda;
-            }
-        }
-
-        return low;
     }
 
     private double getLambda(int m0, int pn) {
@@ -295,10 +304,6 @@ public class ZsbScore implements Score {
         }
 
         return lambdas.get(m0);
-    }
-
-    private static double getP(double pn, double m0, double lambda) {
-        return 2. - pow((1. + (exp(-(lambda - 1.) / 2.)) * sqrt(lambda)), pn - m0);
     }
 
     private int[] indices(List<Node> __adj) {

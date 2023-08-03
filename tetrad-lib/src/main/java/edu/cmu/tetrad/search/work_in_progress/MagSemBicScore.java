@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search.work_in_progress;
 
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Edge;
@@ -31,18 +32,18 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 
-import javax.help.UnsupportedOperationException;
 import java.util.*;
 
 /**
- * Gives a BIC score for a linear, Gaussian MAG (Mixed Ancestral Graph). It
- * will perform the same as SemBicScore for DAGs.
+ * Gives a BIC score for a linear, Gaussian MAG (Mixed Ancestral Graph). It will perform the same as SemBicScore for
+ * DAGs.
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>
  *
  * @author Bryan Andrews
  */
+@Experimental
 public class MagSemBicScore implements Score {
 
     private final SemBicScore score;
@@ -71,12 +72,12 @@ public class MagSemBicScore implements Score {
      *
      * @param dataSet The continuous dataset to analyze.
      */
-    public MagSemBicScore(DataSet dataSet) {
+    public MagSemBicScore(DataSet dataSet, boolean precomputeCovariances) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
-        this.score = new SemBicScore(dataSet);
+        this.score = new SemBicScore(dataSet, precomputeCovariances);
         this.mag = null;
         this.order = null;
     }
@@ -241,8 +242,7 @@ public class MagSemBicScore implements Score {
     }
 
     /**
-     * Returns a judgment for FGES as to whether an edges with this bump
-     * (for this score) counts as an effect edge.
+     * Returns a judgment for FGES as to whether an edges with this bump (for this score) counts as an effect edge.
      *
      * @param bump Ths bump.
      * @return The judgment.
@@ -262,14 +262,6 @@ public class MagSemBicScore implements Score {
     @Override
     public int getMaxDegree() {
         return this.score.getMaxDegree();
-    }
-
-    /**
-     * @throws UnsupportedOperationException Not implemented.
-     */
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        throw new UnsupportedOperationException();
     }
 
     private void constructHeadsTails(List<List<Node>> heads, List<Set<Node>> tails, List<Node> mbo, List<Node> head, List<Node> in, Set<Node> an, Node v1) {
@@ -324,5 +316,8 @@ public class MagSemBicScore implements Score {
         }
     }
 
+    public String toString() {
+        return "MAG(" + this.score + ")";
+    }
 
 }

@@ -26,9 +26,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestDSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -40,13 +39,10 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the PC search.
@@ -133,9 +129,9 @@ public class TestPc {
                 "\n" +
                 "Graph Edges:\n" +
                 "1. ABILITY --> CITES\n" +
-                "2. ABILITY --> GPQ\n" +
-                "3. ABILITY --> PREPROD\n" +
-                "4. GPQ --> QFJ\n" +
+                "2. ABILITY --- GPQ\n" +
+                "3. ABILITY --- PREPROD\n" +
+                "4. GPQ --- QFJ\n" +
                 "5. PREPROD --> CITES\n" +
                 "6. PUBS --> CITES\n" +
                 "7. QFJ --> CITES\n" +
@@ -146,7 +142,7 @@ public class TestPc {
 
 
         try {
-            trueGraph = GraphPersistence.readerToGraphTxt(trueString);
+            trueGraph = GraphSaveLoadUtils.readerToGraphTxt(trueString);
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
             assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {
@@ -164,8 +160,9 @@ public class TestPc {
         Graph graph = GraphUtils.convert(inputGraph);
 
         // Set up search.
-        IndependenceTest independence = new IndTestDSep(graph);
+        IndependenceTest independence = new MsepTest(graph);
         Pc pc = new Pc(independence);
+        pc.setVerbose(true);
 
         // Run search
 //        Graph resultGraph = pc.search();
@@ -174,12 +171,13 @@ public class TestPc {
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert(outputGraph);
 
-        // PrintUtil out problem and graphs.
+        System.out.println("resultGraph = " + resultGraph);
+        System.out.println("trueGraph = " + trueGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
         // Do test.
-        assertTrue(resultGraph.equals(trueGraph));
+        assertEquals(resultGraph, trueGraph);
     }
 
     /**
@@ -187,13 +185,12 @@ public class TestPc {
      * graph.
      */
     private void checkWithKnowledge(Knowledge knowledge) {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
         // Set up graph and node objects.
         Graph graph = GraphUtils.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
-        IndependenceTest independence = new IndTestDSep(graph);
+        IndependenceTest independence = new MsepTest(graph);
         Pc pc = new Pc(independence);
 
         // Set up search.
@@ -219,7 +216,7 @@ public class TestPc {
         for (int i = 0; i < 2; i++) {
             Graph graph = RandomGraph.randomGraph(100, 0, 100, 100,
                     100, 100, false);
-            IndTestDSep test = new IndTestDSep(graph);
+            MsepTest test = new MsepTest(graph);
             Pc pc = new Pc(test);
             Graph CPDAG = pc.search();
             Graph CPDAG2 = GraphSearchUtils.cpdagFromDag(graph);
@@ -227,13 +224,13 @@ public class TestPc {
         }
     }
 
-    //    @Test
+//    @Test
     public void testPcFci() {
 
         String[] algorithms = {"PC", "CPC", "FGES", "FCI", "GFCI", "RFCI", "CFCI"};
         String[] statLabels = {"AP", "TP", "BP", "NA", "NT", "NB", "E"/*, "AP/E"*/};
 
-        final int numMeasures = 200;
+        final int numMeasures = 10;
         final double edgeFactor = 1.0;
 
         final int numRuns = 5;
@@ -242,7 +239,6 @@ public class TestPc {
         final double penaltyDiscount = 2.0;
         final double ofInterestCutoff = 0.1;
 
-        if (numMeasures % jumpLatents != 0) throw new IllegalStateException();
         final int numLatentGroups = numMeasures / jumpLatents + 1;
 
         double[][][] allAllRet = new double[numLatentGroups][][];
@@ -313,12 +309,10 @@ public class TestPc {
             int numEdges = (int) (1.0 * (200 + numLatents));
 
             List<Node> nodes = new ArrayList<>();
-            List<String> names = new ArrayList<>();
 
             for (int r = 0; r < 200 + numLatents; r++) {
                 String name = "X" + (r + 1);
                 nodes.add(new ContinuousVariable(name));
-                names.add(name);
             }
 
             Graph dag = RandomGraph.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
@@ -478,12 +472,9 @@ public class TestPc {
                 avgNumTails,
                 avgNumBidirected,
                 -avgElapsed, // minimize
-//                avgRatioPrecisionToElapsed
         };
 
         System.out.println();
-
-        NumberFormat nf2 = new DecimalFormat("0.0000");
 
         System.out.println(algorithms[t] + " arrow precision " + nf.format(avgArrowPrecision));
         System.out.println(algorithms[t] + " tail precision " + nf.format(avgTailPrecision));
@@ -492,33 +483,9 @@ public class TestPc {
         System.out.println(algorithms[t] + " avg num tails " + nf.format(avgNumTails));
         System.out.println(algorithms[t] + " avg num bidirected " + nf.format(avgNumBidirected));
         System.out.println(algorithms[t] + " avg elapsed " + nf.format(avgElapsed));
-//        System.out.println(algorithm[t] + " avg precision / elapsed " + nf2.format(avgRatioPrecisionToElapsed));
 
         return ret;
     }
-
-    private Graph outClosure(Graph out) {
-        Graph revised = new EdgeListGraph(out);
-
-        for (Node n : out.getNodes()) {
-            for (Node m : out.getNodesOutTo(n, Endpoint.ARROW)) {
-                Edge e = out.getEdge(n, m);
-                Endpoint proximalEndpoint = e.getProximalEndpoint(n);
-                if (proximalEndpoint == Endpoint.CIRCLE || proximalEndpoint == Endpoint.TAIL) {
-                    List<Node> descendants = out.paths().getDescendants(Collections.singletonList(m));
-
-                    for (Node o : descendants) {
-                        if (!revised.isAdjacentTo(m, o)) {
-                            revised.addEdge(new Edge(n, o, proximalEndpoint, Endpoint.ARROW));
-                        }
-                    }
-                }
-            }
-        }
-
-        return revised;
-    }
-
 
     private void printBestStats(double[][][] allAllRet, String[] algorithms, String[] statLabels,
                                 int maxLatents, int jumpLatents, double ofInterestCutoff) {
@@ -547,11 +514,11 @@ public class TestPc {
         for (int numLatents = 0; numLatents <= maxLatents; numLatents += jumpLatents) {
             latentIndex++;
 
-            table.setToken(latentIndex + 1, 0, numLatents + "");
+            table.setToken(latentIndex + 1, 0, String.valueOf(numLatents));
 
             for (int statIndex = 0; statIndex < allAllRet[latentIndex][0].length; statIndex++) {
 //                double maxStat = Double.NaN;
-                String maxAlg = "-";
+                StringBuilder maxAlg = new StringBuilder("-");
 
                 List<Pair> algStats = new ArrayList<>();
 
@@ -563,18 +530,12 @@ public class TestPc {
                 }
 
                 if (algStats.isEmpty()) {
-                    maxAlg = "-";
+                    maxAlg = new StringBuilder("-");
                 } else {
-                    Collections.sort(algStats, new Comparator<Pair>() {
-
-                        @Override
-                        public int compare(Pair o1, Pair o2) {
-                            return -Double.compare(o1.getStat(), o2.getStat());
-                        }
-                    });
+                    algStats.sort((o1, o2) -> -Double.compare(o1.getStat(), o2.getStat()));
 
                     double maxStat = algStats.get(0).getStat();
-                    maxAlg = algStats.get(0).getAlgorithm();
+                    maxAlg = new StringBuilder(algStats.get(0).getAlgorithm());
 
                     double minStat = algStats.get(algStats.size() - 1).getStat();
 
@@ -583,12 +544,12 @@ public class TestPc {
 
                     for (int i = 1; i < algStats.size(); i++) {
                         if (algStats.get(i).getStat() >= ofInterest) {
-                            maxAlg += "," + algStats.get(i).getAlgorithm();
+                            maxAlg.append(",").append(algStats.get(i).getAlgorithm());
                         }
                     }
                 }
 
-                table.setToken(latentIndex + 1, statIndex + 1, maxAlg);
+                table.setToken(latentIndex + 1, statIndex + 1, maxAlg.toString());
             }
         }
 
@@ -601,7 +562,7 @@ public class TestPc {
         System.out.println(table);
     }
 
-    //    @Test
+    @Test
     public void testPcRegression() {
 
         String[] algorithms = {"PC", "CPC", "FGES", "FCI", "GFCI", "RFCI", "CFCI", "Regression"};
@@ -611,13 +572,12 @@ public class TestPc {
         final double edgeFactor = 2.0;
 
         final int numRuns = 5;
-        final int jumpLatents = numMeasures / 5;
+        final int jumpLatents = numMeasures / 2;
         final double alpha = 0.1;
         final double penaltyDiscount = 4.0;
         final double ofInterestCutoff = 0.01;
         final int sampleSize = 10000;
 
-        if (numMeasures % jumpLatents != 0) throw new IllegalStateException();
         final int numLatentGroups = numMeasures / jumpLatents + 1;
 
         double[][][] allAllRet = new double[numLatentGroups][][];
@@ -677,12 +637,10 @@ public class TestPc {
             int numEdges = (int) (2.0 * (10 + numLatents));
 
             List<Node> nodes = new ArrayList<>();
-            List<String> names = new ArrayList<>();
 
             for (int r = 0; r < 10 + numLatents; r++) {
                 String name = "X" + (r + 1);
                 nodes.add(new ContinuousVariable(name));
-                names.add(name);
             }
 
             Graph dag = RandomGraph.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
@@ -690,11 +648,7 @@ public class TestPc {
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(10000, false);
-
-//            Graph comparison = dag;
             Graph comparison = dagToPag(dag);
-//            Graph comparison = new Pc(new IndTestDSep(dag)).search();
-
             IndTestFisherZ test = new IndTestFisherZ(data, 0.1);
 
 
@@ -748,15 +702,10 @@ public class TestPc {
                     throw new IllegalStateException();
             }
 
+            assert target != null;
             target = out.getNode(target.getName());
 
             out = trim(out, target);
-
-            long start = MillisecondTimes.timeMillis();
-
-            long stop = MillisecondTimes.timeMillis();
-
-            long elapsed = stop - start;
 
             out = GraphUtils.replaceNodes(out, dag.getNodes());
 

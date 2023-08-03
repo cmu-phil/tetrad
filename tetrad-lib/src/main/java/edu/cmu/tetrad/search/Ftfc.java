@@ -45,19 +45,17 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * <p>Implements the Find Two Factor Clusters (FOFC) algorithm, which uses reasoning
- * about vanishing tetrads of algorithms to infer clusters of the measured variables
- * in a dataset that each be explained by a single latent variable. The reference
- * is as follows:</p>
+ * about vanishing tetrads of algorithms to infer clusters of the measured variables in a dataset that each be explained
+ * by a single latent variable. The reference is as follows:</p>
  *
  * <p>Kummerfeld, E. &amp; Ramsey, J. &amp; Yang, R. &amp; Spirtes, P. &amp; Scheines, R. (2014).
- * Causal Clustering for 2-Factor Measurement Models. In T. Calders, F. Esposito,
- * E. Hullermeier, and R. Meo, editors, Machine Learning and Knowledge Discovery in
- * Databases, volume 8725 of Lecture Notes in Computer Science, pages 34-49. Springer
- * Berlin Heidelberg.</p>
+ * Causal Clustering for 2-Factor Measurement Models. In T. Calders, F. Esposito, E. Hullermeier, and R. Meo, editors,
+ * Machine Learning and Knowledge Discovery in Databases, volume 8725 of Lecture Notes in Computer Science, pages 34-49.
+ * Springer Berlin Heidelberg.</p>
  *
  * <p>The two-factor version of the algorithm substitutes sextad tests for
- * tetrad tests and searches for clusters of at leat 6 variables that can be
- * explained by two latent factors by calculating vanishing sextads.</p>
+ * tetrad tests and searches for clusters of at least 6 variables that can be explained by two latent factors by
+ * calculating vanishing sextads.</p>
  *
  * @author peterspirtes
  * @author erichkummerfeld
@@ -67,33 +65,19 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 public class Ftfc {
 
-    /**
-     * Gives the options to be used in FOFC to sort through the various possibilities
-     * for forming clusters to find the best options. SAG (Seed and Grow) looks
-     * for good seed clusters and then grows them by adding one variable at a time.
-     * GAP (Grow and Pick) grows out all the cluster initially and then just
-     * picks from among these. SAG is generally faster; GAP is generally slower but
-     * more accurate.
-     */
-    public enum Algorithm {SAG, GAP}
-
     private final CorrelationMatrix corr;
     // The list of all variables.
     private final List<Node> variables;
-
     // The significance level.
     private final double alpha;
-
     // The Delta test. Testing two sextads simultaneously.
     private final DeltaSextadTest test;
-
     // The data.
     private final transient DataModel dataModel;
-
+    private final Algorithm algorithm;
     private List<List<Node>> clusters;
 
     private boolean verbose;
-    private final Algorithm algorithm;
 
     /**
      * Conctructor.
@@ -135,8 +119,7 @@ public class Ftfc {
     }
 
     /**
-     * Runs the search and returns a graph of clusters, each of which has two common
-     * latent parents.
+     * Runs the search and returns a graph of clusters, each of which has two common latent parents.
      *
      * @return This graph.
      */
@@ -207,104 +190,6 @@ public class Ftfc {
         return allClusters;
 
     }
-
-
-//    // renjiey
-//    private int findFrequentestIndex(Integer[] outliers) {
-//        Map<Integer, Integer> map = new HashMap<>();
-//
-//        for (Integer outlier : outliers) {
-//            if (map.containsKey(outlier)) {
-//                map.put(outlier, map.get(outlier) + 1);
-//            } else {
-//                map.put(outlier, 1);
-//            }
-//        }
-//
-//        Set<Map.Entry<Integer, Integer>> set = map.entrySet();
-//        Iterator<Map.Entry<Integer, Integer>> it = set.iterator();
-//        int nums = 0;// how many times variable occur
-//        int key = 0;// the number occur the most times
-//
-//        while (it.hasNext()) {
-//            Map.Entry<Integer, Integer> entry = it.next();
-//            if (entry.getValue() > nums) {
-//                nums = entry.getValue();
-//                key = entry.getKey();
-//            }
-//        }
-//
-//        return (key);
-//    }
-
-//    // This is the main function. It removea variables in the data such that the remaining correlation matrix
-//    // does not contain extreme value
-//    // Inputs: correlation matrix, upper and lower bound for unacceptable correlations
-//    // Output: and dynamic array of removed variables
-//    // renjiey
-//    private ArrayList<Integer> removeVariables(Matrix correlationMatrix, double lowerBound, double upperBound,
-//                                               double percentBound) {
-//        Integer[] outlier = new Integer[correlationMatrix.rows() * (correlationMatrix.rows() - 1)];
-//        int count = 0;
-//        for (int i = 2; i < (correlationMatrix.rows() + 1); i++) {
-//            for (int j = 1; j < i; j++) {
-//
-//                if ((abs(correlationMatrix.get(i - 1, j - 1)) < lowerBound)
-//                        || (abs(correlationMatrix.get(i - 1, j - 1)) > upperBound)) {
-//                    outlier[count * 2] = i;
-//                    outlier[count * 2 + 1] = j;
-//
-//                } else {
-//                    outlier[count * 2] = 0;
-//                    outlier[count * 2 + 1] = 0;
-//                }
-//                count = count + 1;
-//            }
-//        }
-//
-//        //find out the variables that should be deleted
-//        ArrayList<Integer> removedVariables = new ArrayList<>();
-//
-//        // Added the percent bound jdramsey
-//        while (outlier.length > 1 && removedVariables.size() < percentBound * correlationMatrix.rows()) {
-//            //find out the variable that occurs most frequently in outlier
-//            int worstVariable = findFrequentestIndex(outlier);
-//            if (worstVariable > 0) {
-//                removedVariables.add(worstVariable);
-//            }
-//
-//            //remove the correlations having the bad variable (change the relevant variables to 0)
-//            for (int i = 1; i < outlier.length + 1; i++) {
-//                if (outlier[i - 1] == worstVariable) {
-//                    outlier[i - 1] = 0;
-//
-//                    if (i % 2 != 0) {
-//                        outlier[i] = 0;
-//                    } else {
-//                        outlier[i - 2] = 0;
-//                    }
-//                }
-//            }
-//
-//            //delete zero elements in outlier
-//            outlier = removeZeroIndex(outlier);
-//        }
-//
-//        log(removedVariables.size() + " variables removed: " + variablesForIndices(removedVariables), true);
-//
-//        return (removedVariables);
-//    }
-
-//    // renjiey
-//    private Integer[] removeZeroIndex(Integer[] outlier) {
-//        List<Integer> list = new ArrayList<>(Arrays.asList(outlier));
-//        for (Integer element : outlier) {
-//            if (element < 1) {
-//                list.remove(element);
-//            }
-//        }
-//        return list.toArray(new Integer[1]);
-//    }
 
     private Set<List<Integer>> findPurepentads(List<Integer> variables) {
         if (variables.size() < 6) {
@@ -542,18 +427,6 @@ public class Ftfc {
                     _cluster.add(o);
                 }
 
-//                for (Set<Integer> c : new HashSet<>(purePentads)) {
-////                    for (Integer d : c) {
-////                        if (_cluster.contains(d)) {
-////                            purePentads.remove(c);
-////                        }
-////                    }
-//
-//                    if (_cluster.containsAll(c)) {
-//                        purePentads.remove(c);
-//                    }
-//                }
-
                 // This takes out all pure clusters that are subsets of _cluster.
                 ChoiceGenerator gen2 = new ChoiceGenerator(_cluster.size(), 5);
                 int[] choice2;
@@ -720,7 +593,7 @@ public class Ftfc {
         }
     }
 
-    //  Finds clusters of size 5 for the sextet first algorithm.
+    //  Finds clusters of size 5 for the sextet-first algorithm.
     private Set<List<Integer>> findMixedClusters(Set<List<Integer>> clusters, List<Integer> remaining, Set<Integer> unionPure) {
         Set<List<Integer>> pentads = new HashSet<>();
         Set<List<Integer>> _clusters = new HashSet<>(clusters);
@@ -758,8 +631,8 @@ public class Ftfc {
                     continue;
                 }
 
-                // Check all x as a cross check; really only one should be necessary.
-                boolean allvanish = true;
+                // Check all x as a cross-check; really only one should be necessary.
+                boolean allVanish = true;
                 boolean someVanish = false;
 
                 for (int t1 : allVariables()) {
@@ -772,12 +645,12 @@ public class Ftfc {
                     if (vanishes(_cluster)) {
                         someVanish = true;
                     } else {
-                        allvanish = false;
+                        allVanish = false;
                         break;
                     }
                 }
 
-                if (someVanish && allvanish) {
+                if (someVanish && allVanish) {
                     pentads.add(cluster);
                     _clusters.add(cluster);
                     unionPure.addAll(cluster);
@@ -806,12 +679,6 @@ public class Ftfc {
         double q = ProbUtils.chisqCdf(chisq, dof);
         return 1.0 - q;
     }
-
-//    private int dofDrton(int n) {
-//        int dof = ((n - 2) * (n - 3)) / 2 - 2;
-//        if (dof < 0) dof = 0;
-//        return dof;
-//    }
 
     private int dofHarman(int n) {
         int dof = n * (n - 5) / 2 + 1;
@@ -901,73 +768,6 @@ public class Ftfc {
         return est.estimate();
     }
 
-//    private SemIm estimateModel(List<List<Integer>> clusters) {
-//        Graph g = new EdgeListGraph();
-//
-//        List<Node> upperLatents = new ArrayList<>();
-//        List<Node> lowerLatents = new ArrayList<>();
-//
-//        for (int i = 0; i < clusters.size(); i++) {
-//            List<Integer> cluster = clusters.get(i);
-//            Node l1 = new GraphNode("L1." + (i + 1));
-//            l1.setNodeType(NodeType.LATENT);
-//
-//            Node l2 = new GraphNode("L2." + (i + 1));
-//            l2.setNodeType(NodeType.LATENT);
-//
-//            upperLatents.add(l1);
-//            lowerLatents.add(l2);
-//
-//            g.addNode(l1);
-//            g.addNode(l2);
-//
-//            for (Integer aCluster : cluster) {
-//                Node n = this.variables.get(aCluster);
-//                g.addNode(n);
-//                g.addDirectedEdge(l1, n);
-//                g.addDirectedEdge(l2, n);
-//            }
-//        }
-//
-//        for (int i = 0; i < upperLatents.size(); i++) {
-//            for (int j = i + 1; j < upperLatents.size(); j++) {
-//                g.addDirectedEdge(upperLatents.get(i), upperLatents.get(j));
-//                g.addDirectedEdge(lowerLatents.get(i), lowerLatents.get(j));
-//            }
-//        }
-//
-//        for (int i = 0; i < upperLatents.size(); i++) {
-//            for (int j = 0; j < lowerLatents.size(); j++) {
-//                if (i == j) continue;
-//                g.addDirectedEdge(upperLatents.get(i), lowerLatents.get(j));
-//            }
-//        }
-//
-//        SemPm pm = new SemPm(g);
-//
-//        for (Node node : upperLatents) {
-//            Parameter p = pm.getParameter(node, node);
-//            p.setFixed(true);
-//            p.setStartingValue(1.0);
-//        }
-//
-//        for (Node node : lowerLatents) {
-//            Parameter p = pm.getParameter(node, node);
-//            p.setFixed(true);
-//            p.setStartingValue(1.0);
-//        }
-//
-//        SemEstimator est;
-//
-//        if (this.dataModel instanceof DataSet) {
-//            est = new SemEstimator((DataSet) this.dataModel, pm, new SemOptimizerEm());
-//        } else {
-//            est = new SemEstimator((CovarianceMatrix) this.dataModel, pm, new SemOptimizerEm());
-//        }
-//
-//        return est.estimate();
-//    }
-
     private List<Integer> sextet(int n1, int n2, int n3, int n4, int n5, int n6) {
         List<Integer> sextet = new ArrayList<>();
         sextet.add(n1);
@@ -1000,23 +800,6 @@ public class Ftfc {
     }
 
     private boolean vanishes(List<Integer> sextet) {
-
-//        PermutationGenerator gen = new PermutationGenerator(6);
-//        int[] perm;
-
-//        while ((perm = gen.next()) != null) {
-//            int n1 = sextet.get(perm[0]);
-//            int n2 = sextet.get(perm[1]);
-//            int n3 = sextet.get(perm[2]);
-//            int n4 = sextet.get(perm[3]);
-//            int n5 = sextet.get(perm[4]);
-//            int n6 = sextet.get(perm[5);
-//
-//            if (!vanishes(n1, n2, n3, n4, n5, n6)) return false;
-//        }
-//
-//        return true;
-
         int n1 = sextet.get(0);
         int n2 = sextet.get(1);
         int n3 = sextet.get(2);
@@ -1050,7 +833,6 @@ public class Ftfc {
         Sextad t1 = new Sextad(n1, n2, n3, n4, n5, n6);
         Sextad t2 = new Sextad(n1, n5, n6, n2, n3, n4);
         Sextad t3 = new Sextad(n1, n4, n6, n2, n3, n5);
-        Sextad t4 = new Sextad(n1, n4, n5, n2, n3, n6);
         Sextad t5 = new Sextad(n1, n3, n4, n2, n5, n6);
         Sextad t6 = new Sextad(n1, n3, n5, n2, n4, n6);
         Sextad t7 = new Sextad(n1, n3, n6, n2, n4, n5);
@@ -1058,19 +840,8 @@ public class Ftfc {
         Sextad t9 = new Sextad(n1, n2, n5, n3, n4, n6);
         Sextad t10 = new Sextad(n1, n2, n6, n3, n4, n5);
 
-//            IntSextad[] independents = {t2, t5, t10, t3, t6};
-
         List<Sextad[]> independents = new ArrayList<>();
         independents.add(new Sextad[]{t1, t2, t3, t5, t6});
-//        independents.add(new IntSextad[]{t1, t2, t3, t9, t10});
-//        independents.add(new IntSextad[]{t6, t7, t8, t9, t10});
-//        independents.add(new IntSextad[]{t1, t2, t4, t5, t9});
-//        independents.add(new IntSextad[]{t1, t3, t4, t6, t10});
-
-//        independents.add(new IntSextad[]{t1, t2, t3, t4, t5, t6, t7, t8, t9, t10});
-
-        // The four sextads implied by equation 5.17 in Harmann.
-//            independents.add(new IntSextad[]{t3, t7, t8, t9});
 
         for (Sextad[] sextads : independents) {
             double p = this.test.getPValue(sextads);
@@ -1140,6 +911,14 @@ public class Ftfc {
 //            System.out.println(s);
         }
     }
+
+    /**
+     * Gives the options to be used in FOFC to sort through the various possibilities for forming clusters to find the
+     * best options. SAG (Seed and Grow) looks for good seed clusters and then grows them by adding one variable at a
+     * time. GAP (Grow and Pick) grows out all the cluster initially and then just picks from among these. SAG is
+     * generally faster; GAP is generally slower but more accurate.
+     */
+    public enum Algorithm {SAG, GAP}
 }
 
 

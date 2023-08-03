@@ -31,8 +31,8 @@ import java.awt.*;
 import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
 
 /**
- * Provides a little display/editor for notes in the session workbench. This may
- * be elaborated in the future to allow marked up text.
+ * Provides a little display/editor for notes in the session workbench. This may be elaborated in the future to allow
+ * marked up text.
  *
  * @author josephramsey
  */
@@ -44,9 +44,8 @@ public class MisclassificationsEditor extends JPanel {
      * The model for the note.
      */
     private final Misclassifications comparison;
-    private JTextArea area;
-
     private final Parameters params;
+    private JTextArea area;
 
     /**
      * Constructs the editor given the model

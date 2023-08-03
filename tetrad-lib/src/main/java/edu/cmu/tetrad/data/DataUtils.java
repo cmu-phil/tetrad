@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.data;
 
 import cern.colt.list.DoubleArrayList;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Vector;
@@ -105,22 +106,19 @@ public final class DataUtils {
 
     /**
      * @param index Ond plus the given index.
-     * @return the default category for index i. (The default category should
-     * ALWAYS be obtained by calling this method.)
+     * @return the default category for index i. (The default category should ALWAYS be obtained by calling this
+     * method.)
      */
     public static String defaultCategory(int index) {
         return Integer.toString(index);
     }
 
     /**
-     * Adds missing data values to cases in accordance with probabilities
-     * specified in a double array which has as many elements as there are
-     * columns in the input dataset.  Hence, if the first element of the array of
-     * probabilities is alpha, then the first column will contain a -99 (or
-     * other missing value code) in a given case with probability alpha.
-     * This method will be useful in generating datasets which can be used to
-     * test algorithm that handle missing data and/or latent variables.
-     * Author:  Frank Wimberly
+     * Adds missing data values to cases in accordance with probabilities specified in a double array which has as many
+     * elements as there are columns in the input dataset.  Hence, if the first element of the array of probabilities is
+     * alpha, then the first column will contain a -99 (or other missing value code) in a given case with probability
+     * alpha. This method will be useful in generating datasets which can be used to test algorithm that handle missing
+     * data and/or latent variables. Author:  Frank Wimberly
      *
      * @param inData The data to which random missing data is to be added.
      * @param probs  The probability of adding missing data to each column.
@@ -1005,8 +1003,7 @@ public final class DataUtils {
     }
 
     /**
-     * @return a sample with replacement with the given sample size from the
-     * given dataset.
+     * @return a sample with replacement with the given sample size from the given dataset.
      */
     public static Matrix getBootstrapSample(Matrix data, int sampleSize) {
         int actualSampleSize = data.getNumRows();
@@ -1024,8 +1021,7 @@ public final class DataUtils {
     }
 
     /**
-     * @return a sample without replacement with the given sample size from the
-     * given dataset.
+     * @return a sample without replacement with the given sample size from the given dataset.
      */
     public static DataSet getResamplingDataset(DataSet data, int sampleSize) {
         int actualSampleSize = data.getNumRows();
@@ -1106,8 +1102,7 @@ public final class DataUtils {
     }
 
     /**
-     * @return a sample with replacement with the given sample size from the
-     * given dataset.
+     * @return a sample with replacement with the given sample size from the given dataset.
      */
     public static DataSet getBootstrapSample(DataSet data, int sampleSize) {
         int actualSampleSize = data.getNumRows();
@@ -1407,7 +1402,7 @@ public final class DataUtils {
 
                 double std1 = StatUtils.sd(x1);
                 double mu1 = StatUtils.mean(x1);
-                double[] xTransformed = DataUtils.ranks(data, x1);
+                double[] xTransformed = DataUtils.ranks(x1);
 
                 for (int i = 0; i < xTransformed.length; i++) {
                     xTransformed[i] /= n;
@@ -1464,15 +1459,16 @@ public final class DataUtils {
         }
     }
 
-    private static double[] ranks(Matrix data, double[] x) {
-        double[] ranks = new double[x.length];
+    public static double[] ranks(double[] x) {
+        int numRows = x.length;
+        double[] ranks = new double[numRows];
 
-        for (int i = 0; i < data.getNumRows(); i++) {
+        for (int i = 0; i < numRows; i++) {
             double d = x[i];
             int count = 0;
 
-            for (int k = 0; k < data.getNumRows(); k++) {
-                if (x[k] <= d) {
+            for (double v : x) {
+                if (v <= d) {
                     count++;
                 }
             }
@@ -1522,6 +1518,56 @@ public final class DataUtils {
         return dataSet.subsetColumns(newCols);
     }
 
+    public static List<Node> getConstantColumns(DataSet dataSet) {
+        List<Node> constantColumns = new ArrayList<>();
+        int rows = dataSet.getNumRows();
+
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+            Object first = dataSet.getObject(0, j);
+            boolean constant = true;
+
+            for (int row = 1; row < rows; row++) {
+                Object current = dataSet.getObject(row, j);
+                if (!first.equals(current)) {
+                    constant = false;
+                    break;
+                }
+            }
+
+            if (constant) {
+                constantColumns.add(dataSet.getVariable(j));
+            }
+        }
+
+        return constantColumns;
+    }
+
+    public static List<Node> getExampleNonsingular(ICovarianceMatrix covarianceMatrix, int depth) {
+        List<Node> variables = covarianceMatrix.getVariables();
+
+        SublistGenerator generator = new SublistGenerator(variables.size(), depth);
+        int[] choice;
+
+        while ((choice = generator.next()) != null) {
+            if (choice.length < 2) continue;
+            List<Node> _choice = GraphUtils.asList(choice, variables);
+
+            List<String> names = new ArrayList<>();
+
+            for (Node node : _choice) {
+                names.add(node.getName());
+            }
+
+            ICovarianceMatrix _dataSet = covarianceMatrix.getSubmatrix(names);
+
+            if (new CovarianceMatrix(_dataSet).isSingular()) {
+                return _choice;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Returns the equivalent sample size, assuming all units are equally correlated and all unit variances are equal.
      */
@@ -1541,6 +1587,27 @@ public final class DataUtils {
 
         double rho = (n * sum - n * m) / (m * (n * n - n));
         return n / (1. + (n - 1.) * rho);
+    }
+
+    public static DataSet removeRandomColumns(DataSet dataSet, double aDouble) {
+        int columns = dataSet.getNumColumns();
+        int rows = dataSet.getNumRows();
+        if (rows == 0) {
+            return dataSet;
+        }
+
+        List<Integer> keepCols = new ArrayList<>();
+
+        for (int j = 0; j < columns; j++) {
+            if (RandomUtil.getInstance().nextDouble() > aDouble) {
+                keepCols.add(j);
+            }
+        }
+
+        int[] newCols = new int[keepCols.size()];
+        for (int j = 0; j < keepCols.size(); j++) newCols[j] = keepCols.get(j);
+
+        return dataSet.subsetColumns(newCols);
     }
 }
 

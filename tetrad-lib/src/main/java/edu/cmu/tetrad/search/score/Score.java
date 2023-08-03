@@ -26,8 +26,8 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Interface for a score. Most methods are given defaults so that such a score will be
- * easy to implement in Python usign JPype.
+ * Interface for a score. Most methods are given defaults so that such a score will be easy to implement in Python usign
+ * JPype.
  *
  * @author josephramsey
  */
@@ -63,7 +63,6 @@ public interface Score {
      */
     String toString();
 
-    //==============================DEFAULT METHODS=========================//
 
     default double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);

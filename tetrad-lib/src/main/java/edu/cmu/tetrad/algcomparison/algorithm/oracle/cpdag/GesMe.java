@@ -34,8 +34,8 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
-    private boolean compareToTrue;
     private final ScoreWrapper score = new SemBicScoreDeterministic();
+    private boolean compareToTrue;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
 
@@ -181,7 +181,7 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();
-            this.bootstrapGraphs = search.getGraphs();
+            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             return graph;
         }
     }

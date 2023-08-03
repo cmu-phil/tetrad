@@ -88,8 +88,8 @@ public class SimpleDataLoader {
      * @param missingValueMarker The missing value marker as a string--e.g., "NA".
      * @param hasHeader          True if the first row of the data contains variable names.
      * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
-     * @param maxNumCategories   The maximum number of distinct entries in a columns alloed
-     *                           in order for the column to be parsed as discrete.
+     * @param maxNumCategories   The maximum number of distinct entries in a columns alloed in order for the column to
+     *                           be parsed as discrete.
      * @return The loaded DataSet.
      * @throws IOException If an error occurred in reading the file.
      */
@@ -151,8 +151,7 @@ public class SimpleDataLoader {
     }
 
     /**
-     * Parses the given files for a tabular data set, returning a
-     * RectangularDataSet if successful.
+     * Parses the given files for a tabular data set, returning a RectangularDataSet if successful.
      *
      * @param file               The text file to load the data from.
      * @param commentMarker      The comment marker as a string--e.g., "//".
@@ -333,10 +332,10 @@ public class SimpleDataLoader {
 
 
     /**
-     * Returns the model cast to ICovarianceMatrix if already a covariance matric,
-     * or else returns the covariance matrix for a dataset.
+     * Returns the model cast to ICovarianceMatrix if already a covariance matric, or else returns the covariance matrix
+     * for a dataset.
      */
-    public static ICovarianceMatrix getCovarianceMatrix(DataModel dataModel) {
+    public static ICovarianceMatrix getCovarianceMatrix(DataModel dataModel, boolean precomputeCovariances) {
         if (dataModel == null) {
             throw new IllegalArgumentException("Expecting either a tabular dataset or a covariance matrix.");
         }
@@ -344,15 +343,20 @@ public class SimpleDataLoader {
         if (dataModel instanceof ICovarianceMatrix) {
             return (ICovarianceMatrix) dataModel;
         } else if (dataModel instanceof DataSet) {
-            return new CovarianceMatrix((DataSet) dataModel);
+            return getCovarianceMatrix((DataSet) dataModel, precomputeCovariances);
+//            return new CovarianceMatrix((DataSet) dataModel);
         } else {
             throw new IllegalArgumentException("Sorry, I was expecting either a tabular dataset or a covariance matrix.");
         }
     }
 
     @NotNull
-    public static ICovarianceMatrix getCovarianceMatrix(DataSet dataSet) {
-        return new CovarianceMatrix(dataSet);
+    public static ICovarianceMatrix getCovarianceMatrix(DataSet dataSet, boolean precomputeCovariances) {
+        if (precomputeCovariances) {
+            return new CovarianceMatrix(dataSet);
+        } else {
+            return new CovarianceMatrixOnTheFly(dataSet);
+        }
     }
 
     @NotNull
@@ -361,8 +365,7 @@ public class SimpleDataLoader {
     }
 
     /**
-     * Loads knowledge from a file. Assumes knowledge is the only thing in the
-     * file. No jokes please. :)
+     * Loads knowledge from a file. Assumes knowledge is the only thing in the file. No jokes please. :)
      *
      * @param file          The text file to load the data from.
      * @param delimiter     One of the options in the Delimiter enum--e.g., Delimiter.TAB.
@@ -377,8 +380,7 @@ public class SimpleDataLoader {
     }
 
     /**
-     * Reads a knowledge file in tetrad2 format (almost--only does temporal
-     * tiers currently). Format is:
+     * Reads a knowledge file in tetrad2 format (almost--only does temporal tiers currently). Format is:
      * <pre>
      * /knowledge
      * addtemporal
@@ -449,12 +451,12 @@ public class SimpleDataLoader {
                         }
 
                         tier = Integer.parseInt(token);
-                        if (tier < 1) {
+                        if (tier < 0) {
                             throw new IllegalArgumentException(
-                                    lineizer.getLineNumber() + ": Tiers must be 1, 2...");
+                                    lineizer.getLineNumber() + ": Tiers must be 0, 1, 2...");
                         }
                         if (forbiddenWithin) {
-                            knowledge.setTierForbiddenWithin(tier - 1, true);
+                            knowledge.setTierForbiddenWithin(tier, true);
                         }
                     }
 
@@ -470,9 +472,9 @@ public class SimpleDataLoader {
 
                         addVariable(knowledge, name);
 
-                        knowledge.addToTier(tier - 1, name);
+                        knowledge.addToTier(tier, name);
 
-                        TetradLogger.getInstance().log("info", "Adding to tier " + (tier - 1) + " " + name);
+                        TetradLogger.getInstance().log("info", "Adding to tier " + (tier) + " " + name);
                     }
                 }
             } else if ("forbiddengroup".equalsIgnoreCase(line.trim())) {

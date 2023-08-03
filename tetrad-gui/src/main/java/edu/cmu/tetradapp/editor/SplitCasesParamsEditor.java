@@ -38,9 +38,8 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
- * Edits parameters for splitting a dataset by cases. One parameter is
- * whether the data should be split in original order or in a shuffled order.
- * The other set of parameters is what the breakpoints should be.
+ * Edits parameters for splitting a dataset by cases. One parameter is whether the data should be split in original
+ * order or in a shuffled order. The other set of parameters is what the breakpoints should be.
  *
  * @author josephramsey
  */
@@ -64,23 +63,48 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
 
     /**
-     * A panel to hold the split editor in case the user changes her mind
-     * about the number of splits (in which case a new split editor needs
-     * to be put here).
+     * A panel to hold the split editor in case the user changes her mind about the number of splits (in which case a
+     * new split editor needs to be put here).
      */
     private JPanel splitEditorPanel;
 
     //==============================CONSTRUCTORS========================//
 
     /**
-     * Constructs a JPanel to edit the discretization for a continuous
-     * variable.
+     * Constructs a JPanel to edit the discretization for a continuous variable.
      */
     public SplitCasesParamsEditor() {
 
     }
 
     //================================PUBLIC METHODS=======================//
+
+    private static SplitCasesSpec getDefaultSpec(int sampleSize, int numSplits) {
+        int[] breakpoints = defaultBreakpoints(sampleSize, numSplits);
+        List<String> splitNames = new LinkedList<>();
+
+        if (numSplits == 1) {
+            splitNames.add("same_data");
+        } else if (numSplits == 2) {
+            splitNames.add("train");
+            splitNames.add("test");
+        } else {
+            for (int i = 0; i < numSplits; i++) {
+                splitNames.add("split_" + i);
+            }
+        }
+
+        return new SplitCasesSpec(sampleSize, breakpoints, splitNames);
+    }
+
+    private static int[] defaultBreakpoints(int sampleSize, int numSplits) {
+        int interval = sampleSize / numSplits;
+        int[] breakpoints = new int[numSplits - 1];
+        for (int i = 0; i < breakpoints.length; i++) {
+            breakpoints[i] = (i + 1) * interval;
+        }
+        return breakpoints;
+    }
 
     private void setNumSplits(int numSplits) {
         if (numSplits < 1) {
@@ -158,11 +182,11 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         this.add(b1, BorderLayout.CENTER);
     }
 
-
     public void setParams(Parameters params) {
         this.params = params;
     }
 
+    //==============================PRIVATE METHODS=======================//
 
     public void setParentModels(Object[] parentModels) {
         if (parentModels == null || parentModels.length == 0) {
@@ -184,39 +208,8 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         dataSet = (DataSet) model;
     }
 
-
     public boolean mustBeShown() {
         return true;
-    }
-
-    //==============================PRIVATE METHODS=======================//
-
-
-    private static SplitCasesSpec getDefaultSpec(int sampleSize, int numSplits) {
-        int[] breakpoints = defaultBreakpoints(sampleSize, numSplits);
-        List<String> splitNames = new LinkedList<>();
-
-        if (numSplits == 1) {
-            splitNames.add("same_data");
-        } else if (numSplits == 2) {
-            splitNames.add("train");
-            splitNames.add("test");
-        } else {
-            for (int i = 0; i < numSplits; i++) {
-                splitNames.add("split_" + i);
-            }
-        }
-
-        return new SplitCasesSpec(sampleSize, breakpoints, splitNames);
-    }
-
-    private static int[] defaultBreakpoints(int sampleSize, int numSplits) {
-        int interval = sampleSize / numSplits;
-        int[] breakpoints = new int[numSplits - 1];
-        for (int i = 0; i < breakpoints.length; i++) {
-            breakpoints[i] = (i + 1) * interval;
-        }
-        return breakpoints;
     }
 
 
@@ -225,14 +218,13 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
     static final class SplitEditor extends JComponent {
         private final int[] breakpoints;
         private final List<String> splitNames;
-        private StringTextField[] splitNameFields;
-        private IntTextField[] leftSplitFields;
-        private IntTextField[] rightSplitFields;
-
         private final LinkedList<JTextField> focusTraveralOrder =
                 new LinkedList<>();
         private final Map<Object, Integer> labels = new HashMap<>();
         private final int sampleSize;
+        private StringTextField[] splitNameFields;
+        private IntTextField[] leftSplitFields;
+        private IntTextField[] rightSplitFields;
 
         public SplitEditor(SplitCasesSpec spec) {
             sampleSize = spec.getSampleSize();

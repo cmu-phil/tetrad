@@ -11,8 +11,8 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fask;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -52,6 +52,8 @@ public class FaskPw implements Algorithm, TakesExternalGraph {
                 this.externalGraph = this.algorithm.search(dataModel, parameters);
             }
 
+            boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
+
             if (this.externalGraph == null) {
                 throw new IllegalArgumentException(
                         "This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
@@ -60,7 +62,7 @@ public class FaskPw implements Algorithm, TakesExternalGraph {
 
             DataSet dataSet = SimpleDataLoader.getContinuousDataSet(dataModel);
 
-            Fask fask = new Fask(dataSet, new SemBicScore(dataSet), new IndTestFisherZ(dataSet, 0.01));
+            Fask fask = new Fask(dataSet, new SemBicScore(dataSet, precomputeCovariances), new IndTestFisherZ(dataSet, 0.01));
             fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
             fask.setExternalGraph(this.externalGraph);
             fask.setSkewEdgeThreshold(Double.POSITIVE_INFINITY);
@@ -106,6 +108,7 @@ public class FaskPw implements Algorithm, TakesExternalGraph {
         }
 
         parameters.add(Params.VERBOSE);
+        parameters.add(Params.PRECOMPUTE_COVARIANCES);
 
         return parameters;
     }
@@ -119,5 +122,4 @@ public class FaskPw implements Algorithm, TakesExternalGraph {
 
         this.algorithm = algorithm;
     }
-
 }

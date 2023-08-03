@@ -25,8 +25,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -36,8 +36,7 @@ import java.util.*;
 
 
 /**
- * Checks independence facts for variables associated with a sepset by simply
- * querying the sepset
+ * Checks independence facts for variables associated with a sepset by simply querying the sepset
  *
  * @author Robert Tillman
  */
@@ -65,8 +64,7 @@ public class IndTestSepsetDci implements IndependenceTest {
     private boolean verbose;
 
     /**
-     * Constructs a new independence test that returns d-separation facts for the given
-     * graph as independence results.
+     * Constructs a new independence test that returns d-separation facts for the given graph as independence results.
      */
     public IndTestSepsetDci(SepsetMapDci sepset, List<Node> nodes) {
         if (sepset == null) {
@@ -111,7 +109,7 @@ public class IndTestSepsetDci implements IndependenceTest {
      * @param z a List of nodes (conditioning variables)
      * @return True iff x _||_ y | z
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
@@ -125,8 +123,8 @@ public class IndTestSepsetDci implements IndependenceTest {
         boolean independent = false;
 
         if (this.sepset.get(x, y) != null) {
-            List<List<Node>> condSets = this.sepset.getSet(x, y);
-            for (List<Node> condSet : condSets) {
+            Set<Set<Node>> condSets = this.sepset.getSet(x, y);
+            for (Set<Node> condSet : condSets) {
                 if (condSet.size() == z.size() && condSet.containsAll(z)) {
                     final double pValue = 1.0;
 
@@ -147,7 +145,7 @@ public class IndTestSepsetDci implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue(), getAlpha() - getPValue());
     }
 
     /**
@@ -209,11 +207,6 @@ public class IndTestSepsetDci implements IndependenceTest {
 
     public DataSet getData() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public double getScore() {
-        return getPValue();
     }
 
     public boolean isVerbose() {

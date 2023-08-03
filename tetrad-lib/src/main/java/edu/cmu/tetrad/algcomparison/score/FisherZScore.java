@@ -4,9 +4,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.IndTestScore;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -26,8 +26,8 @@ import java.util.List;
 public class FisherZScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
-    private DataModel dataSet;
     double alpha = 0.001;
+    private DataModel dataSet;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {

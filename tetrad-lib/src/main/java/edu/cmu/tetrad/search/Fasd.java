@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -37,9 +36,8 @@ import java.util.*;
 
 /**
  * <p>Adjusts FAS (see) for the deterministic case by refusing to removed edges
- * based on conditional independence tests that are judged to be deterministic.
- * That is, if X _||_ Y | Z, but Z determines X or Y, then the edge X---Y is
- * not removed.</p>
+ * based on conditional independence tests that are judged to be deterministic. That is, if X _||_ Y | Z, but Z
+ * determines X or Y, then the edge X---Y is not removed.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -52,50 +50,40 @@ import java.util.*;
 public class Fasd implements IFas {
 
     /**
-     * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
-     * x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
-     */
-    private Graph graph;
-
-    /**
      * The independence test. This should be appropriate to the types
      */
     private final IndependenceTest test;
-
+    /**
+     * The logger, by default the empty logger.
+     */
+    private final TetradLogger logger = TetradLogger.getInstance();
+    private final NumberFormat nf = new DecimalFormat("0.00E0");
+    /**
+     * The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node
+     * x. It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
+     */
+    private final Graph graph;
     /**
      * Specification of which edges are forbidden or required.
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
      * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
      */
     private int depth = 1000;
-
     /**
      * The number of independence tests.
      */
     private int numIndependenceTests;
-
-
-    /**
-     * The logger, by default the empty logger.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-
     /**
      * The sepsets found during the search.
      */
     private SepsetMap sepset = new SepsetMap();
-
     /**
      * The depth 0 graph, specified initially.
      */
     private Graph externalGraph;
-
-    private final NumberFormat nf = new DecimalFormat("0.00E0");
-
     /**
      * True iff verbose output should be printed.
      */
@@ -103,18 +91,6 @@ public class Fasd implements IFas {
 
     private PrintStream out = System.out;
 
-    //==========================CONSTRUCTORS=============================//
-
-    /**
-     * Constructs a new FastAdjacencySearch.
-     *
-     * @param graph An initial graph of edges that will be removed.
-     * @param test  A test to use as a conditional independence oracle.
-     */
-    public Fasd(Graph graph, IndependenceTest test) {
-        this.graph = graph;
-        this.test = test;
-    }
 
     /**
      * Constructs a new FastAdjacencySearch.
@@ -127,15 +103,8 @@ public class Fasd implements IFas {
     }
 
     /**
-     * @throws UnsupportedOperationException This contructor is not implemented.
-     */
-    public Graph search(List<Node> nodes) {
-        throw new UnsupportedOperationException("Constructor not implemented.");
-    }
-
-    /**
      * Discovers all adjacencies in data.  The procedure is to remove edges in the graph which connect pairs of
-     * variables which are independent conditional on some other set of variables in the graph (the "sepset"). These are
+     * variables which are independent, conditional on some other set of variables in the graph (the "sepset"). These are
      * removed in tiers.  First, edges which are independent conditional on zero other variables are removed, then edges
      * which are independent conditional on one other variable are removed, then two, then three, and so on, until no
      * more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
@@ -194,7 +163,7 @@ public class Fasd implements IFas {
 
 
     /**
-     * Sets the maximum number of variables conditoined on in any test.
+     * Sets the maximum number of variables conditioned on in any test.
      *
      * @param depth This maximum.
      */
@@ -220,7 +189,7 @@ public class Fasd implements IFas {
     }
 
     /**
-     * Returns the nubmer of conditional independence tests done in the course of search.
+     * Returns the number of conditional independence tests done in the course of search.
      *
      * @return This number.
      */
@@ -238,8 +207,8 @@ public class Fasd implements IFas {
     }
 
     /**
-     * Sets the external graph. Adjacencies not in this external graph will not be judged
-     * adjacent in the search result.
+     * Sets the external graph. Adjacencies not in this external graph will not be judged adjacent in the search
+     * result.
      *
      * @param externalGraph This graph.
      */
@@ -254,7 +223,7 @@ public class Fasd implements IFas {
     /**
      * Sets whether verbose output will be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -271,7 +240,7 @@ public class Fasd implements IFas {
     }
 
     /**
-     * Returns the nodes beign searched over.
+     * Returns the nodes being searched over.
      *
      * @return This list.
      */
@@ -302,7 +271,7 @@ public class Fasd implements IFas {
     }
 
     private boolean searchAtDepth0(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
-        List<Node> empty = Collections.emptyList();
+        Set<Node> empty = Collections.emptySet();
         for (int i = 0; i < nodes.size(); i++) {
             if (this.verbose) {
                 if ((i + 1) % 100 == 0) this.out.println("Node # " + (i + 1));
@@ -331,7 +300,7 @@ public class Fasd implements IFas {
                     result = test.checkIndependence(x, y, empty);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN);
+                    result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN, Double.NaN);
                 }
 
                 boolean noEdgeRequired =
@@ -424,7 +393,7 @@ public class Fasd implements IFas {
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, ppx);
+                        Set<Node> condSet = GraphUtils.asSet(choice, ppx);
 
                         IndependenceFact fact = new IndependenceFact(x, y, condSet);
                         if (facts.contains(fact)) continue;

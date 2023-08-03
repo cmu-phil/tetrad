@@ -2,11 +2,11 @@
 <html>
 <head>
     <title>Learning the Tools</title>
-    <meta http-equiv="Content-Type"
-          content="text/html; charset=iso-8859-1">
+    <meta content="text/html; charset=iso-8859-1"
+          http-equiv="Content-Type">
 </head>
 <body>
-<table width="99%" border="1" bgcolor="maroon">
+<table bgcolor="maroon" border="1" width="99%">
     <tbody>
     <tr>
         <td>
@@ -21,7 +21,7 @@
 </p>
 
 <h3>Select and Move Button </h3>
-<img src="../images/select_move_button.gif" width="113" height="43"><br>
+<img height="43" src="../images/select_move_button.gif" width="113"><br>
 <p> When the movement button is highlighted,&nbsp; the objects in the
     workspace can be moved around by
     clicking over each nodes and dragging it elsewhere in the workspace. </p>
@@ -34,7 +34,7 @@
 </p>
 
 <h3>Flow Chart Button</h3>
-<p><img src="../images/arrow_button.gif" width="114" height="44"><br>
+<p><img height="44" src="../images/arrow_button.gif" width="114"><br>
     <br>
     To make a flow chart, simply click on the flow chart tool button, and then click
     on the box you want at the tail of a flowchart arrow and drag the arrow to the
@@ -42,7 +42,7 @@
     without having to click on the .flow chart tool button in between. Only one
     flowchart arrow can connect any two boxes, but a box can have any number of
     flowchart arrows out of it.</p>
-<p><img src="../images/graph1_to_pm1.gif" width="244" height="90"></p>
+<p><img height="90" src="../images/graph1_to_pm1.gif" width="244"></p>
 <p>The flow chart you create provides the input to each Tetrad operation. Some
     boxes require no input (e.g, the Graph boz), some require one input (e..g.,
     PM box requires a Graph box as input) and some boxes require several inputs
@@ -67,7 +67,7 @@
 </p>
 
 <h3>Data & Simulation</h3>
-<p><img src="../images/data_button.gif" width="113" height="43"></p>
+<p><img height="43" src="../images/data_button.gif" width="113"></p>
 <p>Creates a Data & Similation box which can be used to load data from a file, or create
     simulated data, or manipulate one data set to create another one
     and allows the importation of data files from outside the
@@ -75,7 +75,7 @@
 </p>
 
 <h3>Search</h3>
-<p><img src="../images/search_button.gif" width="113" height="43"></p>
+<p><img height="43" src="../images/search_button.gif" width="113"></p>
 <p><font size="+1"><span style="font-weight: bold;">Search Button</span></font></p>
 <p>Creates a Search box, which allows one to perform a search algorithm on
     specified data to produce a graph. Please see the help items for the
@@ -91,7 +91,7 @@
 </p>
 
 <h3>Knowledge</h3>
-<p><img src="../images/knowledge_button.png" width="113" height="43"></p>
+<p><img height="43" src="../images/knowledge_button.png" width="113"></p>
 <p>Creates a Knowledge box, which allows one to specify background
     knowledge for a search. Note that the knowledge editor for
     Tiers & Edges is included in the search box for algorithms that
@@ -102,7 +102,7 @@
 </p>
 
 <h3>Compare Model</h3>
-<p><img src="../images/compare_button.gif" width="114" height="44"><br>
+<p><img height="44" src="../images/compare_button.gif" width="114"><br>
 </p>
 <p>Creates a Comparison box. The Comparison box allows one to perform
     various types of comparisons between two boxes. Many of the comparisons
@@ -114,7 +114,7 @@
 </p>
 
 <h3>Graph Model</h3>
-</p><img src="../images/graph_button.gif" width="114" height="45"></p>
+</p><img height="45" src="../images/graph_button.gif" width="114"></p>
 <p>Creates a Graph box. Options are:</p>
 <ul>
     <li><i>DAG (Directed Acyclic Graph)</i> - Produces a graph consisting
@@ -135,7 +135,7 @@
 </ul>
 
 <h3>Parametric Model</h3>
-<p><img src="../images/pm_button.gif" width="113" height="43"></p>
+<p><img height="43" src="../images/pm_button.gif" width="113"></p>
 <p>Creates a PM box in which a parametric model can be created. A
     parametric model specifies the family of probability
     functions connecting cause and effect,a, but does
@@ -154,7 +154,7 @@
 </p>
 
 <h3>Instantiated Model </h3>
-<p><img src="../images/im_button.gif" width="114" height="44"></p>
+<p><img height="44" src="../images/im_button.gif" width="114"></p>
 <p>Creates an IM box, which can be used to create an instantiated
     model. An instantiated model specifies particular numberical values
     for the parameters of a parametric model. Arbitrary parameter values
@@ -163,7 +163,7 @@
 </p>
 
 <h3>Estimator Button</h3>
-<p><img src="../images/estimator_button.gif" width="113" height="44"></p>
+<p><img height="44" src="../images/estimator_button.gif" width="113"></p>
 <p>Creates an Estimator box. Given a PM and Data, the procedures in the
     statistical estimator allow estimation of the parameters--that is,
     creation of an instantiated model, based on the Data input to the
@@ -172,14 +172,14 @@
     for handling missing values.</p>
 
 <h3>Updater Button</h3>
-<p><img src="../images/updater_button.gif" width="113" height="44"></p>
+<p><img height="44" src="../images/updater_button.gif" width="113"></p>
 <p>Creates an Update box. The Update box requires input from an IM box that is a Bayes net--i.e., is for discrete
     variables. It will compute the conditional probability of any variable in the Bayes net given values for any other
     variables in the model. It will also compute such probabilities condiitonal on an <span style="font-style: italic;">intervention </span>the
     fixes or randomizes other variables. </p>
 
 <h3>Classify Button</h3>
-<p><img src="../images/classify_button.gif" width="114" height="45"></p>
+<p><img height="45" src="../images/classify_button.gif" width="114"></p>
 <p>Classify creates a Classifier box, which requires input from Data and from an IM box. It is used to classify new
     cases with the Bayes net in the IM box.. The variables in the IM box must match some of the variables in the Data.
     The user specifies a target variable in the IM and the classifier uses the Bayes net structure of the IM to predict
@@ -187,7 +187,7 @@
     and confusion matrices.) </p>
 <h3>Regression Button</h3>
 
-<p><img src="../images/regression_button.gif" width="114" height="45"></p>
+<p><img height="45" src="../images/regression_button.gif" width="114"></p>
 <p>Creates a Regression box, which allows the user to perform multiple linear regressions
     or logistic regressions.</p>
 </body>

@@ -69,24 +69,19 @@ class QQPlotDisplayPanel extends JPanel {
      * Format for continuous data.
      */
     private final NumberFormat format = NumberFormatUtil.getInstance().getNumberFormat();
-
-
+    /**
+     * A map from the rectangles that define the bars, to the number of units in the bar.
+     */
+    private final Map<Rectangle, Integer> rectMap = new ConcurrentHashMap<>();
     /**
      * The q-q plot we are displaying.
      */
 
     private QQPlot qqPlot;
-
     /**
      * A cached string displaying what is being viewed in the histogram.
      */
     private String displayString;
-
-
-    /**
-     * A map from the rectangles that define the bars, to the number of units in the bar.
-     */
-    private final Map<Rectangle, Integer> rectMap = new ConcurrentHashMap<>();
 
 
     /**

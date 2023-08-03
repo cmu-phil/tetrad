@@ -32,70 +32,58 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Implements the "batch" version of the K Means clustering algorithm-- that is,
- * in one sweep, assign each point to its nearest center, and then in a second
- * sweep, reset each center to the mean of the cluster for that center,
- * repeating until convergence.
+ * Implements the "batch" version of the K Means clustering algorithm-- that is, in one sweep, assign each point to its
+ * nearest center, and then in a second sweep, reset each center to the mean of the cluster for that center, repeating
+ * until convergence.
  * <p>
- * Note that this algorithm is guaranteed to converge, since the total squared
- * error is guaranteed to be reduced at each step.
+ * Note that this algorithm is guaranteed to converge, since the total squared error is guaranteed to be reduced at each
+ * step.
  *
  * @author josephramsey
  */
 public class KMeans implements ClusteringAlgorithm {
 
     /**
-     * The type of initialization in which random points are selected from
-     * the data to serve as initial centers.
+     * The type of initialization in which random points are selected from the data to serve as initial centers.
      */
     private static final int RANDOM_POINTS = 0;
 
     /**
-     * The type of initialization in which points are assigned randomly to
-     * clusters.
+     * The type of initialization in which points are assigned randomly to clusters.
      */
     private static final int RANDOM_CLUSTERS = 1;
 
     /**
-     * The type of initialiation in which explicit points are provided to
-     * serve as clusters.
+     * The type of initialiation in which explicit points are provided to serve as clusters.
      */
     private static final int EXPLICIT_POINTS = 2;
-
+    /**
+     * The dissimilarity metric being used. For K means, the metric must be squared Euclidean. It's an assumption of the
+     * algorithm.
+     */
+    private final Dissimilarity metric = new SquaredErrorLoss();
     /**
      * The data, columns as features, rows as cases.
      */
     private Matrix data;
-
     /**
      * The centers.
      */
     private Matrix centers;
-
     /**
      * The maximum number of interations.
      */
     private int maxIterations = 50;
-
     /**
      * Current clusters.
      */
     private List<Integer> clusters;
-
     /**
      * Number of iterations of algorithm.
      */
     private int iterations;
-
     /**
-     * The dissimilarity metric being used. For K means, the metric must be
-     * squared Euclidean. It's an assumption of the algorithm.
-     */
-    private final Dissimilarity metric = new SquaredErrorLoss();
-
-    /**
-     * The number of centers (i.e. the number clusters) that the algorithm
-     * will find.
+     * The number of centers (i.e. the number clusters) that the algorithm will find.
      */
     private int numCenters;
 
@@ -133,9 +121,8 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     /**
-     * Constructs a new KMeansBatch, initializing the algorithm by randomly
-     * assigning each point in the data to one of the numCenters clusters,
-     * then calculating the centroid of each cluster.
+     * Constructs a new KMeansBatch, initializing the algorithm by randomly assigning each point in the data to one of
+     * the numCenters clusters, then calculating the centroid of each cluster.
      *
      * @param numCenters The number of centers (clusters).
      * @return The constructed algorithm.
@@ -150,9 +137,32 @@ public class KMeans implements ClusteringAlgorithm {
 
     //===========================PUBLIC METHODS=======================//
 
+    private static List<List<Integer>> convertClusterIndicesToLists(List<Integer> clusterIndices) {
+        int max = 0;
+
+        for (Integer clusterIndice : clusterIndices) {
+            if (clusterIndice > max) max = clusterIndice;
+        }
+
+        List<List<Integer>> clusters = new ArrayList<>();
+
+        for (int i = 0; i <= max; i++) {
+            clusters.add(new LinkedList<>());
+        }
+
+        for (int i = 0; i < clusterIndices.size(); i++) {
+            Integer index = clusterIndices.get(i);
+
+            if (index == -1) continue;
+
+            clusters.get(index).add(i);
+        }
+
+        return clusters;
+    }
+
     /**
-     * Runs the batch K-means clustering algorithm on the data, returning a
-     * result.
+     * Runs the batch K-means clustering algorithm on the data, returning a result.
      */
     public void cluster(Matrix data) {
         this.data = data;
@@ -209,33 +219,8 @@ public class KMeans implements ClusteringAlgorithm {
         return KMeans.convertClusterIndicesToLists(this.clusters);
     }
 
-    private static List<List<Integer>> convertClusterIndicesToLists(List<Integer> clusterIndices) {
-        int max = 0;
-
-        for (Integer clusterIndice : clusterIndices) {
-            if (clusterIndice > max) max = clusterIndice;
-        }
-
-        List<List<Integer>> clusters = new ArrayList<>();
-
-        for (int i = 0; i <= max; i++) {
-            clusters.add(new LinkedList<>());
-        }
-
-        for (int i = 0; i < clusterIndices.size(); i++) {
-            Integer index = clusterIndices.get(i);
-
-            if (index == -1) continue;
-
-            clusters.get(index).add(i);
-        }
-
-        return clusters;
-    }
-
     /**
-     * Return the maximum number of iterations, or -1 if the algorithm is
-     * allowed to run unconstrainted.
+     * Return the maximum number of iterations, or -1 if the algorithm is allowed to run unconstrainted.
      *
      * @return This value.
      */
@@ -244,8 +229,7 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     /**
-     * Sets the maximum number of iterations, or -1 if the algorithm is allowed
-     * to run unconstrainted.
+     * Sets the maximum number of iterations, or -1 if the algorithm is allowed to run unconstrainted.
      *
      * @param maxIterations This value.
      */

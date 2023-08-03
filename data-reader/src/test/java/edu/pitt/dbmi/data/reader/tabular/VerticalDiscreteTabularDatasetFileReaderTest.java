@@ -25,9 +25,9 @@ import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -46,10 +46,10 @@ public class VerticalDiscreteTabularDatasetFileReaderTest {
     private final boolean hasHeader = true;
 
     private final Path[] dataFiles = {
-            Paths.get(getClass().getResource("/data/tabular/discrete/dos_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/discrete/mac_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/discrete/sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/discrete/quotes_sim_test_data.csv").getFile())
+            new File(getClass().getResource("/data/tabular/discrete/dos_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/discrete/mac_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/discrete/sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/discrete/quotes_sim_test_data.csv").getFile()).toPath()
     };
 
     public VerticalDiscreteTabularDatasetFileReaderTest() {
@@ -62,7 +62,7 @@ public class VerticalDiscreteTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataWithNoHeaderExcludingVariableByColumnNumbers() throws IOException {
-        Path dataFile = Paths.get(getClass().getResource("/data/tabular/discrete/no_header_sim_test_data.csv").getFile());
+        Path dataFile = new File(getClass().getResource("/data/tabular/discrete/no_header_sim_test_data.csv").getFile()).toPath();
         VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, this.delimiter);
         dataReader.setCommentMarker(this.commentMarker);
         dataReader.setQuoteCharacter(this.quoteCharacter);
@@ -97,7 +97,7 @@ public class VerticalDiscreteTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInDataWithNoHeader() throws IOException {
-        Path dataFile = Paths.get(getClass().getResource("/data/tabular/discrete/no_header_sim_test_data.csv").getFile());
+        Path dataFile = new File(getClass().getResource("/data/tabular/discrete/no_header_sim_test_data.csv").getFile()).toPath();
         VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, this.delimiter);
         dataReader.setCommentMarker(this.commentMarker);
         dataReader.setQuoteCharacter(this.quoteCharacter);

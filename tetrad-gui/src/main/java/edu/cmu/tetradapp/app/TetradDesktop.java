@@ -77,8 +77,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     private final Map<SessionEditor, JInternalFrame> framesMap = new HashMap<>();
 
     /**
-     * A map from SessionWrapper to TetradMetadata, storing metadata for
-     * sessions that have been loaded in.
+     * A map from SessionWrapper to TetradMetadata, storing metadata for sessions that have been loaded in.
      */
     private final Map<SessionWrapper, TetradMetadata> metadataMap = new HashMap<>();
 
@@ -113,7 +112,39 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         setTransferHandler(new SessionFileTransferHandler());
     }
 
-    // ===========================PUBLIC METHODS============================//
+    /**
+     * Randomly picks the location of a new window, such that it fits completely on the screen.
+     *
+     * @param desktopPane the desktop pane that the frame is being added to.
+     * @param frame       the JInternalFrame which is being added.
+     * @param desiredSize the desired dimensions of the frame.
+     */
+    public static void setGoodBounds(JInternalFrame frame,
+                                     JDesktopPane desktopPane, Dimension desiredSize) {
+        RandomUtil randomUtil = RandomUtil.getInstance();
+        Dimension desktopSize = desktopPane.getSize();
+
+        Dimension d = new Dimension(desiredSize);
+        int tx = desktopSize.width - d.width;
+        int ty = desktopSize.height - d.height;
+
+        if (tx < 0) {
+            tx = 0;
+            d.width = desktopSize.width;
+        } else {
+            tx = (int) (randomUtil.nextDouble() * tx);
+        }
+
+        if (ty < 0) {
+            ty = 0;
+            d.height = desktopSize.height;
+        } else {
+            ty = (int) (randomUtil.nextDouble() * ty);
+        }
+
+        frame.setBounds(tx, ty, d.width, d.height);
+    }
+
     public void newSessionEditor() {
         String newName = getNewSessionName();
         SessionEditor editor = new SessionEditor(newName);
@@ -121,8 +152,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     }
 
     /**
-     * Adds a component to the middle layer of the desktop--that is, the layer
-     * for session node editors. Note: The comp is a SessionEditor
+     * Adds a component to the middle layer of the desktop--that is, the layer for session node editors. Note: The comp
+     * is a SessionEditor
      */
     public void addSessionEditor(SessionEditorIndirectRef editorRef) {
         SessionEditor editor = (SessionEditor) editorRef;
@@ -331,8 +362,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     }
 
     /**
-     * Reacts to property change events 'editorClosing', 'closeFrame', and
-     * 'name'.
+     * Reacts to property change events 'editorClosing', 'closeFrame', and 'name'.
      *
      * @param e the property change event.
      */
@@ -385,8 +415,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     /**
      * Queries the user as to whether they would like to save their sessions.
      *
-     * @return true if the transaction was ended successfully, false if not
-     * (that is, canceled).
+     * @return true if the transaction was ended successfully, false if not (that is, canceled).
      */
     public boolean closeAllSessions() {
         while (existsSession()) {
@@ -455,9 +484,17 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     }
 
     /**
-     * Sets whether the display log output should be displayed or not. If true
-     * then a text area roughly 20% of the screen size will appear on the bottom
-     * and will display any log output, otherwise just the standard tetrad
+     * States whether the desktop is currently displaying log output.
+     *
+     * @return - true iff the desktop is display log output.
+     */
+    public boolean isDisplayLogging() {
+        return this.logArea != null;
+    }
+
+    /**
+     * Sets whether the display log output should be displayed or not. If true then a text area roughly 20% of the
+     * screen size will appear on the bottom and will display any log output, otherwise just the standard tetrad
      * workbend is shown.
      */
     public void setDisplayLogging(boolean displayLogging) {
@@ -484,17 +521,6 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
         Preferences.userRoot().putBoolean("displayLogging", displayLogging);
     }
-
-    /**
-     * States whether the desktop is currently displaying log output.
-     *
-     * @return - true iff the desktop is display log output.
-     */
-    public boolean isDisplayLogging() {
-        return this.logArea != null;
-    }
-
-    // ===========================PRIVATE METHODS==========================//
 
     /**
      * @return a reasonable divider location for the log output.
@@ -549,42 +575,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     }
 
     /**
-     * Randomly picks the location of a new window, such that it fits completely
-     * on the screen.
-     *
-     * @param desktopPane the desktop pane that the frame is being added to.
-     * @param frame       the JInternalFrame which is being added.
-     * @param desiredSize the desired dimensions of the frame.
-     */
-    public static void setGoodBounds(JInternalFrame frame,
-                                     JDesktopPane desktopPane, Dimension desiredSize) {
-        RandomUtil randomUtil = RandomUtil.getInstance();
-        Dimension desktopSize = desktopPane.getSize();
-
-        Dimension d = new Dimension(desiredSize);
-        int tx = desktopSize.width - d.width;
-        int ty = desktopSize.height - d.height;
-
-        if (tx < 0) {
-            tx = 0;
-            d.width = desktopSize.width;
-        } else {
-            tx = (int) (randomUtil.nextDouble() * tx);
-        }
-
-        if (ty < 0) {
-            ty = 0;
-            d.height = desktopSize.height;
-        } else {
-            ty = (int) (randomUtil.nextDouble() * ty);
-        }
-
-        frame.setBounds(tx, ty, d.width, d.height);
-    }
-
-    /**
-     * @return the next available session name in the series untitled1.tet,
-     * untitled2.tet, etc.
+     * @return the next available session name in the series untitled1.tet, untitled2.tet, etc.
      */
     private String getNewSessionName() {
         final String base = "untitled";
@@ -617,9 +608,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     }
 
     /**
-     * States whether the log display should be automatically displayed, if
-     * there is no value in the user's prefs then it will display a prompt
-     * asking the user whether they would like to disable automatic popups.
+     * States whether the log display should be automatically displayed, if there is no value in the user's prefs then
+     * it will display a prompt asking the user whether they would like to disable automatic popups.
      */
     private boolean allowAutomaticLogPopup() {
         Boolean allowed = TetradLogger.getInstance()
@@ -646,12 +636,8 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         return allowed;
     }
 
-    // ================================ Inner class
-    // =======================================//
-
     /**
-     * Listener for the logger that will open the display log if not already
-     * open.
+     * Listener for the logger that will open the display log if not already open.
      */
     private class LoggerListener implements TetradLoggerListener {
 

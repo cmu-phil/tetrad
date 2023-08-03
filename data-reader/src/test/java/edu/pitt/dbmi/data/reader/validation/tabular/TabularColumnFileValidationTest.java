@@ -23,8 +23,8 @@ import edu.pitt.dbmi.data.reader.validation.ValidationResult;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -38,7 +38,7 @@ public class TabularColumnFileValidationTest {
     private final char quoteCharacter = '"';
     private final String commentMarker = "//";
 
-    private final Path dataFile = Paths.get(getClass().getResource("/data/tabular/continuous/bad_column_sim_test_data.csv").getFile());
+    private final Path dataFile = new File(getClass().getResource("/data/tabular/continuous/bad_column_sim_test_data.csv").getFile()).toPath();
 
     public TabularColumnFileValidationTest() {
     }

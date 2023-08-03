@@ -46,15 +46,15 @@ import java.util.List;
 import java.util.*;
 
 /**
- * Assumes that the search method of the CPDAG search has been run and shows the
- * various options for DAG's consistent with correlation information over the variables.
+ * Assumes that the search method of the CPDAG search has been run and shows the various options for DAG's consistent
+ * with correlation information over the variables.
  *
  * @author josephramsey
  */
 public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private GraphWorkbench workbench;
     private boolean showHighestScoreOnly;
-    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private Map<Graph, Double> dagsToScores;
     private List<Graph> dags;
     private JLabel scoreLabel;
@@ -259,8 +259,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
     }
 
     /**
-     * Creates the "file" menu, which allows the user to load, save, and post
-     * workbench models.
+     * Creates the "file" menu, which allows the user to load, save, and post workbench models.
      *
      * @return this menu.
      */

@@ -42,64 +42,6 @@ import static org.junit.Assert.fail;
  */
 public final class TestBayesXml {
 
-    @Test
-    public void testRoundtrip() {
-        BayesIm bayesIm = TestBayesXml.sampleBayesIm1();
-        Element element = BayesXmlRenderer.getElement(bayesIm);
-
-        BayesXmlParser parser = new BayesXmlParser();
-        BayesIm bayesIm2 = parser.getBayesIm(element);
-
-        assertEquals(bayesIm, bayesIm2);
-    }
-
-    @Test
-    public void testRoundtrip2() {
-        BayesIm bayesIm = TestBayesXml.sampleBayesIm2();
-        Element element = BayesXmlRenderer.getElement(bayesIm);
-
-        BayesXmlParser parser = new BayesXmlParser();
-        BayesIm bayesIm2 = parser.getBayesIm(element);
-
-        assertEquals(bayesIm, bayesIm2);
-    }
-
-    @Test
-    public void testRoundtrip3() {
-        BayesIm bayesIm = TestBayesXml.sampleBayesIm3();
-        Element element = BayesXmlRenderer.getElement(bayesIm);
-
-        BayesXmlParser parser = new BayesXmlParser();
-        BayesIm bayesIm2 = parser.getBayesIm(element);
-
-        assertEquals(bayesIm, bayesIm2);
-    }
-
-    /**
-     * Tests to make sure that a particular file produced by the renderer on
-     * 6/26/04 remains parsable. VERY IMPORTANT THIS DOES NOT BREAK!!!
-     */
-    @Test
-    public void testLoadFromFile() {
-        try {
-            Builder builder = new Builder();
-            Document document =
-                    builder.build(new File("src/test/resources/parsableBayesNet.xml"));
-
-            BayesXmlParser parser = new BayesXmlParser();
-            parser.getBayesIm(document.getRootElement());
-        } catch (ParsingException e) {
-            e.printStackTrace();
-            fail("The file referred to cannot be parsed as a Bayes IM." +
-                    " The file referred to MUST LOAD!! PLEASE FIX IMMEDIATELY!!!" +
-                    " (Ask Joe Ramsey jdramsey@andrew.cmu.edu for details.");
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail("The file referred to cannot be opened (or doesn't exist). " +
-                    "Maybe the working directory is not set correctly.");
-        }
-    }
-
     private static BayesIm sampleBayesIm1() {
         Node a = new GraphNode("a");
         Node b = new GraphNode("b");
@@ -173,7 +115,6 @@ public final class TestBayesXml {
         return new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
     }
 
-
     private static BayesIm sampleBayesIm3() {
         Node a = new GraphNode("a");
         a.setNodeType(NodeType.LATENT);
@@ -219,6 +160,64 @@ public final class TestBayesXml {
             serializer.write(document);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testRoundtrip() {
+        BayesIm bayesIm = TestBayesXml.sampleBayesIm1();
+        Element element = BayesXmlRenderer.getElement(bayesIm);
+
+        BayesXmlParser parser = new BayesXmlParser();
+        BayesIm bayesIm2 = parser.getBayesIm(element);
+
+        assertEquals(bayesIm, bayesIm2);
+    }
+
+    @Test
+    public void testRoundtrip2() {
+        BayesIm bayesIm = TestBayesXml.sampleBayesIm2();
+        Element element = BayesXmlRenderer.getElement(bayesIm);
+
+        BayesXmlParser parser = new BayesXmlParser();
+        BayesIm bayesIm2 = parser.getBayesIm(element);
+
+        assertEquals(bayesIm, bayesIm2);
+    }
+
+    @Test
+    public void testRoundtrip3() {
+        BayesIm bayesIm = TestBayesXml.sampleBayesIm3();
+        Element element = BayesXmlRenderer.getElement(bayesIm);
+
+        BayesXmlParser parser = new BayesXmlParser();
+        BayesIm bayesIm2 = parser.getBayesIm(element);
+
+        assertEquals(bayesIm, bayesIm2);
+    }
+
+    /**
+     * Tests to make sure that a particular file produced by the renderer on 6/26/04 remains parsable. VERY IMPORTANT
+     * THIS DOES NOT BREAK!!!
+     */
+    @Test
+    public void testLoadFromFile() {
+        try {
+            Builder builder = new Builder();
+            Document document =
+                    builder.build(new File("src/test/resources/parsableBayesNet.xml"));
+
+            BayesXmlParser parser = new BayesXmlParser();
+            parser.getBayesIm(document.getRootElement());
+        } catch (ParsingException e) {
+            e.printStackTrace();
+            fail("The file referred to cannot be parsed as a Bayes IM." +
+                    " The file referred to MUST LOAD!! PLEASE FIX IMMEDIATELY!!!" +
+                    " (Ask Joe Ramsey jdramsey@andrew.cmu.edu for details.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail("The file referred to cannot be opened (or doesn't exist). " +
+                    "Maybe the working directory is not set correctly.");
         }
     }
 }

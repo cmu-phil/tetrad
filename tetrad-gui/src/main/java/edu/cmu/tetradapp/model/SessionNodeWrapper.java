@@ -30,8 +30,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 /**
- * A node in a SessionWrapper; wraps a SessionNode and presents it as a
- * GraphNode.
+ * A node in a SessionWrapper; wraps a SessionNode and presents it as a GraphNode.
  *
  * @author josephramsey
  * @see edu.cmu.tetrad.session.SessionNode
@@ -49,8 +48,8 @@ public class SessionNodeWrapper extends GraphNode {
     private final SessionNode sessionNode;
 
     /**
-     * The button type of the session node (some string defined in the config
-     * file). "???" indicates that no button type has been set.
+     * The button type of the session node (some string defined in the config file). "???" indicates that no button type
+     * has been set.
      *
      * @serial Cannot be null.
      */
@@ -59,9 +58,8 @@ public class SessionNodeWrapper extends GraphNode {
     //==========================CONSTRUCTORS==========================//
 
     /**
-     * Wraps the given SessionNode as a SessionNodeWrapper for use in a
-     * SessionWrapper. The name of the SessionNode is used as the name of the
-     * SessionNodeWrapper. A button type may optionally be set.
+     * Wraps the given SessionNode as a SessionNodeWrapper for use in a SessionWrapper. The name of the SessionNode is
+     * used as the name of the SessionNodeWrapper. A button type may optionally be set.
      */
     public SessionNodeWrapper(SessionNode sessionNode) {
         super(sessionNode.getDisplayName());
@@ -88,8 +86,8 @@ public class SessionNodeWrapper extends GraphNode {
     }
 
     /**
-     * Sets the session name. This method should be used in preference to
-     * setName, which only sets the name in the superclass.
+     * Sets the session name. This method should be used in preference to setName, which only sets the name in the
+     * superclass.
      */
     public void setSessionName(String name) {
 //        if (!NamingProtocol.isLegalName(name)) {
@@ -108,16 +106,14 @@ public class SessionNodeWrapper extends GraphNode {
     }
 
     /**
-     * Gets the buttonType of the node, which is the buttonType of the wrapped
-     * SessionNode.
+     * Gets the buttonType of the node, which is the buttonType of the wrapped SessionNode.
      */
     public String getButtonType() {
         return this.buttonType;
     }
 
     /**
-     * Sets the buttonType of the node, which is the buttonType of the wrapped
-     * SessionNode.
+     * Sets the buttonType of the node, which is the buttonType of the wrapped SessionNode.
      */
     public void setButtonType(String buttonType) {
         if (buttonType == null) {
@@ -143,18 +139,16 @@ public class SessionNodeWrapper extends GraphNode {
     }
 
     /**
-     * Must override hashCode in GraphNode to make sure that this object doesn't
-     * get hashed differently if its name changes. If it does, session box
-     * deletion won't work.
+     * Must override hashCode in GraphNode to make sure that this object doesn't get hashed differently if its name
+     * changes. If it does, session box deletion won't work.
      */
     public int hashCode() {
         return 1;
     }
 
     /**
-     * Must override equals in GraphNode to make sure equality is object
-     * identity. In particular, change of name does not constitute change of
-     * identity.
+     * Must override equals in GraphNode to make sure equality is object identity. In particular, change of name does
+     * not constitute change of identity.
      */
     public boolean equals(Object o) {
         return this == o;
@@ -169,14 +163,12 @@ public class SessionNodeWrapper extends GraphNode {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

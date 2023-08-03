@@ -28,8 +28,7 @@ import javax.swing.border.MatteBorder;
 import java.awt.*;
 
 /**
- * Allows the user to choose a variable in a Bayes net and edit the parameters
- * associated with that variable.
+ * Allows the user to choose a variable in a Bayes net and edit the parameters associated with that variable.
  *
  * @author josephramsey
  */

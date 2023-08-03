@@ -187,8 +187,8 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
     }
 
     /**
-     * @return the getMappings object being edited. (This probably should not be
-     * public, but it is needed so that the textfields can edit the model.)
+     * @return the getMappings object being edited. (This probably should not be public, but it is needed so that the
+     * textfields can edit the model.)
      */
     private synchronized Parameters getParams() {
         return this.params;

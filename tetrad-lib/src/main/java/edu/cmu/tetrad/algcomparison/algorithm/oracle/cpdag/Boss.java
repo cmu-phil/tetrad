@@ -13,8 +13,8 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.PermutationSearch;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -68,12 +68,11 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             Score score = this.score.getScore(dataModel, parameters);
 
             edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
-//            boss.setDepth(parameters.getInt(Params.DEPTH));
+            boss.setUseBes(parameters.getBoolean(Params.USE_BES));
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+            boss.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
             PermutationSearch permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(this.knowledge);
-
-            permutationSearch.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return permutationSearch.search();
         } else {
@@ -84,9 +83,8 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();
-            this.bootstrapGraphs = search.getGraphs();
+            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             return graph;
         }
     }
@@ -110,14 +108,11 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     public List<String> getParameters() {
         ArrayList<String> params = new ArrayList<>();
 
-        // Flags
-        params.add(Params.VERBOSE);
-
         // Parameters
+        params.add(Params.USE_BES);
         params.add(Params.NUM_STARTS);
-//        params.add(Params.DEPTH);
+        params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
         params.add(Params.TIME_LAG);
-
 
         return params;
     }

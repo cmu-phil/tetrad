@@ -27,7 +27,7 @@ import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphPersistence;
+import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -44,8 +44,8 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 /**
- * Runs a search algorithm over a N subsamples of size b to asses stability
- * as in "Stability Selection" and "Stability Approach to Regularization Selection"
+ * Runs a search algorithm over a N subsamples of size b to asses stability as in "Stability Selection" and "Stability
+ * Approach to Regularization Selection"
  * <p>
  * This is under construction...likely to be buggy
  * <p>
@@ -236,7 +236,7 @@ public class StabilityUtils {
     //some tests...
     public static void main(String[] args) {
         final String fn = "/Users/ajsedgewick/tetrad_mgm_runs/run2/networks/DAG_0_graph.txt";
-        Graph trueGraph = GraphPersistence.loadGraphTxt(new File(fn));
+        Graph trueGraph = GraphSaveLoadUtils.loadGraphTxt(new File(fn));
         DataSet ds = null;
         try {
             ds = MixedUtils.loadData("/Users/ajsedgewick/tetrad_mgm_runs/run2/data/", "DAG_0_data.txt");

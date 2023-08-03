@@ -7,8 +7,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.BayesImParser;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import nu.xom.Builder;
@@ -26,6 +26,41 @@ import java.util.List;
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  */
 public class TestRfciBsc {
+
+    private static void refineData(DataSet fullData) {
+        for (int c = 0; c < fullData.getNumColumns(); c++) {
+            for (int r = 0; r < fullData.getNumRows(); r++) {
+                if (fullData.getInt(r, c) < 0) {
+                    fullData.setInt(r, c, 0);
+                }
+            }
+        }
+
+    }
+
+    private static List<Node> getLatents(Graph dag) {
+        List<Node> latents = new ArrayList<>();
+        for (Node n : dag.getNodes()) {
+            if (n.getNodeType() == NodeType.LATENT) {
+                latents.add(n);
+            }
+        }
+        return latents;
+    }
+
+    private static BayesIm loadBayesIm() {
+        try {
+            Builder builder = new Builder();
+            File file = new File("src/test/resources/" + "Alarm.xdsl");
+            System.out.println(file.getAbsolutePath());
+            Document document = builder.build(file);
+            BayesImParser parser = new BayesImParser();
+            parser.setUseDisplayNames(true);
+            return parser.getBayesIm(document.getRootElement());
+        } catch (ParsingException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     //	@Test
     public void testRandomDiscreteData() {
@@ -166,41 +201,6 @@ public class TestRfciBsc {
         System.out.println("RB-I: \n" + rfciBsc.getGraphRBI());
         System.out.println("------------------------------------------");
         System.out.println("RB-D: \n" + rfciBsc.getGraphRBD());
-    }
-
-    private static void refineData(DataSet fullData) {
-        for (int c = 0; c < fullData.getNumColumns(); c++) {
-            for (int r = 0; r < fullData.getNumRows(); r++) {
-                if (fullData.getInt(r, c) < 0) {
-                    fullData.setInt(r, c, 0);
-                }
-            }
-        }
-
-    }
-
-    private static List<Node> getLatents(Graph dag) {
-        List<Node> latents = new ArrayList<>();
-        for (Node n : dag.getNodes()) {
-            if (n.getNodeType() == NodeType.LATENT) {
-                latents.add(n);
-            }
-        }
-        return latents;
-    }
-
-    private static BayesIm loadBayesIm() {
-        try {
-            Builder builder = new Builder();
-            File file = new File("src/test/resources/" + "Alarm.xdsl");
-            System.out.println(file.getAbsolutePath());
-            Document document = builder.build(file);
-            BayesImParser parser = new BayesImParser();
-            parser.setUseDisplayNames(true);
-            return parser.getBayesIm(document.getRootElement());
-        } catch (ParsingException | IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }

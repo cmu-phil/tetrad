@@ -30,11 +30,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p>Stores a map from pairs of nodes to separating sets--that is, for each unordered pair of nodes {node1, node2} in a
- * graph, stores a set of nodes conditional on which node1 and node2 are independent (where the nodes are considered as
- * variables) or stores null if the pair was not judged to be independent. (Note that if a sepset is non-null and empty,
- * that should mean that the compared nodes were found to be independent conditional on the empty set, whereas if a
- * sepset is null, that should mean that no set was found yet conditional on which the compared nodes are independent.
+ * <p>Stores a map from pairs of nodes to separating sets--that is, for each unordered pair of nodes {node1, node2} in
+ * a graph, stores a set of nodes conditional on which node1 and node2 are independent (where the nodes are considered
+ * as variables) or stores null if the pair was not judged to be independent. (Note that if a sepset is non-null and
+ * empty, that should mean that the compared nodes were found to be independent conditional on the empty set, whereas if
+ * a sepset is null, that should mean that no set was found yet conditional on which the compared nodes are independent.
  * So at the end of the search, a null sepset carries different information from an empty sepset.)&gt; 0 <p>We cast the
  * variable-like objects to Node to allow them either to be variables explicitly or else to be graph nodes that in some
  * model could be considered as variables. This allows us to use d-separation as a graphical indicator of what
@@ -44,12 +44,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class SepsetMap implements TetradSerializable {
     static final long serialVersionUID = 23L;
-
-    private Map<Set<Node>, List<Node>> sepsets = new ConcurrentHashMap<>();
-    private Map<Set<Node>, Double> pValues = new ConcurrentHashMap<>();
     private final Map<Node, HashSet<Node>> parents = new HashMap<>();
+    private Map<Set<Node>, Set<Node>> sepsets = new ConcurrentHashMap<>();
+    private Map<Set<Node>, Double> pValues = new ConcurrentHashMap<>();
 
-    //=============================CONSTRUCTORS===========================//
 
     /**
      * Constructor.
@@ -74,12 +72,11 @@ public final class SepsetMap implements TetradSerializable {
         return new SepsetMap();
     }
 
-    //=============================PUBLIC METHODS========================//
 
     /**
      * Sets the sepset for {x, y} to be z. Note that {x, y} is unordered.
      */
-    public void set(Node x, Node y, List<Node> z) {
+    public void set(Node x, Node y, Set<Node> z) {
         Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
@@ -93,7 +90,7 @@ public final class SepsetMap implements TetradSerializable {
     /**
      * Retrieves the sepset previously set for {a, b}, or null if no such set was previously set.
      */
-    public List<Node> get(Node a, Node b) {
+    public Set<Node> get(Node a, Node b) {
         Set<Node> pair = new HashSet<>(2);
         pair.add(a);
         pair.add(b);

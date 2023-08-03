@@ -27,48 +27,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Randomizes a graph using existing factors by first removing all edges and
- * then adding for each factor (a) an edge from the same factor at time lag 1
- * and (b) a given number of factors chosen uniformly from all lagged factors
- * with lag &gt; 0. The number of factors added is chosen according to a strategy
- * set in the constructor. If constant indegree n is chosen, then n - 1 edges
- * are added (in addition to the edge from the same factor at time lag 1) for
- * each factor. If max indegree n in chosen, then an integer is chosen uniformly
- * for each factor from {1, ..., n - 1}, and that number of edges is added for
- * that factor. If mean indegree n is chosen, then an integer is chosen
- * uniformly for each factor from {1, ..., 2n - 1}, and that number of edges is
- * added for that factor. Notice that the number of "extra" edges added take
- * account of the fact that one edge has already been added in each case, so
- * that the total indegree for each factor is correctly distributed.
+ * Randomizes a graph using existing factors by first removing all edges and then adding for each factor (a) an edge
+ * from the same factor at time lag 1 and (b) a given number of factors chosen uniformly from all lagged factors with
+ * lag &gt; 0. The number of factors added is chosen according to a strategy set in the constructor. If constant
+ * indegree n is chosen, then n - 1 edges are added (in addition to the edge from the same factor at time lag 1) for
+ * each factor. If max indegree n in chosen, then an integer is chosen uniformly for each factor from {1, ..., n - 1},
+ * and that number of edges is added for that factor. If mean indegree n is chosen, then an integer is chosen uniformly
+ * for each factor from {1, ..., 2n - 1}, and that number of edges is added for that factor. Notice that the number of
+ * "extra" edges added take account of the fact that one edge has already been added in each case, so that the total
+ * indegree for each factor is correctly distributed.
  *
  * @author josephramsey
  */
 public class SimpleRandomizer implements GraphInitializer {
-    static final long serialVersionUID = 23L;
-
     /**
      * Indicates constant indegree.
      */
     public static final int CONSTANT = 0;
-
     /**
      * Indicates maximum indegree.
      */
     public static final int MAX = 1;
-
     /**
      * Indicates mean indegree.
      */
     public static final int MEAN = 2;
-
+    static final long serialVersionUID = 23L;
     /**
      * The indegree type of this randomizer.
      */
     private int indegreeType = SimpleRandomizer.CONSTANT;
 
     /**
-     * The stored indegree for this randomizer (differently interpreted
-     * depending on the indegree type).
+     * The stored indegree for this randomizer (differently interpreted depending on the indegree type).
      */
     private int indegree = 1;
 
@@ -78,8 +69,8 @@ public class SimpleRandomizer implements GraphInitializer {
     private int mlag = 1;
 
     /**
-     * The stored percent houseekeeping. This percent of the genes should be
-     * initialized with no parents except for themselves one time lag back.
+     * The stored percent houseekeeping. This percent of the genes should be initialized with no parents except for
+     * themselves one time lag back.
      */
     private double percentHousekeeping = 80.0;
 

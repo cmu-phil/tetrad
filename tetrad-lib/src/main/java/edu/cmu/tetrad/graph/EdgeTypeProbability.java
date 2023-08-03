@@ -13,15 +13,8 @@ import java.util.List;
 public class EdgeTypeProbability implements TetradSerializable {
 
     private static final long serialVersionUID = 23L;
-
-    public enum EdgeType {
-        nil, ta, at, ca, ac, cc, aa, tt
-    }
-
     private EdgeType edgeType;
-
     private List<Edge.Property> properties = new ArrayList<>();
-
     private double probability;
 
     public EdgeTypeProbability() {
@@ -67,6 +60,10 @@ public class EdgeTypeProbability implements TetradSerializable {
 
     public void setProbability(double probability) {
         this.probability = probability;
+    }
+
+    public enum EdgeType {
+        nil, ta, at, ca, ac, cc, aa, tt
     }
 
 }

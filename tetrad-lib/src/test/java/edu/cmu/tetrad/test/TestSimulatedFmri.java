@@ -48,6 +48,7 @@ import java.text.ParseException;
  * @author josephramsey
  */
 public class TestSimulatedFmri {
+    boolean precomputeCovariances = true;
 
     public static void main(String... args) {
         new TestSimulatedFmri().task();
@@ -364,7 +365,7 @@ public class TestSimulatedFmri {
 
 
                 Fask fask = new Fask(data,
-                        new edu.cmu.tetrad.search.score.SemBicScore(data),
+                        new edu.cmu.tetrad.search.score.SemBicScore(data, precomputeCovariances),
                         new IndTestFisherZ(data, 0.001));
                 Graph out = fask.search();
 
@@ -404,7 +405,7 @@ public class TestSimulatedFmri {
                 DataSet data = im.simulateData(N, false);
 
                 Fask fask = new Fask(data,
-                        new edu.cmu.tetrad.search.score.SemBicScore(data),
+                        new edu.cmu.tetrad.search.score.SemBicScore(data, precomputeCovariances),
                         new IndTestFisherZ(data, 0.001));
                 Graph out = fask.search();
 
@@ -450,7 +451,7 @@ public class TestSimulatedFmri {
         DataSet data = im.simulateData(1000, false);
 
         Fask fask = new Fask(data,
-                new edu.cmu.tetrad.search.score.SemBicScore(data),
+                new edu.cmu.tetrad.search.score.SemBicScore(data, precomputeCovariances),
                 new IndTestFisherZ(data, 0.001));
         Graph out = fask.search();
 

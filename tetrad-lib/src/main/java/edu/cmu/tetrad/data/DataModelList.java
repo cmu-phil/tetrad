@@ -68,7 +68,6 @@ public final class DataModelList extends AbstractList<DataModel>
      */
     private Knowledge knowledge = new Knowledge();
 
-    //===========================CONSTRUCTORS============================//
     public DataModelList() {
     }
 
@@ -92,8 +91,6 @@ public final class DataModelList extends AbstractList<DataModel>
     public static DataModelList serializableInstance() {
         return new DataModelList();
     }
-
-    //===========================PUBLIC METHODS (see AbstractList too)===//
 
     /**
      * @return this model, as an Object.
@@ -140,20 +137,17 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
-     * Adds the given DataModel to the list at the given index. Required for
-     * AbstractList.
+     * Adds the given DataModel to the list at the given index. Required for AbstractList.
      *
      * @param index   the index at which the DataModel is to be added.
-     * @param element the DataModel to be added. (Note that this must be a
-     *                DataModel.)
+     * @param element the DataModel to be added. (Note that this must be a DataModel.)
      */
     public void add(int index, DataModel element) {
         this.modelList.add(index, element);
     }
 
     /**
-     * Check if the modeList is empty Need to override this since this class is
-     * extending AbstractList.
+     * Check if the modeList is empty Need to override this since this class is extending AbstractList.
      */
     @Override
     public boolean isEmpty() {
@@ -161,9 +155,8 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
-     * Use this to check if the dataModelList only contains the default empty
-     * dataset that is being used to populat the empty spreadsheet - Added by
-     * Kevin
+     * Use this to check if the dataModelList only contains the default empty dataset that is being used to populat the
+     * empty spreadsheet - Added by Kevin
      */
     public boolean containsEmptyData() {
         if (this.modelList.isEmpty()) {
@@ -178,8 +171,7 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
-     * Removes the DataModel at the given index. Required for AbstractList.
-     * Required for AbstractList.
+     * Removes the DataModel at the given index. Required for AbstractList. Required for AbstractList.
      *
      * @param index the index of the DataModel to remove.
      * @return the DataModel just removed.
@@ -195,8 +187,8 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
-     * @return the model that is currently selected. The default is the first
-     * model. If there are no models in the list, null is returned.
+     * @return the model that is currently selected. The default is the first model. If there are no models in the list,
+     * null is returned.
      */
     public DataModel getSelectedModel() {
         if (this.selectedModel != null) {
@@ -292,14 +284,12 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

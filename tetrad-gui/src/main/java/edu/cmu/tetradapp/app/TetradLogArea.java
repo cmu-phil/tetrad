@@ -67,17 +67,12 @@ class TetradLogArea extends JPanel {
         add(pane, BorderLayout.CENTER);
     }
 
-    //================================= Public methods =============================//
-
-
     /**
      * @return the output stream that is being used to log messages to the log area.
      */
     public OutputStream getOutputStream() {
         return this.stream;
     }
-
-    //============================== Private Methods ============================//
 
     /**
      * Creates the header of the log display.
@@ -104,10 +99,6 @@ class TetradLogArea extends JPanel {
 
         return panel;
     }
-
-    //========================= Private Methods =================================//
-
-
 }
 
 

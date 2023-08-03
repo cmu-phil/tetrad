@@ -24,7 +24,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 
@@ -48,7 +48,7 @@ public class IndependenceFacts implements DataModel {
     }
 
     public IndependenceFacts(Graph graph) {
-        IndTestDSep dsep = new IndTestDSep(graph);
+        MsepTest msep = new MsepTest(graph);
 
         Set<IndependenceFact> facts = new HashSet<>();
 
@@ -67,13 +67,13 @@ public class IndependenceFacts implements DataModel {
                 Node x = nodes.get(choice[perm[0]]);
                 Node y = nodes.get(choice[perm[1]]);
 
-                List<Node> Z = new ArrayList<>();
+                Set<Node> Z = new HashSet<>();
 
                 for (int i = 2; i < perm.length; i++) {
                     Z.add(nodes.get(choice[perm[i]]));
                 }
 
-                if (dsep.checkIndependence(x, y, Z).isIndependent()) {
+                if (msep.checkIndependence(x, y, Z).isIndependent()) {
                     facts.add(new IndependenceFact(x, y, Z));
                 }
             }
@@ -175,7 +175,7 @@ public class IndependenceFacts implements DataModel {
 //        return unsortedFacts.contains(fact);
     }
 
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public boolean isIndependent(Node x, Node y, Set<Node> z) {
         boolean found = false;
 
         for (IndependenceFact fact : unsortedFacts) {

@@ -28,8 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Estimates probabilities from data by constructing the entire cell count table
- * for the data.
+ * Estimates probabilities from data by constructing the entire cell count table for the data.
  *
  * @author josephramsey
  */
@@ -41,18 +40,15 @@ public final class CellTableProbs implements DiscreteProbs {
     private final DataSet dataSet;
 
     /**
-     * An array whose length is the number of dimensions of the cell and whose
-     * contents, for each value dims[i], are the numbers of values for each
-     * i'th dimension. Each of these dimensions must be an integer greater than
-     * zero.
+     * An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
+     * numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
      */
     private final int[] dims;
 
     /**
-     * A single-dimension array containing all of the cells of the table. Must
-     * be at least long enough to contain data for each cell allowed for by the
-     * given dimension array--in other words, the length must be greater than or
-     * equal to dims[0] & dims[1] ... * dims[dims.length - 1].
+     * A single-dimension array containing all of the cells of the table. Must be at least long enough to contain data
+     * for each cell allowed for by the given dimension array--in other words, the length must be greater than or equal
+     * to dims[0] & dims[1] ... * dims[dims.length - 1].
      */
     private final int[] cells;
 
@@ -115,9 +111,26 @@ public final class CellTableProbs implements DiscreteProbs {
 
     //===========================PUBLIC METHODS=========================//
 
+    private static boolean hasNextValue(Proposition proposition, int variable,
+                                        int curIndex) {
+        return CellTableProbs.nextValue(proposition, variable, curIndex) != -1;
+    }
+
+    private static int nextValue(Proposition proposition, int variable,
+                                 int curIndex) {
+        for (int i = curIndex + 1;
+             i < proposition.getNumCategories(variable); i++) {
+            if (proposition.isAllowed(variable, i)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     /**
-     * @return the estimated probability for the given cell. The order of the
-     * variable values is the order of the variables in getVariable().
+     * @return the estimated probability for the given cell. The order of the variable values is the order of the
+     * variables in getVariable().
      */
     public double getCellProb(int[] variableValues) {
         int cellIndex = getCellIndex(variableValues);
@@ -168,8 +181,7 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated conditional probability for the given assertion
-     * conditional on the given condition.
+     * @return the estimated conditional probability for the given assertion conditional on the given condition.
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
@@ -249,9 +261,10 @@ public final class CellTableProbs implements DiscreteProbs {
         return this.dataSet;
     }
 
+    //===========================PRIVATE METHODS===========================//
+
     /**
-     * @return the list of variables for the dataset that this is estimating
-     * probabilities for.
+     * @return the list of variables for the dataset that this is estimating probabilities for.
      */
     public List<Node> getVariables() {
         return null;
@@ -264,14 +277,10 @@ public final class CellTableProbs implements DiscreteProbs {
         return true;
     }
 
-    //===========================PRIVATE METHODS===========================//
-
     /**
-     * @param coords The coordinates of the cell. Each value must be less
-     *               than the number of possible value for the corresponding
-     *               dimension in the table. (Enforced.)
-     * @return the row in the table for the given node and combination of parent
-     * values.
+     * @param coords The coordinates of the cell. Each value must be less than the number of possible value for the
+     *               corresponding dimension in the table. (Enforced.)
+     * @return the row in the table for the given node and combination of parent values.
      */
     private int getCellIndex(int[] coords) {
         int cellIndex = 0;
@@ -303,23 +312,6 @@ public final class CellTableProbs implements DiscreteProbs {
         }
 
         return cellIndex;
-    }
-
-    private static boolean hasNextValue(Proposition proposition, int variable,
-                                        int curIndex) {
-        return CellTableProbs.nextValue(proposition, variable, curIndex) != -1;
-    }
-
-    private static int nextValue(Proposition proposition, int variable,
-                                 int curIndex) {
-        for (int i = curIndex + 1;
-             i < proposition.getNumCategories(variable); i++) {
-            if (proposition.isAllowed(variable, i)) {
-                return i;
-            }
-        }
-
-        return -1;
     }
 
 }

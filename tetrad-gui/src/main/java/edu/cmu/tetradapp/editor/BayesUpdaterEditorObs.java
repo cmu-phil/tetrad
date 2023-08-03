@@ -65,8 +65,8 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     private EvidenceWizardMultipleObs evidenceWizardMultiple;
 
     /**
-     * Contains the other right-hand panels; included so that the right-hand
-     * view panel (contained in this panel) can easily be reset.
+     * Contains the other right-hand panels; included so that the right-hand view panel (contained in this panel) can
+     * easily be reset.
      */
     private JPanel singleResultPanel;
 
@@ -76,14 +76,12 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     private JPanel multiResultPanel;
 
     /**
-     * Remember which tab the user selected last time around so as not to
-     * irritate the user.
+     * Remember which tab the user selected last time around so as not to irritate the user.
      */
     private int updatedBayesImWizardTab;
 
     /**
-     * A JPanel with a card layout that contains the various cards of the
-     * wizard.
+     * A JPanel with a card layout that contains the various cards of the wizard.
      */
     private JPanel cardPanel;
 
@@ -312,17 +310,13 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     }
 
     private void resetSingleResultPanel() {
-        Window owner = (Window) getTopLevelAncestor();
-
-        if (owner == null) {
-            resetSingleResultPanelSub();
-        } else {
-            new WatchedProcess(owner) {
-                public void watch() {
-                    resetSingleResultPanelSub();
-                }
-            };
+        class MyWatchedProcess extends WatchedProcess {
+            public void watch() {
+                resetSingleResultPanelSub();
+            }
         }
+
+        new MyWatchedProcess();
     }
 
     private void resetSingleResultPanelSub() {

@@ -43,9 +43,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Displays a vertical list of buttons that determine the next action the user
- * can take in the session editor workbench, whether it's selecting and moving a
- * node, adding a node of a particular type, or adding an edge.
+ * Displays a vertical list of buttons that determine the next action the user can take in the session editor workbench,
+ * whether it's selecting and moving a node, adding a node of a particular type, or adding an edge.
  *
  * @author josephramsey
  */
@@ -171,16 +170,13 @@ class KnowledgeEditorToolbar extends JPanel {
     //===========================PRIVATE METHODS=========================//
 
     /**
-     * Constructs the button with the given node type and image prefix. If the
-     * node type is "Select", constructs a button that allows nodes to be
-     * selected and moved. If the node type is "Edge", constructs a button that
-     * allows edges to be drawn. For other node types, constructs buttons that
-     * allow those type of nodes to be added to the workbench. If a non-null
-     * image prefix is provided, images for <prefix>Up.gif, <prefix>Down.gif,
+     * Constructs the button with the given node type and image prefix. If the node type is "Select", constructs a
+     * button that allows nodes to be selected and moved. If the node type is "Edge", constructs a button that allows
+     * edges to be drawn. For other node types, constructs buttons that allow those type of nodes to be added to the
+     * workbench. If a non-null image prefix is provided, images for <prefix>Up.gif, <prefix>Down.gif,
      * <prefix>Off.gif and <prefix>Roll.gif are loaded from the /images
-     * directory relative to this compiled class and used to provide up, down,
-     * off, and rollover images for the constructed button. On construction,
-     * nodes are mapped to their node types in the Map, <code>nodeTypes</code>.
+     * directory relative to this compiled class and used to provide up, down, off, and rollover images for the
+     * constructed button. On construction, nodes are mapped to their node types in the Map, <code>nodeTypes</code>.
      * Listeners are added to the node.
      *
      * @param buttonInfo contains the info needed to construct the button.
@@ -253,8 +249,7 @@ class KnowledgeEditorToolbar extends JPanel {
     private static class ButtonInfo {
 
         /**
-         * This is the name used to construct nodes on the graph of this type.
-         * Need to coordinate with session.
+         * This is the name used to construct nodes on the graph of this type. Need to coordinate with session.
          */
         private final String nodeTypeName;
 

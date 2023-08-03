@@ -2,6 +2,7 @@ package edu.pitt.dbmi.algo.resampling.task;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
@@ -41,7 +42,8 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     private Knowledge knowledge = new Knowledge();
 
     private PrintStream out = System.out;
-    private ScoreWrapper scoreWrapper;
+    private ScoreWrapper scoreWrapper = null;
+    private IndependenceWrapper independenceWrapper = null;
 
     public GeneralResamplingSearchRunnable(DataModel dataModel, Algorithm algorithm, Parameters parameters,
                                            GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
@@ -97,16 +99,14 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     }
 
     /**
-     * @return the output stream that output (except for log output) should be
-     * sent to.
+     * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
         return this.out;
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent
-     * to. By detault System.out.
+     * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
      */
     public void setOut(PrintStream out) {
         this.out = out;
@@ -142,7 +142,13 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
                     }
                 }
 
-                this.multiDataSetAlgorithm.setScoreWrapper(this.scoreWrapper);
+                if (scoreWrapper != null) {
+                    this.multiDataSetAlgorithm.setScoreWrapper(this.scoreWrapper);
+                }
+
+                if (independenceWrapper != null) {
+                    this.multiDataSetAlgorithm.setIndTestWrapper(this.independenceWrapper);
+                }
 
                 graph = this.multiDataSetAlgorithm.search(this.dataModels, this.parameters);
             }

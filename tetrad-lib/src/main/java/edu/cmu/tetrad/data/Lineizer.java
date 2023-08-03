@@ -26,10 +26,8 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
- * @author josephramsey
- * Returns one line at a time, with a method to determine whether another
- * line is available. Blank lines and lines beginning with the given comment
- * marker are skipped.
+ * @author josephramsey Returns one line at a time, with a method to determine whether another line is available. Blank
+ * lines and lines beginning with the given comment marker are skipped.
  */
 final class Lineizer {
 
@@ -37,26 +35,21 @@ final class Lineizer {
      * The character sequence being tokenized.
      */
     private final BufferedReader reader;
-
-    /**
-     * Stores the line read by hasMoreLines, until it is retrieved by nextLine,
-     * at which point it is null.
-     */
-    private String tempLine;
-
     /**
      * The comment marker.
      */
     private final String commentMarker;
-
+    /**
+     * Stores the line read by hasMoreLines, until it is retrieved by nextLine, at which point it is null.
+     */
+    private String tempLine;
     /**
      * The line number of the line most recently read.
      */
     private int lineNumber;
 
     /**
-     * Constructs a tokenizer for the given input line, using the given Pattern
-     * as delimiter.
+     * Constructs a tokenizer for the given input line, using the given Pattern as delimiter.
      */
     public Lineizer(Reader reader, String commentMarker) {
         if (reader == null) {

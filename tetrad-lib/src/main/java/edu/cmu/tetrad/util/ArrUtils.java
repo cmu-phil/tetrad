@@ -51,9 +51,8 @@ final class ArrUtils {
     }
 
     /**
-     * Copies the given array, using a standard scientific notation number
-     * formatter and beginning each line with a tab character. The number format
-     * is DecimalFormat(" 0.0000;-0.0000").
+     * Copies the given array, using a standard scientific notation number formatter and beginning each line with a tab
+     * character. The number format is DecimalFormat(" 0.0000;-0.0000").
      *
      * @param arr The double array to turn into a String.
      * @return The formatted array.
@@ -64,9 +63,8 @@ final class ArrUtils {
     }
 
     /**
-     * Copies the given array, using a standard scientific notation number
-     * formatter and beginning each line with a tab character. The number format
-     * is DecimalFormat(" 0.0000;-0.0000").
+     * Copies the given array, using a standard scientific notation number formatter and beginning each line with a tab
+     * character. The number format is DecimalFormat(" 0.0000;-0.0000").
      *
      * @param arr The int array to turn into a string.
      * @return The formatted array.
@@ -81,9 +79,8 @@ final class ArrUtils {
     }
 
     /**
-     * Copies the given array, using a standard scientific notation number
-     * formatter and beginning each line with the given lineInit. The number
-     * format is DecimalFormat(" 0.0000;-0.0000").
+     * Copies the given array, using a standard scientific notation number formatter and beginning each line with the
+     * given lineInit. The number format is DecimalFormat(" 0.0000;-0.0000").
      *
      * @param arr The double array to turn into a string.
      * @param nf  The number format to use.

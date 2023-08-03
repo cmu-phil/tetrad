@@ -20,32 +20,31 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
  * <p>Uses SP in place of FGES for the initial step in the GFCI algorithm.
- * This tends to produce a accurate PAG than GFCI as a result, for the latent
- * variables case. This is a simple substitution; the reference for GFCI is here:</p>
+ * This tends to produce a accurate PAG than GFCI as a result, for the latent variables case. This is a simple
+ * substitution; the reference for GFCI is here:</p>
  *
  * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016. Here, SP has been substituted for
- * FGES.</p>
+ * for Latent Variable Models," JMLR 2016. Here, SP has been substituted for FGES.</p>
  *
  * <p>The reference for the SP algorithm is here:</p>
  *
@@ -56,8 +55,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * a test, so for this method, both a test and a score need to be given.</p>
  *
  * <p>Note that SP considers all permutations of the algorithm, which is
- * exponential in the number of variables. So SP is limited to about 10
- * variables.</p>
+ * exponential in the number of variables. So SP is limited to about 10 variables.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -72,45 +70,28 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  */
 public final class SpFci implements IGraphSearch {
 
-    // The PAG being constructed.
-    private Graph graph;
-
-    // The background knowledge.
-    private Knowledge knowledge = new Knowledge();
-
-    // The conditional independence test.
-    private IndependenceTest independenceTest;
-
-    // Flag for complete rule set, true if you should use complete rule set, false otherwise.
-    private boolean completeRuleSetUsed = true;
-
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-    private int maxPathLength = -1;
-
-    // The maxDegree for the fast adjacency search.
-    private int maxDegree = -1;
-
     // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    // True iff verbose output should be printed.
-    private boolean verbose;
-
-    // The covariance matrix beign searched over. Assumes continuous data.
-    ICovarianceMatrix covarianceMatrix;
-
-    // The sample size.
-    int sampleSize;
-
-    // The print stream that output is directed to.
-    private PrintStream out = System.out;
-
     // The score.
     private final Score score;
+    // The sample size.
+    int sampleSize;
+    // The PAG being constructed.
+    private Graph graph;
+    // The background knowledge.
+    private Knowledge knowledge = new Knowledge();
+    // The conditional independence test.
+    private final IndependenceTest independenceTest;
+    // Flag for complete rule set, true if you should use complete rule set, false otherwise.
+    private boolean completeRuleSetUsed = true;
+    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    private int maxPathLength = -1;
+    // The maxDegree for the fast adjacency search.
+    private int maxDegree = -1;
+    // True iff verbose output should be printed.
+    private boolean verbose;
     private int depth = -1;
     private boolean doDiscriminatingPathRule = true;
-
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -127,7 +108,6 @@ public final class SpFci implements IGraphSearch {
         this.independenceTest = test;
     }
 
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Runs the search and returns the discovered PAG.
@@ -146,7 +126,6 @@ public final class SpFci implements IGraphSearch {
         Sp subAlg = new Sp(this.score);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
-        alg.setVerbose(this.verbose);
 
         this.graph = alg.search();
 
@@ -160,7 +139,7 @@ public final class SpFci implements IGraphSearch {
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);
 
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
+        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth, knowledge);
 
         // GFCI extra edge removal step...
         gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
@@ -182,6 +161,15 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
+     * Returns The maximum indegree of the output graph.
+     *
+     * @return This maximum.
+     */
+    public int getMaxDegree() {
+        return this.maxDegree;
+    }
+
+    /**
      * Sets the max degree of the search.
      *
      * @param maxDegree This maximum.
@@ -195,18 +183,9 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
-     * Returns The maximum indegree of the output graph.
-     *
-     * @return This maximum.
-     */
-    public int getMaxDegree() {
-        return this.maxDegree;
-    }
-
-    /**
      * Returns the knowledge.
      *
-     * @return This knowedge.
+     * @return This knowledge.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -224,28 +203,25 @@ public final class SpFci implements IGraphSearch {
     /**
      * Returns whether the complete rule set is used.
      *
-     * @return True if Zhang's complete rule set should be used, Talse if only
-     * R1-R4 (the rule set of the original FCI) should be used. False by
-     * default.
+     * @return True if Zhang's complete rule set should be used, False if only R1-R4 (the rule set of the original FCI)
+     * should be used. False by default.
      */
     public boolean isCompleteRuleSetUsed() {
         return this.completeRuleSetUsed;
     }
 
     /**
-     * Sets whether Zhang's complete ruleset is used.
+     * Sets whether Zhang's complete rule set is used.
      *
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set
-     *                            should be used, false if only R1-R4 (the rule set of the original FCI)
-     *                            should be used. False by default.
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
+     *                            set of the original FCI) should be used. False by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
-     * Returns the maximum length of any discriminating path, or -1 of
-     * unlimited.
+     * Returns the maximum length of any discriminating path, or -1 of unlimited.
      *
      * @return This length.
      */
@@ -256,8 +232,7 @@ public final class SpFci implements IGraphSearch {
     /**
      * Sets the max path length for discriminating paths.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1
-     *                      if unlimited.
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -270,7 +245,7 @@ public final class SpFci implements IGraphSearch {
     /**
      * Sets whether verbose output is printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -291,7 +266,7 @@ public final class SpFci implements IGraphSearch {
      * @param out This print stream.
      */
     public void setOut(PrintStream out) {
-        this.out = out;
+        // The print stream that output is directed to.
     }
 
     /**
@@ -306,13 +281,12 @@ public final class SpFci implements IGraphSearch {
     /**
      * Sets whether the discriminating path search is done.
      *
-     * @param doDiscriminatingPathRule True if so.
+     * @param doDiscriminatingPathRule True, if so.
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
-    //===========================================PRIVATE METHODS=======================================//
 
     // Due to Spirtes.
     private void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
@@ -323,7 +297,7 @@ public final class SpFci implements IGraphSearch {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -340,7 +314,7 @@ public final class SpFci implements IGraphSearch {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
+                    Set<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);

@@ -28,8 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Implements a basic node in a graph--that is, a node that is not itself a
- * variable.
+ * Implements a basic node in a graph--that is, a node that is not itself a variable.
  *
  * @author josephramsey
  * @author Willie Wheeler
@@ -37,14 +36,13 @@ import java.util.Map;
 public class GraphNode implements Node {
 
     static final long serialVersionUID = 23L;
-
+    private final Map<String, Object> attributes = new HashMap<>();
     /**
      * The name of the node.
      *
      * @serial
      */
     private String name = "??";
-
     /**
      * The type of the node.
      *
@@ -52,33 +50,26 @@ public class GraphNode implements Node {
      * @see edu.cmu.tetrad.graph.NodeType
      */
     private NodeType nodeType = NodeType.MEASURED;
-
     /**
-     * Node variable type (domain, interventional status, interventional
-     * value..) of this node variable
+     * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
-
     /**
      * The x coordinate of the center of the node.
      *
      * @serial
      */
     private int centerX = -1;
-
     /**
      * The y coordinate of the center of the node.
      *
      * @serial
      */
     private int centerY = -1;
-
     /**
      * Fires property change events.
      */
     private transient PropertyChangeSupport pcs;
-
-    private final Map<String, Object> attributes = new HashMap<>();
 
     //============================CONSTRUCTORS==========================//
 
@@ -116,6 +107,19 @@ public class GraphNode implements Node {
     }
 
     /**
+     * Sets the name of this variable.
+     */
+    public final void setName(String name) {
+        if (name == null) {
+            throw new NullPointerException("Name must not be null.");
+        }
+
+        String oldName = this.name;
+        this.name = name;
+        getPcs().firePropertyChange("name", oldName, this.name);
+    }
+
+    /**
      * @return the node type.
      * @see edu.cmu.tetrad.graph.NodeType
      */
@@ -133,19 +137,6 @@ public class GraphNode implements Node {
             throw new NullPointerException("Node type must not be null.");
         }
         this.nodeType = nodeType;
-    }
-
-    /**
-     * Sets the name of this variable.
-     */
-    public final void setName(String name) {
-        if (name == null) {
-            throw new NullPointerException("Name must not be null.");
-        }
-
-        String oldName = this.name;
-        this.name = name;
-        getPcs().firePropertyChange("name", oldName, this.name);
     }
 
     /**
@@ -185,8 +176,8 @@ public class GraphNode implements Node {
     }
 
     /**
-     * @return the existing property change support object for this class, if
-     * there is one, or else creates a new one and returns that.
+     * @return the existing property change support object for this class, if there is one, or else creates a new one
+     * and returns that.
      */
     private PropertyChangeSupport getPcs() {
         if (this.pcs == null) {
@@ -210,27 +201,16 @@ public class GraphNode implements Node {
     }
 
     public int hashCode() {
-        if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
-            return super.hashCode();
-        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            return this.getName().hashCode();
-        }
-
-        throw new IllegalArgumentException();
+        return this.getName().hashCode();
     }
 
     /**
-     * Two continuous variables are equal if they have the same name and the
-     * same missing value marker.
+     * Two continuous variables are equal if they have the same name and the same missing value marker.
      */
     public boolean equals(Object o) {
-        if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
-            return o == this;
-        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            return o instanceof GraphNode && getName().equals(((Node) o).getName());
-        }
-
-        throw new IllegalStateException();
+        if (o == null) return false;
+        if (!(o instanceof GraphNode)) return false;
+        return getName().equals(((Node) o).getName());
     }
 
     public Node like(String name) {
@@ -240,14 +220,12 @@ public class GraphNode implements Node {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

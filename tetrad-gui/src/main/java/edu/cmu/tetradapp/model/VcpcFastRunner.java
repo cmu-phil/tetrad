@@ -23,16 +23,19 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.work_in_progress.VcPcFast;
-import edu.cmu.tetrad.search.test.IndTestDSep;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
+import edu.cmu.tetrad.search.work_in_progress.VcPcFast;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IndTestType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
@@ -55,9 +58,8 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
     //============================CONSTRUCTORS============================//
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DataWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DataWrapper must contain a DataSet that is either a DataSet
+     * or a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public VcpcFastRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -75,9 +77,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 
 
     /**
-     * Constucts a wrapper for the given
-     * /**
-     * Constucts a wrapper for the given EdgeListGraph.
+     * Constucts a wrapper for the given /** Constucts a wrapper for the given EdgeListGraph.
      */
     public VcpcFastRunner(Graph graph, Parameters params) {
         super(graph, params);
@@ -175,7 +175,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 
         VcPcFast fvcpc = new VcPcFast(getIndependenceTest());
         fvcpc.setKnowledge(knowledge);
-        fvcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        fvcpc.setMeekPreventCycles(this.isMeekPreventCycles());
         fvcpc.setDepth(getParams().getInt("depth", -1));
         if (this.independenceFactsModel != null) {
             fvcpc.setFacts(this.independenceFactsModel.getFacts());
@@ -196,7 +196,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 
     public IndependenceTest getIndependenceTest() {
         if (this.dag != null) {
-            return new IndTestDSep(getGraph());
+            return new MsepTest(getGraph());
         }
 
         Object dataModel = getDataModel();
@@ -254,7 +254,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 
     public MeekRules getMeekRules() {
         MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        meekRules.setMeekPreventCycles(this.isMeekPreventCycles());
         meekRules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
         return meekRules;
     }
@@ -266,9 +266,9 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 
     //========================== Private Methods ===============================//
 
-    private boolean isAggressivelyPreventCycles() {
+    private boolean isMeekPreventCycles() {
         Parameters params = getParams();
-        return params instanceof Parameters && params.getBoolean("aggressivelyPreventCycles", false);
+        return params instanceof Parameters && params.getBoolean("MeekPreventCycles", false);
     }
 
     private void setVcpcFastFields(VcPcFast fvcpc) {

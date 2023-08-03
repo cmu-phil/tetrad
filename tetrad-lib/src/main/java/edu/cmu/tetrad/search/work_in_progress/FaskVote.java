@@ -18,12 +18,12 @@ import static edu.cmu.tetrad.util.Params.*;
 
 /**
  * <p>Runs IMaGES on a list of algorithms and then produces a graph over the
- * ImaGES adjacencies where each edge orientation is voted on by running FASK on each
- * dataset in turn and voting on edge orientation.</p>
+ * ImaGES adjacencies where each edge orientation is voted on by running FASK on each dataset in turn and voting on edge
+ * orientation.</p>
  *
  * <p>Moving this to the work_in_progress directory because this functionality
- * can be generalized to arbitrary GraphSearch algorithms, not just FASK, given
- * an adjacency graph, as an alternative to bootstrapping.</p>
+ * can be generalized to arbitrary GraphSearch algorithms, not just FASK, given an adjacency graph, as an alternative to
+ * bootstrapping.</p>
  *
  * @author Madelyn Glymour
  * @author josephramsey 9/5/2020
@@ -31,8 +31,8 @@ import static edu.cmu.tetrad.util.Params.*;
 public class FaskVote {
     private final IndependenceWrapper test;
     private final ScoreWrapper score;
-    private Knowledge knowledge = new Knowledge();
     private final List<DataSet> dataSets;
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * Constructor.

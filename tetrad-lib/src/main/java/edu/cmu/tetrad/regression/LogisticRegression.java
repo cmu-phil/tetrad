@@ -38,14 +38,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implements a logistic regression algorithm based on a Javascript
- * implementation by John Pezzullo.  That implementation together with a
- * description of logistic regression and some examples appear on his web page
+ * Implements a logistic regression algorithm based on a Javascript implementation by John Pezzullo.  That
+ * implementation together with a description of logistic regression and some examples appear on his web page
  * http://members.aol.com/johnp71/logistic.html
  * <p>
- * See also  Applied Logistic Regression, by D.W. Hosmer and S. Lemeshow. 1989,
- * John Wiley and Sons, New York which Pezzullo references.  In particular see
- * pages 27-29.
+ * See also  Applied Logistic Regression, by D.W. Hosmer and S. Lemeshow. 1989, John Wiley and Sons, New York which
+ * Pezzullo references.  In particular see pages 27-29.
  *
  * @author Frank Wimberly
  */
@@ -56,22 +54,19 @@ public class LogisticRegression implements TetradSerializable {
      * The data set that was supplied.
      */
     private final DataSet dataSet;
-
-    /**
-     * The default alpha level which may be specified otherwise in the GUI
-     */
-    private double alpha = 0.05;
-
     /**
      * The data converted into column major, to avoid unnecessary copying.
      */
     private final double[][] dataCols;
-
+    /**
+     * The default alpha level which may be specified otherwise in the GUI
+     */
+    private double alpha = 0.05;
     private int[] rows;
 
     /**
-     * A mixed data set. The targets of regresson must be binary. Regressors must be continuous or binary.
-     * Other variables don't matter.
+     * A mixed data set. The targets of regresson must be binary. Regressors must be continuous or binary. Other
+     * variables don't matter.
      */
     public LogisticRegression(DataSet dataSet) {
         this.dataSet = dataSet;
@@ -133,8 +128,8 @@ public class LogisticRegression implements TetradSerializable {
     }
 
     /**
-     * Regresses the single-column target onto the regressors which have been
-     * previously set, generating a regression result.
+     * Regresses the single-column target onto the regressors which have been previously set, generating a regression
+     * result.
      * <p>
      * The target must be a two-valued variable with values 0 and 1.
      * <p>
@@ -376,6 +371,21 @@ public class LogisticRegression implements TetradSerializable {
         this.rows = rows;
     }
 
+    /**
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
+     */
+    private void readObject(ObjectInputStream s)
+            throws IOException, ClassNotFoundException {
+        s.defaultReadObject();
+    }
+
+    //================================== Public Methods =======================================//
+
     public static class Result implements TetradSerializable {
         static final long serialVersionUID = 23L;
         private final double chiSq;
@@ -566,23 +576,6 @@ public class LogisticRegression implements TetradSerializable {
 
             return report.toString();
         }
-    }
-
-    //================================== Public Methods =======================================//
-
-    /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
     }
 }
 

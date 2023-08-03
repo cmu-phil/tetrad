@@ -21,8 +21,8 @@
 
 package edu.cmu.tetrad.study.gene.tetrad.gene.graph;
 
-import edu.cmu.tetrad.study.gene.tetrad.gene.history.SimpleRandomizer;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.study.gene.tetrad.gene.history.SimpleRandomizer;
 
 /**
  * Constructs as a randomized update workbench.
@@ -38,8 +38,7 @@ public class RandomActiveLagGraph extends ActiveLagGraph
     //===========================CONSTRUCTORS===========================//
 
     /**
-     * Using the given parameters, constructs an BasicLagGraph that is
-     * randomized upon construction.
+     * Using the given parameters, constructs an BasicLagGraph that is randomized upon construction.
      *
      * @param params an LagGraphParams object.
      */

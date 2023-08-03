@@ -4,7 +4,8 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.BFci;
+import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -25,11 +26,11 @@ import java.util.List;
 
 
 public class DataForCalibrationRfci {
+    public int depth = 5;
     PrintWriter outProb;
     private PrintWriter outGraph;
     private PrintWriter outPag;
-    public int depth = 5;
-
+    private static boolean precomputeCovariances = false;
 
     public static void main(String[] args) throws IOException {
 
@@ -134,7 +135,7 @@ public class DataForCalibrationRfci {
 //        if (algorithm.equals("RFCI")) {
 
         final IndTestFisherZ test = new IndTestFisherZ(data, 0.001);
-        final SemBicScore score = new SemBicScore(data);
+        final SemBicScore score = new SemBicScore(data, precomputeCovariances);
         score.setPenaltyDiscount(2);
 
         System.out.println("Starting search with all data");
@@ -354,7 +355,7 @@ public class DataForCalibrationRfci {
 
     public Graph learnBNRFCI(DataSet bootstrapSample, int depth, Graph truePag) {
         final IndTestFisherZ test = new IndTestFisherZ(bootstrapSample, 0.001);
-        final SemBicScore score = new SemBicScore(bootstrapSample);
+        final SemBicScore score = new SemBicScore(bootstrapSample, precomputeCovariances);
         score.setPenaltyDiscount(2);
 
         System.out.println("Starting search with a bootstrap");
@@ -370,35 +371,6 @@ public class DataForCalibrationRfci {
 
 
         return estPag;
-    }
-
-    private interface EdgeProbabiity {
-        double getProbability(Edge edge);
-    }
-
-    private static class EdgeFrequency implements EdgeProbabiity {
-        private final List<Graph> PagProbs;
-
-        public EdgeFrequency(List<Graph> PagProb) {
-            this.PagProbs = PagProb;
-        }
-
-        public double getProbability(Edge e) {
-            int count = 0;
-
-            if (!PagProbs.get(0).containsNode(e.getNode1())) throw new IllegalArgumentException();
-            if (!PagProbs.get(0).containsNode(e.getNode2())) throw new IllegalArgumentException();
-
-            for (Graph g : PagProbs) {
-                if (e.getEndpoint1() == Endpoint.NULL || e.getEndpoint2() == Endpoint.NULL) {
-                    if (!g.isAdjacentTo(e.getNode1(), e.getNode2())) count++;
-                } else {
-                    if (g.containsEdge(e)) count++;
-                }
-            }
-
-            return count / (double) PagProbs.size();
-        }
     }
 
     public boolean checkProbFileExists(String modelName, int numVars, int numEdges, int numCases, int numBootstrapSamples, String alg, int i, double numLatentConfounders, double alpha, String data_path) {
@@ -443,5 +415,38 @@ public class DataForCalibrationRfci {
         out.flush();
         out.print(s);
         out.flush();
+    }
+
+    public void setPrecomputeCovariances(boolean precomputeCovariances) {
+        this.precomputeCovariances = precomputeCovariances;
+    }
+
+    private interface EdgeProbabiity {
+        double getProbability(Edge edge);
+    }
+
+    private static class EdgeFrequency implements EdgeProbabiity {
+        private final List<Graph> PagProbs;
+
+        public EdgeFrequency(List<Graph> PagProb) {
+            this.PagProbs = PagProb;
+        }
+
+        public double getProbability(Edge e) {
+            int count = 0;
+
+            if (!PagProbs.get(0).containsNode(e.getNode1())) throw new IllegalArgumentException();
+            if (!PagProbs.get(0).containsNode(e.getNode2())) throw new IllegalArgumentException();
+
+            for (Graph g : PagProbs) {
+                if (e.getEndpoint1() == Endpoint.NULL || e.getEndpoint2() == Endpoint.NULL) {
+                    if (!g.isAdjacentTo(e.getNode1(), e.getNode2())) count++;
+                } else {
+                    if (g.containsEdge(e)) count++;
+                }
+            }
+
+            return count / (double) PagProbs.size();
+        }
     }
 }

@@ -28,9 +28,8 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Provides an interface for classes that test tetrad constraints. For the continuous case,
- * we have a variety of tests, including a distribution-free one (which may not be
- * currently practical when the number of variables is too large).
+ * Provides an interface for classes that test tetrad constraints. For the continuous case, we have a variety of tests,
+ * including a distribution-free one (which may not be currently practical when the number of variables is too large).
  *
  * @author Ricardo Silva
  */

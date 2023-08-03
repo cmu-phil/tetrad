@@ -24,8 +24,10 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -41,38 +43,31 @@ import java.util.*;
 public class IndTestProbabilistic implements IndependenceTest {
 
     /**
-     * Calculates probabilities of independence for conditional independence facts.
-     */
-    private boolean threshold;
-
-    /**
      * The data set for which conditional  independence judgments are requested.
      */
     private final DataSet data;
-
     /**
      * The nodes of the data set.
      */
     private final List<Node> nodes;
-
     /**
      * Indices of the nodes.
      */
     private final Map<Node, Integer> indices;
-
     /**
      * A map from independence facts to their probabilities of independence.
      */
     private final Map<IndependenceFact, Double> H;
+    private final BCInference bci;
+    /**
+     * Calculates probabilities of independence for conditional independence facts.
+     */
+    private boolean threshold;
     private double posterior;
     private boolean verbose;
-
     private double cutoff = 0.5;
     private double priorEquivalentSampleSize = 10;
 
-    private final BCInference bci;
-
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Initializes the test using a discrete data sets.
@@ -139,7 +134,10 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     @Override
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+
         Node[] nodes = new Node[z.size()];
         for (int i = 0; i < z.size(); i++) nodes[i] = z.get(i);
         return checkIndependence(x, y, nodes);
@@ -156,8 +154,8 @@ public class IndTestProbabilistic implements IndependenceTest {
 
         List<Integer> rows = getRows(this.data, allVars, this.indices);
         if (rows.isEmpty())
-            return new IndependenceResult(new IndependenceFact(x, y, z),
-                    true, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, GraphUtils.asSet(z)),
+                    true, Double.NaN, Double.NaN);
 
         BCInference bci;
         Map<Node, Integer> indices;
@@ -200,6 +198,7 @@ public class IndTestProbabilistic implements IndependenceTest {
         posterior = p;
 
         boolean ind;
+
         if (threshold) {
             ind = (p >= cutoff);
         } else {
@@ -209,11 +208,12 @@ public class IndTestProbabilistic implements IndependenceTest {
         if (this.verbose) {
             if (ind) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, Arrays.asList(z), p));
+                        LogUtilsSearch.independenceFactMsg(x, y, GraphUtils.asSet(z), p));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), ind, p);
+        // Note p here is not a p-value but rather a posterior probability.
+        return new IndependenceResult(new IndependenceFact(x, y, z), ind, p, Double.NaN);
     }
 
 
@@ -246,7 +246,7 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     @Override
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(Set<Node> z, Node y) {
         throw new UnsupportedOperationException();
     }
 
@@ -263,12 +263,6 @@ public class IndTestProbabilistic implements IndependenceTest {
     @Override
     public DataModel getData() {
         return this.data;
-    }
-
-
-    @Override
-    public double getScore() {
-        return this.posterior;
     }
 
     public Map<IndependenceFact, Double> getH() {

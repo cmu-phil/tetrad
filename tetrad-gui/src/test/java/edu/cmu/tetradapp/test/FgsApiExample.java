@@ -21,8 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Author : Jeremy Espino MD
- * Created  10/15/19 6:47 PM
+ * Author : Jeremy Espino MD Created  10/15/19 6:47 PM
  */
 public class FgsApiExample {
 

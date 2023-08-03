@@ -50,8 +50,7 @@ public class TestSession {
     }
 
     /**
-     * Tests whether session nodes can be added and removed from the session
-     * correctly.
+     * Tests whether session nodes can be added and removed from the session correctly.
      */
     @Test
     public void testAddRemoveSessionNodes() {
@@ -197,21 +196,19 @@ public class TestSession {
         }
     }
 
-    private void setEventId(String eventId) {
-        this.eventId = eventId;
-    }
-
     private String getEventId() {
         return this.eventId;
     }
 
+    private void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
     /**
-     * Tests whether the session can be serialized and reconstructed correctly.
-     * This only tests the skeletal form of the serialization--serialization of
-     * each specific model has to be tested separately in those models, since
-     * the session class itself is not supposed to have any knowledge of
-     * specific models. (For the test, we just make up a few classes and try
-     * serializing those.)
+     * Tests whether the session can be serialized and reconstructed correctly. This only tests the skeletal form of the
+     * serialization--serialization of each specific model has to be tested separately in those models, since the
+     * session class itself is not supposed to have any knowledge of specific models. (For the test, we just make up a
+     * few classes and try serializing those.)
      */
 //    @Test
     public void rtestSerialization() {

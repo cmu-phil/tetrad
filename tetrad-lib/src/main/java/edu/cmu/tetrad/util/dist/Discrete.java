@@ -26,10 +26,9 @@ import edu.cmu.tetrad.util.RandomUtil;
 import java.util.Arrays;
 
 /**
- * Wraps a chi square distribution for purposes of drawing random samples.
- * Methods are provided to allow parameters to be manipulated in an interface.
- * A value of n is returned if a number drawn uniformly from [0, 1] is less
- * than the n + 1th p value.
+ * Wraps a chi square distribution for purposes of drawing random samples. Methods are provided to allow parameters to
+ * be manipulated in an interface. A value of n is returned if a number drawn uniformly from [0, 1] is less than the n +
+ * 1th p value.
  *
  * @author josephramsey
  */
@@ -39,9 +38,8 @@ public class Discrete implements Distribution {
     private final double[] p;
 
     /**
-     * A discrete distribution with 0 with probability 1 - p and 1 with probability p. Each of the
-     * supplied values must be in (0, 1), and each must be less than its
-     * successor (if it has one).
+     * A discrete distribution with 0 with probability 1 - p and 1 with probability p. Each of the supplied values must
+     * be in (0, 1), and each must be less than its successor (if it has one).
      */
     private Discrete(double... p) {
         this.p = convert(p);
@@ -90,8 +88,6 @@ public class Discrete implements Distribution {
     public String toString() {
         return "Discrete(" + Arrays.toString(this.p) + ")";
     }
-
-    //=============================PRIVATE METHODS=========================//
 
     private double[] convert(double... p) {
         for (double _p : p) {

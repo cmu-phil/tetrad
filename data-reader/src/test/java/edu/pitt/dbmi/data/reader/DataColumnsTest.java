@@ -26,9 +26,9 @@ import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Jan 2, 2019 10:49:19 AM
@@ -37,10 +37,9 @@ import java.nio.file.Paths;
  */
 public class DataColumnsTest {
 
-    Path dataFile = Paths.get(getClass().getResource("/data/metadata/sim_mixed_intervention.txt").getFile());
-    Path metadataFile = Paths.get(getClass().getResource("/data/metadata/sim_mixed_intervention_metadata.json").getFile());
-
     private final Delimiter delimiter = Delimiter.TAB;
+    Path dataFile = new File(getClass().getResource("/data/metadata/sim_mixed_intervention.txt").getFile()).toPath();
+    Path metadataFile = new File(getClass().getResource("/data/metadata/sim_mixed_intervention_metadata.json").getFile()).toPath();
 
     public DataColumnsTest() {
     }

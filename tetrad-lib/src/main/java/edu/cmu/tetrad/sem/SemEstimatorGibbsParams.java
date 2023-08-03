@@ -35,15 +35,11 @@ import java.io.ObjectInputStream;
  */
 public final class SemEstimatorGibbsParams implements TetradSerializable {
     static final long serialVersionUID = 23L;
-
+    private final double tolerance;
     private SemIm startIm;
     private boolean flatPrior;
     private int numIterations;
     private double stretch;
-
-    private final double tolerance;
-
-    //=============================CONSTRUCTORS============================//
 
     /**
      *
@@ -98,24 +94,21 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
         this.numIterations = numIterations;
     }
 
-    public void setFlatPrior(boolean flatPrior) {
-        this.flatPrior = flatPrior;
-    }
-
     public boolean isFlatPrior() {
         return this.flatPrior;
     }
 
+    public void setFlatPrior(boolean flatPrior) {
+        this.flatPrior = flatPrior;
+    }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

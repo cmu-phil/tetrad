@@ -39,47 +39,6 @@ public class StARS implements Algorithm {
         this.parameter = parameter;
     }
 
-    @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        DataSet _dataSet;
-
-        _dataSet = (DataSet) dataSet;//.subsetColumns(cols);
-
-        double percentageB = parameters.getDouble("percentSubsampleSize");
-        double beta = parameters.getDouble("StARS.cutoff");
-        int numSubsamples = parameters.getInt("numSubsamples");
-
-        Parameters _parameters = new Parameters(parameters);
-
-        List<DataSet> samples = new ArrayList<>();
-
-        for (int i = 0; i < numSubsamples; i++) {
-            BootstrapSampler sampler = new BootstrapSampler();
-            sampler.setWithoutReplacements(true);
-            samples.add(sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows())));
-        }
-
-        double maxD = Double.NEGATIVE_INFINITY;
-        double _lambda = Double.NaN;
-
-        for (double lambda = this.low; lambda <= this.high; lambda += 0.5) {
-            double D = StARS.getD(parameters, this.parameter, lambda, samples, this.algorithm);
-            System.out.println("lambda = " + lambda + " D = " + D);
-
-            if (D > maxD && D < beta) {
-                maxD = D;
-                _lambda = lambda;
-            }
-        }
-
-        System.out.println("FINAL: lambda = " + _lambda + " D = " + maxD);
-
-        System.out.println(this.parameter + " = " + StARS.getValue(_lambda, parameters));
-        _parameters.set(this.parameter, StARS.getValue(_lambda, parameters));
-
-        return this.algorithm.search(dataSet, _parameters);
-    }
-
     private static double getD(Parameters params, String paramName, double paramValue, List<DataSet> samples,
                                Algorithm algorithm) {
         params.set(paramName, paramValue);
@@ -163,6 +122,47 @@ public class StARS implements Algorithm {
         } else {
             return FastMath.round(value * 1000000000.0) / 1000000000.0;
         }
+    }
+
+    @Override
+    public Graph search(DataModel dataSet, Parameters parameters) {
+        DataSet _dataSet;
+
+        _dataSet = (DataSet) dataSet;//.subsetColumns(cols);
+
+        double percentageB = parameters.getDouble("percentSubsampleSize");
+        double beta = parameters.getDouble("StARS.cutoff");
+        int numSubsamples = parameters.getInt("numSubsamples");
+
+        Parameters _parameters = new Parameters(parameters);
+
+        List<DataSet> samples = new ArrayList<>();
+
+        for (int i = 0; i < numSubsamples; i++) {
+            BootstrapSampler sampler = new BootstrapSampler();
+            sampler.setWithoutReplacements(true);
+            samples.add(sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows())));
+        }
+
+        double maxD = Double.NEGATIVE_INFINITY;
+        double _lambda = Double.NaN;
+
+        for (double lambda = this.low; lambda <= this.high; lambda += 0.5) {
+            double D = StARS.getD(parameters, this.parameter, lambda, samples, this.algorithm);
+            System.out.println("lambda = " + lambda + " D = " + D);
+
+            if (D > maxD && D < beta) {
+                maxD = D;
+                _lambda = lambda;
+            }
+        }
+
+        System.out.println("FINAL: lambda = " + _lambda + " D = " + maxD);
+
+        System.out.println(this.parameter + " = " + StARS.getValue(_lambda, parameters));
+        _parameters.set(this.parameter, StARS.getValue(_lambda, parameters));
+
+        return this.algorithm.search(dataSet, _parameters);
     }
 
     @Override

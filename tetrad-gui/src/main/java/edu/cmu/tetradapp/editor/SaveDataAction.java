@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.text.NumberFormat;
 
 /**
@@ -42,21 +43,17 @@ import java.text.NumberFormat;
 final class SaveDataAction extends AbstractAction {
 
     /**
+     * Formats all numbers.
+     */
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    /**
      * The dataEditor.                          -
      */
     private DataEditor dataEditor;
-
-
     /***
      * Search editor to get data from.
      */
     private MarkovBlanketSearchEditor searchEditor;
-
-
-    /**
-     * Formats all numbers.
-     */
-    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * Creates a new action to save data.
@@ -136,7 +133,7 @@ final class SaveDataAction extends AbstractAction {
             PrintWriter out;
 
             try {
-                out = new PrintWriter(new FileOutputStream(file));
+                out = new PrintWriter(Files.newOutputStream(file.toPath()));
             } catch (IOException e) {
                 throw new IllegalArgumentException(
                         "Output file could not be opened: " + file);
@@ -163,7 +160,7 @@ final class SaveDataAction extends AbstractAction {
             PrintWriter out;
 
             try {
-                out = new PrintWriter(new FileOutputStream(file));
+                out = new PrintWriter(Files.newOutputStream(file.toPath()));
             } catch (IOException e) {
                 throw new IllegalArgumentException(
                         "Output file could not be opened: " + file);
@@ -191,7 +188,7 @@ final class SaveDataAction extends AbstractAction {
                     try {
                         File file1 = new File(file.getParent(), file.getName() + "_" + (i + 1) + ".txt");
                         System.out.println(file1);
-                        out = new PrintWriter(new FileOutputStream(file1));
+                        out = new PrintWriter(Files.newOutputStream(file1.toPath()));
                     } catch (IOException e) {
                         throw new IllegalArgumentException(
                                 "Output file could not be opened: " + name.replace(" ", "_") + ".txt");
@@ -214,7 +211,7 @@ final class SaveDataAction extends AbstractAction {
                     try {
                         File file1 = new File(file.getParent(), file.getName() + "_" + (i + 1) + ".txt");
                         System.out.println(file1);
-                        out = new PrintWriter(new FileOutputStream(file1));
+                        out = new PrintWriter(Files.newOutputStream(file1.toPath()));
                     } catch (IOException e) {
                         throw new IllegalArgumentException(
                                 "Output file could not be opened: " + name.replace(" ", "_") + ".txt");

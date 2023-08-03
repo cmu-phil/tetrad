@@ -2,6 +2,7 @@ package edu.pitt.dbmi.algo.resampling;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
@@ -22,6 +23,7 @@ public class GeneralResamplingTest {
     private final GeneralResamplingSearch resamplingSearch;
     private final ResamplingEdgeEnsemble edgeEnsemble;
     private ScoreWrapper scoreWrapper;
+    private IndependenceWrapper independenceWrapper;
     private PrintStream out = System.out;
     private Parameters parameters;
     private Algorithm algorithm;
@@ -59,8 +61,11 @@ public class GeneralResamplingTest {
             case 3:
                 this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
                 break;
+            case 4:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Threshold;
+                break;
             default:
-                throw new IllegalArgumentException("Expecting 1, 2, or 3.");
+                throw new IllegalArgumentException("Expecting 1, 2, 3 or 4.");
         }
     }
 
@@ -86,8 +91,11 @@ public class GeneralResamplingTest {
             case 3:
                 this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
                 break;
+            case 4:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Threshold;
+                break;
             default:
-                throw new IllegalArgumentException("Expecting 1, 2, or 3.");
+                throw new IllegalArgumentException("Expecting 1, 2, 3, or 4.");
         }
     }
 
@@ -225,16 +233,14 @@ public class GeneralResamplingTest {
     }
 
     /**
-     * @return the output stream that output (except for log output) should be
-     * sent to.
+     * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
         return this.out;
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent
-     * to. By default System.out.
+     * Sets the output stream that output (except for log output) should be sent to. By default System.out.
      */
     public void setOut(PrintStream out) {
         this.out = out;
@@ -251,8 +257,7 @@ public class GeneralResamplingTest {
     /**
      * Sets the background knowledge.
      *
-     * @param knowledge the knowledge object, specifying forbidden and required
-     *                  edges.
+     * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
@@ -328,8 +333,13 @@ public class GeneralResamplingTest {
         this.scoreWrapper = scoreWrapper;
     }
 
+    public void setIndTestWrapper(IndependenceWrapper independenceWrapper) {
+        this.independenceWrapper = independenceWrapper;
+    }
+
     /**
      * Returns the individual bootstrap result graphs.
+     *
      * @return A list of these Graphs.
      */
     public List<Graph> getGraphs() {

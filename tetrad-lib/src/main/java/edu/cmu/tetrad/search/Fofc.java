@@ -38,17 +38,16 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * <p>Implements the Find One Factor Clusters (FOFC) algorithm by Erich Kummerfeld, which
- * uses reasoning about vanishing tetrads of algorithms to infer clusters of the
- * measured variables in a dataset that each be explained by a single latent variable.
- * A reference is the following</p>
+ * uses reasoning about vanishing tetrads of algorithms to infer clusters of the measured variables in a dataset that
+ * each be explained by a single latent variable. A reference is the following</p>
  *
  * <p>Kummerfeld, E., &amp; Ramsey, J. (2016, August). Causal clustering for 1-factor measurement
- * models. In Proceedings of the 22nd ACM SIGKDD international conference on knowledge
- * discovery and data mining (pp. 1655-1664).</p>
+ * models. In Proceedings of the 22nd ACM SIGKDD international conference on knowledge discovery and data mining (pp.
+ * 1655-1664).</p>
  *
  * <p>The algorithm employs tests of vanishing tetrads (list of 4 variables that follow
- * a certain pattern in the exchangeability of latent paths with respect to the data).
- * The notion of vanishng tetrads is old one but is explained in this book:</p>
+ * a certain pattern in the exchangeability of latent paths with respect to the data). The notion of vanishing tetrads is
+ * old one but is explained in this book:</p>
  *
  * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
  * prediction, and search. MIT press.</p>
@@ -60,16 +59,6 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @see Bpc
  */
 public class Fofc {
-
-    /**
-     * Gives the options to be used in FOFC to sort through the various possibilities
-     * for forming clusters to find the best options. SAG (Seed and Grow) looks
-     * for good seed clusters and then grows them by adding one variable at a time.
-     * GAP (Grow and Pick) grows out all the cluster initially and then just
-     * picks from among these. SAG is generally faster; GAP is generally slower but
-     * more accurate.
-     */
-    public enum Algorithm {SAG, GAP}
 
     private final CorrelationMatrix corr;
     // The list of all variables.
@@ -83,14 +72,14 @@ public class Fofc {
     // The data.
     private final transient DataModel dataModel;
     private final BpcTestType testType;
+    private final Algorithm algorithm;
     private List<List<Node>> clusters;
     private boolean verbose;
     private boolean significanceChecked;
-    private final Algorithm algorithm;
     private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
 
     /**
-     * Conctructor.
+     * Constructor.
      *
      * @param cov       The covariance matrix searched over.
      * @param testType  The type of test used.
@@ -139,8 +128,7 @@ public class Fofc {
     }
 
     /**
-     * Runs the search and returns a graph of clusters with the ir respective
-     * latent parents.
+     * Runs the search and returns a graph of clusters with the ir respective latent parents.
      *
      * @return This graph.
      */
@@ -169,9 +157,9 @@ public class Fofc {
     }
 
     /**
-     * Sets whether the significant of cluster should be checked for each cluster.
+     * Sets whether the significance of the cluster should be checked for each cluster.
      *
-     * @param significanceChecked True if so.
+     * @param significanceChecked True, if so.
      */
     public void setSignificanceChecked(boolean significanceChecked) {
         this.significanceChecked = significanceChecked;
@@ -187,7 +175,6 @@ public class Fofc {
         this.checkType = checkType;
     }
 
-
     // renjiey
     private int findFrequentestIndex(Integer[] outliers) {
         Map<Integer, Integer> map = new HashMap<>();
@@ -202,8 +189,8 @@ public class Fofc {
 
         Set<Map.Entry<Integer, Integer>> set = map.entrySet();
         Iterator<Map.Entry<Integer, Integer>> it = set.iterator();
-        int nums = 0;// how many times variable occur
-        int key = 0;// the number occur the most times
+        int nums = 0;// how many times variables occur?
+        int key = 0;// the number occurs the most times
 
         while (it.hasNext()) {
             Map.Entry<Integer, Integer> entry = it.next();
@@ -960,7 +947,7 @@ public class Fofc {
     }
 
     /**
-     * The clusters output by the algorithm from the last call to search().
+     * The clusters that are output by the algorithm from the last call to search().
      */
     public List<List<Node>> getClusters() {
         return this.clusters;
@@ -1035,6 +1022,14 @@ public class Fofc {
             TetradLogger.getInstance().forceLogMessage(s);
         }
     }
+
+    /**
+     * Gives the options to be used in FOFC to sort through the various possibilities for forming clusters to find the
+     * best options. SAG (Seed and Grow) looks for good seed clusters and then grows them by adding one variable at a
+     * time. GAP (Grow and Pick) grows out all the cluster initially and then just picks from among these. SAG is
+     * generally faster; GAP is generally slower but more accurate.
+     */
+    public enum Algorithm {SAG, GAP}
 }
 
 

@@ -31,8 +31,7 @@ import java.util.List;
 import java.util.*;
 
 /**
- * Lays out a graph by placing springs between the nodes and letting the system
- * settle (one node at a time).
+ * Lays out a graph by placing springs between the nodes and letting the system settle (one node at a time).
  *
  * @author josephramsey
  */
@@ -93,9 +92,8 @@ final class CausalOrder {
     }
 
     /**
-     * Finds the set of nodes which have no children, followed by the set of
-     * their parents, then the set of the parents' parents, and so on.  The
-     * result is returned as a List of Lists.
+     * Finds the set of nodes which have no children, followed by the set of their parents, then the set of the parents'
+     * parents, and so on.  The result is returned as a List of Lists.
      *
      * @return the tiers of this digraph.
      */

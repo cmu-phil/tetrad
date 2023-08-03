@@ -33,23 +33,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- * This component has three modes: <ul> <li> UNANCHORED <li> NORMAL <li>
- * SELECTED </ul> In the unanchored mode, it displays an edge in the the
- * workbench, one end of which is anchored to a workbench node and the other end
- * of which tracks a mouse point.  The edge in this mode is useful for
- * constructing new edges in the workbench.  In the normal and selected modes,
- * both ends are anchored to workbench nodes, and the edge will track these
- * workbench nodes if they are moved on the workbench.  The difference between
- * the normal and selected modes is that they display the edge in different
- * colors and when queried they respond differently as to whether the edge is
- * selected.  <p> The intended use for this workbench edge is as follows.  When
- * an edge on the screen is first being created, an instance of this workbench
- * edge is created anchored on one end to a workbench node.  As the mouse is
- * dragged, updates to its position are fed to the updateTrackPoint() method.
- * When the mouse is released, the tracking edge is removed from the workbench
- * and replaced with a new workbench edge which is anchored to two nodes--(1)
- * the original node from the tracking edge and (2) the node which is nearest to
- * the mouse release position.
+ * This component has three modes: <ul> <li> UNANCHORED <li> NORMAL <li> SELECTED </ul> In the unanchored mode, it
+ * displays an edge in the the workbench, one end of which is anchored to a workbench node and the other end of which
+ * tracks a mouse point.  The edge in this mode is useful for constructing new edges in the workbench.  In the normal
+ * and selected modes, both ends are anchored to workbench nodes, and the edge will track these workbench nodes if they
+ * are moved on the workbench.  The difference between the normal and selected modes is that they display the edge in
+ * different colors and when queried they respond differently as to whether the edge is selected.  <p> The intended use
+ * for this workbench edge is as follows.  When an edge on the screen is first being created, an instance of this
+ * workbench edge is created anchored on one end to a workbench node.  As the mouse is dragged, updates to its position
+ * are fed to the updateTrackPoint() method. When the mouse is released, the tracking edge is removed from the workbench
+ * and replaced with a new workbench edge which is anchored to two nodes--(1) the original node from the tracking edge
+ * and (2) the node which is nearest to the mouse release position.
  *
  * @author josephramsey
  * @author Willie Wheeler
@@ -57,120 +51,101 @@ import java.beans.PropertyChangeListener;
 public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
-     * Indicates that one end of the edge is anchored to one component, but the
-     * other half is tracking the mouse point.
-     */
-    protected static final int HALF_ANCHORED = 0;
-
-    /**
-     * Indicates that both ends of the edge are anchored to components.  The
-     * edge will move when those components move.
-     */
-    protected static final int ANCHORED_UNSELECTED = 1;
-
-    /**
-     * Indicates that the edge is under construction, which is similar to the
-     * normal mode except that it's displayed as selected and will identify
-     * itself as selected upon request (for possible deletion, e.g.).
-     */
-    protected static final int ANCHORED_SELECTED = 2;
-
-    /**
      * Represents the fact that this is a directed edge, A--&gt;B.
      */
     public static final int DIRECTED = 0;
-
     /**
      * Represents the fact that this is an nondirected edge, Ao-oB
      */
     public static final int NONDIRECTED = 1;
-
     /**
      * Represents the fact that this is an undirected edge, A---B
      */
     public static final int UNDIRECTED = 2;
-
     /**
      * Represents the fact that this is a partially directed edge, Ao-&gt;B.
      */
     public static final int PARTIALLY_ORIENTED = 3;
-
     /**
      * Represents the fact that this is a bidirected edge, A&lt;-&gt;B.
      */
     public static final int BIDIRECTED = 4;
-
     /**
      * Represents a session edge
      */
     public static final int SESSION = 5;
-
     /**
-     * The model edge that this display is is portraying.
+     * Indicates that one end of the edge is anchored to one component, but the other half is tracking the mouse point.
      */
-    private Edge modelEdge;
-
+    protected static final int HALF_ANCHORED = 0;
     /**
-     * The getModel mode of the edge--HALF_ANCHORED, ANCHORED_UNSELECTED, or
-     * ANCHORED_SELECTED.
+     * Indicates that both ends of the edge are anchored to components.  The edge will move when those components move.
      */
-    private int mode;
-
+    protected static final int ANCHORED_UNSELECTED = 1;
     /**
-     * The type of the edge, one of DIRECTED, NONDIRECTED, UNDIRECTED,
-     * PARTIALLY_ORIENTED, BIDIRECTED.
+     * Indicates that the edge is under construction, which is similar to the normal mode except that it's displayed as
+     * selected and will identify itself as selected upon request (for possible deletion, e.g.).
      */
-    private int type;
-
+    protected static final int ANCHORED_SELECTED = 2;
     /**
      * The node that this edge is linked "from."
      */
     private final DisplayNode node1;
-
+    /**
+     * Handler for <code>ComponentEvent</code>s.
+     */
+    private final ComponentHandler compHandler = new ComponentHandler();
+    /**
+     * Handler for <code>PropertyChange</code>s.
+     */
+    private final PropertyChangeHandler propertyChangeHandler =
+            new PropertyChangeHandler();
+    /**
+     * The model edge that this display is is portraying.
+     */
+    private Edge modelEdge;
+    /**
+     * The getModel mode of the edge--HALF_ANCHORED, ANCHORED_UNSELECTED, or ANCHORED_SELECTED.
+     */
+    private int mode;
+    /**
+     * The type of the edge, one of DIRECTED, NONDIRECTED, UNDIRECTED, PARTIALLY_ORIENTED, BIDIRECTED.
+     */
+    private int type;
     /**
      * The node that this edge is linked "to."
      */
     private DisplayNode node2;
-
     /**
      * For HALF_ANCHORed edges, this is the mouse point they connect to.
      */
     private Point mouseTrackPoint = new Point();
-
     /**
      * This is the same mouse point, but relative to *this* edge component.
      */
     private Point relativeMouseTrackPoint = new Point();
-
     /**
      * If the user clicks in this region, the edge will select.
      */
     private Polygon clickRegion;
-
     /**
      * True iff only adacencies (and no endpoints) should be shown.
      */
     private boolean showAdjacenciesOnly;
-
     /**
      * The offset of this edge for multiple edges between node pairs.
      */
     private double offset;
-
     /**
-     * The pair of points that this edge connects, from the edge of one
-     * component to the edge of the other.
+     * The pair of points that this edge connects, from the edge of one component to the edge of the other.
      */
     private PointPair connectedPoints;
-
     /**
      * The color that unselected edges will be drawn in.
      */
 //    private Color lineColor = new Color(78, 117, 175);
 
     private Color lineColor = new Color(26, 113, 169, 255);// DisplayNodeUtils.getNodeFillColor().darker().darker();
-
-
     /**
      * The color that selected edges will be drawn in.
      */
@@ -178,38 +153,24 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
 //    private Color selectedColor = new Color(221, 66, 32);   // this one
     private Color selectedColor = new Color(244, 0, 20);//DisplayNodeUtils.getNodeSelectedFillColor();   // this one
-
     //    private Color highlightedColor = Color.red.darker().darker();
     private Color highlightedColor = new Color(238, 180, 34);
-
     /**
      * The width of the stroke.
      */
     private float strokeWidth = 1.2f;
-
     /**
      * True iff this edge is highlighted.
      */
     private boolean highlighted;
-
-    /**
-     * Handler for <code>ComponentEvent</code>s.
-     */
-    private final ComponentHandler compHandler = new ComponentHandler();
-
-    /**
-     * Handler for <code>PropertyChange</code>s.
-     */
-    private final PropertyChangeHandler propertyChangeHandler =
-            new PropertyChangeHandler();
     private boolean solid = true;
     private boolean thick = false;
 
     //==========================CONSTRUCTORS============================//
 
     /**
-     * Constructs a new DisplayEdge connecting two components, 'node1' and
-     * 'node2', assuming that a reference to the model edge will not be needed.
+     * Constructs a new DisplayEdge connecting two components, 'node1' and 'node2', assuming that a reference to the
+     * model edge will not be needed.
      *
      * @param node1 the 'from' component.
      * @param node2 the 'to' component.
@@ -252,8 +213,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Constructs a new DisplayEdge connecting two components, 'node1' and
-     * 'node2', assuming that a reference to the model edge will be needed.
+     * Constructs a new DisplayEdge connecting two components, 'node1' and 'node2', assuming that a reference to the
+     * model edge will be needed.
      *
      * @param node1 the 'from' component.
      * @param node2 the 'to' component.
@@ -295,12 +256,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Constructs a new unanchored session edge.  The end of the edge at 'node1'
-     * isO anchored, but the other end tracks a mouse point. The mouse point
-     * should be updated by the parent component using repeated calls to
-     * 'updateTrackPoint'; this process is finished by finally anchoring the
-     * second end of the of edge using 'anchorSecondEnd'.  Once this is done,
-     * the edge is considered anchored and will not be able to track a mouse
+     * Constructs a new unanchored session edge.  The end of the edge at 'node1' isO anchored, but the other end tracks
+     * a mouse point. The mouse point should be updated by the parent component using repeated calls to
+     * 'updateTrackPoint'; this process is finished by finally anchoring the second end of the of edge using
+     * 'anchorSecondEnd'.  Once this is done, the edge is considered anchored and will not be able to track a mouse
      * point any longer.
      *
      * @param node1           the 'from' component.
@@ -338,6 +297,44 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
         resetBounds();
     }
+
+    /**
+     * Calculates the distance between a pair of points.
+     */
+    protected static double distance(Point p1, Point p2) {
+        double d;
+
+        d = (p1.x - p2.x) * (p1.x - p2.x);
+        d += (p1.y - p2.y) * (p1.y - p2.y);
+        d = FastMath.sqrt(d);
+
+        return d;
+    }
+
+    /**
+     * Calculates the degenerate horizontal sleeve in the case where the point pair is near horizontal.
+     *
+     * @param pp        the given point pair.
+     * @param halfWidth the half-width of the sleeve.
+     * @return the sleeve as a polygon.
+     */
+    private static Polygon getHorizSleeve(PointPair pp, int halfWidth) {
+        int[] xpoints = new int[4];
+        int[] ypoints = new int[4];
+
+        xpoints[0] = pp.getFrom().x;
+        xpoints[1] = pp.getFrom().x;
+        xpoints[2] = pp.getTo().x;
+        xpoints[3] = pp.getTo().x;
+        ypoints[0] = pp.getFrom().y + halfWidth;
+        ypoints[1] = pp.getFrom().y - halfWidth;
+        ypoints[2] = pp.getTo().y - halfWidth;
+        ypoints[3] = pp.getTo().y + halfWidth;
+
+        return new Polygon(xpoints, ypoints, 4);
+    }
+
+    //============================PUBLIC METHODS========================//
 
     /**
      * Paints the component.
@@ -457,13 +454,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         firePropertyChange("newPointPair", null, getConnectedPoints());
     }
 
-    //============================PUBLIC METHODS========================//
-
     /**
-     * Overrides the parent's contains() method using the click region, so that
-     * points not in the click region are passed through to components lying
-     * beneath this one in the z-order. (Equates the effective shape of this
-     * edge to its click region.)
+     * Overrides the parent's contains() method using the click region, so that points not in the click region are
+     * passed through to components lying beneath this one in the z-order. (Equates the effective shape of this edge to
+     * its click region.)
      *
      * @param x the x value of the point to be tested.
      * @param y the y value of the point to be tested.
@@ -480,8 +474,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Retrieves the getModel region where mouse clicks are responded to (as
-     * opposed to passed on).
+     * Retrieves the getModel region where mouse clicks are responded to (as opposed to passed on).
      *
      * @return the click region.
      */
@@ -495,8 +488,14 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Retrieves the currents point pair which defines the line segment of the
-     * edge.
+     * Allows subclasses to set the clickable region is for this component.
+     */
+    protected final void setClickRegion(Polygon clickRegion) {
+        this.clickRegion = clickRegion;
+    }
+
+    /**
+     * Retrieves the currents point pair which defines the line segment of the edge.
      *
      * @return the getModel point pair.
      */
@@ -522,16 +521,14 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * @return the 'from' AbstractGraphNode to which this session edge is
-     * anchored.
+     * @return the 'from' AbstractGraphNode to which this session edge is anchored.
      */
     public final DisplayNode getComp1() {
         return this.getNode1();
     }
 
     /**
-     * @return the 'to' AbstractGraphNode to which this session edge is
-     * anchored.
+     * @return the 'to' AbstractGraphNode to which this session edge is anchored.
      */
     public final DisplayNode getComp2() {
         return this.getNode2();
@@ -545,11 +542,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * @return the getModel track point for the edge.  When a new edge is being
-     * created in the UI, one end is anchored to a AbstractGraphNode while the
-     * other tracks the mouse point.  When the mouse is released, the latest
-     * mouse track point is needed to determine which node it's closest to so
-     * that it can be anchored to that node.
+     * @return the getModel track point for the edge.  When a new edge is being created in the UI, one end is anchored
+     * to a AbstractGraphNode while the other tracks the mouse point.  When the mouse is released, the latest mouse
+     * track point is needed to determine which node it's closest to so that it can be anchored to that node.
      */
     public final Point getTrackPoint() {
         return this.mouseTrackPoint;
@@ -586,11 +581,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Updates the position of the free end of the edge while it is in the
-     * HALF_ANCHORED mode.
+     * Updates the position of the free end of the edge while it is in the HALF_ANCHORED mode.
      *
-     * @throws IllegalStateException if this method is called when this edge is
-     *                               not in the HALF_ANCHORED mode.
+     * @throws IllegalStateException if this method is called when this edge is not in the HALF_ANCHORED mode.
      */
     public final void updateTrackPoint(Point p) {
         if (this.mode != DisplayEdge.HALF_ANCHORED) {
@@ -620,12 +613,14 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * @return the two points this edge actually connects--that is, the
-     * intersections of the edge with node 1 and node 2.
+     * @return the two points this edge actually connects--that is, the intersections of the edge with node 1 and node
+     * 2.
      */
     public final PointPair getConnectedPoints() {
         return this.connectedPoints;
     }
+
+    //==========================PROTECTED METHODS========================//
 
     /**
      * Allows subclasses to set what the connected points are.
@@ -635,29 +630,19 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * @return the moure track point relative to this component. (It's usually
-     * given relative to the containing component.)
+     * @return the moure track point relative to this component. (It's usually given relative to the containing
+     * component.)
      */
     public final Point getRelativeMouseTrackPoint() {
         return this.relativeMouseTrackPoint;
     }
 
     /**
-     * Allows subclasses to set the clickable region is for this component.
-     */
-    protected final void setClickRegion(Polygon clickRegion) {
-        this.clickRegion = clickRegion;
-    }
-
-    //==========================PROTECTED METHODS========================//
-
-    /**
-     * Calculates the two endpoints of the line segment connecting two given
-     * non-overlapping rectangles.  (Should give back null for overlapping
-     * rectangles but doesn't always...)
+     * Calculates the two endpoints of the line segment connecting two given non-overlapping rectangles.  (Should give
+     * back null for overlapping rectangles but doesn't always...)
      *
-     * @return a point pair which represents the connecting line segment through
-     * the center of each rectangle touching the edge of each.
+     * @return a point pair which represents the connecting line segment through the center of each rectangle touching
+     * the edge of each.
      */
     protected final PointPair calculateEdge(DisplayNode comp1, DisplayNode comp2) {
         Rectangle r1 = comp1.getBounds();
@@ -695,9 +680,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Calculates the point pair which defines the straight line segment edge
-     * from a given point p to a given component. Assumes that the component
-     * contains the center point of its bounding rectangle.
+     * Calculates the point pair which defines the straight line segment edge from a given point p to a given component.
+     * Assumes that the component contains the center point of its bounding rectangle.
      */
     protected final PointPair calculateEdge(DisplayNode comp, Point p) {
         Rectangle r = comp.getBounds();
@@ -711,26 +695,14 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         return (p3 == null) ? null : new PointPair(p3, p2);
     }
 
-    /**
-     * Calculates the distance between a pair of points.
-     */
-    protected static double distance(Point p1, Point p2) {
-        double d;
-
-        d = (p1.x - p2.x) * (p1.x - p2.x);
-        d += (p1.y - p2.y) * (p1.y - p2.y);
-        d = FastMath.sqrt(d);
-
-        return d;
-    }
+    //============================PRIVATE METHODS========================//
 
     /**
      * Draws endpoints appropriate to the type of edge this is.
      *
-     * @param pp the point pair which specifies where and at what angle the
-     *           endpoints are to be drawn.  The 'from' endpoint is drawn at the
-     *           'from' point angled as it it were coming from the 'to'
-     *           endpoint, and vice-versa.
+     * @param pp the point pair which specifies where and at what angle the endpoints are to be drawn.  The 'from'
+     *           endpoint is drawn at the 'from' point angled as it it were coming from the 'to' endpoint, and
+     *           vice-versa.
      * @param g  the graphics context.
      */
     protected final void drawEndpoints(PointPair pp, Graphics g) {
@@ -785,8 +757,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         }
     }
 
-    //============================PRIVATE METHODS========================//
-
     /**
      * Draws an arrowhead at the 'to' end of the edge.
      */
@@ -815,10 +785,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
                 itheta - 33 * (int) getStrokeWidth(), 66 * (int) getStrokeWidth());
     }
 
-
     /**
-     * Draws a circle endpoint at the 'to' point angled as if coming from the
-     * 'from' point.
+     * Draws a circle endpoint at the 'to' point angled as if coming from the 'from' point.
      */
     private void drawCircleEndpoint(Point from, Point to, Graphics g) {
 //        final int diameter = 13;
@@ -843,13 +811,11 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Calculates the intersection with the boundary of the given component
-     * along a line which connects one point which lies inside the boundary of
-     * the component with another point which lies outside the boundary of the
-     * component.  If the first point does not lie inside the boundary, or if
-     * the second point does not lie outside the boundary, a null is returned.
-     * If the connecting line intersects the boundary at more than one place,
-     * the outermost one is returned.
+     * Calculates the intersection with the boundary of the given component along a line which connects one point which
+     * lies inside the boundary of the component with another point which lies outside the boundary of the component. If
+     * the first point does not lie inside the boundary, or if the second point does not lie outside the boundary, a
+     * null is returned. If the connecting line intersects the boundary at more than one place, the outermost one is
+     * returned.
      */
     private Point getBoundaryIntersection(DisplayNode comp, Point pIn,
                                           Point pOut) {
@@ -888,12 +854,12 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Calculates a sleeve around the edge which represents the region within
-     * which mouse clicks will be send to the edge (as opposed to ignored).
+     * Calculates a sleeve around the edge which represents the region within which mouse clicks will be send to the
+     * edge (as opposed to ignored).
      *
      * @param pp the point pair representing the line segment of the edge.
-     * @return the Polygon representing the sleeve, or null if no such Polygon
-     * exists (because, e.g., one of the endpoints is null).
+     * @return the Polygon representing the sleeve, or null if no such Polygon exists (because, e.g., one of the
+     * endpoints is null).
      */
     private Polygon getSleeve(PointPair pp) {
         if ((pp == null) || (pp.getFrom() == null) || (pp.getTo() == null)) {
@@ -939,33 +905,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Calculates the degenerate horizontal sleeve in the case where the point
-     * pair is near horizontal.
-     *
-     * @param pp        the given point pair.
-     * @param halfWidth the half-width of the sleeve.
-     * @return the sleeve as a polygon.
-     */
-    private static Polygon getHorizSleeve(PointPair pp, int halfWidth) {
-        int[] xpoints = new int[4];
-        int[] ypoints = new int[4];
-
-        xpoints[0] = pp.getFrom().x;
-        xpoints[1] = pp.getFrom().x;
-        xpoints[2] = pp.getTo().x;
-        xpoints[3] = pp.getTo().x;
-        ypoints[0] = pp.getFrom().y + halfWidth;
-        ypoints[1] = pp.getFrom().y - halfWidth;
-        ypoints[2] = pp.getTo().y - halfWidth;
-        ypoints[3] = pp.getTo().y + halfWidth;
-
-        return new Polygon(xpoints, ypoints, 4);
-    }
-
-    /**
-     * This method resets the bounds of the edge component to the union of the
-     * bounds of the two components which the edge connects.  It also calculates
-     * the bounds of these two components relative to this new union.
+     * This method resets the bounds of the edge component to the union of the bounds of the two components which the
+     * edge connects.  It also calculates the bounds of these two components relative to this new union.
      */
     private void resetBounds() {
         switch (this.mode) {
@@ -1108,8 +1049,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         /**
          * This method gets called when a bound property is changed.
          *
-         * @param evt A PropertyChangeEvent object describing the event source
-         *            and the property that has changed.
+         * @param evt A PropertyChangeEvent object describing the event source and the property that has changed.
          */
         public void propertyChange(PropertyChangeEvent evt) {
             String name = evt.getPropertyName();

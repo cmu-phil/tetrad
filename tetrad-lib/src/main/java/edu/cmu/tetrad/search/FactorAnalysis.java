@@ -35,13 +35,13 @@ import static org.apache.commons.math3.util.FastMath.abs;
 /**
  * <p>Implements the classical Factor Analysis algorithm. Some references include:</p>
  * <p>Horst, P. (1965). Factor analysis of data matrices. Holt, Rinehart and Winston.
- * This work has good specifications and explanations of factor analysis algorithm and
- * methods of communality estimation.</p>
+ * This work has good specifications and explanations of factor analysis algorithm and methods of communality
+ * estimation.</p>
  *
  * <p>Rummel, R. J. (1988). Applied factor analysis. Northwestern University Press. This
- * book is a good companion to the book listed above.  While it doesn't specify any actual
- * algorithm, it has a great introduction to the subject that gives the reader a good
- * appreciation of the philosophy and the mathematics behind factor analysis.</p>
+ * book is a good companion to the book listed above.  While it doesn't specify any actual algorithm, it has a great
+ * introduction to the subject that gives the reader a good appreciation of the philosophy and the mathematics behind
+ * factor analysis.</p>
  *
  * <p>This class is not configured to respect knowledge of forbidden and required
  * edges.</p>
@@ -58,7 +58,7 @@ public class FactorAnalysis {
     private Matrix residual;
 
     /**
-     * Consructor.
+     * Constructor.
      *
      * @param covarianceMatrix The covariance matrix being analyzed.
      */
@@ -75,40 +75,81 @@ public class FactorAnalysis {
         this.covariance = new CovarianceMatrix(dataSet);
     }
 
-    //================= COMMUNALITY ESTIMATES =================//
+
+    //designed for normalizing a vector.
+    //as usual, vectors are treated as matrices to simplify operations elsewhere
+    private static Matrix normalizeRows(Matrix matrix) {
+        LinkedList<Matrix> normalizedRows = new LinkedList<>();
+        for (int i = 0; i < matrix.getNumRows(); i++) {
+            Vector vector = matrix.getRow(i);
+            Matrix colVector = new Matrix(matrix.getNumColumns(), 1);
+            for (int j = 0; j < matrix.getNumColumns(); j++)
+                colVector.set(j, 0, vector.get(j));
+
+            normalizedRows.add(FactorAnalysis.normalizeVector(colVector));
+        }
+
+        Matrix result = new Matrix(matrix.getNumRows(), matrix.getNumColumns());
+        for (int i = 0; i < matrix.getNumRows(); i++) {
+            Matrix normalizedRow = normalizedRows.get(i);
+            for (int j = 0; j < matrix.getNumColumns(); j++) {
+                result.set(i, j, normalizedRow.get(j, 0));
+            }
+        }
+
+        return result;
+    }
+
+    private static Matrix normalizeVector(Matrix vector) {
+        double scalar = FastMath.sqrt(vector.transpose().times(vector).get(0, 0));
+        return vector.scalarMult(1.0 / scalar);
+    }
+
+    private static Matrix matrixExp(Matrix matrix, double exponent) {
+        Matrix result = new Matrix(matrix.getNumRows(), matrix.getNumColumns());
+        for (int i = 0; i < matrix.getNumRows(); i++) {
+            for (int j = 0; j < matrix.getNumColumns(); j++) {
+                result.set(i, j, FastMath.pow(matrix.get(i, j), exponent));
+            }
+        }
+        return result;
+    }
 
     /**
      * Successive method with residual matrix.
      * <p>
-     * This algorithm makes use of a helper algorithm.  Together they solve for an unrotated
-     * factor loading matrix.
+     * This algorithm makes use of a helper algorithm.
+     * Together, they solve for an unrotated factor loading matrix.
      * <p>
-     * This method calls upon its helper to find column vectors, with which it constructs its
-     * factor loading matrix.  Upon receiving each successive column vector from its helper
-     * method, it makes sure that we want to keep this vector instead of discarding it.  After
-     * keeping a vector, a residual matrix is calculated, upon which solving for the next column
-     * vector is directly dependent.
+     * This method calls upon its helper to find column vectors, with which it constructs its factor loading matrix.
+     * Upon receiving each successive column vector from its helper method, it makes sure that we want to keep this
+     * vector instead of discarding it.
+     * After keeping a vector, a residual matrix is calculated, upon which solving for
+     * the next column vector is directly dependent.
      * <p>
-     * We stop looking for new vectors either when we've accounted for close to all of the variance in
-     * the original correlation matrix, or when the "d scalar" for a new vector is less than 1 (the
-     * d-scalar is the corresponding diagonal for the factor loading matrix -- thus, when it's less
-     * than 1, the vector we've solved for barely accounts for any more variance).  This means we've
-     * already "pulled out" all of the variance we can from the residual matrix, and we should stop
-     * as further factors don't explain much more (and serve to complicate the model).
+     * We stop looking for new vectors either when we've accounted for close to all the variance in the original
+     * correlation matrix, or when the "d scalar" for a new vector is less than 1 (the d-scalar is the corresponding
+     * diagonal for the factor loading matrix -- thus, when it's less than 1, the vector we've solved for barely
+     * accounts for any more variance).
+     * This means we've already "pulled out" all the variance we can from the
+     * residual matrix, and we should stop as further factors don't explain much more
+     * (and serve to complicate the
+     * model).
      * <p>
      * PSEUDO-CODE:
      * <p>
-     * 0th Residual Matrix = Original Correlation Matrix
-     * Ask helper for the 1st factor (first column vector in our factor loading vector)
-     * Add 1st factor's d-scalar (for i'th factor, call its d-scalar the i'th d-scalar) to a list of d-scalars.
+     * 0th Residual Matrix = Original Correlation Matrix Ask helper for the 1st factor (first column vector in our
+     * factor loading vector) Add 1st factor's d-scalar
+     * (for i'th factor, call its d-scalar the i'th d-scalar) to a list
+     * of d-scalars.
      * <p>
-     * While the ratio of the sum of d-scalars to the trace of the original correlation matrix is less than .99
-     * (in other words, while we haven't accounted for practically all of the variance):
+     * While the ratio of the sum of d-scalars to the trace of the original correlation matrix is less than .99 (in
+     * other words, while we haven't accounted for practically all the variance):
      * <p>
-     * i'th residual matrix = (i - 1)'th residual matrix SUBTRACT the major product moment of (i - 1)'th factor loading vector
-     * Ask helper for i'th factor
-     * If i'th factor's d-value is less than 1, throw it out and end loop.
-     * Otherwise, add it to the factor loading matrix and continue loop.
+     * i'th residual matrix = (i - 1)'th residual matrix SUBTRACT the major product moment of (i - 1)'th factor loading
+     * vector Ask helper for i'th factor If i'th factor's d-value is less than 1, throw it out and end loop.
+     * Otherwise,
+     * add it to the factor loading matrix and continue loop.
      * <p>
      * END PSEUDO-CODE
      * <p>
@@ -245,6 +286,8 @@ public class FactorAnalysis {
         return result;
     }
 
+    // ------------------Private methods-------------------//
+
     /**
      * Sets the threshold.
      *
@@ -255,7 +298,7 @@ public class FactorAnalysis {
     }
 
     /**
-     * Sets the nubmer of factors to find.
+     * Sets the number of factors to find.
      *
      * @param numFactors This number.
      */
@@ -272,39 +315,38 @@ public class FactorAnalysis {
         return this.residual;
     }
 
-    // ------------------Private methods-------------------//
-
     /**
      * Helper method for the basic structure successive factor method above.
-     * Takes a residual matrix and a approximation vector, and finds both
-     * the factor loading vector and the "d scalar" which is used to determine
-     * the amount of total variance accounted for so far.
+     * Takes a residual matrix and an approximation
+     * vector, and finds both the factor loading vector and the "d scalar"
+     * which is used to determine the amount of
+     * total variance accounted for so far.
      * <p>
-     * The helper takes, to begin with, the unit vector as its approximation to the
-     * factor column vector.  With each iteration, it approximates a bit closer --
-     * the d-scalar for each successive step eventually converges to a value (provably).
+     * The helper takes, to begin with, the unit vector as its approximation to the factor column vector.
+     * With each
+     * iteration, it approximates a bit closer --
+     * the d-scalar for each successive step eventually converges to a value
+     * (provably).
      * <p>
-     * Thus, the ratio between the last iteration's d-scalar and this iteration's d-scalar
-     * should approach 1.  When this ratio gets sufficiently close to 1, the algorithm halts
-     * and returns its getModel approximation.
+     * Thus, the ratio between the last iteration's d-scalar and this iteration's d-scalar should approach 1.
+     * When this
+     * ratio gets sufficiently close to 1, the algorithm halts and returns its getModel approximation.
      * <p>
      * Important to note: the residual matrix stays fixed for this entire algorithm.
      * <p>
      * PSEUDO-CODE:
      * <p>
-     * Calculate the 0'th d-scalar, which is done with the following few calculations:
-     * 0'th U Vector = residual matrix * approximation vector (this is just the unit vector for the 0'th)
-     * 0'th L Scalar = transpose(approximation vector) * U Vector
-     * 0'th d-scalar = square root(L Scalar)
-     * 0'th approximation to factor loading (A Vector) = 0'th U Vector / 0'th d-scalar
+     * Calculate the 0'th d-scalar, which is done with the following few calculations: 0'th U Vector = residual matrix *
+     * approximation vector (this is just the unit vector for the 0'th) 0'th L Scalar = transpose(approximation vector)
+     * * U Vector 0'th d-scalar = square root(L Scalar) 0'th approximation to factor loading (A Vector) = 0'th U Vector
+     * / 0'th d-scalar
      * <p>
      * <p>
-     * While the ratio of the new d-scalar to the old is not sufficiently close to 1
-     * (or if we haven't approximated 100 times yet, a failsafe):
+     * While the ratio of the new d-scalar to the old is not sufficiently close to 1 (or if we haven't approximated 100
+     * times yet, a failsafe):
      * <p>
-     * i'th U Vector = residual matrix * (i - 1)'th factor loading
-     * i'th L Scalar = transpose((i - 1)'th factor loading) * i'th U Vector
-     * i'th D Scalar = square root(i'th L Scalar)
+     * i'th U Vector = residual matrix * (i - 1)'th factor loading i'th L Scalar = transpose((i - 1)'th factor loading)
+     * * i'th U Vector i'th D Scalar = square root(i'th L Scalar)
      * i'th factor loading = i'th U Vector / i'th D Scalar
      * <p>
      * Return the final i'th factor loading as our best approximation.
@@ -334,46 +376,6 @@ public class FactorAnalysis {
 
         this.factorLoadingVectors.add(f);
         return true;
-    }
-
-
-    //designed for normalizing a vector.
-    //as usual, vectors are treated as matrices to simplify operations elsewhere
-    private static Matrix normalizeRows(Matrix matrix) {
-        LinkedList<Matrix> normalizedRows = new LinkedList<>();
-        for (int i = 0; i < matrix.getNumRows(); i++) {
-            Vector vector = matrix.getRow(i);
-            Matrix colVector = new Matrix(matrix.getNumColumns(), 1);
-            for (int j = 0; j < matrix.getNumColumns(); j++)
-                colVector.set(j, 0, vector.get(j));
-
-            normalizedRows.add(FactorAnalysis.normalizeVector(colVector));
-        }
-
-        Matrix result = new Matrix(matrix.getNumRows(), matrix.getNumColumns());
-        for (int i = 0; i < matrix.getNumRows(); i++) {
-            Matrix normalizedRow = normalizedRows.get(i);
-            for (int j = 0; j < matrix.getNumColumns(); j++) {
-                result.set(i, j, normalizedRow.get(j, 0));
-            }
-        }
-
-        return result;
-    }
-
-    private static Matrix normalizeVector(Matrix vector) {
-        double scalar = FastMath.sqrt(vector.transpose().times(vector).get(0, 0));
-        return vector.scalarMult(1.0 / scalar);
-    }
-
-    private static Matrix matrixExp(Matrix matrix, double exponent) {
-        Matrix result = new Matrix(matrix.getNumRows(), matrix.getNumColumns());
-        for (int i = 0; i < matrix.getNumRows(); i++) {
-            for (int j = 0; j < matrix.getNumColumns(); j++) {
-                result.set(i, j, FastMath.pow(matrix.get(i, j), exponent));
-            }
-        }
-        return result;
     }
 }
 

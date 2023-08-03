@@ -1,26 +1,17 @@
 package edu.cmu.tetrad.algcomparison.statistic.utils;
 
-import edu.cmu.tetrad.graph.*;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 
 /**
  * A confusion matrix for orientations:
- *
- *  True    |  Estimated |  Orientation
- * --------------------------------
- * a <- b   |   a <- b   |   tp, tn
- *          |   a -> b   |   fp, fn
- *          |   a −− b   |   fn
- *          |   a .. b   |   fn
- * --------------------------------
- * a .. b   |   a <- b   |   fp
- *          |   a -> b   |   fp
- *          |   a −− b   |
- *          |   a .. b   |
- *
+ * <p>
+ * True    |  Estimated |  Orientation -------------------------------- a <- b   |   a <- b   |   tp, tn |   a -> b   |
+ * fp, fn |   a −− b   |   fn |   a .. b   |   fn -------------------------------- a .. b   |   a <- b   |   fp |   a ->
+ * b   |   fp |   a −− b   | |   a .. b   |
+ * <p>
  * The true graph should be a DAG!
  *
  * @author bryanandrews, josephramsey

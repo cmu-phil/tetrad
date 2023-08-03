@@ -3,17 +3,16 @@ package edu.cmu.tetrad.simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeEqualityMode;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
 /**
- * This version of Vicinity finds nearby nodes by searching with an expanding cube
- * Prior to Vicinity4, versions of Vicinity looked at the 3 axis independently instead of collectively.
+ * This version of Vicinity finds nearby nodes by searching with an expanding cube Prior to Vicinity4, versions of
+ * Vicinity looked at the 3 axis independently instead of collectively.
  * <p>
- * Vicinity5 improves on Vicinity4 by allowing for the nodes to not be distributed evenly throughout
- * the location space. This is needed for fMRI data when the voxels are not perfect cubes.
+ * Vicinity5 improves on Vicinity4 by allowing for the nodes to not be distributed evenly throughout the location space.
+ * This is needed for fMRI data when the voxels are not perfect cubes.
  *
  * @author josephramsey
  * @author Erich Kummerfeld
@@ -55,8 +54,6 @@ public class Vicinity {
 
         this.locationMap = locationMap;
 
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
-
         //make the edge accessible via the map from either of its endpoints
         for (Edge edge : edges) {
             this.add(Coords1, edge, Arrays.asList(this.getX(edge.getNode1(), locationMap), this.getY(edge.getNode1(), locationMap),
@@ -93,7 +90,6 @@ public class Vicinity {
     //******************* This finds the range when edge is Undirected **********
     private int findRangeU(Edge edge, int chunksize) {
         Set<Edge> edges = new HashSet<>();
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
         int range = -chunksize;
         while (edges.isEmpty()) {
             //increment range by chunk
@@ -166,7 +162,6 @@ public class Vicinity {
         Set<Edge> edges = new HashSet<>();
         //It matters whether Node1 is the tail or the head of the arrow
         //Because of how the Edge class works, it looks like Node1 is ALWAYS the TAIL
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
         int range = -chunksize;
         while (edges.isEmpty()) {
             //increment range by chunk
@@ -236,7 +231,6 @@ public class Vicinity {
     //this is like findRange, but it returns the edges within the range in one step, without iterating chunksize
     private List<Edge> findEdges(Edge edge, int range) {
         Set<Edge> edges = new HashSet<>();
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
         //create separate range values for x y and z, scaled by xdist ydist zdist
         int xrange = (int) FastMath.ceil(range / this.xDist);
         int yrange = (int) FastMath.ceil(range / this.yDist);

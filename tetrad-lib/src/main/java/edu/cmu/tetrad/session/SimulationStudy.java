@@ -28,9 +28,8 @@ import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
- * Runs a simulation edu.cmu.tetrad.study for a session which traverses a subtree of the
- * session graph in depth-first order and executes each node encountered a
- * specified number of times.
+ * Runs a simulation edu.cmu.tetrad.study for a session which traverses a subtree of the session graph in depth-first
+ * order and executes each node encountered a specified number of times.
  *
  * @author josephramsey
  */
@@ -76,9 +75,48 @@ public final class SimulationStudy {
     //===========================PUBLIC METHODS============================//
 
     /**
-     * Sets the number of times the given node (and all of its children) will be
-     * executed each time it is encountered in a depth first traversal of the
-     * tree.
+     * Gets the repeition of the given node. If the repetition of a node has not been set, it is assumed to be 1.
+     *
+     * @see #setRepetition
+     */
+    public static int getRepetition(SessionNode node) {
+        if (node.getRepetition() < 1) {
+            node.setRepetition(1);
+        }
+
+        return node.getRepetition();
+    }
+
+    /**
+     * Removes the repetition number for the given node. If it's still in the graph, its repetition will be 1.
+     */
+    private static void removeRepetition(SessionNode sessionNode) {
+        sessionNode.setRepetition(1);
+    }
+
+    public static Set getDescendants(SessionNode node) {
+        HashSet<SessionNode> descendants = new HashSet<>();
+        SimulationStudy.doChildClosureVisit(node, descendants);
+        return descendants;
+    }
+
+    /**
+     * closure under the child relation
+     */
+    private static void doChildClosureVisit(SessionNode node, Set<SessionNode> closure) {
+        if (!closure.contains(node)) {
+            closure.add(node);
+            Collection<SessionNode> children = node.getChildren();
+
+            for (SessionNode child : children) {
+                SimulationStudy.doChildClosureVisit(child, closure);
+            }
+        }
+    }
+
+    /**
+     * Sets the number of times the given node (and all of its children) will be executed each time it is encountered in
+     * a depth first traversal of the tree.
      *
      * @param repetition the repetition, an integer &gt; 0.
      */
@@ -96,19 +134,7 @@ public final class SimulationStudy {
         getSessionSupport().fireRepetitionChanged(node);
     }
 
-    /**
-     * Gets the repeition of the given node. If the repetition of a node has not
-     * been set, it is assumed to be 1.
-     *
-     * @see #setRepetition
-     */
-    public static int getRepetition(SessionNode node) {
-        if (node.getRepetition() < 1) {
-            node.setRepetition(1);
-        }
-
-        return node.getRepetition();
-    }
+    //===========================PRIVATE METHODS===========================//
 
     /**
      * Executes the given node the specified number of times.
@@ -172,8 +198,6 @@ public final class SimulationStudy {
         getSessionSupport().addSessionListener(l);
     }
 
-    //===========================PRIVATE METHODS===========================//
-
     private HashSet<SessionNode> nodesWithModels() {
         HashSet<SessionNode> nodesWithModels = new HashSet<>();
 
@@ -187,8 +211,8 @@ public final class SimulationStudy {
     }
 
     /**
-     * Notify session nodes (and their parameters) downstream that a new
-     * execution has begun of a simulation edu.cmu.tetrad.study.
+     * Notify session nodes (and their parameters) downstream that a new execution has begun of a simulation
+     * edu.cmu.tetrad.study.
      */
     private void notifyDownstreamOfStart(SessionNode sessionNode) {
         SessionSupport sessionSupport = new SessionSupport(this);
@@ -197,10 +221,9 @@ public final class SimulationStudy {
     }
 
     /**
-     * Executes the given node the specified number of times. Executes the
-     * children of the node. If the node has more than one child, the nodes are
-     * executed in the order of the given tier ordering. This needs to be a tier
-     * ordering over all of the nodes in the graph.
+     * Executes the given node the specified number of times. Executes the children of the node. If the node has more
+     * than one child, the nodes are executed in the order of the given tier ordering. This needs to be a tier ordering
+     * over all of the nodes in the graph.
      *
      * @see #getRepetition
      */
@@ -297,17 +320,8 @@ public final class SimulationStudy {
     }
 
     /**
-     * Removes the repetition number for the given node. If it's still in the
-     * graph, its repetition will be 1.
-     */
-    private static void removeRepetition(SessionNode sessionNode) {
-        sessionNode.setRepetition(1);
-    }
-
-    /**
-     * This method returns the nodes of a digraph in such an order that as one
-     * iterates through the list, the parents of each node have already been
-     * encountered in the list.
+     * This method returns the nodes of a digraph in such an order that as one iterates through the list, the parents of
+     * each node have already been encountered in the list.
      *
      * @return a tier ordering for the nodes in this graph.
      */
@@ -334,26 +348,6 @@ public final class SimulationStudy {
 
         found.retainAll(SimulationStudy.getDescendants(node));
         return found;
-    }
-
-    public static Set getDescendants(SessionNode node) {
-        HashSet<SessionNode> descendants = new HashSet<>();
-        SimulationStudy.doChildClosureVisit(node, descendants);
-        return descendants;
-    }
-
-    /**
-     * closure under the child relation
-     */
-    private static void doChildClosureVisit(SessionNode node, Set<SessionNode> closure) {
-        if (!closure.contains(node)) {
-            closure.add(node);
-            Collection<SessionNode> children = node.getChildren();
-
-            for (SessionNode child : children) {
-                SimulationStudy.doChildClosureVisit(child, closure);
-            }
-        }
     }
 
     private SessionSupport getSessionSupport() {

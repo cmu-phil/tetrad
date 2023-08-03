@@ -27,9 +27,8 @@ import edu.cmu.tetrad.graph.*;
 import java.util.*;
 
 /**
- * Given a CPDAG, lists all the DAGs in that DPCAG. In the form of an iterator--
- * call hasNext() to see if there's another one and next() to get it. next() will
- * return null if there are no more.
+ * Given a CPDAG, lists all the DAGs in that DPCAG. In the form of an iterator-- call hasNext() to see if there's
+ * another one and next() to get it. next() will return null if there are no more.
  *
  * @author josephramsey
  */
@@ -40,14 +39,14 @@ public class DagInCpcagIterator {
      * these edges have already been oriented left and/or right.
      */
     private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
-    private Graph storedGraph;
-    private boolean returnedOne;
     private final LinkedList<Triple> colliders;
     private final boolean allowNewColliders;
+    private Graph storedGraph;
+    private boolean returnedOne;
 
     /**
-     * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it
-     * is not acyclic, it is rejected.
+     * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it is
+     * not acyclic, it is rejected.
      *
      * @param CPDAG The CPDAG for which DAGS are wanted. May result in cyclic outputs.
      * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
@@ -57,8 +56,8 @@ public class DagInCpcagIterator {
     }
 
     /**
-     * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it
-     * is not acyclic, it is rejected.
+     * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it is
+     * not acyclic, it is rejected.
      *
      * @param CPDAG     The CPDAG for which DAGS are wanted. May result in cyclic outputs.
      * @param knowledge The knowledge to be used to constrain the DAGs.
@@ -69,8 +68,8 @@ public class DagInCpcagIterator {
     }
 
     /**
-     * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it
-     * is not acyclic, it is rejected.
+     * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it is
+     * not acyclic, it is rejected.
      *
      * @param CPDAG                      The CPDAG for which DAGS are wanted.
      * @param knowledge                  The knowledge to be used to constrain the DAGs.
@@ -170,11 +169,11 @@ public class DagInCpcagIterator {
     private static class DecoratedGraph {
         private final Graph graph;
         private final Edge edge;
+        private final Knowledge knowledge;
+        private final boolean allowArbitraryOrientation;
         private boolean triedLeft;
         private boolean triedRight;
-        private final Knowledge knowledge;
         private Map<Graph, Set<Edge>> changedEdges = new HashMap<>();
-        private final boolean allowArbitraryOrientation;
 
         public DecoratedGraph(Graph graph, Knowledge knowledge, Map<Graph, Set<Edge>> changedEdges, boolean allowArbitraryOrientation) {
             this.graph = graph;

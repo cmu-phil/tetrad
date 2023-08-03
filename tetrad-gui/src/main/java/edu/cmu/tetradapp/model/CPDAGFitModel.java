@@ -43,8 +43,8 @@ import java.util.List;
 
 
 /**
- * Compares a target workbench with a reference workbench by counting errors of
- * omission and commission.  (for edge presence only, not orientation).
+ * Compares a target workbench with a reference workbench by counting errors of omission and commission.  (for edge
+ * presence only, not orientation).
  *
  * @author josephramsey
  * @author Erin Korber (added remove latents functionality July 2004)
@@ -52,20 +52,19 @@ import java.util.List;
 public final class CPDAGFitModel implements SessionModel {
     static final long serialVersionUID = 23L;
     private final Parameters parameters;
-
+    private final DataModelList dataModelList;
     private String name;
     private List<BayesIm> bayesIms;
     private List<BayesPm> bayesPms;
     private List<Graph> referenceGraphs;
-    private final DataModelList dataModelList;
     private List<SemPm> semPms;
 
     //=============================CONSTRUCTORS==========================//
 
 
     /**
-     * Compares the results of a PC to a reference workbench by counting errors
-     * of omission and commission. The counts can be retrieved using the methods
+     * Compares the results of a PC to a reference workbench by counting errors of omission and commission. The counts
+     * can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
     public CPDAGFitModel(Simulation simulation, GeneralAlgorithmRunner algorithmRunner, Parameters params) {
@@ -213,14 +212,12 @@ public final class CPDAGFitModel implements SessionModel {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

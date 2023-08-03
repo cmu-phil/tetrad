@@ -24,9 +24,8 @@ package edu.cmu.tetrad.sem;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * Implements an ordered pair of objects (a, b) suitable for storing in
- * HashSets.  The hashCode() method is overridden so that the hashcode of (a1,
- * b1) == the hashcode of (a2, b2) just in case a1 == a2 and b1 == b2.
+ * Implements an ordered pair of objects (a, b) suitable for storing in HashSets.  The hashCode() method is overridden
+ * so that the hashcode of (a1, b1) == the hashcode of (a2, b2) just in case a1 == a2 and b1 == b2.
  *
  * @author josephramsey
  */
@@ -47,7 +46,6 @@ public class ParameterPair implements TetradSerializable {
      */
     private Parameter b;
 
-    //=============================CONSTRUCTORS==========================//
 
     /**
      * Constructs a new (blank) ordered pair where a = null and b = null.
@@ -74,8 +72,6 @@ public class ParameterPair implements TetradSerializable {
         return new ParameterPair();
     }
 
-    //============================PUBLIC METHODS========================//
-
     /**
      * Method getNumObjects
      *
@@ -95,9 +91,8 @@ public class ParameterPair implements TetradSerializable {
     }
 
     /**
-     * Tests whether this object pair is equal to a second object pair by
-     * looking to see whether each element a and b is equal to its corresponding
-     * element.
+     * Tests whether this object pair is equal to a second object pair by looking to see whether each element a and b is
+     * equal to its corresponding element.
      *
      * @param object the object pair putatively equal to this one.
      * @return true if the object pairs are equals, false if not.

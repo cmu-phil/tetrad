@@ -25,8 +25,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.DagInCpcagIterator;
-import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.sem.DagScorer;
 import edu.cmu.tetrad.sem.Scorer;
 import edu.cmu.tetrad.sem.SemIm;
@@ -45,14 +45,14 @@ import java.util.*;
  * @author josephramsey
  */
 public final class HbsmsGes implements Hbsms {
-    private Knowledge knowledge = new Knowledge();
     private final Graph graph;
-    private double alpha = 0.05;
     private final NumberFormat nf = new DecimalFormat("0.0#########");
     private final Set<GraphWithPValue> significantModels = new HashSet<>();
+    private final Scorer scorer;
+    private Knowledge knowledge = new Knowledge();
+    private double alpha = 0.05;
     private SemIm originalSemIm;
     private SemIm newSemIm;
-    private final Scorer scorer;
 
     public HbsmsGes(Graph graph, DataSet data) {
         if (graph == null) throw new NullPointerException("Graph not specified.");
@@ -72,40 +72,96 @@ public final class HbsmsGes implements Hbsms {
         this.scorer = new DagScorer(data);
     }
 
+    /**
+     * Test if the candidate deletion is a valid operation (Theorem 17 from Chickering, 2002).
+     */
+    private static boolean validDelete(Node x, Node y, Set<Node> h,
+                                       Graph graph) {
+        List<Node> naYXH = HbsmsGes.findNaYX(x, y, graph);
+        naYXH.removeAll(h);
+        return GraphUtils.isClique(naYXH, graph);
+    }
+
+    /**
+     * Get all nodes that are connected to Y by an undirected edge and not adjacent to X.
+     */
+    private static List<Node> getTNeighbors(Node x, Node y, Graph graph) {
+        List<Node> tNeighbors = new LinkedList<>(graph.getAdjacentNodes(y));
+        tNeighbors.removeAll(graph.getAdjacentNodes(x));
+
+        for (int i = tNeighbors.size() - 1; i >= 0; i--) {
+            Node z = tNeighbors.get(i);
+            Edge edge = graph.getEdge(y, z);
+
+            if (!Edges.isUndirectedEdge(edge)) {
+                tNeighbors.remove(z);
+            }
+        }
+
+        return tNeighbors;
+    }
+
+    /**
+     * Get all nodes that are connected to Y by an undirected edge and adjacent to X
+     */
+    private static List<Node> getHNeighbors(Node x, Node y, Graph graph) {
+        List<Node> hNeighbors = new LinkedList<>(graph.getAdjacentNodes(y));
+        hNeighbors.retainAll(graph.getAdjacentNodes(x));
+
+        for (int i = hNeighbors.size() - 1; i >= 0; i--) {
+            Node z = hNeighbors.get(i);
+            Edge edge = graph.getEdge(y, z);
+
+            if (!Edges.isUndirectedEdge(edge)) {
+                hNeighbors.remove(z);
+            }
+        }
+
+        return hNeighbors;
+    }
+
+    /**
+     * Find all nodes that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
+     * directed edge) NOTE: very inefficient implementation, since the getModel library does not allow access to the
+     * adjacency list/matrix of the graph.
+     */
+    private static List<Node> findNaYX(Node x, Node y, Graph graph) {
+        List<Node> naYX = new LinkedList<>(graph.getAdjacentNodes(y));
+        naYX.retainAll(graph.getAdjacentNodes(x));
+
+        for (int i = 0; i < naYX.size(); i++) {
+            Node z = naYX.get(i);
+            Edge edge = graph.getEdge(y, z);
+
+            if (!Edges.isUndirectedEdge(edge)) {
+                naYX.remove(z);
+            }
+        }
+
+        return naYX;
+    }
+
+    private static List<Set<Node>> powerSet(List<Node> nodes) {
+        List<Set<Node>> subsets = new ArrayList<>();
+        int total = (int) FastMath.pow(2, nodes.size());
+        for (int i = 0; i < total; i++) {
+            Set<Node> newSet = new HashSet<>();
+            String selection = Integer.toBinaryString(i);
+            for (int j = selection.length() - 1; j >= 0; j--) {
+                if (selection.charAt(j) == '1') {
+                    newSet.add(nodes.get(selection.length() - j - 1));
+                }
+            }
+            subsets.add(newSet);
+        }
+        return subsets;
+    }
+
     private void saveModelIfSignificant(Graph graph) {
         double pValue = scoreGraph(graph).getPValue();
 
         if (pValue > this.alpha) {
             getSignificantModels().add(new GraphWithPValue(graph, pValue));
-        }
-    }
-
-    public static class GraphWithPValue {
-        private final Graph graph;
-        private final double pValue;
-
-        public GraphWithPValue(Graph graph, double pValue) {
-            this.graph = graph;
-            this.pValue = pValue;
-        }
-
-        public Graph getGraph() {
-            return this.graph;
-        }
-
-        public double getPValue() {
-            return this.pValue;
-        }
-
-        public int hashCode() {
-            return 17 * this.graph.hashCode();
-        }
-
-        public boolean equals(Object o) {
-            if (o == null) return false;
-            if (!(o instanceof GraphWithPValue)) return false;
-            GraphWithPValue p = (GraphWithPValue) o;
-            return (p.graph.equals(this.graph));
         }
     }
 
@@ -130,6 +186,12 @@ public final class HbsmsGes implements Hbsms {
 
     public void setHighPValueAlpha(double highPValueAlpha) {
     }
+
+
+    /*
+     * Do an actual insertion
+     * (Definition 12 from Chickering, 2002).
+     **/
 
     public Score scoreDag(Graph dag) {
 
@@ -314,10 +376,9 @@ public final class HbsmsGes implements Hbsms {
 
     }
 
-
     /*
-     * Do an actual insertion
-     * (Definition 12 from Chickering, 2002).
+     * Test if the candidate insertion is a valid operation
+     * (Theorem 15 from Chickering, 2002).
      **/
 
     private void tryInsert(Node x, Node y, Set<Node> subset, Graph graph) {
@@ -422,86 +483,12 @@ public final class HbsmsGes implements Hbsms {
         }
     }
 
-    /*
-     * Test if the candidate insertion is a valid operation
-     * (Theorem 15 from Chickering, 2002).
-     **/
-
     private boolean validInsert(Node x, Node y, Set<Node> subset, Graph graph) {
         List<Node> naYXT = new LinkedList<>(subset);
         naYXT.addAll(HbsmsGes.findNaYX(x, y, graph));
 
         return GraphUtils.isClique(naYXT, graph) && isSemiDirectedBlocked(x, y, naYXT, graph, new HashSet<>());
 
-    }
-
-    /**
-     * Test if the candidate deletion is a valid operation (Theorem 17 from Chickering, 2002).
-     */
-    private static boolean validDelete(Node x, Node y, Set<Node> h,
-                                       Graph graph) {
-        List<Node> naYXH = HbsmsGes.findNaYX(x, y, graph);
-        naYXH.removeAll(h);
-        return GraphUtils.isClique(naYXH, graph);
-    }
-
-    /**
-     * Get all nodes that are connected to Y by an undirected edge and not adjacent to X.
-     */
-    private static List<Node> getTNeighbors(Node x, Node y, Graph graph) {
-        List<Node> tNeighbors = new LinkedList<>(graph.getAdjacentNodes(y));
-        tNeighbors.removeAll(graph.getAdjacentNodes(x));
-
-        for (int i = tNeighbors.size() - 1; i >= 0; i--) {
-            Node z = tNeighbors.get(i);
-            Edge edge = graph.getEdge(y, z);
-
-            if (!Edges.isUndirectedEdge(edge)) {
-                tNeighbors.remove(z);
-            }
-        }
-
-        return tNeighbors;
-    }
-
-    /**
-     * Get all nodes that are connected to Y by an undirected edge and adjacent to X
-     */
-    private static List<Node> getHNeighbors(Node x, Node y, Graph graph) {
-        List<Node> hNeighbors = new LinkedList<>(graph.getAdjacentNodes(y));
-        hNeighbors.retainAll(graph.getAdjacentNodes(x));
-
-        for (int i = hNeighbors.size() - 1; i >= 0; i--) {
-            Node z = hNeighbors.get(i);
-            Edge edge = graph.getEdge(y, z);
-
-            if (!Edges.isUndirectedEdge(edge)) {
-                hNeighbors.remove(z);
-            }
-        }
-
-        return hNeighbors;
-    }
-
-    /**
-     * Find all nodes that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
-     * directed edge) NOTE: very inefficient implementation, since the getModel library does not allow access to the
-     * adjacency list/matrix of the graph.
-     */
-    private static List<Node> findNaYX(Node x, Node y, Graph graph) {
-        List<Node> naYX = new LinkedList<>(graph.getAdjacentNodes(y));
-        naYX.retainAll(graph.getAdjacentNodes(x));
-
-        for (int i = 0; i < naYX.size(); i++) {
-            Node z = naYX.get(i);
-            Edge edge = graph.getEdge(y, z);
-
-            if (!Edges.isUndirectedEdge(edge)) {
-                naYX.remove(z);
-            }
-        }
-
-        return naYX;
     }
 
     private boolean invalidSetByKnowledge(Node x, Node y, Set<Node> subset,
@@ -560,23 +547,6 @@ public final class HbsmsGes implements Hbsms {
         return true;
     }
 
-    private static List<Set<Node>> powerSet(List<Node> nodes) {
-        List<Set<Node>> subsets = new ArrayList<>();
-        int total = (int) FastMath.pow(2, nodes.size());
-        for (int i = 0; i < total; i++) {
-            Set<Node> newSet = new HashSet<>();
-            String selection = Integer.toBinaryString(i);
-            for (int j = selection.length() - 1; j >= 0; j--) {
-                if (selection.charAt(j) == '1') {
-                    newSet.add(nodes.get(selection.length() - j - 1));
-                }
-            }
-            subsets.add(newSet);
-        }
-        return subsets;
-    }
-
-
     /**
      * Completes a CPDAG that was modified by an insertion/deletion operator Based on the algorithm described on
      * Appendix C of (Chickering, 2002).
@@ -592,12 +562,11 @@ public final class HbsmsGes implements Hbsms {
     /**
      * Fully direct a graph with background knowledge. I am not sure how to adapt Chickering's suggested algorithm above
      * (dagToPdag) to incorporate background knowledge, so I am also implementing this algorithm based on Meek's 1995
-     * UAI paper. Notice it is the same implemented in PcSearch. *IMPORTANT!* *It assumes all colliders are
-     * oriented, as well as arrows dictated by time order.*
+     * UAI paper. Notice it is the same implemented in PcSearch. *IMPORTANT!* *It assumes all colliders are oriented, as
+     * well as arrows dictated by time order.*
      */
     private void pdagWithBk(Graph graph, Knowledge knowledge) {
         MeekRules rules = new MeekRules();
-//        rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
         rules.setKnowledge(knowledge);
         rules.orientImplied(graph);
     }
@@ -619,10 +588,6 @@ public final class HbsmsGes implements Hbsms {
         }
     }
 
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
     public double getAlpha() {
         return this.alpha;
     }
@@ -640,8 +605,41 @@ public final class HbsmsGes implements Hbsms {
         return this.knowledge;
     }
 
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
     public Set<GraphWithPValue> getSignificantModels() {
         return this.significantModels;
+    }
+
+    public static class GraphWithPValue {
+        private final Graph graph;
+        private final double pValue;
+
+        public GraphWithPValue(Graph graph, double pValue) {
+            this.graph = graph;
+            this.pValue = pValue;
+        }
+
+        public Graph getGraph() {
+            return this.graph;
+        }
+
+        public double getPValue() {
+            return this.pValue;
+        }
+
+        public int hashCode() {
+            return 17 * this.graph.hashCode();
+        }
+
+        public boolean equals(Object o) {
+            if (o == null) return false;
+            if (!(o instanceof GraphWithPValue)) return false;
+            GraphWithPValue p = (GraphWithPValue) o;
+            return (p.graph.equals(this.graph));
+        }
     }
 
     public static class Score {

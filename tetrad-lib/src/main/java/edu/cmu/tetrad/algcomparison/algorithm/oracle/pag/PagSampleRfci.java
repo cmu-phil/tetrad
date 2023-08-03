@@ -31,11 +31,12 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
         algoType = AlgType.allow_latent_common_causes
 )
 //@Experimental
-public class PagSampleRfci implements Algorithm, HasKnowledge{
+public class PagSampleRfci implements Algorithm, HasKnowledge {
 
     public static final List<String> PAG_SAMPLING_RFCI_PARAMETERS = new LinkedList<>();
     public static final List<String> RFCI_PARAMETERS = new LinkedList<>();
     public static final List<String> PROBABILISTIC_TEST_PARAMETERS = new LinkedList<>();
+    static final long serialVersionUID = 23L;
 
     static {
         // algorithm parameters
@@ -52,7 +53,6 @@ public class PagSampleRfci implements Algorithm, HasKnowledge{
         PROBABILISTIC_TEST_PARAMETERS.add(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE);
     }
 
-    static final long serialVersionUID = 23L;
     private final IndependenceWrapper test = new ProbabilisticTest();
     private Knowledge knowledge;
     private List<Graph> bootstrapGraphs = new ArrayList<>();

@@ -26,6 +26,7 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
+import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -87,27 +88,58 @@ final class SaveSessionAsAction extends AbstractAction {
         sessionWrapper.setName(file.getName());
         sessionEditor.setName(file.getName());
 
-        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
-            objOut.writeObject(metadata);
-            objOut.writeObject(sessionWrapper);
+        class MyWatchedProceess extends WatchedProcess {
 
-            sessionWrapper.setSessionChanged(false);
-            sessionWrapper.setNewSession(false);
-            this.saved = true;
-        } catch (IOException exception) {
-            exception.printStackTrace(System.err);
+            @Override
+            public void watch() throws InterruptedException {
+                try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
+                    objOut.writeObject(metadata);
+                    objOut.writeObject(sessionWrapper);
 
-            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                    "An error occurred while attempting to save the session.");
-            this.saved = false;
+                    sessionWrapper.setSessionChanged(false);
+                    sessionWrapper.setNewSession(false);
+                    setSaved(true);
+//                    this.saved = true;
+                } catch (IOException exception) {
+                    exception.printStackTrace(System.err);
+
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            "An error occurred while attempting to save the session.");
+                    setSaved(false);
+//                    this.saved = false;
+                }
+
+                DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
+                sessionEditor.firePropertyChange("name", null, file.getName());
+            }
         }
 
-        DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
-        sessionEditor.firePropertyChange("name", null, file.getName());
+        new MyWatchedProceess();
+
+//        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
+//            objOut.writeObject(metadata);
+//            objOut.writeObject(sessionWrapper);
+//
+//            sessionWrapper.setSessionChanged(false);
+//            sessionWrapper.setNewSession(false);
+//            this.saved = true;
+//        } catch (IOException exception) {
+//            exception.printStackTrace(System.err);
+//
+//            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+//                    "An error occurred while attempting to save the session.");
+//            this.saved = false;
+//        }
+//
+//        DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
+//        sessionEditor.firePropertyChange("name", null, file.getName());
     }
 
     public boolean isSaved() {
         return this.saved;
     }
 
+    public void setSaved(boolean saved) {
+        this.saved = saved;
+    }
 }

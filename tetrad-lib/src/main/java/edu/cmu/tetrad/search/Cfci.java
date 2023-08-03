@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -36,8 +35,8 @@ import java.util.*;
 
 /**
  * <p>Adjusts FCI (see) to use conservative orientation as in CPC (see). Because the
- * collider orientatation is conservative, there may be ambiguous triples; these
- * may be retrieved using that accessor method.</p>
+ * collider orientation is conservative, there may be ambiguous triples; these may be retrieved using that accessor
+ * method.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -51,69 +50,56 @@ import java.util.*;
 public final class Cfci implements IGraphSearch {
 
     /**
-     * The PAG being constructed.
-     */
-    private Graph graph;
-
-    /**
      * The SepsetMap being constructed.
      */
     private final SepsetMap sepsets = new SepsetMap();
-
-    /**
-     * The background knowledge.
-     */
-    private Knowledge knowledge = new Knowledge();
-
     /**
      * The variables to search over (optional)
      */
     private final List<Node> variables = new ArrayList<>();
-
     /**
      * The independence test.
      */
     private final IndependenceTest independenceTest;
-
-    /**
-     * Flag for complete rule set, true if you should use complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed = true;
-
-    /**
-     * True iff the possible dsep search is done.
-     */
-    private boolean possibleDsepSearchDone = true;
-
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
-    private int maxReachablePathLength = -1;
-
-    /**
-     * Set of ambiguous unshielded triples.
-     */
-    private Set<Triple> ambiguousTriples;
-
-    /**
-     * The depth for the fast adjacency search.
-     */
-    private int depth = -1;
-
-    /**
-     * Elapsed time of last search.
-     */
-    private long elapsedTime;
-
     /**
      * The logger to use.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-
+    /**
+     * The PAG being constructed.
+     */
+    private Graph graph;
+    /**
+     * The background knowledge.
+     */
+    private Knowledge knowledge = new Knowledge();
+    /**
+     * Flag for complete rule set, true if you should use complete rule set, false otherwise.
+     */
+    private boolean completeRuleSetUsed = true;
+    /**
+     * True iff the possible msep search is done.
+     */
+    private boolean possibleMsepSearchDone = true;
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
+    private int maxReachablePathLength = -1;
+    /**
+     * Set of ambiguous unshielded triples.
+     */
+    private Set<Triple> ambiguousTriples;
+    /**
+     * The depth for the fast adjacency search.
+     */
+    private int depth = -1;
+    /**
+     * Elapsed time of last search.
+     */
+    private long elapsedTime;
     private boolean verbose;
     private boolean doDiscriminatingPathRule;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -129,7 +115,6 @@ public final class Cfci implements IGraphSearch {
         this.variables.addAll(independenceTest.getVariables());
     }
 
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Performs the search and returns the PAG.
@@ -162,8 +147,8 @@ public final class Cfci implements IGraphSearch {
 
         // Note we don't use the sepsets from this search.
 
-        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
-        if (isPossibleDsepSearchDone()) {
+        // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
+        if (isPossibleMsepSearchDone()) {
             long time1 = MillisecondTimes.timeMillis();
             ruleR0(this.independenceTest, this.depth, this.sepsets);
 
@@ -176,13 +161,13 @@ public final class Cfci implements IGraphSearch {
             // Step FCI D.
             long time3 = MillisecondTimes.timeMillis();
 
-            PossibleDsepFci possibleDSep = new PossibleDsepFci(this.graph, this.independenceTest);
-            possibleDSep.setDepth(this.depth);
-            possibleDSep.setKnowledge(this.knowledge);
-            possibleDSep.setMaxPathLength(getMaxReachablePathLength());
+            PossibleMsepFci possibleMSep = new PossibleMsepFci(this.graph, this.independenceTest);
+            possibleMSep.setDepth(this.depth);
+            possibleMSep.setKnowledge(this.knowledge);
+            possibleMSep.setMaxPathLength(getMaxReachablePathLength());
 
             // We use these sepsets though.
-            this.sepsets.addAll(possibleDSep.search());
+            this.sepsets.addAll(possibleMSep.search());
             long time4 = MillisecondTimes.timeMillis();
 
             if (this.verbose) {
@@ -251,8 +236,7 @@ public final class Cfci implements IGraphSearch {
     }
 
     /**
-     * Returns the map from nodes to their sepsets. For x _||_ y | z1,...,zn, this
-     * would map {x, y} to {z1,..,zn}.
+     * Returns the map from nodes to their sepsets. For x _||_ y | z1,...,zn, this would map {x, y} to {z1,..,zn}.
      *
      * @return This map.
      */
@@ -274,14 +258,14 @@ public final class Cfci implements IGraphSearch {
      * Returns true if Zhang's complete rule set should be used, false if only R1-T1 (the rule set of the original FCI)
      * should be used. False by default.
      *
-     * @return True for the complete ruleset.
+     * @return True for the complete rule set.
      */
     public boolean isCompleteRuleSetUsed() {
         return this.completeRuleSetUsed;
     }
 
     /**
-     * Sets whether the complete ruleset should be used.
+     * Sets whether the complete rule set should be used.
      *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-T1 (the rule
      *                            set of the original FCI) should be used. False by default.
@@ -289,6 +273,7 @@ public final class Cfci implements IGraphSearch {
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
+
 
     /**
      * Returns the ambiguous triples found in the search.
@@ -299,8 +284,6 @@ public final class Cfci implements IGraphSearch {
     public Set<Triple> getAmbiguousTriples() {
         return new HashSet<>(this.ambiguousTriples);
     }
-
-    //===========================PRIVATE METHODS=========================//
 
     private Graph getGraph() {
         return this.graph;
@@ -314,7 +297,7 @@ public final class Cfci implements IGraphSearch {
         this.ambiguousTriples = new HashSet<>();
 
         for (Node y : getGraph().getNodes()) {
-            List<Node> adjacentNodes = getGraph().getAdjacentNodes(y);
+            List<Node> adjacentNodes = new ArrayList<>(getGraph().getAdjacentNodes(y));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -332,7 +315,7 @@ public final class Cfci implements IGraphSearch {
                 }
 
                 TripleType type = getTripleType(x, y, z, test, depth);
-                List<Node> sepset = sepsets.get(x, z);
+                Set<Node> sepset = sepsets.get(x, z);
 
                 if (type == TripleType.COLLIDER || (sepset != null && !sepset.contains(y))) {
                     if (isArrowheadAllowed(x, y) &&
@@ -409,7 +392,7 @@ public final class Cfci implements IGraphSearch {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                List<Node> condSet = Cfci.asList(choice, _nodes);
+                Set<Node> condSet = GraphUtils.asSet(choice, _nodes);
 
                 if (test.checkIndependence(x, z, condSet).isIndependent()) {
                     if (condSet.contains(y)) {
@@ -437,7 +420,7 @@ public final class Cfci implements IGraphSearch {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                List<Node> condSet = Cfci.asList(choice, _nodes);
+                Set<Node> condSet = GraphUtils.asSet(choice, _nodes);
 
                 if (test.checkIndependence(x, z, condSet).isIndependent()) {
                     if (condSet.contains(y)) {
@@ -450,9 +433,9 @@ public final class Cfci implements IGraphSearch {
         }
 
         // Note: Unless sepsets are being collected during fas, most likely
-        // this will be null. (Only sepsets found during possible dsep search
+        // this will be null. (Only sepsets found during possible msep search
         // will be here.)
-        List<Node> condSet = getSepsets().get(x, z);
+        Set<Node> condSet = getSepsets().get(x, z);
 
         if (condSet != null) {
             if (condSet.contains(y)) {
@@ -471,17 +454,6 @@ public final class Cfci implements IGraphSearch {
         }
     }
 
-    private static List<Node> asList(int[] indices, List<Node> nodes) {
-        List<Node> list = new LinkedList<>();
-
-        for (int i : indices) {
-            list.add(nodes.get(i));
-        }
-
-        return list;
-    }
-
-
     /**
      * Whether verbose output (about independencies) is output.
      */
@@ -493,28 +465,24 @@ public final class Cfci implements IGraphSearch {
         this.verbose = verbose;
     }
 
-    public void setMaxReachablePathLength(int maxReachablePathLength) {
-        this.maxReachablePathLength = maxReachablePathLength;
+    public boolean isPossibleMsepSearchDone() {
+        return this.possibleMsepSearchDone;
     }
 
-    public boolean isPossibleDsepSearchDone() {
-        return this.possibleDsepSearchDone;
-    }
-
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
+    public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
+        this.possibleMsepSearchDone = possibleMsepSearchDone;
     }
 
     public int getMaxReachablePathLength() {
         return this.maxReachablePathLength;
     }
 
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setMaxReachablePathLength(int maxReachablePathLength) {
+        this.maxReachablePathLength = maxReachablePathLength;
     }
 
-    private enum TripleType {
-        COLLIDER, NONCOLLIDER, AMBIGUOUS
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
     /**
@@ -583,6 +551,10 @@ public final class Cfci implements IGraphSearch {
         if (this.verbose) {
             this.logger.log("info", "Finishing BK Orientation.");
         }
+    }
+
+    private enum TripleType {
+        COLLIDER, NONCOLLIDER, AMBIGUOUS
     }
 }
 

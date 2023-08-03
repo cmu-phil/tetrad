@@ -27,11 +27,11 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.MatrixF;
 import java.io.IOException;
 
 /**
- * Simple implementation of a directed Graph.  edges are just represented by
- * float values (a zero == no edge) stored in a matrix.
+ * Simple implementation of a directed Graph.  edges are just represented by float values (a zero == no edge) stored in
+ * a matrix.
  * <p>
- * Two edges of different orientation can exist between two nodes, but no more than
- * one edge of a given orientation can exist between two nodes.
+ * Two edges of different orientation can exist between two nodes, but no more than one edge of a given orientation can
+ * exist between two nodes.
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
@@ -49,8 +49,7 @@ public class Digraph extends BasicGraph {
     private int[] nParents;
 
     /**
-     * Creates a OldDigraph with <code>gName</code> name, and <code>n</code>
-     * nodes.
+     * Creates a OldDigraph with <code>gName</code> name, and <code>n</code> nodes.
      */
     public Digraph(String gName, int nNodes) {
         super(gName, nNodes);
@@ -150,8 +149,8 @@ public class Digraph extends BasicGraph {
     }
 
     /**
-     * Returns an array with the indexes of the parents of node i. If node i has
-     * no parents it returns an array of size 0 (e.g. not null)
+     * Returns an array with the indexes of the parents of node i. If node i has no parents it returns an array of size
+     * 0 (e.g. not null)
      */
     public int[] getParents(int j) {
         if ((j < 0) || (j >= this.nNodes)) {

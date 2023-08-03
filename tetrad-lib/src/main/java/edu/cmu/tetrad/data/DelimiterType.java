@@ -26,16 +26,13 @@ import java.io.ObjectStreamException;
 import java.util.regex.Pattern;
 
 /**
- * Type-safe enum of delimiter types for parsing data. DISCRETE is used in data
- * where every line starts a new field and every occurrence of a tab starts a
- * new field. SECTION_MARKER is replaces tabs by " *\t *". LAUNCH_TIME replaces
- * tabs by ",". Custom replaces tabs by a specified regular expression.
+ * Type-safe enum of delimiter types for parsing data. DISCRETE is used in data where every line starts a new field and
+ * every occurrence of a tab starts a new field. SECTION_MARKER is replaces tabs by " *\t *". LAUNCH_TIME replaces tabs
+ * by ",". Custom replaces tabs by a specified regular expression.
  *
  * @author josephramsey
  */
 public final class DelimiterType implements TetradSerializable {
-
-    static final long serialVersionUID = 23L;
 
     public static final DelimiterType WHITESPACE
             = new DelimiterType("Whitespace", "\\s+");
@@ -45,20 +42,22 @@ public final class DelimiterType implements TetradSerializable {
             = new DelimiterType("Comma", ",");
     public static final DelimiterType COLON
             = new DelimiterType("Colon", ":");
-
+    static final long serialVersionUID = 23L;
+    private static final DelimiterType[] TYPES = {DelimiterType.WHITESPACE, DelimiterType.TAB, DelimiterType.COMMA};
+    // Declarations required for serialization.
+    private static int nextOrdinal;
     /**
      * The name of this type.
      */
     private final transient String name;
-
     /**
      * The regular expression representing the delimiter.
      */
     private final transient Pattern pattern;
+    private final int ordinal = DelimiterType.nextOrdinal++;
 
     /**
-     * Protected constructor for the types; this allows for extension in case
-     * anyone wants to add formula types.
+     * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
     private DelimiterType(String name, String regex) {
         this.name = name;
@@ -73,8 +72,7 @@ public final class DelimiterType implements TetradSerializable {
     }
 
     /**
-     * @return the CPDAG representing this delimiter type. This CPDAG can be
-     * used to parse, using a matcher.
+     * @return the CPDAG representing this delimiter type. This CPDAG can be used to parse, using a matcher.
      */
     public Pattern getPattern() {
         return this.pattern;
@@ -86,11 +84,6 @@ public final class DelimiterType implements TetradSerializable {
     public String toString() {
         return this.name;
     }
-
-    // Declarations required for serialization.
-    private static int nextOrdinal;
-    private final int ordinal = DelimiterType.nextOrdinal++;
-    private static final DelimiterType[] TYPES = {DelimiterType.WHITESPACE, DelimiterType.TAB, DelimiterType.COMMA};
 
     Object readResolve() throws ObjectStreamException {
         return DelimiterType.TYPES[this.ordinal]; // Canonicalize.

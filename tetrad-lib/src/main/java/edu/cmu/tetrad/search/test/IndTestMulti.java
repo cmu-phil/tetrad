@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -58,22 +59,20 @@ public final class IndTestMulti implements IndependenceTest {
 
 //    private DataSet concatenatedData;
 
-    //==========================CONSTRUCTORS=============================//
 
     public IndTestMulti(List<IndependenceTest> independenceTests, ResolveSepsets.Method method) {
         Set<String> nodeNames = new HashSet<>();
         for (IndependenceTest independenceTest : independenceTests) {
             nodeNames.addAll(independenceTest.getVariableNames());
         }
-        if (independenceTests.get(0).getVariables().size() != nodeNames.size()) {
+        if (independenceTests.iterator().next().getVariables().size() != nodeNames.size()) {
             throw new IllegalArgumentException("Data sets must have same variables.");
         }
-        this.variables = independenceTests.get(0).getVariables();
+        this.variables = independenceTests.iterator().next().getVariables();
         this.independenceTests = independenceTests;
         this.method = method;
     }
 
-    //==========================PUBLIC METHODS=============================//
 
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
@@ -88,7 +87,7 @@ public final class IndTestMulti implements IndependenceTest {
      * @return True iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         boolean independent = ResolveSepsets.isIndependentPooled(this.method, this.independenceTests, x, y, z);
 
         if (independent) {
@@ -97,21 +96,17 @@ public final class IndTestMulti implements IndependenceTest {
             TetradLogger.getInstance().log("dependencies", "In aggregate dependent: " + LogUtilsSearch.independenceFact(x, y, z));
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
-    }
-
-    public double getPValue() {
-        return Double.NaN;
-    }
-
-    public void setAlpha(double alpha) {
-        throw new UnsupportedOperationException();
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN, Double.NaN);
     }
 
     /**
      * Gets the getModel significance level.
      */
     public double getAlpha() {
+        throw new UnsupportedOperationException();
+    }
+
+    public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
@@ -137,22 +132,11 @@ public final class IndTestMulti implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
-
-    /**
-     * Returns alpha - pvalue.
-     *
-     * @return This.
-     */
-    @Override
-    public double getScore() {
-        return getAlpha() - getPValue();
-    }
-
     /**
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Pooled Independence Test:  alpha = " + this.independenceTests.get(0).getAlpha();
+        return "Pooled Independence Test:  alpha = " + this.independenceTests.iterator().next().getAlpha();
     }
 
     /**
@@ -168,7 +152,7 @@ public final class IndTestMulti implements IndependenceTest {
     /**
      * Sets whether this test will print verbose output.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

@@ -59,8 +59,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
 
     /**
-     * Constructs the config for the given event ids. This will create <code>Event</code>s with
-     * no descriptions.
+     * Constructs the config for the given event ids. This will create <code>Event</code>s with no descriptions.
      *
      * @param events The events that the logger reports.
      */
@@ -73,18 +72,18 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
         }
     }
 
-    public TetradLoggerConfig copy() {
-        DefaultTetradLoggerConfig copy = new DefaultTetradLoggerConfig();
-        copy.events = new ArrayList<>(events);
-        copy.active = new HashSet<>(active);
-        return copy;
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static DefaultTetradLoggerConfig serializableInstance() {
         return new DefaultTetradLoggerConfig();
+    }
+
+    public TetradLoggerConfig copy() {
+        DefaultTetradLoggerConfig copy = new DefaultTetradLoggerConfig();
+        copy.events = new ArrayList<>(events);
+        copy.active = new HashSet<>(active);
+        return copy;
     }
 
     //=========================== public methods ================================//

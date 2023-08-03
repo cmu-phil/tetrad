@@ -2,23 +2,22 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
-import static java.util.Collections.sort;
 import static org.apache.commons.math3.util.FastMath.floor;
 
 
 /**
- * Implements and extends a scorer extending Teyssier, M., and Koller, D. (2012). You give it a score function
- * and a variable ordering, and it computes the score. You can move any variable left or right, and it will
- * keep track of the score using the Teyssier and Kohler method. You can move a variable to a new position,
- * and you can bookmark a state and come back to it.
+ * Implements and extends a scorer extending Teyssier, M., and Koller, D. (2012). You give it a score function and a
+ * variable ordering, and it computes the score. You can move any variable left or right, and it will keep track of the
+ * score using the Teyssier and Kohler method. You can move a variable to a new position, and you can bookmark a state
+ * and come back to it.
  *
  * <p>Teyssier, M., &amp; Koller, D. (2012). Ordering-based search: A simple and effective algorithm for
  * learning Bayesian networks. arXiv preprint arXiv:1207.1429.</p>
@@ -28,25 +27,25 @@ import static org.apache.commons.math3.util.FastMath.floor;
  */
 public class TeyssierScorer {
     private final List<Node> variables;
-    private ArrayList<Node> pi; // The current permutation.
-    private Map<Node, Integer> orderHash = new HashMap<>();
     private final IndependenceTest test;
     private final Score score;
-    private ArrayList<Set<Node>> prefixes;
-    private ArrayList<Pair> scores;
     private final Map<Object, ArrayList<Node>> bookmarkedOrders = new HashMap<>();
     private final Map<Object, ArrayList<Pair>> bookmarkedScores = new HashMap<>();
     private final Map<Object, Map<Node, Integer>> bookmarkedOrderHashes = new HashMap<>();
     private final Map<Object, Double> bookmarkedRunningScores = new HashMap<>();
     private final Map<Node, GrowShrinkTree> trees = new HashMap<>();
+    private ArrayList<Node> pi; // The current permutation.
+    private Map<Node, Integer> orderHash = new HashMap<>();
+    private ArrayList<Set<Node>> prefixes;
+    private ArrayList<Pair> scores;
     private Knowledge knowledge = new Knowledge();
     private boolean useScore;
     private boolean useRaskuttiUhler = false;
     private double runningScore = 0f;
 
     /**
-     * Constructor that takes both a test or a score. Only one of these is used, dependeint
-     * on how the parameters are set.
+     * Constructor that takes both a test or a score. Only one of these is used, dependeint on how the parameters are
+     * set.
      *
      * @param test  The test.
      * @param score The score
@@ -55,7 +54,7 @@ public class TeyssierScorer {
      */
     public TeyssierScorer(IndependenceTest test, Score score) {
         if (test == null && score == null) throw new IllegalArgumentException("Required: test or score");
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
+//        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
         this.variables = score.getVariables();
         this.pi = new ArrayList<>(this.variables);
@@ -109,8 +108,7 @@ public class TeyssierScorer {
     }
 
     /**
-     * Scores the given permutation. This needs to be done initially before any move or tuck
-     * operations are performed.
+     * Scores the given permutation. This needs to be done initially before any move or tuck operations are performed.
      *
      * @param order The permutation to score.
      * @return The score of it.
@@ -210,8 +208,8 @@ public class TeyssierScorer {
     }
 
     /**
-     * Returns true iff x-&gt;y or y-&gt;x is a covered edge. x-&gt;y is a covered edge if
-     * parents(x) = parents(y) \ {x}
+     * Returns true iff x-&gt;y or y-&gt;x is a covered edge. x-&gt;y is a covered edge if parents(x) = parents(y) \
+     * {x}
      *
      * @param x The first variable.
      * @param y The second variable.
@@ -416,8 +414,8 @@ public class TeyssierScorer {
     /**
      * Bookmarks the current pi as index key.
      *
-     * @param key This bookmark may be retrieved using the index 'key', an integer.
-     *            This bookmark will be stored until it is retrieved and then removed.
+     * @param key This bookmark may be retrieved using the index 'key', an integer. This bookmark will be stored until
+     *            it is retrieved and then removed.
      */
     public void bookmark(int key) {
         try {
@@ -686,7 +684,7 @@ public class TeyssierScorer {
                     parents.add(z0);
                     continue;
                 }
-                if (this.test.checkIndependence(n, z0, new ArrayList<>(parents)).isDependent()) {
+                if (this.test.checkIndependence(n, z0, new HashSet<>(parents)).isDependent()) {
                     parents.add(z0);
                     changed1 = true;
                 }
@@ -697,7 +695,7 @@ public class TeyssierScorer {
                     continue;
                 }
                 parents.remove(z1);
-                if (this.test.checkIndependence(n, z1, new ArrayList<>(parents)).isDependent()) {
+                if (this.test.checkIndependence(n, z1, new HashSet<>(parents)).isDependent()) {
                     parents.add(z1);
                 } else {
                     changed1 = true;
@@ -734,8 +732,7 @@ public class TeyssierScorer {
         for (Node y : prefix) {
             Set<Node> minus = new HashSet<>(prefix);
             minus.remove(y);
-            ArrayList<Node> z = new ArrayList<>(minus);
-            sort(z);
+            Set<Node> z = new HashSet<>(minus);
 
             if (this.test.checkIndependence(x, y, z).isDependent()) {
                 parents.add(y);

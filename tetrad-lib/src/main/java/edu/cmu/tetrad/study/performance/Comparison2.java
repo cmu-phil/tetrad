@@ -10,9 +10,8 @@ import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndTestDSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.TsDagToPag;
 import edu.cmu.tetrad.search.utils.TsUtils;
@@ -39,8 +38,7 @@ import java.util.List;
 import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
- * Does a comparison of algorithm results across algorithm type, sample sizes,
- * etc.
+ * Does a comparison of algorithm results across algorithm type, sample sizes, etc.
  *
  * @author josephramsey 2016.03.24
  * @author dmalinsky 2016.05.20
@@ -48,8 +46,8 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 public class Comparison2 {
 
     /**
-     * Simulates data from model parameterizing the given DAG, and runs the
-     * algorithm on that data, printing out error statistics.
+     * Simulates data from model parameterizing the given DAG, and runs the algorithm on that data, printing out error
+     * statistics.
      */
     public static ComparisonResult compare(ComparisonParameters params) {
         DataSet dataSet = null;
@@ -75,7 +73,7 @@ public class Comparison2 {
                 if (file.getName().startsWith("graph") && file.getName().contains(String.valueOf(params.getGraphNum()))
                         && file.getName().endsWith(".g.txt")) {
                     params.setGraphFile(file.getName());
-                    trueDag = GraphPersistence.loadGraphTxt(file);
+                    trueDag = GraphSaveLoadUtils.loadGraphTxt(file);
                     break;
                 }
 
@@ -132,7 +130,7 @@ public class Comparison2 {
                 System.out.println("Creating Time Lag Graph : " + trueDag);
             }
 
-            test = new IndTestDSep(trueDag);
+            test = new MsepTest(trueDag);
             score = new GraphScore(trueDag);
 
             if (params.getAlgorithm() == null) {
@@ -466,7 +464,7 @@ public class Comparison2 {
             Graph correctGraph = _result.getCorrectResult();
             Graph resultGraph = _result.getResultGraph();
 
-            GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison2(correctGraph, resultGraph);
+            GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(correctGraph, resultGraph);
 
             int newRow = dataSet.getNumRows();
 

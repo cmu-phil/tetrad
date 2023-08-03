@@ -37,16 +37,13 @@ import java.awt.*;
 import java.text.NumberFormat;
 
 /**
- * Allows the user to execute a logistic regression in the GUI. Contains a panel
- * that lets the user specify a target variable (which must be binary) and a
- * list of continuous regressors, plus a tabbed pane that includes (a) a text
- * area to show the report of the logistic regression and (b) a graph workbench
- * to show the graph of the target with significant regressors from the
- * regression as parents.
+ * Allows the user to execute a logistic regression in the GUI. Contains a panel that lets the user specify a target
+ * variable (which must be binary) and a list of continuous regressors, plus a tabbed pane that includes (a) a text area
+ * to show the report of the logistic regression and (b) a graph workbench to show the graph of the target with
+ * significant regressors from the regression as parents.
  *
  * @author josephramsey
- * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM
- * Bayes estimator
+ * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM Bayes estimator
  */
 public class LogisticRegressionEditor extends JPanel {
 
@@ -158,8 +155,7 @@ public class LogisticRegressionEditor extends JPanel {
     //============================== Private Methods =====================================//
 
     /**
-     * Prints the info in the result to the text area (doesn't use the results
-     * representation).
+     * Prints the info in the result to the text area (doesn't use the results representation).
      */
     private void print(LogisticRegression.Result result, double alpha) {
         if (result == null) {

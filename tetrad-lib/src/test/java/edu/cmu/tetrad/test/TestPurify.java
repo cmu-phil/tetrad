@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -281,7 +281,7 @@ public class TestPurify {
         List<List<Node>> clustering = new ArrayList<>();
 
         for (Node node : latents) {
-            List<Node> adj = graph.getAdjacentNodes(node);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(node));
             adj.removeAll(latents);
 
             clustering.add(adj);

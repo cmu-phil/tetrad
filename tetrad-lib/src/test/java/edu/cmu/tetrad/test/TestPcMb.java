@@ -23,10 +23,11 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndTestDSep;
-import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.MbUtils;
+import edu.cmu.tetrad.search.FgesMb;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.PcMb;
+import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.MbUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -46,7 +47,7 @@ public class TestPcMb {
     public void testGenerateDaglist() {
         Graph graph = GraphUtils.convert("T-->X1,T-->X2,X1-->X2,T-->X3,X4-->T");
 
-        IndTestDSep test = new IndTestDSep(graph);
+        MsepTest test = new MsepTest(graph);
         PcMb search = new PcMb(test, -1);
         Node t = test.getGraph().getNode("T");
         Graph resultGraph = search.search(Collections.singletonList(t));
@@ -74,7 +75,7 @@ public class TestPcMb {
         Graph dag = RandomGraph.randomGraph(nodes1, 0, 10,
                 5, 5, 5, false);
 
-        IndependenceTest test = new IndTestDSep(dag);
+        IndependenceTest test = new MsepTest(dag);
         PcMb search = new PcMb(test, -1);
 
         List<Node> nodes = dag.getNodes();
@@ -82,7 +83,7 @@ public class TestPcMb {
         for (Node node : nodes) {
             Graph resultMb = search.search(Collections.singletonList(node));
             if (dag.containsNode(node)) {
-                Graph trueMb = GraphUtils.markovBlanketDag(node, dag);
+                Graph trueMb = GraphUtils.markovBlanketSubgraph(node, dag);
 
                 List<Node> resultNodes = resultMb.getNodes();
                 List<Node> trueNodes = trueMb.getNodes();

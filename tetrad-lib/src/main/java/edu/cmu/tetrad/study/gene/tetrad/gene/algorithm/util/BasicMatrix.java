@@ -31,38 +31,32 @@ import java.io.*;
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
 public abstract class BasicMatrix {
-    protected String name;
-    protected int n;
-
     /**
      * Maximum short value
      */
     public static final short MAX_SHORT = Short.MAX_VALUE;
-
     /**
      * Minimum short getValue
      */
     public static final short MIN_SHORT = Short.MIN_VALUE;
-
     /**
      * Maximum int value
      */
     public static final int MAX_INT = Integer.MAX_VALUE;
-
     /**
      * Minimum int value
      */
     public static final int MIN_INT = Integer.MIN_VALUE;
-
     /**
      * Maximum float value
      */
     public static final float MAX_FLOAT = Float.MAX_VALUE;
-
     /**
      * Minimum float value
      */
     public static final float MIN_FLOAT = -BasicMatrix.MAX_FLOAT;
+    protected String name;
+    protected int n;
 
     /**
      * No parameters constructor, only used within the package
@@ -84,22 +78,17 @@ public abstract class BasicMatrix {
     }
 
     /**
-     * Creates a matrix reading it from a file <code>fname</code>. The file has
-     * to be an ascii one and follow a particular format:<p> *MATRIX*  [matrix
-     * name] <br> [n]<br> [0, 0 ] [ 0, 1] ...  [ 0, n-1]<br> [1, 0 ] [ 1, 1] ...
-     * [ 1, n-1]<br> :<br> [n-1,0] [n-1,1] ...  [n-1,n-1]<p> First token
-     * should be a word with "MATRIX" as a substring (case insens.), followed by
-     * the name of the matrix (one word). [n] is the number of rows and columns
-     * in the matrix, and [i,j] is element at position i,j in the matrix.<br>
-     * For example, a 3x3 identity matrix could be represented as follows:<p>
-     * MATRIX Identity3x3<br> <br> 3  // # rows and columns<br> <br> //
-     * Matrix elements:<br> 1 0 0<br> 0 1 0<br> 0 0 1<p> Notice there can
-     * be slash-slash (and also slash-star) style comments anywhere in the file.
-     * Numbers can be separated by any number of blank delimiters: tabs, spaces,
-     * carriage returns.  In the examples above they appear in different lines
-     * for more readability of the file. The file may have less elements than
-     * the total needed to fill the matrix.  If it has more elements an illegal
-     * argument exception will be generated.
+     * Creates a matrix reading it from a file <code>fname</code>. The file has to be an ascii one and follow a
+     * particular format:<p> *MATRIX*  [matrix name] <br> [n]<br> [0, 0 ] [ 0, 1] ...  [ 0, n-1]<br> [1, 0 ] [ 1, 1] ...
+     * [ 1, n-1]<br> :<br> [n-1,0] [n-1,1] ...  [n-1,n-1]<p> First token should be a word with "MATRIX" as a substring
+     * (case insens.), followed by the name of the matrix (one word). [n] is the number of rows and columns in the
+     * matrix, and [i,j] is element at position i,j in the matrix.<br> For example, a 3x3 identity matrix could be
+     * represented as follows:<p> MATRIX Identity3x3<br> <br> 3  // # rows and columns<br> <br> // Matrix elements:<br>
+     * 1 0 0<br> 0 1 0<br> 0 0 1<p> Notice there can be slash-slash (and also slash-star) style comments anywhere in the
+     * file. Numbers can be separated by any number of blank delimiters: tabs, spaces, carriage returns.  In the
+     * examples above they appear in different lines for more readability of the file. The file may have less elements
+     * than the total needed to fill the matrix.  If it has more elements an illegal argument exception will be
+     * generated.
      */
     public BasicMatrix(String fname) throws IOException {
         // Create and prepare stream tokenizer
@@ -170,13 +159,6 @@ public abstract class BasicMatrix {
     }
 
     /**
-     * Sets the name of this matrix
-     */
-    public void setName(String newName) {
-        this.name = newName;
-    }
-
-    /**
      * Returns name of this matrix
      */
     public String getName() {
@@ -184,8 +166,14 @@ public abstract class BasicMatrix {
     }
 
     /**
-     * Returns a specially formatted string with all the contents of this
-     * matrix
+     * Sets the name of this matrix
+     */
+    public void setName(String newName) {
+        this.name = newName;
+    }
+
+    /**
+     * Returns a specially formatted string with all the contents of this matrix
      */
     public String toString() {
         StringBuilder s = new StringBuilder(this.getClass().getName() + " " + this.name + "\n" + this.n +
@@ -216,9 +204,8 @@ public abstract class BasicMatrix {
     public abstract double getDoubleValue(int r, int c);
 
     /**
-     * Assigns double value x in matrix element (r, c). Notice the presence
-     * of this method does not really force the implementing class to actually
-     * store doubles.
+     * Assigns double value x in matrix element (r, c). Notice the presence of this method does not really force the
+     * implementing class to actually store doubles.
      */
     public abstract void setDoubleValue(int r, int c, double x);
 

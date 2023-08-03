@@ -24,9 +24,8 @@ package edu.cmu.tetrad.session;
 import java.util.EventObject;
 
 /**
- * Notifies a listener that some change has occurred in the session--a node has
- * been added or removed, an edge has been added or removed, a model has been
- * created or destroyed.
+ * Notifies a listener that some change has occurred in the session--a node has been added or removed, an edge has been
+ * added or removed, a model has been created or destroyed.
  *
  * @author josephramsey
  */
@@ -47,8 +46,8 @@ public class SessionEvent extends EventObject {
     private int type = -1;
 
     /**
-     * Constructs an event where one session node is involved--session node
-     * added or removed, model created or destroyed.
+     * Constructs an event where one session node is involved--session node added or removed, model created or
+     * destroyed.
      */
     public SessionEvent(Object source, int type) {
         super(source);
@@ -71,8 +70,8 @@ public class SessionEvent extends EventObject {
     }
 
     /**
-     * Constructs an event where one session node is involved--session node
-     * added or removed, model created or destroyed.
+     * Constructs an event where one session node is involved--session node added or removed, model created or
+     * destroyed.
      */
     public SessionEvent(Object source, SessionNode node, int type) {
         super(source);
@@ -111,8 +110,7 @@ public class SessionEvent extends EventObject {
     }
 
     /**
-     * Constructs an event where two session nodes are involved--parent added or
-     * removed.
+     * Constructs an event where two session nodes are involved--parent added or removed.
      */
     public SessionEvent(Object source, SessionNode parent, SessionNode child,
                         int type) {
@@ -139,8 +137,7 @@ public class SessionEvent extends EventObject {
     }
 
     /**
-     * Creates a new SessionEvent with the same information as the given event
-     * but with a new source.
+     * Creates a new SessionEvent with the same information as the given event but with a new source.
      */
     public SessionEvent(Object source, SessionEvent event) {
 
@@ -153,33 +150,29 @@ public class SessionEvent extends EventObject {
     }
 
     /**
-     * @return the session node set, if this event was constructed using one
-     * session node.
+     * @return the session node set, if this event was constructed using one session node.
      */
     public SessionNode getNode() {
         return this.node;
     }
 
     /**
-     * @return the parent session node set, if this is an event constructed
-     * using two session nodes.
+     * @return the parent session node set, if this is an event constructed using two session nodes.
      */
     public SessionNode getParent() {
         return this.parent;
     }
 
     /**
-     * @return the child session node set, if this is an event constructed using
-     * two session nodes
+     * @return the child session node set, if this is an event constructed using two session nodes
      */
     public SessionNode getChild() {
         return this.child;
     }
 
     /**
-     * @return the type of this event--one of NODE_ADDED, NODE_REMOVED,
-     * PARENT_ADDED, PARENT_REMOVED, MODEL_CREATED, MODEL_DESTROYED,
-     * MODEL_UNCLEAR.
+     * @return the type of this event--one of NODE_ADDED, NODE_REMOVED, PARENT_ADDED, PARENT_REMOVED, MODEL_CREATED,
+     * MODEL_DESTROYED, MODEL_UNCLEAR.
      */
     public int getType() {
         return this.type;

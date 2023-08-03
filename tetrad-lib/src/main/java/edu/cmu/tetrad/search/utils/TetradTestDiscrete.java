@@ -34,45 +34,20 @@ import java.util.List;
 
 /**
  * Implements a test of tetrad constraints with discrete variables. We are assuming that variables are ordinal or
- * binary. Such tests are a core statistical procedure in algorithm BuildPureClusters and Purify. An "underlying
- * latent variable" approach is used to test tetrads indirectly by fitting discrete one-factor and two-factor models.
- * See Bartholomew and Knott (1999) for details. A two-stage procedure for fitting polychorics correlations (Olsson,
- * 1979) and a chi-square test of tetrad constraints over those correlations is the key for this method.
- * References: Bartholomew, D. and Knott, M. (1999). Latent Variable Models and Factor Analysis, 2nd edition.
- * Arnold. Olsson, Ulf (1979). "Maximum likelihood estimation of the polychoric correlation coefficient".
- * Psychometrika 44, 443-460. Stroud, A. and Secrest D. (1966) Gaussian Quadrature Formulas. Prentice Hall.
+ * binary. Such tests are a core statistical procedure in algorithm BuildPureClusters and Purify. An "underlying latent
+ * variable" approach is used to test tetrads indirectly by fitting discrete one-factor and two-factor models. See
+ * Bartholomew and Knott (1999) for details. A two-stage procedure for fitting polychorics correlations (Olsson, 1979)
+ * and a chi-square test of tetrad constraints over those correlations is the key for this method. References:
+ * Bartholomew, D. and Knott, M. (1999). Latent Variable Models and Factor Analysis, 2nd edition. Arnold. Olsson, Ulf
+ * (1979). "Maximum likelihood estimation of the polychoric correlation coefficient". Psychometrika 44, 443-460. Stroud,
+ * A. and Secrest D. (1966) Gaussian Quadrature Formulas. Prentice Hall.
  *
  * @author Ricardo Silva
  */
 
 public final class TetradTestDiscrete implements TetradTest {
-    DataSet dataSet;
-    //    int rawdata[][];
-    int[][][][] counts; //bivariate coefs only
-    int[][] values;
-    int[] valueIndices;
-    private double[] prob;
-    private double tempProb;
-    private double sig1;
-    private double sig2;
-    private double sig3;
-    private double sig;
-    private boolean[] bvalues;
-    double[][] thresholds;
-    int[] indices;
-    int[][][][] currentCounts;
-    int currentVar1, currentVar2;
-    double[][] currentFiBuffer;
-    double[][] currentPi;
-    double currentRho;
-    double[] rhoGrid;
-    double[][] polyCorr;
-
     private static final int MAX_VALUES = 50;
     private static final int RHO_GRID_SIZE = 1000;
-
-    public boolean verbose;
-
     private static final double[] GHY = {5.55503518732646782452296868771,
             4.77399234341121942970150957712, 4.12199554749184002081690067728,
             3.53197287713767773917138228262, 2.97999120770459800253772781753,
@@ -85,16 +60,36 @@ public final class TetradTestDiscrete implements TetradTest {
             -1.94496294918625384190191671547, -1.44893425065073196265729314868,
             -0.961499634418369064279422271352,
             -0.479450707079107576294598103513};
-
+    public boolean verbose;
+    DataSet dataSet;
+    //    int rawdata[][];
+    int[][][][] counts; //bivariate coefs only
+    int[][] values;
+    int[] valueIndices;
+    double[][] thresholds;
+    int[] indices;
+    int[][][][] currentCounts;
+    int currentVar1, currentVar2;
+    double[][] currentFiBuffer;
+    double[][] currentPi;
+    double currentRho;
+    double[] rhoGrid;
+    double[][] polyCorr;
     /**
      * @serial
      */
     int[][][][] oneFactor4Tests;
-
     /**
      * @serial
      */
     int[][][][] twoFactor4Tests;
+    private double[] prob;
+    private double tempProb;
+    private double sig1;
+    private double sig2;
+    private double sig3;
+    private double sig;
+    private boolean[] bvalues;
 
     public TetradTestDiscrete(DataSet dataSet, double sig) {
         this.dataSet = dataSet;

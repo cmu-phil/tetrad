@@ -52,8 +52,8 @@ class Rubberband extends JComponent {
     /**
      * Constructs a new rubberband at a specified location.
      *
-     * @param anchor The anchor point of the rubberband; the rubber band will
-     *               always go from this point to some other point.
+     * @param anchor The anchor point of the rubberband; the rubber band will always go from this point to some other
+     *               point.
      */
     public Rubberband(Point anchor) {
 
@@ -80,8 +80,8 @@ class Rubberband extends JComponent {
     }
 
     /**
-     * Updates the track point for the rubber band so that it extends from the
-     * initial location point to the point specified as the argument.
+     * Updates the track point for the rubber band so that it extends from the initial location point to the point
+     * specified as the argument.
      */
     public void updateTrackPoint(Point p) {
         int newLocX = FastMath.min(p.x, this.anchor.x);
@@ -104,9 +104,8 @@ class Rubberband extends JComponent {
     }
 
     /**
-     * Rests the boundaries of the shape which is drawn as the rubberband. The
-     * boundaries of the shape need to be set so that when drawn they lie just
-     * inside the boundaries of the component on all four sides.
+     * Rests the boundaries of the shape which is drawn as the rubberband. The boundaries of the shape need to be set so
+     * that when drawn they lie just inside the boundaries of the component on all four sides.
      */
     private void resetShapeBounds() {
         RoundRectangle2D.Double rrect = (RoundRectangle2D.Double) this.shape;
@@ -115,8 +114,7 @@ class Rubberband extends JComponent {
     }
 
     /**
-     * @return the shape of the rubberband, which can be used to determine which
-     * components it intersects.
+     * @return the shape of the rubberband, which can be used to determine which components it intersects.
      */
     public Shape getShape() {
         return this.shape;

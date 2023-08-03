@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
@@ -37,6 +37,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Calculates independence from pooled residuals using the Fisher Z method.
@@ -112,13 +113,13 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      * Determines whether x _||_ y | z.
      *
      * @return an independence result
-     * @see IndependenceResult
      * @throws org.apache.commons.math3.linear.SingularMatrixException if a matrix singularity is encountered.
+     * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
 
         x = getVariable(this.variables, x.getName());
-        z = GraphUtils.replaceNodes(z, this.variables);
+        List<Node> z = GraphUtils.replaceNodes(new ArrayList<>(_z), new ArrayList<>(this.variables));
 
         // Calculate the residual of x and y conditional on z for each data set and concatenate them.
         double[] residualsX = residuals(x, z);
@@ -158,8 +159,8 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
                 0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
         if (Double.isNaN(fisherZ)) {
-            return new IndependenceResult(new IndependenceFact(x, y, z),
-                    true, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, _z),
+                    true, Double.NaN, Double.NaN);
         }
 
         double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(fisherZ)));
@@ -169,21 +170,19 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, this.pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, this.pValue));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, pValue - getAlpha());
 
     }
 
-
     /**
-     * @return the probability associated with the most recently computed independence test.
+     * Gets the getModel significance level.
      */
-    public double getPValue() {
-        return this.pValue;
-//        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(fisherZ)));
+    public double getAlpha() {
+        return this.alpha;
     }
 
     /**
@@ -197,13 +196,6 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
         this.alpha = alpha;
 //        this.thresh = Double.NaN;
-    }
-
-    /**
-     * Gets the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
     }
 
     /**
@@ -247,18 +239,6 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * Returns a number that is positive when dependence holds and more positive
-     * for greater dependence.
-     *
-     * @return This number
-     * @see Fges
-     */
-    @Override
-    public double getScore() {
-        return -(getPValue() - getAlpha());
-    }
-
-    /**
      * @return a string representation of this test.
      */
     public String toString() {
@@ -268,7 +248,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     /**
      * Return True if verbose output should be printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean isVerbose() {
         return this.verbose;
@@ -277,7 +257,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     /**
      * Sets whether verbose output is printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

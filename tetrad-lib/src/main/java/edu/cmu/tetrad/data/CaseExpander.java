@@ -23,20 +23,12 @@ package edu.cmu.tetrad.data;
 
 
 /**
- * Makes a new data set in which cases in the given data set that have been
- * assigned multiplicies other than n = 1 are copied out n times. This increases
- * the number of rows in the data set.
+ * Makes a new data set in which cases in the given data set that have been assigned multiplicies other than n = 1 are
+ * copied out n times. This increases the number of rows in the data set.
  *
  * @author josephramsey
  */
 public final class CaseExpander implements DataFilter {
-
-    /**
-     * Expands cases for the given dataset.
-     */
-    public DataSet filter(DataSet dataSet) {
-        return CaseExpander.expand(dataSet);
-    }
 
     private static DataSet expand(DataSet dataSet) {
         int rows = 0;
@@ -75,6 +67,13 @@ public final class CaseExpander implements DataFilter {
         }
 
         return newDataSet;
+    }
+
+    /**
+     * Expands cases for the given dataset.
+     */
+    public DataSet filter(DataSet dataSet) {
+        return CaseExpander.expand(dataSet);
     }
 }
 

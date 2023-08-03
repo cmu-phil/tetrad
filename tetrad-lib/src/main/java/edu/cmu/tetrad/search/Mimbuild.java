@@ -43,18 +43,16 @@ import java.util.List;
 
 /**
  * <p>Provides an implementation of Mimbuild, an algorithm that takes a clustering
- * of variables, each of which is explained by a single latent, then forms the
- * implied covariance matrix over the latent variables, then runs a CPDAG search
- * to in the structure over the latent themselves.</p>
+ * of variables, each of which is explained by a single latent, then forms the implied covariance matrix over the latent
+ * variables, then runs a CPDAG search to in the structure over the latent themselves.</p>
  *
  * <p>Specifically, the search will first infer the covariance matrix over the
- * latents and then will use the GRaSP algorithm (see) to infer the structure
- * graph over the latents, using the SEM Bic score with the given penalty discount
- * (default 2).</p>
+ * latents and then will use the GRaSP algorithm (see) to infer the structure graph over the latents, using the SEM Bic
+ * score with the given penalty discount (default 2).</p>
  *
  * <p>One may wish to obtain the implied correlation matrix over the latents and
- * run one's own choice of CPDDAG algorithm on it with one's own test or score;
- * a method is available to return this covariance matrix.</p>
+ * run one's own choice of CPDAG algorithm on it with one's own test or score; a method is available to return this
+ * covariance matrix.</p>
  *
  * <p>A suitable clustering for Mimbuild may be obtained using the BPC or FOFC
  * algorithm (see).</p>
@@ -104,15 +102,13 @@ public class Mimbuild {
     public Mimbuild() {
     }
 
-    //=================================== PUBLIC METHODS =========================================//
 
     /**
      * Does a Mimbuild search.
      *
-     * @param clustering  The clustering to use--this clusters the measured variables in such a way
-     *                    that each cluster is explained by a single latent variables.
-     * @param latentNames The names of the latent variables corresponding in order ot each cluster
-     *                    in the clustering.
+     * @param clustering  The clustering to use--this clusters the measured variables in such a way that each cluster is
+     *                    explained by a single latent variables.
+     * @param latentNames The names of the latent variables corresponding in order ot each cluster in the clustering.
      * @param measuresCov The covariance matrix over the measured variables.
      * @return The inferred graph over the latent variables.
      */
@@ -175,8 +171,7 @@ public class Mimbuild {
     }
 
     /**
-     * Returns the clustering of measured variables, each of which is explained
-     * by a single latent.
+     * Returns the clustering of measured variables, each of which is explained by a single latent.
      *
      * @return This clustering.
      */
@@ -194,9 +189,9 @@ public class Mimbuild {
     }
 
     /**
-     * Returns the inferred covariance matrix over the late4nt variables.
+     * Returns the inferred covariance matrix over the latent variables.
      *
-     * @return Thsi covariance matrix.
+     * @return This covariance matrix.
      */
     public ICovarianceMatrix getLatentsCov() {
         return this.latentsCov;
@@ -217,8 +212,8 @@ public class Mimbuild {
     }
 
     /**
-     * The full graph inferred, including the edges from latents to measures and
-     * all fo the edges inferred among latents.
+     * The full graph inferred, including the edges from latents to measures. And all fo the edges inferred among
+     * latents.
      *
      * @return This full graph.
      */
@@ -250,7 +245,6 @@ public class Mimbuild {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    //=================================== PRIVATE METHODS =========================================//
 
     private List<Node> defineLatents(List<String> names) {
         List<Node> latents = new ArrayList<>();
@@ -418,7 +412,7 @@ public class Mimbuild {
             }
         }
 
-        System.out.println("# nnonredundant elemnts of cov(error) = " + latentscov.getNumRows() * (latentscov.getNumRows() + 1) / 2);
+        System.out.println("# nonredundant elemnts of cov(error) = " + latentscov.getNumRows() * (latentscov.getNumRows() + 1) / 2);
 
         int _loadings = 0;
 
@@ -462,8 +456,7 @@ public class Mimbuild {
     }
 
     /**
-     * jf
-     * Clusters smaller than this size will be tossed out.
+     * jf Clusters smaller than this size will be tossed out.
      */
     public int getMinClusterSize() {
         return this.minClusterSize;
@@ -473,6 +466,58 @@ public class Mimbuild {
         if (minClusterSize < 3)
             throw new IllegalArgumentException("Minimum cluster size must be >= 3: " + minClusterSize);
         this.minClusterSize = minClusterSize;
+    }
+
+    private Matrix impliedCovariance(int[][] indicatorIndices, double[][] loadings, Matrix cov, Matrix loadingscov,
+                                     double[] delta) {
+        Matrix implied = new Matrix(cov.getNumRows(), cov.getNumColumns());
+
+        for (int i = 0; i < loadings.length; i++) {
+            for (int j = 0; j < loadings.length; j++) {
+                for (int k = 0; k < loadings[i].length; k++) {
+                    for (int l = 0; l < loadings[j].length; l++) {
+                        double prod = loadings[i][k] * loadings[j][l] * loadingscov.get(i, j);
+                        implied.set(indicatorIndices[i][k], indicatorIndices[j][l], prod);
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < implied.getNumRows(); i++) {
+            implied.set(i, i, implied.get(i, i) + delta[i]);
+        }
+
+        return implied;
+    }
+
+    private double sumOfDifferences(int[][] indicatorIndices, Matrix cov, double[][] loadings, Matrix loadingscov) {
+        double sum = 0;
+
+        for (int i = 0; i < loadings.length; i++) {
+            for (int k = 0; k < loadings[i].length; k++) {
+                for (int l = k + 1; l < loadings[i].length; l++) {
+                    double _cov = cov.get(indicatorIndices[i][k], indicatorIndices[i][l]);
+                    double prod = loadings[i][k] * loadings[i][l] * loadingscov.get(i, i);
+                    double diff = _cov - prod;
+                    sum += diff * diff;
+                }
+            }
+        }
+
+        for (int i = 0; i < loadings.length; i++) {
+            for (int j = i + 1; j < loadings.length; j++) {
+                for (int k = 0; k < loadings[i].length; k++) {
+                    for (int l = 0; l < loadings[j].length; l++) {
+                        double _cov = cov.get(indicatorIndices[i][k], indicatorIndices[j][l]);
+                        double prod = loadings[i][k] * loadings[j][l] * loadingscov.get(i, j);
+                        double diff = _cov - prod;
+                        sum += 2 * diff * diff;
+                    }
+                }
+            }
+        }
+
+        return sum;
     }
 
     private class Function1 implements org.apache.commons.math3.analysis.MultivariateFunction {
@@ -561,59 +606,6 @@ public class Mimbuild {
 
             return 0.5 * (diff.times(diff)).trace();
         }
-    }
-
-
-    private Matrix impliedCovariance(int[][] indicatorIndices, double[][] loadings, Matrix cov, Matrix loadingscov,
-                                     double[] delta) {
-        Matrix implied = new Matrix(cov.getNumRows(), cov.getNumColumns());
-
-        for (int i = 0; i < loadings.length; i++) {
-            for (int j = 0; j < loadings.length; j++) {
-                for (int k = 0; k < loadings[i].length; k++) {
-                    for (int l = 0; l < loadings[j].length; l++) {
-                        double prod = loadings[i][k] * loadings[j][l] * loadingscov.get(i, j);
-                        implied.set(indicatorIndices[i][k], indicatorIndices[j][l], prod);
-                    }
-                }
-            }
-        }
-
-        for (int i = 0; i < implied.getNumRows(); i++) {
-            implied.set(i, i, implied.get(i, i) + delta[i]);
-        }
-
-        return implied;
-    }
-
-    private double sumOfDifferences(int[][] indicatorIndices, Matrix cov, double[][] loadings, Matrix loadingscov) {
-        double sum = 0;
-
-        for (int i = 0; i < loadings.length; i++) {
-            for (int k = 0; k < loadings[i].length; k++) {
-                for (int l = k + 1; l < loadings[i].length; l++) {
-                    double _cov = cov.get(indicatorIndices[i][k], indicatorIndices[i][l]);
-                    double prod = loadings[i][k] * loadings[i][l] * loadingscov.get(i, i);
-                    double diff = _cov - prod;
-                    sum += diff * diff;
-                }
-            }
-        }
-
-        for (int i = 0; i < loadings.length; i++) {
-            for (int j = i + 1; j < loadings.length; j++) {
-                for (int k = 0; k < loadings[i].length; k++) {
-                    for (int l = 0; l < loadings[j].length; l++) {
-                        double _cov = cov.get(indicatorIndices[i][k], indicatorIndices[j][l]);
-                        double prod = loadings[i][k] * loadings[j][l] * loadingscov.get(i, j);
-                        double diff = _cov - prod;
-                        sum += 2 * diff * diff;
-                    }
-                }
-            }
-        }
-
-        return sum;
     }
 
 }

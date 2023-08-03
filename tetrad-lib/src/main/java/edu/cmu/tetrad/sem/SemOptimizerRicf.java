@@ -36,8 +36,6 @@ public class SemOptimizerRicf implements SemOptimizer {
     static final long serialVersionUID = 23L;
     private int numRestarts = 1;
 
-    //=============================CONSTRUCTORS=========================//
-
     /**
      * Blank constructor.
      */
@@ -51,11 +49,9 @@ public class SemOptimizerRicf implements SemOptimizer {
         return new SemOptimizerRicf();
     }
 
-    //==============================PUBLIC METHODS========================//
-
     /**
-     * Optimizes the fitting function of the given Sem using the Powell method
-     * from Numerical Recipes by adjusting the freeParameters of the Sem.
+     * Optimizes the fitting function of the given Sem using the Powell method from Numerical Recipes by adjusting the
+     * freeParameters of the Sem.
      */
     public void optimize(SemIm semIm) {
         if (this.numRestarts < 1) this.numRestarts = 1;
@@ -123,13 +119,13 @@ public class SemOptimizerRicf implements SemOptimizer {
     }
 
     @Override
-    public void setNumRestarts(int numRestarts) {
-        this.numRestarts = numRestarts;
+    public int getNumRestarts() {
+        return this.numRestarts;
     }
 
     @Override
-    public int getNumRestarts() {
-        return this.numRestarts;
+    public void setNumRestarts(int numRestarts) {
+        this.numRestarts = numRestarts;
     }
 
     public String toString() {

@@ -94,6 +94,15 @@ public class BdeuScore implements DiscreteScore {
         }
     }
 
+    private static int getRowIndex(int[] dim, int[] values) {
+        int rowIndex = 0;
+        for (int i = 0; i < dim.length; i++) {
+            rowIndex *= dim[i];
+            rowIndex += values[i];
+        }
+        return rowIndex;
+    }
+
     /**
      * Calculates the BDeu score of a node given its parents.
      *
@@ -195,7 +204,6 @@ public class BdeuScore implements DiscreteScore {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-
     /**
      * Returns the variables of the data.
      *
@@ -204,6 +212,23 @@ public class BdeuScore implements DiscreteScore {
     @Override
     public List<Node> getVariables() {
         return this.variables;
+    }
+
+    /**
+     * Sets the variables to another of the same names, in the same order.
+     *
+     * @param variables The new varialbe list.
+     * @see edu.cmu.tetrad.algcomparison.algorithm.multi.Images
+     */
+    void setVariables(List<Node> variables) {
+        for (int i = 0; i < variables.size(); i++) {
+            if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
+                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
+                        "as the variable being substituted for it.");
+            }
+        }
+
+        this.variables = variables;
     }
 
     /**
@@ -219,7 +244,7 @@ public class BdeuScore implements DiscreteScore {
      * For FGES, this determines whether an edge counts as an effect edge.
      *
      * @param bump The bump for the edge.
-     * @return True if so.
+     * @return True, if so.
      * @see Fges
      */
     public boolean isEffectEdge(double bump) {
@@ -285,23 +310,6 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * Sets the variables to another of the same names, in the same order.
-     *
-     * @param variables The new varialbe list.
-     * @see edu.cmu.tetrad.algcomparison.algorithm.multi.Images
-     */
-    void setVariables(List<Node> variables) {
-        for (int i = 0; i < variables.size(); i++) {
-            if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
-                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
-                        "as the variable being substituted for it.");
-            }
-        }
-
-        this.variables = variables;
-    }
-
-    /**
      * Returns the needed max degree for some searches.
      *
      * @return This max degree.
@@ -312,8 +320,7 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * This score does not implement a method to decide whehter a node is determined
-     * by its parents.
+     * This score does not implement a method to decide whehter a node is determined by its parents.
      *
      * @param z The parents.
      * @param y The node.
@@ -336,15 +343,6 @@ public class BdeuScore implements DiscreteScore {
             int vm = N - 1;
             return numParents * FastMath.log(e / (vm)) + (vm - numParents) * FastMath.log(1.0 - (e / (vm)));
         }
-    }
-
-    private static int getRowIndex(int[] dim, int[] values) {
-        int rowIndex = 0;
-        for (int i = 0; i < dim.length; i++) {
-            rowIndex *= dim[i];
-            rowIndex += values[i];
-        }
-        return rowIndex;
     }
 }
 

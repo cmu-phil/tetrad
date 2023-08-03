@@ -14,14 +14,13 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,13 +28,12 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 
 /**
- * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial
- * steps of finding adjacencies and unshielded colliders.
+ * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial steps of finding adjacencies and
+ * unshielded colliders.
  * <p>
  * GFCI reference is this:
  * <p>
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016.
+ * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
  *
  * @author josephramsey
  */
@@ -114,7 +112,7 @@ public class GraspFci implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();
-            this.bootstrapGraphs = search.getGraphs();
+            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             return graph;
         }
     }
@@ -153,7 +151,7 @@ public class GraspFci implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
-        params.add(Params.POSSIBLE_DSEP_DONE);
+        params.add(Params.POSSIBLE_MSEP_DONE);
 
         // General
         params.add(Params.TIME_LAG);

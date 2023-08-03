@@ -39,8 +39,7 @@ public class TetradInternalFrame extends JInternalFrame {
     private static final long serialVersionUID = 907395289049591825L;
 
     /**
-     * Constructs a new frame which will throw up a warning dialog if someone
-     * tries to close it.
+     * Constructs a new frame which will throw up a warning dialog if someone tries to close it.
      *
      * @param title the title of the frame.
      */

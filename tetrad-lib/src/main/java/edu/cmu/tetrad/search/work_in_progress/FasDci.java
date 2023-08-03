@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -62,52 +62,43 @@ public class FasDci {
      * The independence tests for each dataset. This should be appropriate to the data.
      */
     private final IndependenceTest independenceTest;
-
+    /**
+     * The logger, by default the empty logger.
+     */
+    private final TetradLogger logger = TetradLogger.getInstance();
     /**
      * Specification of which edges are forbidden or required. NOTE: to be implemented later
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
      * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
      */
     private int depth = 1000;
-
     /**
      * The number of independence tests.
      */
     private int numIndependenceTests;
-
     /**
      * The method used to resolve independencies.
      */
     private ResolveSepsets.Method method;
-
     /**
      * If resolving independencies, the sets of variables in each "Marginal" dataset
      */
     private List<Set<Node>> marginalVars;
-
     /**
      * If resolving independenceis, the set of independence tests for other datasets
      */
     private List<IndependenceTest> independenceTests;
-
     /**
      * Independencies known prior to the search
      */
     private SepsetMapDci knownIndependencies;
-
     /**
      * Associations known prior to the search
      */
     private SepsetMapDci knownAssociations;
-
-    /**
-     * The logger, by default the empty logger.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
 
 //    private List<Double> pValues = new ArrayList<Double>();
 
@@ -290,12 +281,12 @@ public class FasDci {
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, ppx);
+                        Set<Node> condSet = GraphUtils.asSet(choice, ppx);
 
                         boolean independent = false;
                         boolean known = false;
                         if (this.knownIndependencies != null && this.knownIndependencies.get(x, y) != null) {
-                            for (List<Node> set : this.knownIndependencies.getSet(x, y)) {
+                            for (Set<Node> set : this.knownIndependencies.getSet(x, y)) {
                                 if (set.containsAll(condSet) && set.size() == condSet.size()) {
                                     independent = true;
                                     known = true;
@@ -304,7 +295,7 @@ public class FasDci {
                             }
                         }
                         if (this.knownAssociations != null && this.knownAssociations.get(x, y) != null) {
-                            for (List<Node> set : this.knownAssociations.getSet(x, y)) {
+                            for (Set<Node> set : this.knownAssociations.getSet(x, y)) {
                                 if (set.containsAll(condSet) && set.size() == condSet.size()) {
                                     independent = false;
                                     known = true;
@@ -341,7 +332,7 @@ public class FasDci {
                         if (independent && noEdgeRequired) {
 //                            Edge edge = graph.getEdge(x, y);
                             graph.removeEdge(x, y);
-                            sepset.set(x, y, new LinkedList<>(condSet));
+                            sepset.set(x, y, new HashSet<>(condSet));
                             continue nextEdge;
                         }
                     }

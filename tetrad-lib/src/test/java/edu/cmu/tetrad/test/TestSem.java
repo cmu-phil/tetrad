@@ -81,14 +81,16 @@ public class TestSem {
     }
 
     /**
-     * The point of this test is to try to detect if the function of the
-     * estimation ever changes for perhaps extraneous reasons.
+     * The point of this test is to try to detect if the function of the estimation ever changes for perhaps extraneous
+     * reasons.
      */
     @Test
     public void testEstimation() {
         Graph graph = constructGraph1();
         SemPm semPm = new SemPm(graph);
         ICovarianceMatrix covMatrix = constructCovMatrix1();
+
+        System.out.println("covMatrix = " + covMatrix);
 
         SemEstimator estimator = new SemEstimator(covMatrix, semPm);
         estimator.estimate();
@@ -110,11 +112,15 @@ public class TestSem {
 
         double[][] errCovar = semIm2.getErrCovar().toArray();
 
+        System.out.println("errorCovar = " + new Matrix(errCovar));
+
         double[][] _errCovar = {{1.0439, 0.0000, 0.0000, 0.0000, 0.0000},
                 {0.0000, 0.9293, 0.0000, 0.0000, 0.0000},
                 {0.0000, 0.0000, 1.0756, 0.0000, 0.0000},
                 {0.0000, 0.0000, 0.0000, 1.0233, 0.0000},
                 {0.0000, 0.0000, 0.0000, 0.0000, 1.0465}};
+
+        System.out.println("_errorCovar = " + new Matrix(_errCovar));
 
         for (int i = 0; i < edgeCoef.length; i++) {
             for (int j = 0; j < edgeCoef[i].length; j++) {

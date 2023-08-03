@@ -13,12 +13,11 @@ import java.util.concurrent.Executors;
 /**
  * Created by Erich on 7/3/2016.
  * <p>
- * This class is used to compare the distance between two graphs learned from fmri data
- * the distance is calculated as the mean of the distance of the edges between the graphs
- * the distance between two edges is calculated as the distance between their endpoints
- * the distance between edges calculated this way is a true distance
- * the distance between two graphs is not a true distance because it is not symmetric
- * this version allows for non-cubic voxels, and parallelizes the most expensive loop
+ * This class is used to compare the distance between two graphs learned from fmri data the distance is calculated as
+ * the mean of the distance of the edges between the graphs the distance between two edges is calculated as the distance
+ * between their endpoints the distance between edges calculated this way is a true distance the distance between two
+ * graphs is not a true distance because it is not symmetric this version allows for non-cubic voxels, and parallelizes
+ * the most expensive loop
  */
 public class Gdistance {
 
@@ -40,6 +39,70 @@ public class Gdistance {
         this.yDist = yDist;
         this.zDist = zDist;
         this.leastList = new ArrayList<>();
+    }
+
+    private static double nodesDistance(Node node1, Node node2, DataSet locationMap, double x, double y, double z) {
+        //calculate distance between two nodes based on their locations
+        //simple starter is simply the taxicab distance:
+        //calc differences in X, Y, and Z axis, then sum them together.
+        int column1 = locationMap.getColumn(node1);
+        int column2 = locationMap.getColumn(node2);
+
+        //System.out.println(column1);
+
+        double value11 = locationMap.getDouble(0, column1);
+        double value12 = locationMap.getDouble(1, column1);
+        double value13 = locationMap.getDouble(2, column1);
+
+        double value21 = locationMap.getDouble(0, column2);
+        double value22 = locationMap.getDouble(1, column2);
+        double value23 = locationMap.getDouble(2, column2);
+
+        //taxicab distance
+        //double taxicab = FastMath.abs(value11 - value21) + FastMath.abs(value12 - value22) + FastMath.abs(value13 - value23);
+        //euclidian distance instead of taxicab
+
+        return FastMath.sqrt((value11 - value21) * x * (value11 - value21) * x + (value12 - value22) * y *
+                (value12 - value22) * y + (value13 - value23) * z * (value13 - value23) * z);
+    }
+
+    private static double edgesDistance(Edge edge1, Edge edge2, DataSet locationMap, double xD, double yD, double zD) {
+        //calculate distance between two edges based on distances of their endpoints
+        //if both edges are directed, then:
+        //compare edge1 head to edge2 head, tail to tail.
+        //sum head distance and tail ditance
+        if (edge1.isDirected() && edge2.isDirected()) {
+            //find head and tail of edge1
+            Node edge1h = Edges.getDirectedEdgeHead(edge1);
+            Node edge1t = Edges.getDirectedEdgeTail(edge1);
+            //find head and tail of edge2
+            Node edge2h = Edges.getDirectedEdgeHead(edge2);
+            Node edge2t = Edges.getDirectedEdgeTail(edge2);
+            //compare tail to tail
+            double tDistance = Gdistance.nodesDistance(edge1t, edge2t, locationMap, xD, yD, zD);
+            double hDistance = Gdistance.nodesDistance(edge1h, edge2h, locationMap, xD, yD, zD);
+            return tDistance + hDistance;
+        } else {
+            //otherwise if either edge is not directed:
+            //for each of edge1's two endpoints, calc distance to both edge2 endpoints
+            //store the shorter distances, and sum them.
+            Node node11 = edge1.getNode1();
+            Node node12 = edge1.getNode2();
+            Node node21 = edge2.getNode1();
+            Node node22 = edge2.getNode2();
+
+            //first compare node1 to node1 and node2 to node2
+            double dist11 = Gdistance.nodesDistance(node11, node21, locationMap, xD, yD, zD);
+            double dist22 = Gdistance.nodesDistance(node12, node22, locationMap, xD, yD, zD);
+
+            //then compare node1 to node2 and node2 to node1
+            double dist12 = Gdistance.nodesDistance(node11, node22, locationMap, xD, yD, zD);
+            double dist21 = Gdistance.nodesDistance(node12, node21, locationMap, xD, yD, zD);
+
+            //then return the minimum of the two ways of pairing nodes from each edge
+            return FastMath.min(dist11 + dist22, dist12 + dist21);
+        }
+
     }
 
     public List<Double> distances(Graph graph1, Graph graph2) {
@@ -123,6 +186,13 @@ public class Gdistance {
         return this.leastList;
     }
 
+
+    //////======***PRIVATE METHODS BELOW *****=====/////
+
+    private synchronized void add(Double value) {
+        this.leastList.add(value);
+    }
+
     //////+++++******* Method used in multithread task
     class FindLeastDistanceTask {
         Vicinity vicinity;
@@ -162,76 +232,5 @@ public class Gdistance {
             }
 
         }
-    }
-
-    private synchronized void add(Double value) {
-        this.leastList.add(value);
-    }
-
-
-    //////======***PRIVATE METHODS BELOW *****=====/////
-
-    private static double nodesDistance(Node node1, Node node2, DataSet locationMap, double x, double y, double z) {
-        //calculate distance between two nodes based on their locations
-        //simple starter is simply the taxicab distance:
-        //calc differences in X, Y, and Z axis, then sum them together.
-        int column1 = locationMap.getColumn(node1);
-        int column2 = locationMap.getColumn(node2);
-
-        //System.out.println(column1);
-
-        double value11 = locationMap.getDouble(0, column1);
-        double value12 = locationMap.getDouble(1, column1);
-        double value13 = locationMap.getDouble(2, column1);
-
-        double value21 = locationMap.getDouble(0, column2);
-        double value22 = locationMap.getDouble(1, column2);
-        double value23 = locationMap.getDouble(2, column2);
-
-        //taxicab distance
-        //double taxicab = FastMath.abs(value11 - value21) + FastMath.abs(value12 - value22) + FastMath.abs(value13 - value23);
-        //euclidian distance instead of taxicab
-
-        return FastMath.sqrt((value11 - value21) * x * (value11 - value21) * x + (value12 - value22) * y *
-                (value12 - value22) * y + (value13 - value23) * z * (value13 - value23) * z);
-    }
-
-    private static double edgesDistance(Edge edge1, Edge edge2, DataSet locationMap, double xD, double yD, double zD) {
-        //calculate distance between two edges based on distances of their endpoints
-        //if both edges are directed, then:
-        //compare edge1 head to edge2 head, tail to tail.
-        //sum head distance and tail ditance
-        if (edge1.isDirected() && edge2.isDirected()) {
-            //find head and tail of edge1
-            Node edge1h = Edges.getDirectedEdgeHead(edge1);
-            Node edge1t = Edges.getDirectedEdgeTail(edge1);
-            //find head and tail of edge2
-            Node edge2h = Edges.getDirectedEdgeHead(edge2);
-            Node edge2t = Edges.getDirectedEdgeTail(edge2);
-            //compare tail to tail
-            double tDistance = Gdistance.nodesDistance(edge1t, edge2t, locationMap, xD, yD, zD);
-            double hDistance = Gdistance.nodesDistance(edge1h, edge2h, locationMap, xD, yD, zD);
-            return tDistance + hDistance;
-        } else {
-            //otherwise if either edge is not directed:
-            //for each of edge1's two endpoints, calc distance to both edge2 endpoints
-            //store the shorter distances, and sum them.
-            Node node11 = edge1.getNode1();
-            Node node12 = edge1.getNode2();
-            Node node21 = edge2.getNode1();
-            Node node22 = edge2.getNode2();
-
-            //first compare node1 to node1 and node2 to node2
-            double dist11 = Gdistance.nodesDistance(node11, node21, locationMap, xD, yD, zD);
-            double dist22 = Gdistance.nodesDistance(node12, node22, locationMap, xD, yD, zD);
-
-            //then compare node1 to node2 and node2 to node1
-            double dist12 = Gdistance.nodesDistance(node11, node22, locationMap, xD, yD, zD);
-            double dist21 = Gdistance.nodesDistance(node12, node21, locationMap, xD, yD, zD);
-
-            //then return the minimum of the two ways of pairing nodes from each edge
-            return FastMath.min(dist11 + dist22, dist12 + dist21);
-        }
-
     }
 }

@@ -43,58 +43,37 @@ import java.util.prefs.Preferences;
 class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEditor {
 
     /**
-     * States which method should be used to discretize matters by default.
-     */
-    public enum Method {
-        EQUAL_SIZE_BUCKETS, EVENLY_DIVIDED_INTERNVALS, NONE
-    }
-
-
-    /**
      * The min value of the data.
      */
     private final double min;
-
     /**
      * The max value of the data.
      */
     private final double max;
-
     /**
      * The panel that contains the range editor.
      */
     private final JPanel rangeEditorPanel;
-
-
     /**
      * The selection buttons box.
      */
     private final Box selectionButtonsBox;
-
-
-    /**
-     * An editor that allows a user to edit the ranges of each category
-     */
-    private RangeEditor rangeEditor;
-
     /**
      * A spinner used to select the number of categories.
      */
     private final IntSpinner categorySpinner;
-
-
-    /**
-     * The default number of categories to use.
-     */
-    private int numberOfCategories;
-
-
     /**
      * The data that is being discretized.
      */
     private final double[] data;
-
-
+    /**
+     * An editor that allows a user to edit the ranges of each category
+     */
+    private RangeEditor rangeEditor;
+    /**
+     * The default number of categories to use.
+     */
+    private int numberOfCategories;
     /**
      * The method being used to discretize the data.
      */
@@ -102,12 +81,11 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
 
 
     /**
-     * Constructs an editor that allows the user to discretize continuous variables. There are two
-     * options for the default discretization <code>Method.EQUAL_SIZE_BUCKETS</code> which will
-     * discretize the continuous data into categories by trying to fit an equal number of values in
-     * each category. On the other hand <code>Method.EVENLY_DIVIDED_INTERNVALS</code> will just
-     * spent the interval up in equal segments which may or may not include an even distribution of
-     * values.
+     * Constructs an editor that allows the user to discretize continuous variables. There are two options for the
+     * default discretization <code>Method.EQUAL_SIZE_BUCKETS</code> which will discretize the continuous data into
+     * categories by trying to fit an equal number of values in each category. On the other hand
+     * <code>Method.EVENLY_DIVIDED_INTERNVALS</code> will just spent the interval up in equal segments which may or may
+     * not include an even distribution of values.
      *
      * @param dataSet  The dataset containing the data for the variable.
      * @param variable The variable to be edited.
@@ -193,8 +171,28 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
         add(b1, BorderLayout.CENTER);
     }
 
+    /**
+     * Calcultes the default break points.
+     */
+    private static double[] defaultBreakpoints(double max, double min,
+                                               int numCategories) {
+        double interval = (max - min) / numCategories;
+        double[] breakpoints = new double[numCategories - 1];
+        for (int i = 0; i < breakpoints.length; i++) {
+            breakpoints[i] = min + (i + 1) * interval;
+        }
+        return breakpoints;
+    }
+
     //================================PUBLIC METHODS=======================//
 
+    private static List<String> defaultCategories(int numCategories) {
+        List<String> categories = new LinkedList<>();
+        for (int i = 0; i < numCategories; i++) {
+            categories.add(DataUtils.defaultCategory(i));
+        }
+        return categories;
+    }
 
     /**
      * @return the number of categories.
@@ -202,63 +200,6 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
     public int getNumCategories() {
         return this.numberOfCategories;
     }
-
-
-    /**
-     * @return the discretization spec created by the user.
-     */
-    public ContinuousDiscretizationSpec getDiscretizationSpec() {
-        ContinuousDiscretizationSpec spec = this.rangeEditor.getDiscretizationSpec();
-        if (this.method == Method.EQUAL_SIZE_BUCKETS) {
-            spec.setMethod(ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES);
-        } else if (this.method == Method.EVENLY_DIVIDED_INTERNVALS) {
-            spec.setMethod(ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS);
-        } else if (this.method == Method.NONE) {
-            spec.setMethod(ContinuousDiscretizationSpec.NONE);
-        }
-        return spec;
-    }
-
-
-    /**
-     * Changes the method.
-     */
-    public void setMethod(Method method) {
-        this.method = method;
-        this.buildSelectionBox();
-        this.setNumCategories(this.numberOfCategories);
-    }
-
-
-    /**
-     * @return the method.
-     */
-    public Method getMethod() {
-        return this.method;
-    }
-
-
-    /**
-     * Sets the discretization spec that should be used by the editor.
-     */
-    public void setDiscretizationSpec(DiscretizationSpec _spec) {
-        ContinuousDiscretizationSpec spec = (ContinuousDiscretizationSpec) _spec;
-
-        this.rangeEditorPanel.removeAll();
-        if (spec.getMethod() == ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS) {
-            this.method = Method.EVENLY_DIVIDED_INTERNVALS;
-        } else if (spec.getMethod() == ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES) {
-            this.method = Method.EQUAL_SIZE_BUCKETS;
-        }
-        this.buildSelectionBox();
-        this.rangeEditor = createRangeEditor(spec);
-        this.numberOfCategories = spec.getCategories().size();
-        this.categorySpinner.setValue(this.numberOfCategories);
-        this.rangeEditorPanel.add(this.rangeEditor, BorderLayout.CENTER);
-        this.rangeEditorPanel.revalidate();
-        this.rangeEditorPanel.repaint();
-    }
-
 
     /**
      * Sets the number of categories to use.
@@ -289,8 +230,59 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
         Preferences.userRoot().putInt("latestNumCategories", numCategories);
     }
 
+    /**
+     * @return the discretization spec created by the user.
+     */
+    public ContinuousDiscretizationSpec getDiscretizationSpec() {
+        ContinuousDiscretizationSpec spec = this.rangeEditor.getDiscretizationSpec();
+        if (this.method == Method.EQUAL_SIZE_BUCKETS) {
+            spec.setMethod(ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES);
+        } else if (this.method == Method.EVENLY_DIVIDED_INTERNVALS) {
+            spec.setMethod(ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS);
+        } else if (this.method == Method.NONE) {
+            spec.setMethod(ContinuousDiscretizationSpec.NONE);
+        }
+        return spec;
+    }
+
+    /**
+     * Sets the discretization spec that should be used by the editor.
+     */
+    public void setDiscretizationSpec(DiscretizationSpec _spec) {
+        ContinuousDiscretizationSpec spec = (ContinuousDiscretizationSpec) _spec;
+
+        this.rangeEditorPanel.removeAll();
+        if (spec.getMethod() == ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS) {
+            this.method = Method.EVENLY_DIVIDED_INTERNVALS;
+        } else if (spec.getMethod() == ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES) {
+            this.method = Method.EQUAL_SIZE_BUCKETS;
+        }
+        this.buildSelectionBox();
+        this.rangeEditor = createRangeEditor(spec);
+        this.numberOfCategories = spec.getCategories().size();
+        this.categorySpinner.setValue(this.numberOfCategories);
+        this.rangeEditorPanel.add(this.rangeEditor, BorderLayout.CENTER);
+        this.rangeEditorPanel.revalidate();
+        this.rangeEditorPanel.repaint();
+    }
+
+    /**
+     * @return the method.
+     */
+    public Method getMethod() {
+        return this.method;
+    }
+
     //==============================PRIVATE METHODS=======================//
 
+    /**
+     * Changes the method.
+     */
+    public void setMethod(Method method) {
+        this.method = method;
+        this.buildSelectionBox();
+        this.setNumCategories(this.numberOfCategories);
+    }
 
     private void buildSelectionBox() {
         this.selectionButtonsBox.removeAll();
@@ -351,7 +343,6 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
         this.selectionButtonsBox.add(Box.createHorizontalGlue());
     }
 
-
     private RangeEditor createRangeEditor(
             ContinuousDiscretizationSpec discretizationSpec) {
         return new RangeEditor(discretizationSpec);
@@ -385,30 +376,15 @@ class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEdi
         return new ContinuousDiscretizationSpec(breakpoints, categories);
     }
 
+
     /**
-     * Calcultes the default break points.
+     * States which method should be used to discretize matters by default.
      */
-    private static double[] defaultBreakpoints(double max, double min,
-                                               int numCategories) {
-        double interval = (max - min) / numCategories;
-        double[] breakpoints = new double[numCategories - 1];
-        for (int i = 0; i < breakpoints.length; i++) {
-            breakpoints[i] = min + (i + 1) * interval;
-        }
-        return breakpoints;
-    }
-
-
-    private static List<String> defaultCategories(int numCategories) {
-        List<String> categories = new LinkedList<>();
-        for (int i = 0; i < numCategories; i++) {
-            categories.add(DataUtils.defaultCategory(i));
-        }
-        return categories;
+    public enum Method {
+        EQUAL_SIZE_BUCKETS, EVENLY_DIVIDED_INTERNVALS, NONE
     }
 
     //=========================== Inner class ====================================//
-
 
     private static class MyFilter implements IntSpinner.Filter {
 

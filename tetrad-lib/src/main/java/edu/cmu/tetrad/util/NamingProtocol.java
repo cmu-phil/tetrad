@@ -22,8 +22,7 @@
 package edu.cmu.tetrad.util;
 
 /**
- * Specifies the protocol used in Tetrad for variable names. This protocol
- * should be used throughout Tetrad.
+ * Specifies the protocol used in Tetrad for variable names. This protocol should be used throughout Tetrad.
  *
  * @author josephramsey
  */

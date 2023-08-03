@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.MvpLikelihood;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -31,13 +32,12 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>Performs a test of conditional independence X _||_ Y | Z1...Zn where all
- * variables are either continuous or discrete. This test is valid for both ordinal
- * and non-ordinal discrete searchVariables.</p>
+ * variables are either continuous or discrete. This test is valid for both ordinal and non-ordinal discrete
+ * searchVariables.</p>
  *
  * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2018). Scoring Bayesian networks of
  * mixed variables. International journal of data science and analytics, 6, 3-18.</p>
@@ -47,15 +47,10 @@ import java.util.Map;
 public class IndTestMvpLrt implements IndependenceTest {
     private final DataSet data;
     private final Map<Node, Integer> nodesHash;
-    private double alpha;
-
     // Likelihood function
     private final MvpLikelihood likelihood;
+    private double alpha;
     private boolean verbose;
-
-
-    // P Values
-    private double pValue = Double.NaN;
 
     /**
      * Constructor.
@@ -96,7 +91,9 @@ public class IndTestMvpLrt implements IndependenceTest {
      * @return This result.
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         int _x = this.nodesHash.get(x);
         int _y = this.nodesHash.get(y);
@@ -106,10 +103,10 @@ public class IndTestMvpLrt implements IndependenceTest {
         list0[0] = _x;
         list1[0] = _y;
         for (int i = 0; i < z.size(); i++) {
-            int _z = this.nodesHash.get(z.get(i));
-            list0[i + 1] = _z;
-            list1[i + 1] = _z;
-            list2[i] = _z;
+            int __z = this.nodesHash.get(z.get(i));
+            list0[i + 1] = __z;
+            list1[i + 1] = __z;
+            list2[i] = __z;
         }
 
         double lik_0;
@@ -142,28 +139,19 @@ public class IndTestMvpLrt implements IndependenceTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        this.pValue = FastMath.min(p_0, p_1);
 
-        boolean independent = this.pValue > this.alpha;
+        double pValue = FastMath.min(p_0, p_1);
+
+        boolean independent = pValue > this.alpha;
 
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
-    }
-
-    /**
-     * Returns The probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for this test.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.pValue;
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, alpha - pValue);
     }
 
     /**
@@ -212,19 +200,9 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
-     * Returns alph - p.
-     *
-     * @return This score.
-     */
-    @Override
-    public double getScore() {
-        return getAlpha() - getPValue();
-    }
-
-    /**
      * Returns true if verbose output is printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     @Override
     public boolean isVerbose() {
@@ -234,7 +212,7 @@ public class IndTestMvpLrt implements IndependenceTest {
     /**
      * Returns whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

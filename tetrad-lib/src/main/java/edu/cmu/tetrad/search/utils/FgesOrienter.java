@@ -23,7 +23,8 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
@@ -35,8 +36,8 @@ import java.util.concurrent.*;
 
 
 /**
- * This Orients a given undirected graph such that the edges in the graph are a superset
- * of the edges in the oriented graph, using FGES method.
+ * This Orients a given undirected graph such that the edges in the graph are a superset of the edges in the oriented
+ * graph, using FGES method.
  *
  * @author AJ Sedgewick, 5/2015
  * @see Fges
@@ -44,110 +45,94 @@ import java.util.concurrent.*;
 public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
+     * The logger for this class. The config needs to be set.
+     */
+    private final TetradLogger logger = TetradLogger.getInstance();
+    // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
+    private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
+    // The static ForkJoinPool instance.
+    private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+    // The minimum number of operations to do before parallelizing.
+    private final int minChunk = 100;
+    // A utility map to help with orientation.
+    private final WeakHashMap<Node, Set<Node>> neighbors = new WeakHashMap<>();
+    // Just some fields to help avoid duplication in the effect edges search.
+    int[] lastSquareIndices = new int[0];
+    Matrix lastSquareCovs = new Matrix(0, 0);
+    int[] lastColumnIndices = new int[0];
+    Vector lastColumnCov = new Vector(0);
+    int lastK = -1;
+    /**
      * The covariance matrix for continuous data.
      */
     private ICovarianceMatrix covariances;
-
     /**
      * Sample size, either from the data set or from the covariances.
      */
     private int sampleSize;
-
     /**
      * Specification of forbidden and required edges.
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * List of variables in the data set, in order.
      */
     private List<Node> variables;
-
     /**
      * True iff the data set is discrete.
      */
     private boolean discrete;
-
     /**
      * The true graph, if known. If this is provided, asterisks will be printed out next to false positive added edges
      * (that is, edges added that aren't adjacencies in the true graph).
      */
     private Graph trueGraph;
-
     /**
      * An initial graph to start from.
      */
     private Graph externalGraph;
-
     /**
      * Elapsed time of the most recent search.
      */
     private long elapsedTime;
-
     /**
      * Penalty penaltyDiscount--the BIC penalty is multiplied by this (for continuous variables).
      */
     private double penaltyDiscount = 1.0;
-
     /**
      * The depth of search for the forward reevaluation step.
      */
     private int depth = -1;
-
     /**
      * The score for discrete searches.
      */
     private edu.cmu.tetrad.search.score.DiscreteScore DiscreteScore;
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-
     /**
      * True if logs should be output.
      */
     private boolean log = true;
-
     /**
      * True if verbose output should be printed.
      */
     private boolean verbose;
-
-    // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
-    private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
-
     // Arrows added to sortedArrows for each <i, j>.
     private Map<OrderedPair<Node>, Set<Arrow>> lookupArrows;
-
     // Map from variables to their column indices in the data set.
     private ConcurrentMap<Node, Integer> hashIndices;
 
-    // The static ForkJoinPool instance.
-    private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
-
-    // The minimum number of operations to do before parallelizing.
-    private final int minChunk = 100;
-
     // Where printed output is sent.
     private PrintStream out = System.out;
 
+
     // A initial adjacencies graph.
     private Graph adjacencies;
-
     // True if it is assumed that zero effect adjacencies are not in the graph.
     private boolean faithfulnessAssumed = false;
-
-    // A utility map to help with orientation.
-    private final WeakHashMap<Node, Set<Node>> neighbors = new WeakHashMap<>();
-
     // Graph input by user as super-structure to search over
     private Graph graphToOrient;
-
-    //===========================CONSTRUCTORS=============================//
 
     /**
      * The data set must either be all continuous or all discrete.
@@ -180,6 +165,83 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         this.out.println("GES constructor done");
     }
 
+    // Get all nodes that are connected to Y by an undirected edge and not adjacent to X.
+    private static List<Node> getTNeighbors(Node x, Node y, Graph graph) {
+        List<Edge> yEdges = graph.getEdges(y);
+        List<Node> tNeighbors = new ArrayList<>();
+
+        for (Edge edge : yEdges) {
+            if (!Edges.isUndirectedEdge(edge)) {
+                continue;
+            }
+
+            Node z = edge.getDistalNode(y);
+
+            if (graph.isAdjacentTo(z, x)) {
+                continue;
+            }
+
+            tNeighbors.add(z);
+        }
+
+        return tNeighbors;
+    }
+
+    // Get all nodes that are connected to Y by an undirected edge.
+    private static Set<Node> getNeighbors(Node y, Graph graph) {
+        List<Edge> yEdges = graph.getEdges(y);
+        Set<Node> neighbors = new HashSet<>();
+
+        for (Edge edge : yEdges) {
+            if (!Edges.isUndirectedEdge(edge)) {
+                continue;
+            }
+
+            Node z = edge.getDistalNode(y);
+
+            neighbors.add(z);
+        }
+
+        return neighbors;
+    }
+
+    // Find all nodes that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
+    // directed edge).
+    private static Set<Node> getNaYX(Node x, Node y, Graph graph) {
+        List<Edge> yEdges = graph.getEdges(y);
+        Set<Node> nayx = new HashSet<>();
+
+        for (Edge edge : yEdges) {
+            if (!Edges.isUndirectedEdge(edge)) {
+                continue;
+            }
+
+            Node z = edge.getDistalNode(y);
+
+            if (!graph.isAdjacentTo(z, x)) {
+                continue;
+            }
+
+            nayx.add(z);
+        }
+
+        return nayx;
+    }
+
+    // Used to find semidirected undirectedPaths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+        return null;
+    }
+
     // This will "orient" graph
     public void orient(Graph graph) {
         this.graphToOrient = new EdgeListGraph(graph);
@@ -195,20 +257,18 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         }
     }
 
-    //==========================PUBLIC METHODS==========================//
+    /**
+     * @return true if it is assumed that all path pairs with one length 1 path do not cancelAll.
+     */
+    public boolean isFaithfulnessAssumed() {
+        return this.faithfulnessAssumed;
+    }
 
     /**
      * Set to true if it is assumed that all path pairs with one length 1 path do not cancelAll.
      */
     public void setFaithfulnessAssumed(boolean faithfulness) {
         this.faithfulnessAssumed = faithfulness;
-    }
-
-    /**
-     * @return true if it is assumed that all path pairs with one length 1 path do not cancelAll.
-     */
-    public boolean isFaithfulnessAssumed() {
-        return this.faithfulnessAssumed;
     }
 
     /**
@@ -252,7 +312,6 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
-        this.logger.log("graph", "\nReturning this graph: " + graph);
 
         this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.flush();
@@ -361,9 +420,9 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         this.log = log;
     }
 
+
     /**
-     * @return the initial graph for the search. The search is initialized to this graph and
-     * proceeds from there.
+     * @return the initial graph for the search. The search is initialized to this graph and proceeds from there.
      */
     public Graph getExternalGraph() {
         return this.externalGraph;
@@ -393,14 +452,6 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent to.
-     * By detault System.out.
-     */
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    /**
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
@@ -408,16 +459,21 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     }
 
     /**
-     * @return the set of preset adjacenies for the algorithm; edges not in this adjacencies graph
-     * will not be added.
+     * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
+     */
+    public void setOut(PrintStream out) {
+        this.out = out;
+    }
+
+    /**
+     * @return the set of preset adjacenies for the algorithm; edges not in this adjacencies graph will not be added.
      */
     public Graph getAdjacencies() {
         return this.adjacencies;
     }
 
     /**
-     * Sets the set of preset adjacenies for the algorithm; edges not in this adjacencies graph
-     * will not be added.
+     * Sets the set of preset adjacenies for the algorithm; edges not in this adjacencies graph will not be added.
      */
     public void setAdjacencies(Graph adjacencies) {
         this.adjacencies = adjacencies;
@@ -437,8 +493,6 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     public void setDepth(int depth) {
         this.depth = depth;
     }
-
-    //===========================PRIVATE METHODS========================//
 
     // Simultaneously finds the first edge to add to an empty graph and finds all length 1 undirectedPaths that are
     // not canceled by other undirectedPaths (the "effect edges")
@@ -689,7 +743,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
             if (isFaithfulnessAssumed()) {
                 adj = this.effectEdgesGraph.getAdjacentNodes(x);
             } else {
-                adj = this.variables;
+                adj = new ArrayList<>(this.variables);
             }
 
             for (Node w : adj) {
@@ -906,96 +960,6 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
                 addLookupArrow(a, b, arrow);
             }
         }
-    }
-
-    // Basic data structure for an arrow a->b considered for additiom or removal from the graph, together with
-    // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
-    // For the forward direction, T neighbors are needed; for the backward direction, H neighbors are needed.
-    // See Chickering (2002). The score difference resulting from added in the edge (hypothetically) is recorded
-    // as the "bump".
-    private static class Arrow implements Comparable<Arrow> {
-        private final double bump;
-        private final Node a;
-        private final Node b;
-        private final Set<Node> hOrT;
-        private final Set<Node> naYX;
-
-        public Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> naYX) {
-            this.bump = bump;
-            this.a = a;
-            this.b = b;
-            this.hOrT = hOrT;
-            this.naYX = naYX;
-        }
-
-        public double getBump() {
-            return this.bump;
-        }
-
-        public Node getA() {
-            return this.a;
-        }
-
-        public Node getB() {
-            return this.b;
-        }
-
-        public Set<Node> getHOrT() {
-            return this.hOrT;
-        }
-
-        public Set<Node> getNaYX() {
-            return this.naYX;
-        }
-
-        // Sorting by bump, high to low.
-        public int compareTo(Arrow arrow) {
-            return Double.compare(arrow.getBump(), getBump());
-        }
-
-        public String toString() {
-            return "Arrow<" + this.a + "->" + this.b + " bump = " + this.bump + " t/h = " + this.hOrT + " naYX = " + this.naYX + ">";
-        }
-    }
-
-    // Get all nodes that are connected to Y by an undirected edge and not adjacent to X.
-    private static List<Node> getTNeighbors(Node x, Node y, Graph graph) {
-        List<Edge> yEdges = graph.getEdges(y);
-        List<Node> tNeighbors = new ArrayList<>();
-
-        for (Edge edge : yEdges) {
-            if (!Edges.isUndirectedEdge(edge)) {
-                continue;
-            }
-
-            Node z = edge.getDistalNode(y);
-
-            if (graph.isAdjacentTo(z, x)) {
-                continue;
-            }
-
-            tNeighbors.add(z);
-        }
-
-        return tNeighbors;
-    }
-
-    // Get all nodes that are connected to Y by an undirected edge.
-    private static Set<Node> getNeighbors(Node y, Graph graph) {
-        List<Edge> yEdges = graph.getEdges(y);
-        Set<Node> neighbors = new HashSet<>();
-
-        for (Edge edge : yEdges) {
-            if (!Edges.isUndirectedEdge(edge)) {
-                continue;
-            }
-
-            Node z = edge.getDistalNode(y);
-
-            neighbors.add(z);
-        }
-
-        return neighbors;
     }
 
     // Evaluate the Insert(X, Y, T) operator (Definition 12 from Chickering, 2002).
@@ -1252,29 +1216,6 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         return false;
     }
 
-    // Find all nodes that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
-    // directed edge).
-    private static Set<Node> getNaYX(Node x, Node y, Graph graph) {
-        List<Edge> yEdges = graph.getEdges(y);
-        Set<Node> nayx = new HashSet<>();
-
-        for (Edge edge : yEdges) {
-            if (!Edges.isUndirectedEdge(edge)) {
-                continue;
-            }
-
-            Node z = edge.getDistalNode(y);
-
-            if (!graph.isAdjacentTo(z, x)) {
-                continue;
-            }
-
-            nayx.add(z);
-        }
-
-        return nayx;
-    }
-
     // Returns true is a path consisting of undirected and directed edges toward 'to' exists of
     // length at most 'bound'. Cycle checker in other words.
     private boolean existsUnblockedSemiDirectedPath(Node from, Node to, Set<Node> cond, Graph G, int bound) {
@@ -1315,20 +1256,6 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         }
 
         return false;
-    }
-
-    // Used to find semidirected undirectedPaths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-        return null;
     }
 
     // Runs the Meek rules on just the changed nodes.
@@ -1388,14 +1315,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         this.sampleSize = dataSet.getNumRows();
     }
 
-    // Sets the covariance matrix.
-    private void setCovMatrix(ICovarianceMatrix covarianceMatrix) {
-        this.covariances = covarianceMatrix;
-        this.variables = covarianceMatrix.getVariables();
-        this.sampleSize = covarianceMatrix.getSampleSize();
-
-        this.out.println("Calculating variances");
-    }
+    //===========================SCORING METHODS===================//
 
     // Maps nodes to their indices for quick lookup.
     private void buildIndexing(List<Node> nodes) {
@@ -1430,8 +1350,6 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
         arrows.add(arrow);
     }
-
-    //===========================SCORING METHODS===================//
 
     /**
      * Scores the given DAG, up to a constant.
@@ -1582,13 +1500,6 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         return score(residualVariance, n, p, c);
     }
 
-    // Just some fields to help avoid duplication in the effect edges search.
-    int[] lastSquareIndices = new int[0];
-    Matrix lastSquareCovs = new Matrix(0, 0);
-    int[] lastColumnIndices = new int[0];
-    Vector lastColumnCov = new Vector(0);
-    int lastK = -1;
-
     private Matrix getSelection1(ICovarianceMatrix cov, int[] rows) {
         Matrix m = new Matrix(rows.length, rows.length);
 
@@ -1661,8 +1572,67 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         return this.covariances;
     }
 
+    // Sets the covariance matrix.
+    private void setCovMatrix(ICovarianceMatrix covarianceMatrix) {
+        this.covariances = covarianceMatrix;
+        this.variables = covarianceMatrix.getVariables();
+        this.sampleSize = covarianceMatrix.getSampleSize();
+
+        this.out.println("Calculating variances");
+    }
+
     private boolean isDiscrete() {
         return this.discrete;
+    }
+
+    // Basic data structure for an arrow a->b considered for additiom or removal from the graph, together with
+    // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
+    // For the forward direction, T neighbors are needed; for the backward direction, H neighbors are needed.
+    // See Chickering (2002). The score difference resulting from added in the edge (hypothetically) is recorded
+    // as the "bump".
+    private static class Arrow implements Comparable<Arrow> {
+        private final double bump;
+        private final Node a;
+        private final Node b;
+        private final Set<Node> hOrT;
+        private final Set<Node> naYX;
+
+        public Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> naYX) {
+            this.bump = bump;
+            this.a = a;
+            this.b = b;
+            this.hOrT = hOrT;
+            this.naYX = naYX;
+        }
+
+        public double getBump() {
+            return this.bump;
+        }
+
+        public Node getA() {
+            return this.a;
+        }
+
+        public Node getB() {
+            return this.b;
+        }
+
+        public Set<Node> getHOrT() {
+            return this.hOrT;
+        }
+
+        public Set<Node> getNaYX() {
+            return this.naYX;
+        }
+
+        // Sorting by bump, high to low.
+        public int compareTo(Arrow arrow) {
+            return Double.compare(arrow.getBump(), getBump());
+        }
+
+        public String toString() {
+            return "Arrow<" + this.a + "->" + this.b + " bump = " + this.bump + " t/h = " + this.hOrT + " naYX = " + this.naYX + ">";
+        }
     }
 }
 

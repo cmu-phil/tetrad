@@ -8,9 +8,8 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import java.util.List;
 
 /**
- * A confusion matrix for arrows--i.e. TP, FP, TN, FN for counts of arrow endpoints.
- * A true positive arrow is counted for X*-&gt;Y in the estimated graph if X is not adjacent
- * to Y or X--Y or X&lt;--Y.
+ * A confusion matrix for arrows--i.e. TP, FP, TN, FN for counts of arrow endpoints. A true positive arrow is counted
+ * for X*-&gt;Y in the estimated graph if X is not adjacent to Y or X--Y or X&lt;--Y.
  *
  * @author josephramsey, rubens (November, 2016)
  */
@@ -63,7 +62,7 @@ public class ArrowConfusion {
             Edge edge1;
 
             if (edges1.size() == 1) {
-                edge1 = edges1.get(0);
+                edge1 = edges1.iterator().next();
             } else {
                 edge1 = est1.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
@@ -82,7 +81,7 @@ public class ArrowConfusion {
             Edge edge2;
 
             if (edges2.size() == 1) {
-                edge2 = edges2.get(0);
+                edge2 = edges2.iterator().next();
 //                if (Edges.isUndirectedEdge(edge2)) continue;
             } else {
                 edge2 = truth1.getDirectedEdge(edge.getNode1(), edge.getNode2());
@@ -157,7 +156,7 @@ public class ArrowConfusion {
             Edge edge1;
 
             if (edges1.size() == 1) {
-                edge1 = edges1.get(0);
+                edge1 = edges1.iterator().next();
             } else {
                 edge1 = est1.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
@@ -176,7 +175,7 @@ public class ArrowConfusion {
             Edge edge2;
 
             if (edges2.size() == 1) {
-                edge2 = edges2.get(0);
+                edge2 = edges2.iterator().next();
 //                if (Edges.isUndirectedEdge(edge2)) continue;
             } else {
                 edge2 = truth1.getDirectedEdge(edge.getNode1(), edge.getNode2());

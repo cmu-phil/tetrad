@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetradapp.editor.search;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.editor.*;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
@@ -46,9 +47,11 @@ public class GraphCard extends JPanel {
 
     private final GeneralAlgorithmRunner algorithmRunner;
     private GraphWorkbench workbench;
+    private Knowledge knowledge = new Knowledge();
 
     public GraphCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
+        this.knowledge = algorithmRunner.getKnowledge();
 
         initComponents();
     }
@@ -123,6 +126,7 @@ public class GraphCard extends JPanel {
 
     private JPanel createGraphPanel(Graph graph) {
         GraphWorkbench graphWorkbench = new GraphWorkbench(graph);
+        graphWorkbench.setKnowledge(knowledge);
         graphWorkbench.enableEditing(false);
 
         this.workbench = graphWorkbench;

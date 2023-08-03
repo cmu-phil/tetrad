@@ -73,9 +73,8 @@ public class RandomUtil {
     }
 
     /**
-     * This is just the RandomUtil.shuffle method (thanks!) but using the Tetrad
-     * RandomUtil to get random numbers. The purpose of this copying is to allow
-     * shuffles to happen deterministically given the Randomutils seed.
+     * This is just the RandomUtil.shuffle method (thanks!) but using the Tetrad RandomUtil to get random numbers. The
+     * purpose of this copying is to allow shuffles to happen deterministically given the Randomutils seed.
      *
      * @param list The list to be shuffled.
      */
@@ -118,6 +117,26 @@ public class RandomUtil {
     }
 
     //=======================================PUBLIC METHODS=================================//
+
+    private static void testDeterminism() {
+        int length = 10000000;
+        long seed = 392949394L;
+
+        RandomUtil.getInstance().setSeed(seed);
+        List<Double> d1 = new ArrayList<>();
+        for (int i = 0; i < length; i++) d1.add(RandomUtil.getInstance().nextDouble());
+
+        RandomUtil.getInstance().setSeed(seed);
+        List<Double> d2 = new ArrayList<>();
+        for (int i = 0; i < length; i++) d2.add(RandomUtil.getInstance().nextDouble());
+
+        boolean deterministic = d1.equals(d2);
+        System.out.println(deterministic ? "Deterministic" : "Not deterministic");
+    }
+
+    public static void main(String[] args) {
+        testDeterminism();
+    }
 
     /**
      * @param n Ibid.
@@ -274,26 +293,6 @@ public class RandomUtil {
 
     public long nextLong() {
         return this.randomGenerator.nextLong();
-    }
-
-    private static void testDeterminism() {
-        int length = 10000000;
-        long seed = 392949394L;
-
-        RandomUtil.getInstance().setSeed(seed);
-        List<Double> d1 = new ArrayList<>();
-        for (int i = 0; i < length; i++) d1.add(RandomUtil.getInstance().nextDouble());
-
-        RandomUtil.getInstance().setSeed(seed);
-        List<Double> d2 = new ArrayList<>();
-        for (int i = 0; i < length; i++) d2.add(RandomUtil.getInstance().nextDouble());
-
-        boolean deterministic = d1.equals(d2);
-        System.out.println(deterministic ? "Deterministic" : "Not deterministic");
-    }
-
-    public static void main(String[] args) {
-        testDeterminism();
     }
 }
 

@@ -88,13 +88,11 @@ public class MimbuildTrek {
      */
     private double pValue;
     private List<Node> latents;
-    private double epsilon = 1e-4;
     private int minClusterSize = 3;
 
     public MimbuildTrek() {
     }
 
-    //=================================== PUBLIC METHODS =========================================//
 
     /**
      * Does the search and returns the graph.
@@ -161,7 +159,7 @@ public class MimbuildTrek {
     /**
      * The clustering used.
      *
-     * @return This clusterng.
+     * @return This clustering.
      */
     public List<List<Node>> getClustering() {
         return this.clustering;
@@ -186,9 +184,9 @@ public class MimbuildTrek {
     }
 
     /**
-     * The covaraince matrix over the latents that is implied by the clustering.
+     * The covariance matrix over the latents that is implied by the clustering.
      *
-     * @return This covarianc matrix.
+     * @return This covariance matrix.
      */
     public ICovarianceMatrix getLatentsCov() {
         return this.latentsCov;
@@ -196,6 +194,7 @@ public class MimbuildTrek {
 
     /**
      * The p-value of the model.
+     *
      * @return This p-value.
      */
     public double getpValue() {
@@ -233,10 +232,8 @@ public class MimbuildTrek {
      */
     public void setEpsilon(double epsilon) {
         if (epsilon < 0) throw new IllegalArgumentException("Epsilon mut be >= 0: " + epsilon);
-        this.epsilon = epsilon;
     }
 
-    //=================================== PRIVATE METHODS =========================================//
 
     private List<Node> defineLatents(List<String> names) {
         List<Node> latents = new ArrayList<>();
@@ -431,8 +428,7 @@ public class MimbuildTrek {
     }
 
     /**
-     * jf
-     * Clusters smaller than this size will be tossed out.
+     * jf Clusters smaller than this size will be tossed out.
      */
     public int getMinClusterSize() {
         return this.minClusterSize;
@@ -442,6 +438,58 @@ public class MimbuildTrek {
         if (minClusterSize < 3)
             throw new IllegalArgumentException("Minimum cluster size must be >= 3: " + minClusterSize);
         this.minClusterSize = minClusterSize;
+    }
+
+    private Matrix impliedCovariance(int[][] indicatorIndices, double[][] loadings, Matrix cov, Matrix loadingscov,
+                                     double[] delta) {
+        Matrix implied = new Matrix(cov.getNumRows(), cov.getNumColumns());
+
+        for (int i = 0; i < loadings.length; i++) {
+            for (int j = 0; j < loadings.length; j++) {
+                for (int k = 0; k < loadings[i].length; k++) {
+                    for (int l = 0; l < loadings[j].length; l++) {
+                        double prod = loadings[i][k] * loadings[j][l] * loadingscov.get(i, j);
+                        implied.set(indicatorIndices[i][k], indicatorIndices[j][l], prod);
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < implied.getNumRows(); i++) {
+            implied.set(i, i, implied.get(i, i) + delta[i]);
+        }
+
+        return implied;
+    }
+
+    private double sumOfDifferences(int[][] indicatorIndices, Matrix cov, double[][] loadings, Matrix loadingscov) {
+        double sum = 0;
+
+        for (int i = 0; i < loadings.length; i++) {
+            for (int k = 0; k < loadings[i].length; k++) {
+                for (int l = k + 1; l < loadings[i].length; l++) {
+                    double _cov = cov.get(indicatorIndices[i][k], indicatorIndices[i][l]);
+                    double prod = loadings[i][k] * loadings[i][l] * loadingscov.get(i, i);
+                    double diff = _cov - prod;
+                    sum += diff * diff;
+                }
+            }
+        }
+
+        for (int i = 0; i < loadings.length; i++) {
+            for (int j = i + 1; j < loadings.length; j++) {
+                for (int k = 0; k < loadings[i].length; k++) {
+                    for (int l = 0; l < loadings[j].length; l++) {
+                        double _cov = cov.get(indicatorIndices[i][k], indicatorIndices[j][l]);
+                        double prod = loadings[i][k] * loadings[j][l] * loadingscov.get(i, j);
+                        double diff = _cov - prod;
+                        sum += 2 * diff * diff;
+                    }
+                }
+            }
+        }
+
+        return sum;
     }
 
     private class Function1 implements MultivariateFunction {
@@ -530,59 +578,6 @@ public class MimbuildTrek {
 
             return 0.5 * (diff.times(diff)).trace();
         }
-    }
-
-
-    private Matrix impliedCovariance(int[][] indicatorIndices, double[][] loadings, Matrix cov, Matrix loadingscov,
-                                     double[] delta) {
-        Matrix implied = new Matrix(cov.getNumRows(), cov.getNumColumns());
-
-        for (int i = 0; i < loadings.length; i++) {
-            for (int j = 0; j < loadings.length; j++) {
-                for (int k = 0; k < loadings[i].length; k++) {
-                    for (int l = 0; l < loadings[j].length; l++) {
-                        double prod = loadings[i][k] * loadings[j][l] * loadingscov.get(i, j);
-                        implied.set(indicatorIndices[i][k], indicatorIndices[j][l], prod);
-                    }
-                }
-            }
-        }
-
-        for (int i = 0; i < implied.getNumRows(); i++) {
-            implied.set(i, i, implied.get(i, i) + delta[i]);
-        }
-
-        return implied;
-    }
-
-    private double sumOfDifferences(int[][] indicatorIndices, Matrix cov, double[][] loadings, Matrix loadingscov) {
-        double sum = 0;
-
-        for (int i = 0; i < loadings.length; i++) {
-            for (int k = 0; k < loadings[i].length; k++) {
-                for (int l = k + 1; l < loadings[i].length; l++) {
-                    double _cov = cov.get(indicatorIndices[i][k], indicatorIndices[i][l]);
-                    double prod = loadings[i][k] * loadings[i][l] * loadingscov.get(i, i);
-                    double diff = _cov - prod;
-                    sum += diff * diff;
-                }
-            }
-        }
-
-        for (int i = 0; i < loadings.length; i++) {
-            for (int j = i + 1; j < loadings.length; j++) {
-                for (int k = 0; k < loadings[i].length; k++) {
-                    for (int l = 0; l < loadings[j].length; l++) {
-                        double _cov = cov.get(indicatorIndices[i][k], indicatorIndices[j][l]);
-                        double prod = loadings[i][k] * loadings[j][l] * loadingscov.get(i, j);
-                        double diff = _cov - prod;
-                        sum += 2 * diff * diff;
-                    }
-                }
-            }
-        }
-
-        return sum;
     }
 }
 

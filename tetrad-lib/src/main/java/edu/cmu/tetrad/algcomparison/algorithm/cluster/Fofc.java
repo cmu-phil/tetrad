@@ -8,7 +8,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.utils.BpcTestType;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
@@ -43,7 +43,9 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataSet);
+            boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
+
+            ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances);
             double alpha = parameters.getDouble(Params.ALPHA);
 
             boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
@@ -158,6 +160,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         parameters.add(Params.USE_GAP);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.CHECK_TYPE);
+        parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.VERBOSE);
 
         return parameters;

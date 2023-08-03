@@ -40,8 +40,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Assumes that the search method of the CPDAG search has been run and shows the
- * various options for DAG's consistent with correlation information over the variables.
+ * Assumes that the search method of the CPDAG search has been run and shows the various options for DAG's consistent
+ * with correlation information over the variables.
  *
  * @author josephramsey
  */
@@ -190,8 +190,7 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
     }
 
     /**
-     * Creates the "file" menu, which allows the user to load, save, and post
-     * workbench models.
+     * Creates the "file" menu, which allows the user to load, save, and post workbench models.
      *
      * @return this menu.
      */

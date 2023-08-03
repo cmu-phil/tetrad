@@ -29,8 +29,7 @@ import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
 
 /**
- * A collection of public static methods to help construct SessionWrappers
- * manually.
+ * A collection of public static methods to help construct SessionWrappers manually.
  *
  * @author josephramsey
  */
@@ -91,8 +90,7 @@ final class SessionWrappers {
 
     /**
      * @return the model classes associated with the given button type.
-     * @throws NullPointerException if no classes are stored for the given
-     *                              type.
+     * @throws NullPointerException if no classes are stored for the given type.
      */
     private static Class[] getModelClasses(String nextButtonType) {
         TetradApplicationConfig config = TetradApplicationConfig.getInstance();

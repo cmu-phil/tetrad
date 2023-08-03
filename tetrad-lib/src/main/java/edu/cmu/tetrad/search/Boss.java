@@ -12,33 +12,27 @@ import java.util.*;
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
- * <p>Implements Best Order Score Search (BOSS). The following references
- * are relevant:</p>
+ * <p>Implements Best Order Score Search (BOSS). The following references are relevant:</p>
  *
- * <p>Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations
- * of the sparsest permutation algorithm. In Uncertainty in Artificial Intelligence
- * (pp. 1052-1062). PMLR.</p>
+ * <p>Lam, W. Y., Andrews, B., & Ramsey, J. (2022, August). Greedy relaxations of the sparsest permutation algorithm.
+ * In Uncertainty in Artificial Intelligence (pp. 1052-1062). PMLR.</p>
  *
- * <p>Teyssier, M., &amp; Koller, D. (2012). Ordering-based search: A simple and effective
- * algorithm for learning Bayesian networks. arXiv preprint arXiv:1207.1429.</p>
+ * <p>Teyssier, M., & Koller, D. (2012). Ordering-based search: A simple and effective algorithm for learning Bayesian
+ * networks. arXiv preprint arXiv:1207.1429.</p>
  *
- * <p>Solus, L., Wang, Y., &amp; Uhler, C. (2021). Consistency guarantees for greedy
- * permutation-based causal inference algorithms. Biometrika, 108(4), 795-814.</p>
+ * <p>Solus, L., Wang, Y., & Uhler, C. (2021). Consistency guarantees for greedy permutation-based causal inference
+ * algorithms. Biometrika, 108(4), 795-814.</p>
  *
- * <p>The BOSS algorithm is based on the idea that implied DAGs for permutations
- * are most optimal in their BIC scores when the variables in the permutations
- * are ordered causally--that is, so that that causes in the models come
- * before effects in a topological order.</p>
+ * <p>The BOSS algorithm is based on the idea that implied DAGs for permutations are most optimal in their BIC scores
+ * when the variables in the permutations are ordered causally--that is, so that that causes in the models come before
+ * effects in a topological order.</p>
  *
- * <p>This algorithm is implemented as a "plugin-in" algorithm to a
- * PermutationSearch object (see), which deals with certain details of knowledge
- * handling that are common to different permutation searches.</p>
+ * <p>This algorithm is implemented as a "plugin-in" algorithm to a PermutationSearch object (see), which deals with
+ * certain details of knowledge handling that are common to different permutation searches.</p>
  *
- * <p>BOSS, like GRaSP (see), is characterized by high adjacency and
- * oreintation precision (especially) and recall for moderate sample
- * sizes. BOSS scales up currently further than GRaSP to larger variable
- * sets and denser graphs and so is currently preferable from a practical
- * standpoint, though performance is essentially identical.</p>
+ * <p>BOSS, like GRaSP (see), is characterized by high adjacency and orientation precision (especially) and recall for
+ * moderate sample sizes. BOSS scales up currently further than GRaSP to larger variable sets and denser graphs and so
+ * is currently preferable from a practical standpoint, though performance is essentially identical.</p>
  *
  * <p>The algorithm works as follows:</p>
  *
@@ -55,13 +49,13 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * are already oriented, so a parameter is included to turn that step off.</o>
  *
  * <p>Knowledge can be used with this search. If tiered knowledge is used,
- * then the procedure is carried out for each tier separately, given the v
- * ariables preceding that tier, which allows the Boss algorithm to address
+ * then the procedure is carried out for each tier separately, given the
+ * variables preceding that tier, which allows the Boss algorithm to address
  * tiered (e.g., time series) problems with larger numbers of variables.
  * However, knowledge of required and forbidden edges is correctly implemented
  * for arbitrary such knowledge.</p>
  *
- * <p>A paremeter is included to restart the search a certain number of time.
+ * <p>A parameter is included to restart the search a certain number of time.
  * The idea is that the goal is to optimize a BIC score, so if several runs
  * are done of the algorithm for the same data, the model with the highest
  * BIC score should be returned and the others ignored.</p>
@@ -83,6 +77,7 @@ public class Boss implements SuborderSearch {
     private Knowledge knowledge = new Knowledge();
     private BesPermutation bes = null;
     private int numStarts = 1;
+    private boolean allowInternalRandomness = false;
 
     /**
      * This algorithm will work with an arbitrary BIC score.
@@ -108,7 +103,10 @@ public class Boss implements SuborderSearch {
         boolean improved;
 
         for (int i = 0; i < this.numStarts; i++) {
-            shuffle(suborder);
+            if (allowInternalRandomness) {
+                shuffle(suborder);
+            }
+
             makeValidKnowledgeOrder(suborder);
 
             do {
@@ -137,8 +135,8 @@ public class Boss implements SuborderSearch {
     }
 
     /**
-     * Sets up BOSS to use the BES algorithm to render BOSS correct under the
-     * faithfulness assumption.
+     * Sets up BOSS to use the BES algorithm to render BOSS correct under the faithfulness assumption.
+     *
      * @param use True if BES should be used.
      */
     public void setUseBes(boolean use) {
@@ -160,8 +158,8 @@ public class Boss implements SuborderSearch {
     }
 
     /**
-     * Sets the number of random starts to use. The model with the best score
-     * from these restartes will be reported.
+     * Sets the number of random starts to use. The model with the best score from these restarts will be reported.
+     *
      * @param numStarts The number of random starts to use.
      */
     public void setNumStarts(int numStarts) {
@@ -181,6 +179,18 @@ public class Boss implements SuborderSearch {
     @Override
     public Score getScore() {
         return this.score;
+    }
+
+    /**
+     * Sets whether to allow internal randomness in the algorithm. Some steps in the algorithm do shuffling of variables
+     * if this is set to true, to help avoid local optima. However, this randomness can lead to different results on
+     * different runs of the algorithm, which may be undesirable.
+     *
+     * @param allowInternalRandomness True if internal randomness should be allowed, false otherwise. This is false by
+     *                                default.
+     */
+    public void setAllowInternalRandomness(boolean allowInternalRandomness) {
+        this.allowInternalRandomness = allowInternalRandomness;
     }
 
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
@@ -218,7 +228,7 @@ public class Boss implements SuborderSearch {
             Node z = itr.previous();
 
             // THE CORRECTNESS OF THIS NEEDS TO BE VERIFIED
-            if(this.knowledge.isRequired(z.getName(), x.getName())) break;
+            if (this.knowledge.isRequired(z.getName(), x.getName())) break;
 
             if (z != x) {
                 Z.remove(z);
@@ -273,5 +283,4 @@ public class Boss implements SuborderSearch {
             });
         }
     }
-
 }

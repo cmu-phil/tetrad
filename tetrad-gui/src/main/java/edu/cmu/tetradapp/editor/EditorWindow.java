@@ -39,23 +39,19 @@ import java.awt.event.ActionListener;
 public class EditorWindow extends JInternalFrame
         implements EditorWindowIndirectRef, Comparable {
 
-    private JPanel editor;
-
-    /**
-     * Set to true if the dialog was canceled.
-     */
-    private boolean canceled;
-
     /**
      * The name of the main button; normally "Save."
      */
     private final String buttonName;
-
     /**
      * The bounds of the source component.
      */
     private final Component centeringComp;
-
+    private JComponent editor;
+    /**
+     * Set to true if the dialog was canceled.
+     */
+    private boolean canceled;
     /**
      * The button the user clicks to dismiss the dialog.
      */
@@ -64,7 +60,7 @@ public class EditorWindow extends JInternalFrame
     /**
      * Pops a new editor window up from a dialog.
      */
-    public EditorWindow(JPanel editor, String title, String buttonName,
+    public EditorWindow(JComponent editor, String title, String buttonName,
                         boolean cancellable, Component centeringComp) {
         super(title, true, true, true, false);
 
@@ -90,7 +86,7 @@ public class EditorWindow extends JInternalFrame
     /**
      * Constructs the dialog.
      */
-    private void doSetup(JPanel editor, boolean cancellable) {
+    private void doSetup(JComponent editor, boolean cancellable) {
         this.editor = editor;
         this.okButton = null;
 
@@ -126,10 +122,10 @@ public class EditorWindow extends JInternalFrame
         b0.add(editor);
         b0.add(b);
 
-        Dimension screensize = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
-        int width = FastMath.min(b0.getPreferredSize().width + 50, screensize.width);
-        int height = FastMath.min(b0.getPreferredSize().height + 50, screensize.height - 100);
+        int width = FastMath.min(b0.getPreferredSize().width + 50, screenSize.width);
+        int height = FastMath.min(b0.getPreferredSize().height + 50, screenSize.height - 100);
 
         if (!(editor instanceof DoNotScroll) && (b0.getPreferredSize().width > width || b0.getPreferredSize().height > height)) {
             JScrollPane scroll = new JScrollPane(b0);
@@ -170,6 +166,15 @@ public class EditorWindow extends JInternalFrame
         return this.centeringComp;
     }
 
+    /**
+     * Adds the action listener to the OK button if it's not null.
+     */
+    public void addActionListener(ActionListener l) {
+        if (this.okButton != null) {
+            this.okButton.addActionListener(l);
+        }
+    }
+
     private class OkListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
@@ -189,15 +194,6 @@ public class EditorWindow extends JInternalFrame
         public void actionPerformed(ActionEvent e) {
             EditorWindow.this.canceled = true;
             closeDialog();
-        }
-    }
-
-    /**
-     * Adds the action listener to the OK button if it's not null.
-     */
-    public void addActionListener(ActionListener l) {
-        if (this.okButton != null) {
-            this.okButton.addActionListener(l);
         }
     }
 }

@@ -25,34 +25,27 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fas;
-import edu.cmu.tetrad.search.Fask;
-import edu.cmu.tetrad.search.IGraphSearch;
-import edu.cmu.tetrad.search.Lofs;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.MillisecondTimes;
 
 import java.util.Collections;
 
 /**
  * <p>Runs Fast Adjacency Search (FAS) and then orients each edge using the robust
- * skew orientation algorithm. Checks are done for adding
- * two-cycles. The two-cycle checks do not require non-Gaussianity. The robust skew
- * orientation of edges left or right does.</p>
+ * skew orientation algorithm. Checks are done for adding two-cycles. The two-cycle checks do not require
+ * non-Gaussianity. The robust skew orientation of edges left or right does.</p>
  *
  * <p>Moving this to the work_in_progress package because the functionality can be
- * generalized. Instead of hard-coding FAS, an arbitrary algorithm can be used
- * to obtain adjacencies. Instead of hard-coding robust skew, and arbitrary algorithm
- * can be used to to pairwise orientation. Instead of orienting all edges, an
- * option can be given to just orient the edges that are unoriented in the input
- * graph (see, e.g., PC LiNGAM). This was an early attempt at this. For PC-LiNGAM,
- * see this paper:</p>
+ * generalized. Instead of hard-coding FAS, an arbitrary algorithm can be used to obtain adjacencies. Instead of
+ * hard-coding robust skew, and arbitrary algorithm can be used to to pairwise orientation. Instead of orienting all
+ * edges, an option can be given to just orient the edges that are unoriented in the input graph (see, e.g., PC LiNGAM).
+ * This was an early attempt at this. For PC-LiNGAM, see this paper:</p>
  *
  * <p>Hoyer, P. O., Hyvarinen, A., Scheines, R., Spirtes, P. L., Ramsey, J., Lacerda, G.,
- * & Shimizu, S. (2012). Causal discovery of linear acyclic models with arbitrary
- * distributions. arXiv preprint arXiv:1206.3260.</p>
+ * & Shimizu, S. (2012). Causal discovery of linear acyclic models with arbitrary distributions. arXiv preprint
+ * arXiv:1206.3260.</p>
  *
  * @author josephramsey
  * @see Fas
@@ -61,14 +54,11 @@ import java.util.Collections;
 public final class FasLofs implements IGraphSearch {
 
     private final Lofs.Rule rule;
-
-    // Elapsed time of the search, in milliseconds.
-    private long elapsed;
-
     // The data sets being analyzed. They must all have the same variables and the same
     // number of records.
     private final DataSet dataSet;
-
+    // Elapsed time of the search, in milliseconds.
+    private long elapsed;
     // For the Fast Adjacency Search.
     private int depth = -1;
 
@@ -89,13 +79,13 @@ public final class FasLofs implements IGraphSearch {
     //======================================== PUBLIC METHODS ====================================//
 
     /**
-     * Runs the search on the concatenated data, returning a graph, possibly cyclic, possibly with
-     * two-cycles. Runs the fast adjacency search (FAS, Spirtes et al., 2000) follows by a modification
-     * of the robust skew rule (Pairwise Likelihood Ratios for Estimation of Non-Gaussian Structural
-     * Equation Models, Smith and Hyvarinen), together with some heuristics for orienting two-cycles.
+     * Runs the search on the concatenated data, returning a graph, possibly cyclic, possibly with two-cycles. Runs the
+     * fast adjacency search (FAS, Spirtes et al., 2000) follows by a modification of the robust skew rule (Pairwise
+     * Likelihood Ratios for Estimation of Non-Gaussian Structural Equation Models, Smith and Hyvarinen), together with
+     * some heuristics for orienting two-cycles.
      *
-     * @return the graph. Some of the edges may be undirected (though it shouldn't be many in most cases)
-     * and some of the adjacencies may be two-cycles.
+     * @return the graph. Some of the edges may be undirected (though it shouldn't be many in most cases) and some of
+     * the adjacencies may be two-cycles.
      */
     public Graph search() {
         long start = MillisecondTimes.timeMillis();
@@ -136,8 +126,8 @@ public final class FasLofs implements IGraphSearch {
     }
 
     /**
-     * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1.
-     *              unlimited. Making this too high may results in statistical errors.
+     * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1. unlimited. Making this too
+     *              high may results in statistical errors.
      */
     public void setDepth(int depth) {
         this.depth = depth;
@@ -151,17 +141,16 @@ public final class FasLofs implements IGraphSearch {
     }
 
     /**
-     * @return Returns the penalty discount used for the adjacency search. The default is 1,
-     * though a higher value is recommended, say, 2, 3, or 4.
+     * @return Returns the penalty discount used for the adjacency search. The default is 1, though a higher value is
+     * recommended, say, 2, 3, or 4.
      */
     public double getPenaltyDiscount() {
         return this.penaltyDiscount;
     }
 
     /**
-     * @param penaltyDiscount Sets the penalty discount used for the adjacency search.
-     *                        The default is 1, though a higher value is recommended, say,
-     *                        2, 3, or 4.
+     * @param penaltyDiscount Sets the penalty discount used for the adjacency search. The default is 1, though a higher
+     *                        value is recommended, say, 2, 3, or 4.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;

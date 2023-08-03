@@ -35,38 +35,28 @@ import java.util.List;
 /**
  * Implements the Washdown algorithm,
  * <p>
- * Initialization: Current Model = M1 := single factor pure model in
- * which L1 is a cause of all Vi in v
+ * Initialization: Current Model = M1 := single factor pure model in which L1 is a cause of all Vi in v
  * <p>
- * 1) Purify step:  run Purify on getModel model.
- * 2) Create new model: for each indicator Vi in Vdiscard (variables
- * discarded) by Purify in step 1, move Vi from being an effect of its
- * latent Lj to being an effect of Lj+1, where if Lj+1 does not exist,
- * create it and freely correlate Lj+1 with all latents L1 to Lj.
- * 3) stop check:  estimate new model and stop if goodness-of-fit test
- * passes, else getModel model:= new model, and go to step 1.
+ * 1) Purify step:  run Purify on getModel model. 2) Create new model: for each indicator Vi in Vdiscard (variables
+ * discarded) by Purify in step 1, move Vi from being an effect of its latent Lj to being an effect of Lj+1, where if
+ * Lj+1 does not exist, create it and freely correlate Lj+1 with all latents L1 to Lj. 3) stop check:  estimate new
+ * model and stop if goodness-of-fit test passes, else getModel model:= new model, and go to step 1.
  * <p>
- * Purify
- * 1) Vkeep := v, Vdiscard := null set
- * 2) Do goodness-of-fit test on getModel model Mc, stop if Mc passes,
- * return Vkeep and Vdiscard
- * 2) For each indicator Vi, do goodness-of-fit test on Mc - Vi, store
- * foodness-of-fit test score as gof(Vi)
- * 3) New getModel model := Mc - Vi, for Vi with max gof(Vi) from step 3.
- * 4) Vkeep:= Vkeep - Vi, Vdiscard:= Vdiscard + Vi
- * 5) Go to step 2.
+ * Purify 1) Vkeep := v, Vdiscard := null set 2) Do goodness-of-fit test on getModel model Mc, stop if Mc passes, return
+ * Vkeep and Vdiscard 2) For each indicator Vi, do goodness-of-fit test on Mc - Vi, store foodness-of-fit test score as
+ * gof(Vi) 3) New getModel model := Mc - Vi, for Vi with max gof(Vi) from step 3. 4) Vkeep:= Vkeep - Vi, Vdiscard:=
+ * Vdiscard + Vi 5) Go to step 2.
  * <p>
- * Clearly we can use any goodness of fit test we think is appropriate -
- * the default being the chi-square test.
+ * Clearly we can use any goodness of fit test we think is appropriate - the default being the chi-square test.
  *
  * @author josephramsey
  */
 
 public class Washdown {
-    private ICovarianceMatrix cov;
-    private DataSet dataSet;
     private final List<Node> variables;
     private final double alpha;
+    private ICovarianceMatrix cov;
+    private DataSet dataSet;
 
     /**
      * Constructor.

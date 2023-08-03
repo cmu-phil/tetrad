@@ -32,9 +32,8 @@ public class Type5 implements SessionModel, TetradSerializableExcluded {
     static final long serialVersionUID = 23L;
 
     /**
-     * It should not be possible to constuct Type5, because it contains two
-     * arguments of the same type. There is in principle no way to decide which
-     * argument should be passed in which position.
+     * It should not be possible to constuct Type5, because it contains two arguments of the same type. There is in
+     * principle no way to decide which argument should be passed in which position.
      */
     public Type5(Type1 model1, Type1 model2, Parameters parameters) {
     }
@@ -49,17 +48,17 @@ public class Type5 implements SessionModel, TetradSerializableExcluded {
     }
 
     /**
-     * Sets the name of the session model.
-     */
-    public void setName(String name) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    /**
      * @return the name of the session model.
      */
     public String getName() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    /**
+     * Sets the name of the session model.
+     */
+    public void setName(String name) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }
 

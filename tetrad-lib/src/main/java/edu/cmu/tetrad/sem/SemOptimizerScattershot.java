@@ -31,16 +31,13 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.List;
 
 /**
- * Optimizes a SEM by randomly selecting points in cubes of decreasing size about
- * a given point.
+ * Optimizes a SEM by randomly selecting points in cubes of decreasing size about a given point.
  *
  * @author josephramsey
  */
 public class SemOptimizerScattershot implements SemOptimizer {
     static final long serialVersionUID = 23L;
     private int numRestarts;
-
-    //=============================CONSTRUCTORS=========================//
 
     /**
      * Blank constructor.
@@ -55,11 +52,9 @@ public class SemOptimizerScattershot implements SemOptimizer {
         return new SemOptimizerScattershot();
     }
 
-    //==============================PUBLIC METHODS========================//
-
     /**
-     * Optimizes the fitting function of the given Sem using the Powell method
-     * from Numerical Recipes by adjusting the freeParameters of the Sem.
+     * Optimizes the fitting function of the given Sem using the Powell method from Numerical Recipes by adjusting the
+     * freeParameters of the Sem.
      */
     public void optimize(SemIm semIm) {
         Matrix sampleCovar = semIm.getSampleCovar();
@@ -121,13 +116,13 @@ public class SemOptimizerScattershot implements SemOptimizer {
     }
 
     @Override
-    public void setNumRestarts(int numRestarts) {
-        this.numRestarts = numRestarts;
+    public int getNumRestarts() {
+        return this.numRestarts;
     }
 
     @Override
-    public int getNumRestarts() {
-        return this.numRestarts;
+    public void setNumRestarts(int numRestarts) {
+        this.numRestarts = numRestarts;
     }
 
     public String toString() {
@@ -263,6 +258,10 @@ public class SemOptimizerScattershot implements SemOptimizer {
         }
     }
 
+    private RandomUtil getRandom() {
+        return RandomUtil.getInstance();
+    }
+
     /**
      * Evaluates a fitting function for an array of freeParameters.
      *
@@ -271,8 +270,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
     interface FittingFunction {
 
         /**
-         * @return the value of the function for the given array of parameter
-         * values.
+         * @return the value of the function for the given array of parameter values.
          */
         double evaluate(double[] argument);
 
@@ -280,8 +278,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
     }
 
     /**
-     * Wraps a Sem for purposes of calculating its fitting function for given
-     * parameter values.
+     * Wraps a Sem for purposes of calculating its fitting function for given parameter values.
      *
      * @author josephramsey
      */
@@ -304,8 +301,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
         /**
          * Computes the maximum likelihood function value for the given                                   G
-         * freeParameters values as given by the optimizer. These values are mapped
-         * to parameter values.
+         * freeParameters values as given by the optimizer. These values are mapped to parameter values.
          */
         public double evaluate(double[] parameters) {
             this.sem.setFreeParamValues(parameters);
@@ -345,10 +341,6 @@ public class SemOptimizerScattershot implements SemOptimizer {
         public void setAvoidNegativeVariances(boolean avoidNegativeVariances) {
             this.avoidNegativeVariances = avoidNegativeVariances;
         }
-    }
-
-    private RandomUtil getRandom() {
-        return RandomUtil.getInstance();
     }
 }
 

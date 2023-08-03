@@ -24,17 +24,19 @@ package edu.cmu.tetrad.regression;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.Vector;
+import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * Implements a regression model from correlations--that is, from a correlation
- * matrix, a list of standard deviations, and a list of means.
+ * Implements a regression model from correlations--that is, from a correlation matrix, a list of standard deviations,
+ * and a list of means.
  *
  * @author josephramsey
  */
@@ -46,8 +48,7 @@ public class RegressionCovariance implements Regression {
     private final CorrelationMatrix correlations;
 
     /**
-     * 2
-     * The standard deviations for the variable in <code>correlations</code>.
+     * 2 The standard deviations for the variable in <code>correlations</code>.
      */
     private final Vector sd;
 
@@ -57,8 +58,7 @@ public class RegressionCovariance implements Regression {
     private final Vector means;
 
     /**
-     * The alpha level, determining which coefficients will be considered
-     * significant.
+     * The alpha level, determining which coefficients will be considered significant.
      */
     private double alpha = 0.05;
 
@@ -70,8 +70,8 @@ public class RegressionCovariance implements Regression {
     //=========================CONSTRUCTORS===========================//
 
     /**
-     * Constructs a covariance-based regression model using the given covariance
-     * matrix, assuming that no means are specified.
+     * Constructs a covariance-based regression model using the given covariance matrix, assuming that no means are
+     * specified.
      *
      * @param covariances The covariance matrix.
      */
@@ -80,12 +80,11 @@ public class RegressionCovariance implements Regression {
     }
 
     /**
-     * Constructs a covariance-based regression model, assuming that the
-     * covariance matrix and the means are as specified.
+     * Constructs a covariance-based regression model, assuming that the covariance matrix and the means are as
+     * specified.
      *
      * @param covariances The covariance matrix, for variables <V1,...,Vn>
-     * @param means       A vector of means, for variables <V1,...,Vn>. May be
-     *                    null.
+     * @param means       A vector of means, for variables <V1,...,Vn>. May be null.
      */
     private RegressionCovariance(ICovarianceMatrix covariances, Vector means) {
         this(new CorrelationMatrix(covariances), RegressionCovariance.standardDeviations(covariances),
@@ -93,13 +92,11 @@ public class RegressionCovariance implements Regression {
     }
 
     /**
-     * Constructs a new covariance-based regression model, assuming the given
-     * correlations, standard deviations, and means are all specified.
+     * Constructs a new covariance-based regression model, assuming the given correlations, standard deviations, and
+     * means are all specified.
      *
-     * @param correlations       The correlation matrix, for variables
-     *                           <V1,...,Vn>.
-     * @param standardDeviations Standard deviations for variables <V1,..,Vn>.
-     *                           Must not be null.
+     * @param correlations       The correlation matrix, for variables <V1,...,Vn>.
+     * @param standardDeviations Standard deviations for variables <V1,..,Vn>. Must not be null.
      * @param means              3 for variables <V1,...,Vn>. May be null.
      */
     private RegressionCovariance(CorrelationMatrix correlations,
@@ -124,9 +121,22 @@ public class RegressionCovariance implements Regression {
 
     //===========================PUBLIC METHODS==========================//
 
+    private static Vector zeroMeans(int numVars) {
+        return new Vector(numVars);
+    }
+
+    private static Vector standardDeviations(ICovarianceMatrix covariances) {
+        Vector standardDeviations = new Vector(covariances.getDimension());
+
+        for (int i = 0; i < covariances.getDimension(); i++) {
+            standardDeviations.set(i, FastMath.sqrt(covariances.getValue(i, i)));
+        }
+
+        return standardDeviations;
+    }
+
     /**
-     * Sets the cutoff for significance. Parameters with p values less than this
-     * will be labeled as significant.
+     * Sets the cutoff for significance. Parameters with p values less than this will be labeled as significant.
      *
      * @param alpha The significance level.
      */
@@ -141,119 +151,124 @@ public class RegressionCovariance implements Regression {
         return this.graph;
     }
 
+    //===========================PRIVATE METHODS==========================//
+
     /**
-     * Regresses the given target on the given regressors, yielding a regression
-     * plane, in which coefficients are given for each regressor plus the
-     * constant (if means have been specified, that is, for the last), and se,
-     * t, and p values are given for each regressor.
+     * Regresses the given target on the given regressors, yielding a regression plane, in which coefficients are given
+     * for each regressor plus the constant (if means have been specified, that is, for the last), and se, t, and p
+     * values are given for each regressor.
      *
      * @param target     The variable being regressed.
      * @param regressors The list of regressors.
      * @return the regression plane.
      */
     public RegressionResult regress(Node target, List<Node> regressors) {
-        Matrix allCorrelations = this.correlations.getMatrix();
+        try {
 
-        List<Node> variables = this.correlations.getVariables();
+            Matrix allCorrelations = this.correlations.getMatrix();
 
-        int yIndex = variables.indexOf(target);
+            List<Node> variables = this.correlations.getVariables();
 
-        int[] xIndices = new int[regressors.size()];
+            int yIndex = variables.indexOf(target);
 
-        for (int i = 0; i < regressors.size(); i++) {
-            xIndices[i] = variables.indexOf(regressors.get(i));
+            int[] xIndices = new int[regressors.size()];
 
-            if (xIndices[i] == -1) {
-                throw new NullPointerException("Can't find variable " + regressors.get(i) + " in this list: " + variables);
-            }
-        }
+            for (int i = 0; i < regressors.size(); i++) {
+                xIndices[i] = variables.indexOf(regressors.get(i));
 
-        Matrix rX = allCorrelations.getSelection(xIndices, xIndices);
-        Matrix rY = allCorrelations.getSelection(xIndices, new int[]{yIndex});
-
-        Matrix bStar = rX.inverse().times(rY);
-
-        Vector b = new Vector(bStar.getNumRows() + 1);
-
-        for (int k = 1; k < b.size(); k++) {
-            double sdY = this.sd.get(yIndex);
-            double sdK = this.sd.get(xIndices[k - 1]);
-            b.set(k, bStar.get(k - 1, 0) * (sdY / sdK));
-        }
-
-        b.set(0, Double.NaN);
-
-        if (this.means != null) {
-            double b0 = this.means.get(yIndex);
-
-            for (int i = 0; i < xIndices.length; i++) {
-                b0 -= b.get(i + 1) * this.means.get(xIndices[i]);
+                if (xIndices[i] == -1) {
+                    throw new NullPointerException("Can't find variable " + regressors.get(i) + " in this list: " + variables);
+                }
             }
 
-            b.set(0, b0);
+            Matrix rX = allCorrelations.getSelection(xIndices, xIndices);
+            Matrix rY = allCorrelations.getSelection(xIndices, new int[]{yIndex});
+
+            Matrix bStar = rX.inverse().times(rY);
+
+            Vector b = new Vector(bStar.getNumRows() + 1);
+
+            for (int k = 1; k < b.size(); k++) {
+                double sdY = this.sd.get(yIndex);
+                double sdK = this.sd.get(xIndices[k - 1]);
+                b.set(k, bStar.get(k - 1, 0) * (sdY / sdK));
+            }
+
+            b.set(0, Double.NaN);
+
+            if (this.means != null) {
+                double b0 = this.means.get(yIndex);
+
+                for (int i = 0; i < xIndices.length; i++) {
+                    b0 -= b.get(i + 1) * this.means.get(xIndices[i]);
+                }
+
+                b.set(0, b0);
+            }
+
+            int[] allIndices = new int[1 + regressors.size()];
+            allIndices[0] = yIndex;
+
+            for (int i = 1; i < allIndices.length; i++) {
+                allIndices[i] = variables.indexOf(regressors.get(i - 1));
+            }
+
+            Matrix r = allCorrelations.getSelection(allIndices, allIndices);
+            Matrix rInv = r.inverse();
+
+            int n = this.correlations.getSampleSize();
+            int k = regressors.size() + 1;
+
+            double vY = rInv.get(0, 0);
+            double r2 = 1.0 - (1.0 / vY);
+            double tss = n * this.sd.get(yIndex) * this.sd.get(yIndex); // Book says n - 1.
+            double rss = tss * (1.0 - r2);
+            double seY = FastMath.sqrt(rss / (double) (n - k));
+
+            Vector sqErr = new Vector(allIndices.length);
+            Vector t = new Vector(allIndices.length);
+            Vector p = new Vector(allIndices.length);
+
+            sqErr.set(0, Double.NaN);
+            t.set(0, Double.NaN);
+            p.set(0, Double.NaN);
+
+            Matrix rxInv = rX.inverse();
+
+            for (int i = 0; i < regressors.size(); i++) {
+                double _r2 = 1.0 - (1.0 / rxInv.get(i, i));
+                double _tss = n * this.sd.get(xIndices[i]) * this.sd.get(xIndices[i]);
+                double _se = seY / FastMath.sqrt(_tss * (1.0 - _r2));
+
+                double _t = b.get(i + 1) / _se;
+                double _p = (1.0 - ProbUtils.tCdf(FastMath.abs(_t), n - k));
+
+                sqErr.set(i + 1, _se);
+                t.set(i + 1, _t);
+                p.set(i + 1, _p);
+            }
+
+            // Graph
+            this.graph = createGraph(target, allIndices, regressors, p);
+
+            String[] vNames = createVarNamesArray(regressors);
+            double[] bArray = b.toArray();
+            double[] tArray = t.toArray();
+            double[] pArray = p.toArray();
+            double[] seArray = sqErr.toArray();
+
+            return new RegressionResult(false, vNames, n,
+                    bArray, tArray, pArray, seArray, r2, rss, this.alpha, null);
+        } catch (SingularMatrixException e) {
+            throw new RuntimeException("Singularity encountered when regressing " +
+                    LogUtilsSearch.getScoreFact(target, regressors));
         }
-
-        int[] allIndices = new int[1 + regressors.size()];
-        allIndices[0] = yIndex;
-
-        for (int i = 1; i < allIndices.length; i++) {
-            allIndices[i] = variables.indexOf(regressors.get(i - 1));
-        }
-
-        Matrix r = allCorrelations.getSelection(allIndices, allIndices);
-        Matrix rInv = r.inverse();
-
-        int n = this.correlations.getSampleSize();
-        int k = regressors.size() + 1;
-
-        double vY = rInv.get(0, 0);
-        double r2 = 1.0 - (1.0 / vY);
-        double tss = n * this.sd.get(yIndex) * this.sd.get(yIndex); // Book says n - 1.
-        double rss = tss * (1.0 - r2);
-        double seY = FastMath.sqrt(rss / (double) (n - k));
-
-        Vector sqErr = new Vector(allIndices.length);
-        Vector t = new Vector(allIndices.length);
-        Vector p = new Vector(allIndices.length);
-
-        sqErr.set(0, Double.NaN);
-        t.set(0, Double.NaN);
-        p.set(0, Double.NaN);
-
-        Matrix rxInv = rX.inverse();
-
-        for (int i = 0; i < regressors.size(); i++) {
-            double _r2 = 1.0 - (1.0 / rxInv.get(i, i));
-            double _tss = n * this.sd.get(xIndices[i]) * this.sd.get(xIndices[i]);
-            double _se = seY / FastMath.sqrt(_tss * (1.0 - _r2));
-
-            double _t = b.get(i + 1) / _se;
-            double _p = (1.0 - ProbUtils.tCdf(FastMath.abs(_t), n - k));
-
-            sqErr.set(i + 1, _se);
-            t.set(i + 1, _t);
-            p.set(i + 1, _p);
-        }
-
-        // Graph
-        this.graph = createGraph(target, allIndices, regressors, p);
-
-        String[] vNames = createVarNamesArray(regressors);
-        double[] bArray = b.toArray();
-        double[] tArray = t.toArray();
-        double[] pArray = p.toArray();
-        double[] seArray = sqErr.toArray();
-
-        return new RegressionResult(false, vNames, n,
-                bArray, tArray, pArray, seArray, r2, rss, this.alpha, null);
     }
 
     public RegressionResult regress(Node target, Node... regressors) {
         List<Node> _regressors = Arrays.asList(regressors);
         return regress(target, _regressors);
     }
-
-    //===========================PRIVATE METHODS==========================//
 
     private String[] createVarNamesArray(List<Node> regressors) {
         String[] vNames = getVarNamesArray(regressors);
@@ -286,20 +301,6 @@ public class RegressionCovariance implements Regression {
         }
 
         return graph;
-    }
-
-    private static Vector zeroMeans(int numVars) {
-        return new Vector(numVars);
-    }
-
-    private static Vector standardDeviations(ICovarianceMatrix covariances) {
-        Vector standardDeviations = new Vector(covariances.getDimension());
-
-        for (int i = 0; i < covariances.getDimension(); i++) {
-            standardDeviations.set(i, FastMath.sqrt(covariances.getValue(i, i)));
-        }
-
-        return standardDeviations;
     }
 }
 

@@ -42,16 +42,14 @@ import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * <p>Implements a number of methods which take a fixed graph as input and use linear,
- * non-Gaussian methods to orient the edges in the graph. where the acronym stands for
- * linear, non-Gaussian Orientation with a Fixed graph Structure (LOFS). The options
- * for different types of scores are given in the enum Lofs.Score. The options for rules
- * to use to do the orientations are given in the enum, Lofs.Rule. Most of these are
- * taken from the literature and can be googled, though we should certainly give
- * this reference for several of them, to which we are indebted:</p>
+ * non-Gaussian methods to orient the edges in the graph. where the acronym stands for linear, non-Gaussian Orientation
+ * with a Fixed graph Structure (LOFS). The options for different types of scores are given in the enum Lofs.Score. The
+ * options for rules to use to do the orientations are given in the enum, Lofs.Rule. Most of these are taken from the
+ * literature and can be googled, though we should certainly give this reference for several of them, to which we are
+ * indebted:</p>
  *
  * <p>Hyvärinen, A., & Smith, S. M. (2013). Pairwise likelihood ratios for estimation
- * of non-Gaussian structural equation models. The Journal of Machine Learning Research,
- * 14(1), 111-152.</p>
+ * of non-Gaussian structural equation models. The Journal of Machine Learning Research, 14(1), 111-152.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -63,24 +61,9 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public class Lofs {
 
-    /**
-     * Gives a list of options for non-Gaussian transformations that can be used
-     * for some scores.
-     */
-    public enum Score {
-        andersonDarling, skew, kurtosis, fifthMoment, absoluteValue,
-        exp, expUnstandardized, expUnstandardizedInverted, other, logcosh, entropy
-    }
-
-    /**
-     * Give a list of options for rules for doing the non-Gaussian orientations.
-     */
-    public enum Rule {
-        IGCI, R1TimeLag, R1, R2, R3, Tanh, EB, Skew, SkewE, RSkew, RSkewE,
-        Patel, Patel25, Patel50, Patel75, Patel90, FastICA, RC
-    }
-
     private final Graph cpdag;
+    private final double SQRT = sqrt(2. * PI);
+    Matrix _data;
     private List<DataSet> dataSets;
     private List<Matrix> matrices;
     private double alpha = 1.1;
@@ -93,14 +76,14 @@ public class Lofs {
     private Knowledge knowledge = new Knowledge();
     private Rule rule = Rule.R1;
     private double selfLoopStrength;
+    private double[] col;
 
     /**
      * Constructor.
      *
      * @param graph    The graph to be oriented. Orientations for the graph will be overwritten.
-     * @param dataSets A list of datasets to use to do the orientation. This may be just one
-     *                 dataset. If more than one dataset are given, the data will be concatenated
-     *                 (pooled).
+     * @param dataSets A list of datasets to use to do the orientation. This may be just one dataset. If more than one
+     *                 dataset are given, the data will be concatenated (pooled).
      */
     public Lofs(Graph graph, List<DataSet> dataSets)
             throws IllegalArgumentException {
@@ -210,6 +193,7 @@ public class Lofs {
 
     /**
      * Sets the (LoFS) score to use.
+     *
      * @param score This score.
      * @see Score
      */
@@ -244,25 +228,23 @@ public class Lofs {
     }
 
     /**
-     * Sets whether orientation should be done in the stronger direction, where
-     * applicable.
+     * Sets whether orientation should be done in the stronger direction, where applicable.
      *
-     * @param orientStrongerDirection True if so.
+     * @param orientStrongerDirection True, if so.
      */
     public void setOrientStrongerDirection(boolean orientStrongerDirection) {
         this.orientStrongerDirection = orientStrongerDirection;
     }
 
+
     /**
-     * Sets for R2 whether cycles shoudld be oriented.
+     * Sets for R2 whether cycles should be oriented.
      *
-     * @param r2Orient2Cycles True if so.
+     * @param r2Orient2Cycles True, if so.
      */
     public void setR2Orient2Cycles(boolean r2Orient2Cycles) {
         this.r2Orient2Cycles = r2Orient2Cycles;
     }
-
-    //==========================PRIVATE=======================================//
 
     private List<Regression> getRegressions() {
         if (this.regressions == null) {
@@ -710,7 +692,6 @@ public class Lofs {
         }
     }
 
-
     private void ruleR3(Graph graph) {
         List<DataSet> standardized = DataUtils.standardizeData(this.dataSets);
         setDataSets(standardized);
@@ -771,8 +752,6 @@ public class Lofs {
             graph.addDirectedEdge(y, x);
         }
     }
-
-    private double[] col;
 
     // rowIndex is for the W matrix, not for the data.
     public double scoreRow(int rowIndex, Matrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
@@ -1504,7 +1483,6 @@ public class Lofs {
         throw new IllegalStateException("Unrecognized score: " + this.score);
     }
 
-    //=============================PRIVATE METHODS=========================//
 
     private double meanAbsolute(Node node, List<Node> parents) {
         double[] _f = residuals(node, parents, false);
@@ -1716,8 +1694,6 @@ public class Lofs {
         return graph;
     }
 
-    Matrix _data;
-
     private void resolveEdgeConditional(Graph graph, Node x, Node y) {
         if (this._data == null) {
             this._data = DataUtils.centerData(this.matrices.get(0));
@@ -1827,8 +1803,6 @@ public class Lofs {
         return kernel1(z);
     }
 
-    private final double SQRT = sqrt(2. * PI);
-
     // Gaussian
     public double kernel1(double z) {
         return exp(-(z * z) / 2.) / this.SQRT; //(sqrt(2. * PI));
@@ -1887,7 +1861,6 @@ public class Lofs {
         return sqrt(sum);
     }
 
-
     private double resolveOneEdgeMaxR3(double[] x, double[] y) {
         OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
         double[][] _x = new double[1][];
@@ -1937,6 +1910,23 @@ public class Lofs {
         double deltaY = yPlus - yMinus;
 
         return deltaX - deltaY;
+    }
+
+
+    /**
+     * Gives a list of options for non-Gaussian transformations that can be used for some scores.
+     */
+    public enum Score {
+        andersonDarling, skew, kurtosis, fifthMoment, absoluteValue,
+        exp, expUnstandardized, expUnstandardizedInverted, other, logcosh, entropy
+    }
+
+    /**
+     * Give a list of options for rules for doing the non-Gaussian orientations.
+     */
+    public enum Rule {
+        IGCI, R1TimeLag, R1, R2, R3, Tanh, EB, Skew, SkewE, RSkew, RSkewE,
+        Patel, Patel25, Patel50, Patel75, Patel90, FastICA, RC
     }
 
 }

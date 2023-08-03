@@ -50,18 +50,14 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
      * The SemPm being edited.
      */
     private final GeneralizedSemIm semIm;
-
+    /**
+     * The set of launched editors--or rather, the nodes for the launched editors.
+     */
+    private final Map<Object, EditorWindow> launchedEditors;
     /**
      * Workbench for the graphical editor.
      */
     private GraphWorkbench workbench;
-
-    /**
-     * The set of launched editors--or rather, the nodes for the launched
-     * editors.
-     */
-    private final Map<Object, EditorWindow> launchedEditors;
-
     private boolean enableEditing = true;
 
     /**

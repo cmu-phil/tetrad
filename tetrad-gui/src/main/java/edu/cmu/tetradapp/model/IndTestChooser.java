@@ -23,14 +23,15 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.ResolveSepsets;
-import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZGeneralizedInverse;
-import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZPercentIndependent;
-import edu.cmu.tetrad.search.work_in_progress.IndTestMultinomialLogisticRegression;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.ImagesScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.*;
+import edu.cmu.tetrad.search.utils.ResolveSepsets;
+import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZGeneralizedInverse;
+import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZPercentIndependent;
+import edu.cmu.tetrad.search.work_in_progress.IndTestMultinomialLogisticRegression;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IndTestType;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
@@ -44,14 +45,15 @@ import java.util.List;
  * @author josephramsey
  */
 final class IndTestChooser {
+    private boolean precomputeCovariances = true;
+
     public IndependenceTest getTest(Object dataSource, Parameters params) {
         return getTest(dataSource, params, IndTestType.DEFAULT);
     }
 
     /**
-     * @return an independence checker appropriate to the given data source.
-     * Also sets the Parameters on the params to an appropriate type object
-     * (using the existing one if it's of the right type).
+     * @return an independence checker appropriate to the given data source. Also sets the Parameters on the params to
+     * an appropriate type object (using the existing one if it's of the right type).
      */
     public IndependenceTest getTest(Object dataSource, Parameters params,
                                     IndTestType testType) {
@@ -98,7 +100,7 @@ final class IndTestChooser {
 
         if (dataSource instanceof Graph) {
             return getGraphTest((Graph) dataSource, params,
-                    IndTestType.D_SEPARATION);
+                    IndTestType.M_SEPARATION);
         }
         if (dataSource instanceof ICovarianceMatrix) {
             return getCovMatrixTest((ICovarianceMatrix) dataSource, params);
@@ -170,7 +172,7 @@ final class IndTestChooser {
         if (IndTestType.SEM_BIC == testType) {
             List<Score> scores = new ArrayList<>();
             for (DataSet dataSet : dataSets) {
-                SemBicScore _score = new SemBicScore(dataSet);
+                SemBicScore _score = new SemBicScore(dataSet, precomputeCovariances);
                 scores.add(_score);
             }
 
@@ -200,16 +202,20 @@ final class IndTestChooser {
 
     private IndependenceTest getGraphTest(Graph graph, Parameters params,
                                           IndTestType testType) {
-        if (IndTestType.D_SEPARATION != testType) {
-            params.set("indTestType", IndTestType.D_SEPARATION);
+        if (IndTestType.M_SEPARATION != testType) {
+            params.set("indTestType", IndTestType.M_SEPARATION);
         }
-        return new IndTestDSep(graph);
+        return new MsepTest(graph);
     }
 
     private IndependenceTest getCovMatrixTest(ICovarianceMatrix covMatrix,
                                               Parameters params) {
         return new IndTestFisherZ(covMatrix,
                 params.getDouble("alpha", 0.001));
+    }
+
+    public void setPrecomputeCovariances(boolean precomputeCovariances) {
+        this.precomputeCovariances = precomputeCovariances;
     }
 }
 

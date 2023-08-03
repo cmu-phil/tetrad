@@ -3,15 +3,15 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.TimeLagGraph;
 import edu.cmu.tetrad.study.gene.tetrad.gene.graph.LagGraphParams;
 import edu.cmu.tetrad.study.gene.tetrad.gene.graph.RandomActiveLagGraph;
 import edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor;
 import edu.cmu.tetrad.study.gene.tetradapp.model.BooleanGlassGeneIm;
 import edu.cmu.tetrad.study.gene.tetradapp.model.BooleanGlassGenePm;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.TimeLagGraph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -19,8 +19,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import java.util.*;
 
 /**
- * A version of the Lee and Hastic simulation which is guaranteed to generate a discrete
- * data set.
+ * A version of the Lee and Hastic simulation which is guaranteed to generate a discrete data set.
  *
  * @author josephramsey
  */
@@ -33,6 +32,38 @@ public class BooleanGlassSimulation implements Simulation {
 
     public BooleanGlassSimulation(RandomGraph graph) {
         this.randomGraph = graph;
+    }
+
+    public static void topToBottomLayout(TimeLagGraph graph) {
+
+        final int xStart = 65;
+        final int yStart = 50;
+        final int xSpace = 100;
+        final int ySpace = 100;
+        List<Node> lag0Nodes = graph.getLag0Nodes();
+
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
+
+        int x = xStart - xSpace;
+
+        for (Node node : lag0Nodes) {
+            x += xSpace;
+            int y = yStart - ySpace;
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
+
+            for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
+                y += ySpace;
+                Node _node = graph.getNode(id.getName(), lag);
+
+                if (_node == null) {
+                    System.out.println("Couldn't find " + null);
+                    continue;
+                }
+
+                _node.setCenterX(x);
+                _node.setCenterY(y);
+            }
+        }
     }
 
     @Override
@@ -90,38 +121,6 @@ public class BooleanGlassSimulation implements Simulation {
         BooleanGlassSimulation.topToBottomLayout(graph);
 
         this.graph = graph;
-    }
-
-    public static void topToBottomLayout(TimeLagGraph graph) {
-
-        final int xStart = 65;
-        final int yStart = 50;
-        final int xSpace = 100;
-        final int ySpace = 100;
-        List<Node> lag0Nodes = graph.getLag0Nodes();
-
-        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
-
-        int x = xStart - xSpace;
-
-        for (Node node : lag0Nodes) {
-            x += xSpace;
-            int y = yStart - ySpace;
-            TimeLagGraph.NodeId id = graph.getNodeId(node);
-
-            for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
-                y += ySpace;
-                Node _node = graph.getNode(id.getName(), lag);
-
-                if (_node == null) {
-                    System.out.println("Couldn't find " + null);
-                    continue;
-                }
-
-                _node.setCenterX(x);
-                _node.setCenterY(y);
-            }
-        }
     }
 
     @Override

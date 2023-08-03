@@ -44,6 +44,11 @@ public final class AlgorithmModels {
         refreshModels();
     }
 
+    public static AlgorithmModels getInstance() {
+        AlgorithmModels.INSTANCE.refreshModels();   // if we had a subscriber CPDAG for app settings would not have to waste time doing this every time!
+        return AlgorithmModels.INSTANCE;
+    }
+
     private void refreshModels() {
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
         List<AnnotatedClass<Algorithm>> list = Tetrad.enableExperimental
@@ -68,11 +73,6 @@ public final class AlgorithmModels {
         // make it unmodifiable
         map.forEach((k, v) -> map.put(k, Collections.unmodifiableList(v)));
         this.modelMap = Collections.unmodifiableMap(map);
-    }
-
-    public static AlgorithmModels getInstance() {
-        AlgorithmModels.INSTANCE.refreshModels();   // if we had a subscriber CPDAG for app settings would not have to waste time doing this every time!
-        return AlgorithmModels.INSTANCE;
     }
 
     private List<AlgorithmModel> filterInclusivelyByAllOrSpecificDataType(List<AlgorithmModel> algorithmModels, DataType dataType, boolean multiDataSetAlgorithm) {

@@ -15,7 +15,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -72,26 +72,33 @@ public class PcMb implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();
-            this.bootstrapGraphs = search.getGraphs();
+            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             return graph;
         }
     }
 
     @NotNull
     private List<Node> targets(IndependenceTest test, String targetString) {
-        String[] tokens = targetString.split(",");
+        String[] _targets;
+
+        if (targetString.contains(",")) {
+            _targets = targetString.split(",");
+        } else {
+            _targets = targetString.split(" ");
+        }
+
         List<Node> targets = new ArrayList<>();
 
-        for (String t : tokens) {
-            String name = t.trim();
-            targets.add(test.getVariable(name));
+        for (String _target : _targets) {
+            targets.add(test.getVariable(_target));
         }
+
         return targets;
     }
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphUtils.markovBlanketDag(targets.get(0), new EdgeListGraph(graph));
+        return GraphUtils.markovBlanketSubgraph(targets.get(0), new EdgeListGraph(graph));
     }
 
     @Override
@@ -126,13 +133,13 @@ public class PcMb implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
-        this.test = test;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return this.test;
     }
 
     @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 
     @Override

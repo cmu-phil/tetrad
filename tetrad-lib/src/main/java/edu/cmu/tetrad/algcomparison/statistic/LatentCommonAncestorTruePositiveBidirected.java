@@ -14,6 +14,19 @@ import java.util.List;
 public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
     static final long serialVersionUID = 23L;
 
+    public static boolean existsLatentCommonAncestor(Graph trueGraph, Edge edge) {
+        List<Node> nodes = trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode1()));
+        nodes.retainAll(trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode2())));
+
+        for (Node c : nodes) {
+            if (c.getNodeType() == NodeType.LATENT) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     public String getAbbreviation() {
         return "#X<->Y,X<~~L~~>Y";
@@ -35,19 +48,6 @@ public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
         }
 
         return tp;
-    }
-
-    public static boolean existsLatentCommonAncestor(Graph trueGraph, Edge edge) {
-        List<Node> nodes = trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode1()));
-        nodes.retainAll(trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode2())));
-
-        for (Node c : nodes) {
-            if (c.getNodeType() == NodeType.LATENT) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     @Override

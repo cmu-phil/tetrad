@@ -21,10 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.CompareTwoGraphs;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.MisclassificationUtils;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
@@ -38,8 +38,8 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 
 /**
- * Compares a target workbench with a reference workbench by counting errors of
- * omission and commission.  (for edge presence only, not orientation).
+ * Compares a target workbench with a reference workbench by counting errors of omission and commission.  (for edge
+ * presence only, not orientation).
  *
  * @author josephramsey
  * @author Erin Korber (added remove latents functionality July 2004)
@@ -56,8 +56,8 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
     //=============================CONSTRUCTORS==========================//
 
     /**
-     * Compares the results of a PC to a reference workbench by counting errors
-     * of omission and commission. The counts can be retrieved using the methods
+     * Compares the results of a PC to a reference workbench by counting errors of omission and commission. The counts
+     * can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
     public Misclassifications(GraphSource model1, GraphSource model2, Parameters params) {
@@ -93,6 +93,24 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
     //==============================PUBLIC METHODS========================//
 
+    public static Graph getComparisonGraph(Graph graph, Parameters params) {
+        String type = params.getString("graphComparisonType");
+
+        if ("DAG".equals(type)) {
+            params.set("graphComparisonType", "DAG");
+            return new EdgeListGraph(graph);
+        } else if ("CPDAG".equals(type)) {
+            params.set("graphComparisonType", "CPDAG");
+            return GraphSearchUtils.cpdagForDag(graph);
+        } else if ("PAG".equals(type)) {
+            params.set("graphComparisonType", "PAG");
+            return dagToPag(graph);
+        } else {
+            params.set("graphComparisonType", "DAG");
+            return new EdgeListGraph(graph);
+        }
+    }
+
     public DataSet getDataSet() {
         return (DataSet) this.params.get("dataSet", null);
     }
@@ -112,26 +130,18 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
         Graph comparisonGraph = getComparisonGraph(referenceGraph, params);
 
+        String table = CompareTwoGraphs.getMisclassificationTable(comparisonGraph, targetGraph);
         return "True graph from " + refName + "\nTarget graph from " + targetName +
-                "\n\n\n" +
-                "Edge Misclassification Table:" +
-                "\n" +
-                MisclassificationUtils.edgeMisclassifications(targetGraph, comparisonGraph) +
-                "\n\n" +
-                "Endpoint Misclassification Table:" +
-                "\n\n" +
-                MisclassificationUtils.endpointMisclassification(targetGraph, comparisonGraph);
+                "\n\n\n" + table;
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -140,24 +150,6 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
     public Parameters getParams() {
         return this.params;
-    }
-
-    public static Graph getComparisonGraph(Graph graph, Parameters params) {
-        String type = params.getString("graphComparisonType");
-
-        if ("DAG".equals(type)) {
-            params.set("graphComparisonType", "DAG");
-            return new EdgeListGraph(graph);
-        } else if ("CPDAG".equals(type)) {
-            params.set("graphComparisonType", "CPDAG");
-            return GraphSearchUtils.cpdagForDag(graph);
-        } else if ("PAG".equals(type)) {
-            params.set("graphComparisonType", "PAG");
-            return dagToPag(graph);
-        } else {
-            params.set("graphComparisonType", "DAG");
-            return new EdgeListGraph(graph);
-        }
     }
 
     public Graph getReferenceGraph() {

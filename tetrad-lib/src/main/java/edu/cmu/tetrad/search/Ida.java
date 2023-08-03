@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -22,12 +23,11 @@ import static org.apache.commons.math3.util.FastMath.min;
  * <p>Implements the IDA algorithm. The reference is here:</p>
  *
  * <p>Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
- * "Estimating high-dimensional intervention effects from observational data."
- * The Annals of Statistics 37.6A (2009): 3133-3164.</p>
+ * "Estimating high-dimensional intervention effects from observational data." The Annals of Statistics 37.6A (2009):
+ * 3133-3164.</p>
  *
  * <p>The IDA algorithm seeks to give a list of possible parents
- * of a given variable Y and their corresponding lower-bounded effects on
- * Y.</p>
+ * of a given variable Y and their corresponding lower-bounded effects on Y.</p>
  *
  * @author josephramsey
  * @see Cstar
@@ -44,8 +44,7 @@ public class Ida {
      * Constructor.
      *
      * @param dataSet        The dataset being searched over.
-     * @param cpdag          The CPDAG (found, e.g., by running PC, or some other CPDAG-
-     *                       producing algorithm.
+     * @param cpdag          The CPDAG (found, e.g., by running PC, or some other CPDAG producing algorithm.
      * @param possibleCauses The possible causes to be considered.
      */
     public Ida(DataSet dataSet, Graph cpdag, List<Node> possibleCauses) {
@@ -67,8 +66,8 @@ public class Ida {
      * Returns the minimum effects of X on Y for X in V \ {Y}, sorted downward by minimum effect
      *
      * @param y The child variable.
-     * @return Two sorted lists, one of possible parents, the other of corresponding minimum effects,
-     * sorted downward by minimum effect size.
+     * @return Two sorted lists, one of possible parents, the other of corresponding minimum effects, sorted downward by
+     * minimum effect size.
      * @see Ida
      */
     public NodeEffects getSortedMinEffects(Node y) {
@@ -89,50 +88,7 @@ public class Ida {
     }
 
     /**
-     * Gives a list of nodes (parents or children) and corresponding minimum effects
-     * for the IDA algorithm.
-     *
-     * @author josephramsey
-     */
-    public static class NodeEffects {
-        private List<Node> nodes;
-        private LinkedList<Double> effects;
-
-        NodeEffects(List<Node> nodes, LinkedList<Double> effects) {
-            this.setNodes(nodes);
-            this.setEffects(effects);
-        }
-
-        public List<Node> getNodes() {
-            return this.nodes;
-        }
-
-        public void setNodes(List<Node> nodes) {
-            this.nodes = nodes;
-        }
-
-        public LinkedList<Double> getEffects() {
-            return this.effects;
-        }
-
-        public void setEffects(LinkedList<Double> effects) {
-            this.effects = effects;
-        }
-
-        public String toString() {
-            StringBuilder b = new StringBuilder();
-
-            for (int i = 0; i < this.nodes.size(); i++) {
-                b.append(this.nodes.get(i)).append("=").append(this.effects.get(i)).append(" ");
-            }
-
-            return b.toString();
-        }
-    }
-
-    /**
-     * Calculates the true effect of (x, y) given the true DAG (which
-     * must be provided).
+     * Calculates the true effect of (x, y) given the true DAG (which must be provided).
      *
      * @param trueDag The true DAG.
      * @return The true effect of (x, y).
@@ -179,13 +135,12 @@ public class Ida {
     }
 
     /**
-     * Returns a list of the possible effects of X on Y (with different possible parents from the pattern),
-     * sorted low to high in absolute value.
+     * Returns a list of the possible effects of X on Y (with different possible parents from the pattern), sorted low
+     * to high in absolute value.
      * <p>
-     * 1. First, estimate a pattern P from the data.
-     * 2. Then, consider all combinations C of siblings Z of X (Z--X) that include all the parents of X in P.
-     * 3. For each such C, regress Y onto {X} U C and record the coefficient beta for X in the regression.
-     * 4. Report the list of such betas, sorted low to high.
+     * 1. First, estimate a pattern P from the data. 2. Then, consider all combinations C of siblings Z of X (Z--X) that
+     * include all the parents of X in P. 3. For each such C, regress Y onto {X} U C and record the coefficient beta for
+     * X in the regression. 4. Report the list of such betas, sorted low to high.
      *
      * @param x The first variable.
      * @param y The second variable
@@ -195,7 +150,7 @@ public class Ida {
         List<Node> parents = this.pattern.getParents(x);
         List<Node> children = this.pattern.getChildren(x);
 
-        List<Node> siblings = this.pattern.getAdjacentNodes(x);
+        List<Node> siblings = new ArrayList<>(this.pattern.getAdjacentNodes(x));
         siblings.removeAll(parents);
         siblings.removeAll(children);
 
@@ -257,6 +212,8 @@ public class Ida {
         SortedMap<Node, Double> minEffects = new TreeMap<>();
 
         for (Node x : this.possibleCauses) {
+            if (!(this.pattern.containsNode(x) && this.pattern.containsNode(y))) continue;
+
             LinkedList<Double> effects = getEffects(x, y);
             minEffects.put(x, effects.getFirst());
         }
@@ -273,12 +230,60 @@ public class Ida {
 
             Matrix rX = this.allCovariances.getSelection(xIndices, xIndices);
             Matrix rY = this.allCovariances.getSelection(xIndices, new int[]{yIndex});
+            Matrix bStar = null;
 
-            Matrix bStar = rX.inverse().times(rY);
+            try {
+                bStar = rX.inverse().times(rY);
+            } catch (SingularMatrixException e) {
+                System.out.println("Singularity encountered when regressing " +
+                        LogUtilsSearch.getScoreFact(child, regressors));
+            }
 
-            return bStar.get(0, 0);
+            return bStar != null ? bStar.get(0, 0) : 0.0;
         } catch (SingularMatrixException e) {
-            return 0.0;
+            throw new RuntimeException("Singularity encountered when regressing " +
+                    LogUtilsSearch.getScoreFact(child, regressors));
+        }
+    }
+
+    /**
+     * Gives a list of nodes (parents or children) and corresponding minimum effects for the IDA algorithm.
+     *
+     * @author josephramsey
+     */
+    public static class NodeEffects {
+        private List<Node> nodes;
+        private LinkedList<Double> effects;
+
+        NodeEffects(List<Node> nodes, LinkedList<Double> effects) {
+            this.setNodes(nodes);
+            this.setEffects(effects);
+        }
+
+        public List<Node> getNodes() {
+            return this.nodes;
+        }
+
+        public void setNodes(List<Node> nodes) {
+            this.nodes = nodes;
+        }
+
+        public LinkedList<Double> getEffects() {
+            return this.effects;
+        }
+
+        public void setEffects(LinkedList<Double> effects) {
+            this.effects = effects;
+        }
+
+        public String toString() {
+            StringBuilder b = new StringBuilder();
+
+            for (int i = 0; i < this.nodes.size(); i++) {
+                b.append(this.nodes.get(i)).append("=").append(this.effects.get(i)).append(" ");
+            }
+
+            return b.toString();
         }
     }
 }

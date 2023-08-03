@@ -23,11 +23,10 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
-import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
@@ -46,7 +45,7 @@ public final class MaxP {
     private Knowledge knowledge = new Knowledge();
     private boolean useHeuristic;
     private int maxPathLength = 3;
-    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
+    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
 
     /**
      * Constructor.
@@ -58,44 +57,14 @@ public final class MaxP {
         this.independenceTest = test;
     }
 
-    //======================================== PUBLIC METHODS ====================================//
 
     /**
      * Adds colliders to the given graph using the max P rule.
      *
      * @param graph The graph to orient.
-     * @see PcMax
      */
     public synchronized void orient(Graph graph) {
         addColliders(graph);
-    }
-
-    /**
-     * Orient a single unshielded triple, x*-*y*-*z, in a graph.
-     *
-     * @param conflictRule The conflict rule to use.
-     * @param graph        The graph to orient.
-     * @see PcCommon.ConflictRule
-     */
-    public static void orientCollider(Node x, Node y, Node z, PcCommon.ConflictRule conflictRule, Graph graph) {
-        if (conflictRule == PcCommon.ConflictRule.PRIORITY) {
-            if (!(graph.getEndpoint(y, x) == Endpoint.ARROW || graph.getEndpoint(y, z) == Endpoint.ARROW)) {
-                graph.removeEdge(x, y);
-                graph.removeEdge(z, y);
-                graph.addDirectedEdge(x, y);
-                graph.addDirectedEdge(z, y);
-            }
-        } else if (conflictRule == PcCommon.ConflictRule.BIDIRECTED) {
-            graph.setEndpoint(x, y, Endpoint.ARROW);
-            graph.setEndpoint(z, y, Endpoint.ARROW);
-        } else if (conflictRule == PcCommon.ConflictRule.OVERWRITE) {
-            graph.removeEdge(x, y);
-            graph.removeEdge(z, y);
-            graph.addDirectedEdge(x, y);
-            graph.addDirectedEdge(z, y);
-        }
-
-        TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(x, y, z));
     }
 
     /**
@@ -108,7 +77,7 @@ public final class MaxP {
     /**
      * Sets whether the max P heuristic should be used.
      *
-     * @param useHeuristic True if so.
+     * @param useHeuristic True, if so.
      */
     public void setUseHeuristic(boolean useHeuristic) {
         this.useHeuristic = useHeuristic;
@@ -170,7 +139,7 @@ public final class MaxP {
     }
 
     private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+        List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
         if (adjacentNodes.size() < 2) {
             return;
@@ -205,8 +174,8 @@ public final class MaxP {
     }
 
     private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) {
-        List<Node> adja = graph.getAdjacentNodes(a);
-        List<Node> adjc = graph.getAdjacentNodes(c);
+        List<Node> adja = new ArrayList<>(graph.getAdjacentNodes(a));
+        List<Node> adjc = new ArrayList<>(graph.getAdjacentNodes(c));
         adja.remove(c);
         adjc.remove(a);
 
@@ -216,7 +185,7 @@ public final class MaxP {
         }
 
         double p = 0;
-        List<Node> S = null;
+        Set<Node> S = null;
 
         SublistGenerator cg1 = new SublistGenerator(adja.size(), this.depth);
         int[] comb2;
@@ -226,7 +195,7 @@ public final class MaxP {
                 break;
             }
 
-            List<Node> s = GraphUtils.asList(comb2, adja);
+            Set<Node> s = GraphUtils.asSet(comb2, adja);
 
             IndependenceResult result = this.independenceTest.checkIndependence(a, c, s);
             double _p = result.getPValue();
@@ -245,7 +214,7 @@ public final class MaxP {
                 break;
             }
 
-            List<Node> s = GraphUtils.asList(comb3, adjc);
+            Set<Node> s = GraphUtils.asSet(comb3, adjc);
 
             IndependenceResult result = this.independenceTest.checkIndependence(a, c, s);
             double _p = result.getPValue();
@@ -270,10 +239,10 @@ public final class MaxP {
             return;
         }
 
-        this.independenceTest.checkIndependence(a, c);
-        double s1 = this.independenceTest.getScore();
-        this.independenceTest.checkIndependence(a, c, b);
-        double s2 = this.independenceTest.getScore();
+        IndependenceResult result1 = this.independenceTest.checkIndependence(a, c);
+        double s1 = result1.getScore();
+        IndependenceResult result2 = this.independenceTest.checkIndependence(a, c, b);
+        double s2 = result2.getScore();
 
         boolean mycollider2 = s2 > s1;
 
@@ -294,7 +263,7 @@ public final class MaxP {
     private void orientCollider(Graph graph, Node a, Node b, Node c, PcCommon.ConflictRule conflictRule) {
         if (this.knowledge.isForbidden(a.getName(), b.getName())) return;
         if (this.knowledge.isForbidden(c.getName(), b.getName())) return;
-        MaxP.orientCollider(a, b, c, conflictRule, graph);
+        PcCommon.orientCollider(a, b, c, conflictRule, graph);
     }
 
     // Returns true if there is an undirected path from x to either y or z within the given number of steps.

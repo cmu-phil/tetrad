@@ -50,10 +50,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Wraps a SessionNodeWrapper as a DisplayNode for presentation in a
- * SessionWorkbench. Connecting these nodes using SessionEdges results in
- * parents being added to appropriate SessionNodes underlying. Double clicking
- * these nodes launches corresponding model editors.
+ * Wraps a SessionNodeWrapper as a DisplayNode for presentation in a SessionWorkbench. Connecting these nodes using
+ * SessionEdges results in parents being added to appropriate SessionNodes underlying. Double clicking these nodes
+ * launches corresponding model editors.
  *
  * @author josephramsey
  * @see SessionEditorWorkbench
@@ -64,29 +63,24 @@ import java.util.Set;
 public final class SessionEditorNode extends DisplayNode {
 
     private static final long serialVersionUID = -6145843764762585351L;
-
-    /**
-     * If an editor has been opened, this is a reference to that editor. Used to
-     * close the editor if necessary.
-     */
-    private EditorWindow spawnedEditor;
-
     /**
      * The simulation edu.cmu.tetrad.study (used to edit the repetition values).
      */
     private final SimulationStudy simulationStudy;
+    /**
+     * The configuration for this editor node.
+     */
+    private final SessionNodeConfig config;
+    JPopupMenu popup;
+    /**
+     * If an editor has been opened, this is a reference to that editor. Used to close the editor if necessary.
+     */
+    private EditorWindow spawnedEditor;
 
     /**
      * A reference to the sessionWrapper, the model associated with this node.
      */
     private SessionWrapper sessionWrapper;
-
-    /**
-     * The configuration for this editor node.
-     */
-    private final SessionNodeConfig config;
-
-    //===========================CONSTRUCTORS==============================//
 
     /**
      * Wraps the given SessionNodeWrapper as a SessionEditorNode.
@@ -116,7 +110,7 @@ public final class SessionEditorNode extends DisplayNode {
             this.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    if (SwingUtilities.isRightMouseButton(e)) {
+                    if (SwingUtilities.isRightMouseButton(e) || e.isControlDown()) {
                         ToolTipManager toolTipManager
                                 = ToolTipManager.sharedInstance();
                         toolTipManager.setInitialDelay(750);
@@ -136,7 +130,58 @@ public final class SessionEditorNode extends DisplayNode {
         }
     }
 
-    //===========================PUBLIC METHODS============================//
+    /**
+     * Update the model classes of the given node to the latest available model classes, of such exists. Otherwise,
+     * leave the model classes of the node unchanged.
+     */
+    private static void loadModelClassesFromConfig(SessionNode sessionNode) {
+        String nodeName = sessionNode.getBoxType();
+
+        if (nodeName != null) {
+            String baseName = SessionEditorNode.extractBase(nodeName);
+            Class[] newModelClasses = SessionEditorNode.modelClasses(baseName);
+
+            if (newModelClasses != null) {
+                sessionNode.setModelClasses(newModelClasses);
+            } else {
+                throw new RuntimeException("Model classes for this session "
+                        + "node were not set in the configuration.");
+            }
+        }
+    }
+
+    /**
+     * @return the substring of <code>name</code> up to but not including a contiguous string of digits at the end. For
+     * example, given "Graph123"
+     */
+    private static String extractBase(String name) {
+        if (name == null) {
+            throw new NullPointerException("Name must not be null.");
+        }
+
+        for (int i = name.length() - 1; i >= 0; i--) {
+            if (!Character.isDigit(name.charAt(i))) {
+                return name.substring(0, i + 1);
+            }
+        }
+
+        return "Node";
+    }
+
+    /**
+     * @return the model classes associated with the given button type.
+     * @throws NullPointerException if no classes are stored for the given type.
+     */
+    private static Class[] modelClasses(String boxType) {
+        TetradApplicationConfig config = TetradApplicationConfig.getInstance();
+        SessionNodeConfig nodeConfig = config.getSessionNodeConfig(boxType);
+        if (nodeConfig == null) {
+            throw new NullPointerException("THere is no configuration for " + boxType);
+        }
+
+        return nodeConfig.getModels();
+    }
+
     public void adjustToModel() {
         String acronym = getAcronym();
 
@@ -198,14 +243,16 @@ public final class SessionEditorNode extends DisplayNode {
     @Override
     public void doDoubleClickAction(Graph sessionWrapper) {
         this.sessionWrapper = (SessionWrapper) sessionWrapper;
-        Window owner = (Window) getTopLevelAncestor();
 
-        new WatchedProcess(owner) {
+        class MyWatchedProcess extends WatchedProcess {
             public void watch() {
                 TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
                 launchEditorVisit();
             }
-        };
+        }
+        ;
+
+        new MyWatchedProcess();
     }
 
     private void launchEditorVisit() {
@@ -313,7 +360,7 @@ public final class SessionEditorNode extends DisplayNode {
         sessionEditorNode.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (SwingUtilities.isRightMouseButton(e)) {
+                if (SwingUtilities.isRightMouseButton(e) || e.isControlDown()) {
                     ToolTipManager toolTipManager
                             = ToolTipManager.sharedInstance();
                     toolTipManager.setInitialDelay(750);
@@ -387,8 +434,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * Adds a property change listener that listends for "changeNodeLabel"
-     * events.
+     * Adds a property change listener that listends for "changeNodeLabel" events.
      */
     private void addEditorListener(JPanel editor) {
         editor.addPropertyChangeListener(evt -> {
@@ -484,8 +530,6 @@ public final class SessionEditorNode extends DisplayNode {
 
         return popup;
     }
-
-    JPopupMenu popup;
 
     /**
      * Creates the popup for the node.
@@ -734,8 +778,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * Shows a dialog that allows the user to change the settings for the box's
-     * model logger.
+     * Shows a dialog that allows the user to change the settings for the box's model logger.
      */
     private void showLogConfig(TetradLoggerConfig config) {
         List<TetradLoggerConfig.Event> events = config.getSupportedEvents();
@@ -758,9 +801,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     private void executeSessionNode(SessionNode sessionNode) {
-        Window owner = (Window) getTopLevelAncestor();
-
-        new WatchedProcess(owner) {
+        class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
                 final Class c = SessionEditorWorkbench.class;
@@ -773,13 +814,14 @@ public final class SessionEditorNode extends DisplayNode {
 
                 workbench.getSimulationStudy().execute(sessionNode, true);
             }
-        };
+        }
+        ;
+
+        new MyWatchedProcess();
     }
 
     private void createDescendantModels() {
-        Window owner = (Window) getTopLevelAncestor();
-
-        new WatchedProcess(owner) {
+        class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
                 final Class clazz = SessionEditorWorkbench.class;
@@ -793,7 +835,10 @@ public final class SessionEditorNode extends DisplayNode {
                             getSessionNode(), true);
                 }
             }
-        };
+        }
+        ;
+
+        new MyWatchedProcess();
     }
 
     /**
@@ -851,11 +896,10 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * Creates a model in the wrapped SessionNode, given the SessionNode's
-     * parent models.
+     * Creates a model in the wrapped SessionNode, given the SessionNode's parent models.
      *
-     * @throws IllegalStateException if the model cannot be created. The reason
-     *                               why the model cannot be created is in the message of the exception.
+     * @throws IllegalStateException if the model cannot be created. The reason why the model cannot be created is in
+     *                               the message of the exception.
      */
     public boolean createModel(boolean simulation) throws Exception {
         if (getSessionNode().getModel() != null) {
@@ -988,27 +1032,6 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * Update the model classes of the given node to the latest available model
-     * classes, of such exists. Otherwise, leave the model classes of the node
-     * unchanged.
-     */
-    private static void loadModelClassesFromConfig(SessionNode sessionNode) {
-        String nodeName = sessionNode.getBoxType();
-
-        if (nodeName != null) {
-            String baseName = SessionEditorNode.extractBase(nodeName);
-            Class[] newModelClasses = SessionEditorNode.modelClasses(baseName);
-
-            if (newModelClasses != null) {
-                sessionNode.setModelClasses(newModelClasses);
-            } else {
-                throw new RuntimeException("Model classes for this session "
-                        + "node were not set in the configuration.");
-            }
-        }
-    }
-
-    /**
      * Destroys the model for the wrapped SessionNode.
      */
     private void destroyModel() {
@@ -1017,8 +1040,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * Tries to edit the parameters, returns true if successfully otherwise
-     * false is returned
+     * Tries to edit the parameters, returns true if successfully otherwise false is returned
      */
     public boolean editParameters(Class modelClass, Parameters params,
                                   Object[] parentModels) {
@@ -1094,38 +1116,6 @@ public final class SessionEditorNode extends DisplayNode {
                 sessionNode.putParam(clazz, new Parameters(sessionNode.getParameters()));
             }
         }
-    }
-
-    /**
-     * @return the substring of <code>name</code> up to but not including a
-     * contiguous string of digits at the end. For example, given "Graph123"
-     */
-    private static String extractBase(String name) {
-        if (name == null) {
-            throw new NullPointerException("Name must not be null.");
-        }
-
-        for (int i = name.length() - 1; i >= 0; i--) {
-            if (!Character.isDigit(name.charAt(i))) {
-                return name.substring(0, i + 1);
-            }
-        }
-
-        return "Node";
-    }
-
-    /**
-     * @return the model classes associated with the given button type.
-     * @throws NullPointerException if no classes are stored for the given type.
-     */
-    private static Class[] modelClasses(String boxType) {
-        TetradApplicationConfig config = TetradApplicationConfig.getInstance();
-        SessionNodeConfig nodeConfig = config.getSessionNodeConfig(boxType);
-        if (nodeConfig == null) {
-            throw new NullPointerException("THere is no configuration for " + boxType);
-        }
-
-        return nodeConfig.getModels();
     }
 
     private SimulationStudy getSimulationStudy() {

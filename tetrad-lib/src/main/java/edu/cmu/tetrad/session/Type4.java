@@ -32,15 +32,13 @@ public class Type4 implements SessionModel, TetradSerializableExcluded {
     static final long serialVersionUID = 23L;
 
     /**
-     * It should be possible to construct a Type4-model with a Type1-node as
-     * parent.
+     * It should be possible to construct a Type4-model with a Type1-node as parent.
      */
     public Type4(Type1 model1, Parameters parameters) {
     }
 
     /**
-     * It should be possible to construct a Type4-model with both Type2 and
-     * Type2-nodes as parents.
+     * It should be possible to construct a Type4-model with both Type2 and Type2-nodes as parents.
      */
     public Type4(Type2 model1, Type3 model2) {
     }
@@ -54,17 +52,17 @@ public class Type4 implements SessionModel, TetradSerializableExcluded {
     }
 
     /**
-     * Sets the name of the session model.
-     */
-    public void setName(String name) {
-
-    }
-
-    /**
      * @return the name of the session model.
      */
     public String getName() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    /**
+     * Sets the name of the session model.
+     */
+    public void setName(String name) {
+
     }
 }
 

@@ -35,7 +35,8 @@ import java.util.stream.Collectors;
  * Nov 8, 2019 2:22:34 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
- * @see <a href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
+ * @see <a
+ * href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
  */
 public class JunctionTreeAlgorithm implements TetradSerializable {
     static final long serialVersionUID = 23L;
@@ -191,8 +192,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     }
 
     /**
-     * Put the nodes from the set to an array in the order they appear in the
-     * graph.
+     * Put the nodes from the set to an array in the order they appear in the graph.
      *
      * @param nodes set of nodes
      * @return nodes in the order they appear in the graph
@@ -413,9 +413,8 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     }
 
     /**
-     * Get the joint probability of the nodes given their parents. Example:
-     * given x &lt;-- z --&gt; y, we can find P(x,y|z). Another example: given x
-     * &lt;-- z --&gt; y &lt;-- w, we can find P(x,y|z,w)
+     * Get the joint probability of the nodes given their parents. Example: given x &lt;-- z --&gt; y, we can find
+     * P(x,y|z). Another example: given x &lt;-- z --&gt; y &lt;-- w, we can find P(x,y|z,w)
      */
     public double getConditionalProbabilities(int[] nodes, int[] values, int[] parents, int[] parentValues) {
         validate(nodes, values);
@@ -474,9 +473,8 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     }
 
     /**
-     * Get the joint probability of all nodes (variables). Given the nodes are
-     * X1, X2,...,Xn, then nodeValues[0] = value(X1), nodeValues[1] =
-     * value(X2),...,nodeValues[n-1] = value(Xn).
+     * Get the joint probability of all nodes (variables). Given the nodes are X1, X2,...,Xn, then nodeValues[0] =
+     * value(X1), nodeValues[1] = value(X2),...,nodeValues[n-1] = value(Xn).
      *
      * @param nodeValues an array of values for each node
      */
@@ -572,8 +570,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         /**
          * Marginalize TreeNode node over all nodes outside the separator set
          *
-         * @param node one of the neighboring junction tree nodes of this
-         *             separator
+         * @param node one of the neighboring junction tree nodes of this separator
          */
         public void update(TreeNode node, double[] potentials) {
             clear(potentials);
@@ -611,17 +608,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         private final double[] prob;
 
         private final double[][] margProb;
-
-        private TreeSeparator parentSeparator;
-
         private final double[] potentials;
-
         private final List<TreeNode> children;
-
         private final int cardinality;
-
         private final Set<Node> clique;
         private final Node[] nodes;
+        private TreeSeparator parentSeparator;
 
         public TreeNode(Set<Node> clique, Set<Node> finishedCalculated) {
             this.clique = clique;
@@ -721,8 +713,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
 
         /**
-         * Calculate marginal probabilities for the individual nodes in the
-         * clique.
+         * Calculate marginal probabilities for the individual nodes in the clique.
          */
         private void calculateMarginalProbabilities() {
             // reset

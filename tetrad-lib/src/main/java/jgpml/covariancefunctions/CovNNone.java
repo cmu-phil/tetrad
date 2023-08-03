@@ -31,17 +31,15 @@ import Jama.Matrix;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Neural network covariance function with a single parameter for the distance
- * measure. The covariance function is parameterized as:
+ * Neural network covariance function with a single parameter for the distance measure. The covariance function is
+ * parameterized as:
  * <p>
  * k(x^p,x^q) = sf2 * asin(x^p'*P*x^q / sqrt[(1+x^p'*P*x^p)*(1+x^q'*P*x^q)])
  * <p>
- * where the x^p and x^q vectors on the right hand side have an added extra bias
- * entry with unit value. P is ell^-2 times the unit matrix and sf2 controls the
- * signal variance. The hyperparameters are:
+ * where the x^p and x^q vectors on the right hand side have an added extra bias entry with unit value. P is ell^-2
+ * times the unit matrix and sf2 controls the signal variance. The hyperparameters are:
  * <p>
- * [ log(ell)
- * log(sqrt(sf2) ]
+ * [ log(ell) log(sqrt(sf2) ]
  */
 
 public class CovNNone implements CovarianceFunction {
@@ -52,6 +50,24 @@ public class CovNNone implements CovarianceFunction {
     public CovNNone() {
     }
 
+    public static void main(String[] args) {
+
+        CovNNone cf = new CovNNone();
+
+        Matrix X = Matrix.identity(6, 6);
+        Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}});
+
+        Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
+
+//            System.out.println("")
+//
+//        long start =  edu.cmu.tetrad.util.Timer.currentThreadCpuTimeMilliseconds()
+
+        Matrix d = cf.computeDerivatives(logtheta, X, 1);
+
+        d.print(d.getColumnDimension(), 8);
+
+    }
 
     /**
      * Returns the number of hyperparameters of this<code>CovarianceFunction</code>
@@ -196,8 +212,8 @@ public class CovNNone implements CovarianceFunction {
     }
 
     /**
-     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect
-     * to the hyperparameter with index <code>idx</code>
+     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
+     * <code>idx</code>
      *
      * @param loghyper hyperparameters
      * @param X        input dataset
@@ -291,24 +307,5 @@ public class CovNNone implements CovarianceFunction {
 
 
         return A;
-    }
-
-    public static void main(String[] args) {
-
-        CovNNone cf = new CovNNone();
-
-        Matrix X = Matrix.identity(6, 6);
-        Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}});
-
-        Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
-
-//            System.out.println("")
-//
-//        long start =  edu.cmu.tetrad.util.Timer.currentThreadCpuTimeMilliseconds()
-
-        Matrix d = cf.computeDerivatives(logtheta, X, 1);
-
-        d.print(d.getColumnDimension(), 8);
-
     }
 }

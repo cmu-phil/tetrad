@@ -43,6 +43,32 @@ public class LinearSineSimulation implements Simulation {
         this.randomGraph = graph;
     }
 
+    private static Graph makeMixedGraph(Graph g, Map<String, Integer> m) {
+        List<Node> nodes = g.getNodes();
+        for (int i = 0; i < nodes.size(); i++) {
+            Node n = nodes.get(i);
+            int nL = m.get(n.getName());
+            if (nL > 0) {
+                Node nNew = new DiscreteVariable(n.getName(), nL);
+                nodes.set(i, nNew);
+            } else {
+                Node nNew = new ContinuousVariable(n.getName());
+                nodes.set(i, nNew);
+            }
+        }
+
+        Graph outG = new EdgeListGraph(nodes);
+
+        for (Edge e : g.getEdges()) {
+            Node n1 = e.getNode1();
+            Node n2 = e.getNode2();
+            Edge eNew = new Edge(outG.getNode(n1.getName()), outG.getNode(n2.getName()), e.getEndpoint1(), e.getEndpoint2());
+            outG.addEdge(eNew);
+        }
+
+        return outG;
+    }
+
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -78,6 +104,11 @@ public class LinearSineSimulation implements Simulation {
             this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
+
+            if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+            }
+
             dataSet.setName("" + (i + 1));
             this.dataSets.add(dataSet);
         }
@@ -102,6 +133,7 @@ public class LinearSineSimulation implements Simulation {
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add("interceptLow");
@@ -259,7 +291,6 @@ public class LinearSineSimulation implements Simulation {
         return mixedData;
     }
 
-
     public void setInterceptLow(double interceptLow) {
         this.interceptLow = interceptLow;
     }
@@ -302,32 +333,6 @@ public class LinearSineSimulation implements Simulation {
 
     private int randSign() {
         return RandomUtil.getInstance().nextInt(2) * 2 - 1;
-    }
-
-    private static Graph makeMixedGraph(Graph g, Map<String, Integer> m) {
-        List<Node> nodes = g.getNodes();
-        for (int i = 0; i < nodes.size(); i++) {
-            Node n = nodes.get(i);
-            int nL = m.get(n.getName());
-            if (nL > 0) {
-                Node nNew = new DiscreteVariable(n.getName(), nL);
-                nodes.set(i, nNew);
-            } else {
-                Node nNew = new ContinuousVariable(n.getName());
-                nodes.set(i, nNew);
-            }
-        }
-
-        Graph outG = new EdgeListGraph(nodes);
-
-        for (Edge e : g.getEdges()) {
-            Node n1 = e.getNode1();
-            Node n2 = e.getNode2();
-            Edge eNew = new Edge(outG.getNode(n1.getName()), outG.getNode(n2.getName()), e.getEndpoint1(), e.getEndpoint2());
-            outG.addEdge(eNew);
-        }
-
-        return outG;
     }
 
 }

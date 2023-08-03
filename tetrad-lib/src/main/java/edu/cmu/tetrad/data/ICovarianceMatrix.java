@@ -27,11 +27,12 @@ import edu.cmu.tetrad.util.Matrix;
 import java.util.List;
 
 /**
- * Interface for covariance matrices. Implemented in different ways.
- * See implementations.
+ * Interface for covariance matrices. Implemented in different ways. See implementations.
  */
 public interface ICovarianceMatrix extends DataModel {
     List<Node> getVariables();
+
+    void setVariables(List<Node> variables);
 
     List<String> getVariableNames();
 
@@ -40,6 +41,8 @@ public interface ICovarianceMatrix extends DataModel {
     int getDimension();
 
     int getSampleSize();
+
+    void setSampleSize(int sampleSize);
 
     String getName();
 
@@ -57,13 +60,11 @@ public interface ICovarianceMatrix extends DataModel {
 
     double getValue(int i, int j);
 
-    void setMatrix(Matrix matrix);
-
-    void setSampleSize(int sampleSize);
-
     int getSize();
 
     Matrix getMatrix();
+
+    void setMatrix(Matrix matrix);
 
     void select(Node variable);
 
@@ -80,8 +81,6 @@ public interface ICovarianceMatrix extends DataModel {
     void setValue(int i, int j, double v);
 
     void removeVariables(List<String> remaining);
-
-    void setVariables(List<Node> variables);
 
     Matrix getSelection(int[] rows, int[] cols);
 }

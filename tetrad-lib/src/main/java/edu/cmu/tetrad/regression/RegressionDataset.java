@@ -49,8 +49,7 @@ public class RegressionDataset implements Regression {
     private final List<Node> variables;
 
     /**
-     * The significance level for determining which regressors are significant
-     * based on their p values.
+     * The significance level for determining which regressors are significant based on their p values.
      */
     private double alpha = 0.05;
 
@@ -62,13 +61,13 @@ public class RegressionDataset implements Regression {
     private int[] rows;
     private Vector res2;
 
+
     //============================CONSTRUCTORS==========================//
 
     /**
      * Constructs a linear regression model for the given tabular data set.
      *
-     * @param data A rectangular data set, the relevant variables of which
-     *             are continuous.
+     * @param data A rectangular data set, the relevant variables of which are continuous.
      */
     public RegressionDataset(DataSet data) {
         this.data = data.getDoubleData();
@@ -87,9 +86,117 @@ public class RegressionDataset implements Regression {
 
     //===========================PUBLIC METHODS========================//
 
+    public static RegressionResult regress(double[] target, double[][] regressors) {
+        int n = target.length;
+        int k = regressors.length + 1;
+
+        String[] regressorNames = new String[regressors.length];
+        for (int i = 0; i < regressors.length; i++) {
+            regressorNames[i] = "X" + (i + 1);
+        }
+
+        Matrix y = new Matrix(new double[][]{target}).transpose();
+        Matrix x = new Matrix(regressors).transpose();
+
+        Matrix xT = x.transpose();
+        Matrix xTx = xT.times(x);
+        Matrix xTxInv = xTx.inverse();
+        Matrix xTy = xT.times(y);
+        Matrix b = xTxInv.times(xTy);
+
+        Matrix yHat = x.times(b);
+        if (yHat.getNumColumns() == 0) yHat = y.like();
+
+        Matrix res = y.minus(yHat); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
+
+        Vector _yHat = yHat.getColumn(0);
+        Vector _res = res.getColumn(0);
+
+        yHat.getNumColumns();
+
+        //  y.copy().assign(yHat, PlusMult.plusMult(-1));
+
+        double rss = RegressionDataset.rss(x, y, b);
+        double se = FastMath.sqrt(rss / (n - k));
+        double tss = RegressionDataset.tss(y);
+        double r2 = 1.0 - (rss / tss);
+
+        Vector sqErr = new Vector(x.getNumColumns());
+        Vector t = new Vector(x.getNumColumns());
+        Vector p = new Vector(x.getNumColumns());
+
+        for (int i = 0; i < x.getNumColumns(); i++) {
+            double _s = se * se * xTxInv.get(i, i);
+            double _se = FastMath.sqrt(_s);
+            double _t = b.get(i, 0) / _se;
+            double _p = (1.0 - ProbUtils.tCdf(FastMath.abs(_t), n - k));
+
+            sqErr.set(i, _se);
+            t.set(i, _t);
+            p.set(i, _p);
+        }
+
+        double[] bArray = b.getNumColumns() == 0 ? new double[0] : b.getColumn(0).toArray();
+        double[] tArray = t.toArray();
+        double[] pArray = p.toArray();
+        double[] seArray = sqErr.toArray();
+
+
+        return new RegressionResult(true, regressorNames, n,
+                bArray, tArray, pArray, seArray, r2, rss, 0.05, _res);
+    }
+
     /**
-     * Sets the alpha level for deciding which regressors are significant
-     * based on their p values.
+     * Calculates the residual sum of squares for parameter data x, actual values y, and regression coefficients
+     * b--i.e., for each point in the data, the predicted value for that point is calculated, and then it is subtracted
+     * from the actual value. The sum of the squares of these difference values over all points in the data is
+     * calculated and returned.
+     *
+     * @param x the array of data.
+     * @param y the target vector.
+     * @param b the regression coefficients.
+     * @return the residual sum of squares.
+     */
+    private static double rss(Matrix x, Matrix y, Matrix b) {
+        double rss = 0.0;
+
+        for (int i = 0; i < x.getNumRows(); i++) {
+            double yH = 0.0;
+
+            for (int j = 0; j < x.getNumColumns(); j++) {
+                yH += b.get(j, 0) * x.get(i, j);
+            }
+
+            double d = y.get(i, 0) - yH;
+
+            rss += d * d;
+        }
+
+        return rss;
+    }
+
+    private static double tss(Matrix y) {
+        // first calculate the mean
+        double mean = 0.0;
+
+        for (int i = 0; i < y.getNumRows(); i++) {
+            mean += y.get(i, 0);
+        }
+
+        mean /= y.getNumRows();
+
+        double ssm = 0.0;
+
+        for (int i = 0; i < y.getNumRows(); i++) {
+            double d = mean - y.get(i, 0);
+            ssm += d * d;
+        }
+
+        return ssm;
+    }
+
+    /**
+     * Sets the alpha level for deciding which regressors are significant based on their p values.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -102,14 +209,15 @@ public class RegressionDataset implements Regression {
         return this.graph;
     }
 
+    //=======================PRIVATE METHODS================================//
+
     /**
      * Regresses the target on the given regressors.
      *
      * @param target     The target variable.
      * @param regressors The regressor variables.
-     * @return The regression plane, specifying for each regressors its
-     * coefficeint, se, t, and p values, and specifying the same for the
-     * constant.
+     * @return The regression plane, specifying for each regressors its coefficeint, se, t, and p values, and specifying
+     * the same for the constant.
      */
     public RegressionResult regress(Node target, List<Node> regressors) {
         int n = getRows().length;
@@ -215,72 +323,10 @@ public class RegressionDataset implements Regression {
                 bArray, tArray, pArray, seArray, r2, rss, this.alpha, _res);
     }
 
-    public static RegressionResult regress(double[] target, double[][] regressors) {
-        int n = target.length;
-        int k = regressors.length + 1;
-
-        String[] regressorNames = new String[regressors.length];
-        for (int i = 0; i < regressors.length; i++) {
-            regressorNames[i] = "X" + (i + 1);
-        }
-
-        Matrix y = new Matrix(new double[][]{target}).transpose();
-        Matrix x = new Matrix(regressors).transpose();
-
-        Matrix xT = x.transpose();
-        Matrix xTx = xT.times(x);
-        Matrix xTxInv = xTx.inverse();
-        Matrix xTy = xT.times(y);
-        Matrix b = xTxInv.times(xTy);
-
-        Matrix yHat = x.times(b);
-        if (yHat.getNumColumns() == 0) yHat = y.like();
-
-        Matrix res = y.minus(yHat); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
-
-        Vector _yHat = yHat.getColumn(0);
-        Vector _res = res.getColumn(0);
-
-        yHat.getNumColumns();
-
-        //  y.copy().assign(yHat, PlusMult.plusMult(-1));
-
-        double rss = RegressionDataset.rss(x, y, b);
-        double se = FastMath.sqrt(rss / (n - k));
-        double tss = RegressionDataset.tss(y);
-        double r2 = 1.0 - (rss / tss);
-
-        Vector sqErr = new Vector(x.getNumColumns());
-        Vector t = new Vector(x.getNumColumns());
-        Vector p = new Vector(x.getNumColumns());
-
-        for (int i = 0; i < x.getNumColumns(); i++) {
-            double _s = se * se * xTxInv.get(i, i);
-            double _se = FastMath.sqrt(_s);
-            double _t = b.get(i, 0) / _se;
-            double _p = (1.0 - ProbUtils.tCdf(FastMath.abs(_t), n - k));
-
-            sqErr.set(i, _se);
-            t.set(i, _t);
-            p.set(i, _p);
-        }
-
-        double[] bArray = b.getNumColumns() == 0 ? new double[0] : b.getColumn(0).toArray();
-        double[] tArray = t.toArray();
-        double[] pArray = p.toArray();
-        double[] seArray = sqErr.toArray();
-
-
-        return new RegressionResult(true, regressorNames, n,
-                bArray, tArray, pArray, seArray, r2, rss, 0.05, _res);
-    }
-
     public RegressionResult regress(Node target, Node... regressors) {
         List<Node> _regressors = Arrays.asList(regressors);
         return regress(target, _regressors);
     }
-
-    //=======================PRIVATE METHODS================================//
 
     private Graph createOutputGraph(String target, Matrix x,
                                     List<Node> regressors, Vector p) {
@@ -304,57 +350,6 @@ public class RegressionDataset implements Regression {
         }
 
         return graph;
-    }
-
-    /**
-     * Calculates the residual sum of squares for parameter data x, actual
-     * values y, and regression coefficients b--i.e., for each point in the
-     * data, the predicted value for that point is calculated, and then it is
-     * subtracted from the actual value. The sum of the squares of these
-     * difference values over all points in the data is calculated and
-     * returned.
-     *
-     * @param x the array of data.
-     * @param y the target vector.
-     * @param b the regression coefficients.
-     * @return the residual sum of squares.
-     */
-    private static double rss(Matrix x, Matrix y, Matrix b) {
-        double rss = 0.0;
-
-        for (int i = 0; i < x.getNumRows(); i++) {
-            double yH = 0.0;
-
-            for (int j = 0; j < x.getNumColumns(); j++) {
-                yH += b.get(j, 0) * x.get(i, j);
-            }
-
-            double d = y.get(i, 0) - yH;
-
-            rss += d * d;
-        }
-
-        return rss;
-    }
-
-    private static double tss(Matrix y) {
-        // first calculate the mean
-        double mean = 0.0;
-
-        for (int i = 0; i < y.getNumRows(); i++) {
-            mean += y.get(i, 0);
-        }
-
-        mean /= y.getNumRows();
-
-        double ssm = 0.0;
-
-        for (int i = 0; i < y.getNumRows(); i++) {
-            double d = mean - y.get(i, 0);
-            ssm += d * d;
-        }
-
-        return ssm;
     }
 
     /**

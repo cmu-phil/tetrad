@@ -32,9 +32,8 @@ import java.util.*;
 
 /**
  * <p>Creates a table of stored cell probabilities for the given list of
- * variables. Since for a moderate number of variables and for a moderate number
- * of values per variables this could get to be a very large table, it might not
- * be a good idea to use this class except for unit testing.&gt; 0
+ * variables. Since for a moderate number of variables and for a moderate number of values per variables this could get
+ * to be a very large table, it might not be a good idea to use this class except for unit testing.&gt; 0
  *
  * @author josephramsey
  */
@@ -131,10 +130,26 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
 
     //=============================PUBLIC METHODS=========================//
 
+    private static boolean hasNextValue(Proposition proposition, int variable,
+                                        int curIndex) {
+        return StoredCellProbs.nextValue(proposition, variable, curIndex) != -1;
+    }
+
+    private static int nextValue(Proposition proposition, int variable,
+                                 int curIndex) {
+        for (int i = curIndex + 1;
+             i < proposition.getNumCategories(variable); i++) {
+            if (proposition.isAllowed(variable, i)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     /**
-     * @return the probability for the given cell, specified as a particular
-     * combination of variable values, for the list of variables (in order)
-     * returned by get
+     * @return the probability for the given cell, specified as a particular combination of variable values, for the
+     * list of variables (in order) returned by get
      */
     public double getCellProb(int[] variableValues) {
         return this.probs[getOffset(variableValues)];
@@ -176,23 +191,6 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         }
 
         return p;
-    }
-
-    private static boolean hasNextValue(Proposition proposition, int variable,
-                                        int curIndex) {
-        return StoredCellProbs.nextValue(proposition, variable, curIndex) != -1;
-    }
-
-    private static int nextValue(Proposition proposition, int variable,
-                                 int curIndex) {
-        for (int i = curIndex + 1;
-             i < proposition.getNumCategories(variable); i++) {
-            if (proposition.isAllowed(variable, i)) {
-                return i;
-            }
-        }
-
-        return -1;
     }
 
     public double getConditionalProb(Proposition assertion,
@@ -300,8 +298,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
     //============================PRIVATE METHODS==========================//
 
     /**
-     * @return the row in the table for the given node and combination of parent
-     * values.
+     * @return the row in the table for the given node and combination of parent values.
      */
     private int getOffset(int[] values) {
         int[] dim = getParentDims();
@@ -332,17 +329,15 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
     }
 
     /**
-     * @return an array containing the number of values, in order, of each
-     * variable.
+     * @return an array containing the number of values, in order, of each variable.
      */
     private int[] getParentDims() {
         return this.parentDims;
     }
 
     /**
-     * Sets the cell probability. Should not be made public for now, since
-     * there's no way to guarantee the probabilities will add to 1.0 if they're
-     * set one at a time.
+     * Sets the cell probability. Should not be made public for now, since there's no way to guarantee the probabilities
+     * will add to 1.0 if they're set one at a time.
      */
     private void setCellProbability(int[] variableValues, double probability) {
         if (probability < 0.0 || probability > 1.0) {

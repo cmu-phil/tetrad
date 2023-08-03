@@ -4,8 +4,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * .
- * Result of a comparison.
+ * . Result of a comparison.
  *
  * @author josephramsey 2016.03.24
  */
@@ -20,36 +19,36 @@ public class ComparisonResult {
         this.params = new ComparisonParameters(params);
     }
 
-    public void setResultGraph(Graph graph) {
-        this.resultGraph = new EdgeListGraph(graph);
-    }
-
-    public void setElapsed(long elapsed) {
-        this.elapsed = elapsed;
-    }
-
-    public void setTrueDag(Graph trueDag) {
-        this.trueDag = new EdgeListGraph(trueDag);
-    }
-
-    public void setCorrectResult(Graph correctResult) {
-        this.correctResult = correctResult;
-    }
-
     public Graph getResultGraph() {
         return this.resultGraph;
+    }
+
+    public void setResultGraph(Graph graph) {
+        this.resultGraph = new EdgeListGraph(graph);
     }
 
     public long getElapsed() {
         return this.elapsed;
     }
 
+    public void setElapsed(long elapsed) {
+        this.elapsed = elapsed;
+    }
+
     public Graph getTrueDag() {
         return this.trueDag;
     }
 
+    public void setTrueDag(Graph trueDag) {
+        this.trueDag = new EdgeListGraph(trueDag);
+    }
+
     public Graph getCorrectResult() {
         return this.correctResult;
+    }
+
+    public void setCorrectResult(Graph correctResult) {
+        this.correctResult = correctResult;
     }
 
     public String toString() {

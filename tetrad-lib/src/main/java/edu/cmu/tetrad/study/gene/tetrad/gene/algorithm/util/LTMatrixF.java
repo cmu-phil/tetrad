@@ -24,8 +24,7 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util;
 import java.io.IOException;
 
 /**
- * Implements a space-efficient Lower Triangular Matrix of
- * elements of type <code>float</code>
+ * Implements a space-efficient Lower Triangular Matrix of elements of type <code>float</code>
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
@@ -56,17 +55,16 @@ public class LTMatrixF extends BasicLTMatrix {
     }
 
     /**
-     * Casts double value x to float and assigns it to element (r,c) This
-     * method checks that x can be converted to a float without causing
-     * overflow.
+     * Casts double value x to float and assigns it to element (r,c) This method checks that x can be converted to a
+     * float without causing overflow.
      */
     public void setDoubleValue(int r, int c, double x) {
         setValue(r, c, x);
     }
 
     /**
-     * Assigns double x to matrix element (r, c).  This method checks that x can
-     * be converted to a float without causing overflow.
+     * Assigns double x to matrix element (r, c).  This method checks that x can be converted to a float without causing
+     * overflow.
      */
     public void setValue(int r, int c, double x) {
         if ((x < BasicMatrix.MIN_FLOAT) || (x > BasicMatrix.MAX_FLOAT)) {

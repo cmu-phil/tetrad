@@ -25,10 +25,10 @@ import java.util.List;
 public class LinearFisherModel implements Simulation, TakesData {
 
     static final long serialVersionUID = 23L;
-    private List<DataSet> dataSets = new ArrayList<>();
-    private List<Graph> graphs = new ArrayList<>();
     private final RandomGraph randomGraph;
     private final List<DataModel> shocks;
+    private List<DataSet> dataSets = new ArrayList<>();
+    private List<Graph> graphs = new ArrayList<>();
 
     public LinearFisherModel(RandomGraph graph) {
         this.randomGraph = graph;
@@ -151,6 +151,10 @@ public class LinearFisherModel implements Simulation, TakesData {
                 dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
+            if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+            }
+
             this.dataSets.add(saveLatentVars ? dataSet : DataUtils.restrictToMeasured(dataSet));
         }
     }
@@ -188,6 +192,7 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add(Params.INCLUDE_NEGATIVE_COEFS);
         parameters.add(Params.ERRORS_NORMAL);
         parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.NUM_CATEGORIES);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);

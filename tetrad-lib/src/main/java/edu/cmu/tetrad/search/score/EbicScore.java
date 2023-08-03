@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
@@ -31,7 +32,8 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static org.apache.commons.math3.util.FastMath.ceil;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * <p>Implements the extended BIC (EBIC) score. The reference is here:</p>
@@ -45,10 +47,10 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author josephramsey
  */
 public class EbicScore implements Score {
-    private DataSet dataSet;
-    private ICovarianceMatrix covariances;
     private final List<Node> variables;
     private final int sampleSize;
+    private DataSet dataSet;
+    private ICovarianceMatrix covariances;
     private double N;
     private Matrix data;
     private boolean calculateRowSubsets;
@@ -71,8 +73,8 @@ public class EbicScore implements Score {
      * Constructs the score using a covariance matrix.
      *
      * @param dataSet               The continuous dataset to analyze.
-     * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly.
-     *                              True if precomputed.
+     * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly. True if
+     *                              precomputed.
      */
     public EbicScore(DataSet dataSet, boolean precomputeCovariances) {
 
@@ -89,11 +91,7 @@ public class EbicScore implements Score {
         this.data = _dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            if (!precomputeCovariances) {
-                setCovariances(new CovarianceMatrixOnTheFly(dataSet));
-            } else {
-                setCovariances(new CovarianceMatrix(dataSet));
-            }
+            setCovariances(SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances));
             this.calculateRowSubsets = false;
         } else {
             this.calculateRowSubsets = true;
@@ -123,7 +121,8 @@ public class EbicScore implements Score {
         try {
             varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
         } catch (SingularMatrixException e) {
-            return Double.NaN;
+            throw new RuntimeException("Singularity encountered when scoring " +
+                    LogUtilsSearch.getScoreFact(i, parents, variables));
         }
 
         double gamma = this.gamma;//  1.0 - riskBound;
@@ -207,27 +206,27 @@ public class EbicScore implements Score {
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {
-        CorrelationMatrixOnTheFly correlations = new CorrelationMatrixOnTheFly(covariances);
+//        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
         this.covariances = covariances;
 
-        boolean exists = false;
-
-        double correlationThreshold = 1.0;
-        for (int i = 0; i < correlations.getSize(); i++) {
-            for (int j = 0; j < correlations.getSize(); j++) {
-                if (i == j) continue;
-                double r = correlations.getValue(i, j);
-                if (abs(r) > correlationThreshold) {
-                    System.out.println("Absolute correlation too high: " + r);
-                    exists = true;
-                }
-            }
-        }
-
-        if (exists) {
-            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
-                    + ") in absolute value.");
-        }
+//        boolean exists = false;
+//
+//        double correlationThreshold = 1.0;
+//        for (int i = 0; i < correlations.getSize(); i++) {
+//            for (int j = 0; j < correlations.getSize(); j++) {
+//                if (i == j) continue;
+//                double r = correlations.getValue(i, j);
+//                if (abs(r) > correlationThreshold) {
+//                    System.out.println("Absolute correlation too high: " + r);
+//                    exists = true;
+//                }
+//            }
+//        }
+//
+//        if (exists) {
+//            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
+//                    + ") in absolute value.");
+//        }
 
 
         this.N = covariances.getSampleSize();

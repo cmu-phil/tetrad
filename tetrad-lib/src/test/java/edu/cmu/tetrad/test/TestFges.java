@@ -37,10 +37,11 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.FgesMb;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.*;
-import edu.cmu.tetrad.search.test.IndTestDSep;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
@@ -67,10 +68,60 @@ import static org.junit.Assert.assertTrue;
  * @author josephramsey
  */
 public class TestFges {
-
+    boolean precomputeCovariances = true;
 
     private final PrintStream out = System.out;
-//    private OutputStream out =
+    //    private OutputStream out =
+    private HashMap<Node, Integer> hashIndices;
+
+    public static void main(String... args) {
+        if (args.length > 0) {
+            int numMeasures = Integer.parseInt(args[0]);
+            int avgDegree = Integer.parseInt(args[1]);
+
+            Parameters parameters = new Parameters();
+
+            parameters.set(Params.NUM_MEASURES, numMeasures);
+            parameters.set(Params.NUM_LATENTS, 0);
+            parameters.set(Params.AVG_DEGREE, avgDegree);
+            parameters.set(Params.MAX_DEGREE, 20);
+            parameters.set(Params.MAX_INDEGREE, 20);
+            parameters.set(Params.MAX_OUTDEGREE, 20);
+            parameters.set(Params.CONNECTED, false);
+
+            parameters.set(Params.COEF_LOW, 0.2);
+            parameters.set(Params.COEF_HIGH, 0.9);
+            parameters.set(Params.VAR_LOW, 1);
+            parameters.set(Params.VAR_HIGH, 3);
+            parameters.set(Params.VERBOSE, false);
+            parameters.set(Params.COEF_SYMMETRIC, true);
+            parameters.set(Params.NUM_RUNS, 1);
+            parameters.set(Params.PERCENT_DISCRETE, 0);
+            parameters.set(Params.NUM_CATEGORIES, 3);
+            parameters.set(Params.DIFFERENT_GRAPHS, true);
+            parameters.set(Params.SAMPLE_SIZE, 1000);
+            parameters.set(Params.INTERVAL_BETWEEN_SHOCKS, 10);
+            parameters.set(Params.INTERVAL_BETWEEN_RECORDINGS, 10);
+            parameters.set(Params.FISHER_EPSILON, 0.001);
+            parameters.set(Params.RANDOMIZE_COLUMNS, true);
+
+            RandomGraph graph = new RandomForward();
+            LinearFisherModel sim = new LinearFisherModel(graph);
+            sim.createData(parameters, false);
+            ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+            Algorithm alg = new Fges(score);
+
+            parameters.set(Params.ALPHA, 1e-8);
+
+            for (int i = 0; i < 5; i++) {
+                Graph out1 = alg.search(sim.getDataModel(0), parameters);
+                System.out.println(out1);
+            }
+
+        } else {
+            new TestFges().test9();
+        }
+    }
 
     @Test
     public void explore1() {
@@ -104,7 +155,7 @@ public class TestFges {
 
         System.out.println("data done");
 
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(data, false);
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
 
@@ -196,7 +247,6 @@ public class TestFges {
 
     }
 
-
     @Test
     public void testExplore3() {
         Graph graph = GraphUtils.convert("A-->B,A-->C,B-->D,C-->D");
@@ -222,7 +272,6 @@ public class TestFges {
         assertEquals(GraphSearchUtils.cpdagForDag(graph), CPDAG);
     }
 
-
     @Test
     public void testFromGraphSimpleFges() {
 
@@ -244,7 +293,7 @@ public class TestFges {
         g.addDirectedEdge(x4, x2);
         g.addDirectedEdge(x4, x3);
 
-        Graph CPDAG1 = new Pc(new IndTestDSep(g)).search();
+        Graph CPDAG1 = new Pc(new MsepTest(g)).search();
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(g));
         fges.setFaithfulnessAssumed(true);
         Graph CPDAG2 = fges.search();
@@ -290,7 +339,7 @@ public class TestFges {
         Graph mb1 = CPDAG1.subgraph(new ArrayList<>(mb));
 
         FgesMb fgesMb = new FgesMb(fgesScore);
-        Graph mb2 = fgesMb.search(x1);
+        Graph mb2 = fgesMb.search(Collections.singletonList(x1));
 
         assertEquals(mb1, mb2);
     }
@@ -324,12 +373,11 @@ public class TestFges {
             Graph mb1 = CPDAG1.subgraph(new ArrayList<>(mb));
 
             FgesMb fgesMb = new FgesMb(fgesScore);
-            Graph mb2 = fgesMb.search(x1);
+            Graph mb2 = fgesMb.search(Collections.singletonList(x1));
 
             assertEquals(mb1, mb2);
         }
     }
-
 
     private void printDegreeDistribution(Graph dag, PrintStream out) {
         int max = 0;
@@ -597,7 +645,7 @@ public class TestFges {
 
 
         try {
-            trueGraph = GraphPersistence.readerToGraphTxt(trueString);
+            trueGraph = GraphSaveLoadUtils.readerToGraphTxt(trueString);
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
             assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {
@@ -611,7 +659,6 @@ public class TestFges {
      * graph.
      */
     private void checkSearch(String inputGraph, String outputGraph) {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
         // Set up graph and node objects.
         Graph graph = GraphUtils.convert(inputGraph);
@@ -653,7 +700,7 @@ public class TestFges {
 
         // Build comparison graph.
         Graph answer = GraphUtils.convert(answerGraph);
-//        Graph answer = new PC(new IndTestDSep(input)).search();
+//        Graph answer = new PC(new IndTestMSep(input)).search();
 
 //        System.out.println("Input = " + input);
 //        System.out.println("Knowledge = " + knowledge);
@@ -714,7 +761,7 @@ public class TestFges {
                             SemPm pm = new SemPm(dag);
                             SemIm im = new SemIm(pm, params);
                             DataSet data = im.simulateData(sampleSize, false);
-                            SemBicScore score = new SemBicScore(data);
+                            SemBicScore score = new SemBicScore(data, precomputeCovariances);
                             score.setPenaltyDiscount(.5);
                             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
                             fges.setFaithfulnessAssumed(false);
@@ -742,7 +789,6 @@ public class TestFges {
         System.out.println(table);
 
     }
-
 
     @Test
     public void testFromGraphWithForbiddenKnowledge() {
@@ -809,7 +855,6 @@ public class TestFges {
         }
     }
 
-
     private Knowledge forbiddenKnowledge(Graph graph) {
         Knowledge knowledge = new Knowledge(graph.getNodeNames());
 
@@ -844,7 +889,6 @@ public class TestFges {
 
         return knowledge;
     }
-
 
     private Graph getSubgraph(Graph graph, boolean discrete1, boolean discrete2, DataSet dataSet) {
         Graph newGraph = new EdgeListGraph(graph.getNodes());
@@ -1461,13 +1505,13 @@ public class TestFges {
                     oky.remove(x);
 
                     if (!okx.isEmpty()) {
-                        Node other = okx.get(0);
+                        Node other = okx.iterator().next();
                         dag.removeEdge(other, x);
                         dag.removeEdge(y, x);
                         dag.addDirectedEdge(other, x);
                         dag.addDirectedEdge(y, x);
                     } else if (!oky.isEmpty()) {
-                        Node other = oky.get(0);
+                        Node other = oky.iterator().next();
                         dag.removeEdge(other, y);
                         dag.removeEdge(x, y);
                         dag.addDirectedEdge(other, y);
@@ -1581,9 +1625,9 @@ public class TestFges {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet dataSet = im.simulateData(N, false);
-        SemBicScore score = new SemBicScore(dataSet);
+        SemBicScore score = new SemBicScore(dataSet, precomputeCovariances);
 
-        IndTestDSep dsep = new IndTestDSep(graph);
+        MsepTest msep = new MsepTest(graph);
         int count = 1;
 
         for (int i = 0; i < 10000; i++) {
@@ -1597,12 +1641,12 @@ public class TestFges {
                 z.add(nodes.get(c));
             }
 
-            boolean _dsep = dsep.checkIndependence(x, y, new ArrayList<>(z)).isIndependent();
+            boolean _msep = msep.checkIndependence(x, y, new HashSet<>(z)).isIndependent();
             double diff = scoreGraphChange(x, y, z, this.hashIndices, score);
             boolean diffNegative = diff < 0;
 
-            if (!_dsep && _dsep != diffNegative) {
-                System.out.println(count++ + "\t" + (_dsep ? "dsep" : "dconn") + "\t" + (diffNegative ? "indep" : "dep") + "\tdiff = " + diff);
+            if (!_msep && _msep != diffNegative) {
+                System.out.println(count++ + "\t" + (_msep ? "msep" : "mconn") + "\t" + (diffNegative ? "indep" : "dep") + "\tdiff = " + diff);
             }
         }
 
@@ -1633,8 +1677,6 @@ public class TestFges {
         return score.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
     }
 
-    private HashMap<Node, Integer> hashIndices;
-
     // Maps adj to their indices for quick lookup.
     private void buildIndexing(List<Node> nodes) {
         this.hashIndices = new HashMap<>();
@@ -1643,55 +1685,6 @@ public class TestFges {
 
         for (Node n : nodes) {
             this.hashIndices.put(n, ++i);
-        }
-    }
-
-    public static void main(String... args) {
-        if (args.length > 0) {
-            int numMeasures = Integer.parseInt(args[0]);
-            int avgDegree = Integer.parseInt(args[1]);
-
-            Parameters parameters = new Parameters();
-
-            parameters.set(Params.NUM_MEASURES, numMeasures);
-            parameters.set(Params.NUM_LATENTS, 0);
-            parameters.set(Params.AVG_DEGREE, avgDegree);
-            parameters.set(Params.MAX_DEGREE, 20);
-            parameters.set(Params.MAX_INDEGREE, 20);
-            parameters.set(Params.MAX_OUTDEGREE, 20);
-            parameters.set(Params.CONNECTED, false);
-
-            parameters.set(Params.COEF_LOW, 0.2);
-            parameters.set(Params.COEF_HIGH, 0.9);
-            parameters.set(Params.VAR_LOW, 1);
-            parameters.set(Params.VAR_HIGH, 3);
-            parameters.set(Params.VERBOSE, false);
-            parameters.set(Params.COEF_SYMMETRIC, true);
-            parameters.set(Params.NUM_RUNS, 1);
-            parameters.set(Params.PERCENT_DISCRETE, 0);
-            parameters.set(Params.NUM_CATEGORIES, 3);
-            parameters.set(Params.DIFFERENT_GRAPHS, true);
-            parameters.set(Params.SAMPLE_SIZE, 1000);
-            parameters.set(Params.INTERVAL_BETWEEN_SHOCKS, 10);
-            parameters.set(Params.INTERVAL_BETWEEN_RECORDINGS, 10);
-            parameters.set(Params.FISHER_EPSILON, 0.001);
-            parameters.set(Params.RANDOMIZE_COLUMNS, true);
-
-            RandomGraph graph = new RandomForward();
-            LinearFisherModel sim = new LinearFisherModel(graph);
-            sim.createData(parameters, false);
-            ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
-            Algorithm alg = new Fges(score);
-
-            parameters.set(Params.ALPHA, 1e-8);
-
-            for (int i = 0; i < 5; i++) {
-                Graph out1 = alg.search(sim.getDataModel(0), parameters);
-                System.out.println(out1);
-            }
-
-        } else {
-            new TestFges().test9();
         }
     }
 

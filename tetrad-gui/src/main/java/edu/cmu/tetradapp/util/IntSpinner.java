@@ -26,9 +26,9 @@ import java.awt.*;
 import java.util.Objects;
 
 /**
- * A JSpinner that uses a <code>IntTextField</code> as its editor.  When changes are made from the
- * editor or the spinner a property change event is invoked with the property name "changedIntValue" and
- * the new value (old value is not given).
+ * A JSpinner that uses a <code>IntTextField</code> as its editor.  When changes are made from the editor or the spinner
+ * a property change event is invoked with the property name "changedIntValue" and the new value (old value is not
+ * given).
  *
  * @author Tyler Gibson
  */
@@ -57,8 +57,8 @@ public class IntSpinner extends JSpinner {
     private Integer max;
 
     /**
-     * Constructs the int spinner given the initial value, the min value to accept,
-     * the max value to accept and the step.
+     * Constructs the int spinner given the initial value, the min value to accept, the max value to accept and the
+     * step.
      *
      * @param value - Initial value to dispaly
      * @param step  - The step (the amount that is "jumped" when the spinner is activated)
@@ -102,7 +102,9 @@ public class IntSpinner extends JSpinner {
         this.setEditor(this.editor);
     }
 
-    //=========================== Public Methods ============================//
+    private static Dimension increment(Dimension dim) {
+        return new Dimension(dim.width + 2, dim.height + 2);
+    }
 
     public void setMin(Integer min) {
         if (!Objects.equals(this.min, min)) {
@@ -113,7 +115,6 @@ public class IntSpinner extends JSpinner {
             this.editor.setValue(this.editor.getValue());
         }
     }
-
 
     /**
      * Sets the max value for the spinner.
@@ -128,11 +129,9 @@ public class IntSpinner extends JSpinner {
         }
     }
 
-
     public void setFilter(Filter filter) {
         this.filter = filter;
     }
-
 
     public void setValue(Object object) {
         if (object == null) {
@@ -146,14 +145,6 @@ public class IntSpinner extends JSpinner {
         }
     }
 
-
-    private static Dimension increment(Dimension dim) {
-        return new Dimension(dim.width + 2, dim.height + 2);
-    }
-
-    //=========================== private methods ======================//
-
-
     private int filter(int value) {
         if (this.filter == null) {
             return value;
@@ -163,9 +154,6 @@ public class IntSpinner extends JSpinner {
         }
         return this.filter.filter((Integer) getValue(), value);
     }
-
-    //============================ Inner classer ====================================//
-
 
     public interface Filter {
 

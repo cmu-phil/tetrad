@@ -13,13 +13,12 @@ import java.util.List;
  */
 public class GdistanceRandom {
     private static DataSet locationMap;
-    private int numEdges1;
-    private int numEdges2;
-    private boolean verbose;
-
     double xdist = 2.4;
     double ydist = 2.4;
     double zdist = 2;
+    private int numEdges1;
+    private int numEdges2;
+    private boolean verbose;
 
     //**************CONSTRUCTORS*********************//
     public GdistanceRandom(DataSet inMap) {

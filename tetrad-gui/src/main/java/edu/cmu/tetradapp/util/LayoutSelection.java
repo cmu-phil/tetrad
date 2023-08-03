@@ -67,13 +67,11 @@ public class LayoutSelection implements Transferable {
 
     /**
      * @param flavor the requested flavor for the data
-     * @return an object which represents the data to be transferred.  The class
-     * of the object returned is defined by the representation class of the
-     * flavor.
-     * @throws java.io.IOException                              if the data is no longer available in the
-     *                                                          requested flavor.
-     * @throws java.awt.datatransfer.UnsupportedFlavorException if the requested data flavor is not
-     *                                                          supported.
+     * @return an object which represents the data to be transferred.  The class of the object returned is defined by
+     * the representation class of the flavor.
+     * @throws java.io.IOException                              if the data is no longer available in the requested
+     *                                                          flavor.
+     * @throws java.awt.datatransfer.UnsupportedFlavorException if the requested data flavor is not supported.
      * @see java.awt.datatransfer.DataFlavor#getRepresentationClass
      */
     public Object getTransferData(DataFlavor flavor)
@@ -87,18 +85,15 @@ public class LayoutSelection implements Transferable {
 
     /**
      * @param flavor the requested flavor for the data
-     * @return whether or not the specified data flavor is supported for this
-     * object.
+     * @return whether or not the specified data flavor is supported for this object.
      */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);
     }
 
     /**
-     * @return an array of DataFlavor objects indicating the flavors the data
-     * can be provided in.  The array should be ordered according to preference
-     * for providing the data (from most richly descriptive to least
-     * descriptive).
+     * @return an array of DataFlavor objects indicating the flavors the data can be provided in.  The array should be
+     * ordered according to preference for providing the data (from most richly descriptive to least descriptive).
      */
     public DataFlavor[] getTransferDataFlavors() {
         return this.dataFlavors;

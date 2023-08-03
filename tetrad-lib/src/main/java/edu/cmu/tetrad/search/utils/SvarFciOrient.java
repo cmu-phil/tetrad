@@ -26,12 +26,8 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SvarFci;
-import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
@@ -41,9 +37,8 @@ import java.util.*;
 
 /**
  * <p>Adapts FciOrient for the SvarFCI algorithm. The main difference is that if an edge is orient,
- * it will also orient all homologous edges to preserve the time-repeating structure assumed by
- * SvarFCI. Based on (but not identicial to) code by Entner and Hoyer for their 2010 paper. Modified
- * by DMalinsky 4/20/2016.</p>
+ * it will also orient all homologous edges to preserve the time-repeating structure assumed by SvarFCI. Based on (but
+ * not identicial to) code by Entner and Hoyer for their 2010 paper. Modified by DMalinsky 4/20/2016.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -58,36 +53,27 @@ public final class SvarFciOrient {
      * The SepsetMap being constructed.
      */
     private final SepsetProducer sepsets;
-
-    private Knowledge knowledge = new Knowledge();
-
-    private boolean changeFlag = true;
-
-    /**
-     * flag for complete rule set, true if one should use complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed;
-
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
-    private int maxPathLength = -1;
-
     /**
      * The logger to use.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-
+    private final IndependenceTest independenceTest;
+    private Knowledge knowledge = new Knowledge();
+    private boolean changeFlag = true;
+    /**
+     * flag for complete rule set, true if one should use complete rule set, false otherwise.
+     */
+    private boolean completeRuleSetUsed;
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
+    private int maxPathLength = -1;
     /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-
     private Graph truePag;
 
-    private final IndependenceTest independenceTest;
-
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -153,7 +139,6 @@ public final class SvarFciOrient {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
-    //===========================PRIVATE METHODS=========================//
 
     /**
      * Orients colliders in the graph.  (FCI Step C)
@@ -167,7 +152,7 @@ public final class SvarFciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -307,7 +292,7 @@ public final class SvarFciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node B : nodes) {
-            List<Node> adj = graph.getAdjacentNodes(B);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
 
             if (adj.size() < 2) {
                 continue;
@@ -443,9 +428,8 @@ public final class SvarFciOrient {
 
 
     /**
-     * The triangles that must be oriented this way (won't be done by another rule) all look like
-     * the ones below, where the dots are a collider path from L to A with each node on the path
-     * (except L) a parent of C.
+     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
+     * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
      * <pre>
      *          B
      *         xo           x is either an arrowhead or a circle
@@ -484,8 +468,8 @@ public final class SvarFciOrient {
 
     /**
      * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of
-     * a DDP consists of colliders that are parents of c.
+     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
+     * consists of colliders that are parents of c.
      */
     public void ddpOrient(Node a, Node b, Node c, Graph graph) {
         Queue<Node> Q = new ArrayDeque<>();
@@ -551,16 +535,16 @@ public final class SvarFciOrient {
 
         List<Node> path = getPath(d, previous);
 
-        boolean ind = getSepsets().isIndependent(d, c, path);
+        boolean ind = getSepsets().isIndependent(d, c, new HashSet<>(path));
 
         List<Node> path2 = new ArrayList<>(path);
 
         path2.remove(b);
 
-        boolean ind2 = getSepsets().isIndependent(d, c, path2);
+        boolean ind2 = getSepsets().isIndependent(d, c, new HashSet<>(path2));
 
         if (!ind && !ind2) {
-            List<Node> sepset = getSepsets().getSepset(d, c);
+            Set<Node> sepset = getSepsets().getSepset(d, c);
 
             if (this.verbose) {
                 System.out.println("Sepset for d = " + d + " and c = " + c + " = " + sepset);
@@ -624,8 +608,8 @@ public final class SvarFciOrient {
     }
 
     /**
-     * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle path u =
-     * [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
+     * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle path u
+     * = [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
      */
     public void ruleR5(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -670,7 +654,7 @@ public final class SvarFciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacents = graph.getAdjacentNodes(b);
+            List<Node> adjacents = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacents.size() < 2) continue;
 
@@ -965,15 +949,15 @@ public final class SvarFciOrient {
         this.verbose = verbose;
     }
 
-    public void setTruePag(Graph truePag) {
-        this.truePag = truePag;
-    }
-
     /**
      * The true PAG if available. Can be null.
      */
     public Graph getTruePag() {
         return this.truePag;
+    }
+
+    public void setTruePag(Graph truePag) {
+        this.truePag = truePag;
     }
 
     private void orientSimilarPairs(Graph graph, Knowledge knowledge, Node x, Node y, Endpoint mark) {

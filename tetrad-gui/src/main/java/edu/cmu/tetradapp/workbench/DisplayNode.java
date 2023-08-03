@@ -33,40 +33,42 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class represents a node in a workbench; it is an abstract class, but
- * extensions of it represent measured and latent variables.
+ * This class represents a node in a workbench; it is an abstract class, but extensions of it represent measured and
+ * latent variables.
  *
  * @author josephramsey
  */
 public class DisplayNode extends JComponent implements Node, TetradSerializableExcluded {
 
+    private final int uniqueId = AbstractVariable.LAST_ID++;
+    private final Map<String, Object> attributes = new HashMap<>();
     /**
      * The model node which this display node depicts.
      */
     private Node modelNode;
-
     /**
      * True iff this display node is selected.
      */
     private boolean selected;
-
     /**
-     * Node variable type (domain, interventional status, interventional
-     * value..) of this node variable
+     * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
-
     /**
      * The component that displays.
      */
     private DisplayComp displayComp;
-    private final int uniqueId = AbstractVariable.LAST_ID++;
-
-    private final Map<String, Object> attributes = new HashMap<>();
 
     //===========================CONSTRUCTORS==============================//
     protected DisplayNode() {
         setName("");
+    }
+
+    /**
+     * @return the model node corresponding to this workbench node. May be null.
+     */
+    public final Node getModelNode() {
+        return this.modelNode;
     }
 
     //===========================PUBLIC METHODS============================//
@@ -83,13 +85,6 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
                 setName((String) (evt.getNewValue()));
             }
         });
-    }
-
-    /**
-     * @return the model node corresponding to this workbench node. May be null.
-     */
-    public final Node getModelNode() {
-        return this.modelNode;
     }
 
     /**
@@ -110,6 +105,13 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     }
 
     /**
+     * @return true if the node is selected, false if not.
+     */
+    public final boolean isSelected() {
+        return this.selected;
+    }
+
+    /**
      * Sets the selection status of the node.
      */
     public void setSelected(boolean selected) {
@@ -122,13 +124,6 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         }
 
         repaint();
-    }
-
-    /**
-     * @return true if the node is selected, false if not.
-     */
-    public final boolean isSelected() {
-        return this.selected;
     }
 
     public final void setLocation(int x, int y) {

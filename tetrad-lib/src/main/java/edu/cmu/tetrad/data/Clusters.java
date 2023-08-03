@@ -38,10 +38,9 @@ public final class Clusters implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**
-     * This is used to store information on pure measurement models (when the
-     * graph is a measurement/structural model). The information is stored
-     * variable clusters, and is used by algorithm such as Purify and MIM Build
-     * (R. Silva, 04/2003)
+     * This is used to store information on pure measurement models (when the graph is a measurement/structural model).
+     * The information is stored variable clusters, and is used by algorithm such as Purify and MIM Build (R. Silva,
+     * 04/2003)
      *
      * @serial
      */
@@ -55,14 +54,11 @@ public final class Clusters implements TetradSerializable {
     private final Map<Integer, String> names;
 
     /**
-     * The number of clusters represented. If there is no fixed upper bound, set
-     * this to -1.
+     * The number of clusters represented. If there is no fixed upper bound, set this to -1.
      *
      * @serial
      */
     private int numClusters = -1;
-
-    //================================CONSTRUCTORS========================//
 
     /**
      * Constructs a blank knowledge object.
@@ -88,17 +84,12 @@ public final class Clusters implements TetradSerializable {
         return new Clusters();
     }
 
-    //===============================PUBLIC METHODS=======================//
-
     /**
-     * Adds the given variable to the given index.  If a variable which is being
-     * added is already in a index, it is moved to the new index. This
-     * information is used specifically by algorithm such as Purify and MIM
-     * Build. The first variation only put an Integer associated with the
-     * index, i.e., the clusterings forms a partition where the integer
-     * represents the index id for the corresponding variable. The second
-     * variation associates a list of Integers with each observed variable. When
-     * reading clustering information, one has to pay attention if the object
+     * Adds the given variable to the given index.  If a variable which is being added is already in a index, it is
+     * moved to the new index. This information is used specifically by algorithm such as Purify and MIM Build. The
+     * first variation only put an Integer associated with the index, i.e., the clusterings forms a partition where the
+     * integer represents the index id for the corresponding variable. The second variation associates a list of
+     * Integers with each observed variable. When reading clustering information, one has to pay attention if the object
      * retrieved is an Integer or a list of Integers.
      *
      * @param index the index.
@@ -122,8 +113,7 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
-     * @return the number of measurement clusters for use in Purify and MIM
-     * Build. R. Silva (04/2003)
+     * @return the number of measurement clusters for use in Purify and MIM Build. R. Silva (04/2003)
      */
     public int getNumClusters() {
         if (!isClustersBounded()) {
@@ -134,8 +124,7 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
-     * Sets the number of clusters represented, or -1 if the number is allowed
-     * to vary.
+     * Sets the number of clusters represented, or -1 if the number is allowed to vary.
      */
     public void setNumClusters(int numClusters) {
         if (numClusters < -1) {
@@ -146,8 +135,7 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
-     * @return a copy of the cluster map, which is a map from variable names to
-     * integers.
+     * @return a copy of the cluster map, which is a map from variable names to integers.
      */
     public Map<String, Integer> getClusters() {
         return new HashMap<>(this.clusters);
@@ -294,14 +282,12 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

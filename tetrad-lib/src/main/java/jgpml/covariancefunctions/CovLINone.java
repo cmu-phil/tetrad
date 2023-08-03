@@ -34,13 +34,11 @@ import static jgpml.covariancefunctions.MatrixOperations.addValue;
 import static jgpml.covariancefunctions.MatrixOperations.sumRows;
 
 /**
- * Linear covariance function with a single hyperparameter. The covariance
- * function is parameterized as:
+ * Linear covariance function with a single hyperparameter. The covariance function is parameterized as:
  * <p>
  * k(x^p,x^q) = x^p'*inv(P)*x^q + 1./t2;
  * <p>
- * where the P matrix is t2 times the unit matrix. The second term plays the
- * role of the bias. The hyperparameter is:
+ * where the P matrix is t2 times the unit matrix. The second term plays the role of the bias. The hyperparameter is:
  * <p>
  * [ log(sqrt(t2)) ]
  */
@@ -48,6 +46,29 @@ import static jgpml.covariancefunctions.MatrixOperations.sumRows;
 public class CovLINone implements CovarianceFunction {
 
     public CovLINone() {
+    }
+
+    public static void main(String[] args) {
+        CovLINone cf = new CovLINone();
+
+        Matrix X = Matrix.identity(6, 6);
+        Matrix logtheta = new Matrix(new double[][]{{0.1}});
+
+        Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
+
+        System.out.println();
+        Matrix K = cf.compute(logtheta, X);
+        K.print(K.getColumnDimension(), 8);
+
+        Matrix[] res = cf.compute(logtheta, X, z);
+
+        res[0].print(res[0].getColumnDimension(), 8);
+        res[1].print(res[1].getColumnDimension(), 8);
+
+        Matrix d = cf.computeDerivatives(logtheta, X, 0);
+
+        d.print(d.getColumnDimension(), 8);
+
     }
 
     /**
@@ -101,8 +122,8 @@ public class CovLINone implements CovarianceFunction {
     }
 
     /**
-     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect
-     * to the hyperparameter with index <code>idx</code>
+     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
+     * <code>idx</code>
      *
      * @param loghyper hyperparameters
      * @param X        input dataset
@@ -119,28 +140,5 @@ public class CovLINone implements CovarianceFunction {
         double it2 = FastMath.exp(-2 * loghyper.get(0, 0));
         Matrix A = X.times(X.transpose());
         return addValue(A, 1).times(-2 * it2);
-    }
-
-    public static void main(String[] args) {
-        CovLINone cf = new CovLINone();
-
-        Matrix X = Matrix.identity(6, 6);
-        Matrix logtheta = new Matrix(new double[][]{{0.1}});
-
-        Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
-
-        System.out.println();
-        Matrix K = cf.compute(logtheta, X);
-        K.print(K.getColumnDimension(), 8);
-
-        Matrix[] res = cf.compute(logtheta, X, z);
-
-        res[0].print(res[0].getColumnDimension(), 8);
-        res[1].print(res[1].getColumnDimension(), 8);
-
-        Matrix d = cf.computeDerivatives(logtheta, X, 0);
-
-        d.print(d.getColumnDimension(), 8);
-
     }
 }

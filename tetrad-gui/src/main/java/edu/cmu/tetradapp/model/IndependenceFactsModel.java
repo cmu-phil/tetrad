@@ -56,30 +56,6 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
         return new Knowledge();
     }
 
-    public void add(IndependenceFact fact) {
-        this.facts.add(fact);
-    }
-
-    public String toString() {
-        return this.facts.toString();
-    }
-
-    public void remove(IndependenceFact fact) {
-        this.facts.remove(fact);
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public IndependenceFacts getFacts() {
-        return this.facts;
-    }
-
     public static IndependenceFactsModel loadFacts(Reader reader) throws IOException {
         IndependenceFactsModel facts = new IndependenceFactsModel();
         Set<String> names = new HashSet<>();
@@ -103,7 +79,7 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
                 }
             }
 
-            List<Node> z = new ArrayList<>();
+            Set<Node> z = new HashSet<>();
 
             for (int i = 2; i < tokens.length; i++) {
                 z.add(nodes.get(tokens[i]));
@@ -113,6 +89,30 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
         }
 
         return facts;
+    }
+
+    public void add(IndependenceFact fact) {
+        this.facts.add(fact);
+    }
+
+    public String toString() {
+        return this.facts.toString();
+    }
+
+    public void remove(IndependenceFact fact) {
+        this.facts.remove(fact);
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public IndependenceFacts getFacts() {
+        return this.facts;
     }
 
     public void setFacts(IndependenceFacts facts) {

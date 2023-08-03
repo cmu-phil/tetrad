@@ -28,8 +28,7 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Interface for graph editors, useful for situations where graph editors need to
- * be treated generally.
+ * Interface for graph editors, useful for situations where graph editors need to be treated generally.
  *
  * @author josephramsey
  */
@@ -43,14 +42,12 @@ public interface GraphEditable {
     void setName(String name);
 
     /**
-     * @return the selected components (display nodes and display edges) in the
-     * editor.
+     * @return the selected components (display nodes and display edges) in the editor.
      */
     List getSelectedModelComponents();
 
     /**
-     * Pastes a list of components (display nodes and display edges) into the
-     * workbench of the editor.
+     * Pastes a list of components (display nodes and display edges) into the workbench of the editor.
      *
      * @param sessionElements The session elements.
      * @param upperLeft       the upper left point of the paste area.

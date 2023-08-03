@@ -32,27 +32,25 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Wraps a DataBox in such a way that mixed data sets can be stored. The type of
- * each column must be specified by a Variable object, which must be either a
+ * Wraps a DataBox in such a way that mixed data sets can be stored. The type of each column must be specified by a
+ * Variable object, which must be either a
  * <code>ContinuousVariable</code> or a <code>DiscreteVariable</code>. This
- * class violates object orientation in that the underlying data matrix is
- * retrievable using the getDoubleData() method. This is allowed so that
- * external calculations may be performed on large datasets without having to
- * allocate extra memory. If this matrix needs to be modified externally, please
- * consider making a copy of it first, using the TetradMatrix copy() method.
+ * class violates object orientation in that the underlying data matrix is retrievable using the getDoubleData() method.
+ * This is allowed so that external calculations may be performed on large datasets without having to allocate extra
+ * memory. If this matrix needs to be modified externally, please consider making a copy of it first, using the
+ * TetradMatrix copy() method.
  * <p>
  * The data set may be given a name; this name is not used internally.
  * <p>
- * The data set has a list of variables associated with it, as described above.
- * This list is coordinated with the stored data, in that data for the i'th
- * variable will be in the i'th column.
+ * The data set has a list of variables associated with it, as described above. This list is coordinated with the stored
+ * data, in that data for the i'th variable will be in the i'th column.
  * <p>
- * A subset of variables in the data set may be designated as selected. This
- * selection set is stored with the data set and may be manipulated using the
+ * A subset of variables in the data set may be designated as selected. This selection set is stored with the data set
+ * and may be manipulated using the
  * <code>select</code> and <code>deselect</code> methods.
  * <p>
- * A multiplicity m_i may be associated with each case c_i in the dataset, which
- * is interpreted to mean that that c_i occurs m_i times in the dataset.
+ * A multiplicity m_i may be associated with each case c_i in the dataset, which is interpreted to mean that that c_i
+ * occurs m_i times in the dataset.
  * <p>
  * Knowledge may be associated with the data set, using the
  * <code>setKnowledge</code> method. This knowledge is not used internally to
@@ -66,15 +64,16 @@ import java.util.*;
 public final class BoxDataSet implements DataSet {
 
     static final long serialVersionUID = 23L;
-    private Map<String, String> columnToTooltip;
-
-    public Map<String, String> getColumnToTooltip() {
-        return this.columnToTooltip;
-    }
-
     /**
-     * The name of the data model. This is not used internally; it is only here
-     * in case an external class wants this dataset to have a name.
+     * Case ID's. These are strings associated with some or all of the cases of the dataset.
+     *
+     * @serial
+     */
+    private final Map<Integer, String> caseIds = new HashMap<>();
+    private Map<String, String> columnToTooltip;
+    /**
+     * The name of the data model. This is not used internally; it is only here in case an external class wants this
+     * dataset to have a name.
      *
      * @serial
      */
@@ -89,9 +88,8 @@ public final class BoxDataSet implements DataSet {
     private List<Node> variables;
 
     /**
-     * The container storing the data. Rows are cases; columns are variables.
-     * The order of columns is coordinated with the order of variables in
-     * getVariables().
+     * The container storing the data. Rows are cases; columns are variables. The order of columns is coordinated with
+     * the order of variables in getVariables().
      *
      * @serial
      */
@@ -103,43 +101,29 @@ public final class BoxDataSet implements DataSet {
      * @serial
      */
     private Set<Node> selection = new HashSet<>();
-
     /**
-     * Case ID's. These are strings associated with some or all of the cases of
-     * the dataset.
-     *
-     * @serial
-     */
-    private final Map<Integer, String> caseIds = new HashMap<>();
-
-    /**
-     * A map from cases to case multipliers. If a case is not in the domain of
-     * this map, its case multiplier is by default 1. This is the number of
-     * repetitions of the case in the dataset. The sample size is obtained by
-     * summing over these multipliers.
+     * A map from cases to case multipliers. If a case is not in the domain of this map, its case multiplier is by
+     * default 1. This is the number of repetitions of the case in the dataset. The sample size is obtained by summing
+     * over these multipliers.
      *
      * @serial
      */
     private Map<Integer, Integer> multipliers = new HashMap<>();
-
     /**
      * The knowledge associated with this data.
      *
      * @serial
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * The number formatter used for printing out continuous values.
      */
     private transient NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
     /**
      * The character used as a delimiter when the dataset is printed.
      */
     private char outputDelimiter = '\t';
 
-    //============================CONSTRUCTORS==========================//
     public BoxDataSet(DataBox dataBox, List<Node> variables) {
         this.dataBox = dataBox;
         this.variables = new ArrayList<>(variables);
@@ -172,7 +156,46 @@ public final class BoxDataSet implements DataSet {
         return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
 
-    //============================PUBLIC METHODS========================//
+    /**
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
+     */
+    private static void readObject(ObjectInputStream s)
+            throws IOException, ClassNotFoundException {
+        s.defaultReadObject();
+    }
+
+    /**
+     * Attempts to translate <code>element</code> into a double value, returning it if successful, otherwise throwing an
+     * exception. To be successful, the object must be either a Number or a String.
+     *
+     * @throws IllegalArgumentException if the translation cannot be made. The reason is in the message.
+     */
+    private static double getValueFromObjectContinuous(Object element) {
+        if ("*".equals(element) || "".equals(element)) {
+            return ContinuousVariable.getDoubleMissingValue();
+        } else if (element instanceof Number) {
+            return ((Number) element).doubleValue();
+        } else if (element instanceof String) {
+            try {
+                return Double.parseDouble((String) element);
+            } catch (NumberFormatException e) {
+                return ContinuousVariable.getDoubleMissingValue();
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "The argument 'element' must be "
+                            + "either a Number or a String.");
+        }
+    }
+
+    public Map<String, String> getColumnToTooltip() {
+        return this.columnToTooltip;
+    }
 
     /**
      * Gets the name of the data set.
@@ -200,16 +223,16 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * @return the number of rows in the rectangular data set, which is the
-     * maximum of the number of rows in the list of wrapped columns.
+     * @return the number of rows in the rectangular data set, which is the maximum of the number of rows in the list of
+     * wrapped columns.
      */
     public int getNumRows() {
         return this.dataBox.numRows();
     }
 
     /**
-     * Sets the value at the given (row, column) to the given int value,
-     * assuming the variable for the column is discrete.
+     * Sets the value at the given (row, column) to the given int value, assuming the variable for the column is
+     * discrete.
      *
      * @param row    The index of the case.
      * @param column The index of the variable.
@@ -251,8 +274,8 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Sets the value at the given (row, column) to the given double value,
-     * assuming the variable for the column is continuous.
+     * Sets the value at the given (row, column) to the given double value, assuming the variable for the column is
+     * continuous.
      *
      * @param row    The index of the case.
      * @param column The index of the variable.
@@ -273,10 +296,9 @@ public final class BoxDataSet implements DataSet {
     /**
      * @param row The index of the case.
      * @param col The index of the variable.
-     * @return the value at the given row and column as an Object. The type
-     * returned is deliberately vague, allowing for variables of any type.
-     * Primitives will be returned as corresponding wrapping objects (for
-     * example, doubles as Doubles).
+     * @return the value at the given row and column as an Object. The type returned is deliberately vague, allowing for
+     * variables of any type. Primitives will be returned as corresponding wrapping objects (for example, doubles as
+     * Doubles).
      */
     public Object getObject(int row, int col) {
         Object variable = getVariable(col);
@@ -336,12 +358,10 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Adds the given variable to the data set, increasing the number of columns
-     * by one, moving columns i &gt;= <code>index</code> to column i + 1, and
-     * inserting a column of missing values at column i.
+     * Adds the given variable to the data set, increasing the number of columns by one, moving columns i &gt;=
+     * <code>index</code> to column i + 1, and inserting a column of missing values at column i.
      *
-     * @throws IllegalArgumentException if the variable already exists in the
-     *                                  dataset.
+     * @throws IllegalArgumentException if the variable already exists in the dataset.
      */
     public void addVariable(Node variable) {
         if (this.variables.contains(variable)) {
@@ -363,9 +383,8 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Adds the given variable to the dataset, increasing the number of columns
-     * by one, moving columns i &gt;= <code>index</code> to column i + 1, and
-     * inserting a column of missing values at column i.
+     * Adds the given variable to the dataset, increasing the number of columns by one, moving columns i &gt;=
+     * <code>index</code> to column i + 1, and inserting a column of missing values at column i.
      */
     public void addVariable(int index, Node variable) {
         if (this.variables.contains(variable)) {
@@ -406,8 +425,8 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * @return the index of the column of the given variable. You can also get
-     * this by calling getVariables().indexOf(variable).
+     * @return the index of the column of the given variable. You can also get this by calling
+     * getVariables().indexOf(variable).
      */
     public int getColumn(Node variable) {
         return this.variables.indexOf(variable);
@@ -477,16 +496,14 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * @return (a copy of) the List of Variables for the data set, in the order
-     * of their columns.
+     * @return (a copy of) the List of Variables for the data set, in the order of their columns.
      */
     public List<Node> getVariables() {
         return new LinkedList<>(this.variables);
     }
 
     /**
-     * @return a copy of the knowledge associated with this data set. (Cannot be
-     * null.)
+     * @return a copy of the knowledge associated with this data set. (Cannot be null.)
      */
     public Knowledge getKnowledge() {
         return this.knowledge.copy();
@@ -504,8 +521,7 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * @return (a copy of) the List of Variables for the data set, in the order
-     * of their columns.
+     * @return (a copy of) the List of Variables for the data set, in the order of their columns.
      */
     public List<String> getVariableNames() {
         List<Node> vars = getVariables();
@@ -520,8 +536,7 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Marks the given column as selected if 'selected' is true or deselected if
-     * 'selected' is false.
+     * Marks the given column as selected if 'selected' is true or deselected if 'selected' is false.
      */
     public void setSelected(Node variable, boolean selected) {
         if (selected) {
@@ -541,9 +556,8 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Ensures that the dataset has at least the number of rows, adding rows if
-     * necessary to make that the case. The new rows will be filled with missing
-     * values.
+     * Ensures that the dataset has at least the number of rows, adding rows if necessary to make that the case. The new
+     * rows will be filled with missing values.
      */
     public void ensureRows(int rows) {
         if (rows > getNumRows()) {
@@ -552,9 +566,8 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Ensures that the dataset has at least the given number of columns, adding
-     * continuous variables with unique names until that is true. The new
-     * columns will be filled with missing values.
+     * Ensures that the dataset has at least the given number of columns, adding continuous variables with unique names
+     * until that is true. The new columns will be filled with missing values.
      */
     public void ensureColumns(int columns, List<String> excludedVariableNames) {
         for (int col = getNumColumns(); col < columns; col++) {
@@ -599,8 +612,7 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Removes the column for the variable at the given index, reducing the
-     * number of columns by one.
+     * Removes the column for the variable at the given index, reducing the number of columns by one.
      */
     public void removeColumn(int index) {
         if (index < 0 || index >= this.variables.size()) {
@@ -615,7 +627,7 @@ public final class BoxDataSet implements DataSet {
             rows[i] = i;
         }
 
-        int[] cols = new int[this.dataBox.numCols()];
+        int[] cols = new int[this.dataBox.numCols() - 1];
 
         int m = -1;
 
@@ -634,8 +646,7 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Removes the columns for the given variable from the dataset, reducing the
-     * number of columns by one.
+     * Removes the columns for the given variable from the dataset, reducing the number of columns by one.
      */
     @Override
     public void removeColumn(Node variable) {
@@ -647,10 +658,9 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Creates and returns a dataset consisting of those variables in the list
-     * vars. Vars must be a subset of the variables of this DataSet. The
-     * ordering of the elements of vars will be the same as in the list of
-     * variables in this DataSet.
+     * Creates and returns a dataset consisting of those variables in the list vars. Vars must be a subset of the
+     * variables of this DataSet. The ordering of the elements of vars will be the same as in the list of variables in
+     * this DataSet.
      */
     public DataSet subsetColumns(List<Node> vars) {
         if (!(getVariables().containsAll(vars))) {
@@ -689,9 +699,8 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * @return true iff this is a continuous data set--that is, if every column
-     * in it is continuous. (By implication, empty datasets are both discrete
-     * and continuous.)
+     * @return true iff this is a continuous data set--that is, if every column in it is continuous. (By implication,
+     * empty datasets are both discrete and continuous.)
      */
     public boolean isContinuous() {
         for (int i = 0; i < getNumColumns(); i++) {
@@ -706,9 +715,8 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * @return true iff this is a discrete data set--that is, if every column in
-     * it is discrete. (By implication, empty datasets are both discrete and
-     * continuous.)
+     * @return true iff this is a discrete data set--that is, if every column in it is discrete. (By implication, empty
+     * datasets are both discrete and continuous.)
      */
     public boolean isDiscrete() {
         for (int i = 0; i < getNumColumns(); i++) {
@@ -723,8 +731,8 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * @return true if this is a mixed data set--that is, if it contains at
-     * least one continuous column and one discrete columnn.
+     * @return true if this is a mixed data set--that is, if it contains at least one continuous column and one discrete
+     * columnn.
      */
     public boolean isMixed() {
         int numContinuous = 0;
@@ -750,10 +758,9 @@ public final class BoxDataSet implements DataSet {
     /**
      * @return the correlation matrix for this dataset. Defers to
      * <code>Statistic.covariance()</code> in the COLT matrix library, so it
-     * inherits the handling of missing values from that library--that is, any
-     * off-diagonal correlation involving a column with a missing value is
-     * Double.NaN, although all of the on-diagonal elements are 1.0. If that's
-     * not the desired behavior, missing values can be removed or imputed first.
+     * inherits the handling of missing values from that library--that is, any off-diagonal correlation involving a
+     * column with a missing value is Double.NaN, although all of the on-diagonal elements are 1.0. If that's not the
+     * desired behavior, missing values can be removed or imputed first.
      */
     public Matrix getCorrelationMatrix() {
         if (!isContinuous()) {
@@ -766,10 +773,8 @@ public final class BoxDataSet implements DataSet {
     /**
      * @return the covariance matrix for this dataset. Defers to
      * <code>Statistic.covariance()</code> in the COLT matrix library, so it
-     * inherits the handling of missing values from that library--that is, any
-     * covariance involving a column with a missing value is Double.NaN. If
-     * that's not the desired behavior, missing values can be removed or imputed
-     * first.
+     * inherits the handling of missing values from that library--that is, any covariance involving a column with a
+     * missing value is Double.NaN. If that's not the desired behavior, missing values can be removed or imputed first.
      */
     public Matrix getCovarianceMatrix() {
         if (!isContinuous()) {
@@ -782,8 +787,8 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * @return the value at the given row and column, rounded to the nearest
-     * integer, or DiscreteVariable.MISSING_VALUE if the value is missing.
+     * @return the value at the given row and column, rounded to the nearest integer, or DiscreteVariable.MISSING_VALUE
+     * if the value is missing.
      */
     public int getInt(int row, int column) {
         Number value = this.dataBox.get(row, column);
@@ -796,10 +801,8 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * @return the double value at the given row and column. For discrete
-     * variables, this returns an int cast to a double. The double value at the
-     * given row and column may be missing, in which case Double.NaN is
-     * returned.
+     * @return the double value at the given row and column. For discrete variables, this returns an int cast to a
+     * double. The double value at the given row and column may be missing, in which case Double.NaN is returned.
      */
     public double getDouble(int row, int column) {
         Number value = this.dataBox.get(row, column);
@@ -812,11 +815,10 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * @return a string, suitable for printing, of the dataset. Lines are
-     * separated by '\n', tokens in the line by whatever character is set in the
+     * @return a string, suitable for printing, of the dataset. Lines are separated by '\n', tokens in the line by
+     * whatever character is set in the
      * <code>setOutputDelimiter()</code> method. The list of variables is printed
-     * first, followed by one line for each case.
-     * This method should probably not be used for saving to files. If that's
+     * first, followed by one line for each case. This method should probably not be used for saving to files. If that's
      * your goal, use the DataSavers class instead.
      * @see #setOutputDelimiter(Character)
      * @see DataWriter
@@ -891,16 +893,13 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * @return a copy of the underlying COLT TetradMatrix matrix, containing all
-     * of the data in this dataset, discrete data included. Discrete data will
-     * be represented by ints cast to doubles. Rows in this matrix are cases,
-     * and columns are variables. The list of variable, in the order in which
-     * they occur in the matrix, is given by getVariables().
+     * @return a copy of the underlying COLT TetradMatrix matrix, containing all of the data in this dataset, discrete
+     * data included. Discrete data will be represented by ints cast to doubles. Rows in this matrix are cases, and
+     * columns are variables. The list of variable, in the order in which they occur in the matrix, is given by
+     * getVariables().
      * <p>
-     * If isMultipliersCollapsed() returns false, multipliers in the dataset are
-     * first expanded before returning the matrix, so the number of rows in the
-     * returned matrix may not be the same as the number of rows in this
-     * dataset.
+     * If isMultipliersCollapsed() returns false, multipliers in the dataset are first expanded before returning the
+     * matrix, so the number of rows in the returned matrix may not be the same as the number of rows in this dataset.
      * @throws IllegalStateException if this is not a continuous data set.
      * @see #getVariables
      */
@@ -922,8 +921,8 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * @return a new data set in which the the column at indices[i] is placed at
-     * index i, for i = 0 to indices.length - 1. (Moved over from Purify.)
+     * @return a new data set in which the the column at indices[i] is placed at index i, for i = 0 to indices.length -
+     * 1. (Moved over from Purify.)
      */
     public DataSet subsetColumns(int[] indices) {
         List<Node> variables = getVariables();
@@ -1113,17 +1112,9 @@ public final class BoxDataSet implements DataSet {
         return new BoxDataSet(this.dataBox.like(), this.variables);
     }
 
-    public void setNumberFormat(NumberFormat nf) {
-        if (nf == null) {
-            throw new NullPointerException();
-        }
-
-        this.nf = nf;
-    }
-
     /**
-     * Sets the character ('\t', ' ', ',', for instance) that is used to delimit
-     * tokens when the data set is printed out using the toString() method.
+     * Sets the character ('\t', ' ', ',', for instance) that is used to delimit tokens when the data set is printed out
+     * using the toString() method.
      *
      * @see #toString
      */
@@ -1154,15 +1145,13 @@ public final class BoxDataSet implements DataSet {
         this.dataBox = data2;
     }
 
-    //===============================PRIVATE METHODS=====================//
     private void setIntPrivate(int row, int col, int value) {
         this.dataBox.set(row, col, value);
     }
 
     /**
-     * Resizes the data to the given dimensions. Data that does not fall within
-     * the new dimensions is lost, and positions in the redimensioned data that
-     * have no correlates in the old data are set to missing (that is,
+     * Resizes the data to the given dimensions. Data that does not fall within the new dimensions is lost, and
+     * positions in the redimensioned data that have no correlates in the old data are set to missing (that is,
      * Double.NaN).
      *
      * @param rows The number of rows in the redimensioned data.
@@ -1183,21 +1172,6 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     */
-    private static void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
-    }
-
-    /**
      * @return the set of selected nodes, creating a new set if necessary.
      */
     private Set<Node> getSelection() {
@@ -1208,38 +1182,10 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Attempts to translate <code>element</code> into a double value, returning
-     * it if successful, otherwise throwing an exception. To be successful, the
-     * object must be either a Number or a String.
+     * Attempts to translate <code>element</code> into an int value, returning it if successful, otherwise throwing an
+     * exception. To be successful, the object must be either a Number or a String.
      *
-     * @throws IllegalArgumentException if the translation cannot be made. The
-     *                                  reason is in the message.
-     */
-    private static double getValueFromObjectContinuous(Object element) {
-        if ("*".equals(element) || "".equals(element)) {
-            return ContinuousVariable.getDoubleMissingValue();
-        } else if (element instanceof Number) {
-            return ((Number) element).doubleValue();
-        } else if (element instanceof String) {
-            try {
-                return Double.parseDouble((String) element);
-            } catch (NumberFormatException e) {
-                return ContinuousVariable.getDoubleMissingValue();
-            }
-        } else {
-            throw new IllegalArgumentException(
-                    "The argument 'element' must be "
-                            + "either a Number or a String.");
-        }
-    }
-
-    /**
-     * Attempts to translate <code>element</code> into an int value, returning
-     * it if successful, otherwise throwing an exception. To be successful, the
-     * object must be either a Number or a String.
-     *
-     * @throws IllegalArgumentException if the translation cannot be made. The
-     *                                  reason is in the message.
+     * @throws IllegalArgumentException if the translation cannot be made. The reason is in the message.
      */
     private int getValueFromObjectDiscrete(Object element,
                                            DiscreteVariable variable) {
@@ -1305,9 +1251,8 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * If the given category is not already a category for a cagetory, augments
-     * the range of category by one and sets the category of the new value to
-     * the given category.
+     * If the given category is not already a category for a cagetory, augments the range of category by one and sets
+     * the category of the new value to the given category.
      */
     private DiscreteVariable accomodateCategory(DiscreteVariable variable,
                                                 String category) {
@@ -1330,8 +1275,7 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Increases the number of categories if necessary to make sure that this
-     * variable has the given index.
+     * Increases the number of categories if necessary to make sure that this variable has the given index.
      */
     private void accomodateIndex(DiscreteVariable variable, int index) {
         if (!variable.isAccommodateNewCategories()) {
@@ -1345,9 +1289,8 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Adjusts the size of the categories list to match the getModel number of
-     * categories. If the list is too short, it is padded with default
-     * categories. If it is too long, the extra categories are removed.
+     * Adjusts the size of the categories list to match the getModel number of categories. If the list is too short, it
+     * is padded with default categories. If it is too long, the extra categories are removed.
      */
     private void adjustCategories(DiscreteVariable variable,
                                   int numCategories) {
@@ -1388,6 +1331,14 @@ public final class BoxDataSet implements DataSet {
         }
 
         return this.nf;
+    }
+
+    public void setNumberFormat(NumberFormat nf) {
+        if (nf == null) {
+            throw new NullPointerException();
+        }
+
+        this.nf = nf;
     }
 
     public DataBox getDataBox() {

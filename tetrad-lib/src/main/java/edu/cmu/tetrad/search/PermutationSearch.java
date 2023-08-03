@@ -15,11 +15,9 @@ import java.util.*;
  * for each permutation search are implemented as a SuborderSearch.</p>
  *
  * <p>This class specifically handles an optimization for tiered knowledge, whereby
- * tiers in the knowledge can be searched one at a time in order from the lowest
- * to highest, taking all variables from previous tiers as a fixed previs
- * for a later tier. This allows these permutation searches to search over
- * many more variables than otherwise, so long as tiered knowledge is available
- * to organize the search.</p>
+ * tiers in the knowledge can be searched one at a time in order from the lowest to highest, taking all variables from
+ * previous tiers as a fixed for a later tier. This allows these permutation searches to search over many more
+ * variables than otherwise, so long as tiered knowledge is available to organize the search.</p>
  *
  * <p>This class is configured to respect the knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -37,7 +35,6 @@ public class PermutationSearch {
     private final Map<Node, GrowShrinkTree> gsts;
     private final Map<String, Node> nodeMap;
     private Knowledge knowledge = new Knowledge();
-    private boolean verbose = false;
 
     /**
      * Constructs a new PermutationSearch using the given SuborderSearch.
@@ -63,47 +60,12 @@ public class PermutationSearch {
     }
 
     /**
-     * Performe the search and return a CPDAG.
-     *
-     * @return The CPDAG.
-     */
-    public Graph search() {
-        List<int[]> tasks = new ArrayList<>();
-        if (!this.knowledge.isEmpty() && this.knowledge.getVariablesNotInTiers().isEmpty()) {
-            int start, end = 0;
-            for (int i = 0; i < this.knowledge.getNumTiers(); i++) {
-                start = end;
-                for (String name : this.knowledge.getTier(i)) {
-                    this.order.add(this.nodeMap.get(name));
-                    end++;
-                }
-                if (!this.knowledge.isTierForbiddenWithin(i)) {
-                    tasks.add(new int[] {start, end});
-                }
-            }
-        } else {
-            this.order.addAll(this.variables);
-            tasks.add(new int[] {0, this.variables.size()});
-        }
-
-        for (int[] task : tasks) {
-            List<Node> prefix = new ArrayList<>(this.order.subList(0, task[0]));
-            List<Node> suborder = this.order.subList(task[0], task[1]);
-            this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
-        }
-
-        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
-    }
-
-    // TO DO: moved to a better place like GraphUtils
-
-    /**
      * Construct a graph given a specification of the parents for each node.
      *
      * @param nodes   The nodes.
      * @param parents A map from each node to its parents.
      * @param cpDag   Whether a CPDAG is wanted, if false, a DAG.
-     * @return The construted graph.
+     * @return The constructed graph.
      */
     public static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, boolean cpDag) {
         return getGraph(nodes, parents, null, cpDag);
@@ -138,24 +100,57 @@ public class PermutationSearch {
         return graph;
     }
 
+    // TO DO: moved to a better place like GraphUtils
+
+    /**
+     * Performe the search and return a CPDAG.
+     *
+     * @return The CPDAG.
+     */
+    public Graph search() {
+        List<Node> prefix;
+        if (!this.knowledge.isEmpty() && this.knowledge.getVariablesNotInTiers().isEmpty()) {
+            int start = 0;
+            List<Node> suborder;
+            for (int i = 0; i < this.knowledge.getNumTiers(); i++) {
+                prefix = new ArrayList<>(this.order);
+                List<String> tier = this.knowledge.getTier(i);
+                for (String name : tier) {
+                    this.order.add(this.nodeMap.get(name));
+                    if (!this.knowledge.isTierForbiddenWithin(i)) continue;
+                    suborder = this.order.subList(start++, this.order.size());
+                    this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
+                }
+                if (this.knowledge.isTierForbiddenWithin(i)) continue;
+                suborder = this.order.subList(start, this.order.size());
+                this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
+                start = this.order.size();
+            }
+        } else {
+            prefix = Collections.emptyList();
+            this.order.addAll(this.variables);
+            this.suborderSearch.searchSuborder(prefix, this.order, this.gsts);
+        }
+
+        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
+    }
+
+    public GrowShrinkTree getGST(Node node) {
+        return this.gsts.get(node);
+    }
+
     /**
      * Returns the variables.
-     * @return This lsit.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);
     }
 
     /**
-     * Sets whether verbose output should be printed.
-     * @param verbose True if so.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
      * Sets the knowledge to be used in the search.
+     *
      * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {

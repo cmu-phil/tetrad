@@ -29,31 +29,28 @@ import java.util.Arrays;
 
 /**
  * <p>Implements a term in a polymonial whose variables are mapped to indices in
- * in the set {0, 1, 2, ...}. The term has a coefficient and a freely generated
- * list of variables. For example, if "x" -&gt; 0, "y" -&gt; 1, "z" -&gt; 2, then the
- * following terms are represented as follows, where "Vi" stands for the
- * variable mapped to index i: <ol> <li> 2.5x -&gt; 2.5*(V0)(V0) <li>
- * 1.7xyz^2 -&gt; 1.7*(V0)(V1)(V2)(V2) <li> -5.0z^3y^2 -&gt; -5.0*(V2)(V2)(V2)(V1)(V1)
+ * in the set {0, 1, 2, ...}. The term has a coefficient and a freely generated list of variables. For example, if "x"
+ * -&gt; 0, "y" -&gt; 1, "z" -&gt; 2, then the following terms are represented as follows, where "Vi" stands for the
+ * variable mapped to index i: <ol> <li> 2.5x -&gt; 2.5*(V0)(V0) <li> 1.7xyz^2 -&gt; 1.7*(V0)(V1)(V2)(V2) <li>
+ * -5.0z^3y^2 -&gt; -5.0*(V2)(V2)(V2)(V1)(V1)
  * </ol>
  *
  * @author josephramsey
  */
 public class PolynomialTerm implements TetradSerializable {
     static final long serialVersionUID = 23L;
-
-    /**
-     * The coefficient of the term.
-     *
-     * @serial
-     */
-    private double coefficient;
-
     /**
      * The variables of the term.
      *
      * @serial
      */
     private final int[] variables;
+    /**
+     * The coefficient of the term.
+     *
+     * @serial
+     */
+    private double coefficient;
 
     //=================================CONSTRUCTORS========================//
 
@@ -109,8 +106,7 @@ public class PolynomialTerm implements TetradSerializable {
     }
 
     /**
-     * Returns true iff the given variable list is equal to the variable list of
-     * this term.
+     * Returns true iff the given variable list is equal to the variable list of this term.
      */
     public boolean isVariableListEqual(int[] variables) {
         return Arrays.equals(variables, this.variables);
@@ -158,14 +154,12 @@ public class PolynomialTerm implements TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

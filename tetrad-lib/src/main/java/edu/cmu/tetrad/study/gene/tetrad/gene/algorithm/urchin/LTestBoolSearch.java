@@ -25,9 +25,8 @@ import java.io.*;
 import java.util.StringTokenizer;
 
 /**
- * This is merely a main program used to read a binarized measurement data set
- * and to instantiate a BoolSearch and run one or more search methods of that
- * instance.
+ * This is merely a main program used to read a binarized measurement data set and to instantiate a BoolSearch and run
+ * one or more search methods of that instance.
  *
  * @author Frank Wimberly
  */

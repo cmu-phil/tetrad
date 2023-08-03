@@ -52,6 +52,13 @@ public class NumberFormatUtil {
     }
 
     /**
+     * @return Ibid.
+     */
+    public NumberFormat getNumberFormat() {
+        return this.nf;
+    }
+
+    /**
      * Sets the number format, <code>nf</code>.
      *
      * @param nf Ibid.
@@ -63,13 +70,6 @@ public class NumberFormatUtil {
         }
 
         this.nf = nf;
-    }
-
-    /**
-     * @return Ibid.
-     */
-    public NumberFormat getNumberFormat() {
-        return this.nf;
     }
 }
 

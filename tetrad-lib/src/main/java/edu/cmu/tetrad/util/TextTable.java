@@ -22,23 +22,20 @@
 package edu.cmu.tetrad.util;
 
 /**
- * Stores a 2D array of Strings for printing out tables. The table can print out
- * columns either left justified or right justified, with a given number of
- * spaces between columns.
+ * Stores a 2D array of Strings for printing out tables. The table can print out columns either left justified or right
+ * justified, with a given number of spaces between columns.
  *
  * @author josephramsey
  */
 public class TextTable {
 
     /**
-     * Set <code>justification</code> to this if the columns should be left
-     * justified.
+     * Set <code>justification</code> to this if the columns should be left justified.
      */
     public static final int LEFT_JUSTIFIED = 0;
 
     /**
-     * Set <code>justification</code> to this if the columns should be right
-     * justified.
+     * Set <code>justification</code> to this if the columns should be right justified.
      */
     public static final int RIGHT_JUSTIFIED = 1;
 
@@ -56,16 +53,10 @@ public class TextTable {
      * The number of spaces between columns. By default, 2.
      */
     private int columnSpacing = 2;
-
-    public enum Delimiter {JUSTIFIED, COMMA, TAB, SPACE}
-
     private Delimiter delimiter = Delimiter.JUSTIFIED;
 
-//    private boolean tabDelimited;
-
     /**
-     * Construct the text table; the table has a fixed number of rows and
-     * columns, each greater than zero.
+     * Construct the text table; the table has a fixed number of rows and columns, each greater than zero.
      */
     public TextTable(int rows, int columns) {
         if (rows <= 0 || columns <= 0) {
@@ -81,9 +72,11 @@ public class TextTable {
         }
     }
 
+//    private boolean tabDelimited;
+
     /**
-     * Sets the token at the given row and column, each of which must be &gt;= 0
-     * and less than the number of rows or columns, respectively.
+     * Sets the token at the given row and column, each of which must be &gt;= 0 and less than the number of rows or
+     * columns, respectively.
      */
     public void setToken(int row, int column, String token) {
         if (token == null) {
@@ -224,6 +217,8 @@ public class TextTable {
     public void setDelimiter(Delimiter delimiter) {
         this.delimiter = delimiter;
     }
+
+    public enum Delimiter {JUSTIFIED, COMMA, TAB, SPACE}
 }
 
 

@@ -37,6 +37,30 @@ import static org.junit.Assert.assertTrue;
  */
 public final class TestBayesIm {
 
+    private static boolean rowsEqual(BayesIm bayesIm, int node, int row1,
+                                     int row2) {
+        for (int col = 0; col < bayesIm.getNumColumns(node); col++) {
+            double prob1 = bayesIm.getProbability(node, row1, col);
+            double prob2 = bayesIm.getProbability(node, row2, col);
+            if (prob1 != prob2) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean rowUnspecified(BayesIm bayesIm, int node, int row) {
+        for (int col = 0; col < bayesIm.getNumColumns(node); col++) {
+            double prob = bayesIm.getProbability(node, row, col);
+            if (!Double.isNaN(prob)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     @Test
     public void testCopyConstructor() {
         Graph graph = GraphUtils.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
@@ -59,13 +83,11 @@ public final class TestBayesIm {
     }
 
     /**
-     * Tests whether the BayesIm does the right thing in a very simple case
-     * where nodes are added or removed from the graph. Start with graph a -> b,
-     * parameterizing with two values for each node. Construct and fill in
-     * probability tables in BayesIm. Then add edge c -> b "manually." This
-     * should create a table of values for c that is unspecified, and it should
-     * double up the rows from b. Then remove the node c. Now the table for b
-     * should be completely unspecified.
+     * Tests whether the BayesIm does the right thing in a very simple case where nodes are added or removed from the
+     * graph. Start with graph a -> b, parameterizing with two values for each node. Construct and fill in probability
+     * tables in BayesIm. Then add edge c -> b "manually." This should create a table of values for c that is
+     * unspecified, and it should double up the rows from b. Then remove the node c. Now the table for b should be
+     * completely unspecified.
      */
     @Test
     public void testAddRemoveParent() {
@@ -112,12 +134,10 @@ public final class TestBayesIm {
     }
 
     /**
-     * Tests whether the BayesIm does the right thing in a very simple case
-     * where values of a nodes are added or removed from the BayesPm. Start with
-     * graph a -> b &lt;- c, construct and fill in probability tables in BayesIm.
-     * Then add edge c -> b "manually." This should create a table of values for
-     * c that is unspecified, and it should double up the rows from b. Then
-     * remove the node c. Now the table for b should be completely unspecified.
+     * Tests whether the BayesIm does the right thing in a very simple case where values of a nodes are added or removed
+     * from the BayesPm. Start with graph a -> b &lt;- c, construct and fill in probability tables in BayesIm. Then add
+     * edge c -> b "manually." This should create a table of values for c that is unspecified, and it should double up
+     * the rows from b. Then remove the node c. Now the table for b should be completely unspecified.
      */
     @Test
     public void testAddRemoveValues() {
@@ -201,30 +221,6 @@ public final class TestBayesIm {
                 bayesIm4.setProbability(_c, row, col, cTable[row][col]);
             }
         }
-    }
-
-    private static boolean rowsEqual(BayesIm bayesIm, int node, int row1,
-                                     int row2) {
-        for (int col = 0; col < bayesIm.getNumColumns(node); col++) {
-            double prob1 = bayesIm.getProbability(node, row1, col);
-            double prob2 = bayesIm.getProbability(node, row2, col);
-            if (prob1 != prob2) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static boolean rowUnspecified(BayesIm bayesIm, int node, int row) {
-        for (int col = 0; col < bayesIm.getNumColumns(node); col++) {
-            double prob = bayesIm.getProbability(node, row, col);
-            if (!Double.isNaN(prob)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }
 

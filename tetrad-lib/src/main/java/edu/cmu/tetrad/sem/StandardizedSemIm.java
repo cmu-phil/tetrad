@@ -34,62 +34,45 @@ import java.util.Map;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * A special SEM model in which variances of variables are always 1 and means of variables
- * are always 0. In order to ensure that means of variables are always zero, means or error
- * terms are set to zero. (They are alway Gaussian for this model.) Connection functions are
- * always linear. In order to ensure that variances of variables are always 1, only coefficients
- * are allowed to change, and the error terms take up the slack. Becuase of this constraint,
- * given settings of other freeParameters, the range of a given parameter is always bounded
- * above and below. The user may query this range and set set the value of the coefficient
- * to anything within this range. The SEM is initialized from a linear, gaussian SEM by
- * calculating (or estimating) what the coefficients would be if a data set were simulated
- * from that SEM, standardized, and reestimated with the same SEM PM. The coefficients of
- * such an estimated SEM PM are used to initialize the standardized SEM, repeating if necessary
- * (due to possible noise issues) to get coefficients for which all errors variances can
- * be calculated. (Variances need to be &gt;= 0 for Normal distributions.) This produces a
- * set of coefficients that are viable candidates for the standardized SEM. From there,
- * the user cannot make any change that does not also allow for a standardized SEM to be
- * defined, with error variances taking up the slack. Thus, the standardized SEM can
- * never go "out of bounds."
+ * A special SEM model in which variances of variables are always 1 and means of variables are always 0. In order to
+ * ensure that means of variables are always zero, means or error terms are set to zero. (They are alway Gaussian for
+ * this model.) Connection functions are always linear. In order to ensure that variances of variables are always 1,
+ * only coefficients are allowed to change, and the error terms take up the slack. Becuase of this constraint, given
+ * settings of other freeParameters, the range of a given parameter is always bounded above and below. The user may
+ * query this range and set set the value of the coefficient to anything within this range. The SEM is initialized from
+ * a linear, gaussian SEM by calculating (or estimating) what the coefficients would be if a data set were simulated
+ * from that SEM, standardized, and reestimated with the same SEM PM. The coefficients of such an estimated SEM PM are
+ * used to initialize the standardized SEM, repeating if necessary (due to possible noise issues) to get coefficients
+ * for which all errors variances can be calculated. (Variances need to be &gt;= 0 for Normal distributions.) This
+ * produces a set of coefficients that are viable candidates for the standardized SEM. From there, the user cannot make
+ * any change that does not also allow for a standardized SEM to be defined, with error variances taking up the slack.
+ * Thus, the standardized SEM can never go "out of bounds."
  * <p>
  * Currently we are not allowing bidirected edges in the SEM graph.
  */
 public class StandardizedSemIm implements Simulator {
-    private Matrix edgeCoef;
-    private Matrix errorCovar;
-    private Map<Node, Double> errorVariances;
-    private final int sampleSize;
-
-    public int getSampleSize() {
-        return this.sampleSize;
-    }
-
-    public enum Initialization {
-        CALCULATE_FROM_SEM, INITIALIZE_FROM_DATA
-    }
-
     static final long serialVersionUID = 23L;
-
+    private final int sampleSize;
     /**
      * The SEM model.
      */
     private final SemPm semPm;
-
     /**
      * The graph of the model. Stored internally because it must be ensured that the error terms are showing.
      */
     private final SemGraph semGraph;
-
     /**
      * A map from edges in the graph to their coefficients. These are the only freeParameters in the model. This
      * includes coefficients for directed as well as bidirected edges.
      */
     private final Map<Edge, Double> edgeParameters;
-
+    private Matrix edgeCoef;
+    private Matrix errorCovar;
+    private Map<Node, Double> errorVariances;
     /**
      * A map from error nodes in the graph to their error variances. These are not freeParameters in the model; their
-     * values are always calculated as residual variances, under the constraint that the variances of each
-     * variable must be 1.
+     * values are always calculated as residual variances, under the constraint that the variances of each variable must
+     * be 1.
      */
 //    private Map<Node, Double> errorVariances;
 
@@ -97,9 +80,6 @@ public class StandardizedSemIm implements Simulator {
     private Matrix implCovarMeas;
     private Edge editingEdge;
     private ParameterRange range;
-
-
-    //========================================CONSTRUCTORS========================================================//
 
     /**
      * Constructs a new standardized SEM IM, initializing from the freeParameters in the given SEM IM.
@@ -109,15 +89,6 @@ public class StandardizedSemIm implements Simulator {
     public StandardizedSemIm(SemIm im, Parameters parameters) {
         this(im, Initialization.CALCULATE_FROM_SEM, parameters);
     }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-    public static StandardizedSemIm serializableInstance() {
-        return new StandardizedSemIm(SemIm.serializableInstance(), new Parameters());
-    }
-
-    //===========================================PUBLIC METHODS==================================================//
 
     /**
      * Constructs a new standardized SEM IM from the freeParameters in the given SEM IM.
@@ -199,6 +170,17 @@ public class StandardizedSemIm implements Simulator {
         }
     }
 
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     */
+    public static StandardizedSemIm serializableInstance() {
+        return new StandardizedSemIm(SemIm.serializableInstance(), new Parameters());
+    }
+
+    public int getSampleSize() {
+        return this.sampleSize;
+    }
+
     public boolean containsParameter(Edge edge) {
         if (Edges.isBidirectedEdge(edge)) {
             edge = Edges.bidirectedEdge(this.semGraph.getExogenous(edge.getNode1()),
@@ -209,8 +191,7 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * Sets the coefficient for the a-&gt;b edge to the given coefficient, if within range. Otherwise
-     * does nothing.
+     * Sets the coefficient for the a-&gt;b edge to the given coefficient, if within range. Otherwise does nothing.
      *
      * @param a    a -&gt; b
      * @param b    a -&gt; b
@@ -238,8 +219,7 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * Sets the covariance for the a&lt;-&gt;b edge to the given covariance, if within range. Otherwise
-     * does nothing.
+     * Sets the covariance for the a&lt;-&gt;b edge to the given covariance, if within range. Otherwise does nothing.
      *
      * @param a     a &lt;-&gt; b
      * @param b     a &lt;-&gt; b
@@ -428,9 +408,9 @@ public class StandardizedSemIm implements Simulator {
 
     /**
      * @param error The error term. A node with NodeType.ERROR.
-     * @return the error variance for the given error term. THIS IS NOT A PARAMETER OF THE
-     * MODEL! Its value is simply calculated from the given coefficients of the model.
-     * Returns Double.NaN if the error variance cannot be computed.
+     * @return the error variance for the given error term. THIS IS NOT A PARAMETER OF THE MODEL! Its value is simply
+     * calculated from the given coefficients of the model. Returns Double.NaN if the error variance cannot be
+     * computed.
      */
     public double getErrorVariance(Node error) {
         return calculateErrorVarianceFromParams(error);
@@ -502,9 +482,9 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * @return The edge coefficient matrix of the model, a la SemIm. Note that this will normally need to be
-     * transposed, since [a][b] is the edge coefficient for a-->b, not b-->a. Sorry. History. THESE ARE
-     * PARAMETERS OF THE MODEL--THE ONLY PARAMETERS.
+     * @return The edge coefficient matrix of the model, a la SemIm. Note that this will normally need to be transposed,
+     * since [a][b] is the edge coefficient for a-->b, not b-->a. Sorry. History. THESE ARE PARAMETERS OF THE MODEL--THE
+     * ONLY PARAMETERS.
      */
     private Matrix edgeCoef() {
         if (this.edgeCoef != null) {
@@ -536,34 +516,24 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * @return For compatibility only. Returns the variable means of the model. These are always
-     * zero, since this is a standardized model. THESE ARE ALSO NOT PARAMETERS OF THE MODEL. ONLY THE
-     * COEFFICIENTS ARE PARAMETERS.
+     * @return For compatibility only. Returns the variable means of the model. These are always zero, since this is a
+     * standardized model. THESE ARE ALSO NOT PARAMETERS OF THE MODEL. ONLY THE COEFFICIENTS ARE PARAMETERS.
      */
     public double[] means() {
         return new double[this.semPm.getVariableNodes().size()];
     }
 
     /**
-     * A convenience method, in case we want to change out mind about how to simulate. For instance,
-     * it's unclear yet whether we can allow nongaussian errors, so we don't know yet whether the
-     * reduced form method is needed.
+     * A convenience method, in case we want to change out mind about how to simulate. For instance, it's unclear yet
+     * whether we can allow nongaussian errors, so we don't know yet whether the reduced form method is needed.
      *
      * @param sampleSize      The sample size of the desired data set.
      * @param latentDataSaved True if latent variables should be included in the data set.
-     * @return This returns a standardized data set simulated from the model, using the reduced form
-     * method.
+     * @return This returns a standardized data set simulated from the model, using the reduced form method.
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         return simulateDataReducedForm(sampleSize, latentDataSaved);
     }
-
-//    @Override
-//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-//        RandomUtil random = RandomUtil.getInstance();
-//        random.setSeed(seed);
-//        return simulateData(sampleSize, latentDataSaved);
-//    }
 
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         this.edgeCoef = null;
@@ -615,6 +585,13 @@ public class StandardizedSemIm implements Simulator {
         }
     }
 
+//    @Override
+//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateData(sampleSize, latentDataSaved);
+//    }
+
     /**
      * @return a copy of the implied covariance matrix over all the variables.
      */
@@ -623,20 +600,16 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * @return a copy of the implied covariance matrix over the measured
-     * variables only.
+     * @return a copy of the implied covariance matrix over the measured variables only.
      */
     public Matrix getImplCovarMeas() {
         return implCovarMeas().copy();
     }
 
-    //========================================PRIVATE METHODS==========================================//
-
     /**
-     * @return Returns the error covariance matrix of the model. i.e. [a][b] is the covariance of E_a and E_b,
-     * with [a][a] of course being the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE
-     * CALCULATED. Note that elements of this matrix may be Double.NaN; this indicates that these
-     * elements cannot be calculated.
+     * @return Returns the error covariance matrix of the model. i.e. [a][b] is the covariance of E_a and E_b, with
+     * [a][a] of course being the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE CALCULATED. Note that
+     * elements of this matrix may be Double.NaN; this indicates that these elements cannot be calculated.
      */
     private Matrix errCovar(Map<Node, Double> errorVariances, boolean recalculate) {
         if (!recalculate && this.errorCovar != null) {
@@ -723,7 +696,6 @@ public class StandardizedSemIm implements Simulator {
         return getSemPm().getMeasuredNodes();
     }
 
-
     public List<Node> getErrorNodes() {
         List<Node> errorNodes = new ArrayList<>();
 
@@ -741,63 +713,6 @@ public class StandardizedSemIm implements Simulator {
         return new SemPm(this.semPm);
     }
 
-    //-------------------------------------------PUBLIC CLASSES--------------------------------------------//
-
-    /**
-     * Stores a coefficient range--i.e. the edge and coefficient value for which the range is needed,
-     * plus the low and high ends of the range to which the coefficient value may be adjusted.
-     *
-     * @author josephramsey
-     */
-    public static final class ParameterRange implements TetradSerializable {
-        static final long serialVersionUID = 23L;
-
-        private final Edge edge;
-        private final double coef;
-        private final double low;
-        private final double high;
-
-        public ParameterRange(Edge edge, double coef, double low, double high) {
-            this.edge = edge;
-            this.coef = coef;
-            this.low = low;
-            this.high = high;
-        }
-
-        /**
-         * Generates a simple exemplar of this class to test serialization.
-         */
-        public static ParameterRange serializableInstance() {
-            return new ParameterRange(Edge.serializableInstance(), 1.0, 1.0, 1.0);
-        }
-
-        public Edge getEdge() {
-            return this.edge;
-        }
-
-        public double getCoef() {
-            return this.coef;
-        }
-
-        public double getLow() {
-            return this.low;
-        }
-
-        public double getHigh() {
-            return this.high;
-        }
-
-        public String toString() {
-
-            return "\n\nRange for " + this.edge +
-                    "\nCurrent value = " + this.coef +
-                    "\nLow end of range = " + this.low +
-                    "\nHigh end of range = " + this.high;
-        }
-    }
-
-    //-------------------------------------------PRIVATE METHODS-------------------------------------------//
-
     private boolean paramInBounds(Edge edge, double newValue) {
         this.edgeParameters.put(edge, newValue);
         Map<Node, Double> errorVariances = new HashMap<>();
@@ -814,6 +729,8 @@ public class StandardizedSemIm implements Simulator {
         return MatrixUtils.isPositiveDefinite(errCovar(errorVariances, true));
     }
 
+    //-------------------------------------------PUBLIC CLASSES--------------------------------------------//
+
     /**
      * Calculates the error variance for the given error node, given all of the coefficient values in the model.
      *
@@ -823,8 +740,8 @@ public class StandardizedSemIm implements Simulator {
     private double calculateErrorVarianceFromParams(Node error) {
         error = this.semGraph.getNode(error.getName());
 
-        Node child = this.semGraph.getChildren(error).get(0);
-        List<Node> parents = this.semGraph.getParents(child);
+        Node child = this.semGraph.getChildren(error).iterator().next();
+        List<Node> parents = new ArrayList<>(this.semGraph.getParents(child));
 
         double otherVariance = 0;
 
@@ -892,6 +809,65 @@ public class StandardizedSemIm implements Simulator {
         }
 
         return 1.0 - otherVariance <= 0 ? Double.NaN : 1.0 - otherVariance;
+    }
+
+    //-------------------------------------------PRIVATE METHODS-------------------------------------------//
+
+    public enum Initialization {
+        CALCULATE_FROM_SEM, INITIALIZE_FROM_DATA
+    }
+
+    /**
+     * Stores a coefficient range--i.e. the edge and coefficient value for which the range is needed, plus the low and
+     * high ends of the range to which the coefficient value may be adjusted.
+     *
+     * @author josephramsey
+     */
+    public static final class ParameterRange implements TetradSerializable {
+        static final long serialVersionUID = 23L;
+
+        private final Edge edge;
+        private final double coef;
+        private final double low;
+        private final double high;
+
+        public ParameterRange(Edge edge, double coef, double low, double high) {
+            this.edge = edge;
+            this.coef = coef;
+            this.low = low;
+            this.high = high;
+        }
+
+        /**
+         * Generates a simple exemplar of this class to test serialization.
+         */
+        public static ParameterRange serializableInstance() {
+            return new ParameterRange(Edge.serializableInstance(), 1.0, 1.0, 1.0);
+        }
+
+        public Edge getEdge() {
+            return this.edge;
+        }
+
+        public double getCoef() {
+            return this.coef;
+        }
+
+        public double getLow() {
+            return this.low;
+        }
+
+        public double getHigh() {
+            return this.high;
+        }
+
+        public String toString() {
+
+            return "\n\nRange for " + this.edge +
+                    "\nCurrent value = " + this.coef +
+                    "\nLow end of range = " + this.low +
+                    "\nHigh end of range = " + this.high;
+        }
     }
 }
 

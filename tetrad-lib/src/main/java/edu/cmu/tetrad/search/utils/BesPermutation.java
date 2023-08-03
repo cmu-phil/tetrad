@@ -21,17 +21,14 @@ import static org.apache.commons.math3.util.FastMath.min;
 
 /**
  * <p>Implements a version of the BES (Best Equivalent Search) algorithm
- * that takes a permutation as input and yields a permtuation as output,
- * where the related DAG or CPDAG models are implied by the ordering or
- * variables in these permutations. BES is the second step of the GES
- * algorithm (e.g., FGES). The first step in GES starts with an
- * empty graph and adds edges (with corresponding reorientations of
- * edges), yielding a Markov model. The second step, this one, BES,
- * starts with this Markov model and then tries to remove edges from
- * it (with corresponding reorientation) to improve the BES scores.</p>
+ * that takes a permutation as input and yields a permtuation as output, where the related DAG or CPDAG models are
+ * implied by the ordering or variables in these permutations. BES is the second step of the GES algorithm (e.g., FGES).
+ * The first step in GES starts with an empty graph and adds edges (with corresponding reorientations of edges),
+ * yielding a Markov model. The second step, this one, BES, starts with this Markov model and then tries to remove edges
+ * from it (with corresponding reorientation) to improve the BES scores.</p>
  * <p>The advantage of doing this is that BES can then be used as
- * a step in certain permutation-based algorithms like BOSS to allow
- * correct models to be inferred under the assumption of faithfulness.</p>
+ * a step in certain permutation-based algorithms like BOSS to allow correct models to be inferred under the assumption
+ * of faithfulness.</p>
  *
  * @author bryanandrews
  * @author josephramsey
@@ -69,25 +66,11 @@ public class BesPermutation {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-
-    /**
-     * Sets the knowledge that BES will use.
-     *
-     * @param knowledge This knowledge.
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-//    public void setDepth(int depth) {
-//        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
-//        this.depth = depth;
-//    }
 
     private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
 
@@ -97,6 +80,11 @@ public class BesPermutation {
             hashIndices.put(n, ++i);
         }
     }
+
+//    public void setDepth(int depth) {
+//        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
+//        this.depth = depth;
+//    }
 
     public void bes(Graph graph, List<Node> order, List<Node> suborder) {
         Map<Node, Integer> hashIndices = new HashMap<>();
@@ -238,10 +226,19 @@ public class BesPermutation {
         return knowledge;
     }
 
+    /**
+     * Sets the knowledge that BES will use.
+     *
+     * @param knowledge This knowledge.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
     private Set<Node> revertToCPDAG(Graph graph) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
-        rules.setAggressivelyPreventCycles(true);
+        rules.setMeekPreventCycles(true);
         boolean meekVerbose = false;
         rules.setVerbose(meekVerbose);
         return rules.orientImplied(graph);
@@ -354,6 +351,7 @@ public class BesPermutation {
                                     int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack, Map<Edge, ArrowConfigBackward> arrowsMapBackward) {
 
         class BackwardTask extends RecursiveTask<Boolean> {
+            final Map<Edge, ArrowConfigBackward> arrowsMapBackward;
             private final Node r;
             private final List<Node> adj;
             private final Map<Node, Integer> hashIndices;
@@ -361,7 +359,6 @@ public class BesPermutation {
             private final int from;
             private final int to;
             private final SortedSet<Arrow> sortedArrowsBack;
-            final Map<Edge, ArrowConfigBackward> arrowsMapBackward;
 
             private BackwardTask(Node r, List<Node> adj, int chunk, int from, int to, Map<Node, Integer> hashIndices, SortedSet<Arrow> sortedArrowsBack, Map<Edge, ArrowConfigBackward> arrowsMapBackward) {
                 this.adj = adj;

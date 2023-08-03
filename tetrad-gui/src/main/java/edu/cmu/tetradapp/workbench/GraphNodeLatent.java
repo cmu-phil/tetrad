@@ -34,10 +34,8 @@ import java.awt.event.FocusEvent;
 import java.util.List;
 
 /**
- * Represents a latent variable in the workbench. Appears as an oval with
- * the variable name in it. Clicking on the oval pops up a dialog that lets
- * the user modify the name of the variable and whether the variable is
- * latent.
+ * Represents a latent variable in the workbench. Appears as an oval with the variable name in it. Clicking on the oval
+ * pops up a dialog that lets the user modify the name of the variable and whether the variable is latent.
  *
  * @author josephramsey
  * @author Willie Wheeler
@@ -45,8 +43,7 @@ import java.util.List;
 public class GraphNodeLatent extends DisplayNode {
 
     /**
-     * Constructs a new node for representing latent variables in the
-     * graph workbench.
+     * Constructs a new node for representing latent variables in the graph workbench.
      */
     public GraphNodeLatent(Node modelNode) {
         setModelNode(modelNode);

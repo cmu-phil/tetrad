@@ -26,8 +26,6 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -37,108 +35,56 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * <p>Implements a convervative version of PC, in which the Markov condition is assumed
- * but faithfulness is tested locally. The reference is here:</p>
+ * <p>Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
+ * locally. The reference is here:</p>
  *
- * <p>Ramsey, J., Zhang, J., &amp; Spirtes, P. L. (2012). Adjacency-faithfulness and
- * conservative causal inference. arXiv preprint arXiv:1206.6843.</p>
+ * <p>Ramsey, J., Zhang, J., &amp; Spirtes, P. L. (2012). Adjacency-faithfulness and conservative causal inference.
+ * arXiv preprint arXiv:1206.6843.</p>
  *
- * <p>Conservative triple orientation is a method for orienting unshielded triples
- * X*=-*Y*-*Z as one of the following: (a) Collider, X->Y<-Z, (b) Noncollider,
- * X-->Y-->Z, or X<-Y<-Z, or X<-Y->Z, (c) ambiguous between (a) or (b). One does \
- * this by conditioning on subsets of adj(X) or adj(Z). One first checks conditional
- * independence of X and Z conditional on each of these subsets, then lists
- * all of these subsets conditional on which X and Z are *independent*, then looks
- * thoough this list to see if Y is in them. If Y is in all of these subset, the
- * triple is judged to be a noncollider; if it is in none of these subsets, the
- * triple is judged to be a collider, and if it is in some of these subsets and
+ * <p>Conservative triple orientation is a method for orienting unshielded triples X*=-*Y*-*Z as one of the following:
+ * (a) Collider, X->Y<-Z, (b) Noncollider, X-->Y-->Z, or X<-Y<-Z, or X<-Y->Z, (c) ambiguous between (a) or (b). One does
+ * this by conditioning on subsets of adj(X) or adj(Z). One first checks conditional independence of X and Z conditional
+ * on each of these subsets, then lists all of these subsets conditional on which X and Z are *independent*, then looks
+ * thoough this list to see if Y is in them. If Y is in all of these subset, the triple is judged to be a noncollider;
+ * if it is in none of these subsets, the triple is judged to be a collider, and if it is in some of these subsets and
  * not in others of the subsets, then it is judged to be ambiguous.</p>
  *
- * <p>Ambiguous triple are marked in the final graph using an underline, and the
- * final graph is called an "e-patterh", and represents a collection of CPDAGs.
- * To find an element of this collection, one first needs to choose for each
- * ambiguous triple whether it should be a collider or a noncollider and then
- * run the Meek rules given the result of these decisions.</p>
+ * <p>Ambiguous triple are marked in the final graph using an underline, and the final graph is called an "e-pattern",
+ * and represents a collection of CPDAGs. To find an element of this collection, one first needs to choose for each
+ * ambiguous triple whether it should be a collider or a noncollider and then run the Meek rules given the result of
+ * these decisions.</p>
  *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * <p>See setter methods for "knobs" you can turn to control the output of PC and their defaults.</p> *
+ *
+ * <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.</p>
  *
  * @author josephramsey (this version).
  * @see Pc
- * @see PcMax
  * @see Knowledge
  * @see edu.cmu.tetrad.search.utils.MeekRules
  */
 public final class Cpc implements IGraphSearch {
-
-    /**
-     * The independence test used for the PC search.
-     */
     private final IndependenceTest independenceTest;
-
-    /**
-     * Forbidden and required edges for the search.
-     */
-    private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The maximum number of nodes conditioned on in the search.
-     */
-    private int depth = 1000;
-
-    private Graph graph;
-
-    /**
-     * Elapsed time of last search.
-     */
-    private long elapsedTime;
-
-    /**
-     * Set of unshielded colliders from the triple orientation step.
-     */
-    private Set<Triple> colliderTriples;
-
-    /**
-     * Set of unshielded noncolliders from the triple orientation step.
-     */
-    private Set<Triple> noncolliderTriples;
-
-    /**
-     * Set of ambiguous unshielded triples.
-     */
-    private Set<Triple> ambiguousTriples;
-
-    /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
-     */
-    private boolean aggressivelyPreventCycles;
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * The sepsets.
-     */
+    private Knowledge knowledge = new Knowledge();
+    private Graph graph;
+    private long elapsedTime;
+    private Set<Triple> colliderTriples;
+    private Set<Triple> noncolliderTriples;
+    private Set<Triple> ambiguousTriples;
     private SepsetMap sepsets;
+    private int depth = 1000;
+    private boolean stable = true;
+    private boolean meekPreventCycles = true;
+    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+    private boolean verbose = false;
+    private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+
 
     /**
-     * Whether verbose output about independencies is output.
-     */
-    private boolean verbose;
-
-    private boolean stable;
-    private boolean useHeuristic = false;
-    private int maxPPathLength = -1;
-    private final PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
-
-    //=============================CONSTRUCTORS==========================//
-
-    /**
-     * Constructs a CPC algorithm that uses the given independence test as oracle. This does
-     * not make a copy of the independence test, for fear of duplicating the data set!
+     * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
+     * independence test, for fear of duplicating the data set!
      *
      * @param independenceTest The test to user for oracle conditional independence information.
      */
@@ -150,43 +96,76 @@ public final class Cpc implements IGraphSearch {
         this.independenceTest = independenceTest;
     }
 
-    //==============================PUBLIC METHODS========================//
 
     /**
-     * Returns true just in case edges will not be added if they would create cycles.
+     * Runs CPC starting with a fully connected graph over all the variables in the domain of the independence test. See
+     * PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
      *
-     * @return True if so.
+     * @return The e-pattern for the search, which is a graphical representation of a set of possible CPDAGs.
      */
-    public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
+    public Graph search() {
+        this.logger.log("info", "Starting CPC algorithm");
+        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        this.ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
+
+        Fas fas = new Fas(getIndependenceTest());
+
+        long startTime = MillisecondTimes.timeMillis();
+
+        fas.setKnowledge(getKnowledge());
+        fas.setDepth(getDepth());
+        fas.setVerbose(this.verbose);
+
+        // Note that we are ignoring the sepset map returned by this method
+        // on purpose; it is not used in this search.
+        this.graph = fas.search();
+        this.sepsets = fas.getSepsets();
+
+        PcCommon search = new PcCommon(independenceTest);
+        search.setDepth(depth);
+        search.setConflictRule(conflictRule);
+        search.setPcHeuristicType(pcHeuristicType);
+        search.setMeekPreventCycles(meekPreventCycles);
+        search.setKnowledge(this.knowledge);
+
+        if (stable) {
+            search.setFasType(PcCommon.FasType.STABLE);
+        } else {
+            search.setFasType(PcCommon.FasType.REGULAR);
+        }
+
+        search.setColliderDiscovery(PcCommon.ColliderDiscovery.CONSERVATIVE);
+        search.setConflictRule(conflictRule);
+        search.setVerbose(verbose);
+
+        this.graph = search.search();
+        this.sepsets = fas.getSepsets();
+
+        long endTime = MillisecondTimes.timeMillis();
+        this.elapsedTime = endTime - startTime;
+
+        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+        TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
+
+        this.colliderTriples = search.getColliderTriples();
+        this.noncolliderTriples = search.getNoncolliderTriples();
+        this.ambiguousTriples = search.getAmbiguousTriples();
+
+        logTriples();
+
+        TetradLogger.getInstance().flush();
+        return this.graph;
     }
 
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
      *
-     * @param aggressivelyPreventCycles True if so.
+     * @param meekPreventCycles True, if so.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
-    }
-
-    /**
-     * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
-     * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multicore systems.
-     *
-     * @param depth This maximum.
-     */
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
-        }
-
-        if (depth == Integer.MAX_VALUE) {
-            throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
-                    "due to a known bug.");
-        }
-
-        this.depth = depth;
+    public void meekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
@@ -226,8 +205,8 @@ public final class Cpc implements IGraphSearch {
     }
 
     /**
-     * Returns the depth of the search--that is, the maximum number of variables
-     * conditioned on in any conditional independence test.
+     * Returns the depth of the search--that is, the maximum number of variables conditioned on in any conditional
+     * independence test.
      *
      * @return This.
      */
@@ -236,8 +215,27 @@ public final class Cpc implements IGraphSearch {
     }
 
     /**
-     * Returns the set of ambiguous triples found during the most recent run of the algorithm.
-     * Non-null after a call to <code>search()</code>.
+     * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
+     * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multicore systems.
+     *
+     * @param depth This maximum.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
+        }
+
+        if (depth == Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
+                    "due to a known bug.");
+        }
+
+        this.depth = depth;
+    }
+
+    /**
+     * Returns the set of ambiguous triples found during the most recent run of the algorithm. Non-null after a call to
+     * <code>search()</code>.
      *
      * @return This set.
      */
@@ -252,75 +250,6 @@ public final class Cpc implements IGraphSearch {
      */
     public Set<Edge> getAdjacencies() {
         return new HashSet<>(GraphUtils.undirectedGraph(this.graph).getEdges());
-    }
-
-    /**
-     * Runs CPC starting with a fully connected graph over all the variables in the domain
-     * of the independence test. See PC for caveats. The number of possible cycles and
-     * bidirected edges is far less with CPC than with PC.
-     *
-     * @return The e-pattern for the search, which is a graphical representation of a set
-     * of possible CPDAGs.
-     */
-    public Graph search() {
-        this.logger.log("info", "Starting CPC algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
-        this.ambiguousTriples = new HashSet<>();
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
-
-        Fas fas = new Fas(getIndependenceTest());
-
-        long startTime = MillisecondTimes.timeMillis();
-
-        fas.setKnowledge(getKnowledge());
-        fas.setDepth(getDepth());
-        fas.setVerbose(this.verbose);
-
-        // Note that we are ignoring the sepset map returned by this method
-        // on purpose; it is not used in this search.
-        this.graph = fas.search();
-        this.sepsets = fas.getSepsets();
-
-        PcCommon search = new PcCommon(independenceTest);
-        search.setDepth(depth);
-        search.setHeuristic(1);
-        search.setKnowledge(this.knowledge);
-
-        if (stable) {
-            search.setFasType(PcCommon.FasType.STABLE);
-        } else {
-            search.setFasType(PcCommon.FasType.REGULAR);
-        }
-
-        search.setColliderDiscovery(PcCommon.ColliderDiscovery.CONSERVATIVE);
-        search.setConflictRule(conflictRule);
-        search.setUseHeuristic(useHeuristic);
-        search.setMaxPathLength(maxPPathLength);
-        search.setVerbose(verbose);
-
-        this.graph = search.search();
-        this.sepsets = fas.getSepsets();
-
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, independenceTest.getVariables());
-        GraphSearchUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
-
-        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
-
-        long endTime = MillisecondTimes.timeMillis();
-        this.elapsedTime = endTime - startTime;
-
-        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
-
-        this.colliderTriples = search.getColliderTriples();
-        this.noncolliderTriples = search.getNoncolliderTriples();
-        this.ambiguousTriples = search.getAmbiguousTriples();
-
-        logTriples();
-
-        TetradLogger.getInstance().flush();
-        return this.graph;
     }
 
     /**
@@ -344,40 +273,45 @@ public final class Cpc implements IGraphSearch {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Sets whether the stable FAS search should be used.
+     * <p>Sets whether the stable adjacency search should be used. Default is false. Default is false. See the
+     * following reference for this:</p>
      *
-     * @param stable True if so.
+     * <p>Colombo, D., & Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J. Mach.
+     * Learn. Res., 15(1), 3741-3782.</p>
+     *
+     * @param stable True iff the case.
      */
     public void setStable(boolean stable) {
         this.stable = stable;
     }
 
     /**
-     * Sets whether the heuristic should be used for max p.
+     * Sets which conflict rule to use for resolving collider orientation conflicts.
      *
-     * @param useHeuristic True if so.
+     * @param conflictRule The rule.
+     * @see edu.cmu.tetrad.search.utils.PcCommon.ConflictRule
      */
-    public void setUseHeuristic(boolean useHeuristic) {
-        this.useHeuristic = useHeuristic;
+    public void setConflictRule(PcCommon.ConflictRule conflictRule) {
+        this.conflictRule = conflictRule;
     }
 
     /**
-     * Sets the max path length for the max p heuristic.
+     * Sets the PC heuristic type. Default = NONE.
      *
-     * @param maxPPathLength This length.
+     * @param pcHeuristicType The type.
+     * @see edu.cmu.tetrad.search.utils.PcCommon.PcHeuristicType
      */
-    public void setMaxPPathLength(int maxPPathLength) {
-        this.maxPPathLength = maxPPathLength;
+    public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristicType) {
+        this.pcHeuristicType = pcHeuristicType;
     }
 
-    //==========================PRIVATE METHODS===========================//
 
     private void logTriples() {
         TetradLogger.getInstance().log("info", "\nCollider triples:");
@@ -399,7 +333,6 @@ public final class Cpc implements IGraphSearch {
             TetradLogger.getInstance().log("info", "Ambiguous: " + triple);
         }
     }
-
 }
 
 

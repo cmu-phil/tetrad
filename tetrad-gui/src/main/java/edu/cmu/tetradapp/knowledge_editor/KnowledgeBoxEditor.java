@@ -65,6 +65,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private final List<String> firstTierVars = new LinkedList<>();
     private final List<String> secondTierVars = new LinkedList<>();
     private final KnowledgeBoxModel knowledgeBoxModel;
+    private final JTabbedPane tabbedPane;
     private Knowledge knowledge;
     private KnowledgeWorkbench edgeWorkbench;
     private JPanel tiersPanel;
@@ -73,7 +74,6 @@ public class KnowledgeBoxEditor extends JPanel {
     private boolean showRequired;
     private boolean showRequiredByGroups;
     private boolean showForbiddenByGroups;
-    private final JTabbedPane tabbedPane;
     private int numTiers = 3;
 
     public KnowledgeBoxEditor(ForbiddenGraphModel knowledgeBoxModel) {
@@ -85,10 +85,9 @@ public class KnowledgeBoxEditor extends JPanel {
     }
 
     /**
-     * Constructs a Knowledge editor for the given knowledge, variable names
-     * (that is, the list of all variable names to be considered, which may vary
-     * from object to object even for the same knowledge), and possible source
-     * graph. The source graph is used only to arrange nodes in the edge panel.
+     * Constructs a Knowledge editor for the given knowledge, variable names (that is, the list of all variable names to
+     * be considered, which may vary from object to object even for the same knowledge), and possible source graph. The
+     * source graph is used only to arrange nodes in the edge panel.
      */
     public KnowledgeBoxEditor(KnowledgeBoxModel knowledgeBoxModel) {
         this.vars = knowledgeBoxModel.getVariables();
@@ -114,6 +113,8 @@ public class KnowledgeBoxEditor extends JPanel {
         });
 
         initComponents();
+
+        setNumDisplayTiers(this.knowledge.getNumTiers());
     }
 
     private void initComponents() {
@@ -299,9 +300,8 @@ public class KnowledgeBoxEditor extends JPanel {
     }
 
     /**
-     * If the knowledge box sees interventional variables
-     * it automatically places those variables in the first tier
-     * and the rest of domain variables in second tier - Zhou
+     * If the knowledge box sees interventional variables it automatically places those variables in the first tier and
+     * the rest of domain variables in second tier - Zhou
      */
     private void checkInterventionalVariables() {
         this.vars.forEach(e -> {
@@ -357,7 +357,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         for (int tier = 0; tier < numTiers; tier++) {
             Box textRow = Box.createHorizontalBox();
-            textRow.add(new JLabel("Tier " + (tier + 1)));
+            textRow.add(new JLabel("Tier " + (tier)));
             int _tier = tier;
 
             textRow.add(Box.createHorizontalGlue());

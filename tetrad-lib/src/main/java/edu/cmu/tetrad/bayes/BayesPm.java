@@ -34,13 +34,10 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Implements a discrete Bayes parametric model--that is, a DAG together with a
- * map from the nodes in the graph to a set of discrete variables, specifying
- * the number of categories for each variable and the name of each category for
- * each variable. This is all the information one needs to know in order to
- * determine the parametric form of a Bayes net up to actual values of
- * parameters. Specific values for the Bayes net are stored in a BayesIM object
- * (see).
+ * Implements a discrete Bayes parametric model--that is, a DAG together with a map from the nodes in the graph to a set
+ * of discrete variables, specifying the number of categories for each variable and the name of each category for each
+ * variable. This is all the information one needs to know in order to determine the parametric form of a Bayes net up
+ * to actual values of parameters. Specific values for the Bayes net are stored in a BayesIM object (see).
  *
  * @author josephramsey
  * @see edu.cmu.tetrad.graph.Dag
@@ -66,9 +63,8 @@ public final class BayesPm implements Pm, VariableSource {
     //=========================CONSTRUCTORS=============================//
 
     /**
-     * Construct a new BayesPm using the given DAG, assigning each variable two
-     * values named "value1" and "value2" unless nodes are discrete variables
-     * with categories already defined.
+     * Construct a new BayesPm using the given DAG, assigning each variable two values named "value1" and "value2"
+     * unless nodes are discrete variables with categories already defined.
      */
     public BayesPm(Graph graph) {
         if (graph == null) {
@@ -95,16 +91,15 @@ public final class BayesPm implements Pm, VariableSource {
     }
 
     /**
-     * Constructs a new BayesPm using a given DAG, using as much information
-     * from the old BayesPm as possible.
+     * Constructs a new BayesPm using a given DAG, using as much information from the old BayesPm as possible.
      */
     public BayesPm(Graph graph, BayesPm oldBayesPm) {
         this(graph, oldBayesPm, 2, 2);
     }
 
     /**
-     * Constructs a new BayesPm from the given DAG, assigning each variable a
-     * random number of values between <code>lowerBound</code> and
+     * Constructs a new BayesPm from the given DAG, assigning each variable a random number of values between
+     * <code>lowerBound</code> and
      * <code>upperBound</code>. Uses a fixed number of values if lowerBound ==
      * upperBound. The values are named "value1" ... "valuen".
      */
@@ -119,12 +114,10 @@ public final class BayesPm implements Pm, VariableSource {
     }
 
     /**
-     * Constructs a new BayesPm from the given DAG, using as much information
-     * from the old BayesPm as possible. For variables not in the old BayesPm,
-     * assigns each variable a random number of values between
+     * Constructs a new BayesPm from the given DAG, using as much information from the old BayesPm as possible. For
+     * variables not in the old BayesPm, assigns each variable a random number of values between
      * <code>lowerBound</code> and <code>upperBound</code>. Uses a fixed number
-     * of values if lowerBound == upperBound. The values are named "value1" ...
-     * "valuen".
+     * of values if lowerBound == upperBound. The values are named "value1" ... "valuen".
      */
     public BayesPm(Graph graph, BayesPm oldBayesPm, int lowerBound,
                    int upperBound) {
@@ -177,18 +170,34 @@ public final class BayesPm implements Pm, VariableSource {
 
     //=========================PUBLIC METHODS=============================//
 
-    /**
-     * @return the DAG as a Graph.
-     */
-    public Graph getDag() {
-        return this.dag;
-    }
-
     public static List<String> getParameterNames() {
         List<String> parameters = new ArrayList<>();
         parameters.add("minCategories");
         parameters.add("maxCategories");
         return parameters;
+    }
+
+    private static int pickNumVals(int lowerBound, int upperBound) {
+        if (lowerBound < 2) {
+            throw new IllegalArgumentException(
+                    "Lower bound must be >= 2: " + lowerBound);
+        }
+
+        if (upperBound < lowerBound) {
+            throw new IllegalArgumentException(
+                    "Upper bound for number of categories must be >= lower " + "bound.");
+        }
+
+        int difference = upperBound - lowerBound;
+        RandomUtil randomUtil = RandomUtil.getInstance();
+        return randomUtil.nextInt(difference + 1) + lowerBound;
+    }
+
+    /**
+     * @return the DAG as a Graph.
+     */
+    public Graph getDag() {
+        return this.dag;
     }
 
     /**
@@ -273,8 +282,7 @@ public final class BayesPm implements Pm, VariableSource {
     }
 
     /**
-     * Will return true if the argument is a BayesPm with the same graph and
-     * variables.
+     * Will return true if the argument is a BayesPm with the same graph and variables.
      */
     public boolean equals(Object o) {
         if (o == null) {
@@ -336,7 +344,6 @@ public final class BayesPm implements Pm, VariableSource {
         return measuredNodes;
     }
 
-
     /**
      * Prints out the list of values for each node.
      */
@@ -373,11 +380,11 @@ public final class BayesPm implements Pm, VariableSource {
         return -1;
     }
 
+    //=========================PRIVATE METHODS=============================//
+
     public int getNumNodes() {
         return this.dag.getNumNodes();
     }
-
-    //=========================PRIVATE METHODS=============================//
 
     private void copyAvailableInformationFromOldBayesPm(BayesPm oldbayesPm,
                                                         int lowerBound, int upperBound) {
@@ -477,31 +484,13 @@ public final class BayesPm implements Pm, VariableSource {
         }
     }
 
-    private static int pickNumVals(int lowerBound, int upperBound) {
-        if (lowerBound < 2) {
-            throw new IllegalArgumentException(
-                    "Lower bound must be >= 2: " + lowerBound);
-        }
-
-        if (upperBound < lowerBound) {
-            throw new IllegalArgumentException(
-                    "Upper bound for number of categories must be >= lower " + "bound.");
-        }
-
-        int difference = upperBound - lowerBound;
-        RandomUtil randomUtil = RandomUtil.getInstance();
-        return randomUtil.nextInt(difference + 1) + lowerBound;
-    }
-
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

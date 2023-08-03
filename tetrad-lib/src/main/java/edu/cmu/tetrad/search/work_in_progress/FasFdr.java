@@ -23,9 +23,9 @@ package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.IFas;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.*;
@@ -47,8 +47,8 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * search is different for different algorithm, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
  * <p>
- * This variant does each depth twice, gathering up the p values in the first round, using FDR to estimate a cutoff
- * for acceptance, and rerunning using the specified cutoff.
+ * This variant does each depth twice, gathering up the p values in the first round, using FDR to estimate a cutoff for
+ * acceptance, and rerunning using the specified cutoff.
  *
  * @author josephramsey.
  */
@@ -57,14 +57,14 @@ public class FasFdr implements IFas {
     private final double alpha;
     private final Graph graph;
     private final IndependenceTest test;
-    private Knowledge knowledge = new Knowledge();
-    private int depth = 1000;
     private final int numIndependenceTests;
     private final TetradLogger logger = TetradLogger.getInstance();
-    private SepsetMap sepset = new SepsetMap();
     private final NumberFormat nf = new DecimalFormat("0.00E0");
-    private boolean verbose;
     private final List<Double> pValueList = new ArrayList<>();
+    private Knowledge knowledge = new Knowledge();
+    private int depth = 1000;
+    private SepsetMap sepset = new SepsetMap();
+    private boolean verbose;
     private PrintStream out = System.out;
 
     //==========================CONSTRUCTORS=============================//
@@ -175,7 +175,7 @@ public class FasFdr implements IFas {
     /**
      * Sets whether verbose output will be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -202,8 +202,8 @@ public class FasFdr implements IFas {
     }
 
     /**
-     * Sets the depth of the search--i.e., the maximum number of variables conditioned on for any
-     * conditional independence test.
+     * Sets the depth of the search--i.e., the maximum number of variables conditioned on for any conditional
+     * independence test.
      *
      * @param depth This maximum.
      */
@@ -295,7 +295,7 @@ public class FasFdr implements IFas {
 
                 if (addDependencies) {
                     if (independent) {
-                        List<Node> theRest = new ArrayList<>();
+                        Set<Node> theRest = new HashSet<>();
 
                         for (Node node : nodes) {
                             if (node != x && node != y) theRest.add(node);
@@ -313,7 +313,7 @@ public class FasFdr implements IFas {
                     if (independent) {
                         if (!adjacencies.get(x).contains(y)) continue;
 
-                        List<Node> theRest = new ArrayList<>();
+                        Set<Node> theRest = new HashSet<>();
 
                         for (Node node : nodes) {
                             if (node != x && node != y) theRest.add(node);
@@ -392,7 +392,7 @@ public class FasFdr implements IFas {
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, ppx);
+                        Set<Node> condSet = GraphUtils.asSet(choice, ppx);
                         IndependenceResult result;
 
                         try {
@@ -400,7 +400,7 @@ public class FasFdr implements IFas {
                             this.pValueList.add(result.getPValue());
                         } catch (Exception e) {
                             result = new IndependenceResult(new IndependenceFact(x, y, condSet),
-                                    false, Double.NaN);
+                                    false, Double.NaN, Double.NaN);
                         }
 
                         boolean noEdgeRequired =

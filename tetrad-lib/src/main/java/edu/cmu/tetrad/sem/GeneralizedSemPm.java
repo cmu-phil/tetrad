@@ -34,9 +34,8 @@ import java.util.*;
 
 
 /**
- * Parametric model for Generalized SEM model. This contains all the
- * equations of the model with parameters represented symbolically (i.e.
- * no values for parameters).
+ * Parametric model for Generalized SEM model. This contains all the equations of the model with parameters represented
+ * symbolically (i.e. no values for parameters).
  *
  * @author josephramsey
  */
@@ -73,21 +72,20 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     private final List<Node> errorNodes;
 
     /**
-     * The freeParameters in the model, mapped to the nodes that they are associated with. Each parameter may
-     * be associated with more than one node. When freeParameters are removed from an equation or error distribution,
-     * the associated nodes should be removed from the relevant set in this map, and if the set is empty,
-     * the parameter should be removed from the map. Also, before adding a parameter to this map, it must be
-     * checked whether a parameter by the same name already exists. If one such parameter by the same name
-     * already exists, that one should be used instead of the new one. This is needed both to avoid confusion
-     * and to allow freeParameters to be reused in different parts of the interface, creating equality constraints.
+     * The freeParameters in the model, mapped to the nodes that they are associated with. Each parameter may be
+     * associated with more than one node. When freeParameters are removed from an equation or error distribution, the
+     * associated nodes should be removed from the relevant set in this map, and if the set is empty, the parameter
+     * should be removed from the map. Also, before adding a parameter to this map, it must be checked whether a
+     * parameter by the same name already exists. If one such parameter by the same name already exists, that one should
+     * be used instead of the new one. This is needed both to avoid confusion and to allow freeParameters to be reused
+     * in different parts of the interface, creating equality constraints.
      *
      * @serial Cannot be null.
      */
     private final Map<String, Set<Node>> referencedParameters;
 
     /**
-     * The nodes of the model, variable nodes or error nodes, mapped to the other nodes that they are
-     * associated with.
+     * The nodes of the model, variable nodes or error nodes, mapped to the other nodes that they are associated with.
      */
     private final Map<Node, Set<Node>> referencedNodes;
 
@@ -110,32 +108,39 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      * String representations of initial parameter distributions. A map from parameter names to expression strings.
      */
     private final Map<String, String> parameterExpressionStrings;
-
-    /**
-     * Distributions from which initial values for freeParameters are drawn.
-     */
-    private Map<String, Expression> parameterEstimationInitializationExpressions;
-
     /**
      * String representations of initial parameter distributions. A map from parameter names to expression strings.
      */
     private final Map<String, String> parameterEstimationInitializationExpressionStrings;
-
+    /**
+     * A map from initial name strings to parameter templates.
+     */
+    private final Map<String, String> startsWithParametersTemplates;
+    /**
+     * A map from initial name strings to parameter templates.
+     */
+    private final Map<String, String> startsWithParametersEstimationInitializationTemplates;
+    /**
+     * A map from names to nodes, speedup.
+     */
+    private final Map<String, Node> namesToNodes = new HashMap<>();
+    private final Map<String, Integer> parameterSubscript = new HashMap<>();
+    /**
+     * Distributions from which initial values for freeParameters are drawn.
+     */
+    private Map<String, Expression> parameterEstimationInitializationExpressions;
     /**
      * The stored template for variables.
      */
     private String variablesTemplate = "TSUM(NEW(B)*$)";
-
     /**
      * The stored template for error terms.
      */
     private String errorsTemplate = "Normal(0, NEW(s))";
-
     /**
      * The stored template for freeParameters.
      */
     private String parametersTemplate = "Split(-1.0,-.5,.5,1.0)";
-
     /**
      * The stored template for freeParameters.
      */
@@ -147,25 +152,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     private List<String> variableNames;
 
     /**
-     * A map from initial name strings to parameter templates.
-     */
-    private final Map<String, String> startsWithParametersTemplates;
-
-    /**
-     * A map from initial name strings to parameter templates.
-     */
-    private final Map<String, String> startsWithParametersEstimationInitializationTemplates;
-
-    /**
-     * A map from names to nodes, speedup.
-     */
-    private final Map<String, Node> namesToNodes = new HashMap<>();
-
-    //===========================CONSTRUCTORS==========================//
-
-    /**
-     * Constructs a BayesPm from the given Graph, which must be convertible
-     * first into a ProtoSemGraph and then into a SemGraph.
+     * Constructs a BayesPm from the given Graph, which must be convertible first into a ProtoSemGraph and then into a
+     * SemGraph.
      */
     public GeneralizedSemPm(Graph graph) {
         this(new SemGraph(graph));
@@ -334,7 +322,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
             for (int i = 0; i < variableNodes.size(); i++) {
                 Node node = variableNodes.get(i);
-                List<Node> parents = getVariableParents(node);
+                List<Node> parents = new ArrayList<>(getVariableParents(node));
 
                 StringBuilder buf = new StringBuilder();
 
@@ -450,8 +438,6 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         parameters.add("generalSemParameterTemplate");
         return parameters;
     }
-
-    //============================PUBLIC METHODS========================//
 
     public Expression getNodeExpression(Node node) {
         return this.nodeExpressions.get(node);
@@ -598,8 +584,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Sets the expression which should be evaluated when calculating new values for the given
-     * parameter. These values are used to initialize the freeParameters.
+     * Sets the expression which should be evaluated when calculating new values for the given parameter. These values
+     * are used to initialize the freeParameters.
      *
      * @param parameter        The parameter whose initial value needs to be computed.
      * @param expressionString The formula for picking initial values.
@@ -656,8 +642,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Sets the expression which should be evaluated when calculating new values for the given
-     * parameter. These values are used to initialize the freeParameters.
+     * Sets the expression which should be evaluated when calculating new values for the given parameter. These values
+     * are used to initialize the freeParameters.
      *
      * @param parameter        The parameter whose initial value needs to be computed.
      * @param expressionString The formula for picking initial values.
@@ -698,8 +684,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Sets the expression which should be evaluated when calculating new values for the given
-     * parameter. These values are used to initialize the freeParameters.
+     * Sets the expression which should be evaluated when calculating new values for the given parameter. These values
+     * are used to initialize the freeParameters.
      *
      * @param parameter        The parameter whose initial value needs to be computed.
      * @param expressionString The formula for picking initial values.
@@ -785,7 +771,6 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         return new SemGraph(this.graph);
     }
 
-
     /**
      * @return all the nodes in the sem, including error nodes.
      */
@@ -794,8 +779,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Returns the list of variable nodes--that is, node that are not error
-     * nodes.
+     * Returns the list of variable nodes--that is, node that are not error nodes.
      */
     public List<Node> getVariableNodes() {
         return new ArrayList<>(this.variableNodes);
@@ -878,8 +862,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
     /**
      * @param node the node doing the referencing.
-     * @return the set of nodes (variable or error) referenced by the expression for the given
-     * node.
+     * @return the set of nodes (variable or error) referenced by the expression for the given node.
      */
     public Set<Node> getReferencingNodes(Node node) {
         Set<Node> set = this.referencedNodes.get(node);
@@ -888,8 +871,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
     /**
      * @param node the node doing the referencing.
-     * @return the variables referenced by the expression for the given node (variable node or
-     * error node).
+     * @return the variables referenced by the expression for the given node (variable node or error node).
      */
     public Set<Node> getReferencedNodes(Node node) {
         Set<Node> nodes = new HashSet<>();
@@ -904,9 +886,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Given base b (a String), returns the first name in the sequence "b1",
-     * "b2", "b3", etc., which is not already the name of a node in the
-     * workbench.
+     * Given base b (a String), returns the first name in the sequence "b1", "b2", "b3", etc., which is not already the
+     * name of a node in the workbench.
      *
      * @param base the base string.
      * @return the first string in the sequence not already being used.
@@ -928,8 +909,6 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         return base + subscript;
     }
 
-    private final Map<String, Integer> parameterSubscript = new HashMap<>();
-
     /**
      * @param node the given node, variable or error.
      * @return all parents of the given node, with error node(s?) last.
@@ -941,8 +920,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Returns a relatively brief String representation of this SEM PM--the equations and distributions
-     * of the model. Initial value distributions for freeParameters are not printed.
+     * Returns a relatively brief String representation of this SEM PM--the equations and distributions of the model.
+     * Initial value distributions for freeParameters are not printed.
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
@@ -967,15 +946,13 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         return buf.toString();
     }
 
-    //============================PRIVATE METHODS======================//
-
     /**
      * @param node A node in the graph.
      * @return The non-error parents of <code>node</code>.
      */
-    private List<Node> getVariableParents(Node node) {
+    private Set<Node> getVariableParents(Node node) {
         List<Node> allParents = this.graph.getParents(node);
-        List<Node> parents = new LinkedList<>();
+        Set<Node> parents = new HashSet<>();
 
         for (Node _parent : allParents) {
             if (_parent.getNodeType() != NodeType.ERROR) {
@@ -986,7 +963,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     private List<Node> putErrorNodesLast(List<Node> parents) {
-        List<Node> sortedNodes = new LinkedList<>();
+        List<Node> sortedNodes = new ArrayList<>();
 
         for (Node node : parents) {
             if (node.getNodeType() != NodeType.ERROR) {
@@ -1004,14 +981,12 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help).
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help).
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -1055,10 +1030,6 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         return this.parametersTemplate;
     }
 
-    public String getParametersEstimationInitializationTemplate() {
-        return this.parametersEstimationInitializationTemplate;
-    }
-
     public void setParametersTemplate(String parametersTemplate) throws ParseException {
         if (parametersTemplate == null) {
             throw new NullPointerException();
@@ -1075,6 +1046,10 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         }
 
         this.parametersTemplate = parametersTemplate;
+    }
+
+    public String getParametersEstimationInitializationTemplate() {
+        return this.parametersEstimationInitializationTemplate;
     }
 
     public void setParametersEstimationInitializationTemplate(String parametersTemplate) throws ParseException {

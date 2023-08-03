@@ -33,22 +33,17 @@ import java.util.*;
  */
 public class TimeLagGraph implements Graph {
     static final long serialVersionUID = 23L;
-
+    private final Map<String, Object> attributes = new HashMap<>();
     /**
      * Fires property change events.
      */
     private transient PropertyChangeSupport pcs;
-
-
     private EdgeListGraph graph = new EdgeListGraph();
     private int maxLag = 1;
     private int numInitialLags = 1;
     private List<Node> lag0Nodes = new ArrayList<>();
-
     private boolean pag;
     private boolean cpdag;
-
-    private final Map<String, Object> attributes = new HashMap<>();
     private Paths paths;
 
     private Set<Triple> underLineTriples = new HashSet<>();
@@ -375,24 +370,6 @@ public class TimeLagGraph implements Graph {
         return this.numInitialLags;
     }
 
-    public static class NodeId {
-        private final String name;
-        private final int lag;
-
-        public NodeId(String name, int lag) {
-            this.name = name;
-            this.lag = lag;
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
-        public int getLag() {
-            return this.lag;
-        }
-    }
-
     public String toString() {
         return getGraph().toString() + "\n" + this.lag0Nodes;
     }
@@ -497,13 +474,8 @@ public class TimeLagGraph implements Graph {
     }
 
     @Override
-    public List<Node> getSepset(Node n1, Node n2) {
+    public Set<Node> getSepset(Node n1, Node n2) {
         return this.graph.getSepset(n1, n2);
-    }
-
-    @Override
-    public void setNodes(List<Node> nodes) {
-        throw new IllegalArgumentException("Sorry, you cannot replace the variables for a time lag graph.");
     }
 
     public boolean isExogenous(Node node) {
@@ -513,7 +485,6 @@ public class TimeLagGraph implements Graph {
     public List<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }
-
 
     public Endpoint getEndpoint(Node node1, Node node2) {
         return getGraph().getEndpoint(node1, node2);
@@ -599,6 +570,11 @@ public class TimeLagGraph implements Graph {
 
     public List<Node> getNodes() {
         return getGraph().getNodes();
+    }
+
+    @Override
+    public void setNodes(List<Node> nodes) {
+        throw new IllegalArgumentException("Sorry, you cannot replace the variables for a time lag graph.");
     }
 
     public List<String> getNodeNames() {
@@ -783,6 +759,24 @@ public class TimeLagGraph implements Graph {
             if (!isAdjacentTo(triple.getX(), triple.getY()) || isAdjacentTo(triple.getY(), triple.getZ())) {
                 this.dottedUnderLineTriples.remove(triple);
             }
+        }
+    }
+
+    public static class NodeId {
+        private final String name;
+        private final int lag;
+
+        public NodeId(String name, int lag) {
+            this.name = name;
+            this.lag = lag;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public int getLag() {
+            return this.lag;
         }
     }
 }

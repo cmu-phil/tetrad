@@ -36,8 +36,7 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
     private Parameters params = new Parameters();
 
     /**
-     * Constructs a dialog to edit the given workbench randomization
-     * parameters.
+     * Constructs a dialog to edit the given workbench randomization parameters.
      */
     public GraphParamsEditor() {
     }

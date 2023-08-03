@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
@@ -19,14 +19,18 @@ public class Paths implements TetradSerializable {
         this.graph = graph;
     }
 
+    private static void addToSet(Map<Node, Set<Node>> previous, Node b, Node c) {
+        previous.computeIfAbsent(c, k -> new HashSet<>());
+        Set<Node> list = previous.get(c);
+        list.add(b);
+    }
+
     /**
      * Returns a valid causal order for either a DAG or a CPDAG. (bryanandrews)
      *
-     * @param initialOrder Variables in the order will be kept as close to this
-     *                     initial order as possible, either the forward order
-     *                     or the reverse order, depending on the next parameter.
-     * @param forward      Whether the variable will be iterated over in forward or
-     *                     reverse direction.
+     * @param initialOrder Variables in the order will be kept as close to this initial order as possible, either the
+     *                     forward order or the reverse order, depending on the next parameter.
+     * @param forward      Whether the variable will be iterated over in forward or reverse direction.
      * @return The valid causal order found.
      */
     public List<Node> getValidOrder(List<Node> initialOrder, boolean forward) {
@@ -91,9 +95,52 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    public Set<Set<Node>> maxCliques() {
+        int[][] graph = new int[this.graph.getNumNodes()][this.graph.getNumNodes()];
+        List<Node> nodes = this.graph.getNodes();
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = 0; j < nodes.size(); j++) {
+                if (this.graph.isAdjacentTo(nodes.get(i), nodes.get(j))) {
+                    graph[i][j] = 1;
+                    graph[j][i] = 1;
+                }
+            }
+        }
+
+        List<List<Integer>> _cliques = AllCliquesAlgorithm.findCliques(graph, graph.length);
+
+        Set<Set<Node>> cliques = new HashSet<>();
+        for (List<Integer> _clique : _cliques) {
+            if (_clique.size() < 2) continue;
+            Set<Node> clique = new HashSet<>();
+            for (Integer i : _clique) {
+                clique.add(nodes.get(i));
+            }
+            cliques.add(clique);
+        }
+
+        Set<Set<Node>> copy = new HashSet<>(cliques);
+        boolean changed = true;
+
+        while (changed) {
+            changed = false;
+
+            for (Set<Node> clique : new HashSet<>(copy)) {
+                for (Set<Node> other : new HashSet<>(copy)) {
+                    if (clique == other) continue;
+                    if (clique.containsAll(other)) {
+                        copy.remove(other);
+                        changed = true;
+                    }
+                }
+            }
+        }
+
+        return copy;
+    }
+
     /**
-     * @return the connected components of the given graph, as a list of lists
-     * of nodes.
+     * @return the connected components of the given graph, as a list of lists of nodes.
      */
     public List<List<Node>> connectedComponents() {
         List<List<Node>> components = new LinkedList<>();
@@ -498,7 +545,7 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-    public boolean isDConnectedTo(List<Node> x, List<Node> y, List<Node> z) {
+    public boolean isMConnectedTo(Set<Node> x, Set<Node> y, Set<Node> z) {
         Set<Node> ancestors = ancestorsOf(z);
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
@@ -548,7 +595,73 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-    public Set<Node> getDconnectedVars(Node y, List<Node> z) {
+    /**
+     * Checks to see if x and y are d-connected given z.
+     *
+     * @param ancestorMap A map of nodes to their ancestors.
+     * @return True if x and y are d-connected given z.
+     */
+    public boolean isMConnectedTo(Set<Node> x, Set<Node> y, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
+        if (ancestorMap == null) throw new NullPointerException("Ancestor map cannot be null.");
+
+        Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
+        Set<OrderedPair<Node>> V = new HashSet<>();
+
+        for (Node _x : x) {
+            for (Node node : graph.getAdjacentNodes(_x)) {
+                if (y.contains(node)) {
+                    return true;
+                }
+                OrderedPair<Node> edge = new OrderedPair<>(_x, node);
+                Q.offer(edge);
+                V.add(edge);
+            }
+        }
+
+        while (!Q.isEmpty()) {
+            OrderedPair<Node> t = Q.poll();
+
+            Node b = t.getFirst();
+            Node a = t.getSecond();
+
+            for (Node c : graph.getAdjacentNodes(b)) {
+                if (c == a) {
+                    continue;
+                }
+
+                boolean collider = graph.isDefCollider(a, b, c);
+
+                boolean ancestor = false;
+
+                for (Node _z : z) {
+                    if (ancestorMap.get(_z).contains(b)) {
+                        ancestor = true;
+                        break;
+                    }
+                }
+
+                if (!((collider && ancestor) || (!collider && !z.contains(b)))) {
+                    continue;
+                }
+
+                if (y.contains(c)) {
+                    return true;
+                }
+
+                OrderedPair<Node> u = new OrderedPair<>(b, c);
+                if (V.contains(u)) {
+                    continue;
+                }
+
+                V.add(u);
+                Q.offer(u);
+            }
+        }
+
+        return false;
+    }
+
+    public Set<Node> getMConnectedVars(Node y, Set<Node> z) {
         Set<Node> Y = new HashSet<>();
 
         class EdgeNode {
@@ -612,8 +725,71 @@ public class Paths implements TetradSerializable {
         return Y;
     }
 
+    public Set<Node> getMConnectedVars(Node y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
+        Set<Node> Y = new HashSet<>();
 
-    private boolean reachable(Edge e1, Edge e2, Node a, List<Node> z) {
+        class EdgeNode {
+
+            private final Edge edge;
+            private final Node node;
+
+            public EdgeNode(Edge edge, Node node) {
+                this.edge = edge;
+                this.node = node;
+            }
+
+            public int hashCode() {
+                return this.edge.hashCode() + this.node.hashCode();
+            }
+
+            public boolean equals(Object o) {
+                if (!(o instanceof EdgeNode)) {
+                    throw new IllegalArgumentException();
+                }
+                EdgeNode _o = (EdgeNode) o;
+                return _o.edge == this.edge && _o.node == this.node;
+            }
+        }
+
+        Queue<EdgeNode> Q = new ArrayDeque<>();
+        Set<EdgeNode> V = new HashSet<>();
+
+        for (Edge edge : graph.getEdges(y)) {
+            EdgeNode edgeNode = new EdgeNode(edge, y);
+            Q.offer(edgeNode);
+            V.add(edgeNode);
+            Y.add(edge.getDistalNode(y));
+        }
+
+        while (!Q.isEmpty()) {
+            EdgeNode t = Q.poll();
+
+            Edge edge1 = t.edge;
+            Node a = t.node;
+            Node b = edge1.getDistalNode(a);
+
+            for (Edge edge2 : graph.getEdges(b)) {
+                Node c = edge2.getDistalNode(b);
+                if (c == a) {
+                    continue;
+                }
+
+                if (reachable(edge1, edge2, a, z, ancestors)) {
+                    EdgeNode u = new EdgeNode(edge2, b);
+
+                    if (!V.contains(u)) {
+                        V.add(u);
+                        Q.offer(u);
+                        Y.add(c);
+                    }
+                }
+            }
+        }
+
+        return Y;
+    }
+
+    private boolean reachable(Edge e1, Edge e2, Node a, Set<Node> z) {
         Node b = e1.getDistalNode(a);
         Node c = e2.getDistalNode(b);
 
@@ -627,7 +803,54 @@ public class Paths implements TetradSerializable {
         return collider && ancestor;
     }
 
-    private boolean isAncestor(Node b, List<Node> z) {
+    // Return true if b is an ancestor of any node in z
+    private boolean reachable(Edge e1, Edge e2, Node a, Set<Node> z, Map<Node, Set<Node>> ancestors) {
+        Node b = e1.getDistalNode(a);
+        Node c = e2.getDistalNode(b);
+
+        boolean collider = e1.getProximalEndpoint(b) == Endpoint.ARROW && e2.getProximalEndpoint(b) == Endpoint.ARROW;
+
+        boolean ancestor = false;
+
+        for (Node _z : ancestors.get(b)) {
+            if (z.contains(_z)) {
+                ancestor = true;
+                break;
+            }
+        }
+
+        if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
+            return true;
+        }
+
+        return collider && ancestor;
+    }
+
+    /**
+     * Return a map from each node to its ancestors.
+     *
+     * @return This map.
+     */
+    public Map<Node, Set<Node>> getAncestorMap() {
+        Map<Node, Set<Node>> ancestorsMap = new HashMap<>();
+
+        for (Node node : graph.getNodes()) {
+            ancestorsMap.put(node, new HashSet<>());
+        }
+
+        for (Node n1 : graph.getNodes()) {
+            for (Node n2 : graph.getNodes()) {
+                if (isAncestor(n1, Collections.singleton(n2))) {
+                    ancestorsMap.get(n1).add(n2);
+                }
+            }
+        }
+
+        return ancestorsMap;
+    }
+
+    // Return true if b is an ancestor of any node in z
+    private boolean isAncestor(Node b, Set<Node> z) {
         if (z.contains(b)) {
             return true;
         }
@@ -659,7 +882,7 @@ public class Paths implements TetradSerializable {
     }
 
 
-    private boolean reachable(Node a, Node b, Node c, List<Node> z) {
+    private boolean reachable(Node a, Node b, Node c, Set<Node> z) {
         boolean collider = graph.isDefCollider(a, b, c);
 
         if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
@@ -671,7 +894,7 @@ public class Paths implements TetradSerializable {
     }
 
 
-    private List<Node> getPassNodes(Node a, Node b, List<Node> z) {
+    private List<Node> getPassNodes(Node a, Node b, Set<Node> z) {
         List<Node> passNodes = new ArrayList<>();
 
         for (Node c : graph.getAdjacentNodes(b)) {
@@ -688,7 +911,7 @@ public class Paths implements TetradSerializable {
     }
 
 
-    private Set<Node> ancestorsOf(List<Node> z) {
+    private Set<Node> ancestorsOf(Set<Node> z) {
         Queue<Node> Q = new ArrayDeque<>();
         Set<Node> V = new HashSet<>();
 
@@ -712,8 +935,8 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Determines whether an inducing path exists between node1 and node2, given
-     * a set O of observed nodes and a set sem of conditioned nodes.
+     * Determines whether an inducing path exists between node1 and node2, given a set O of observed nodes and a set sem
+     * of conditioned nodes.
      *
      * @param x the first node.
      * @param y the second node.
@@ -798,8 +1021,8 @@ public class Paths implements TetradSerializable {
         return null;
     }
 
-    public List<Node> possibleDsep(Node x, Node y, int maxPathLength) {
-        Set<Node> dsep = new HashSet<>();
+    public List<Node> possibleMsep(Node x, Node y, int maxPathLength) {
+        Set<Node> msep = new HashSet<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
         Set<OrderedPair<Node>> V = new HashSet<>();
@@ -823,7 +1046,7 @@ public class Paths implements TetradSerializable {
             Q.offer(edge);
             V.add(edge);
             addToSet(previous, b, x);
-            dsep.add(b);
+            msep.add(b);
         }
 
         while (!Q.isEmpty()) {
@@ -841,7 +1064,7 @@ public class Paths implements TetradSerializable {
             Node b = t.getSecond();
 
             if (existOnePathWithPossibleParents(previous, b, x, b)) {
-                dsep.add(b);
+                msep.add(b);
             }
 
             for (Node c : graph.getAdjacentNodes(b)) {
@@ -873,38 +1096,38 @@ public class Paths implements TetradSerializable {
             }
         }
 
-        dsep.remove(x);
-        dsep.remove(y);
+        msep.remove(x);
+        msep.remove(y);
 
-        List<Node> _dsep = new ArrayList<>(dsep);
+        List<Node> _msep = new ArrayList<>(msep);
 
-        Collections.sort(_dsep);
-        Collections.reverse(_dsep);
+        Collections.sort(_msep);
+        Collections.reverse(_msep);
 
-        return _dsep;
+        return _msep;
     }
 
     /**
-     * Remove edges by the possible d-separation rule.
+     * Remove edges by the possible m-separation rule.
      *
      * @param test    The independence test to use to remove edges.
-     * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets
-     *                will not be recorded.
+     * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets will not be
+     *                recorded.
      */
-    public void removeByPossibleDsep(IndependenceTest test, SepsetMap sepsets) {
+    public void removeByPossibleMsep(IndependenceTest test, SepsetMap sepsets) {
         for (Edge edge : graph.getEdges()) {
             Node a = edge.getNode1();
             Node b = edge.getNode2();
 
             {
-                List<Node> possibleDsep = possibleDsep(a, b, -1);
+                List<Node> possibleMsep = possibleMsep(a, b, -1);
 
-                SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
+                SublistGenerator gen = new SublistGenerator(possibleMsep.size(), possibleMsep.size());
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
                     if (choice.length < 2) continue;
-                    List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                    Set<Node> sepset = GraphUtils.asSet(choice, possibleMsep);
                     if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                     if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                     if (test.checkIndependence(a, b, sepset).isIndependent()) {
@@ -921,14 +1144,14 @@ public class Paths implements TetradSerializable {
 
             if (graph.containsEdge(edge)) {
                 {
-                    List<Node> possibleDsep = possibleDsep(b, a, -1);
+                    List<Node> possibleMsep = possibleMsep(b, a, -1);
 
-                    SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
+                    SublistGenerator gen = new SublistGenerator(possibleMsep.size(), possibleMsep.size());
                     int[] choice;
 
                     while ((choice = gen.next()) != null) {
                         if (choice.length < 2) continue;
-                        List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                        Set<Node> sepset = GraphUtils.asSet(choice, possibleMsep);
                         if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                         if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                         if (test.checkIndependence(a, b, sepset).isIndependent()) {
@@ -967,12 +1190,6 @@ public class Paths implements TetradSerializable {
         }
 
         return false;
-    }
-
-    private static void addToSet(Map<Node, Set<Node>> previous, Node b, Node c) {
-        previous.computeIfAbsent(c, k -> new HashSet<>());
-        Set<Node> list = previous.get(c);
-        list.add(b);
     }
 
     public boolean existsSemidirectedPath(Node from, Node to) {
@@ -1019,12 +1236,11 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Check to see if a set of variables Z satisfies the back-door criterion
-     * relative to node x and node y.
+     * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y.
      *
      * @author Kevin V. Bui (March 2020)
      */
-    public boolean isSatisfyBackDoorCriterion(Graph graph, Node x, Node y, List<Node> z) {
+    public boolean isSatisfyBackDoorCriterion(Graph graph, Node x, Node y, Set<Node> z) {
         Dag dag = new Dag(graph);
 
         // make sure no nodes in z is a descendant of x
@@ -1044,29 +1260,29 @@ public class Paths implements TetradSerializable {
             });
         });
 
-        return dag.paths().isDSeparatedFrom(x, y, z);
+        return dag.paths().isMSeparatedFrom(x, y, z);
     }
 
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
-    public List<Node> getSepset(Node x, Node y) {
-        List<Node> sepset = getSepsetVisit(x, y);
+    public Set<Node> getSepset(Node x, Node y) {
+        Set<Node> sepset = getSepsetVisit(x, y);
         if (sepset == null) {
             sepset = getSepsetVisit(y, x);
         }
         return sepset;
     }
 
-    private List<Node> getSepsetVisit(Node x, Node y) {
+    private Set<Node> getSepsetVisit(Node x, Node y) {
         if (x == y) {
             return null;
         }
 
-        List<Node> z = new ArrayList<>();
+        Set<Node> z = new HashSet<>();
 
-        List<Node> _z;
+        Set<Node> _z;
 
         do {
-            _z = new ArrayList<>(z);
+            _z = new HashSet<>(z);
 
             Set<Node> path = new HashSet<>();
             path.add(x);
@@ -1082,7 +1298,7 @@ public class Paths implements TetradSerializable {
         return z;
     }
 
-    private boolean sepsetPathFound(Node a, Node b, Node y, Set<Node> path, List<Node> z, Set<Triple> colliders, int bound) {
+    private boolean sepsetPathFound(Node a, Node b, Node y, Set<Node> path, Set<Node> z, Set<Triple> colliders, int bound) {
         if (b == y) {
             return true;
         }
@@ -1149,8 +1365,12 @@ public class Paths implements TetradSerializable {
         }
     }
 
-    // Breadth first.
-    public boolean isDConnectedTo(Node x, Node y, List<Node> z) {
+    /**
+     * Detemrmines whether x and y are d-connected given z.
+     *
+     * @return true if x and y are d-connected given z; false otherwise.
+     */
+    public boolean isMConnectedTo(Node x, Node y, Set<Node> z) {
         class EdgeNode {
 
             private final Edge edge;
@@ -1221,6 +1441,81 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    /**
+     * Detemrmines whether x and y are d-connected given z.
+     *
+     * @return true if x and y are d-connected given z; false otherwise.
+     */
+    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
+        class EdgeNode {
+
+            private final Edge edge;
+            private final Node node;
+
+            public EdgeNode(Edge edge, Node node) {
+                this.edge = edge;
+                this.node = node;
+            }
+
+            public int hashCode() {
+                return this.edge.hashCode() + 5 * this.node.hashCode();
+            }
+
+            public boolean equals(Object o) {
+                if (!(o instanceof EdgeNode)) {
+                    throw new IllegalArgumentException();
+                }
+                EdgeNode _o = (EdgeNode) o;
+                return _o.edge.equals(this.edge) && _o.node.equals(this.node);
+            }
+        }
+
+        Queue<EdgeNode> Q = new ArrayDeque<>();
+        Set<EdgeNode> V = new HashSet<>();
+
+        if (x == y) {
+            return true;
+        }
+
+        for (Edge edge : graph.getEdges(x)) {
+            if (edge.getDistalNode(x) == y) {
+                return true;
+            }
+            EdgeNode edgeNode = new EdgeNode(edge, x);
+            Q.offer(edgeNode);
+            V.add(edgeNode);
+        }
+
+        while (!Q.isEmpty()) {
+            EdgeNode t = Q.poll();
+
+            Edge edge1 = t.edge;
+            Node a = t.node;
+            Node b = edge1.getDistalNode(a);
+
+            for (Edge edge2 : graph.getEdges(b)) {
+                Node c = edge2.getDistalNode(b);
+                if (c == a) {
+                    continue;
+                }
+
+                if (reachable(edge1, edge2, a, z, ancestors)) {
+                    if (c == y) {
+                        return true;
+                    }
+
+                    EdgeNode u = new EdgeNode(edge2, b);
+
+                    if (!V.contains(u)) {
+                        V.add(u);
+                        Q.offer(u);
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
 
     /**
      * Assumes node should be in component.
@@ -1245,8 +1540,7 @@ public class Paths implements TetradSerializable {
      * added by ekorber, 2004/06/11
      *
      * @return true if the given edge is definitely visible (Jiji, pg 25)
-     * @throws IllegalArgumentException if the given edge is not a directed edge
-     *                                  in the graph
+     * @throws IllegalArgumentException if the given edge is not a directed edge in the graph
      */
     public boolean defVisible(Edge edge) {
         if (!edge.isDirected()) return false;
@@ -1377,9 +1671,8 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Determines whether a trek exists between two nodes in the graph. A trek
-     * exists if there is a directed path between the two nodes or else, for
-     * some third node in the graph, there is a path to each of the two nodes in
+     * Determines whether a trek exists between two nodes in the graph. A trek exists if there is a directed path
+     * between the two nodes or else, for some third node in the graph, there is a path to each of the two nodes in
      * question.
      */
     public boolean existsTrek(Node node1, Node node2) {
@@ -1405,7 +1698,6 @@ public class Paths implements TetradSerializable {
 
         return new ArrayList<>(ancestors);
     }
-
 
     /**
      * Determines whether one node is an ancestor of another.
@@ -1445,24 +1737,20 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Determines whether one n ode is d-separated from another. According to
-     * Spirtes, Richardson and Meek, two nodes are d- connected given some
-     * conditioning set Z if there is an acyclic undirected path U between them,
-     * such that every collider on U is an ancestor of some element in Z and
-     * every non-collider on U is not in Z. Two elements are d-separated just in
-     * case they are not d-connected. A collider is a node which two edges hold
-     * in common for which the endpoints leading into the node are both arrow
-     * endpoints.
+     * Determines whether one n ode is d-separated from another. According to Spirtes, Richardson and Meek, two nodes
+     * are d- connected given some conditioning set Z if there is an acyclic undirected path U between them, such that
+     * every collider on U is an ancestor of some element in Z and every non-collider on U is not in Z. Two elements are
+     * d-separated just in case they are not d-connected. A collider is a node which two edges hold in common for which
+     * the endpoints leading into the node are both arrow endpoints.
      *
      * @param node1 the first node.
      * @param node2 the second node.
      * @param z     the conditioning set.
-     * @return true if node1 is d-separated from node2 given set t, false if
-     * not.
-     * @see #isDConnectedTo
+     * @return true if node1 is d-separated from node2 given set t, false if not.
+     * @see #isMConnectedTo
      */
-    public boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z) {
-        return !isDConnectedTo(node1, node2, z);
+    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z) {
+        return !isMConnectedTo(node1, node2, z);
     }
 
     /**
@@ -1501,7 +1789,7 @@ public class Paths implements TetradSerializable {
         if (edges.size() != 1) {
             return false;
         }
-        Edge edge = edges.get(0);
+        Edge edge = edges.iterator().next();
         return edge.pointsTowards(node2);
     }
 
@@ -1513,6 +1801,80 @@ public class Paths implements TetradSerializable {
     public boolean possibleAncestor(Node node1, Node node2) {
         return existsSemiDirectedPathFromTo(node1,
                 Collections.singleton(node2));
+    }
+
+    public static class AllCliquesAlgorithm {
+
+        public static void main(String[] args) {
+            int[][] graph = {
+                    {0, 1, 1, 0, 0},
+                    {1, 0, 1, 1, 0},
+                    {1, 1, 0, 1, 1},
+                    {0, 1, 1, 0, 1},
+                    {0, 0, 1, 1, 0}
+            };
+            int n = graph.length;
+
+            List<List<Integer>> cliques = findCliques(graph, n);
+            System.out.println("All Cliques:");
+            for (List<Integer> clique : cliques) {
+                System.out.println(clique);
+            }
+        }
+
+        public static List<List<Integer>> findCliques(int[][] graph, int n) {
+            List<List<Integer>> cliques = new ArrayList<>();
+            Set<Integer> candidates = new HashSet<>();
+            Set<Integer> excluded = new HashSet<>();
+            Set<Integer> included = new HashSet<>();
+
+            for (int i = 0; i < n; i++) {
+                candidates.add(i);
+            }
+
+            bronKerbosch(graph, candidates, excluded, included, cliques);
+
+            return cliques;
+        }
+
+        private static void bronKerbosch(int[][] graph, Set<Integer> candidates,
+                                         Set<Integer> excluded, Set<Integer> included,
+                                         List<List<Integer>> cliques) {
+            if (candidates.isEmpty() && excluded.isEmpty()) {
+                cliques.add(new ArrayList<>(included));
+                return;
+            }
+
+            Set<Integer> candidatesCopy = new HashSet<>(candidates);
+            for (int vertex : candidatesCopy) {
+                Set<Integer> neighbors = new HashSet<>();
+                for (int i = 0; i < graph.length; i++) {
+                    if (graph[vertex][i] == 1 && candidates.contains(i)) {
+                        neighbors.add(i);
+                    }
+                }
+
+                bronKerbosch(graph, intersect(candidates, neighbors),
+                        intersect(excluded, neighbors),
+                        union(included, vertex),
+                        cliques);
+
+                candidates.remove(vertex);
+                excluded.add(vertex);
+            }
+        }
+
+        private static Set<Integer> intersect(Set<Integer> set1, Set<Integer> set2) {
+            Set<Integer> result = new HashSet<>(set1);
+            result.retainAll(set2);
+            return result;
+        }
+
+        private static Set<Integer> union(Set<Integer> set, int element) {
+            Set<Integer> result = new HashSet<>(set);
+            result.add(element);
+            return result;
+        }
     }
 }
 

@@ -32,6 +32,44 @@ import edu.cmu.tetrad.util.StatUtils;
  */
 public class TestFaskSimpleSimulaton {
 
+    public static double cv(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+        double ex = 0.0;
+        double ey = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0.0) {
+                exy += x[k] * y[k];
+                ex += x[k];
+                ey += y[k];
+                n++;
+            }
+        }
+
+        return exy / n - (ex / n) * (ey / n);
+    }
+
+    public static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    public static void main(String... args) {
+        new TestFaskSimpleSimulaton().test2();
+    }
+
     public void simulation() {
 
         int xtoy = 0;
@@ -100,25 +138,6 @@ public class TestFaskSimpleSimulaton {
         return TestFaskSimpleSimulaton.cv(x, y, x) / TestFaskSimpleSimulaton.cv(x, x, x) - TestFaskSimpleSimulaton.cv(x, y, y) / TestFaskSimpleSimulaton.cv(y, y, y);
     }
 
-    public static double cv(double[] x, double[] y, double[] condition) {
-        double exy = 0.0;
-        double ex = 0.0;
-        double ey = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition[k] > 0.0) {
-                exy += x[k] * y[k];
-                ex += x[k];
-                ey += y[k];
-                n++;
-            }
-        }
-
-        return exy / n - (ex / n) * (ey / n);
-    }
-
     public void test2() {
 
         int xtoy = 0;
@@ -175,26 +194,6 @@ public class TestFaskSimpleSimulaton {
         System.out.println("mean xxdiff = " + StatUtils.mean(xxdiff));
         System.out.println("mean ratiodiff = " + StatUtils.mean(ratiodiff));
 
-    }
-
-    public static double cu(double[] x, double[] y, double[] condition) {
-        double exy = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-
-    public static void main(String... args) {
-        new TestFaskSimpleSimulaton().test2();
     }
 }
 

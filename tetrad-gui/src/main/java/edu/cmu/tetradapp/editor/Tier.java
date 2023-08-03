@@ -36,12 +36,12 @@ import java.util.List;
  */
 class Tier extends JPanel {
 
+    private static Knowledge know;
     private final TierList knowList;    //knowlist constraint is contained in
     private final int num;
     private final String[] tierNames;
     private final JPanel view = new JPanel();
     private final JScrollPane jsp;
-    private static Knowledge know;
 
     /**
      * A panel with a tier name, and all vars in that tier.
@@ -66,8 +66,7 @@ class Tier extends JPanel {
     }
 
     /**
-     * tell tier what info it should hold and represent, used for constant
-     * updating of tiers
+     * tell tier what info it should hold and represent, used for constant updating of tiers
      */
     public void loadInfo() {
         removeAll();

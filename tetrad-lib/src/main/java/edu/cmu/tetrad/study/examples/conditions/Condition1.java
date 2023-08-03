@@ -31,17 +31,20 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
- * An example script to load in data sets and graphs from files and analyze them. The
- * files loaded must be in the same format as
+ * An example script to load in data sets and graphs from files and analyze them. The files loaded must be in the same
+ * format as
  * <p>
  * new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
  * <p>
- * saves them. For other formats, specialty data loaders can be written to implement the
- * Simulation interface.
+ * saves them. For other formats, specialty data loaders can be written to implement the Simulation interface.
  *
  * @author josephramsey
  */
 public class Condition1 {
+    public static void main(String... args) {
+        new Condition1().compileTable();
+    }
+
     public void generateTetradResults() {
         Parameters parameters = new Parameters();
 
@@ -130,10 +133,6 @@ public class Condition1 {
                 "/Users/user/causal-comparisons/condition_1",
                 algorithms, statistics, parameters);
 
-    }
-
-    public static void main(String... args) {
-        new Condition1().compileTable();
     }
 }
 

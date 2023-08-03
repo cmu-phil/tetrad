@@ -25,16 +25,14 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.EstimateRank;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Vector;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -43,19 +41,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Adam Brodie
  */
 public final class IndTestTrekSep implements IndependenceTest {
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final ICovarianceMatrix covMatrix;
     private final List<Node> latents;
-    private boolean verbose;
     private final List<List<Node>> clustering;
-    private List<Node> variables;
-    private double alpha;
-    private double pValue;
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private DataSet dataSet;
     private final Map<Node, Integer> indexMap;
     private final Map<String, Node> nameMap;
+    private boolean verbose;
+    private List<Node> variables;
+    private double alpha;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
@@ -63,8 +58,8 @@ public final class IndTestTrekSep implements IndependenceTest {
      *
      * @param covMatrix  The covariance over the measures.
      * @param alpha      The significance level.
-     * @param clustering The clustering of the measured variables. In each cluster, all measured variable in
-     *                   the cluster are explained by a single latent.
+     * @param clustering The clustering of the measured variables. In each cluster, all measured variable in the cluster
+     *                   are explained by a single latent.
      * @param latents    The list of latent variables for the clusters, in order.
      */
     public IndTestTrekSep(ICovarianceMatrix covMatrix, double alpha, List<List<Node>> clustering, List<Node> latents) {
@@ -77,7 +72,6 @@ public final class IndTestTrekSep implements IndependenceTest {
         setAlpha(alpha);
     }
 
-    //==========================PUBLIC METHODS=============================//
 
     /**
      * Creates a new independence test instance for a sublist of the variables.
@@ -117,7 +111,7 @@ public final class IndTestTrekSep implements IndependenceTest {
      * @return True iff x _||_ y | z.
      * @throws org.apache.commons.math3.linear.SingularMatrixException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         int n = sampleSize();
         int xi = this.latents.indexOf(x);
         int yi = this.latents.indexOf(y);
@@ -161,17 +155,17 @@ public final class IndTestTrekSep implements IndependenceTest {
 //        return rank <= z.size();
 
         boolean independent = rank <= z.size();
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, this.pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN, Double.NaN);
 
     }
 
     /**
-     * Returns the probability associated with the most recently computed independence test.
+     * Gets the model significance level.
      *
-     * @return This p-value.
+     * @return This alpha.
      */
-    public double getPValue() {
-        return this.pValue;
+    public double getAlpha() {
+        return this.alpha;
     }
 
     /**
@@ -189,15 +183,6 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * Gets the model significance level.
-     *
-     * @return This alpha.
-     */
-    public double getAlpha() {
-        return this.alpha;
-    }
-
-    /**
      * Returns the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      *
@@ -205,6 +190,18 @@ public final class IndTestTrekSep implements IndependenceTest {
      */
     public List<Node> getVariables() {
         return this.latents;
+    }
+
+    /**
+     * Sets the varialbe to this list (of the same length). Useful is multiple test are used that need the same
+     * object-identical lists of variables.
+     *
+     * @param variables This list.
+     */
+    public void setVariables(List<Node> variables) {
+        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
+        this.variables = new ArrayList<>(variables);
+        this.covMatrix.setVariables(variables);
     }
 
     /**
@@ -258,12 +255,10 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * Returns the data set being analyzed.
-     *
-     * @return This data.
+     * @throws UnsupportedOperationException Always.
      */
     public DataSet getData() {
-        return this.dataSet;
+        throw new UnsupportedOperationException("Dataset not available.");
     }
 
     /**
@@ -276,18 +271,6 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * Sets the varialbe to this list (of the same length). Useful is multiple test are used that
-     * need the same object-identical lists of variables.
-     *
-     * @param variables This list.
-     */
-    public void setVariables(List<Node> variables) {
-        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
-        this.variables = new ArrayList<>(variables);
-        this.covMatrix.setVariables(variables);
-    }
-
-    /**
      * Returns the covariance matrix.
      *
      * @return This matrix.
@@ -297,18 +280,11 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * Returns a singleton list consisting just of the dataset for this test.
-     *
-     * @return This lsit.
+     * @throws UnsupportedOperationException Always.
      */
     @Override
     public List<DataSet> getDataSets() {
-
-        List<DataSet> dataSets = new ArrayList<>();
-
-        dataSets.add(this.dataSet);
-
-        return dataSets;
+        throw new UnsupportedOperationException("Dataset not available.");
     }
 
     /**
@@ -322,19 +298,9 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * Returns alpha - p.
-     *
-     * @return This nubmer.
-     */
-    @Override
-    public double getScore() {
-        return alpha - getPValue();
-    }
-
-    /**
      * Returns true if verbose output should be printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     @Override
     public boolean isVerbose() {
@@ -344,7 +310,7 @@ public final class IndTestTrekSep implements IndependenceTest {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

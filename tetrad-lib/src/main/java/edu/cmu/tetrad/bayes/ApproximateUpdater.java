@@ -33,11 +33,9 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Calculates updated marginals for a Bayes net by simulating data and
- * calculating likelihood ratios. The method is as follows. For P(A | B), enough
- * sample points are simulated from the underlying BayesIm so that 1000 satisfy
- * the condition B. Then the maximum likelihood estimate of condition A is
- * calculated.
+ * Calculates updated marginals for a Bayes net by simulating data and calculating likelihood ratios. The method is as
+ * follows. For P(A | B), enough sample points are simulated from the underlying BayesIm so that 1000 satisfy the
+ * condition B. Then the maximum likelihood estimate of condition A is calculated.
  *
  * @author josephramsey
  */
@@ -66,8 +64,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     private int[][] counts;
 
     /**
-     * This is the source BayesIm after manipulation; all data simulations
-     * should be taken from this.
+     * This is the source BayesIm after manipulation; all data simulations should be taken from this.
      *
      * @serial
      */
@@ -105,6 +102,43 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
     //============================PUBLIC METHODS==========================//
 
+    private static int[] getSinglePoint(BayesIm bayesIm, int[] tiers) {
+        int[] point = new int[bayesIm.getNumNodes()];
+        int[] combination = new int[bayesIm.getNumNodes()];
+        RandomUtil randomUtil = RandomUtil.getInstance();
+
+        for (int nodeIndex : tiers) {
+            double cutoff = randomUtil.nextDouble();
+
+            for (int k = 0; k < bayesIm.getNumParents(nodeIndex); k++) {
+                combination[k] = point[bayesIm.getParent(nodeIndex, k)];
+            }
+
+            int rowIndex = bayesIm.getRowIndex(nodeIndex, combination);
+            double sum = 0.0;
+
+            for (int k = 0; k < bayesIm.getNumColumns(nodeIndex); k++) {
+                double probability =
+                        bayesIm.getProbability(nodeIndex, rowIndex, k);
+
+                if (Double.isNaN(probability)) {
+                    throw new IllegalStateException("Some probability " +
+                            "values in the BayesIm are not filled in; " +
+                            "cannot simulate data to do approximate updating.");
+                }
+
+                sum += probability;
+
+                if (sum >= cutoff) {
+                    point[nodeIndex] = k;
+                    break;
+                }
+            }
+        }
+
+        return point;
+    }
+
     /**
      * @return the Bayes instantiated model that is being updated.
      */
@@ -113,8 +147,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * @return the Bayes instantiated model after manipulations have been
-     * applied.
+     * @return the Bayes instantiated model after manipulations have been applied.
      */
     public BayesIm getManipulatedBayesIm() {
         return this.manipulatedBayesIm;
@@ -212,14 +245,14 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
+    //==============================PRIVATE METHODS=======================//
+
     /**
      * Prints out the most recent marginal.
      */
     public String toString() {
         return "Approximate updater, evidence = " + this.evidence;
     }
-
-    //==============================PRIVATE METHODS=======================//
 
     private void doUpdate() {
         if (this.counts != null) {
@@ -292,52 +325,13 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         return updatedGraph;
     }
 
-    private static int[] getSinglePoint(BayesIm bayesIm, int[] tiers) {
-        int[] point = new int[bayesIm.getNumNodes()];
-        int[] combination = new int[bayesIm.getNumNodes()];
-        RandomUtil randomUtil = RandomUtil.getInstance();
-
-        for (int nodeIndex : tiers) {
-            double cutoff = randomUtil.nextDouble();
-
-            for (int k = 0; k < bayesIm.getNumParents(nodeIndex); k++) {
-                combination[k] = point[bayesIm.getParent(nodeIndex, k)];
-            }
-
-            int rowIndex = bayesIm.getRowIndex(nodeIndex, combination);
-            double sum = 0.0;
-
-            for (int k = 0; k < bayesIm.getNumColumns(nodeIndex); k++) {
-                double probability =
-                        bayesIm.getProbability(nodeIndex, rowIndex, k);
-
-                if (Double.isNaN(probability)) {
-                    throw new IllegalStateException("Some probability " +
-                            "values in the BayesIm are not filled in; " +
-                            "cannot simulate data to do approximate updating.");
-                }
-
-                sum += probability;
-
-                if (sum >= cutoff) {
-                    point[nodeIndex] = k;
-                    break;
-                }
-            }
-        }
-
-        return point;
-    }
-
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

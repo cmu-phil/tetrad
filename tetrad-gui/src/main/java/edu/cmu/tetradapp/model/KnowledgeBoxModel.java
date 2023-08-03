@@ -49,6 +49,14 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     private List<String> variableNames = new ArrayList<>();
     private int numTiers = 3;
 
+    public KnowledgeBoxModel() {
+        this.knowledge = new Knowledge();
+        this.numTiers = 3;
+        this.variables = new ArrayList<>();
+        this.params =  new Parameters();
+//        this.params.set("__myKnowledge", this.knowledge);
+    }
+
     public KnowledgeBoxModel(Parameters params) {
         this.knowledge = new Knowledge();
         this.numTiers = 3;

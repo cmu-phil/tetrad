@@ -31,11 +31,11 @@ import static org.apache.commons.math3.util.FastMath.abs;
 public class SpecialDataClark implements Simulation {
     static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
+    private final List<BayesIm> ims = new ArrayList<>();
     private BayesPm pm;
     private BayesIm im;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
-    private final List<BayesIm> ims = new ArrayList<>();
 
     public SpecialDataClark(RandomGraph graph) {
         this.randomGraph = graph;

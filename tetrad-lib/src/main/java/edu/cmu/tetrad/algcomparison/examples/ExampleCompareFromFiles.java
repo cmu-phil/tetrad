@@ -25,19 +25,18 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Cpc;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcMax;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 /**
- * An example script to load in data sets and graphs from files and analyze them. The
- * files loaded must be in the same format as
+ * An example script to load in data sets and graphs from files and analyze them. The files loaded must be in the same
+ * format as
  * <p>
  * new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
  * <p>
- * saves them. For other formats, specialty data loaders can be written to implement the
- * Simulation interface.
+ * saves them. For other formats, specialty data loaders can be written to implement the Simulation interface.
  *
  * @author josephramsey
  */
@@ -49,6 +48,7 @@ public class ExampleCompareFromFiles {
         // we're loading from file here.
         parameters.set("alpha", 1e-4);
         parameters.set("numRuns", 10);
+        parameters.set(Params.USE_MAX_P_HEURISTIC, true);
 
         Statistics statistics = new Statistics();
 
@@ -62,7 +62,7 @@ public class ExampleCompareFromFiles {
         statistics.add(new MathewsCorrArrow());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
-        statistics.add(new Shd());
+        statistics.add(new StructuralHammingDistance());
         statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
@@ -74,7 +74,7 @@ public class ExampleCompareFromFiles {
 
         algorithms.add(new Pc(new FisherZ()));
         algorithms.add(new Cpc(new FisherZ()));
-        algorithms.add(new PcMax(new FisherZ()));
+        algorithms.add(new Pc(new FisherZ()));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(false);

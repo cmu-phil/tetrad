@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -34,12 +35,14 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Gives a way of interpreting a score as an independence test. The contract is that
- * the score returned will be negative for independence and positive for dependence;
- * this simply reports these differences.</p>
+ * the score returned will be negative for independence and positive for dependence; this simply reports these
+ * differences.</p>
  *
  * @author josephramsey
  */
@@ -47,8 +50,8 @@ public class ScoreIndTest implements IndependenceTest {
 
     private final Score score;
     private final List<Node> variables;
-    private double bump = Double.NaN;
     private final DataModel data;
+    private double bump = Double.NaN;
     private boolean verbose;
 
     public ScoreIndTest(Score score) {
@@ -76,16 +79,18 @@ public class ScoreIndTest implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         List<Node> z1 = new ArrayList<>(z);
+        Collections.sort(z1);
 
-        if (determines(z1, x)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());
-        ;
-        if (determines(z1, y)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());
-        ;
-
-        double v = this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y), varIndices(z));
+        double v = this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y),
+                varIndices(z1));
         this.bump = v;
+
+        int N = score.getSampleSize();
+
+        // No.
+//        double p = 5 * exp(-2 * v - 2 * log(N)) / ((N) * log(N));
 
         boolean independent = v <= 0;
 
@@ -97,17 +102,7 @@ public class ScoreIndTest implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
-    }
-
-    /**
-     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for this test.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.bump;
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, v, v);
     }
 
     /**
@@ -195,15 +190,6 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * Returns A score that is higher with more likely models.
-     *
-     * @return This score.
-     */
-    public double getScore() {
-        return this.bump;
-    }
-
-    /**
      * Returns the score object that this test wraps.
      *
      * @return This score object.
@@ -216,7 +202,7 @@ public class ScoreIndTest implements IndependenceTest {
     /**
      * Returns true if verbose ouput should be printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     @Override
     public boolean isVerbose() {
@@ -226,7 +212,7 @@ public class ScoreIndTest implements IndependenceTest {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

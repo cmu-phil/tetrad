@@ -33,30 +33,24 @@ public class Matrix extends BasicMatrix {
     protected short[][] A;
 
     /**
-     * Creates a matrix with name <code>mname</code>, and <code>nrows</code>
-     * rows.
+     * Creates a matrix with name <code>mname</code>, and <code>nrows</code> rows.
      */
     public Matrix(String mname, int nrows) {
         super(mname, nrows);
     }
 
     /**
-     * Creates a matrix reading it from a file <code>fname</code>. The file has
-     * to be an ascii one and follow a particular format:<p> *MATRIX*  [matrix
-     * name] <br> [n]<br> [0, 0 ] [ 0, 1] ...  [ 0, n-1]<br> [1, 0 ] [ 1, 1] ...
-     * [ 1, n-1]<br> :<br> [n-1,0] [n-1,1] ...  [n-1,n-1]<p> First token
-     * should be a word with "MATRIX" as a substring (case insens.), followed by
-     * the name of the matrix (one word). [n] is the number of rows and columns
-     * in the matrix, and [i,j] is element at position i,j in the matrix.<br>
-     * For example, a 3x3 identity matrix could be represented as follows:<p>
-     * MATRIX Identity3x3<br> <br> 3  // # rows and columns<br> <br> //
-     * Matrix elements:<br> 1 0 0<br> 0 1 0<br> 0 0 1<p> Notice there can
-     * be slash-slash (and also slash-star) style comments anywhere in the file.
-     * Numbers can be separated by any number of blank delimiters: tabs, spaces,
-     * carriage returns.  In the examples above they appear in different lines
-     * for more readability of the file. The file may have less elements than
-     * the total needed to fill the matrix.  If it has more elements an illegal
-     * argument exception will be generated.
+     * Creates a matrix reading it from a file <code>fname</code>. The file has to be an ascii one and follow a
+     * particular format:<p> *MATRIX*  [matrix name] <br> [n]<br> [0, 0 ] [ 0, 1] ...  [ 0, n-1]<br> [1, 0 ] [ 1, 1] ...
+     * [ 1, n-1]<br> :<br> [n-1,0] [n-1,1] ...  [n-1,n-1]<p> First token should be a word with "MATRIX" as a substring
+     * (case insens.), followed by the name of the matrix (one word). [n] is the number of rows and columns in the
+     * matrix, and [i,j] is element at position i,j in the matrix.<br> For example, a 3x3 identity matrix could be
+     * represented as follows:<p> MATRIX Identity3x3<br> <br> 3  // # rows and columns<br> <br> // Matrix elements:<br>
+     * 1 0 0<br> 0 1 0<br> 0 0 1<p> Notice there can be slash-slash (and also slash-star) style comments anywhere in the
+     * file. Numbers can be separated by any number of blank delimiters: tabs, spaces, carriage returns.  In the
+     * examples above they appear in different lines for more readability of the file. The file may have less elements
+     * than the total needed to fill the matrix.  If it has more elements an illegal argument exception will be
+     * generated.
      */
     public Matrix(String fname) throws IOException {
         super(fname);
@@ -104,8 +98,8 @@ public class Matrix extends BasicMatrix {
     }
 
     /**
-     * Assigns integer x to matrix element at (r, c).  This method checks that
-     * the integer x can be converted to a short without causing overflow.
+     * Assigns integer x to matrix element at (r, c).  This method checks that the integer x can be converted to a short
+     * without causing overflow.
      */
     public void setValue(int r, int c, int x) {
         if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
@@ -140,8 +134,7 @@ public class Matrix extends BasicMatrix {
     }
 
     /**
-     * Returns a specially formatted string with all the contents of this
-     * matrix
+     * Returns a specially formatted string with all the contents of this matrix
      */
     public String toString() {
         String s = this.getClass().getName() + " " + this.name + "\n" + this.n +

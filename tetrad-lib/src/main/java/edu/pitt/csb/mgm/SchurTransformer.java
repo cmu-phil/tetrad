@@ -11,14 +11,12 @@ import org.apache.commons.math3.util.Precision;
 /**
  * Class transforming a general real matrix to Schur form.
  * <p>A m &times; m matrix A can be written as the product of three matrices: A = P
- * &times; T &times; P<sup>T</sup> with P an orthogonal matrix and T an quasi-triangular
- * matrix. Both P and T are m &times; m matrices.&gt; 0
+ * &times; T &times; P<sup>T</sup> with P an orthogonal matrix and T an quasi-triangular matrix. Both P and T are m
+ * &times; m matrices.&gt; 0
  * <p>Transformation to Schur form is often not a goal by itself, but it is an
- * intermediate step in more general decomposition algorithms like
- * {@link EigenDecomposition eigen decomposition}. This class is therefore
- * intended for internal use by the library and is not public. As a consequence
- * of this explicitly limited scope, many methods directly returns references to
- * internal arrays, not copies.&gt; 0
+ * intermediate step in more general decomposition algorithms like {@link EigenDecomposition eigen decomposition}. This
+ * class is therefore intended for internal use by the library and is not public. As a consequence of this explicitly
+ * limited scope, many methods directly returns references to internal arrays, not copies.&gt; 0
  * <p>This class is based on the method hqr2 in class EigenvalueDecomposition
  * from the <a href="http://math.nist.gov/javanumerics/jama/">JAMA</a> library.&gt; 0
  *
@@ -42,6 +40,10 @@ class SchurTransformer {
      */
     private final double[][] matrixT;
     /**
+     * Epsilon criteria taken from JAMA code (originally was 2^-52).
+     */
+    private final double epsilon = Precision.EPSILON;
+    /**
      * Cached value of P.
      */
     private RealMatrix cachedP;
@@ -53,11 +55,6 @@ class SchurTransformer {
      * Cached value of PT.
      */
     private RealMatrix cachedPt;
-
-    /**
-     * Epsilon criteria taken from JAMA code (originally was 2^-52).
-     */
-    private final double epsilon = Precision.EPSILON;
 
     /**
      * Build the transformation to Schur form of a general real matrix.
@@ -433,8 +430,8 @@ class SchurTransformer {
     }
 
     /**
-     * Internal data structure holding the current shift information.
-     * Contains variable names as present in the original JAMA code.
+     * Internal data structure holding the current shift information. Contains variable names as present in the original
+     * JAMA code.
      */
     private static class ShiftInfo {
         // CHECKSTYLE: stop all

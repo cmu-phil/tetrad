@@ -34,8 +34,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the
- * Graph interface.
+ * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the Graph interface.
  *
  * @author josephramsey
  */
@@ -76,7 +75,7 @@ public final class TestDag {
         assertTrue(parents.contains(x3));
         assertTrue(parents.contains(x5));
 
-        assertTrue(graph.paths().isDConnectedTo(x1, x3, Collections.EMPTY_LIST));
+        assertTrue(graph.paths().isMConnectedTo(x1, x3, Collections.EMPTY_SET));
 
         assertTrue(graph.paths().existsDirectedPathFromTo(x1, x4));
         assertTrue(!graph.paths().existsDirectedPathFromTo(x1, x5));

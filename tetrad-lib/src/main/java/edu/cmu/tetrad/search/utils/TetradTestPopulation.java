@@ -30,8 +30,8 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.List;
 
 /**
- * Implements a test of tetrad constraints in a known correlation matrix. It might be
- * useful for debugging BuildPureClusters/Purify-like algorithm.
+ * Implements a test of tetrad constraints in a known correlation matrix. It might be useful for debugging
+ * BuildPureClusters/Purify-like algorithm.
  *
  * @author Ricardo Silva
  */

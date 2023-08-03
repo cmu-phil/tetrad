@@ -14,8 +14,8 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.PermutationSearch;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -69,7 +69,6 @@ public class Sp implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBoo
             Score score = this.score.getScore(dataModel, parameters);
             PermutationSearch permutationSearch = new PermutationSearch(new edu.cmu.tetrad.search.Sp(score));
             permutationSearch.setKnowledge(this.knowledge);
-            permutationSearch.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return permutationSearch.search();
         } else {
@@ -83,7 +82,7 @@ public class Sp implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBoo
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();
-            this.bootstrapGraphs = search.getGraphs();
+            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             return graph;
         }
     }
@@ -105,13 +104,7 @@ public class Sp implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBoo
 
     @Override
     public List<String> getParameters() {
-        ArrayList<String> params = new ArrayList<>();
-
-        // Flags
-        params.add(Params.VERBOSE);
-
-
-        return params;
+        return new ArrayList<>();
     }
 
     @Override

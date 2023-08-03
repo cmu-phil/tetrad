@@ -35,9 +35,8 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.*;
 
 /**
- * Implements the Purify algorithm, which is a implementation of the automated
- * purification methods described on CPS and the report "Learning Measurement Models"
- * CMU-CALD-03-100.
+ * Implements the Purify algorithm, which is a implementation of the automated purification methods described on CPS and
+ * the report "Learning Measurement Models" CMU-CALD-03-100.
  * <p>
  * No background knowledge is allowed yet. Future versions of this algorithm will include it.
  * <p>
@@ -57,24 +56,63 @@ import java.util.*;
  * @author Ricardo Silva
  */
 public class Purify {
-    private boolean outputMessage;
-
-    /**
-     * Data storage
-     */
-    private CorrelationMatrix correlationMatrix;
-    private DataSet dataSet;
-    private Clusters clusters;
-    private List<Node> forbiddenList;
-    private int numVars;
-    private TetradTest tetradTest;
-
     /**
      * The logger for this class. The config needs to be set.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
     private final List<Node> variables;
+    double[][] Cyy, Cyz, Czz, bestCyy, bestCyz, bestCzz;
+    double[][] covErrors, oldCovErrors, sampleCovErrors, betas, oldBetas;
+    double[][] betasLat;
+    double[] varErrorLatent;
+    double[][] omega;
+    double[] omegaI;
+    double[][][] parentsResidualsCovar;
+    double[] iResidualsCovar;
+    double[][][] selectedInverseOmega;
+    double[][][] auxInverseOmega;
+    int[][] spouses;
+    int[] nSpouses;
+    int[][] parents;
+    int[][] parentsLat;
+    double[][][] parentsCov;
+    double[][] parentsChildCov;
+    double[][][] parentsLatCov;
+    double[][] parentsChildLatCov;
+    double[][][] pseudoParentsCov;
+    double[][] pseudoParentsChildCov;
+    boolean[][] parentsL;
+    int numObserved;
+    int numLatent;
+    int[] clusterId;
+    Hashtable observableNames, latentNames;
+    SemGraph purePartitionGraph;
+    Graph basicGraph;
+    ICovarianceMatrix covarianceMatrix;
+    boolean[][] correlatedErrors, latentParent, observedParent;
 
+    // The number of variables in cluster that have not been eliminated.
+    List latentNodes, measuredNodes;
+    SemIm currentSemIm;
+    boolean modifiedGraph;
+    boolean extraDebugPrint;
+    private boolean outputMessage;
+    /**
+     * Data storage
+     */
+    private CorrelationMatrix correlationMatrix;
+
+    //     SCORE-BASED PURIFY - using BIC score function and Structural EM for
+//     search. Probabilistic model is Gaussian. - search operator consists only
+//     of adding a bi-directed edge between pairs of error variables - after
+//     such pairs are found, an heuristic is applied to eliminate one member of
+//     each pair - this methods tends to be much slower than the "tetradBased"
+//     ones.
+    private DataSet dataSet;
+    private Clusters clusters;
+    private List<Node> forbiddenList;
+    private int numVars;
+    private TetradTest tetradTest;
 
     /*********************************************************
      * INITIALIZATION                                                                                        o
@@ -127,6 +165,69 @@ public class Purify {
         this.variables = tetradTest.getVariables();
     }
 
+    public static Graph convertSearchGraph(SemGraph input) {
+        if (input == null) {
+            List<Node> nodes = new ArrayList<>();
+            nodes.add(new GraphNode("No_model."));
+            return new EdgeListGraph(nodes);
+        }
+        List<Node> inputIndicators = new ArrayList<>();
+        List<Node> inputLatents = new ArrayList<>();
+        for (Node next : input.getNodes()) {
+            if (next.getNodeType() == NodeType.MEASURED) {
+                inputIndicators.add(next);
+            } else if (next.getNodeType() == NodeType.LATENT) {
+                inputLatents.add(next);
+            }
+
+        }
+        List<Node> allNodes = new ArrayList<>(inputIndicators);
+        allNodes.addAll(inputLatents);
+        Graph output = new EdgeListGraph(allNodes);
+
+        for (Node node1 : input.getNodes()) {
+            for (Node node2 : input.getNodes()) {
+                Edge edge = input.getEdge(node1, node2);
+                if (edge != null) {
+                    if (node1.getNodeType() == NodeType.ERROR &&
+                            node2.getNodeType() == NodeType.ERROR) {
+                        Iterator<Node> ci = input.getChildren(node1).iterator();
+                        Node indicator1 =
+                                ci.next(); //Assuming error nodes have only one children in SemGraphs...
+                        ci = input.getChildren(node2).iterator();
+                        Node indicator2 =
+                                ci.next(); //Assuming error nodes have only one children in SemGraphs...
+                        if (indicator1.getNodeType() != NodeType.LATENT) {
+                            output.setEndpoint(indicator1, indicator2,
+                                    Endpoint.ARROW);
+                            output.setEndpoint(indicator2, indicator1,
+                                    Endpoint.ARROW);
+                        }
+                    } else if ((node1.getNodeType() != NodeType.LATENT ||
+                            node2.getNodeType() != NodeType.LATENT) &&
+                            node1.getNodeType() != NodeType.ERROR &&
+                            node2.getNodeType() != NodeType.ERROR) {
+                        output.setEndpoint(edge.getNode1(), edge.getNode2(),
+                                Endpoint.ARROW);
+                        output.setEndpoint(edge.getNode2(), edge.getNode1(),
+                                Endpoint.TAIL);
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < inputLatents.size() - 1; i++) {
+            for (int j = i + 1; j < inputLatents.size(); j++) {
+                output.setEndpoint(inputLatents.get(i),
+                        inputLatents.get(j), Endpoint.TAIL);
+                output.setEndpoint(inputLatents.get(j),
+                        inputLatents.get(i), Endpoint.TAIL);
+            }
+        }
+
+        return output;
+    }
+
     private void initAlgorithm(double sig, BpcTestType testType, Clusters clusters) {
         this.clusters = clusters;
         this.forbiddenList = null;
@@ -150,13 +251,12 @@ public class Purify {
     }
 
     /**
-     * ****************************************************** SEARCH INTERFACE *******************************************************
+     * ****************************************************** SEARCH INTERFACE
+     * *******************************************************
      */
 
     public Graph search() {
-        Graph graph = getResultGraph();
-        this.logger.log("graph", "\nReturning this graph: " + graph);
-        return graph;
+        return getResultGraph();
     }
 
     private Graph getResultGraph() {
@@ -235,71 +335,9 @@ public class Purify {
         return clusters;
     }
 
-    public static Graph convertSearchGraph(SemGraph input) {
-        if (input == null) {
-            List<Node> nodes = new ArrayList<>();
-            nodes.add(new GraphNode("No_model."));
-            return new EdgeListGraph(nodes);
-        }
-        List<Node> inputIndicators = new ArrayList<>();
-        List<Node> inputLatents = new ArrayList<>();
-        for (Node next : input.getNodes()) {
-            if (next.getNodeType() == NodeType.MEASURED) {
-                inputIndicators.add(next);
-            } else if (next.getNodeType() == NodeType.LATENT) {
-                inputLatents.add(next);
-            }
-
-        }
-        List<Node> allNodes = new ArrayList<>(inputIndicators);
-        allNodes.addAll(inputLatents);
-        Graph output = new EdgeListGraph(allNodes);
-
-        for (Node node1 : input.getNodes()) {
-            for (Node node2 : input.getNodes()) {
-                Edge edge = input.getEdge(node1, node2);
-                if (edge != null) {
-                    if (node1.getNodeType() == NodeType.ERROR &&
-                            node2.getNodeType() == NodeType.ERROR) {
-                        Iterator<Node> ci = input.getChildren(node1).iterator();
-                        Node indicator1 =
-                                ci.next(); //Assuming error nodes have only one children in SemGraphs...
-                        ci = input.getChildren(node2).iterator();
-                        Node indicator2 =
-                                ci.next(); //Assuming error nodes have only one children in SemGraphs...
-                        if (indicator1.getNodeType() != NodeType.LATENT) {
-                            output.setEndpoint(indicator1, indicator2,
-                                    Endpoint.ARROW);
-                            output.setEndpoint(indicator2, indicator1,
-                                    Endpoint.ARROW);
-                        }
-                    } else if ((node1.getNodeType() != NodeType.LATENT ||
-                            node2.getNodeType() != NodeType.LATENT) &&
-                            node1.getNodeType() != NodeType.ERROR &&
-                            node2.getNodeType() != NodeType.ERROR) {
-                        output.setEndpoint(edge.getNode1(), edge.getNode2(),
-                                Endpoint.ARROW);
-                        output.setEndpoint(edge.getNode2(), edge.getNode1(),
-                                Endpoint.TAIL);
-                    }
-                }
-            }
-        }
-
-        for (int i = 0; i < inputLatents.size() - 1; i++) {
-            for (int j = i + 1; j < inputLatents.size(); j++) {
-                output.setEndpoint(inputLatents.get(i),
-                        inputLatents.get(j), Endpoint.TAIL);
-                output.setEndpoint(inputLatents.get(j),
-                        inputLatents.get(i), Endpoint.TAIL);
-            }
-        }
-
-        return output;
-    }
-
     /**
-     * ****************************************************** DEBUG UTILITIES *******************************************************
+     * ****************************************************** DEBUG UTILITIES
+     * *******************************************************
      */
 
     private void printClustering(List<int[]> clustering) {
@@ -407,8 +445,7 @@ public class Purify {
 
     /**
      * Marks for deletion nodes within a single cluster that are part of some tetrad constraint that does not hold
-     * according to a statistical test. False discovery rates will be used to adjust for multiple hypothesis
-     * tests.
+     * according to a statistical test. False discovery rates will be used to adjust for multiple hypothesis tests.
      */
     private void intraConstructPhase(int[] cluster, boolean[] eliminated,
                                      String clusterName) {
@@ -664,11 +701,9 @@ public class Purify {
         return pValues;
     }
 
-
     /**
      * Marks for deletion nodes that are part of some tetrad constraint between two clusters that does not hold
-     * according to a statistical test. False discovery rates will be used to adjust for multiple hypothesis
-     * tests.
+     * according to a statistical test. False discovery rates will be used to adjust for multiple hypothesis tests.
      */
 
     private void crossConstructPhase(List<int[]> partition, boolean[] eliminated) {
@@ -1003,8 +1038,6 @@ public class Purify {
         return allPValues;
     }
 
-    // The number of variables in cluster that have not been eliminated.
-
     private int numNotEliminated(int[] cluster, boolean[] eliminated) {
         int n1 = 0;
         for (int j : cluster) {
@@ -1230,50 +1263,6 @@ public class Purify {
         return this.purePartitionGraph;
     }
 
-//     SCORE-BASED PURIFY - using BIC score function and Structural EM for
-//     search. Probabilistic model is Gaussian. - search operator consists only
-//     of adding a bi-directed edge between pairs of error variables - after
-//     such pairs are found, an heuristic is applied to eliminate one member of
-//     each pair - this methods tends to be much slower than the "tetradBased"
-//     ones.
-
-    double[][] Cyy, Cyz, Czz, bestCyy, bestCyz, bestCzz;
-    double[][] covErrors, oldCovErrors, sampleCovErrors, betas, oldBetas;
-    double[][] betasLat;
-    double[] varErrorLatent;
-    double[][] omega;
-    double[] omegaI;
-    double[][][] parentsResidualsCovar;
-    double[] iResidualsCovar;
-    double[][][] selectedInverseOmega;
-    double[][][] auxInverseOmega;
-    int[][] spouses;
-    int[] nSpouses;
-    int[][] parents;
-    int[][] parentsLat;
-    double[][][] parentsCov;
-    double[][] parentsChildCov;
-    double[][][] parentsLatCov;
-    double[][] parentsChildLatCov;
-    double[][][] pseudoParentsCov;
-    double[][] pseudoParentsChildCov;
-    boolean[][] parentsL;
-
-    int numObserved;
-    int numLatent;
-    int[] clusterId;
-    Hashtable observableNames, latentNames;
-    SemGraph purePartitionGraph;
-    Graph basicGraph;
-    ICovarianceMatrix covarianceMatrix;
-    boolean[][] correlatedErrors, latentParent, observedParent;
-    List latentNodes, measuredNodes;
-    SemIm currentSemIm;
-    boolean modifiedGraph;
-
-
-    boolean extraDebugPrint;
-
     private SemGraph scoreBasedPurify(List partition) {
         structuralEmInitialization(partition);
         SemGraph bestGraph = this.purePartitionGraph;
@@ -1310,7 +1299,7 @@ public class Purify {
         } while (this.modifiedGraph);
         boolean[][] impurities = new boolean[this.numObserved][this.numObserved];
         for (int i = 0; i < this.numObserved; i++) {
-            List parents = bestGraph.getParents(
+            List<Node> parents = bestGraph.getParents(
                     bestGraph.getNode(this.measuredNodes.get(i).toString()));
             if (parents.size() > 1) {
                 boolean latent_found = false;

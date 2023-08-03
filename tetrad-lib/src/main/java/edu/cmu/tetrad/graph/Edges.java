@@ -27,17 +27,13 @@ import java.util.List;
 
 
 /**
- * This factory class produces edges of the types commonly used for Tetrad-style
- * graphs.  For each method in the class, one supplies a pair of nodes, and an
- * edge is returned, connecting those nodes, of the specified type.  Methods are
- * also included to help determine whether a specified edge falls into one of
- * the types produced by this factory.  It's entirely possible to produce edges
- * of these types other than by using this factory.  For randomUtil, an edge
- * counts as a directed edge just in case it has one null endpoint and one arrow
- * endpoint.  Any edge which has one null endpoint and one arrow endpoint will
- * do, whether or not this factory produced it.  These helper methods provide a
- * uniform way of testing whether an edge is in fact, e.g., a directed edge (or
- * any of the other types).
+ * This factory class produces edges of the types commonly used for Tetrad-style graphs.  For each method in the class,
+ * one supplies a pair of nodes, and an edge is returned, connecting those nodes, of the specified type.  Methods are
+ * also included to help determine whether a specified edge falls into one of the types produced by this factory.  It's
+ * entirely possible to produce edges of these types other than by using this factory.  For randomUtil, an edge counts
+ * as a directed edge just in case it has one null endpoint and one arrow endpoint.  Any edge which has one null
+ * endpoint and one arrow endpoint will do, whether or not this factory produced it.  These helper methods provide a
+ * uniform way of testing whether an edge is in fact, e.g., a directed edge (or any of the other types).
  *
  * @author josephramsey
  */
@@ -188,8 +184,7 @@ public final class Edges {
     }
 
     /**
-     * For A --* B or A o-* B, given A, returns B. For A &lt;-* B, returns null.
-     * Added by ekorber, 2004/06/12.
+     * For A --* B or A o-* B, given A, returns B. For A &lt;-* B, returns null. Added by ekorber, 2004/06/12.
      */
     public static Node traverseSemiDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
@@ -207,8 +202,7 @@ public final class Edges {
     /**
      * For a directed edge, returns the node adjacent to the arrow endpoint.
      *
-     * @throws IllegalArgumentException if the given edge is not a directed
-     *                                  edge.
+     * @throws IllegalArgumentException if the given edge is not a directed edge.
      */
     public static Node getDirectedEdgeHead(Edge edge) {
         if ((edge.getEndpoint1() == Endpoint.ARROW) &&
@@ -225,8 +219,7 @@ public final class Edges {
     /**
      * For a directed edge, returns the node adjacent to the null endpoint.
      *
-     * @throws IllegalArgumentException if the given edge is not a directed
-     *                                  edge.
+     * @throws IllegalArgumentException if the given edge is not a directed edge.
      */
     public static Node getDirectedEdgeTail(Edge edge) {
         if ((edge.getEndpoint2() == Endpoint.ARROW) &&

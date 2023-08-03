@@ -34,11 +34,12 @@ public class ZhangShenBoundScore implements ScoreWrapper {
 
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
+        boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
         ZsbScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new ZsbScore((DataSet) this.dataSet);
+            score = new ZsbScore((DataSet) this.dataSet, precomputeCovariances);
         } else if (dataSet instanceof ICovarianceMatrix) {
             score = new ZsbScore((ICovarianceMatrix) this.dataSet);
         } else {
@@ -64,6 +65,7 @@ public class ZhangShenBoundScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ZS_RISK_BOUND);
+        parameters.add(Params.PRECOMPUTE_COVARIANCES);
         return parameters;
     }
 

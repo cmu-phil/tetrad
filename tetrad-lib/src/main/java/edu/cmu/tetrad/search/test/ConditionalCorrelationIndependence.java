@@ -34,8 +34,8 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * Checks conditional independence of variable in a continuous data set using Daudin's method. See
  * <p>
- * Ramsey, J. D. (2014). A scalable conditional independence test for nonlinear, non-Gaussian data. arXiv
- * preprint arXiv:1401.5031.
+ * Ramsey, J. D. (2014). A scalable conditional independence test for nonlinear, non-Gaussian data. arXiv preprint
+ * arXiv:1401.5031.
  * <p>
  * This is corrected using Lemma 2, condition 4 of
  * <p>
@@ -44,8 +44,9 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * This all follows the original Daudin paper, which is this:
  * <p>
- * Daudin, J. J. (1980). Partial association measures and a  application to qualitative regression.
- * Biometrika, 67(3), 581-590.
+ * Daudin, J. J. (1980). Partial association measures and ann application to qualitative regression.
+ * Biometrika, 67(3),
+ * 581-590.
  * <p>
  * We use Nadaraya-Watson kernel regression, though we further restrict the sample size to nearby points.
  *
@@ -54,75 +55,49 @@ import static org.apache.commons.math3.util.FastMath.*;
 public final class ConditionalCorrelationIndependence {
 
     /**
-     * Gives a choice of kernels to use for the independence judgmnts for conditional correlation independence.
-     *
-     * @see ConditionalCorrelationIndependence
-     */
-    public enum Kernel {Epinechnikov, Gaussian}
-
-    /**
-     * Gives a choice of basis functions to use for judgments of independence for conditional correlation independence.
-     *
-     * @see ConditionalCorrelationIndependence
-     */
-    public enum Basis {Polynomial, Cosine}
-
-    /**
      * The dataset supplied in the constructor.
      */
     private final DataSet dataSet;
-
     /**
      * The variables in datasSet.
      */
     private final List<Node> variables;
-
     /**
      * Map from nodes to their indices.
      */
     private final HashMap<Node, Integer> nodesHash;
-
     /**
      * The q value of the most recent test.
      */
     private double score;
-
     /**
      * Number of functions to use in the (truncated) basis.
      */
     private int numFunctions = 10;
-
     /**
      * Z cutoff for testing; depends on alpha.
      */
     private double cutoff;
-
     /**
      * Azzalini kernel widths are multiplied by this.
      */
     private double width = 1.0;
-
     /**
      * Kernel
      */
     private Kernel kernelMultiplier = Kernel.Gaussian;
-
     /**
      * Basis
      */
     private Basis basis = Basis.Polynomial;
-
     /**
      * The minimum sample size to use for the kernel regression.
      */
     private int kernelRegressionSampleSize = 100;
 
-    //==================CONSTRUCTORS====================//
-
     /**
-     * Constructs a new Independence test which checks independence facts based on the
-     * correlation data implied by the given data set (must be continuous). The given
-     * significance level is used.
+     * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
+     * given data set (must be continuous). The given significance level is used.
      *
      * @param dataSet A data set containing only continuous columns.
      */
@@ -138,14 +113,15 @@ public final class ConditionalCorrelationIndependence {
         }
     }
 
-    //=================PUBLIC METHODS====================//
-
     /**
      * Returns the p-value of the test, x _||_ y | z. Can be compared to alpha.
      *
      * @return This p-value.
      */
-    public double isIndependent(Node x, Node y, List<Node> z) {
+    public double isIndependent(Node x, Node y, Set<Node> _z) {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+
         try {
             Map<Node, Integer> nodesHash = new HashMap<>();
             for (int i = 0; i < this.variables.size(); i++) {
@@ -174,12 +150,12 @@ public final class ConditionalCorrelationIndependence {
         }
     }
 
+
     /**
-     * Calculates the residuals of x regressed nonparametrically onto z. Left public
-     * so it can be accessed separately.
+     * Calculates the residuals of x regressed nonparametrically onto z. Left public so it can be accessed separately.
      *
-     * @return a double[2][] array. The first double[] array contains the residuals for x
-     * and the second double[] array contains the resituls for y.
+     * @return a double[2][] array. The first double[] array contains the residuals for x, and the second double[] array
+     * contains the residuals for y.
      */
     public double[] residuals(Node x, List<Node> z, List<Integer> rows) {
         int[] _rows = new int[rows.size()];
@@ -288,6 +264,7 @@ public final class ConditionalCorrelationIndependence {
         return _residualsx;
     }
 
+
     /**
      * Sets the number of functions to use in (truncated) basis
      *
@@ -337,15 +314,6 @@ public final class ConditionalCorrelationIndependence {
     /**
      * Returns the p-value of the score.
      *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return getPValue(this.score);
-    }
-
-    /**
-     * Returns the p-value of the score.
-     *
      * @param score The score.
      * @return This p-value.
      */
@@ -354,9 +322,8 @@ public final class ConditionalCorrelationIndependence {
     }
 
     /**
-     * Returns the minimal scores value calculated by the method for the most
-     * recent independence check, less the cutoff so that negative scores correspond
-     * to independence.
+     * Returns the minimal scores value calculated by the method for the most recent independence check, less the cutoff
+     * so that negative scores correspond to independence.
      *
      * @return This minimal score.
      */
@@ -382,12 +349,9 @@ public final class ConditionalCorrelationIndependence {
         this.kernelRegressionSampleSize = kernelRegressionSapleSize;
     }
 
-    //=====================PRIVATE METHODS====================//
-
     /**
-     * @return true just in the case the x and y vectors are independent,
-     * once undefined values have been removed. Left public so it can be
-     * accessed separately.
+     * @return True, just in case the x and y vectors are independent, once undefined values have been removed. Left
+     * public so it can be accessed separately.
      */
     private double independent(double[] x, double[] y) {
         double[] _x = new double[x.length];
@@ -431,6 +395,7 @@ public final class ConditionalCorrelationIndependence {
             dataSet.setDouble(i, col, min + (d - min) / (max - min));
         }
     }
+
 
     private double nonparametricFisherZ(double[] _x, double[] _y) {
 
@@ -483,7 +448,7 @@ public final class ConditionalCorrelationIndependence {
         }
     }
 
-    // Optimal bandwidth qsuggested by Bowman and Bowman and Azzalini (1997) q.31,
+    // Optimal bandwidth suggested by Bowman and Bowman and Azzalini (1997) q.31,
     // using MAD.
     private double h(double[] xCol) {
         double[] g = new double[xCol.length];
@@ -594,6 +559,20 @@ public final class ConditionalCorrelationIndependence {
 
         return rows;
     }
+
+    /**
+     * Gives a choice of kernels to use for the independence judgments for conditional correlation independence.
+     *
+     * @see ConditionalCorrelationIndependence
+     */
+    public enum Kernel {Epinechnikov, Gaussian}
+
+    /**
+     * Gives a choice of basis functions to use for judgments of independence for conditional correlation independence.
+     *
+     * @see ConditionalCorrelationIndependence
+     */
+    public enum Basis {Polynomial, Cosine}
 }
 
 

@@ -25,8 +25,7 @@ package edu.cmu.tetradapp.util;
 import edu.cmu.tetrad.util.Version;
 
 /**
- * Some utilities for loading license-related files and making sure they get the
- * right versions stamped in them.
+ * Some utilities for loading license-related files and making sure they get the right versions stamped in them.
  *
  * @author josephramsey
  */

@@ -6,7 +6,8 @@ import edu.cmu.tetrad.bayes.DirichletBayesIm;
 import edu.cmu.tetrad.bayes.DirichletEstimator;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
@@ -34,34 +35,11 @@ import static org.apache.commons.math3.util.FastMath.log;
 
 public class RBExperiments {
 
+    private static final int MININUM_EXPONENT = -1022;
     private final int depth = 5;
     private String directory;
 
-    private static class MapUtil {
-        public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-            List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
-            list.sort((o1, o2) -> (o2.getValue()).compareTo(o1.getValue()));
-
-            Map<K, V> result = new LinkedHashMap<>();
-            for (Map.Entry<K, V> entry : list) {
-                result.put(entry.getKey(), entry.getValue());
-            }
-            return result;
-        }
-    }
-
-    private List<Node> getLatents(Graph dag) {
-        List<Node> latents = new ArrayList<>();
-        for (Node n : dag.getNodes()) {
-            if (n.getNodeType() == NodeType.LATENT) {
-                latents.add(n);
-            }
-        }
-        return latents;
-    }
-
     public static void main(String[] args) throws IOException {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
 
         // read and process input arguments
         double alpha = 0.05, lower = 0.3, upper = 0.7;
@@ -123,6 +101,16 @@ public class RBExperiments {
                 }
             }
         }
+    }
+
+    private List<Node> getLatents(Graph dag) {
+        List<Node> latents = new ArrayList<>();
+        for (Node n : dag.getNodes()) {
+            if (n.getNodeType() == NodeType.LATENT) {
+                latents.add(n);
+            }
+        }
+        return latents;
     }
 
     public void experiment(String modelName, int numCases, int numModels, int numBootstrapSamples, double alpha,
@@ -427,17 +415,6 @@ public class RBExperiments {
         return new allScores(pagLnBSCD, pagLnBSCI);
     }
 
-    private static class allScores {
-        Map<Graph, Double> LnBSCD;
-        Map<Graph, Double> LnBSCI;
-
-        allScores(Map<Graph, Double> LnBSCD, Map<Graph, Double> LnBSCI) {
-            this.LnBSCD = LnBSCD;
-            this.LnBSCI = LnBSCI;
-        }
-
-    }
-
     private IndTestProbabilistic runRB(DataSet data, List<Graph> pags, int numModels, boolean threshold) {
         IndTestProbabilistic BSCtest = new IndTestProbabilistic(data);
 
@@ -474,7 +451,7 @@ public class RBExperiments {
             BCInference.OP op;
             double p;
 
-            if (pag.paths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;
@@ -497,7 +474,7 @@ public class RBExperiments {
                         String[] splitParent2 = splitParent[1].trim().split(Pattern.quote("|"));
                         Node Y = pag.getNode(splitParent2[0].trim());
 
-                        List<Node> Z = new ArrayList<>();
+                        Set<Node> Z = new HashSet<>();
                         if (splitParent2.length > 1) {
                             String[] splitParent3 = splitParent2[1].trim().split(Pattern.quote(","));
                             for (String s : splitParent3) {
@@ -505,7 +482,7 @@ public class RBExperiments {
                             }
                         }
                         IndependenceFact parentFact = new IndependenceFact(X, Y, Z);
-                        if (pag.paths().isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
+                        if (pag.paths().isMSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
                             parentValues[parentIndex] = 1;
                         } else {
                             parentValues[parentIndex] = 0;
@@ -562,7 +539,7 @@ public class RBExperiments {
         for (IndependenceFact fact : H.keySet()) {
             BCInference.OP op;
 
-            if (pag.paths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;
@@ -648,6 +625,28 @@ public class RBExperiments {
         return lnQTotal;
     }
 
-    private static final int MININUM_EXPONENT = -1022;
+    private static class MapUtil {
+        public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+            List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
+            list.sort((o1, o2) -> (o2.getValue()).compareTo(o1.getValue()));
+
+            Map<K, V> result = new LinkedHashMap<>();
+            for (Map.Entry<K, V> entry : list) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+            return result;
+        }
+    }
+
+    private static class allScores {
+        Map<Graph, Double> LnBSCD;
+        Map<Graph, Double> LnBSCI;
+
+        allScores(Map<Graph, Double> LnBSCD, Map<Graph, Double> LnBSCI) {
+            this.LnBSCD = LnBSCD;
+            this.LnBSCI = LnBSCI;
+        }
+
+    }
 
 }

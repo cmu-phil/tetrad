@@ -29,8 +29,8 @@ import junit.framework.TestSuite;
 import java.util.SortedSet;
 
 /**
- * Tests the SimpleRandomizer class by constructing graphs with randomly chosen
- * parameters and seeing if they have the required properties.
+ * Tests the SimpleRandomizer class by constructing graphs with randomly chosen parameters and seeing if they have the
+ * required properties.
  *
  * @author josephramsey
  */
@@ -42,6 +42,17 @@ public class TestSimpleRandomizer extends TestCase {
      */
     public TestSimpleRandomizer(String name) {
         super(name);
+    }
+
+    /**
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
+     */
+    public static Test suite() {
+
+        // Edit the name of the class in the parens to match the name
+        // of this class.
+        return new TestSuite(TestSimpleRandomizer.class);
     }
 
     /**
@@ -57,8 +68,7 @@ public class TestSimpleRandomizer extends TestCase {
     }
 
     /**
-     * Tests whether the randomizer can randomly make a graph where all of the
-     * factors have the same indegree.
+     * Tests whether the randomizer can randomly make a graph where all of the factors have the same indegree.
      */
     public void testConstantIndegree() {
 
@@ -93,8 +103,8 @@ public class TestSimpleRandomizer extends TestCase {
     }
 
     /**
-     * Tests whether the randomizer can randomly make a graph where the mean
-     * ofindegree across factors is the given number.
+     * Tests whether the randomizer can randomly make a graph where the mean ofindegree across factors is the given
+     * number.
      */
     public void testMeanIndegree() {
 
@@ -145,8 +155,8 @@ public class TestSimpleRandomizer extends TestCase {
     }
 
     /**
-     * Tests whether the randomizer can randomly make a graph where the maximum
-     * indegree across factors is the given factor.
+     * Tests whether the randomizer can randomly make a graph where the maximum indegree across factors is the given
+     * factor.
      */
     public void testMaxIndegree() {
 
@@ -184,17 +194,6 @@ public class TestSimpleRandomizer extends TestCase {
 
     public void tearDown() {
         this.lagGraph = null;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSimpleRandomizer.class);
     }
 }
 

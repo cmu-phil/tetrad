@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.*;
@@ -34,9 +33,9 @@ import java.util.*;
 
 /**
  * <p>Searches for a CPDAG representing all the Markov blankets for a given target T consistent
- * with the given independence information. This CPDAG may be used to generate the actual list
- * of DAG's that might be Markov blankets. Note that this code has been converted to be consistent
- * with the CPC algorithm. The reference is here:</p>
+ * with the given independence information. This CPDAG may be used to generate the actual list of DAG's that might be
+ * Markov blankets. Note that this code has been converted to be consistent with the CPC algorithm. The reference is
+ * here:</p>
  *
  * <p>Bai, X., Padman, R., Ramsey, J., & Spirtes, P. (2008). Tabu search-enhanced graphical models
  * for classification in high dimensions. INFORMS Journal on Computing, 20(3), 423-437.</p>
@@ -54,79 +53,58 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * The independence test used to perform the search.
      */
     private final IndependenceTest test;
-
+    /**
+     * The logger for this class. The config needs to be set.
+     */
+    private final TetradLogger logger = TetradLogger.getInstance();
     /**
      * The list of variables being searched over. Must contain the target.
      */
     private List<Node> variables;
-
     /**
      * The target variable.
      */
     private List<Node> targets;
-
     /**
-     * The depth to which independence tests should be performed--i.e. the maximum number of conditioning variables for
+     * The depth to which independence tests should be performed--i.e., the maximum number of conditioning variables for
      * any independence test.
      */
     private int depth;
-
     /**
      * The CPDAG output by the most recent search. This is saved in case the user wants to generate the list of MB
      * DAGs.
      */
     private Graph resultGraph;
-
     /**
      * A count of the number of independence tests performed in the course of the most recent search.
      */
     private int numIndependenceTests;
-
     /**
      * Information to help understand what part of the search is taking the most time.
      */
     private int[] maxRemainingAtDepth;
-
     /**
      * The set of nodes that edges should not be drawn to in the addDepthZeroAssociates method.
      */
     private Set<Node> a;
-
     /**
      * Elapsed time for the last run of the algorithm.
      */
     private long elapsedTime;
-
     /**
      * Knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * Set of ambiguous unshielded triples.
      */
     private Set<Triple> ambiguousTriples;
-
     /**
-     * The most recently returned graph.
+     * True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
      */
-    private Graph graph;
-
-    /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
-     */
-    private boolean aggressivelyPreventCycles;
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-
+    private boolean meekPreventCycles;
     private boolean findMb = false;
 
-
-    //==============================CONSTRUCTORS==========================//
 
     /**
      * Constructs a new search.
@@ -152,15 +130,24 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.variables = test.getVariables();
     }
 
-    //===============================PUBLIC METHODS=======================//
+
+    private static boolean isArrowheadAllowed1(Node from, Node to,
+                                               Knowledge knowledge) {
+        if (knowledge == null) {
+            return true;
+        }
+
+        return !knowledge.isRequired(to.toString(), from.toString()) &&
+                !knowledge.isForbidden(from.toString(), to.toString());
+    }
 
     /**
-     * Sets whether cycles should be aggressively prevented, using a cycle checker.
+     * Sets whether cycles should be prevented, using a cycle checker.
      *
-     * @param aggressivelyPreventCycles True if so.
+     * @param meekPreventCycles True, if so.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+    public void setMeekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
@@ -249,7 +236,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                         _a.retainAll(graph.getAdjacentNodes(w));
                         if (_a.size() > 1) continue;
 
-                        List<Node> adjT = graph.getAdjacentNodes(target);
+                        List<Node> adjT = new ArrayList<>(graph.getAdjacentNodes(target));
                         SublistGenerator cg = new SublistGenerator(
                                 adjT.size(), this.depth);
                         int[] choice;
@@ -259,7 +246,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                                 break;
                             }
 
-                            List<Node> s = GraphUtils.asList(choice, adjT);
+                            Set<Node> s = GraphUtils.asSet(choice, adjT);
                             if (!s.contains(v)) continue;
 
                             if (independent(target, w, s)) {
@@ -300,7 +287,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         orientUnshieldedTriples(this.knowledge, graph, getDepth(), _visited);
 
         MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+        meekRules.setMeekPreventCycles(this.meekPreventCycles);
         meekRules.setKnowledge(this.knowledge);
         meekRules.orientImplied(graph);
 
@@ -346,9 +333,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
 
         finishUp(start, graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + graph);
-
-        this.graph = graph;
         return graph;
     }
 
@@ -400,18 +384,15 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         orientUnshieldedTriples(this.knowledge, graph, getDepth(), graph.getNodes());
 
         MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+        meekRules.setMeekPreventCycles(this.meekPreventCycles);
         meekRules.setKnowledge(this.knowledge);
         meekRules.orientImplied(graph);
-
-        this.logger.log("graph", "\nReturning this graph: " + graph);
 
         return graph;
     }
 
     /**
-     * Returns the set of triples identified as ambiguous by the CPC algorithm during the
-     * most recent search.
+     * Returns the set of triples identified as ambiguous by the CPC algorithm during the most recent search.
      *
      * @return This set.
      */
@@ -429,7 +410,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * Returns the targets of the most recent search.
+     * Return the targets of the most recent search.
      *
      * @return This list.
      */
@@ -456,8 +437,8 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * Returns the depth of the search--that is, the maximum number of variables
-     * conditioned on in any conditional independence test.
+     * Returns the depth of the search--that is, the maximum number of variables conditioned on in any conditional
+     * independence test.
      *
      * @return This depth.
      */
@@ -494,9 +475,9 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param target The target variable.
      * @return This list.
      */
-    public List<Node> findMb(Node target) {
+    public Set<Node> findMb(Node target) {
         Graph graph = search(Collections.singletonList(target));
-        List<Node> nodes = graph.getNodes();
+        Set<Node> nodes = new HashSet<>(graph.getNodes());
         nodes.remove(target);
         return nodes;
     }
@@ -509,6 +490,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     public IndependenceTest getTest() {
         return this.test;
     }
+
 
     /**
      * Returns The knowledge used in search.
@@ -528,8 +510,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
-
-    //================================PRIVATE METHODS====================//
 
     private Set<Node> getA() {
         return this.a;
@@ -555,7 +535,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                 continue;
             }
 
-            if (!independent(v, w, new LinkedList<>()) && !edgeForbidden(v, w)) {
+            if (!independent(v, w, new HashSet<>()) && !edgeForbidden(v, w)) {
                 addEdge(graph, w, v);
                 numAssociated++;
             }
@@ -577,7 +557,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * Tries node remove the edge node---from using adjacent nodes of node 'from', then tries node remove each other
+     * Tries to remove the edge node---from using adjacent nodes of node 'from.' then tries to remove each other
      * edge adjacent node 'from' using remaining edges adjacent node 'from.' If the edge 'node' is removed, the method
      * immediately returns.
      *
@@ -612,7 +592,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                     break;
                 }
 
-                List<Node> condSet = GraphUtils.asList(choice, adjNode);
+                Set<Node> condSet = GraphUtils.asSet(choice, adjNode);
 
                 if (independent(node, y, condSet) && !edgeRequired(node, y)) {
                     graph.removeEdge(node, y);
@@ -644,7 +624,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.resultGraph = graph;
     }
 
-    private boolean independent(Node v, Node w, List<Node> z) {
+    private boolean independent(Node v, Node w, Set<Node> z) {
         boolean independent = getTest().checkIndependence(v, w, z).isIndependent();
 
         this.numIndependenceTests++;
@@ -676,7 +656,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         }
 
         for (Node y : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(y));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -747,7 +727,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                     break;
                 }
 
-                List<Node> condSet = PcMb.asList(choice, _nodes);
+                Set<Node> condSet = GraphUtils.asSet(choice, _nodes);
 
                 if (independent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -783,7 +763,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                     break;
                 }
 
-                List<Node> condSet = PcMb.asList(choice, _nodes);
+                Set<Node> condSet = GraphUtils.asSet(choice, _nodes);
 
                 if (independent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -819,7 +799,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      *
      * @param node    The node being discussed.
      * @param adjNode The list of adjacencies to <code>node</code>.
-     * @return The revised list of nodes--i.e. the possible parents among adjx, according to knowledge.
+     * @return The revised list of nodes--i.e., the possible parents among adjx, according to knowledge.
      */
     private List<Node> possibleParents(Node node, List<Node> adjNode) {
         List<Node> possibleParents = new LinkedList<>();
@@ -840,35 +820,15 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param z         The name of a node.
      * @param x         The name of another node.
      * @param knowledge The knowledge set--see the Knowledge class.
-     * @return True just in case z is a possible parent of x.
+     * @return True, just in case z is a possible parent of x.
      */
     private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
-    private static List<Node> asList(int[] indices, List<Node> nodes) {
-        List<Node> list = new LinkedList<>();
-
-        for (int i : indices) {
-            list.add(nodes.get(i));
-        }
-
-        return list;
-    }
-
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         return PcMb.isArrowheadAllowed1(x, y, knowledge) &&
                 PcMb.isArrowheadAllowed1(z, y, knowledge);
-    }
-
-    private static boolean isArrowheadAllowed1(Node from, Node to,
-                                               Knowledge knowledge) {
-        if (knowledge == null) {
-            return true;
-        }
-
-        return !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     public void setVariables(List<Node> variables) {
@@ -879,8 +839,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.findMb = findMb;
     }
 
-
-    //==============================CLASSES==============================//
 
     private enum TripleType {
         COLLIDER, NONCOLLIDER, AMBIGUOUS

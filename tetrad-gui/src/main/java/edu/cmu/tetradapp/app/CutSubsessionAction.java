@@ -33,8 +33,8 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 /**
- * Copies a selection of session nodes in the frontmost session editor to the
- * clipboard and deletes them from the session editor.
+ * Copies a selection of session nodes in the frontmost session editor to the clipboard and deletes them from the
+ * session editor.
  *
  * @author josephramsey
  */
@@ -42,16 +42,14 @@ final class CutSubsessionAction extends AbstractAction
         implements ClipboardOwner {
 
     /**
-     * Constucts an action for loading the session in the given '.tet' file into
-     * the desktop.
+     * Constucts an action for loading the session in the given '.tet' file into the desktop.
      */
     public CutSubsessionAction() {
         super("Cut");
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost
-     * session editor to the clipboard.
+     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         SessionEditorIndirectRef sessionEditorRef =
