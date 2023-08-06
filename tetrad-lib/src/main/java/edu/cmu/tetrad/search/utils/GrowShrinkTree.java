@@ -123,7 +123,7 @@ public class GrowShrinkTree {
         }
 
         public double trace(Set<Node> prefix, Set<Node> available, Set<Node> parents) {
-
+//lock
             if (!this.grow) {
                 this.grow = true;
                 this.branches = new ArrayList<>();
@@ -138,7 +138,7 @@ public class GrowShrinkTree {
                 this.branches.sort(Collections.reverseOrder());
                 this.branches.addAll(0, required);
             }
-
+//unlock
             for (GSTNode branch : this.branches) {
                 Node add = branch.getAdd();
                 available.remove(add);
@@ -148,8 +148,8 @@ public class GrowShrinkTree {
                     return branch.trace(prefix, available, parents);
                 }
             }
-
             if (!this.shrink) {
+//lock
                 this.shrink = true;
                 this.remove = new HashSet<>();
                 this.shrinkScore = this.growScore;
@@ -180,7 +180,12 @@ public class GrowShrinkTree {
                     }
                 } while (best != null);
 
+//                unlock
+
             }
+
+
+
             parents.removeAll(this.remove);
             return this.shrinkScore;
         }
