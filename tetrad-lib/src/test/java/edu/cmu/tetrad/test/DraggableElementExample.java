@@ -104,7 +104,7 @@ public class DraggableElementExample extends Application {
         line.setEndX(endIntersection[0]);
         line.setEndY(endIntersection[1]);
 
-        double arrowSize = 10;
+        double arrowSize = 11;
         double angle = Math.atan2(line.getStartY() - line.getEndY(), line.getStartX() - line.getEndX());
 
         arrowhead1.getPoints().clear();
