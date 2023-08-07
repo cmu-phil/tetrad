@@ -28,17 +28,17 @@ public class DraggableElementExample extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Graph graph = RandomGraph.randomDag(100, 0, 100,
+        Graph graph = RandomGraph.randomDag(1000, 0, 2000,
                 100, 100, 100, false);
 
-        graph = GraphSearchUtils.cpdagForDag(graph);
+//        graph = GraphSearchUtils.cpdagForDag(graph);
 
         int centerX = 120 + 5 * graph.getNumNodes();
         int centerY = 120 + 5 * graph.getNumNodes();
         int radius = centerX - 50;
 
-        LayoutUtil.circleLayout(graph, centerX, centerY, radius);
-//        LayoutUtil.fruchtermanReingoldLayout(graph);
+//        LayoutUtil.circleLayout(graph, centerX, centerY, radius);
+        LayoutUtil.fruchtermanReingoldLayout(graph);
 
         AnchorPane contentArea = new AnchorPane();
         ScrollPane scrollPane = new ScrollPane(contentArea);
@@ -198,7 +198,7 @@ public class DraggableElementExample extends Application {
         double[] intersection = new double[2];
 
         // Use binary search to find a point on the boundary of the ellipse from the center to the edge.
-        int iterations = 20; // The number of iterations for binary search (can be adjusted for higher precision)
+        int iterations = 15; // The number of iterations for binary search (can be adjusted for higher precision)
         for (int i = 0; i < iterations; i++) {
             double midX = (startX + endX) / 2;
             double midY = (startY + endY) / 2;
