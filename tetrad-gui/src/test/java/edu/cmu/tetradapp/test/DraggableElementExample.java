@@ -1,7 +1,6 @@
-package edu.cmu.tetrad.test;
+package edu.cmu.tetradapp.test;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
