@@ -79,13 +79,6 @@ public class DraggableElementExample extends Application {
     }
 
     private DisplayEdge makeDisplayEdge() {
-        Line line = new Line();
-        line.setStroke(Color.BLACK);
-
-        Polygon arrowHead = new Polygon();
-        arrowHead.setStroke(Color.BLACK);
-        arrowHead.setFill(Color.BLACK);
-
         return new DisplayEdge();
     }
 
