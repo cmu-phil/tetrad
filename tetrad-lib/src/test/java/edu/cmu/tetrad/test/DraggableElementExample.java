@@ -28,7 +28,7 @@ public class DraggableElementExample extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Graph graph = RandomGraph.randomDag(50, 0, 50,
+        Graph graph = RandomGraph.randomDag(10, 0, 10,
                 100, 100, 100, false);
 
         graph = GraphSearchUtils.cpdagForDag(graph);
