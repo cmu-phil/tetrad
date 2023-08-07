@@ -28,7 +28,7 @@ public class DraggableElementExample extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Graph graph = RandomGraph.randomDag(10, 0, 10,
+        Graph graph = RandomGraph.randomDag(100, 0, 100,
                 100, 100, 100, false);
 
         graph = GraphSearchUtils.cpdagForDag(graph);
@@ -46,7 +46,7 @@ public class DraggableElementExample extends Application {
         Pane root = new Pane(scrollPane);
         Scene scene = new Scene(root, 400, 400);
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Graph View Example");
+        primaryStage.setTitle("Graph View Example--you'll need to make the graph you want to start the app again...");
         primaryStage.show();
 
         scrollPane.prefWidthProperty().bind(root.widthProperty());
