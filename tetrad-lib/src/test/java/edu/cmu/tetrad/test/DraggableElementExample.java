@@ -58,8 +58,11 @@ public class DraggableElementExample extends Application {
         for (Edge edge : graph.getEdges()) {
             DisplayEdge _edge = makeDisplayEdge();
             displayEdges.put(edge, _edge);
-            contentArea.getChildren().addAll(_edge.getLine(), _edge.getArrowHead());
-            updateLineAndArrow(edge, _edge.getLine(), _edge.getArrowHead(), displayNodes.get(edge.getNode1()).getEllipse(), displayNodes.get(edge.getNode2()).getEllipse());
+            contentArea.getChildren().addAll(_edge.getLine(), _edge.getArrowHead1(), _edge.getArrowHead2());
+            updateLineAndArrow(edge, _edge.getLine(),
+                    _edge.getArrowHead2(), _edge.getArrowHead2(),
+                    displayNodes.get(edge.getNode1()).getEllipse(),
+                    displayNodes.get(edge.getNode2()).getEllipse());
         }
 
         // Finally, add the nodes to the root.
@@ -79,7 +82,8 @@ public class DraggableElementExample extends Application {
         return new DisplayEdge();
     }
 
-    private void updateLineAndArrow(Edge edge, Line line, Polygon arrowhead, Ellipse startEllipse, Ellipse endEllipse) {
+    private void updateLineAndArrow(Edge edge, Line line, Polygon arrowhead1, Polygon arrowhead2,
+                                    Ellipse startEllipse, Ellipse endEllipse) {
         double startX = startEllipse.getCenterX();
         double startY = startEllipse.getCenterY();
         double endX = endEllipse.getCenterX();
@@ -96,15 +100,31 @@ public class DraggableElementExample extends Application {
         double arrowSize = 10;
         double angle = Math.atan2(line.getStartY() - line.getEndY(), line.getStartX() - line.getEndX());
 
-        arrowhead.getPoints().clear();
-        arrowhead.getPoints().addAll(
-                line.getEndX() + arrowSize * Math.cos(angle - Math.PI / 6),
-                line.getEndY() + arrowSize * Math.sin(angle - Math.PI / 6),
-                line.getEndX(),
-                line.getEndY(),
-                line.getEndX() + arrowSize * Math.cos(angle + Math.PI / 6),
-                line.getEndY() + arrowSize * Math.sin(angle + Math.PI / 6)
-        );
+        arrowhead1.getPoints().clear();
+        arrowhead2.getPoints().clear();
+
+        if (edge.getEndpoint1() == Endpoint.ARROW) {
+            arrowhead1.getPoints().addAll(
+                    line.getStartX() + arrowSize * Math.cos(angle - Math.PI / 6),
+                    line.getStartY() + arrowSize * Math.sin(angle - Math.PI / 6),
+                    line.getStartX(),
+                    line.getStartX(),
+                    line.getStartX() + arrowSize * Math.cos(angle + Math.PI / 6),
+                    line.getStartX() + arrowSize * Math.sin(angle + Math.PI / 6)
+            );
+        }
+
+        if (edge.getEndpoint2() == Endpoint.ARROW) {
+            arrowhead2.getPoints().addAll(
+                    line.getEndX() + arrowSize * Math.cos(angle - Math.PI / 6),
+                    line.getEndY() + arrowSize * Math.sin(angle - Math.PI / 6),
+                    line.getEndX(),
+                    line.getEndY(),
+                    line.getEndX() + arrowSize * Math.cos(angle + Math.PI / 6),
+                    line.getEndY() + arrowSize * Math.sin(angle + Math.PI / 6)
+            );
+        }
+
     }
 
     private double[] findEllipseIntersection(Ellipse ellipse, double startX, double startY, double endX, double endY) {
@@ -159,7 +179,8 @@ public class DraggableElementExample extends Application {
                 Node n1 = Edges.getDirectedEdgeTail(edge);
                 Node n2 = Edges.getDirectedEdgeHead(edge);
 
-                updateLineAndArrow(edge, displayEdges.get(edge).getLine(), displayEdges.get(edge).getArrowHead(),
+                updateLineAndArrow(edge, displayEdges.get(edge).getLine(),
+                        displayEdges.get(edge).getArrowHead1(), displayEdges.get(edge).getArrowHead2(),
                         displayNodes.get(n1).getEllipse(), displayNodes.get(n2).getEllipse());
             }
         });
@@ -181,7 +202,8 @@ public class DraggableElementExample extends Application {
                 Node n1 = Edges.getDirectedEdgeTail(edge);
                 Node n2 = Edges.getDirectedEdgeHead(edge);
 
-                updateLineAndArrow(edge, displayEdges.get(edge).getLine(), displayEdges.get(edge).getArrowHead(),
+                updateLineAndArrow(edge, displayEdges.get(edge).getLine(),
+                        displayEdges.get(edge).getArrowHead1(), displayEdges.get(edge).getArrowHead2(),
                         displayNodes.get(n1).getEllipse(), displayNodes.get(n2).getEllipse());
             }
         });
@@ -209,26 +231,37 @@ public class DraggableElementExample extends Application {
 
     private static class DisplayEdge {
         private final Line line;
-        private final Polygon arrowHead;
+        private final Polygon arrowHead1;
+        private final Polygon arrowHead2;
 
         public DisplayEdge() {
             Line line = new Line();
             line.setStroke(Color.BLACK);
-
-            Polygon arrowHead = new Polygon();
-            arrowHead.setStroke(Color.BLACK);
-            arrowHead.setFill(Color.BLACK);
-
             this.line = line;
-            this.arrowHead = arrowHead;
+
+            Polygon arrowHead1 = new Polygon();
+            arrowHead1.setStroke(Color.BLACK);
+            arrowHead1.setFill(Color.BLACK);
+
+            this.arrowHead1 = arrowHead1;
+
+            Polygon arrowHead2 = new Polygon();
+            arrowHead2.setStroke(Color.BLACK);
+            arrowHead2.setFill(Color.BLACK);
+
+            this.arrowHead2 = arrowHead2;
         }
 
         public Line getLine() {
             return line;
         }
 
-        public Polygon getArrowHead() {
-            return arrowHead;
+        public Polygon getArrowHead1() {
+            return arrowHead1;
+        }
+
+        public Polygon getArrowHead2() {
+            return arrowHead2;
         }
     }
 }
