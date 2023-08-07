@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
@@ -27,10 +28,16 @@ public class DraggableElementExample extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Graph graph = RandomGraph.randomDag(20, 0, 20,
+        Graph graph = RandomGraph.randomDag(10, 0, 10,
                 100, 100, 100, false);
 
-//        LayoutUtil.circleLayout(graph, 500, 500, 300);
+        graph = GraphSearchUtils.cpdagForDag(graph);
+
+        int centerX = 120 + 5 * graph.getNumNodes();
+        int centerY = 120 + 5 * graph.getNumNodes();
+        int radius = centerX - 50;
+
+//        LayoutUtil.circleLayout(graph, centerX, centerY, radius);
         LayoutUtil.fruchtermanReingoldLayout(graph);
 
         AnchorPane contentArea = new AnchorPane();
@@ -130,7 +137,7 @@ public class DraggableElementExample extends Application {
     private double[] findEllipseIntersection(Ellipse ellipse, double startX, double startY, double endX, double endY) {
         double[] intersection = new double[2];
 
-        // Use binary search to find a point on the line segment that lies inside the ellipse
+        // Use binary search to find a point on the boundary of the ellipse from the center to the edge.
         int iterations = 20; // The number of iterations for binary search (can be adjusted for higher precision)
         for (int i = 0; i < iterations; i++) {
             double midX = (startX + endX) / 2;
