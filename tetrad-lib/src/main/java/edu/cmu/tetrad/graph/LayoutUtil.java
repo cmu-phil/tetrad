@@ -10,8 +10,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.floorMod;
-
 public class LayoutUtil {
     public static void kamadaKawaiLayout(Graph graph, boolean randomlyInitialized, double naturalEdgeLength, double springConstant, double stopEnergy) {
         KamadaKawaiLayout layout = new KamadaKawaiLayout(graph);
