@@ -81,7 +81,7 @@ class LoadGraph extends AbstractAction {
         Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
         Graph graph = GraphSaveLoadUtils.loadGraph(file);
-        LayoutUtil.circleLayout(graph, 200, 200, 150);
+        LayoutUtil.circleLayout(graph);
         this.graphEditable.setGraph(graph);
     }
 }

@@ -108,7 +108,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 }
 
                 Graph structureGraph = mimbuild.search(partition, latentNames, cov);
-                LayoutUtil.circleLayout(structureGraph, 200, 200, 150);
+                LayoutUtil.circleLayout(structureGraph);
                 LayoutUtil.fruchtermanReingoldLayout(structureGraph);
 
                 ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
@@ -116,7 +116,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 TetradLogger.getInstance().log("details", "Latent covs = \n" + latentsCov);
 
                 Graph fullGraph = mimbuild.getFullGraph();
-                LayoutUtil.circleLayout(fullGraph, 200, 200, 150);
+                LayoutUtil.circleLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
 
                 return fullGraph;

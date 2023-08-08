@@ -27,8 +27,8 @@ public class DraggableElementExample extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Graph graph = RandomGraph.randomDag(1000, 0, 2000,
-                100, 100, 100, false);
+        Graph graph = RandomGraph.randomDag(17, 0, 40,
+                600, 100, 100, false);
 
 //        graph = GraphSearchUtils.cpdagForDag(graph);
 
@@ -36,8 +36,9 @@ public class DraggableElementExample extends Application {
         int centerY = 120 + 5 * graph.getNumNodes();
         int radius = centerX - 50;
 
-//        LayoutUtil.circleLayout(graph, centerX, centerY, radius);
-        LayoutUtil.fruchtermanReingoldLayout(graph);
+        LayoutUtil.circleLayout(graph);
+//        LayoutUtil.fruchtermanReingoldLayout(graph);
+//        LayoutUtil.squareLayout(graph);
 
         AnchorPane contentArea = new AnchorPane();
         ScrollPane scrollPane = new ScrollPane(contentArea);

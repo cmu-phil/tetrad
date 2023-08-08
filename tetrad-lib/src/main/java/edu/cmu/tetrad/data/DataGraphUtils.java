@@ -219,7 +219,7 @@ public class DataGraphUtils {
         }
 
         if (arrangeGraph) {
-            LayoutUtil.circleLayout(graph1, 200, 200, 150);
+            LayoutUtil.circleLayout(graph1);
             LayoutUtil.fruchtermanReingoldLayout(graph1);
         }
 

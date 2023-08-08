@@ -446,7 +446,7 @@ public class LayoutUtils {
             }
         }
 
-        LayoutUtil.circleLayout(graph, 225, 200, 150);
+        LayoutUtil.circleLayout(graph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.layered;
     }
@@ -504,7 +504,30 @@ public class LayoutUtils {
         int centery = r.y + m;
 
 //        DataGraphUtils.circleLayout(graph, 200, 200, 150);
-        LayoutUtil.circleLayout(graph, centerx, centery, radius);
+        LayoutUtil.circleLayout(graph);
+        layoutEditable.layoutByGraph(graph);
+        LayoutUtils.layout = Layout.circle;
+    }
+
+    public static void squareLayout(LayoutEditable layoutEditable) {
+        Graph graph = layoutEditable.getGraph();
+
+        for (Node node : new ArrayList<>(graph.getNodes())) {
+            if (node.getNodeType() == NodeType.ERROR) {
+                ((SemGraph) graph).setShowErrorTerms(false);
+//                graph.removeNode(node);
+            }
+        }
+
+        Rectangle r = layoutEditable.getVisibleRect();
+
+        int m = FastMath.min(r.width, r.height) / 2;
+        int radius = m - 50;
+        int centerx = r.x + m;
+        int centery = r.y + m;
+
+        LayoutUtil.circleLayout(graph);
+        LayoutUtil.squareLayout(graph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.circle;
     }
@@ -623,10 +646,12 @@ public class LayoutUtils {
         }
     }
 
+
+
     public enum Layout {
         lag0TopToBottom, lag0BottomToTop, lag0LeftToRight, lag0RightToLeft,
         topToBottom, bottomToTop, leftToRight, rightToLeft, layered, source, knowledge, circle,
-        kamadaKawai, fruchtermReingold, distanceFromSelected
+        kamadaKawai, fruchtermReingold, distanceFromSelected, sqaure
     }
 }
 

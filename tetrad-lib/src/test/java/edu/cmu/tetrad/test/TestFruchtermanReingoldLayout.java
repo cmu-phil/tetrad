@@ -64,7 +64,7 @@ public final class TestFruchtermanReingoldLayout {
 
         Dag dag2 = new Dag(dag);
 
-        LayoutUtil.circleLayout(dag, 200, 200, 150);
+        LayoutUtil.circleLayout(dag);
 
         LayoutUtil.FruchtermanReingoldLayout layout = new LayoutUtil.FruchtermanReingoldLayout(dag);
         layout.doLayout();

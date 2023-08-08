@@ -163,13 +163,12 @@
         <!--            <version>3.2.1</version>-->
         <!--        </dependency>-->
 
-        <!-- https://mvnrepository.com/artifact/org.openjfx/javafx -->
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx</artifactId>
-            <version>11</version>
-            <type>pom</type>
-        </dependency>
+<!--         https://mvnrepository.com/artifact/javafx/javafx-->
+<!--        <dependency>-->
+<!--            <groupId>javafx</groupId>-->
+<!--            <artifactId>javafx</artifactId>-->
+<!--            <version>2.2.7</version>-->
+<!--        </dependency>-->
 
 
     </dependencies>
