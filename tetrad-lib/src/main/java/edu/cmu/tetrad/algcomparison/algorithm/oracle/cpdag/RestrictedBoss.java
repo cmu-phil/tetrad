@@ -96,7 +96,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
             edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
             boss.setUseBes(parameters.getBoolean(Params.USE_BES));
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            boss.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
+            boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             PermutationSearch permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(knowledge);
             permutationSearch.search();
@@ -126,7 +126,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
             boss = new edu.cmu.tetrad.search.Boss(score);
             boss.setUseBes(parameters.getBoolean(Params.USE_BES));
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            boss.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
+            boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(knowledge);
 

@@ -6,10 +6,9 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.BesPermutation;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
+import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.*;
-
-import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
  * <p>Implements Best Order Score Search (BOSS). The following references are relevant:</p>
@@ -77,7 +76,7 @@ public class Boss implements SuborderSearch {
     private Knowledge knowledge = new Knowledge();
     private BesPermutation bes = null;
     private int numStarts = 1;
-    private boolean allowInternalRandomness = false;
+    private boolean useDataOrder = true;
 
     /**
      * This algorithm will work with an arbitrary BIC score.
@@ -103,8 +102,10 @@ public class Boss implements SuborderSearch {
         boolean improved;
 
         for (int i = 0; i < this.numStarts; i++) {
-            if (allowInternalRandomness) {
-                shuffle(suborder);
+            if (Thread.interrupted()) break;
+
+            if ((i == 0 && !this.useDataOrder) || i > 0) {
+                RandomUtil.shuffle(suborder);
             }
 
             makeValidKnowledgeOrder(suborder);
@@ -181,16 +182,16 @@ public class Boss implements SuborderSearch {
         return this.score;
     }
 
-    /**
-     * Sets whether to allow internal randomness in the algorithm. Some steps in the algorithm do shuffling of variables
-     * if this is set to true, to help avoid local optima. However, this randomness can lead to different results on
-     * different runs of the algorithm, which may be undesirable.
+     /**
+     * True if the order of the variables in the data should be used for an initial best-order search, false if a random
+     * permutation should be used. (Subsequence automatic best order runs will use random permutations.) This is
+     * included so that the algorithm will be capable of outputting the same results with the same data without any
+     * randomness.
      *
-     * @param allowInternalRandomness True if internal randomness should be allowed, false otherwise. This is false by
-     *                                default.
+     * @param useDataOrder True if so
      */
-    public void setAllowInternalRandomness(boolean allowInternalRandomness) {
-        this.allowInternalRandomness = allowInternalRandomness;
+    public void setUseDataOrder(boolean useDataOrder) {
+        this.useDataOrder = useDataOrder;
     }
 
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
