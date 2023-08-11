@@ -521,12 +521,7 @@ public class LayoutUtils {
 
         Rectangle r = layoutEditable.getVisibleRect();
 
-        int m = FastMath.min(r.width, r.height) / 2;
-        int radius = m - 50;
-        int centerx = r.x + m;
-        int centery = r.y + m;
-
-        LayoutUtil.circleLayout(graph);
+//        LayoutUtil.circleLayout(graph);
         LayoutUtil.squareLayout(graph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.circle;
