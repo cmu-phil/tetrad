@@ -169,7 +169,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
         // Parameters
         params.add(Params.USE_BES);
         params.add(Params.NUM_STARTS);
-        params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
+        params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.TARGETS);
         params.add(Params.TRIMMING_STYLE);
 
