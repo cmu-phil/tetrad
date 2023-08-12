@@ -10,6 +10,8 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.*;
 
+import static java.util.Collections.shuffle;
+
 /**
  * <p>Implements Best Order Score Search (BOSS). The following references are relevant:</p>
  *
