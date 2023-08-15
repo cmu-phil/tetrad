@@ -122,22 +122,80 @@ public class GrowShrinkTree {
             this.growScore = this.tree.localScore(X);
         }
 
-        public double trace(Set<Node> prefix, Set<Node> available, Set<Node> parents) {
 
-            if (!this.grow) {
-                this.grow = true;
-                this.branches = new ArrayList<>();
-                List<GSTNode> required = new ArrayList<>();
+        private synchronized void grow(Set<Node> available, Set<Node> parents) {
+            if (this.grow) return;
 
-                for (Node add : available) {
-                    GSTNode branch = new GSTNode(this.tree, add, parents);
-                    if (this.tree.isRequired(add)) required.add(branch);
-                    else if (branch.getGrowScore() >= this.growScore) this.branches.add(branch);
+            this.grow = true;
+            this.branches = new ArrayList<>();
+            List<GSTNode> required = new ArrayList<>();
+
+            for (Node add : available) {
+                GSTNode branch = new GSTNode(this.tree, add, parents);
+                if (this.tree.isRequired(add)) required.add(branch);
+                else if (branch.getGrowScore() >= this.growScore) this.branches.add(branch);
+            }
+
+            this.branches.sort(Collections.reverseOrder());
+            this.branches.addAll(0, required);
+        }
+
+
+        private synchronized void shrink(Set<Node> parents) {
+            if (this.shrink) return;
+
+            this.shrink = true;
+            this.remove = new HashSet<>();
+            this.shrinkScore = this.growScore;
+            if (parents.isEmpty()) return;
+
+            Node best;
+            do {
+                best = null;
+                int[] X = new int[parents.size() - 1];
+
+                for (Node remove : new HashSet<>(parents)) {
+                    if (this.tree.isRequired(remove)) continue;
+                    int i = 0;
+                    parents.remove(remove);
+                    for (Node parent : parents) X[i++] = this.tree.getIndex(parent);
+                    parents.add(remove);
+
+                    double s = this.tree.localScore(X);
+                    if (s > this.shrinkScore) {
+                        this.shrinkScore = s;
+                        best = remove;
+                    }
                 }
 
-                this.branches.sort(Collections.reverseOrder());
-                this.branches.addAll(0, required);
-            }
+                if (best != null) {
+                    parents.remove(best);
+                    this.remove.add(best);
+                }
+            } while (best != null);
+        }
+
+
+        public double trace(Set<Node> prefix, Set<Node> available, Set<Node> parents) {
+
+            grow(available, parents);
+
+//            synchronized (this) {
+//                if (!this.grow) {
+//                    this.grow = true;
+//                    this.branches = new ArrayList<>();
+//                    List<GSTNode> required = new ArrayList<>();
+//
+//                    for (Node add : available) {
+//                        GSTNode branch = new GSTNode(this.tree, add, parents);
+//                        if (this.tree.isRequired(add)) required.add(branch);
+//                        else if (branch.getGrowScore() >= this.growScore) this.branches.add(branch);
+//                    }
+//
+//                    this.branches.sort(Collections.reverseOrder());
+//                    this.branches.addAll(0, required);
+//                }
+//            }
 
             for (GSTNode branch : this.branches) {
                 Node add = branch.getAdd();
@@ -149,38 +207,42 @@ public class GrowShrinkTree {
                 }
             }
 
-            if (!this.shrink) {
-                this.shrink = true;
-                this.remove = new HashSet<>();
-                this.shrinkScore = this.growScore;
-                if (parents.isEmpty()) return this.shrinkScore;
+            shrink(parents);
 
-                Node best;
-                do {
-                    best = null;
-                    int[] X = new int[parents.size() - 1];
+//            synchronized (this) {
+//                if (!this.shrink) {
+//                    this.shrink = true;
+//                    this.remove = new HashSet<>();
+//                    this.shrinkScore = this.growScore;
+//                    if (parents.isEmpty()) return this.shrinkScore;
+//
+//                    Node best;
+//                    do {
+//                        best = null;
+//                        int[] X = new int[parents.size() - 1];
+//
+//                        for (Node remove : new HashSet<>(parents)) {
+//                            if (this.tree.isRequired(remove)) continue;
+//                            int i = 0;
+//                            parents.remove(remove);
+//                            for (Node parent : parents) X[i++] = this.tree.getIndex(parent);
+//                            parents.add(remove);
+//
+//                            double s = this.tree.localScore(X);
+//                            if (s > this.shrinkScore) {
+//                                this.shrinkScore = s;
+//                                best = remove;
+//                            }
+//                        }
+//
+//                        if (best != null) {
+//                            parents.remove(best);
+//                            this.remove.add(best);
+//                        }
+//                    } while (best != null);
+//                }
+//            }
 
-                    for (Node remove : new HashSet<>(parents)) {
-                        if (this.tree.isRequired(remove)) continue;
-                        int i = 0;
-                        parents.remove(remove);
-                        for (Node parent : parents) X[i++] = this.tree.getIndex(parent);
-                        parents.add(remove);
-
-                        double s = this.tree.localScore(X);
-                        if (s > this.shrinkScore) {
-                            this.shrinkScore = s;
-                            best = remove;
-                        }
-                    }
-
-                    if (best != null) {
-                        parents.remove(best);
-                        this.remove.add(best);
-                    }
-                } while (best != null);
-
-            }
             parents.removeAll(this.remove);
             return this.shrinkScore;
         }
