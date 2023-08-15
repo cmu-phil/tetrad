@@ -77,7 +77,6 @@ public class Boss implements SuborderSearch {
     private Knowledge knowledge = new Knowledge();
     private BesPermutation bes = null;
     private int numStarts = 1;
-    private boolean allowInternalRandomness = false;
 
     /**
      * This algorithm will work with an arbitrary BIC score.
@@ -103,9 +102,7 @@ public class Boss implements SuborderSearch {
         boolean improved;
 
         for (int i = 0; i < this.numStarts; i++) {
-            if (allowInternalRandomness) {
-                shuffle(suborder);
-            }
+            shuffle(suborder);
 
             makeValidKnowledgeOrder(suborder);
 
@@ -181,17 +178,6 @@ public class Boss implements SuborderSearch {
         return this.score;
     }
 
-    /**
-     * Sets whether to allow internal randomness in the algorithm. Some steps in the algorithm do shuffling of variables
-     * if this is set to true, to help avoid local optima. However, this randomness can lead to different results on
-     * different runs of the algorithm, which may be undesirable.
-     *
-     * @param allowInternalRandomness True if internal randomness should be allowed, false otherwise. This is false by
-     *                                default.
-     */
-    public void setAllowInternalRandomness(boolean allowInternalRandomness) {
-        this.allowInternalRandomness = allowInternalRandomness;
-    }
 
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
         Set<Node> all = new HashSet<>(suborder);
