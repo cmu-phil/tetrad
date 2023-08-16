@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.utils.BesPermutation;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
@@ -109,7 +110,8 @@ public class Boss implements SuborderSearch {
             do {
                 improved = false;
                 for (Node x : new ArrayList<>(suborder)) {
-                    if (betterMutation(prefix, suborder, x)) improved = true;
+//                     if (betterMutation(prefix, suborder, x)) improved = true;
+                    if (betterMutationAsync(prefix, suborder, x)) improved = true;
                 }
             } while (improved);
 
@@ -177,6 +179,92 @@ public class Boss implements SuborderSearch {
     public Score getScore() {
         return this.score;
     }
+
+
+
+
+    private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) {
+        Set<Node> all = new HashSet<>(suborder);
+        all.addAll(prefix);
+
+        List<Future<Double>> futures = new ArrayList<>();
+        List<Future<Double>> with = new ArrayList<>();
+        List<Future<Double>> without = new ArrayList<>();
+
+        Set<Node> Z = new HashSet<>(prefix);
+
+        int numThreads = Runtime.getRuntime().availableProcessors(); // Use available cores
+        System.out.println(numThreads);
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+
+        int i = 0;
+        int curr = 0;
+
+        futures.add(executorService.submit(() -> this.gsts.get(x).trace(new ArrayList<>(Z), new ArrayList<>(all))));
+        for (Node z : suborder) {
+            if (x != z){
+                Z.add(x);
+                with.add(0, executorService.submit(() -> this.gsts.get(z).trace(new ArrayList<>(Z), new ArrayList<>(all))));
+                Z.remove(x);
+                without.add(executorService.submit(() -> this.gsts.get(z).trace(new ArrayList<>(Z), new ArrayList<>(all))));
+                Z.add(z);
+                futures.add(executorService.submit(() -> this.gsts.get(x).trace(new ArrayList<>(Z), new ArrayList<>(all))));
+            } else curr = i;
+            i++;
+        }
+
+        double[] scores = new double[suborder.size()];
+        double score;
+
+        try {
+            i = 0;
+            for (Future<Double> future : futures) {
+                System.out.println(i);
+                scores[i++] = future.get();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            score = 0;
+            i = with.size();
+            for (Future<Double> future : with) {
+                score += future.get();
+                scores[--i] += score;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            score = 0;
+            i = 0;
+            for (Future<Double> future : without) {
+                score += future.get();
+                scores[++i] += score;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+
+        executorService.shutdown();
+
+        int best = curr;
+
+        for (i = scores.length - 1; i >= 0; i--) {
+            if (scores[i] + 1e-6 > scores[best]) best = i;
+        }
+
+        if (scores[curr] + 1e-6 > scores[best]) return false;
+        suborder.remove(x);
+        suborder.add(best, x);
+
+        return true;
+    }
+
+
+
 
 
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
