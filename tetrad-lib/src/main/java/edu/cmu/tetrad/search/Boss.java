@@ -180,7 +180,23 @@ public class Boss implements SuborderSearch {
         return this.score;
     }
 
+    private static class Trace extends RecursiveTask<Double> {
 
+        private final GrowShrinkTree gst;
+        private final Set<Node> prefix;
+        private final Set<Node> available;
+
+        Trace(GrowShrinkTree gst, Collection<Node> prefix, Set<Node> available) {
+            this.gst = gst;
+            this.prefix = new HashSet<>(prefix);
+            this.available = new HashSet<>(available);
+        }
+
+        @Override
+        protected Double compute() {
+            return gst.traceUnsafe(this.prefix, this.available);
+        }
+    }
 
 
     private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) {
@@ -193,25 +209,25 @@ public class Boss implements SuborderSearch {
 
         Set<Node> Z = new HashSet<>(prefix);
 
-        int numThreads = Runtime.getRuntime().availableProcessors(); // Use available cores
-        System.out.println(numThreads);
-        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+        ForkJoinPool pool = ForkJoinPool.commonPool();
 
         int i = 0;
         int curr = 0;
 
-        futures.add(executorService.submit(() -> this.gsts.get(x).trace(new ArrayList<>(Z), new ArrayList<>(all))));
+        futures.add(pool.submit(new Trace(this.gsts.get(x), Z, all)));
         for (Node z : suborder) {
             if (x != z){
                 Z.add(x);
-                with.add(0, executorService.submit(() -> this.gsts.get(z).trace(new ArrayList<>(Z), new ArrayList<>(all))));
+                with.add(0, pool.submit(new Trace(this.gsts.get(z), Z, all)));
                 Z.remove(x);
-                without.add(executorService.submit(() -> this.gsts.get(z).trace(new ArrayList<>(Z), new ArrayList<>(all))));
+                without.add(pool.submit(new Trace(this.gsts.get(z), Z, all)));
                 Z.add(z);
-                futures.add(executorService.submit(() -> this.gsts.get(x).trace(new ArrayList<>(Z), new ArrayList<>(all))));
+                futures.add(pool.submit(new Trace(this.gsts.get(x), Z, all)));
             } else curr = i;
             i++;
         }
+
+        pool.shutdown();
 
         double[] scores = new double[suborder.size()];
         double score;
@@ -219,25 +235,16 @@ public class Boss implements SuborderSearch {
         try {
             i = 0;
             for (Future<Double> future : futures) {
-                System.out.println(i);
                 scores[i++] = future.get();
             }
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
 
-        try {
             score = 0;
             i = with.size();
             for (Future<Double> future : with) {
                 score += future.get();
                 scores[--i] += score;
             }
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
 
-        try {
             score = 0;
             i = 0;
             for (Future<Double> future : without) {
@@ -248,7 +255,6 @@ public class Boss implements SuborderSearch {
             throw new RuntimeException(e);
         }
 
-        executorService.shutdown();
 
         int best = curr;
 

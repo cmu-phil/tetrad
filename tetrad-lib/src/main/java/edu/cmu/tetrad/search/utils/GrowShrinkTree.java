@@ -26,11 +26,11 @@ public class GrowShrinkTree {
         this.forbidden = new ArrayList<>();
     }
 
-//    public double traceUnsafe(Collection<Node> prefix, HashSet<Node> available) {
-//        available.remove(this.node);
-//        this.forbidden.forEach(available::remove);
-//        return this.root.trace(new HashSet<>(prefix), available, new HashSet<>());
-//    }
+    public double traceUnsafe(Set<Node> prefix, Set<Node> available) {
+        available.remove(this.node);
+        this.forbidden.forEach(available::remove);
+        return this.root.trace(prefix, available, new HashSet<>());
+    }
 
     public double trace(Collection<Node> prefix, Collection<Node> all) {
         Set<Node> available = new HashSet<>(all);

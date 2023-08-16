@@ -41,10 +41,10 @@ import edu.cmu.tetrad.util.Params;
 public class TestBoss {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
-        parameters.set(Params.NUM_RUNS, 10);
+        parameters.set(Params.NUM_RUNS, 3);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
-        parameters.set(Params.NUM_MEASURES, 60);
-        parameters.set(Params.AVG_DEGREE, 4);
+        parameters.set(Params.NUM_MEASURES, 200);
+        parameters.set(Params.AVG_DEGREE, 20);
         parameters.set(Params.SAMPLE_SIZE, 1000);
         parameters.set(Params.COEF_LOW, 0);
         parameters.set(Params.COEF_HIGH, 1);
@@ -69,7 +69,7 @@ public class TestBoss {
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new DirectLingam(new SemBicScore()));
-        algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new Fges(new SemBicScore()));
         algorithms.add(new Boss(new SemBicScore()));
 //        algorithms.add(new Dagma());
 
