@@ -218,20 +218,20 @@ public class Boss implements SuborderSearch {
 
         try {
             i = 0;
-            for (Future<Double> future : futures) {
+            for (Future<Double> future : new ArrayList<>(futures)) {
                 scores[i++] = future.get();
             }
 
             score = 0;
             i = with.size();
-            for (Future<Double> future : with) {
+            for (Future<Double> future : new ArrayList<>(with)) {
                 score += future.get();
                 scores[--i] += score;
             }
 
             score = 0;
             i = 0;
-            for (Future<Double> future : without) {
+            for (Future<Double> future : new ArrayList<>(without)) {
                 score += future.get();
                 scores[++i] += score;
             }
