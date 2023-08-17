@@ -78,10 +78,10 @@ public class Boss implements SuborderSearch {
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
     private Map<Node, GrowShrinkTree> gsts;
-    private ForkJoinPool pool;
     private Knowledge knowledge = new Knowledge();
     private BesPermutation bes = null;
     private int numStarts = 1;
+    private ForkJoinPool pool;
 
     /**
      * This algorithm will work with an arbitrary BIC score.
@@ -95,6 +95,8 @@ public class Boss implements SuborderSearch {
         for (Node x : this.variables) {
             this.parents.put(x, new HashSet<>());
         }
+
+        pool = new ForkJoinPool(10 * Runtime.getRuntime().availableProcessors());
     }
 
     @Override
@@ -105,8 +107,6 @@ public class Boss implements SuborderSearch {
         List<Node> bestSuborder = null;
         double score, bestScore = Double.NEGATIVE_INFINITY;
         boolean improved;
-
-        this.pool = new ForkJoinPool(10 * Runtime.getRuntime().availableProcessors());
 
         for (int i = 0; i < this.numStarts; i++) {
             shuffle(suborder);
@@ -130,7 +130,8 @@ public class Boss implements SuborderSearch {
             }
         }
 
-        this.pool.shutdown();
+
+        pool.shutdown();
 
         suborder.clear();
 
@@ -189,43 +190,47 @@ public class Boss implements SuborderSearch {
     }
 
     private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) {
-        Set<Node> all = new HashSet<>(suborder);
+        HashSet<Node> all = new HashSet<>(suborder);
         all.addAll(prefix);
 
         List<Future<Double>> futures = new ArrayList<>();
         List<Future<Double>> with = new ArrayList<>();
         List<Future<Double>> without = new ArrayList<>();
 
-        Set<Node> Z = new HashSet<>(prefix);
+        HashSet<Node> Z = new HashSet<>(prefix);
+
+
 
         int i = 0;
         int curr = 0;
 
-        futures.add(this.pool.submit(new Trace(this.gsts.get(x), Z, all)));
+        futures.add(pool.submit(new Trace(this.gsts.get(x), Z, all)));
         for (Node z : suborder) {
             if (x != z){
                 Z.add(x);
-                with.add(0, this.pool.submit(new Trace(this.gsts.get(z), Z, all)));
+                with.add(0, pool.submit(new Trace(this.gsts.get(z), Z, all)));
                 Z.remove(x);
-                without.add(this.pool.submit(new Trace(this.gsts.get(z), Z, all)));
+                without.add(pool.submit(new Trace(this.gsts.get(z), Z, all)));
                 Z.add(z);
-                futures.add(this.pool.submit(new Trace(this.gsts.get(x), Z, all)));
+                futures.add(pool.submit(new Trace(this.gsts.get(x), Z, all)));
             } else curr = i;
             i++;
         }
+//
+//        pool.shutdown();
 
         double[] scores = new double[suborder.size()];
         double score;
 
         try {
             i = 0;
-            for (Future<Double> future : futures) {
+            for (Future<Double> future : new ArrayList<>(futures)) {
                 scores[i++] = future.get();
             }
 
             score = 0;
             i = with.size();
-            for (Future<Double> future : with) {
+            for (Future<Double> future : new ArrayList<>(with)) {
                 score += future.get();
                 scores[--i] += score;
             }
