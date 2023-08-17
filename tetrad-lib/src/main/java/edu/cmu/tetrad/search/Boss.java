@@ -78,6 +78,7 @@ public class Boss implements SuborderSearch {
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
     private Map<Node, GrowShrinkTree> gsts;
+    private ForkJoinPool pool;
     private Knowledge knowledge = new Knowledge();
     private BesPermutation bes = null;
     private int numStarts = 1;
@@ -105,6 +106,8 @@ public class Boss implements SuborderSearch {
         double score, bestScore = Double.NEGATIVE_INFINITY;
         boolean improved;
 
+        this.pool = new ForkJoinPool(10 * Runtime.getRuntime().availableProcessors());
+
         for (int i = 0; i < this.numStarts; i++) {
             shuffle(suborder);
 
@@ -126,6 +129,8 @@ public class Boss implements SuborderSearch {
                 bestScore = score;
             }
         }
+
+        this.pool.shutdown();
 
         suborder.clear();
 
@@ -193,25 +198,21 @@ public class Boss implements SuborderSearch {
 
         Set<Node> Z = new HashSet<>(prefix);
 
-        ForkJoinPool pool = new ForkJoinPool(10 * Runtime.getRuntime().availableProcessors());
-
         int i = 0;
         int curr = 0;
 
-        futures.add(pool.submit(new Trace(this.gsts.get(x), Z, all)));
+        futures.add(this.pool.submit(new Trace(this.gsts.get(x), Z, all)));
         for (Node z : suborder) {
             if (x != z){
                 Z.add(x);
-                with.add(0, pool.submit(new Trace(this.gsts.get(z), Z, all)));
+                with.add(0, this.pool.submit(new Trace(this.gsts.get(z), Z, all)));
                 Z.remove(x);
-                without.add(pool.submit(new Trace(this.gsts.get(z), Z, all)));
+                without.add(this.pool.submit(new Trace(this.gsts.get(z), Z, all)));
                 Z.add(z);
-                futures.add(pool.submit(new Trace(this.gsts.get(x), Z, all)));
+                futures.add(this.pool.submit(new Trace(this.gsts.get(x), Z, all)));
             } else curr = i;
             i++;
         }
-
-        pool.shutdown();
 
         double[] scores = new double[suborder.size()];
         double score;
