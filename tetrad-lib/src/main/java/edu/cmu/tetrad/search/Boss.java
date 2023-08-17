@@ -8,7 +8,10 @@ import edu.cmu.tetrad.search.utils.BesPermutation;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
@@ -180,25 +183,6 @@ public class Boss implements SuborderSearch {
         return this.score;
     }
 
-    private static class Trace extends RecursiveTask<Double> {
-
-        private final GrowShrinkTree gst;
-        private final Set<Node> prefix;
-        private final Set<Node> available;
-
-        Trace(GrowShrinkTree gst, Collection<Node> prefix, Set<Node> available) {
-            this.gst = gst;
-            this.prefix = new HashSet<>(prefix);
-            this.available = new HashSet<>(available);
-        }
-
-        @Override
-        protected Double compute() {
-            return gst.traceUnsafe(this.prefix, this.available);
-        }
-    }
-
-
     private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) {
         Set<Node> all = new HashSet<>(suborder);
         all.addAll(prefix);
@@ -209,7 +193,7 @@ public class Boss implements SuborderSearch {
 
         Set<Node> Z = new HashSet<>(prefix);
 
-        ForkJoinPool pool = ForkJoinPool.commonPool();
+        ForkJoinPool pool = new ForkJoinPool(10 * Runtime.getRuntime().availableProcessors());
 
         int i = 0;
         int curr = 0;
@@ -234,13 +218,13 @@ public class Boss implements SuborderSearch {
 
         try {
             i = 0;
-            for (Future<Double> future : futures) {
+            for (Future<Double> future : new ArrayList<>(futures)) {
                 scores[i++] = future.get();
             }
 
             score = 0;
             i = with.size();
-            for (Future<Double> future : with) {
+            for (Future<Double> future : new ArrayList<>(with)) {
                 score += future.get();
                 scores[--i] += score;
             }
@@ -255,7 +239,6 @@ public class Boss implements SuborderSearch {
             throw new RuntimeException(e);
         }
 
-
         int best = curr;
 
         for (i = scores.length - 1; i >= 0; i--) {
@@ -269,9 +252,23 @@ public class Boss implements SuborderSearch {
         return true;
     }
 
+    private static class Trace implements Callable<Double> {
 
+        private final GrowShrinkTree gst;
+        private final Set<Node> prefix;
+        private final Set<Node> available;
 
+        Trace(GrowShrinkTree gst, Set<Node> prefix, Set<Node> available) {
+            this.gst = gst;
+            this.prefix = new HashSet<>(prefix);
+            this.available = new HashSet<>(available);
+        }
 
+        @Override
+        public Double call() {
+            return gst.traceUnsafe(this.prefix, this.available);
+        }
+    }
 
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
         Set<Node> all = new HashSet<>(suborder);
