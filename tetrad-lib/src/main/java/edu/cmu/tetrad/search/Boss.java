@@ -96,8 +96,7 @@ public class Boss implements SuborderSearch {
             this.parents.put(x, new HashSet<>());
         }
 
-        pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
-
+        pool = new ForkJoinPool(20 * Runtime.getRuntime().availableProcessors());
     }
 
     @Override
