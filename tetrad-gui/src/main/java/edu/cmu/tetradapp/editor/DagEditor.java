@@ -217,7 +217,7 @@ public final class DagEditor extends JPanel
                     // Update the dagWrapper
                     dagWrapper.setGraph(targetGraph);
                     // Also need to update the UI
-                    updateBootstrapTable(targetGraph);
+//                    updateBootstrapTable(targetGraph);
                 }
             } else if ("modelChanged".equals(propertyName)) {
                 firePropertyChange("modelChanged", null, null);
@@ -355,7 +355,7 @@ public final class DagEditor extends JPanel
                 updateGraphWorkbench(dagWrapper.getGraph());
 
                 // Update the bootstrap table
-                updateBootstrapTable(dagWrapper.getGraph());
+//                updateBootstrapTable(dagWrapper.getGraph());
             });
 
             // Put together
