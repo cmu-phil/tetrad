@@ -274,13 +274,17 @@ public class Boss implements SuborderSearch {
     }
 
     private void makeValidKnowledgeOrder(List<Node> order) {
-        if (!this.knowledge.isEmpty()) {
-            order.sort((a, b) -> {
-                if (a.getName().equals(b.getName())) return 0;
-                else if (this.knowledge.isRequired(a.getName(), b.getName())) return -1;
-                else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
-                else return 0;
-            });
+        if (this.knowledge.isEmpty()) return;
+        for (int i = 1; i < order.size(); i++) {
+            String a = order.get(i).getName();
+            for (int j = 0; j < i; j++) {
+                String b = order.get(j).getName();
+                if (this.knowledge.isRequired(a, b)) {
+                    Node x = order.remove(i);
+                    order.add(j, x);
+                    break;
+                }
+            }
         }
     }
 }
