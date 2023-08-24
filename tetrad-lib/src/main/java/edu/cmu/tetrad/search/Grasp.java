@@ -142,7 +142,7 @@ public class Grasp {
             if (Thread.interrupted()) break;
 
             if ((r == 0 && !this.useDataOrder) || r > 0) {
-                shuffle(order);
+                RandomUtil.shuffle(order);
             }
 
             this.start = MillisecondTimes.timeMillis();
