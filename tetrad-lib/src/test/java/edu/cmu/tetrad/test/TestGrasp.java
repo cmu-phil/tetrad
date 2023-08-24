@@ -353,7 +353,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, true);
+        params.set(Params.USE_DATA_ORDER, true);
         params.set(Params.ALLOW_INTERNAL_RANDOMNESS, false);
         params.set(Params.CACHE_SCORES, true);
         params.set(Params.VERBOSE, true);
@@ -533,7 +533,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 0);//1);
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
         params.set(Params.CACHE_SCORES, true);
 
 
@@ -590,7 +590,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, true);
+        params.set(Params.USE_DATA_ORDER, true);
         params.set(Params.ALLOW_INTERNAL_RANDOMNESS, false);
         params.set(Params.CACHE_SCORES, true);
         params.set(Params.VERBOSE, true);
@@ -740,7 +740,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_ORDERED_ALG, true);
 //        params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
         params.set(Params.CACHE_SCORES, true);
 //        params.set(Params.GRASP_ALG, false);
 
@@ -806,7 +806,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
         params.set(Params.GRASP_USE_VP_SCORING, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
 
         params.set(Params.GRASP_ALG, false);
 
@@ -1038,7 +1038,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 0, 1);
         params.set(Params.GRASP_ORDERED_ALG, false);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
         params.set(Params.CACHE_SCORES, true);
 
         Algorithms algorithms = new Algorithms();
@@ -1164,7 +1164,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
         params.set(Params.GRASP_ORDERED_ALG, false);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
         params.set(Params.CACHE_SCORES, true);
 
 
@@ -1959,7 +1959,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.
@@ -2046,7 +2046,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
 
         Statistics statistics = new Statistics();
         statistics.add(new ParameterColumn(Params.NUM_MEASURES));
@@ -2478,7 +2478,7 @@ public final class TestGrasp {
         // Flags
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
         params.set(Params.GRASP_USE_SCORE, true);
-        params.set(Params.GRASP_USE_DATA_ORDER, true);
+        params.set(Params.USE_DATA_ORDER, true);
         params.set(Params.NUM_STARTS, 1);
 
         // default for GIC scores is gic = 4, pd = 1.
@@ -2601,7 +2601,7 @@ public final class TestGrasp {
         // Flags
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
         params.set(Params.GRASP_USE_SCORE, true);
-        params.set(Params.GRASP_USE_DATA_ORDER, true);
+        params.set(Params.USE_DATA_ORDER, true);
         params.set(Params.NUM_STARTS, 1);
 
         // default for GIC scores is gic = 4, pd = 1.
