@@ -83,7 +83,6 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             search.setKnowledge(knowledge);
@@ -129,7 +128,6 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
         params.add(Params.DEPTH);
-        params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 
@@ -147,7 +145,7 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     @Override

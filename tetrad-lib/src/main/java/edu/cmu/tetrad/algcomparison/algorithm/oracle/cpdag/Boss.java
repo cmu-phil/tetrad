@@ -70,7 +70,8 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
             boss.setUseBes(parameters.getBoolean(Params.USE_BES));
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
+            boss.setNumThreads(parameters.getInt(Params.NUM_THREADS));
+            boss.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
             PermutationSearch permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(this.knowledge);
 
@@ -111,8 +112,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         // Parameters
         params.add(Params.USE_BES);
         params.add(Params.NUM_STARTS);
-        params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.TIME_LAG);
+        params.add(Params.NUM_THREADS);
+        params.add(Params.USE_DATA_ORDER);
 
         return params;
     }
