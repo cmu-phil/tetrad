@@ -43,7 +43,7 @@ public class TestBoss {
         Parameters parameters = new Parameters();
         parameters.set(Params.NUM_RUNS, 1);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
-        parameters.set(Params.NUM_MEASURES, 1000);
+        parameters.set(Params.NUM_MEASURES, 200);
         parameters.set(Params.AVG_DEGREE, 10);
         parameters.set(Params.SAMPLE_SIZE, 1000);
         parameters.set(Params.COEF_LOW, 0);
@@ -57,7 +57,7 @@ public class TestBoss {
 
         parameters.set(Params.USE_BES, false);
         parameters.set(Params.NUM_STARTS, 1);
-        parameters.set(Params.NUM_THREADS, 400);
+        parameters.set(Params.NUM_THREADS, 40);
 
         parameters.set(Params.VERBOSE, false);
 
