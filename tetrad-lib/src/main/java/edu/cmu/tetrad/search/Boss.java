@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.BesPermutation;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
+import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -79,6 +80,7 @@ public class Boss implements SuborderSearch {
     private Knowledge knowledge = new Knowledge();
     private BesPermutation bes = null;
     private int numStarts = 1;
+    private boolean useDataOrder = true;
     private int numThreads = 1;
 
     /**
@@ -107,7 +109,9 @@ public class Boss implements SuborderSearch {
         this.pool = Executors.newFixedThreadPool(this.numThreads);
 
         for (int i = 0; i < this.numStarts; i++) {
-            shuffle(suborder);
+            if ((i == 0 && !this.useDataOrder) || i > 0) {
+                RandomUtil.shuffle(suborder);
+            }
 
             makeValidKnowledgeOrder(suborder);
 
@@ -188,6 +192,18 @@ public class Boss implements SuborderSearch {
     @Override
     public Score getScore() {
         return this.score;
+    }
+
+     /**
+     * True if the order of the variables in the data should be used for an initial best-order search, false if a random
+     * permutation should be used. (Subsequence automatic best order runs will use random permutations.) This is
+     * included so that the algorithm will be capable of outputting the same results with the same data without any
+     * randomness.
+     *
+     * @param useDataOrder True if so
+     */
+    public void setUseDataOrder(boolean useDataOrder) {
+        this.useDataOrder = useDataOrder;
     }
 
     private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) {

@@ -88,7 +88,7 @@ public class GraspFci implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
-            search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
+            search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
             search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
 
             // FCI
@@ -143,7 +143,7 @@ public class GraspFci implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         params.add(Params.GRASP_NONSINGULAR_DEPTH);
         params.add(Params.GRASP_ORDERED_ALG);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
-        params.add(Params.GRASP_USE_DATA_ORDER);
+        params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 
         // FCI
