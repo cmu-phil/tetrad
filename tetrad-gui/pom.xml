@@ -31,7 +31,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.11.0</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -65,6 +65,7 @@
                     </execution>
                 </executions>
             </plugin>
+
             <!--            <plugin>-->
             <!--                <groupId>org.apache.maven.plugins</groupId>-->
             <!--                <artifactId>maven-site-plugin</artifactId>-->
@@ -161,6 +162,13 @@
         <!--            <artifactId>maven-source-plugin</artifactId>-->
         <!--            <version>3.2.1</version>-->
         <!--        </dependency>-->
+
+<!--         https://mvnrepository.com/artifact/javafx/javafx-->
+<!--        <dependency>-->
+<!--            <groupId>javafx</groupId>-->
+<!--            <artifactId>javafx</artifactId>-->
+<!--            <version>2.2.7</version>-->
+<!--        </dependency>-->
 
 
     </dependencies>

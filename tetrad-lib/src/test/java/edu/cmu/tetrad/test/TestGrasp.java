@@ -95,7 +95,7 @@ public final class TestGrasp {
 
 //        new TestGrasp().testMsep();
 
-        new TestGrasp().testJaime();
+        new TestGrasp().testPredictGoodStats();
 
     }
 
@@ -254,9 +254,9 @@ public final class TestGrasp {
 
         Parameters params = new Parameters();
 
-        params.set(Params.NUM_MEASURES, 20);
+        params.set(Params.NUM_MEASURES, 100);
         params.set(Params.NUM_LATENTS, 0);
-        params.set(Params.AVG_DEGREE, 6);
+        params.set(Params.AVG_DEGREE, 10);
 
         params.set(Params.DIFFERENT_GRAPHS, true);
 
@@ -264,16 +264,16 @@ public final class TestGrasp {
         params.set(Params.SAMPLE_SIZE, 1000);
 
         params.set(Params.NUM_RUNS, 1);
-        params.set(Params.PARALLELIZED, false);
+//        params.set(Params.PARALLELIZED, false);
 
-        params.set(Params.ALPHA, 0.05);
-        params.set(Params.PENALTY_DISCOUNT, 1.0, 2.0, 4.0);
-        params.set(Params.POISSON_LAMBDA, 1, 2, 4);
-        params.set(Params.ZS_RISK_BOUND, 0.001, 0.01, 0.05, 0.1);
+//        params.set(Params.ALPHA, 0.05);
+        params.set(Params.PENALTY_DISCOUNT, 4.0);
+//        params.set(Params.POISSON_LAMBDA, 1, 2, 4);
+//        params.set(Params.ZS_RISK_BOUND, 0.001, 0.01, 0.05, 0.1);
 
-        params.set(Params.STABLE_FAS, false, true);
-        params.set(Params.USE_MAX_P_HEURISTIC, false, true);
-        params.set(Params.USE_BES, false, true);
+//        params.set(Params.STABLE_FAS, false, true);
+//        params.set(Params.USE_MAX_P_HEURISTIC, false, true);
+//        params.set(Params.USE_BES, false, true);
 
 //        params.set(Params.GRASP_DEPTH, 3);
 //        params.set(Params.GRASP_SINGULAR_DEPTH, 1);
@@ -287,17 +287,17 @@ public final class TestGrasp {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Pc(new SemBicDTest()));
-        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
-        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
-        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
-        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+//        algorithms.add(new Pc(new FisherZ()));
+//        algorithms.add(new Pc(new SemBicDTest()));
+//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+//        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+//        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
         algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
-        algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+//        algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+//        algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
 
         Statistics statistics = new Statistics();
 //        statistics.add(new ParameterColumn(Params.ALPHA));
@@ -306,26 +306,28 @@ public final class TestGrasp {
 //        statistics.add(new ParameterColumn(Params.ZS_RISK_BOUND));
 //        statistics.add(new FractionDependentUnderNull(0.01));
 //        statistics.add(new FractionDependentUnderNull());
-        statistics.add(new PvalueUniformityUnderNull(0.01));
+//        statistics.add(new PvalueUniformityUnderNull(0.01));
 //        statistics.add(new PvalueDistanceToAlpha(0.01));
-        statistics.add(new MarkovAdequacyScore());
-        statistics.add(new BicEst(2));
-//        statistics.add(new AdjacencyPrecision());
+//        statistics.add(new MarkovAdequacyScore());
+//        statistics.add(new BicEst(2));
+        statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
-//        statistics.add(new ArrowheadRecall());
+        statistics.add(new ArrowheadRecall());
 //        statistics.add(new ArrowheadPrecisionCommonEdges());
 //        statistics.add(new ArrowheadRecallCommonEdges());
 //        statistics.add(new StructuralHammingDistance());
 
-        statistics.setWeight("MAS", 1.0);
+        statistics.add(new ElapsedCpuTime());
+
+//        statistics.setWeight("MAS", 1.0);
 
         Comparison comparison = new Comparison();
         comparison.setParallelized(false);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
-        comparison.setSortByUtility(true);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+//        comparison.setSortByUtility(true);
         comparison.setShowAlgorithmIndices(true);
-        comparison.compareFromSimulations("pvalue_comparison", simulations, algorithms, statistics, params);
+        comparison.compareFromSimulations("grasp_boss_timing", simulations, algorithms, statistics, params);
     }
 
     //    @Test

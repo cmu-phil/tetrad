@@ -220,7 +220,7 @@ public final class SemGraphEditor extends JPanel
                     // Update the semGraphWrapper
                     semGraphWrapper.setGraph(targetGraph);
                     // Also need to update the UI
-                    updateBootstrapTable(targetGraph);
+//                    updateBootstrapTable(targetGraph);
                 }
             } else if ("modelChanged".equals(propertyName)) {
                 firePropertyChange("modelChanged", null, null);
@@ -358,7 +358,7 @@ public final class SemGraphEditor extends JPanel
                 updateGraphWorkbench(semGraphWrapper.getGraph());
 
                 // Update the bootstrap table
-                updateBootstrapTable(semGraphWrapper.getGraph());
+//                updateBootstrapTable(semGraphWrapper.getGraph());
             });
 
             // Put together

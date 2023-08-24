@@ -16,6 +16,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.util.Collections.shuffle;
 
 
 /**
@@ -404,7 +405,7 @@ public class Grasp {
         List<Node> vars = scorer.getPi();
 
         if (allowInternalRandomness) {
-            RandomUtil.shuffle(vars);
+            shuffle(vars);
         }
 
         for (Node y : vars) {
@@ -412,7 +413,7 @@ public class Grasp {
             List<Node> parents = new ArrayList<>(scorer.getParents(y));
 
             if (allowInternalRandomness) {
-                RandomUtil.shuffle(parents);
+                shuffle(parents);
             }
 
             for (Node x : parents) {

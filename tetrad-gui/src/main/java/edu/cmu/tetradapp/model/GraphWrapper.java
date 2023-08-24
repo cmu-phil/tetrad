@@ -85,7 +85,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             setGraph(new EdgeListGraph(graphSource.getGraph()));
         }
 
-        log();
+ //       log();
     }
 
     public GraphWrapper(Graph graph) {
@@ -93,7 +93,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             throw new NullPointerException("Graph must not be null.");
         }
         setGraph(graph);
-        log();
+ //       log();
     }
 
     public GraphWrapper(Graph graph, String message) {
@@ -109,7 +109,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
     public GraphWrapper(Parameters parameters) {
         this.parameters = parameters;
         setGraph(new EdgeListGraph());
-        log();
+//        log();
     }
 
     public GraphWrapper(Simulation simulation, Parameters parameters) {
@@ -119,7 +119,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         this.modelIndex = 0;
         this.modelSourceName = simulation.getName();
 
-        log();
+//        log();
     }
 
     public GraphWrapper(DataWrapper wrapper) {
@@ -133,7 +133,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             setGraph(new EdgeListGraph(wrapper.getVariables()));
         }
 
-        LayoutUtil.circleLayout(getGraph(), 200, 200, 150);
+        LayoutUtil.circleLayout(getGraph());
     }
 
     public GraphWrapper(GeneralizedSemImWrapper wrapper) {
@@ -241,7 +241,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
     public void setGraph(Graph graph) {
         this.graphs = new ArrayList<>();
         this.graphs.add(new EdgeListGraph(graph));
-        log();
+ //       log();
     }
 
     public boolean allowRandomGraph() {
@@ -302,10 +302,10 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         return this.parameters;
     }
 
-    private void log() {
-        TetradLogger.getInstance().log("info", "General Graph");
-        TetradLogger.getInstance().log("graph", "" + getGraph());
-    }
+//    private void log() {
+//        TetradLogger.getInstance().log("info", "General Graph");
+//        TetradLogger.getInstance().log("graph", "" + getGraph());
+//    }
 
     /**
      * Adds semantic checks to the default deserialization method. This method must have the standard signature for a

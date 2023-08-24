@@ -198,7 +198,7 @@ public final class TimeLagGraphEditor extends JPanel
                     // Update the timeLagGraphWrapper
                     timeLagGraphWrapper.setGraph(targetGraph);
                     // Also need to update the UI
-                    updateBootstrapTable(targetGraph);
+//                    updateBootstrapTable(targetGraph);
                 }
             } else if ("modelChanged".equals(propertyName)) {
                 firePropertyChange("modelChanged", null, null);

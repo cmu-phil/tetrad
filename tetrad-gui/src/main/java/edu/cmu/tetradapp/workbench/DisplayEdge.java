@@ -767,7 +767,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         int itheta = (int) ((theta * 360.0) / (2.0 * FastMath.PI) + 180);
 
 //        g.fillArc(to.x - 18, to.y - 18, 36, 36, itheta - 15, 30);
-        g.fillArc(to.x - 18, to.y - 18, 36, 36,
+        g.fillArc(to.x - 17, to.y - 17, 34, 34,
                 itheta - 14 - 3 * (int) getStrokeWidth(), 29 + 6 * (int) getStrokeWidth());
     }
 

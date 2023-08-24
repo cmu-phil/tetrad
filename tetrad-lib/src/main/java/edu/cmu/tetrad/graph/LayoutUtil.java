@@ -34,17 +34,22 @@ public class LayoutUtil {
 
     /**
      * Arranges the nodes in the graph in a circle.
-     *
-     * @param radius  The radius of the circle in pixels; a good default is 150.
-     * @param centerx The x coordinate for the center of the layout.
-     * @param centery The y coordinate for the center of the layout.
      */
-    public static void circleLayout(Graph graph, int centerx, int centery, int radius) {
+    public static void circleLayout(Graph graph) {
         if (graph == null) {
             return;
         }
-        List<Node> nodes = graph.getNodes();
-        Collections.sort(nodes);
+
+
+        int centerx = 120 + 7 * graph.getNumNodes();
+        int centery = 120 + 7 * graph.getNumNodes();
+        int radius = centerx - 50;
+
+        List<Node> nodes = new ArrayList<>(graph.getNodes());
+        graph.paths().makeValidOrder(nodes);
+
+//        List<Node> nodes = graph.getNodes();
+//        Collections.sort(nodes);
 
         double rad = 6.28 / nodes.size();
         double phi = .75 * 6.28;    // start from 12 o'clock.
@@ -60,6 +65,61 @@ public class LayoutUtil {
         }
     }
 
+    public static void squareLayout(Graph graph) {
+        List<Node> nodes = new ArrayList<>(graph.getNodes());
+        graph.paths().makeValidOrder(nodes);
+
+//        Collections.sort(nodes);
+
+        int bufferx = 70;
+        int buffery = 50;
+        int spacex = 70;
+        int spacey = 50;
+
+//        int side = (int) ceil(nodes.size() / 4.0);
+        int side = nodes.size() / 4;
+
+        if (nodes.size() % 4 != 0) {
+            side++;
+        }
+
+        for (int i = 0; i < side; i++) {
+            if (i >= nodes.size()) {
+                break;
+            }
+            Node node = nodes.get(i);
+            node.setCenterX(bufferx + spacex * i);
+            node.setCenterY(buffery);
+        }
+
+        for (int i = 0; i < side; i++) {
+            if (i + side >= nodes.size()) {
+                break;
+            }
+            Node node = nodes.get(i + side);
+            node.setCenterX(bufferx + spacex * side);
+            node.setCenterY(buffery + i * spacey);
+        }
+
+        for (int i = 0; i < side; i++) {
+            if (i + 2 * side >= nodes.size()) {
+                break;
+            }
+            Node node = nodes.get(i + 2 * side);
+            node.setCenterX(bufferx + spacex * (side - i));
+            node.setCenterY(buffery + spacey * side);
+        }
+
+        for (int i = 0; i < side; i++) {
+            if (i + 3 * side >= nodes.size()) {
+                break;
+            }
+            Node node = nodes.get(i + 3 * side);
+            node.setCenterX(bufferx);
+            node.setCenterY(buffery + spacey * (side  - i));
+        }
+    }
+
     /**
      * Arranges the nodes in the result graph according to their positions in the source graph.
      *
@@ -71,7 +131,7 @@ public class LayoutUtil {
         }
 
         if (sourceGraph == null) {
-            circleLayout(resultGraph, 200, 200, 150);
+            circleLayout(resultGraph);
             return true;
         }
 
@@ -171,7 +231,7 @@ public class LayoutUtil {
         //============================PUBLIC METHODS==========================//
 
         public void doLayout() {
-            circleLayout(this.graph, 300, 300, 200);
+            circleLayout(this.graph);
 
             this.monitor = new ProgressMonitor(null, "Energy settling...",
                     "Energy = ?", 0, 100);
@@ -632,7 +692,7 @@ public class LayoutUtil {
         //============================PUBLIC METHODS==========================//
 
         public void doLayout() {
-            circleLayout(this.graph, 300, 300, 200);
+            circleLayout(this.graph);
 
             List<List<Node>> components = this.graph.paths().connectedComponents();
 
@@ -643,6 +703,9 @@ public class LayoutUtil {
             });
 
             for (List<Node> component1 : components) {
+//                List<Node> nodes = new ArrayList<>(graph.getNodes());
+                graph.paths().makeValidOrder(component1);
+
                 layoutComponent(component1);
             }
         }

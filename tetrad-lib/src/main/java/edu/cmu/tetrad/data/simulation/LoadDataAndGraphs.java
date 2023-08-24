@@ -57,7 +57,7 @@ public class LoadDataAndGraphs implements Simulation {
                         this.graphs.add(null);
                     }
 
-                    LayoutUtil.circleLayout(this.graphs.get(i), 225, 200, 150);
+                    LayoutUtil.circleLayout(this.graphs.get(i));
 
                     File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
 

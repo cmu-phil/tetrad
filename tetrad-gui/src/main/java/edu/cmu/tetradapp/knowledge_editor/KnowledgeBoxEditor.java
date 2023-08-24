@@ -691,7 +691,7 @@ public class KnowledgeBoxEditor extends JPanel {
                 this.edgeWorkbench.getGraph());
 
         if (!arrangedAll) {
-            LayoutUtil.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.circleLayout(graph);
         }
 
         this.edgeWorkbench.setGraph(graph);

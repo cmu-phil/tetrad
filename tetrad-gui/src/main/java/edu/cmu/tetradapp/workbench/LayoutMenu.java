@@ -123,6 +123,16 @@ public class LayoutMenu extends JMenu {
             LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
         });
 
+        JMenuItem squareLayout = new JMenuItem("Squiare");
+        this.add(squareLayout);
+
+        squareLayout.addActionListener(e -> {
+            LayoutUtils.squareLayout(LayoutMenu.this.getLayoutEditable());
+
+            // Copy the laid out graph to the clipboard.
+            LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
+        });
+
 
         JMenuItem fruchtermanReingold = new JMenuItem("Fruchterman-Reingold");
         this.add(fruchtermanReingold);
