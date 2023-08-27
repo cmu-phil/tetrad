@@ -2,7 +2,7 @@
 
 Please visit our [Tetrad web page](https://sites.google.com/view/tetradcausal) for current links for downloadables, a list of contributors, some history, documentation, descriptions, links for our various projects, Javadocs, and more!
 
-## Cloning This Project
+## Clone
 
 So glad you want to clone our project! Here's the command:
 
