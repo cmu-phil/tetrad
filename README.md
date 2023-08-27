@@ -44,7 +44,7 @@ To generate an executable jar:
 mvn clean package
 ```
 
-The jar will appear in the tetrad-gui/target directory.
+The (launch) jar for the Tetrad Application will appear in the tetrad-gui/target directory. For links for our Python and R projects, please see our [Tetrad web page](https://sites.google.com/view/tetradcausal).
 
 ## Problems? Comments?
 
