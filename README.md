@@ -1,6 +1,16 @@
 # Tetrad
 
-Here is our [project web page](https://sites.google.com/view/tetradcausal) with current links for downloadables, a list of contributors, some history, and links to our various projects.
+Here is our [Tetrad web page](https://sites.google.com/view/tetradcausal) with current links for downloadables, a list of contributors, some history, documentation, descriptions and links for our various projects, Javadocs, and more!## 
+
+## Cloning This Project
+
+So glad you want to clone our project! Here's the command:
+
+```
+git clone https://github.com/cmu-phil/tetrad
+```
+
+Or, you can use GitHub's cloning button.
 
 ## Install
 
@@ -13,3 +23,26 @@ The project contains well-developed code in these packages:
 * tetradapp
 
 The tetrad-lib package contains the model code; the tetrad-gui package contains the view (GUI) code.
+
+A similar method can be followed for installing in some other IDE.
+
+If you have Maven installed, you can type the following to compile:
+
+```
+mvn clean compile
+``
+
+To run the unit tests:
+
+```
+mvn clean test
+```
+
+To generate an executable jar:
+
+```
+mvn clean package
+```
+
+The jar will appear in the tetrad-gui/target directory.
+
