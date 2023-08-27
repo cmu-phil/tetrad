@@ -1,6 +1,6 @@
 # Tetrad
 
-Here is our [Tetrad web page](https://sites.google.com/view/tetradcausal) with current links for downloadables, a list of contributors, some history, documentation, descriptions, and links for our various projects, Javadocs, and more!## 
+Please visit our [Tetrad web page](https://sites.google.com/view/tetradcausal) for current links for downloadables, a list of contributors, some history, documentation, descriptions, links for our various projects, Javadocs, and more!## 
 
 ## Cloning This Project
 
