@@ -46,6 +46,6 @@ mvn clean package
 
 The jar will appear in the tetrad-gui/target directory.
 
-## Problems?
+## Problems? Comments?
 
 Please submit an issue in our [Issue Tracker](https://github.com/cmu-phil/tetrad/issues), which we assiduously read.
