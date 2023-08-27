@@ -10,7 +10,7 @@ So glad you want to clone our project! Here's the command:
 git clone https://github.com/cmu-phil/tetrad
 ```
 
-Or, you can use GitHub's cloning button.
+Or, you can use GitHub's Code button.
 
 ## Install
 
