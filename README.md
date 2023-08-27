@@ -1,6 +1,6 @@
 # Tetrad
 
-Here is our [Tetrad web page](https://sites.google.com/view/tetradcausal) with current links for downloadables, a list of contributors, some history, documentation, descriptions and links for our various projects, Javadocs, and more!## 
+Here is our [Tetrad web page](https://sites.google.com/view/tetradcausal) with current links for downloadables, a list of contributors, some history, documentation, descriptions, and links for our various projects, Javadocs, and more!## 
 
 ## Cloning This Project
 
@@ -30,7 +30,7 @@ If you have Maven installed, you can type the following to compile:
 
 ```
 mvn clean compile
-``
+```
 
 To run the unit tests:
 
