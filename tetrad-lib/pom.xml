@@ -22,24 +22,24 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <artifactId>maven-antrun-plugin</artifactId>-->
-<!--                <version>3.1.0</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <phase>compile</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>run</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <target>-->
-<!--                                <copy file="../docs/manual/index.html"-->
-<!--                                      tofile="${project.build.outputDirectory}/manual/index.html"/>-->
-<!--                            </target>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>shaded</shadedClassifierName> <!-- Any name that makes sense -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
         <extensions>
             <extension>
@@ -48,6 +48,7 @@
                 <version>2.10</version>
             </extension>
         </extensions>
+
     </build>
 
     <dependencies>
@@ -92,11 +93,6 @@
             <version>1.0.3</version>
             <scope>compile</scope>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.reflections</groupId>-->
-        <!--            <artifactId>reflections</artifactId>-->
-        <!--            <version>0.10.2</version>-->
-        <!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/javax.help/javahelp -->
         <dependency>
@@ -133,8 +129,6 @@
             <artifactId>jsoup</artifactId>
             <version>1.15.4</version>
         </dependency>
-
-
         <dependency>
             <groupId>io.github.cmu-phil</groupId>
             <artifactId>data-reader</artifactId>
@@ -147,7 +141,6 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
-
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
