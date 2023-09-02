@@ -33,7 +33,6 @@ import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
-import edu.cmu.tetrad.algcomparison.independence.SemBicDTest;
 import edu.cmu.tetrad.algcomparison.score.GicScores;
 import edu.cmu.tetrad.algcomparison.score.MSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -3387,7 +3386,7 @@ public final class TestGrasp {
 //            String path = "/Users/josephramsey/Downloads/sample100genes.csv1.imputed.txt";
             String path = "/Users/josephramsey/Downloads/Arabidopsis_dataset_Wdtf.csv1.impute.txt";
             DataSet data = SimpleDataLoader.loadContinuousData(new File(path), "//", '\"',
-                    "*", true, Delimiter.TAB);
+                    "*", true, Delimiter.TAB, false);
 
             System.out.println(data.getNumColumns());
 

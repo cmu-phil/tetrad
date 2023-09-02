@@ -51,7 +51,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 try {
                     DataSet data = SimpleDataLoader.loadContinuousData(file, "//", '\"',
-                            "*", true, Delimiter.TAB);
+                            "*", true, Delimiter.TAB, false);
                     this.dataSets.add(data);
                 } catch (Exception e) {
                     System.out.println("Couldn't parse " + file.getAbsolutePath());

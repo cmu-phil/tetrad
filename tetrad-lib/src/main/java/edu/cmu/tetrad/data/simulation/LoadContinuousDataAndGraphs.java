@@ -55,7 +55,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
 
                     System.out.println("Loading data from " + file1.getAbsolutePath());
                     DataSet data = SimpleDataLoader.loadContinuousData(file1, "//", '\"',
-                            "*", true, Delimiter.TAB);
+                            "*", true, Delimiter.TAB, false);
                     this.dataSets.add(data);
                 }
 

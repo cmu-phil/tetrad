@@ -448,7 +448,7 @@ public final class ExploreAutisticsNeurotypicals {
                     if (file.getName().startsWith(prefixes[i]) && !file.getName().endsWith(".graph.txt")
                             && !file.getName().contains("tet")) {
                         DataSet data = SimpleDataLoader.loadContinuousData(file, "//", '\"',
-                                "*", true, Delimiter.TAB);
+                                "*", true, Delimiter.TAB, false);
 
                         allDataSets.get(i).add(data);
                         attested = true;
@@ -506,7 +506,7 @@ public final class ExploreAutisticsNeurotypicals {
             final String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets";
             File file = new File(path, "concat_usm_dataset_madelyn.txt");
             DataSet data = SimpleDataLoader.loadContinuousData(file, "//", '\"',
-                    "*", true, Delimiter.TAB);
+                    "*", true, Delimiter.TAB, false);
 
             ContinuousVariable avg = new ContinuousVariable("Avg");
             data.addVariable(avg);

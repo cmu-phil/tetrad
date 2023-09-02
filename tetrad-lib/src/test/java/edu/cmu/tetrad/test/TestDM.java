@@ -1185,7 +1185,7 @@ public class TestDM {
 
         try {
             data = SimpleDataLoader.loadContinuousData(file, "//", '"',
-                    "*", true, Delimiter.WHITESPACE);
+                    "*", true, Delimiter.WHITESPACE, false);
         } catch (IOException e) {
             System.out.println("Failed to read in data.");
             e.printStackTrace();
