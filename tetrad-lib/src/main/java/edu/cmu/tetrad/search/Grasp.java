@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -57,7 +58,7 @@ import static java.util.Collections.shuffle;
  * @see Sp
  * @see Knowledge
  */
-public class Grasp {
+public class Grasp implements HasKnowledge {
     private final List<Node> variables;
     private Score score;
     private IndependenceTest test;
@@ -242,6 +243,11 @@ public class Grasp {
         if (test != null) {
             this.test.setVerbose(verbose);
         }
+    }
+
+    @Override
+    public Knowledge getKnowledge() {
+        return this.knowledge;
     }
 
     /**

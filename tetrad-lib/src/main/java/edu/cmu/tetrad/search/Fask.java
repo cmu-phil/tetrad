@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.Knowledge;
@@ -134,7 +135,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @see Knowledge
  * @see Lofs
  */
-public final class Fask implements IGraphSearch {
+public final class Fask implements IGraphSearch, HasKnowledge {
 
 
     // The score to be used for the FAS adjacency search.

@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.FciOrient;
@@ -53,7 +54,7 @@ import java.util.*;
  * @see Fci
  * @see Knowledge
  */
-public final class Rfci implements IGraphSearch {
+public final class Rfci implements IGraphSearch, HasKnowledge {
 
     /**
      * The variables to search over (optional)

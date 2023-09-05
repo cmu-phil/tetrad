@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -83,7 +84,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Sp
  * @see Knowledge
  */
-public final class Fges implements IGraphSearch, DagScorer {
+public final class Fges implements IGraphSearch, DagScorer, HasKnowledge {
     private final Set<Node> emptySet = new HashSet<>();
     private final int[] count = new int[1];
     private final int depth = 10000;

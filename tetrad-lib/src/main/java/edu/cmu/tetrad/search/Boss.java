@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -71,7 +72,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * @see Grasp
  * @see Knowledge
  */
-public class Boss implements SuborderSearch {
+public class Boss implements SuborderSearch, HasKnowledge {
     private final Score score;
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
@@ -155,6 +156,11 @@ public class Boss implements SuborderSearch {
             this.bes.setVerbose(false);
             this.bes.setKnowledge(knowledge);
         }
+    }
+
+    @Override
+    public Knowledge getKnowledge() {
+        return this.knowledge;
     }
 
     @Override

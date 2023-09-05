@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -71,7 +72,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see Fges
  * @see Knowledge
  */
-public final class GFci implements IGraphSearch {
+public final class GFci implements IGraphSearch, HasKnowledge {
     private final IndependenceTest independenceTest;
     private final TetradLogger logger = TetradLogger.getInstance();
     private final Score score;
@@ -126,9 +127,10 @@ public final class GFci implements IGraphSearch {
 
         Graph fgesGraph = new EdgeListGraph(graph);
 
-        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null,
+                this.depth, getKnowledge());
         gfciExtraEdgeRemovalStep(graph, fgesGraph, nodes, sepsets);
-        GraphUtils.gfciR0(graph, fgesGraph, sepsets, knowledge);
+        GraphUtils.gfciR0(graph, fgesGraph, sepsets, getKnowledge());
 
         if (this.possibleMsepSearchDone) {
             graph.paths().removeByPossibleMsep(independenceTest, null);
@@ -141,8 +143,9 @@ public final class GFci implements IGraphSearch {
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(this.knowledge);
+        fciOrient.setKnowledge(getKnowledge());
 
+//        fciOrient.fciOrientbk(getKnowledge(), graph, graph.getNodes());
         fciOrient.doFinalOrientation(graph);
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());

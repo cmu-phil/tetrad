@@ -21,7 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -32,10 +34,7 @@ import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <p>Implements the Fast Causal Inference (FCI) algorithm due to Peter Spirtes, which addressed
@@ -71,7 +70,7 @@ import java.util.Set;
  * @see FciOrient
  * @see Knowledge
  */
-public final class Fci implements IGraphSearch {
+public final class Fci implements IGraphSearch, HasKnowledge {
     private final List<Node> variables = new ArrayList<>();
     private final IndependenceTest independenceTest;
     private final TetradLogger logger = TetradLogger.getInstance();
@@ -158,27 +157,25 @@ public final class Fci implements IGraphSearch {
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
-        SepsetsSet sepsets1 = new SepsetsSet(this.sepsets, this.independenceTest);
+        SepsetsSet sepsets = new SepsetsSet(this.sepsets, this.independenceTest);
+
+        FciOrient fciOrient = new FciOrient(sepsets);
+        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setVerbose(this.verbose);
+        fciOrient.setKnowledge(getKnowledge());
 
         if (this.possibleMsepSearchDone) {
-            new FciOrient(sepsets1).ruleR0(graph);
-            graph.paths().removeByPossibleMsep(independenceTest, sepsets);
+            fciOrient.ruleR0(graph);
+            graph.paths().removeByPossibleMsep(independenceTest, this.sepsets);
 
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
         }
 
         // Step CI C (Zhang's step F3.)
-
-        FciOrient fciOrient = new FciOrient(sepsets1);
-
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(this.knowledge);
-
         fciOrient.ruleR0(graph);
 
         fciOrient.doFinalOrientation(graph);

@@ -536,6 +536,10 @@ public final class FciOrient {
                     if (graph.getEndpoint(a, d) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.CIRCLE) {
                         if (!graph.isAdjacentTo(a, c)) {
                             if (graph.getEndpoint(d, b) == Endpoint.CIRCLE) {
+                                if (!isArrowheadAllowed(d, b, graph, knowledge)) {
+                                    return;
+                                }
+
                                 graph.setEndpoint(d, b, Endpoint.ARROW);
 
                                 if (this.verbose) {
@@ -1039,6 +1043,10 @@ public final class FciOrient {
                 continue;
             }
 
+            if (!isArrowheadAllowed(to, from, graph, knowledge)) {
+                return;
+            }
+
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             this.changeFlag = true;
@@ -1063,6 +1071,10 @@ public final class FciOrient {
 
             if (graph.getEdge(from, to) == null) {
                 continue;
+            }
+
+            if (!isArrowheadAllowed(from, to, graph, knowledge)) {
+                return;
             }
 
             graph.setEndpoint(to, from, Endpoint.TAIL);

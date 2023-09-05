@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -68,7 +69,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see Knowledge
  * @see FciOrient
  */
-public final class SpFci implements IGraphSearch {
+public final class SpFci implements IGraphSearch, HasKnowledge {
 
     // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();

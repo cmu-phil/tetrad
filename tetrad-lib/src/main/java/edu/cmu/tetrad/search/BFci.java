@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -61,7 +62,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see Fges
  * @see Knowledge
  */
-public final class BFci implements IGraphSearch {
+public final class BFci implements IGraphSearch, HasKnowledge {
 
     // The conditional independence test.
     private final IndependenceTest independenceTest;
@@ -123,7 +124,6 @@ public final class BFci implements IGraphSearch {
 
         Graph graph = alg.search();
 
-        Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(graph);
 
         // GFCI extra edge removal step...
@@ -137,13 +137,18 @@ public final class BFci implements IGraphSearch {
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge2);
+        fciOrient.setKnowledge(knowledge);
 
         fciOrient.doFinalOrientation(graph);
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
         return graph;
+    }
+
+    @Override
+    public Knowledge getKnowledge() {
+        return this.knowledge;
     }
 
     /**

@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -47,7 +48,7 @@ import java.util.*;
  * @see FgesMb
  * @see Knowledge
  */
-public final class PcMb implements IMbSearch, IGraphSearch {
+public final class PcMb implements IMbSearch, IGraphSearch, HasKnowledge {
 
     /**
      * The independence test used to perform the search.

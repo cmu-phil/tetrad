@@ -1,5 +1,6 @@
 package edu.pitt.dbmi.algo.bayesian.constraint.search;
 
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
@@ -18,7 +19,7 @@ import java.util.concurrent.*;
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
  */
-public class PagSamplingRfci implements IGraphSearch {
+public class PagSamplingRfci implements IGraphSearch, HasKnowledge {
 
     private final int NUM_THREADS = 10;
     private final DataSet dataSet;
@@ -131,6 +132,11 @@ public class PagSamplingRfci implements IGraphSearch {
 
     public void setPriorEquivalentSampleSize(double priorEquivalentSampleSize) {
         this.priorEquivalentSampleSize = priorEquivalentSampleSize;
+    }
+
+    @Override
+    public Knowledge getKnowledge() {
+        return knowledge;
     }
 
     public void setKnowledge(Knowledge knowledge) {

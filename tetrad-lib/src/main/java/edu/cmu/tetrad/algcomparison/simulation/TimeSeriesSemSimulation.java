@@ -171,7 +171,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        // Uses internal knowledge
     }
 
 }

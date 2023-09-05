@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
@@ -62,7 +63,7 @@ import java.util.Set;
  * @see Fci
  * @see Knowledge
  */
-public final class SvarFci implements IGraphSearch {
+public final class SvarFci implements IGraphSearch, HasKnowledge {
 
     private final IndependenceTest independenceTest;
     /**
