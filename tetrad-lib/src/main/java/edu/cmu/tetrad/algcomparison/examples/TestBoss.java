@@ -51,13 +51,14 @@ public class TestBoss {
         parameters.set(Params.VAR_LOW, 1);
         parameters.set(Params.VAR_HIGH, 3);
 
-        parameters.set(Params.PENALTY_DISCOUNT, 8);
+        parameters.set(Params.PENALTY_DISCOUNT, 2);
         parameters.set(Params.SEM_BIC_STRUCTURE_PRIOR, 0);
         parameters.set(Params.ALPHA, 1e-2);
 
         parameters.set(Params.USE_BES, false);
         parameters.set(Params.NUM_STARTS, 1);
-        parameters.set(Params.NUM_THREADS, 40);
+        parameters.set(Params.NUM_THREADS, -1);
+        parameters.set(Params.USE_DATA_ORDER, false);
 
         parameters.set(Params.VERBOSE, false);
 

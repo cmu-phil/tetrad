@@ -26,7 +26,13 @@ public class GrowShrinkTree {
         this.forbidden = new ArrayList<>();
     }
 
-    public double traceUnsafe(Set<Node> prefix, Set<Node> available) {
+
+    // does available really need to be passed every single time?
+    // probably not
+
+    public double traceAsync(Collection<Node> prefixList, Collection<Node> availableList) {
+        Set<Node> prefix = new HashSet<>(prefixList);
+        Set<Node> available = new HashSet<>(availableList);
         available.remove(this.node);
         this.forbidden.forEach(available::remove);
         return this.root.trace(prefix, available, new HashSet<>());
@@ -96,6 +102,10 @@ public class GrowShrinkTree {
         this.forbidden = forbidden;
     }
 
+    public void reset() {
+        this.root = new GSTNode(this);
+    }
+
     private static class GSTNode implements Comparable<GSTNode> {
         private final GrowShrinkTree tree;
         private final Node add;
@@ -130,7 +140,9 @@ public class GrowShrinkTree {
         }
 
         private synchronized void grow(Set<Node> available, Set<Node> parents) {
-            if (this.grow.get()) return;
+             if (this.grow.get()) return;
+
+//             System.out.println("new");
 
             this.branches = new ArrayList<>();
             List<GSTNode> required = new ArrayList<>();

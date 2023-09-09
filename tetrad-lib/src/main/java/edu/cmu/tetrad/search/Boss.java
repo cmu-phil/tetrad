@@ -6,7 +6,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.BesPermutation;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
-import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -76,12 +75,18 @@ public class Boss implements SuborderSearch {
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
     private Map<Node, GrowShrinkTree> gsts;
-    private ExecutorService pool;
+    private ForkJoinPool pool;
     private Knowledge knowledge = new Knowledge();
     private BesPermutation bes = null;
     private int numStarts = 1;
     private boolean useDataOrder = true;
+    private boolean resetAfterBM = false;
+    private boolean resetAfterRS = true;
     private int numThreads = 1;
+    private List<Double> bics;
+    private List<Double> times;
+    private boolean verbose = false;
+
 
     /**
      * This algorithm will work with an arbitrary BIC score.
@@ -102,15 +107,28 @@ public class Boss implements SuborderSearch {
         assert this.numStarts > 0;
         this.gsts = gsts;
 
+        this.bics = new ArrayList<>();
+        this.times = new ArrayList<>();
+
         List<Node> bestSuborder = null;
         double score, bestScore = Double.NEGATIVE_INFINITY;
         boolean improved;
 
-        this.pool = Executors.newFixedThreadPool(this.numThreads);
+        if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
+        if (this.numThreads < 1) this.pool = ForkJoinPool.commonPool();
 
         for (int i = 0; i < this.numStarts; i++) {
+
+            double time = System.currentTimeMillis();
+
             if ((i == 0 && !this.useDataOrder) || i > 0) {
-                RandomUtil.shuffle(suborder);
+                shuffle(suborder);
+            }
+
+            if (i > 0 && this.resetAfterRS) {
+               for (Node root: suborder) {
+                   this.gsts.get(root).reset();
+                }
             }
 
             makeValidKnowledgeOrder(suborder);
@@ -118,21 +136,39 @@ public class Boss implements SuborderSearch {
             do {
                 improved = false;
                 for (Node x : new ArrayList<>(suborder)) {
+
+                    if (this.verbose && (suborder.size() > 1)) System.out.println(x);
+
                     if (this.numThreads == 1 && betterMutation(prefix, suborder, x)) improved = true;
-                    if (this.numThreads > 1 && betterMutationAsync(prefix, suborder, x)) improved = true;
+                    else if (betterMutationAsync(prefix, suborder, x)) improved = true;
                 }
+
+                if (this.verbose && (suborder.size() > 1)) {
+                    System.out.printf("\n\nScore: %.3f\n\n", update(prefix, suborder));
+                }
+
             } while (improved);
 
             if (this.bes != null) bes(prefix, suborder);
 
             score = update(prefix, suborder);
+            time = System.currentTimeMillis() - time;
+
+            if (suborder.size() > 1) {
+                this.bics.add(score);
+                this.times.add(time);
+                if (this.verbose) {
+                    System.out.printf("\n\nRestart: %d\t Score: %.3f\t Time: %.3f\n\n", i, score, time / 1e3);
+                }
+            }
+
             if (score > bestScore) {
                 bestSuborder = new ArrayList<>(suborder);
                 bestScore = score;
             }
         }
 
-        this.pool.shutdown();
+        if (this.numThreads > 1) this.pool.shutdown();
 
         suborder.clear();
 
@@ -175,6 +211,18 @@ public class Boss implements SuborderSearch {
         this.numStarts = numStarts;
     }
 
+    public void setResetAfterBM(boolean reset) {
+        this.resetAfterBM = reset;
+    }
+
+    public void setResetAfterRS(boolean reset) {
+       this.resetAfterRS = reset;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
     public void setNumThreads(int numThreads) {
         this.numThreads = numThreads;
     }
@@ -194,6 +242,14 @@ public class Boss implements SuborderSearch {
         return this.score;
     }
 
+    public List<Double> getBics() {
+        return this.bics;
+    }
+
+    public List<Double> getTimes() {
+        return this.times;
+    }
+
      /**
      * True if the order of the variables in the data should be used for an initial best-order search, false if a random
      * permutation should be used. (Subsequence automatic best order runs will use random permutations.) This is
@@ -207,74 +263,50 @@ public class Boss implements SuborderSearch {
     }
 
     private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) {
-        Set<Node> all = new HashSet<>(suborder);
+        List<Node> all = new ArrayList<>(suborder);
         all.addAll(prefix);
 
-        List<Future<Double>> futures = new ArrayList<>();
-        List<Future<Double>> with = new ArrayList<>();
-        List<Future<Double>> without = new ArrayList<>();
+        List<Callable<Void>> tasks = new ArrayList<>();
 
-        Set<Node> Z;
+        double[] scores = new double[suborder.size()];
+        double[] with = new double[suborder.size() - 1];
+        double[] without = new double[suborder.size() - 1];
 
-        Z = new HashSet<>(prefix);
-        Z.add(x);
+        Set<Node> Z = new HashSet<>(prefix);
+        int i = 0, curr = 0;
 
-        for (Node z : suborder) {
-            if (this.knowledge.isRequired(x.getName(), z.getName())) break;
-            if (x == z) continue;
-            with.add(0, this.pool.submit(new Trace(this.gsts.get(z), Z, all)));
-            Z.add(z);
-        }
+        tasks.add(new Trace(this.gsts.get(x), Z, all, scores, i));
 
-        Z = new HashSet<>(prefix);
-
-        for (Node z : suborder) {
-            if (this.knowledge.isRequired(x.getName(), z.getName())) break;
-            if (x == z) continue;
-            without.add(this.pool.submit(new Trace(this.gsts.get(z), Z, all)));
-            Z.add(z);
-        }
-
-        Z = new HashSet<>(prefix);
-        int curr = 0;
-        int i = 0;
-
-        futures.add(this.pool.submit(new Trace(this.gsts.get(x), Z, all)));
         for (Node z : suborder) {
             if (this.knowledge.isRequired(x.getName(), z.getName())) break;
             if (x == z) {
                 curr = i;
                 continue;
             }
+
+            Z.add(x);
+            tasks.add(new Trace(this.gsts.get(z), Z, all, with, i));
+            Z.remove(x);
+            tasks.add(new Trace(this.gsts.get(z), Z, all, without, i));
             Z.add(z);
-            futures.add(this.pool.submit(new Trace(this.gsts.get(x), Z, all)));
-            i++;
+            tasks.add(new Trace(this.gsts.get(x), Z, all, scores, ++i));
         }
 
-        double[] scores = new double[futures.size()];
-        double score;
+        shuffle(tasks);
+        this.pool.invokeAll(tasks);
+        if (this.resetAfterBM) this.gsts.get(x).reset();
+        double runningScore = 0;
 
-        try {
-            i = 0;
-            for (Future<Double> future : futures) {
-                scores[i++] = future.get();
-            }
+        for (i = with.length - 1 ; i >= 0 ; i--) {
+            runningScore += with[i];
+            scores[i] += runningScore;
+        }
 
-            score = 0;
-            i = with.size();
-            for (Future<Double> future : with) {
-                score += future.get();
-                scores[--i] += score;
-            }
+        runningScore = 0;
 
-            score = 0;
-            i = 0;
-            for (Future<Double> future : without) {
-                score += future.get();
-                scores[++i] += score;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+        for (i = 0 ; i < without.length ; i++) {
+            runningScore += without[i];
+            scores[i + 1] += runningScore;
         }
 
         int best = curr;
@@ -291,21 +323,27 @@ public class Boss implements SuborderSearch {
         return true;
     }
 
-    private static class Trace implements Callable<Double> {
-
+    private static class Trace implements Callable<Void> {
         private final GrowShrinkTree gst;
-        private final Set<Node> prefix;
-        private final Set<Node> available;
+        private final Collection<Node> prefix;
+        private final Collection<Node> all;
+        private final double[] scores;
+        private final int index;
 
-        Trace(GrowShrinkTree gst, Set<Node> prefix, Set<Node> available) {
+        Trace(GrowShrinkTree gst, Collection<Node> prefix, Collection<Node> all, double[] scores, int index) {
             this.gst = gst;
-            this.prefix = new HashSet<>(prefix);
-            this.available = new HashSet<>(available);
+            this.prefix = new ArrayList<>(prefix);
+            this.all = new ArrayList<>(all);
+            this.scores = scores;
+            this.index = index;
         }
 
         @Override
-        public Double call() {
-            return gst.traceUnsafe(this.prefix, this.available);
+        public Void call() {
+            double score = gst.traceAsync(this.prefix, this.all);
+            this.scores[index] = score;
+
+            return null;
         }
     }
 
