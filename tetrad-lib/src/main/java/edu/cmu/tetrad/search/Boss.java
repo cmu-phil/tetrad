@@ -75,6 +75,7 @@ public class Boss implements SuborderSearch {
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
     private Map<Node, GrowShrinkTree> gsts;
+    private Set<Node> all;
     private ForkJoinPool pool;
     private Knowledge knowledge = new Knowledge();
     private BesPermutation bes = null;
@@ -106,6 +107,8 @@ public class Boss implements SuborderSearch {
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
         assert this.numStarts > 0;
         this.gsts = gsts;
+        this.all = new HashSet<>(prefix);
+        this.all.addAll(suborder);
 
         this.bics = new ArrayList<>();
         this.times = new ArrayList<>();
@@ -115,7 +118,7 @@ public class Boss implements SuborderSearch {
         boolean improved;
 
         if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
-        if (this.numThreads < 1) this.pool = ForkJoinPool.commonPool();
+        else if (this.numThreads != 1) this.pool = ForkJoinPool.commonPool();
 
         for (int i = 0; i < this.numStarts; i++) {
 
@@ -139,12 +142,12 @@ public class Boss implements SuborderSearch {
 
                     if (this.verbose && (suborder.size() > 1)) System.out.println(x);
 
-                    if (this.numThreads == 1 && betterMutation(prefix, suborder, x)) improved = true;
-                    else if (betterMutationAsync(prefix, suborder, x)) improved = true;
+                    if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
+                    else improved |= betterMutationAsync(prefix, suborder, x);
                 }
 
                 if (this.verbose && (suborder.size() > 1)) {
-                    System.out.printf("\n\nScore: %.3f\n\n", update(prefix, suborder));
+                    System.out.printf("\nScore: %.3f\n\n", update(prefix, suborder));
                 }
 
             } while (improved);
@@ -158,7 +161,7 @@ public class Boss implements SuborderSearch {
                 this.bics.add(score);
                 this.times.add(time);
                 if (this.verbose) {
-                    System.out.printf("\n\nRestart: %d\t Score: %.3f\t Time: %.3f\n\n", i, score, time / 1e3);
+                    System.out.printf("\nRestart: %d\t Score: %.3f\t Time: %.3f\n\n", i, score, time / 1e3);
                 }
             }
 
@@ -263,9 +266,6 @@ public class Boss implements SuborderSearch {
     }
 
     private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) {
-        List<Node> all = new ArrayList<>(suborder);
-        all.addAll(prefix);
-
         List<Callable<Void>> tasks = new ArrayList<>();
 
         double[] scores = new double[suborder.size()];
@@ -275,7 +275,7 @@ public class Boss implements SuborderSearch {
         Set<Node> Z = new HashSet<>(prefix);
         int i = 0, curr = 0;
 
-        tasks.add(new Trace(this.gsts.get(x), Z, all, scores, i));
+        tasks.add(new Trace(this.gsts.get(x), this.all, Z, scores, i));
 
         for (Node z : suborder) {
             if (this.knowledge.isRequired(x.getName(), z.getName())) break;
@@ -285,11 +285,11 @@ public class Boss implements SuborderSearch {
             }
 
             Z.add(x);
-            tasks.add(new Trace(this.gsts.get(z), Z, all, with, i));
+            tasks.add(new Trace(this.gsts.get(z), this.all, Z, with, i));
             Z.remove(x);
-            tasks.add(new Trace(this.gsts.get(z), Z, all, without, i));
+            tasks.add(new Trace(this.gsts.get(z), this.all, Z, without, i));
             Z.add(z);
-            tasks.add(new Trace(this.gsts.get(x), Z, all, scores, ++i));
+            tasks.add(new Trace(this.gsts.get(x), this.all, Z, scores, ++i));
         }
 
         shuffle(tasks);
@@ -325,22 +325,22 @@ public class Boss implements SuborderSearch {
 
     private static class Trace implements Callable<Void> {
         private final GrowShrinkTree gst;
-        private final Collection<Node> prefix;
-        private final Collection<Node> all;
+        private final Set<Node> all;
+        private final Set<Node> prefix;
         private final double[] scores;
         private final int index;
 
-        Trace(GrowShrinkTree gst, Collection<Node> prefix, Collection<Node> all, double[] scores, int index) {
+        Trace(GrowShrinkTree gst, Set<Node> all, Set<Node> prefix, double[] scores, int index) {
             this.gst = gst;
-            this.prefix = new ArrayList<>(prefix);
-            this.all = new ArrayList<>(all);
+            this.all = all;
+            this.prefix = new HashSet<>(prefix);
             this.scores = scores;
             this.index = index;
         }
 
         @Override
         public Void call() {
-            double score = gst.traceAsync(this.prefix, this.all);
+            double score = gst.trace(this.prefix, this.all);
             this.scores[index] = score;
 
             return null;
@@ -348,9 +348,6 @@ public class Boss implements SuborderSearch {
     }
 
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
-        Set<Node> all = new HashSet<>(suborder);
-        all.addAll(prefix);
-
         ListIterator<Node> itr = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
         Set<Node> Z = new HashSet<>(prefix);
@@ -367,14 +364,14 @@ public class Boss implements SuborderSearch {
                 break;
             }
 
-            scores[i++] = this.gsts.get(x).trace(Z, all) + score;
+            scores[i++] = this.gsts.get(x).trace(Z, this.all) + score;
             if (z != x) {
-                score += this.gsts.get(z).trace(Z, all);
+                score += this.gsts.get(z).trace(Z, this.all);
                 Z.add(z);
             } else curr = i - 1;
         }
 
-        scores[i] = this.gsts.get(x).trace(Z, all) + score;
+        scores[i] = this.gsts.get(x).trace(Z, this.all) + score;
         int best = i;
 
         Z.add(x);
@@ -387,7 +384,7 @@ public class Boss implements SuborderSearch {
 
             if (z != x) {
                 Z.remove(z);
-                score += gsts.get(z).trace(Z, all);
+                score += gsts.get(z).trace(Z, this.all);
             }
 
             scores[--i] += score;
@@ -413,15 +410,13 @@ public class Boss implements SuborderSearch {
 
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
-        Set<Node> all = new HashSet<>(suborder);
-        all.addAll(prefix);
 
         Set<Node> Z = new HashSet<>(prefix);
 
         for (Node x : suborder) {
             Set<Node> parents = this.parents.get(x);
             parents.clear();
-            score += this.gsts.get(x).trace(Z, all, parents);
+            score += this.gsts.get(x).trace(Z, this.all, parents);
             Z.add(x);
         }
 
