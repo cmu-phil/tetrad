@@ -29,7 +29,6 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.ScoredGraph;
 import edu.cmu.tetrad.search.utils.Bes;
 import edu.cmu.tetrad.search.utils.DagScorer;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -242,7 +241,7 @@ public final class Fges implements IGraphSearch, DagScorer, HasKnowledge {
             this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-        this.modelScore = scoreDag(GraphSearchUtils.dagFromCPDAG(graph), true);
+        this.modelScore = scoreDag(GraphTransforms.dagFromCPDAG(graph), true);
 
         return graph;
     }

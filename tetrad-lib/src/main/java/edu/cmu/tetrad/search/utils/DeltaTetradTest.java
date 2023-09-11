@@ -71,7 +71,7 @@ public class DeltaTetradTest {
 
         List<DataSet> data1 = new ArrayList<>();
         data1.add(dataSet);
-        List<DataSet> data2 = DataUtils.center(data1);
+        List<DataSet> data2 = DataTransforms.center(data1);
 
         this.dataSet = data2.get(0);
 

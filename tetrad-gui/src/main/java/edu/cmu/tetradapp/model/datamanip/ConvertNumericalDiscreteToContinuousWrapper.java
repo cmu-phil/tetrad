@@ -52,7 +52,7 @@ public class ConvertNumericalDiscreteToContinuousWrapper extends DataWrapper {
             DataSet convertedData;
 
             try {
-                convertedData = DataUtils.convertNumericalDiscreteToContinuous(originalData);
+                convertedData = DataTransforms.convertNumericalDiscreteToContinuous(originalData);
             } catch (NumberFormatException e) {
                 throw new RuntimeException("There were some non-numeric values in that dataset.");
             }

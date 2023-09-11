@@ -97,7 +97,7 @@ public class PoissonPriorScore implements Score {
         this.variables = dataSet.getVariables();
         this.sampleSize = dataSet.getNumRows();
 
-        DataSet _dataSet = DataUtils.center(dataSet);
+        DataSet _dataSet = DataTransforms.center(dataSet);
         this.data = _dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {

@@ -944,7 +944,7 @@ public final class MlBayesIm implements BayesIm {
         constructSample(sampleSize, dataSet, map, tiers);
 
         if (!latentDataSaved) {
-            dataSet = DataUtils.restrictToMeasured(dataSet);
+            dataSet = DataTransforms.restrictToMeasured(dataSet);
         }
 
         return dataSet;
@@ -994,7 +994,7 @@ public final class MlBayesIm implements BayesIm {
         if (latentDataSaved) {
             return dataSet;
         } else {
-            return DataUtils.restrictToMeasured(dataSet);
+            return DataTransforms.restrictToMeasured(dataSet);
         }
     }
 

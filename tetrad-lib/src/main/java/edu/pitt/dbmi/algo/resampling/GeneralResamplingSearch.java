@@ -3,10 +3,7 @@ package edu.pitt.dbmi.algo.resampling;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -158,12 +155,12 @@ public class GeneralResamplingSearch {
 
                 if (this.resamplingWithReplacement) {
                     dataSet = (randomGenerator == null)
-                            ? DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0))
-                            : DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0), randomGenerator);
+                            ? DataTransforms.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0))
+                            : DataTransforms.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0), randomGenerator);
                 } else {
                     dataSet = (randomGenerator == null)
-                            ? DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0))
-                            : DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0), randomGenerator);
+                            ? DataTransforms.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0))
+                            : DataTransforms.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0), randomGenerator);
                 }
 
                 dataSet.setKnowledge(data.getKnowledge());
@@ -191,11 +188,11 @@ public class GeneralResamplingSearch {
                 for (DataSet data : this.dataSets) {
 
                     if (this.resamplingWithReplacement) {
-                        DataSet bootstrapSample = DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
+                        DataSet bootstrapSample = DataTransforms.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
                         bootstrapSample.setKnowledge(data.getKnowledge());
                         dataModels.add(bootstrapSample);
                     } else {
-                        DataSet resamplingDataset = DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
+                        DataSet resamplingDataset = DataTransforms.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
                         resamplingDataset.setKnowledge(data.getKnowledge());
                         dataModels.add(resamplingDataset);
                     }

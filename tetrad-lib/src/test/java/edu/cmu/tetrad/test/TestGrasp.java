@@ -2662,7 +2662,7 @@ public final class TestGrasp {
             Graph trueGraph = RandomGraph.randomGraph(20, 8, 40,
                     100, 100, 100, false);
 
-            Graph truePag = GraphSearchUtils.dagToPag(trueGraph);
+            Graph truePag = GraphTransforms.dagToPag(trueGraph);
 
             trueGraphMap.put(i, new HashMap<>());
             trueGraphs.add(trueGraph);
@@ -3156,7 +3156,7 @@ public final class TestGrasp {
 
                         if (g1.equals(g2)) gsCount++;
                         gsShd += GraphSearchUtils.structuralHammingDistance(
-                                GraphSearchUtils.cpdagForDag(g1), GraphSearchUtils.cpdagForDag(g2));
+                                GraphTransforms.cpdagForDag(g1), GraphTransforms.cpdagForDag(g2));
 
                         for (int i = 0; i < alpha.length; i++) {
 //                            test.setAlpha(alpha[i]);
@@ -3171,7 +3171,7 @@ public final class TestGrasp {
 
                             if (g1.equals(g3)) pearlCounts[i]++;
                             pearlShd[i] += GraphSearchUtils.structuralHammingDistance(
-                                    GraphSearchUtils.cpdagForDag(g1), GraphSearchUtils.cpdagForDag(g3));
+                                    GraphTransforms.cpdagForDag(g1), GraphTransforms.cpdagForDag(g3));
                         }
                     }
 

@@ -2,8 +2,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class DefiniteDirectedPathRecall implements Statistic {
         int tp = 0, fn = 0;
 
         List<Node> nodes = trueGraph.getNodes();
-        Graph cpdag = GraphSearchUtils.cpdagForDag(trueGraph);
+        Graph cpdag = GraphTransforms.cpdagForDag(trueGraph);
 
         for (Node x : nodes) {
             for (Node y : nodes) {

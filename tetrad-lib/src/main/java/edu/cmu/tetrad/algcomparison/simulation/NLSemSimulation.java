@@ -160,7 +160,7 @@ public class NLSemSimulation implements Simulation {
             DataSet dataSet = new BoxDataSet(new DoubleDataBox(data.getData()), continuousVars);
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.shuffleColumns(dataSet);
+                dataSet = DataTransforms.shuffleColumns(dataSet);
             }
 
             dataSet.setName(String.valueOf(i + 1));

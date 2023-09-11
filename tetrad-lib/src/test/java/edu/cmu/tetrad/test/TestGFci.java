@@ -87,7 +87,7 @@ public class TestGFci {
         simulator.setCoefRange(.5, 1.5);
         simulator.setVarRange(1, 3);
         data = simulator.simulateDataFisher(sampleSize);
-        data = DataUtils.restrictToMeasured(data);
+        data = DataTransforms.restrictToMeasured(data);
 
         ICovarianceMatrix cov = new CovarianceMatrix(data);
 
@@ -110,7 +110,7 @@ public class TestGFci {
 //        dagToPag.setMaxPathLength(maxPathLength);
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = GraphSearchUtils.dagToPag(dag);
+        Graph truePag = GraphTransforms.dagToPag(dag);
 
         outGraph = GraphUtils.replaceNodes(outGraph, truePag.getNodes());
 
@@ -193,7 +193,7 @@ public class TestGFci {
 //            dagToPag.setCompleteRuleSetUsed(false);
 //            Graph pag2 = dagToPag.convert();
 
-            Graph pag2 = GraphSearchUtils.dagToPag(dag);
+            Graph pag2 = GraphTransforms.dagToPag(dag);
 
             assertEquals(pag2, pag1);
         }
@@ -219,7 +219,7 @@ public class TestGFci {
 
         DataSet data = im.simulateData(1000, false);
 
-        data = DataUtils.restrictToMeasured(data);
+        data = DataTransforms.restrictToMeasured(data);
 
 //        System.out.println(data.getCorrelationMatrix());
 

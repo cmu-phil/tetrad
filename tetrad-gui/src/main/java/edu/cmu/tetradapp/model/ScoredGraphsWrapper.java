@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.DagScorer;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
@@ -69,7 +69,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     }
 
     public ScoredGraphsWrapper(Graph graph, DagScorer scorer) {
-        List<Graph> dags = GraphSearchUtils.generateCpdagDags(graph, true);
+        List<Graph> dags = GraphTransforms.generateCpdagDags(graph, true);
         this.graphsToScores = new HashMap<>();
         this.graphScorer = scorer;
 

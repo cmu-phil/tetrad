@@ -106,7 +106,7 @@ public class LinearSineSimulation implements Simulation {
             DataSet dataSet = simulate(graph, parameters);
 
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+                dataSet = DataTransforms.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
             }
 
             dataSet.setName("" + (i + 1));

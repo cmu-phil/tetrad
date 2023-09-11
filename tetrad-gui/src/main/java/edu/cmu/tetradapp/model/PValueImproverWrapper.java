@@ -252,7 +252,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
             LayoutUtil.circleLayout(this.graph);
         }
 
-        setResultGraph(GraphSearchUtils.cpdagForDag(this.graph));
+        setResultGraph(GraphTransforms.cpdagForDag(this.graph));
     }
 
     public boolean supportsKnowledge() {
@@ -368,7 +368,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
             }
         }
 
-        return DataUtils.restrictToMeasured(fullDataSet);
+        return DataTransforms.restrictToMeasured(fullDataSet);
     }
 
     /**

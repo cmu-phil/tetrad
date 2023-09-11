@@ -27,7 +27,7 @@ import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -95,7 +95,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 
         this.dataSet = dataSet;
 
-        this.data = new DenseDoubleMatrix2D(DataUtils.center(this.dataSet).getDoubleData().toArray());
+        this.data = new DenseDoubleMatrix2D(DataTransforms.center(this.dataSet).getDoubleData().toArray());
         this.variables = Collections.unmodifiableList(this.dataSet.getVariables());
         setAlpha(alpha);
     }

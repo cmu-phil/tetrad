@@ -23,6 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.SemEstimator;
@@ -65,7 +66,7 @@ public class TestStandardizedSem {
         SemIm im = new SemIm(pm);
 
         DataSet dataSet = im.simulateData(1000, false);
-        DataSet dataSetStandardized = DataUtils.standardizeData(dataSet);
+        DataSet dataSetStandardized = DataTransforms.standardizeData(dataSet);
         Matrix _dataSet = dataSet.getDoubleData();
 
         DataUtils.cov(_dataSet);

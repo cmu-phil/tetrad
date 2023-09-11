@@ -120,11 +120,11 @@ public class ConditionalGaussianSimulation implements Simulation {
             dataSet.setName("" + (i + 1));
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.shuffleColumns(dataSet);
+                dataSet = DataTransforms.shuffleColumns(dataSet);
             }
 
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+                dataSet = DataTransforms.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
             }
 
             this.dataSets.add(dataSet);
@@ -368,7 +368,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
 
         boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
-        return saveLatentVars ? mixedData : DataUtils.restrictToMeasured(mixedData);
+        return saveLatentVars ? mixedData : DataTransforms.restrictToMeasured(mixedData);
     }
 
     private double[] getBreakpoints(DataSet mixedData, DiscreteVariable _parent, int mixedParentColumn) {
