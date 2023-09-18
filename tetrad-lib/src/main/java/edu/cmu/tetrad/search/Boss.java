@@ -423,8 +423,33 @@ public class Boss implements SuborderSearch {
         return score;
     }
 
+
+    // alter this code so that it roughly obeys tiers.
+
+
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (this.knowledge.isEmpty()) return;
+
+        int index = 0;
+
+        Set<String> tier = new HashSet<>(this.knowledge.getVariablesNotInTiers());
+        for (int i = 0; i < order.size(); i++) {
+            if (tier.contains(order.get(i).getName())) {
+                Node x = order.remove(i);
+                order.add(index++, x);
+            }
+        }
+
+        for (int i = 0; i < this.knowledge.getNumTiers(); i++) {
+            tier = new HashSet<>(this.knowledge.getTier(i));
+            for (int j = 0; j < order.size(); j++) {
+                if (tier.contains(order.get(j).getName())) {
+                    Node x = order.remove(j);
+                    order.add(index++, x);
+                }
+            }
+        }
+
         for (int i = 1; i < order.size(); i++) {
             String a = order.get(i).getName();
             for (int j = 0; j < i; j++) {
