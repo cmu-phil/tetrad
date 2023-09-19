@@ -33,7 +33,6 @@ public class PermutationSearch {
     private final List<Node> variables;
     private final List<Node> order;
     private final Map<Node, GrowShrinkTree> gsts;
-    private final Map<String, Node> nodeMap;
     private Knowledge knowledge = new Knowledge();
 
     /**
@@ -47,15 +46,15 @@ public class PermutationSearch {
         this.variables = suborderSearch.getVariables();
         this.order = new ArrayList<>();
         this.gsts = new HashMap<>();
-        this.nodeMap = new HashMap<>();
 
-        int i = 0;
         Score score = suborderSearch.getScore();
         Map<Node, Integer> index = new HashMap<>();
+
+        int i = 0;
         for (Node node : this.variables) {
             index.put(node, i++);
             this.gsts.put(node, new GrowShrinkTree(score, index, node));
-            this.nodeMap.put(node.getName(), node);
+            this.order.add(node);
         }
     }
 
@@ -110,17 +109,23 @@ public class PermutationSearch {
     public Graph search() {
         List<Node> prefix;
         if (!this.knowledge.isEmpty() && this.knowledge.getVariablesNotInTiers().isEmpty()) {
+            List<Node> order = new ArrayList<>(this.order);
+            this.order.clear();
             int start = 0;
             List<Node> suborder;
             for (int i = 0; i < this.knowledge.getNumTiers(); i++) {
                 prefix = new ArrayList<>(this.order);
                 List<String> tier = this.knowledge.getTier(i);
-                for (String name : tier) {
-                    this.order.add(this.nodeMap.get(name));
+
+                for (Node node : order) {
+                    String name = node.getName();
+                    if (!tier.contains(name)) continue;
+                    this.order.add(node);
                     if (!this.knowledge.isTierForbiddenWithin(i)) continue;
                     suborder = this.order.subList(start++, this.order.size());
-                    this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
+                    this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);;
                 }
+
                 if (this.knowledge.isTierForbiddenWithin(i)) continue;
                 suborder = this.order.subList(start, this.order.size());
                 this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
@@ -128,11 +133,20 @@ public class PermutationSearch {
             }
         } else {
             prefix = Collections.emptyList();
-            this.order.addAll(this.variables);
             this.suborderSearch.searchSuborder(prefix, this.order, this.gsts);
         }
 
         return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
+    }
+
+    public List<Node> getOrder() {
+        return this.order;
+    }
+
+    public void setOrder(List<Node> order) {
+        assert new HashSet<>(order).containsAll(this.variables);
+        this.order.clear();
+        this.order.addAll(order);
     }
 
     public GrowShrinkTree getGST(Node node) {

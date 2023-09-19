@@ -82,7 +82,7 @@ public class DirectLingam {
             R.put(this.variables.get(i), X[i]);
         }
 
-        List<Node> K = new ArrayList<>();
+        Set<Node> K = new HashSet<>();
         Graph g = new EdgeListGraph(this.variables);
 
         while (!U.isEmpty()) {
