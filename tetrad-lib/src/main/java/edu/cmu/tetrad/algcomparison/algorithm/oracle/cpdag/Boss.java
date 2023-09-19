@@ -72,6 +72,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             boss.setNumThreads(parameters.getInt(Params.NUM_THREADS));
             boss.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
+            boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
             PermutationSearch permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(this.knowledge);
 
@@ -115,6 +116,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         params.add(Params.TIME_LAG);
         params.add(Params.NUM_THREADS);
         params.add(Params.USE_DATA_ORDER);
+        params.add(Params.VERBOSE);
 
         return params;
     }

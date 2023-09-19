@@ -20,30 +20,26 @@ public class GrowShrinkTree {
         this.score = score;
         this.index = index;
         this.node = node;
+
         this.nodeIndex = index.get(node);
-        this.root = new GSTNode(this);
         this.required = new ArrayList<>();
         this.forbidden = new ArrayList<>();
+        this.root = new GSTNode(this);
     }
 
-    public double traceUnsafe(Set<Node> prefix, Set<Node> available) {
-        available.remove(this.node);
-        this.forbidden.forEach(available::remove);
-        return this.root.trace(prefix, available, new HashSet<>());
-    }
-
-    public double trace(Collection<Node> prefix, Collection<Node> all) {
+    public double trace(Set<Node> prefix, Set<Node> all) {
         Set<Node> available = new HashSet<>(all);
         available.remove(this.node);
-        this.forbidden.forEach(available::remove);
-        return this.root.trace(new HashSet<>(prefix), available, new HashSet<>());
+        available.removeAll(this.forbidden);
+        Set<Node> parents = new HashSet<>();
+        return this.root.trace(prefix, available, parents);
     }
 
-    public double trace(Collection<Node> prefix, Collection<Node> all, Set<Node> parents) {
+    public double trace(Set<Node> prefix, Set<Node> all, Set<Node> parents) {
         Set<Node> available = new HashSet<>(all);
         available.remove(this.node);
-        this.forbidden.forEach(available::remove);
-        return this.root.trace(new HashSet<>(prefix), available, parents);
+        available.removeAll(this.forbidden);
+        return this.root.trace(prefix, available, parents);
     }
 
     public Node getNode() {
@@ -52,9 +48,7 @@ public class GrowShrinkTree {
 
     public List<Node> getFirstLayer() {
         List<Node> firstLayer = new ArrayList<>();
-        for (GSTNode branch : this.root.branches) {
-            firstLayer.add(branch.getAdd());
-        }
+        for (GSTNode branch : this.root.branches) firstLayer.add(branch.getAdd());
         return firstLayer;
     }
 
@@ -91,9 +85,13 @@ public class GrowShrinkTree {
     }
 
     public void setKnowledge(List<Node> required, List<Node> forbidden) {
-        this.root = new GSTNode(this);
         this.required = required;
         this.forbidden = forbidden;
+        this.reset();
+    }
+
+    public void reset() {
+        this.root = new GSTNode(this);
     }
 
     private static class GSTNode implements Comparable<GSTNode> {
@@ -190,7 +188,6 @@ public class GrowShrinkTree {
                 Node add = branch.getAdd();
                 available.remove(add);
                 if (prefix.contains(add)) {
-                    prefix.remove(add);
                     parents.add(add);
                     return branch.trace(prefix, available, parents);
                 }
