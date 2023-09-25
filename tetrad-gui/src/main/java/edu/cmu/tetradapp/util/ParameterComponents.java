@@ -221,7 +221,8 @@ public final class ParameterComponents {
         return field;
     }
 
-    private static Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
+    private static Box
+    createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
         JComponent component;
         Object defaultValue = paramDesc.getDefaultValue();
         if (defaultValue instanceof Double) {
