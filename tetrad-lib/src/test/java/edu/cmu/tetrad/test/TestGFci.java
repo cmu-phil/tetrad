@@ -188,7 +188,7 @@ public class TestGFci {
                     10, 10, 10, false);
 
 //            Fci gfci = new Fci(new MsepTest(dag));
-            BFci gfci = new BFci(new MsepTest(dag), new GraphScore(dag));
+            GFci gfci = new GFci(new MsepTest(dag), new GraphScore(dag));
             gfci.setCompleteRuleSetUsed(true);
 //            gfci.setFaithfulnessAssumed(false);
             Graph pag1 = gfci.search();
