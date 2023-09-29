@@ -700,6 +700,7 @@ public class TestFges {
 
         // Build comparison graph.
         Graph answer = GraphUtils.convert(answerGraph);
+        answer = GraphUtils.replaceNodes(answer, input.getNodes());
 //        Graph answer = new PC(new IndTestMSep(input)).search();
 
 //        System.out.println("Input = " + input);

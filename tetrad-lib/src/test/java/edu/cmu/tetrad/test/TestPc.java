@@ -90,8 +90,7 @@ public class TestPc {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge(
-                knowledge);
+        checkWithKnowledge(knowledge);
     }
 
     @Test
@@ -202,6 +201,7 @@ public class TestPc {
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert("A---B,B-->C,D");
+        resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
 //        System.out.println("Knowledge = " + knowledge);
         System.out.println("True graph = " + graph);
