@@ -40,16 +40,12 @@ public class LayoutUtil {
             return;
         }
 
-
         int centerx = 120 + 7 * graph.getNumNodes();
         int centery = 120 + 7 * graph.getNumNodes();
         int radius = centerx - 50;
 
         List<Node> nodes = new ArrayList<>(graph.getNodes());
-        graph.paths().makeValidOrder(nodes);
-
-//        List<Node> nodes = graph.getNodes();
-//        Collections.sort(nodes);
+        Collections.sort(nodes);
 
         double rad = 6.28 / nodes.size();
         double phi = .75 * 6.28;    // start from 12 o'clock.
@@ -67,16 +63,14 @@ public class LayoutUtil {
 
     public static void squareLayout(Graph graph) {
         List<Node> nodes = new ArrayList<>(graph.getNodes());
-        graph.paths().makeValidOrder(nodes);
 
-//        Collections.sort(nodes);
+        Collections.sort(nodes);
 
         int bufferx = 70;
         int buffery = 50;
         int spacex = 70;
         int spacey = 50;
 
-//        int side = (int) ceil(nodes.size() / 4.0);
         int side = nodes.size() / 4;
 
         if (nodes.size() % 4 != 0) {
@@ -703,9 +697,7 @@ public class LayoutUtil {
             });
 
             for (List<Node> component1 : components) {
-//                List<Node> nodes = new ArrayList<>(graph.getNodes());
-                graph.paths().makeValidOrder(component1);
-
+                Collections.sort(component1);
                 layoutComponent(component1);
             }
         }
