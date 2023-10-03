@@ -317,11 +317,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     public final int hashCode() {
-
-        // Equality of nodes can only dependent on the object identity of the
-        // nodes, not on their name. Otherwise, the identity of an edge could be
-        // changed by changing the name of one of its nodes.
-        return 1;
+        return this.node1.hashCode() + this.node2.hashCode();
     }
 
     /**
