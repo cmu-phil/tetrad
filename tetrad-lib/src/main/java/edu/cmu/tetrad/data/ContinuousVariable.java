@@ -39,9 +39,9 @@ import java.util.Map;
  */
 public final class ContinuousVariable extends AbstractVariable implements Variable {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
-    /**
+/**
      * This is the value which represents missing data in data columns for this variable.
      */
     private static final double MISSING_VALUE = Double.NaN;
