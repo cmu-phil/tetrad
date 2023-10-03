@@ -581,7 +581,7 @@ public class StandardizedSemIm implements Simulator {
         if (latentDataSaved) {
             return fullDataSet;
         } else {
-            return DataTransforms.restrictToMeasured(fullDataSet);
+            return DataUtils.restrictToMeasured(fullDataSet);
         }
     }
 

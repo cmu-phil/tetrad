@@ -41,7 +41,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -90,8 +90,7 @@ public class TestPc {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge(
-                knowledge);
+        checkWithKnowledge(knowledge);
     }
 
     @Test
@@ -202,6 +201,7 @@ public class TestPc {
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert("A---B,B-->C,D");
+        resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
 //        System.out.println("Knowledge = " + knowledge);
         System.out.println("True graph = " + graph);

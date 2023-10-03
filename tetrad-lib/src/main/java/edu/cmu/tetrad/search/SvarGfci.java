@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.BdeuScore;
@@ -63,7 +62,7 @@ import java.util.Set;
  * @see Knowledge
  * @see SvarFci
  */
-public final class SvarGfci implements IGraphSearch, HasKnowledge {
+public final class SvarGfci implements IGraphSearch {
 
     // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
@@ -169,11 +168,6 @@ public final class SvarGfci implements IGraphSearch, HasKnowledge {
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
 
         return this.graph;
-    }
-
-    @Override
-    public Knowledge getKnowledge() {
-        return this.knowledge;
     }
 
     /**

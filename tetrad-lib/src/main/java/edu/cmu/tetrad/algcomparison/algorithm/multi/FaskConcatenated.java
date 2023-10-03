@@ -55,10 +55,10 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
             List<DataSet> centered = new ArrayList<>();
 
             for (DataModel dataSet : dataSets) {
-                centered.add(DataTransforms.standardizeData((DataSet) dataSet));
+                centered.add(DataUtils.standardizeData((DataSet) dataSet));
             }
 
-            DataSet dataSet = DataTransforms.concatenate(centered);
+            DataSet dataSet = DataUtils.concatenate(centered);
 
             dataSet.setNumberFormat(new DecimalFormat("0.000000000000000000"));
 

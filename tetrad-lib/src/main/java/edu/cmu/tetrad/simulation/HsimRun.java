@@ -3,7 +3,10 @@ package edu.cmu.tetrad.simulation;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataWriter;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -49,7 +52,7 @@ public class HsimRun {
             System.out.println(estGraph);
 
             Graph estCPDAG = new EdgeListGraph(estGraph);
-            Graph estGraphDAG = GraphTransforms.dagFromCPDAG(estCPDAG);
+            Graph estGraphDAG = GraphSearchUtils.dagFromCPDAG(estCPDAG);
             Dag estDAG = new Dag(estGraphDAG);
 
             //===========Identify the nodes to be resimulated===========

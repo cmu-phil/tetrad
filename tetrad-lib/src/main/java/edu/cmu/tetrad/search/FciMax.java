@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -65,7 +64,7 @@ import java.util.concurrent.RecursiveTask;
  * @see FciOrient
  * @see Knowledge
  */
-public final class FciMax implements IGraphSearch, HasKnowledge {
+public final class FciMax implements IGraphSearch {
     private final IndependenceTest independenceTest;
     private final TetradLogger logger = TetradLogger.getInstance();
     private SepsetMap sepsets;

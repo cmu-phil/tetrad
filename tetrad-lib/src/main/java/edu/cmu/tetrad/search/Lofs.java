@@ -364,7 +364,7 @@ public class Lofs {
     }
 
     private void ruleR1(Graph skeleton, Graph graph, List<Node> nodes) {
-        List<DataSet> centeredData = DataTransforms.center(this.dataSets);
+        List<DataSet> centeredData = DataUtils.center(this.dataSets);
         setDataSets(centeredData);
 
         for (Node node : nodes) {
@@ -442,7 +442,7 @@ public class Lofs {
     }
 
     private void ruleR2(Graph skeleton, Graph graph) {
-        List<DataSet> standardized = DataTransforms.standardizeData(this.dataSets);
+        List<DataSet> standardized = DataUtils.standardizeData(this.dataSets);
         setDataSets(standardized);
 
         Set<Edge> edgeList1 = skeleton.getEdges();
@@ -693,7 +693,7 @@ public class Lofs {
     }
 
     private void ruleR3(Graph graph) {
-        List<DataSet> standardized = DataTransforms.standardizeData(this.dataSets);
+        List<DataSet> standardized = DataUtils.standardizeData(this.dataSets);
         setDataSets(standardized);
 
         Set<Edge> edgeList1 = graph.getEdges();
@@ -789,8 +789,8 @@ public class Lofs {
     }
 
     private Graph entropyBased(Graph graph) {
-        DataSet dataSet = DataTransforms.concatenate(this.dataSets);
-        dataSet = DataTransforms.standardizeData(dataSet);
+        DataSet dataSet = DataUtils.concatenate(this.dataSets);
+        dataSet = DataUtils.standardizeData(dataSet);
         Graph _graph = new EdgeListGraph(graph.getNodes());
 
         for (Edge edge : graph.getEdges()) {
@@ -833,9 +833,9 @@ public class Lofs {
     }
 
     private Graph tanhGraph(Graph graph) {
-        DataSet dataSet = DataTransforms.concatenate(this.dataSets);
+        DataSet dataSet = DataUtils.concatenate(this.dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
-        dataSet = DataTransforms.standardizeData(dataSet);
+        dataSet = DataUtils.standardizeData(dataSet);
         double[][] data = dataSet.getDoubleData().transpose().toArray();
         Graph _graph = new EdgeListGraph(graph.getNodes());
         List<Node> nodes = dataSet.getVariables();
@@ -895,9 +895,9 @@ public class Lofs {
 
     // @param empirical True if the skew signs are estimated empirically.
     private Graph skewGraph(Graph graph, boolean empirical) {
-        DataSet dataSet = DataTransforms.concatenate(this.dataSets);
+        DataSet dataSet = DataUtils.concatenate(this.dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
-        dataSet = DataTransforms.standardizeData(dataSet);
+        dataSet = DataUtils.standardizeData(dataSet);
         double[][] data = dataSet.getDoubleData().transpose().toArray();
         Graph _graph = new EdgeListGraph(graph.getNodes());
         List<Node> nodes = dataSet.getVariables();
@@ -964,9 +964,9 @@ public class Lofs {
     private Graph robustSkewGraph(Graph graph, boolean empirical) {
         // DataUtils.standardizeData(dataSet));
         List<DataSet> _dataSets = new ArrayList<>(this.dataSets);
-        DataSet dataSet = DataTransforms.concatenate(_dataSets);
+        DataSet dataSet = DataUtils.concatenate(_dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
-        dataSet = DataTransforms.standardizeData(dataSet);
+        dataSet = DataUtils.standardizeData(dataSet);
         double[][] data = dataSet.getDoubleData().transpose().toArray();
         List<Node> nodes = dataSet.getVariables();
         Map<Node, Integer> nodesHash = new HashMap<>();
@@ -1032,9 +1032,9 @@ public class Lofs {
 
     // cutoff is NaN if no thresholding is to be done, otherwise a threshold between 0 and 1.
     private Graph patelTauOrientation(Graph graph, double cutoff) {
-        List<DataSet> centered = DataTransforms.center(this.dataSets);
-        DataSet concat = DataTransforms.concatenate(centered);
-        DataSet dataSet = DataTransforms.standardizeData(concat);
+        List<DataSet> centered = DataUtils.center(this.dataSets);
+        DataSet concat = DataUtils.concatenate(centered);
+        DataSet dataSet = DataUtils.standardizeData(concat);
 
         Graph _graph = new EdgeListGraph(graph.getNodes());
 

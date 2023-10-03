@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.cmu-phil</groupId>
     <artifactId>tetrad</artifactId>
-    <version>7.5.1-SNAPSHOT</version>
+    <version>7.5.0</version>
     <packaging>pom</packaging>
 
     <name>Tetrad Project</name>
@@ -193,6 +193,11 @@
     </properties>
 
     <dependencies>
+        <!--        <dependency>-->
+        <!--            <groupId>org.slf4j</groupId>-->
+        <!--            <artifactId>slf4j-log4j12</artifactId>-->
+        <!--            <version>1.7.36</version>-->
+        <!--        </dependency>-->
         <dependency> <!--For java annotations used by annotated algorithms-->
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>

@@ -1173,7 +1173,7 @@ public final class SemIm implements Im, ISemIm {
             }
         }
 
-        return latentDataSaved ? fullData : DataTransforms.restrictToMeasured(fullData);
+        return latentDataSaved ? fullData : DataUtils.restrictToMeasured(fullData);
     }
 
 //    /**
@@ -1266,7 +1266,7 @@ public final class SemIm implements Im, ISemIm {
         if (latentDataSaved) {
             return fullDataSet;
         } else {
-            return DataTransforms.restrictToMeasured(fullDataSet);
+            return DataUtils.restrictToMeasured(fullDataSet);
         }
     }
 
@@ -1441,7 +1441,7 @@ public final class SemIm implements Im, ISemIm {
         if (latentDataSaved) {
             return fullDataSet;
         } else {
-            return DataTransforms.restrictToMeasured(fullDataSet);
+            return DataUtils.restrictToMeasured(fullDataSet);
         }
     }
 
@@ -1511,7 +1511,7 @@ public final class SemIm implements Im, ISemIm {
         if (latentDataSaved) {
             return fullDataSet;
         } else {
-            return DataTransforms.restrictToMeasured(fullDataSet);
+            return DataUtils.restrictToMeasured(fullDataSet);
         }
     }
 

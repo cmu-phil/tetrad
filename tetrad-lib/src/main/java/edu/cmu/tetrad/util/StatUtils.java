@@ -1310,7 +1310,7 @@ public final class StatUtils {
 
         kurt = kurt / N;
 
-        kurt = kurt / (variance * variance) - 3.0;
+        kurt = kurt / (variance * variance);
 
         return kurt;
     }

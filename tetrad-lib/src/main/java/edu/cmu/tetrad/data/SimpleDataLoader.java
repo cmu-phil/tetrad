@@ -3,6 +3,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.pitt.dbmi.data.reader.ContinuousData;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -27,32 +28,21 @@ public class SimpleDataLoader {
      * @param missingValueMarker The missing value marker as a string--e.g., "NA".
      * @param hasHeader          True if the first row of the data contains variable names.
      * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
-     * @param excludeFirstColumn If the first column should be excluded from the data.
      * @return The loaded DataSet.
      * @throws IOException If an error occurred in reading the file.
      */
     @NotNull
     public static DataSet loadContinuousData(File file, String commentMarker, char quoteCharacter,
-                                             String missingValueMarker, boolean hasHeader, Delimiter delimiter,
-                                             boolean excludeFirstColumn)
+                                             String missingValueMarker, boolean hasHeader, Delimiter delimiter)
             throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
-        DataColumn[] dataColumns = columnReader.readInDataColumns(excludeFirstColumn ?
-                new int[]{1} : new int[]{}, false);
-
-        columnReader.setCommentMarker(commentMarker);
-
-        TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
-
-        // Need to specify commentMarker, .... again to the TabularDataFileReader
+        ContinuousTabularDatasetFileReader dataReader
+                = new ContinuousTabularDatasetFileReader(file.toPath(), delimiter);
         dataReader.setCommentMarker(commentMarker);
-        dataReader.setMissingDataMarker(missingValueMarker);
         dataReader.setQuoteCharacter(quoteCharacter);
-
-        Data data = dataReader.read(dataColumns, hasHeader);
-        DataModel dataModel = DataConvertUtils.toDataModel(data);
-
-        return (DataSet) dataModel;
+        dataReader.setMissingDataMarker(missingValueMarker);
+        dataReader.setHasHeader(hasHeader);
+        ContinuousData data = (ContinuousData) dataReader.readInData();
+        return (DataSet) DataConvertUtils.toContinuousDataModel(data);
     }
 
     /**
@@ -64,18 +54,15 @@ public class SimpleDataLoader {
      * @param missingValueMarker The missing value marker as a string--e.g., "NA".
      * @param hasHeader          True if the first row of the data contains variable names.
      * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
-     * @param excludeFirstColumn If the first columns should be excluded from the data.
      * @return The loaded DataSet.
      * @throws IOException If an error occurred in reading the file.
      */
     @NotNull
     public static DataSet loadDiscreteData(File file, String commentMarker, char quoteCharacter,
-                                           String missingValueMarker, boolean hasHeader, Delimiter delimiter,
-                                           boolean excludeFirstColumn)
+                                           String missingValueMarker, boolean hasHeader, Delimiter delimiter)
             throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
-        DataColumn[] dataColumns = columnReader.readInDataColumns(excludeFirstColumn ?
-                new int[]{1} : new int[]{}, true);
+        DataColumn[] dataColumns = columnReader.readInDataColumns(new int[]{1}, true);
 
         columnReader.setCommentMarker(commentMarker);
 
@@ -100,21 +87,18 @@ public class SimpleDataLoader {
      * @param quoteCharacter     The quote character, e.g., '\"'.
      * @param missingValueMarker The missing value marker as a string--e.g., "NA".
      * @param hasHeader          True if the first row of the data contains variable names.
+     * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
      * @param maxNumCategories   The maximum number of distinct entries in a columns alloed in order for the column to
      *                           be parsed as discrete.
-     * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
-     * @param excludeFirstColumn If the first columns should be excluded from the data set.
      * @return The loaded DataSet.
      * @throws IOException If an error occurred in reading the file.
      */
     @NotNull
     public static DataSet loadMixedData(File file, String commentMarker, char quoteCharacter,
-                                        String missingValueMarker, boolean hasHeader, int maxNumCategories,
-                                        Delimiter delimiter, boolean excludeFirstColumn)
+                                        String missingValueMarker, boolean hasHeader, int maxNumCategories, Delimiter delimiter)
             throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
-        DataColumn[] dataColumns = columnReader.readInDataColumns(excludeFirstColumn ?
-                new int[]{1} : new int[]{}, false);
+        DataColumn[] dataColumns = columnReader.readInDataColumns(new int[]{1}, false);
 
         columnReader.setCommentMarker(commentMarker);
 

@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -72,7 +71,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see Fges
  * @see Knowledge
  */
-public final class GFci implements IGraphSearch, HasKnowledge {
+public final class GFci implements IGraphSearch {
     private final IndependenceTest independenceTest;
     private final TetradLogger logger = TetradLogger.getInstance();
     private final Score score;
@@ -125,31 +124,23 @@ public final class GFci implements IGraphSearch, HasKnowledge {
         fges.setOut(this.out);
         graph = fges.search();
 
-        Graph fgesGraph = new EdgeListGraph(graph);
+        Knowledge knowledge2 = new Knowledge(knowledge);
+        Graph referenceDag = new EdgeListGraph(graph);
 
-        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null,
-                this.depth, getKnowledge());
-        gfciExtraEdgeRemovalStep(graph, fgesGraph, nodes, sepsets);
-        GraphUtils.gfciR0(graph, fgesGraph, sepsets, getKnowledge());
-
-        if (this.possibleMsepSearchDone) {
-            graph.paths().removeByPossibleMsep(independenceTest, null);
-        }
+        // GFCI extra edge removal step...
+        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge);
 
         FciOrient fciOrient = new FciOrient(sepsets);
-
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(getKnowledge());
+        fciOrient.setVerbose(verbose);
+        fciOrient.setKnowledge(knowledge2);
 
-//        fciOrient.fciOrientbk(getKnowledge(), graph, graph.getNodes());
         fciOrient.doFinalOrientation(graph);
-
-        GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
-
         return graph;
     }
 

@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -45,7 +48,7 @@ public class Ida {
      * @param possibleCauses The possible causes to be considered.
      */
     public Ida(DataSet dataSet, Graph cpdag, List<Node> possibleCauses) {
-        this.dataSet = DataTransforms.convertNumericalDiscreteToContinuous(dataSet);
+        this.dataSet = DataUtils.convertNumericalDiscreteToContinuous(dataSet);
         this.pattern = cpdag;
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
         this.possibleCauses = possibleCauses;

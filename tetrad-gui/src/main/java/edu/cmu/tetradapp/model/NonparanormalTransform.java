@@ -41,7 +41,7 @@ public class NonparanormalTransform extends DataWrapper {
             throw new IllegalArgumentException("Data model must be a tabular continuous data set, not a covariance matrix.");
         }
 
-        DataSet nonparanormalTransformed = DataTransforms.getNonparanormalTransformed((DataSet) dataModel);
+        DataSet nonparanormalTransformed = DataUtils.getNonparanormalTransformed((DataSet) dataModel);
         nonparanormalTransformed.setKnowledge(dataModel.getKnowledge().copy());
 
         setDataModel(nonparanormalTransformed);

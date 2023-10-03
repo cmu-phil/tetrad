@@ -105,7 +105,7 @@ public class PcLingam {
 
         TetradLogger.getInstance().log("info", "Making list of all dags in CPDAG...");
 
-        List<Graph> dags = GraphTransforms.getAllGraphsByDirectingUndirectedEdges(_cpdag);
+        List<Graph> dags = GraphSearchUtils.getAllGraphsByDirectingUndirectedEdges(_cpdag);
 
         TetradLogger.getInstance().log("normalityTests", "Anderson Darling P value for Variables\n");
         NumberFormat nf = new DecimalFormat("0.0000");

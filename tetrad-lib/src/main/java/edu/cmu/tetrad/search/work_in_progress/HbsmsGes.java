@@ -62,7 +62,7 @@ public final class HbsmsGes implements Hbsms {
         DagInCpcagIterator iterator = new DagInCpcagIterator(graph, getKnowledge(), allowArbitraryOrientations,
                 allowNewColliders);
         graph = iterator.next();
-        graph = GraphTransforms.cpdagForDag(graph);
+        graph = GraphSearchUtils.cpdagForDag(graph);
 
         if (GraphUtils.containsBidirectedEdge(graph)) {
             throw new IllegalArgumentException("Contains bidirected edge.");
@@ -166,7 +166,7 @@ public final class HbsmsGes implements Hbsms {
     }
 
     public Score scoreGraph(Graph graph) {
-        Graph dag = GraphTransforms.dagFromCPDAG(graph, getKnowledge());
+        Graph dag = GraphSearchUtils.dagFromCPDAG(graph, getKnowledge());
 
         this.scorer.score(dag);
         return new Score(this.scorer);

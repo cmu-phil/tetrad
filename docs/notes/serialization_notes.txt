@@ -1,0 +1,87 @@
+Stabilizing Saving and Loading for Tetrad.
+
+Since we are using binary serialization to save out and load up Tetrad sessions
+(mainly because it's fast at loading large sessions), a strategy needs to be adopted
+to make sure future versions of Tetrad will be able to load sessions saved out with
+previous "stable" versions of Tetrad.
+
+This strategy needs to solve a number of problems:
+
+P1. A variety of options are available in the Serialization API, none of which are
+extremely good, but all of which are confusing in practice.
+
+P2. Checking whether old sessions will load manually is cumbersome, and even if
+it succeeds, offers no assurance that arbitrary old sessions will load.
+
+P3. Developers can easily make changes to the code that will break serialization
+for other users trying to load in sessions from old versions, with no red flags
+being raised when new versions are published.
+
+P4. Even if we aim for backward compatibility, still the user has no idea what
+version a session was saved out in and what version of the software they have.
+
+The first problem (P1) is solved by making it a policy to use default serialization,
+with readObject() methods mainly just to check the coherence of objects on
+deserialization. Look at any TetradSerializable class with non-static, non-transient
+fields for an example. Classes implement TetradSerializable (without
+implementing TetradSerializableExcluded) if they're in the Tetrad API and are
+being supported for serialization. See the javadocs for TetradSerializable and
+TetradSerializableExcluded. It is also being adopted as a policy that all
+serializable fields of serial classes be given a @serial tag in their javadoc,
+in accordance with the Serialization Spec, and that these tags contain information
+about the allowable range of the field.
+
+The second problem (P2) is solved by identifying a set of classes TS
+TetradSerializable but not TetradSerializableExcluded) and making sure exemplars
+of each such class can be serialized out and deserialized back in for each
+previous stable version with respect to the current version. Exemplars are
+generated for each such (non-abstract, non-interface) class by adding an
+obligatory serializableInstance() static constructor that generates a simple
+instance of that class for test purposes. Again, see any class in TS for an
+example, and read the javadoc for serializableInstance(). The reason this
+strategy generalizes is that the serialization algorithm is recursive, so if all
+serializable fields of an nodes serialize and deserialize properly the nodes
+will serialize and deserialize properly as well. By checking classes in TS for
+this property, all possible sessions are by implication checked.
+
+The third problem (P3) is addressed in part through the test described in the last
+paragraph. Zipped archives of these serialized exemplars are saved out in the
+archives directory from previous published versions. Whenever unit
+tests are run, these archives are unzipped, and all of the serialized objects they
+contain are deserialized. If it's ever the case that a class has been renamed or
+moved, or a field test for a field by name 'n' has been changed to an incompatible
+test (or anything else that would prevent bare deserialization of an nodes from
+finishing), an exception will be thrown with a descriptive message. The only way
+an old session might not deserialize with the current version of Tetrad if this test
+passes is if some nodes it contains is incompatible with some check that's
+included in the readObject() method, so it's important that objects be self
+consistent in this sense.
+
+It's possible of course that sessions may load in but incorrectly. The most
+important cases of this are when a variable is renamed. An extra condition is
+added, therefore, to prevent variables from being renamed, so that that fields
+from old sessions may never be removed. This is checked automatically by saving
+out the list of field names for each class when examplar archives are created.
+When an exemplar archive is unzipped, this list is read in, and each class is
+checked to make each field name in the list is the name of some field in the class.
+If this fails, the user is asked to put the field back (i.e. add it again or
+restore the name of the field that caused the problem). Note that if field
+names are the same, between a new version and an old version, their types must
+be compatible, or the archive deserialization test will throw an exception.
+
+There are many ways for the current version of Tetrad to misinterpretation coltData
+from old sessions by, e.g., switching two fields of the same test, ignoring
+coltData from the objects that used to contain it, and so on. These more sophisticated
+methods of misinterpreting old sessions cannot generally be detected by an automatic
+algorithm, or at least not in any sensible way. The programmer just has to watch
+out for them and perhaps add specific tests for them. For instance, if the
+programmer decides to use a new test of coltData set for a class, then the old coltData
+set needs to be converted to the new coltData test in order to make sure old sessions
+will load.
+
+The last problem (P4) is solved by defining a test called "TetradSession" that
+contains a SessionWrapper in addition to some metadata, such as version number,
+and by adding up-to-date version numbers (automatically stamped) to the "About
+Tetrad" menu item.
+
+Joe Ramsey, jdramsey@andrew.cmu.edu

@@ -156,11 +156,11 @@ public class RBExperiments {
         // simulate data from instantiated model
         DataSet fullData = im.simulateData(numCases, /*round * 1000000 + 71512,*/ true);
         refineData(fullData);
-        DataSet data = DataTransforms.restrictToMeasured(fullData);
+        DataSet data = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
 
-        Graph PAG_True = GraphTransforms.dagToPag(dag);
+        Graph PAG_True = GraphSearchUtils.dagToPag(dag);
 
         PAG_True = GraphUtils.replaceNodes(PAG_True, data.getVariables());
 
@@ -187,7 +187,7 @@ public class RBExperiments {
 
         // learn structure of constraints using empirical data
         Graph depCPDAG = runFGS(depData);
-        Graph estDepBN = GraphTransforms.dagFromCPDAG(depCPDAG);
+        Graph estDepBN = GraphSearchUtils.dagFromCPDAG(depCPDAG);
         System.out.println("estDepBN: " + estDepBN.getEdges());
         out.println("DepGraph(nodes,edges):" + estDepBN.getNumNodes() + "," + estDepBN.getNumEdges());
         System.out.println("Dependency graph done!");
@@ -369,7 +369,7 @@ public class RBExperiments {
         System.out.println("HCopy size: " + HCopy.size());
 
         for (int b = 0; b < numBootstrapSamples; b++) {
-            DataSet bsData = DataTransforms.getBootstrapSample(data, data.getNumRows());
+            DataSet bsData = DataUtils.getBootstrapSample(data, data.getNumRows());
             IndTestProbabilistic bsTest = new IndTestProbabilistic(bsData);
             bsTest.setThreshold(threshold);
             for (IndependenceFact f : HCopy.keySet()) {

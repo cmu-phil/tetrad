@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -69,7 +68,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see Knowledge
  * @see FciOrient
  */
-public final class SpFci implements IGraphSearch, HasKnowledge {
+public final class SpFci implements IGraphSearch {
 
     // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
@@ -135,7 +134,7 @@ public final class SpFci implements IGraphSearch, HasKnowledge {
         }
 
         Knowledge knowledge2 = new Knowledge(knowledge);
-        addForbiddenReverseEdgesForDirectedEdges(GraphTransforms.cpdagForDag(graph), knowledge2);
+        addForbiddenReverseEdgesForDirectedEdges(GraphSearchUtils.cpdagForDag(graph), knowledge2);
 
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);

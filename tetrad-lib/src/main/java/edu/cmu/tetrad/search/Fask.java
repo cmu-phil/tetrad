@@ -21,9 +21,8 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
@@ -135,7 +134,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @see Knowledge
  * @see Lofs
  */
-public final class Fask implements IGraphSearch, HasKnowledge {
+public final class Fask implements IGraphSearch {
 
 
     // The score to be used for the FAS adjacency search.
@@ -251,7 +250,7 @@ public final class Fask implements IGraphSearch, HasKnowledge {
         long start = MillisecondTimes.timeMillis();
         NumberFormat nf = new DecimalFormat("0.000");
 
-        DataSet dataSet = DataTransforms.standardizeData(this.dataSet);
+        DataSet dataSet = DataUtils.standardizeData(this.dataSet);
 
         List<Node> variables = dataSet.getVariables();
         double[][] lrs = getLrScores(); // Sets D.
@@ -477,7 +476,7 @@ public final class Fask implements IGraphSearch, HasKnowledge {
      */
     public double[][] getLrScores() {
         List<Node> variables = this.dataSet.getVariables();
-        double[][] D = DataTransforms.standardizeData(this.dataSet).getDoubleData().transpose().toArray();
+        double[][] D = DataUtils.standardizeData(this.dataSet).getDoubleData().transpose().toArray();
 
         double[][] lr = new double[variables.size()][variables.size()];
 

@@ -219,7 +219,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      * @return This data
      */
     public DataSet getData() {
-        return DataTransforms.concatenate(this.dataSets);
+        return DataUtils.concatenate(this.dataSets);
     }
 
     /**
@@ -232,10 +232,10 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         List<DataSet> _dataSets = new ArrayList<>();
 
         for (DataSet d : this.dataSets) {
-            _dataSets.add(DataTransforms.standardizeData(d));
+            _dataSets.add(DataUtils.standardizeData(d));
         }
 
-        return new CovarianceMatrix(DataTransforms.concatenate(_dataSets));
+        return new CovarianceMatrix(DataUtils.concatenate(_dataSets));
     }
 
     /**

@@ -487,8 +487,7 @@ public final class LoadDataSettings extends JPanel {
         // Otherwise, select the inferred delimiter from ComboBox and
         // check the singleCharDelimiterRadioButton
         // Only infer delimiter based on the first file - Zhou
-//        char inferredDelimiter = getInferredDelimiter(this.files.get(0));
-        char inferredDelimiter = '\t';
+        char inferredDelimiter = getInferredDelimiter(this.files.get(0));
 
         switch (inferredDelimiter) {
             case ',':

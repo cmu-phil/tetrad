@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -83,7 +84,7 @@ public final class HbsmsBeam implements Hbsms {
     public Graph search() {
         EdgeListGraph _graph = new EdgeListGraph(this.externalGraph);
         addRequiredEdges(_graph);
-        Graph bestGraph = GraphTransforms.dagFromCPDAG(_graph);
+        Graph bestGraph = GraphSearchUtils.dagFromCPDAG(_graph);
 
         if (getGraph().getNumEdges() == 0) {
             System.out.println("Found one!");
@@ -105,7 +106,7 @@ public final class HbsmsBeam implements Hbsms {
 
         if (this.trueModel != null) {
             this.trueModel = GraphUtils.replaceNodes(this.trueModel, bestGraph.getNodes());
-            this.trueModel = GraphTransforms.cpdagForDag(this.trueModel);
+            this.trueModel = GraphSearchUtils.cpdagForDag(this.trueModel);
         }
 
         System.out.println("Initial Score = " + this.nf.format(bestScore));

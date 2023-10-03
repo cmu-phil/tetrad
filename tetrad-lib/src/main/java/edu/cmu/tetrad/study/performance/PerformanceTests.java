@@ -45,7 +45,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * Runs some basic performance tests of various algorithm.
@@ -290,7 +290,7 @@ public class PerformanceTests {
 
         this.out.println("Total elapsed (cov + PC-Stable) " + (time4 - time2) + " ms");
 
-        GraphSearchUtils.graphComparison(GraphTransforms.cpdagForDag(graph), outGraph, this.out);
+        GraphSearchUtils.graphComparison(GraphSearchUtils.cpdagForDag(graph), outGraph, this.out);
 
         this.out.close();
     }
@@ -401,7 +401,7 @@ public class PerformanceTests {
 
         this.out.println("Total elapsed (cov + PC-Stable) " + (time4 - time2) + " ms");
 
-        Graph trueCPDAG = GraphTransforms.cpdagForDag(dag);
+        Graph trueCPDAG = GraphSearchUtils.cpdagForDag(dag);
 
         System.out.println("# edges in true CPDAG = " + trueCPDAG.getNumEdges());
         System.out.println("# edges in est CPDAG = " + estCPDAG.getNumEdges());
@@ -464,7 +464,7 @@ public class PerformanceTests {
 
         this.out.println("Total elapsed (cov + FGES) " + (time4 - time2) + " ms");
 
-        Graph trueCPDAG = GraphTransforms.cpdagForDag(dag);
+        Graph trueCPDAG = GraphSearchUtils.cpdagForDag(dag);
 
         System.out.println("# edges in true CPDAG = " + trueCPDAG.getNumEdges());
         System.out.println("# edges in est CPDAG = " + estCPDAG.getNumEdges());
@@ -552,7 +552,7 @@ public class PerformanceTests {
 
         this.out.println("Total elapsed (cov + PC-Stable) " + (time4 - time2) + " ms");
 
-        GraphSearchUtils.graphComparison(GraphTransforms.cpdagForDag(graph), outGraph, this.out);
+        GraphSearchUtils.graphComparison(GraphSearchUtils.cpdagForDag(graph), outGraph, this.out);
 
         this.out.close();
     }
@@ -623,7 +623,7 @@ public class PerformanceTests {
 
         this.out.println("Total elapsed (cov + CPC-Stable) " + (time4 - time2) + " ms");
 
-        Graph trueCPDAG = GraphTransforms.cpdagForDag(graph);
+        Graph trueCPDAG = GraphSearchUtils.cpdagForDag(graph);
 
         GraphSearchUtils.graphComparison(trueCPDAG, outGraph, this.out);
 
@@ -751,7 +751,7 @@ public class PerformanceTests {
 
         DataSet data = simulator.simulateDataFisher(numCases);
 
-        data = DataTransforms.restrictToMeasured(data);
+        data = DataUtils.restrictToMeasured(data);
 
         System.out.println("Finishing simulation");
 
@@ -861,7 +861,7 @@ public class PerformanceTests {
 
             System.out.println("Calculating CPDAG for DAG");
 
-            Graph CPDAG = GraphTransforms.cpdagForDag(dag);
+            Graph CPDAG = GraphSearchUtils.cpdagForDag(dag);
 
             List<Node> vars = dag.getNodes();
 
@@ -1065,7 +1065,7 @@ public class PerformanceTests {
 
         System.out.println("Calculating CPDAG for DAG");
 
-        Graph CPDAG = GraphTransforms.cpdagForDag(dag);
+        Graph CPDAG = GraphSearchUtils.cpdagForDag(dag);
 
         int[] tiers = new int[dag.getNumNodes()];
 
@@ -1353,7 +1353,7 @@ public class PerformanceTests {
 //            dagToPag.setMaxPathLength(maxPathLength);
 //            Graph truePag = dagToPag.convert();
 
-            Graph truePag = GraphTransforms.dagToPag(dag);
+            Graph truePag = GraphSearchUtils.dagToPag(dag);
 
             System.out.println("True PAG_of_the_true_DAG done");
 
@@ -1366,7 +1366,7 @@ public class PerformanceTests {
 
             DataSet data = simulator.simulateDataFisher(numCases);
 
-            data = DataTransforms.restrictToMeasured(data);
+            data = DataUtils.restrictToMeasured(data);
 
             System.out.println("Finishing simulation");
 
@@ -1484,7 +1484,7 @@ public class PerformanceTests {
 
         System.out.println("PC graph = " + left);
 
-        Graph top = GraphTransforms.cpdagForDag(dag);
+        Graph top = GraphSearchUtils.cpdagForDag(dag);
 
         System.out.println("DAG to CPDAG graph = " + top);
 
@@ -1534,7 +1534,7 @@ public class PerformanceTests {
 
         System.out.println("Graph done");
 
-        Graph left = GraphTransforms.cpdagForDag(dag);//  pc1.search();
+        Graph left = GraphSearchUtils.cpdagForDag(dag);//  pc1.search();
 
         System.out.println("First FAS graph = " + left);
 

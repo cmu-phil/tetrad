@@ -49,18 +49,12 @@ public class RemoveConstantColumnsWrapper extends DataWrapper {
         }
 
 
-        DataSet filter = removeConstantColumns((DataSet) model);
-        this.setDataModel(filter);
+        DataFilter interpolator = new RemoveConstantColumnsDataFilter();
+        this.setDataModel(interpolator.filter((DataSet) model));
         this.setSourceGraph(data.getSourceGraph());
 
         LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", getDataModelList());
 
-    }
-
-    public static DataSet removeConstantColumns(DataSet model) {
-        DataFilter interpolator = new RemoveConstantColumnsDataFilter();
-        DataSet filter = interpolator.filter(model);
-        return filter;
     }
 
     /**

@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -29,8 +28,10 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.ScoredGraph;
 import edu.cmu.tetrad.search.utils.Bes;
 import edu.cmu.tetrad.search.utils.DagScorer;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -83,7 +84,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Sp
  * @see Knowledge
  */
-public final class FgesMb implements DagScorer, HasKnowledge {
+public final class FgesMb implements DagScorer {
     public enum TrimmingStyle {
         NONE, ADJACENT_TO_TARGETS, MARKOV_BLANKET_GRAPH, SEMIDIRECTED_PATHS_TO_TARGETS
     }
@@ -231,7 +232,7 @@ public final class FgesMb implements DagScorer, HasKnowledge {
             this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-        this.modelScore = scoreDag(GraphTransforms.dagFromCPDAG(graph), true);
+        this.modelScore = scoreDag(GraphSearchUtils.dagFromCPDAG(graph), true);
         graph = GraphUtils.trimGraph(targets, graph, trimmingStyle);
         return graph;
     }

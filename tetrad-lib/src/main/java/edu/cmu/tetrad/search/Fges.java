@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -29,6 +28,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.ScoredGraph;
 import edu.cmu.tetrad.search.utils.Bes;
 import edu.cmu.tetrad.search.utils.DagScorer;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -83,7 +83,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Sp
  * @see Knowledge
  */
-public final class Fges implements IGraphSearch, DagScorer, HasKnowledge {
+public final class Fges implements IGraphSearch, DagScorer {
     private final Set<Node> emptySet = new HashSet<>();
     private final int[] count = new int[1];
     private final int depth = 10000;
@@ -241,7 +241,7 @@ public final class Fges implements IGraphSearch, DagScorer, HasKnowledge {
             this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-        this.modelScore = scoreDag(GraphTransforms.dagFromCPDAG(graph), true);
+        this.modelScore = scoreDag(GraphSearchUtils.dagFromCPDAG(graph), true);
 
         return graph;
     }

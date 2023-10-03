@@ -129,7 +129,22 @@ public class SaveGraph extends AbstractAction {
                 return;
             }
 
-            saveGraphJson(graph, file);
+            try {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String text = gson.toJson(graph);
+
+                PrintWriter out = new PrintWriter(file);
+                out.println(text);
+                Preferences.userRoot().put("fileSaveLocation", file.getParent());
+                out.close();
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
+                throw new RuntimeException("Not a directed graph.", e1);
+            } catch (IllegalArgumentException e1) {
+
+                // Probably not a directed graph.
+                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+            }
         } else if (this.type == Type.dot) {
             File file = EditorUtils.getSaveFile("graph", "dot", parent, false, this.title);
 
@@ -199,25 +214,6 @@ public class SaveGraph extends AbstractAction {
                 // Probably not a directed graph.
                 JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
             }
-        }
-    }
-
-    private void saveGraphJson(Graph graph, File file) {
-        try {
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            String text = gson.toJson(graph);
-
-            PrintWriter out = new PrintWriter(file);
-            out.println(text);
-            Preferences.userRoot().put("fileSaveLocation", file.getParent());
-            out.close();
-        } catch (FileNotFoundException e1) {
-            e1.printStackTrace();
-            throw new RuntimeException("Not a directed graph.", e1);
-        } catch (IllegalArgumentException e1) {
-
-            // Probably not a directed graph.
-            JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
         }
     }
 

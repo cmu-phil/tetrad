@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -62,7 +61,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see FciOrient
  * @see Knowledge
  */
-public final class GraspFci implements IGraphSearch, HasKnowledge {
+public final class GraspFci implements IGraphSearch {
 
     // The conditional independence test.
     private final IndependenceTest independenceTest;
@@ -125,7 +124,6 @@ public final class GraspFci implements IGraphSearch, HasKnowledge {
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
         alg.setVerbose(verbose);
-        alg.setKnowledge(getKnowledge());
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
@@ -133,6 +131,7 @@ public final class GraspFci implements IGraphSearch, HasKnowledge {
         alg.bestOrder(variables);
         Graph graph = alg.getGraph(true); // Get the DAG
 
+        Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(graph);
 
         // GFCI extra edge removal step...
@@ -146,18 +145,13 @@ public final class GraspFci implements IGraphSearch, HasKnowledge {
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge);
+        fciOrient.setKnowledge(knowledge2);
 
         fciOrient.doFinalOrientation(graph);
 
         GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
         return graph;
-    }
-
-    @Override
-    public Knowledge getKnowledge() {
-        return this.knowledge;
     }
 
     /**

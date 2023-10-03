@@ -44,7 +44,7 @@ public class LayoutUtil {
         int centery = 120 + 7 * graph.getNumNodes();
         int radius = centerx - 50;
 
-        List<Node> nodes = graph.getNodes();
+        List<Node> nodes = new ArrayList<>(graph.getNodes());
         Collections.sort(nodes);
 
         double rad = 6.28 / nodes.size();
@@ -62,17 +62,15 @@ public class LayoutUtil {
     }
 
     public static void squareLayout(Graph graph) {
-        List<Node> nodes = graph.getNodes();
-        Collections.sort(nodes);
+        List<Node> nodes = new ArrayList<>(graph.getNodes());
 
-//        Collections.sort(nodes);
+        Collections.sort(nodes);
 
         int bufferx = 70;
         int buffery = 50;
         int spacex = 70;
         int spacey = 50;
 
-//        int side = (int) ceil(nodes.size() / 4.0);
         int side = nodes.size() / 4;
 
         if (nodes.size() % 4 != 0) {
@@ -699,9 +697,7 @@ public class LayoutUtil {
             });
 
             for (List<Node> component1 : components) {
-//                List<Node> nodes = new ArrayList<>(graph.getNodes());
-//                Collections.sort(nodes);
-
+                Collections.sort(component1);
                 layoutComponent(component1);
             }
         }

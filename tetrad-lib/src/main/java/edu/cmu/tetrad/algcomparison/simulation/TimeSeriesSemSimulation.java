@@ -104,7 +104,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             dataSet = TsUtils.createLagData(dataSet, numLags);
 
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-                dataSet = DataTransforms.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
             }
 
             dataSet.setName("" + (i + 1));
@@ -171,7 +171,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        // Uses internal knowledge
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
 }

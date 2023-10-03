@@ -21,7 +21,10 @@
 
 package edu.cmu.tetrad.study.performance;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.search.Pc;
@@ -38,7 +41,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * Contains some tests for Dan Malinsky, that might be of interest to others.
@@ -170,7 +173,7 @@ public class PerformanceTestsDan {
 
             DataSet fullData = im.simulateData(numCases, false);
 
-            DataSet data = DataTransforms.restrictToMeasured(fullData);
+            DataSet data = DataUtils.restrictToMeasured(fullData);
 
             ICovarianceMatrix cov = new CovarianceMatrix(data);
 

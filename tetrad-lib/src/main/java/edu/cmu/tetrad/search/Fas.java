@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -64,7 +63,7 @@ import java.util.*;
  * @see Fci
  * @see Knowledge
  */
-public class Fas implements IFas, HasKnowledge {
+public class Fas implements IFas {
     private final IndependenceTest test;
     private final TetradLogger logger = TetradLogger.getInstance();
     private Knowledge knowledge = new Knowledge();
@@ -234,11 +233,6 @@ public class Fas implements IFas, HasKnowledge {
         }
 
         this.depth = depth;
-    }
-
-    @Override
-    public Knowledge getKnowledge() {
-        return this.knowledge;
     }
 
     /**

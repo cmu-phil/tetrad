@@ -118,7 +118,7 @@ public class TestDeltaSextadTest {
         try {
             final String name = "src/test/resources/dataLG.txt";
             data = SimpleDataLoader.loadContinuousData(new File(name), "//", '\"',
-                    "*", true, Delimiter.TAB, false);
+                    "*", true, Delimiter.TAB);
         } catch (IOException e) {
             e.printStackTrace();
         }

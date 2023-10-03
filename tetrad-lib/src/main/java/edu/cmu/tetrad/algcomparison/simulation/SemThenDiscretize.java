@@ -74,7 +74,7 @@ public class SemThenDiscretize implements Simulation {
             DataSet dataSet = simulate(graph, parameters);
 
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-                dataSet = DataTransforms.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
             }
 
             dataSet.setName("" + (i + 1));

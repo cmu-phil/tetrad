@@ -80,9 +80,9 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
             TetradLogger.getInstance().log("info", s);
 
             DataSet train = SimpleDataLoader.loadContinuousData(new File(trainPath), "//", '\"',
-                    "*", true, Delimiter.TAB, false);
+                    "*", true, Delimiter.TAB);
             DataSet test = SimpleDataLoader.loadContinuousData(new File(testPath), "//", '\"',
-                    "*", true, Delimiter.TAB, false);
+                    "*", true, Delimiter.TAB);
 
             double alpha = Double.parseDouble(alphaString);
             int depth = Integer.parseInt(depthString);

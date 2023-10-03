@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
@@ -65,7 +64,7 @@ import java.util.Set;
  * @see Fci
  * @see Knowledge
  */
-public class Pc implements IGraphSearch, HasKnowledge {
+public class Pc implements IGraphSearch {
     private final IndependenceTest independenceTest;
     private final TetradLogger logger = TetradLogger.getInstance();
     private Knowledge knowledge = new Knowledge();

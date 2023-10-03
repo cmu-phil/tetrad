@@ -165,7 +165,7 @@ public class TestFges {
         alg.setFaithfulnessAssumed(true);
         Graph estCPDAG = alg.search();
 
-        Graph trueCPDAG = GraphTransforms.cpdagForDag(dag);
+        Graph trueCPDAG = GraphSearchUtils.cpdagForDag(dag);
 
         estCPDAG = GraphUtils.replaceNodes(estCPDAG, vars);
 
@@ -230,7 +230,7 @@ public class TestFges {
 
         Graph estCPDAG = ges.search();
 
-        Graph trueCPDAG = GraphTransforms.cpdagForDag(dag);
+        Graph trueCPDAG = GraphSearchUtils.cpdagForDag(dag);
 
         int[][] counts = GraphSearchUtils.graphComparison(trueCPDAG, estCPDAG, null);
 
@@ -252,7 +252,7 @@ public class TestFges {
         Graph graph = GraphUtils.convert("A-->B,A-->C,B-->D,C-->D");
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         Graph CPDAG = fges.search();
-        assertEquals(GraphTransforms.cpdagForDag(graph), CPDAG);
+        assertEquals(GraphSearchUtils.cpdagForDag(graph), CPDAG);
     }
 
     @Test
@@ -260,7 +260,7 @@ public class TestFges {
         Graph graph = GraphUtils.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         Graph CPDAG = fges.search();
-        assertEquals(GraphTransforms.cpdagForDag(graph), CPDAG);
+        assertEquals(GraphSearchUtils.cpdagForDag(graph), CPDAG);
     }
 
     @Test
@@ -269,7 +269,7 @@ public class TestFges {
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         fges.setFaithfulnessAssumed(false);
         Graph CPDAG = fges.search();
-        assertEquals(GraphTransforms.cpdagForDag(graph), CPDAG);
+        assertEquals(GraphSearchUtils.cpdagForDag(graph), CPDAG);
     }
 
     @Test
@@ -700,6 +700,7 @@ public class TestFges {
 
         // Build comparison graph.
         Graph answer = GraphUtils.convert(answerGraph);
+        answer = GraphUtils.replaceNodes(answer, input.getNodes());
 //        Graph answer = new PC(new IndTestMSep(input)).search();
 
 //        System.out.println("Input = " + input);
@@ -918,7 +919,7 @@ public class TestFges {
     }
 
     private Graph searchSemFges(DataSet Dk) {
-        Dk = DataTransforms.convertNumericalDiscreteToContinuous(Dk);
+        Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
         SemBicScore score = new SemBicScore(new CovarianceMatrix(Dk));
         score.setPenaltyDiscount(2.0);
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
