@@ -671,15 +671,17 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         synchronized (edgeListMap) {
 
             // Someoone may have changed the name of one of these variables, in which
-            // case we need to reconstitute the edgeLists map, since the name of a
-            // node is used part of the definition of node equality.
+            // case we need to reconstitute the edgeLists map.
             if (!edgeLists.containsKey(edge.getNode1()) || !edgeLists.containsKey(edge.getNode2())) {
                 this.edgeLists = new HashMap<>(this.edgeLists);
+                this.edgeLists.get(edge.getNode1()).add(edge);
+                this.edgeLists.get(edge.getNode2()).add(edge);
+                this.edgesSet.add(edge);
+            } else {
+                this.edgeLists.get(edge.getNode1()).add(edge);
+                this.edgeLists.get(edge.getNode2()).add(edge);
+                this.edgesSet.add(edge);
             }
-
-            this.edgeLists.get(edge.getNode1()).add(edge);
-            this.edgeLists.get(edge.getNode2()).add(edge);
-            this.edgesSet.add(edge);
         }
 
         if (Edges.isDirectedEdge(edge)) {

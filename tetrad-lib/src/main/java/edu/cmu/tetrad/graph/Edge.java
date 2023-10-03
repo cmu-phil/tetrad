@@ -317,7 +317,11 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     public final int hashCode() {
-        return this.node1.hashCode() + this.node2.hashCode();
+
+        // Equality of nodes can only dependent on the object identity of the
+        // nodes, not on their name. Otherwise, the identity of an edge could be
+        // changed by changing the name of one of its nodes.
+        return 1;
     }
 
     /**
@@ -331,23 +335,22 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
         Edge edge = (Edge) o;
 
-        String name1 = getNode1().getName();
-        String name2 = getNode2().getName();
-        String name1b = edge.getNode1().getName();
-        String name2b = edge.getNode2().getName();
+        Node node1a = getNode1();
+        Node node2a = getNode2();
+        Node node1b = edge.getNode1();
+        Node node2b = edge.getNode2();
 
-        Endpoint end1 = getEndpoint1();
-        Endpoint end2 = getEndpoint2();
+        Endpoint end1a = getEndpoint1();
+        Endpoint end2a = getEndpoint2();
         Endpoint end1b = edge.getEndpoint1();
         Endpoint end2b = edge.getEndpoint2();
 
-        if (name1.hashCode() == name1b.hashCode() && name2.hashCode() == name2b.hashCode()
-                && name1.equals(name1b) && name2.equals(name2b)) {
-            return end1 == end1b && end2 == end2b;
-        } else {
-            return name1.hashCode() == name2b.hashCode() && name2.hashCode() == name1b.hashCode()
-                    && name1.equals(name2b) && name2.equals(name1b) && end1 == end2b && end2 == end1b;
-        }
+        boolean equal1 = node1a.equals(node1b) && node2a.equals(node2b)
+                && end1a.equals(end1b) && end2a.equals(end2b);
+        boolean equal2 = node1a.equals(node2b) && node2a.equals(node1b)
+                && end1a.equals(end2b) && end2a.equals(end1b);
+
+        return equal1 || equal2;
     }
 
     public int compareTo(Edge _edge) {
