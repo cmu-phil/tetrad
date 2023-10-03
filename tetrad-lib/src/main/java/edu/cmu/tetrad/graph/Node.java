@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
-import org.jetbrains.annotations.NotNull;
 
 import java.beans.PropertyChangeListener;
 import java.util.Map;
@@ -121,10 +120,58 @@ public interface Node extends TetradSerializable, Comparable<Node> {
      */
     Node like(String name);
 
-    /**
-     * Alphabetical order.
-     */
-    int compareTo(@NotNull Node node);
+    //    /**
+    default int compareTo(Node node) {
+        String node1 = getName();
+        String node2 = node.getName();
+
+        boolean isAlpha1 = Node.ALPHA.matcher(node1).matches();
+        boolean isAlpha2 = Node.ALPHA.matcher(node2).matches();
+        boolean isAlphaNum1 = Node.ALPHA_NUM.matcher(node1).matches();
+        boolean isAlphaNum2 = Node.ALPHA_NUM.matcher(node2).matches();
+        boolean isLag1 = Node.LAG.matcher(node1).matches();
+        boolean isLag2 = Node.LAG.matcher(node2).matches();
+
+        if (isAlpha1) {
+            if (isLag2) {
+                return -1;
+            }
+        } else if (isAlphaNum1) {
+            if (isAlphaNum2) {
+                String s1 = node1.replaceAll("\\d+", "");
+                String s2 = node2.replaceAll("\\d+", "");
+                if (s1.equals(s2)) {
+                    String n1 = node1.replaceAll("\\D+", "");
+                    String n2 = node2.replaceAll("\\D+", "");
+
+                    return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
+                } else {
+                    return s1.compareTo(s2);
+                }
+            } else if (isLag2) {
+                return -1;
+            }
+        } else if (isLag1) {
+            if (isAlpha2 || isAlphaNum2) {
+                return 1;
+            } else if (isLag2) {
+                String l1 = node1.replaceAll(":", "");
+                String l2 = node2.replaceAll(":", "");
+                String s1 = l1.replaceAll("\\d+", "");
+                String s2 = l2.replaceAll("\\d+", "");
+                if (s1.equals(s2)) {
+                    String n1 = l1.replaceAll("\\D+", "");
+                    String n2 = l2.replaceAll("\\D+", "");
+
+                    return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
+                } else {
+                    return s1.compareTo(s2);
+                }
+            }
+        }
+
+        return node1.compareTo(node2);
+    }
 
     Map<String, Object> getAllAttributes();
 

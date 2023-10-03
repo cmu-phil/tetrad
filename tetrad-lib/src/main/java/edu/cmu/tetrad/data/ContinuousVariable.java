@@ -37,7 +37,7 @@ import java.util.Map;
  * @author Willie Wheeler 07/99
  * @author josephramsey modifications 12/00
  */
-public final class ContinuousVariable extends AbstractVariable {
+public final class ContinuousVariable extends AbstractVariable implements Variable {
 
     static final long serialVersionUID = 23L;
 

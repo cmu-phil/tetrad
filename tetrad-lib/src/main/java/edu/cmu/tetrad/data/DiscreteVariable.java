@@ -47,7 +47,7 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public final class DiscreteVariable extends AbstractVariable {
+public final class DiscreteVariable extends AbstractVariable implements Node {
 
     /**
      * This is the index in the data which represents missing data internally for this variable.
