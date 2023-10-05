@@ -209,6 +209,7 @@ public final class SemIm implements Im, ISemIm {
     private ScoreType scoreType = ScoreType.Fml;
     private double errorParam1;
     private double errorParam2 = 1.0;
+    private int numRandomCalls = 0;
 
     /**
      * Constructs a new SEM IM from a SEM PM.
@@ -1151,7 +1152,7 @@ public final class SemIm implements Im, ISemIm {
                         }
                         Node child = semGraph.getChildren(parent).iterator().next();
                         double paramValue = getParamValue(child, child);
-                        sum += RandomUtil.getInstance().nextNormal(0.0, paramValue);
+                        sum += getNextNormal(0.0, paramValue);
                     } else {
                         TimeLagGraph.NodeId id = timeSeriesGraph.getNodeId(parent);
                         int fromIndex = nodeIndices.get(timeSeriesGraph.getNode(id.getName(), 0));
@@ -1161,7 +1162,7 @@ public final class SemIm implements Im, ISemIm {
                             double fromValue = fullData.getDouble(currentStep - lag, fromIndex);
                             sum += coef * fromValue;
                         } else {
-                            sum += RandomUtil.getInstance().nextNormal(0.0, 0.5);
+                            sum += getNextNormal(0.0, 0.5);
                         }
                     }
                 }
@@ -1174,6 +1175,11 @@ public final class SemIm implements Im, ISemIm {
         }
 
         return latentDataSaved ? fullData : DataUtils.restrictToMeasured(fullData);
+    }
+
+    private double getNextNormal(double mean, double stdDev) {
+        numRandomCalls++;
+        return RandomUtil.getInstance().nextNormal(mean, stdDev);
     }
 
 //    /**
@@ -1336,18 +1342,16 @@ public final class SemIm implements Im, ISemIm {
 
             for (int i = 0; i < exoData.length; i++) {
                 if (errorType == 1) {
-                    exoData[i] = RandomUtil.getInstance().nextNormal(0,
+                    exoData[i] = getNextNormal(0,
                             sqrt(this.errCovar.get(i, i)));
                 } else if (errorType == 2) {
-                    exoData[i] = RandomUtil.getInstance().nextUniform(this.errorParam1, this.errorParam2);
+                    exoData[i] = getNextUniform();
                 } else if (errorType == 3) {
-                    exoData[i] = RandomUtil.getInstance().nextExponential(this.errorParam1);
+                    exoData[i] = getNextExponential();
                 } else if (errorType == 4) {
-                    exoData[i] = RandomUtil.getInstance().nextGumbel(this.errorParam1,
-                            this.errorParam2);
+                    exoData[i] = getNextGumbel();
                 } else if (errorType == 5) {
-                    exoData[i] = RandomUtil.getInstance().nextGamma(this.errorParam1,
-                            this.errorParam2);
+                    exoData[i] = getNextGamma();
                 }
             }
 
@@ -1445,6 +1449,28 @@ public final class SemIm implements Im, ISemIm {
         }
     }
 
+    private double getNextGamma() {
+        numRandomCalls++;
+        return RandomUtil.getInstance().nextGamma(this.errorParam1,
+                this.errorParam2);
+    }
+
+    private double getNextGumbel() {
+        numRandomCalls++;
+        return RandomUtil.getInstance().nextGumbel(this.errorParam1,
+                this.errorParam2);
+    }
+
+    private double getNextExponential() {
+        numRandomCalls++;
+        return RandomUtil.getInstance().nextExponential(this.errorParam1);
+    }
+
+    private double getNextUniform() {
+        numRandomCalls++;
+        return RandomUtil.getInstance().nextUniform(this.errorParam1, this.errorParam2);
+    }
+
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
         double errorParam1 = params.getDouble(Params.SIMULATION_PARAM1);
@@ -1466,11 +1492,13 @@ public final class SemIm implements Im, ISemIm {
             Vector e = new Vector(this.edgeCoef.getNumColumns());
 
             for (int i = 0; i < e.size(); i++) {
-//                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar.get(i, i))));
-
                 if (errorType == 1) {
-                    e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(this.errCovar.get(i, i))));
-//                    e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errorParam2)));
+                    double errCovar = this.errCovar.get(i, i);
+                    if (errCovar == 0.0) {
+                        e.set(i, 0.0);
+                    } else {
+                        e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar)));
+                    }
                 } else if (errorType == 2) {
                     e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));
                 } else if (errorType == 3) {
@@ -2154,5 +2182,9 @@ public final class SemIm implements Im, ISemIm {
         }
 
         return implCovarMeas;
+    }
+
+    public int getNumRandomCalls() {
+        return numRandomCalls;
     }
 }

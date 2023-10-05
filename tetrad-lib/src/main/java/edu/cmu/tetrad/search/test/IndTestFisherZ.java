@@ -201,14 +201,13 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-        double p = 0.0;
+        double p = Double.NaN;
+
         try {
             p = getPValue(x, y, z);
         } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, z));
-//            return new IndependenceResult(new IndependenceFact(x, y, z),
-//                    false, p, alpha - p);
+            return new IndependenceResult(new IndependenceFact(x, y, z),
+                    true, p, alpha - p);
         }
 
         boolean independent = p > this.alpha;
@@ -222,21 +221,12 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         if (Double.isNaN(p)) {
             return new IndependenceResult(new IndependenceFact(x, y, z),
-                    false, p, alpha - p);
+                    true, p, alpha - p);
         } else {
             return new IndependenceResult(new IndependenceFact(x, y, z),
                     independent, p, alpha - p);
         }
     }
-
-//    /**
-//     * Returns the probability associated with the most recently computed independence test.
-//     *
-//     * @return This probability.
-//     */
-//    public double getPValue() {
-//        return this.p;
-//    }
 
     /**
      * Returns the p-value for x _||_ y | z.
@@ -264,10 +254,8 @@ public final class IndTestFisherZ implements IndependenceTest {
         this.r = r;
         double q = .5 * (log(1.0 + abs(r)) - log(1.0 - abs(r)));
         double fisherZ = sqrt(n - 3. - z.size()) * q;
-        double p = 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
 
-//        this.p = p;
-        return p;
+        return 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
     }
 
     /**
