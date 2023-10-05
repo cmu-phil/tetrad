@@ -90,7 +90,7 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
         this.nodeType = variable.nodeType;
         this.centerX = variable.centerX;
         this.centerY = variable.centerY;
-        this.nodeVariableType = getNodeVariableType();
+        this.nodeVariableType = variable.nodeVariableType;
     }
 
     /**
