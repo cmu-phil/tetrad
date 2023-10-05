@@ -1192,48 +1192,6 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-//    private boolean existsSemiDirectedPath(Node from, Node to) {
-//        Queue<Node> Q = new LinkedList<>();
-//        Set<Node> V = new HashSet<>();
-//
-//        for (Node u : graph.getAdjacentNodes(from)) {
-//            Edge edge = graph.getEdge(from, u);
-//            Node c = GraphUtils.traverseSemiDirected(from, edge);
-//
-//            if (c == null) {
-//                continue;
-//            }
-//
-//            if (!V.contains(c)) {
-//                V.add(c);
-//                Q.offer(c);
-//            }
-//        }
-//
-//        while (!Q.isEmpty()) {
-//            Node t = Q.remove();
-//
-//            if (t == to) {
-//                return true;
-//            }
-//
-//            for (Node u : graph.getAdjacentNodes(t)) {
-//                Edge edge = graph.getEdge(t, u);
-//                Node c = GraphUtils.traverseSemiDirected(t, edge);
-//
-//                if (c == null) {
-//                    continue;
-//                }
-//
-//                if (!V.contains(c)) {
-//                    V.add(c);
-//                    Q.offer(c);
-//                }
-//            }
-//        }
-//
-//        return false;
-//    }
 
     /**
      * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y.
