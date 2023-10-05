@@ -105,18 +105,22 @@ public class SimpleDataLoader {
      * @param quoteCharacter     The quote character, e.g., '\"'.
      * @param missingValueMarker The missing value marker as a string--e.g., "NA".
      * @param hasHeader          True if the first row of the data contains variable names.
-     * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
      * @param maxNumCategories   The maximum number of distinct entries in a columns alloed in order for the column to
      *                           be parsed as discrete.
+     * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
+     * @param excludeFirstColumn If the first columns should be excluded from the data set.
      * @return The loaded DataSet.
      * @throws IOException If an error occurred in reading the file.
      */
+    // From SimpleDataLoader
     @NotNull
     public static DataSet loadMixedData(File file, String commentMarker, char quoteCharacter,
-                                        String missingValueMarker, boolean hasHeader, int maxNumCategories, Delimiter delimiter)
+                                        String missingValueMarker, boolean hasHeader, int maxNumCategories,
+                                        Delimiter delimiter, boolean excludeFirstColumn)
             throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
-        DataColumn[] dataColumns = columnReader.readInDataColumns(new int[]{1}, false);
+        DataColumn[] dataColumns = columnReader.readInDataColumns(excludeFirstColumn ?
+                new int[]{1} : new int[]{}, false);
 
         columnReader.setCommentMarker(commentMarker);
 
@@ -129,9 +133,14 @@ public class SimpleDataLoader {
         dataReader.determineDiscreteDataColumns(dataColumns, maxNumCategories, hasHeader);
 
         Data data = dataReader.read(dataColumns, hasHeader);
-        DataModel dataModel = DataConvertUtils.toDataModel(data);
 
-        return (DataSet) dataModel;
+        if (data != null){
+            DataModel dataModel = DataConvertUtils.toDataModel(data);
+            dataModel.setName(file.getName());
+            return (DataSet) dataModel;
+        }
+
+        return null;
     }
 
     /**
