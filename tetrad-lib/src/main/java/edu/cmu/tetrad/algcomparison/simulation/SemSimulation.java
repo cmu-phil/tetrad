@@ -176,8 +176,6 @@ public class SemSimulation implements Simulation {
         long seed = parameters.getLong(Params.SEED);
 
         if (im != null) {
-            // (Perhaps we could get away with just keeping track of the old seed and
-            // setting the new seed to the old seed. That might be better. -JR 20231005)
 
             // If the seed is set and has not changed, then we should call RandomUtil
             // methods the same number of times as we would have if we had created a new im.
