@@ -145,39 +145,6 @@ public class SimpleDataLoader {
     }
 
     /**
-     * Simple method to save a Java object to JSON.
-     * @param object The object.
-     * @param file The file to save to.
-     */
-    public static void jsonFromJava(Object object, File file) {
-        Gson gson = new Gson();
-
-        try (FileWriter writer = new FileWriter(file)) {
-            gson.toJson(object, writer);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Simple method to restore a Java object from a JSON file for a given class.
-     * The class must have all fields that can be restored from JSON. Otherwise,
-     * a more complicated strategy needs to be pursued where the load is given hints.
-     * @param file The file to load from.
-     * @param clazz The class of the object to restore.
-     * @return The restored object. Needs to be cast to the appropriate type.
-     */
-    public static Object javaFromJson(File file, Class clazz) {
-        Gson gson = new Gson();
-
-        try (FileReader reader = new FileReader(file)) {
-            return gson.fromJson(reader, clazz);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
      * Parses a covariance matrix from a char[] array. The format is as follows.
      * <pre>
      * /covariance
