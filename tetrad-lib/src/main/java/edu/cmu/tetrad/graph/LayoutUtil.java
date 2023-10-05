@@ -149,6 +149,12 @@ public class LayoutUtil {
      *
      * @return the tiers of this digraph.
      */
+    /**
+     * Finds the set of nodes which have no children, followed by the set of their parents, then the set of the parents'
+     * parents, and so on.  The result is returned as a List of Lists.
+     *
+     * @return the tiers of this digraph.
+     */
     private static List<List<Node>> getTiers(Graph graph) {
         Set<Node> found = new HashSet<>();
         List<List<Node>> tiers = new LinkedList<>();
@@ -183,6 +189,7 @@ public class LayoutUtil {
 
         return tiers;
     }
+
 
     /**
      * Arranges the nodes in the result graph according to their positions in the source graph.

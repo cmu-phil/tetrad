@@ -200,7 +200,8 @@ public class Cstar {
 
         if (new File(origDir, "data.txt").exists()) {
             try {
-                dataSet = SimpleDataLoader.loadContinuousData(new File(origDir, "data.txt"), "//", '\"', "*", true, Delimiter.TAB);
+                dataSet = SimpleDataLoader.loadContinuousData(new File(origDir, "data.txt"), "//",
+                        '\"', "*", true, Delimiter.TAB, false);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Could not load data from " + new File(origDir, "data.txt").getAbsolutePath());
             }
@@ -626,7 +627,8 @@ public class Cstar {
 
     private double[][] loadMatrix(File file) {
         try {
-            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"', "*", true, Delimiter.TAB);
+            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//",
+                    '\"', "*", true, Delimiter.TAB, false);
             return dataSet.getDoubleData().toArray();
         } catch (IOException e) {
             throw new RuntimeException(e);

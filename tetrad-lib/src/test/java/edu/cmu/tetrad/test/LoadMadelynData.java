@@ -46,7 +46,7 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
 
             try {
                 DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
-                        "*", true, Delimiter.TAB);
+                        "*", true, Delimiter.TAB, false);
                 this.dataSets.add(dataSet);
 
                 if (!(dataSet.isContinuous())) {

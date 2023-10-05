@@ -49,7 +49,7 @@ public class TestRubenData {
             try {
                 DataSet data = SimpleDataLoader.loadContinuousData(new File(path1),
                         "//",
-                        '\"', "*", true, Delimiter.COMMA);
+                        '\"', "*", true, Delimiter.COMMA, false);
 
                 Graph graph = GraphSaveLoadUtils.loadGraphTxt(new File(path2));
 

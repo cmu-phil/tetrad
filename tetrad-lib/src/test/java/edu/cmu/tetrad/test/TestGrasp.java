@@ -3387,7 +3387,7 @@ public final class TestGrasp {
 //            String path = "/Users/josephramsey/Downloads/sample100genes.csv1.imputed.txt";
             String path = "/Users/josephramsey/Downloads/Arabidopsis_dataset_Wdtf.csv1.impute.txt";
             DataSet data = SimpleDataLoader.loadContinuousData(new File(path), "//", '\"',
-                    "*", true, Delimiter.TAB);
+                    "*", true, Delimiter.TAB, false);
 
             System.out.println(data.getNumColumns());
 

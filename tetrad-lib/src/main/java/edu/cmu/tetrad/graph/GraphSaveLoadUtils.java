@@ -58,7 +58,8 @@ public class GraphSaveLoadUtils {
             final String missingValueMarker = "*";
             final boolean hasHeader = false;
 
-            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, commentMarker, quoteCharacter, missingValueMarker, hasHeader, Delimiter.COMMA);
+            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, commentMarker, quoteCharacter, missingValueMarker,
+                    hasHeader, Delimiter.COMMA, false);
 
             List<Node> nodes = dataSet.getVariables();
             Graph graph = new EdgeListGraph(nodes);
@@ -202,7 +203,7 @@ public class GraphSaveLoadUtils {
     public static Graph loadGraphPcalg(File file) {
         try {
             DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
-                    "*", true, Delimiter.COMMA);
+                    "*", true, Delimiter.COMMA, false);
 
             List<Node> nodes = dataSet.getVariables();
             Graph graph = new EdgeListGraph(nodes);

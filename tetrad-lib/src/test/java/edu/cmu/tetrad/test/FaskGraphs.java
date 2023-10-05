@@ -106,7 +106,7 @@ public class FaskGraphs {
                     if (name.contains("autistic")) {
                         this.types.add(true);
                         DataSet dataSet = SimpleDataLoader.loadContinuousData(new File(path, name), "//", '\"',
-                                "*", true, Delimiter.TAB);
+                                "*", true, Delimiter.TAB, false);
                         this.filenames.add(name);
                         this.datasets.add(dataSet);
                         Fask fask = new Fask();
@@ -115,7 +115,7 @@ public class FaskGraphs {
                     } else if (name.contains("typical")) {
                         this.types.add(false);
                         DataSet dataSet = SimpleDataLoader.loadContinuousData(new File(path, name), "//", '\"',
-                                "*", true, Delimiter.TAB);
+                                "*", true, Delimiter.TAB, false);
                         this.filenames.add(name);
                         this.datasets.add(dataSet);
                         Fask fask = new Fask();
