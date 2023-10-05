@@ -1619,10 +1619,6 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-//    private boolean existsSemiDirectedPath(Node node1, Node node2) {
-//        return existsSemiDirectedPath(node1, Collections.singleton(node2));
-//    }
-
     public boolean existsSemiDirectedPath(Node node1, Set<Node> nodes) {
         return existsSemiDirectedPathVisit(node1, nodes, new LinkedList<>());
     }
@@ -1689,7 +1685,7 @@ public class Paths implements TetradSerializable {
      *
      * @return true iff node2 is a definite nondecendent of node1
      */
-    public boolean defNonDescendent(Node node1, Node node2) {
+    public boolean definiteNonDescendent(Node node1, Node node2) {
         return !(possibleAncestor(node1, node2));
     }
 
