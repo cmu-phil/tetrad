@@ -45,7 +45,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final DataSet dataSet;
     private Graph fullGraph;
     private ICovarianceMatrix covMatrix;

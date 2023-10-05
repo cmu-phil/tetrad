@@ -193,7 +193,7 @@ public class ExpressionManager {
      * Addition
      */
     private static class AdditionExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public AdditionExpressionDescriptor() {
@@ -204,7 +204,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length > 0) {
                 return new AbstractExpression("+", Position.BOTH, expressions) {
-                    static final long serialVersionUID = 23L;
+                    private static final long serialVersionUID = 23L;
 
                     public double evaluate(Context context) {
                         double value = 0.0;
@@ -233,7 +233,7 @@ public class ExpressionManager {
      * Addition
      */
     private static class SubtractionExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public SubtractionExpressionDescriptor() {
@@ -244,7 +244,7 @@ public class ExpressionManager {
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length == 1) {
                 return new AbstractExpression("-", Position.INFIX, expressions) {
-                    static final long serialVersionUID = 23L;
+                    private static final long serialVersionUID = 23L;
 
                     public double evaluate(Context context) {
                         return -getExpressions().get(0).evaluate(context);
@@ -252,7 +252,7 @@ public class ExpressionManager {
                 };
             } else if (expressions.length == 2) {
                 return new AbstractExpression("-", Position.INFIX, expressions) {
-                    static final long serialVersionUID = 23L;
+                    private static final long serialVersionUID = 23L;
 
                     public double evaluate(Context context) {
                         return getExpressions().get(0).evaluate(context) - getExpressions().get(1).evaluate(context);
@@ -269,7 +269,7 @@ public class ExpressionManager {
      * Ceil
      */
     private static class CeilExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public CeilExpressionDescriptor() {
@@ -283,7 +283,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("ceil", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.ceil(getExpressions().get(0).evaluate(context));
@@ -293,7 +293,7 @@ public class ExpressionManager {
     }
 
     private static class SignumExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public SignumExpressionDescriptor() {
@@ -307,7 +307,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("signum", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.signum(getExpressions().get(0).evaluate(context));
@@ -320,7 +320,7 @@ public class ExpressionManager {
      * Cosine
      */
     private static class CosExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public CosExpressionDescriptor() {
@@ -334,7 +334,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("cos", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.cos(getExpressions().get(0).evaluate(context));
@@ -344,7 +344,7 @@ public class ExpressionManager {
     }
 
     private static class CoshExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public CoshExpressionDescriptor() {
@@ -358,7 +358,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("cosh", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.cosh(getExpressions().get(0).evaluate(context));
@@ -368,7 +368,7 @@ public class ExpressionManager {
     }
 
     private static class AcosExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public AcosExpressionDescriptor() {
@@ -382,7 +382,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("acos", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.acos(getExpressions().get(0).evaluate(context));
@@ -396,7 +396,7 @@ public class ExpressionManager {
      * Flooor.
      */
     private static class FloorExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public FloorExpressionDescriptor() {
@@ -410,7 +410,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("floor", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.floor(getExpressions().get(0).evaluate(context));
@@ -423,7 +423,7 @@ public class ExpressionManager {
      * Flooor.
      */
     private static class AbsoluteValueExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public AbsoluteValueExpressionDescriptor() {
@@ -437,7 +437,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("abs", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.abs(getExpressions().get(0).evaluate(context));
@@ -447,7 +447,7 @@ public class ExpressionManager {
     }
 
     private static class Log10ExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public Log10ExpressionDescriptor() {
@@ -461,7 +461,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("log10", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.log10(getExpressions().get(0).evaluate(context));
@@ -475,7 +475,7 @@ public class ExpressionManager {
      * Multiplication.
      */
     private static class MultiplicationExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public MultiplicationExpressionDescriptor() {
@@ -488,7 +488,7 @@ public class ExpressionManager {
                 throw new ExpressionInitializationException("Must have at least two arguments.");
             }
             return new AbstractExpression("*", Position.BOTH, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     double value = 1.0;
@@ -506,7 +506,7 @@ public class ExpressionManager {
      * Multiplication.
      */
     private static class DivisionExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public DivisionExpressionDescriptor() {
@@ -519,7 +519,7 @@ public class ExpressionManager {
                 throw new ExpressionInitializationException("Must have two arguments.");
             }
             return new AbstractExpression("/", Position.BOTH, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return getExpressions().get(0).evaluate(context)
@@ -534,7 +534,7 @@ public class ExpressionManager {
      * Natural log.
      */
     private static class NaturalLogExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public NaturalLogExpressionDescriptor() {
@@ -548,7 +548,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("ln", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.log(getExpressions().get(0).evaluate(context));
@@ -561,7 +561,7 @@ public class ExpressionManager {
      * Random value.
      */
     private static class RandomExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public RandomExpressionDescriptor() {
@@ -574,7 +574,7 @@ public class ExpressionManager {
                 throw new ExpressionInitializationException("Random must have no arguments.");
             }
             return new AbstractExpression("random", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.random();
@@ -587,7 +587,7 @@ public class ExpressionManager {
      * Round expression.
      */
     private static class RoundExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public RoundExpressionDescriptor() {
@@ -601,7 +601,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("round", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.round(getExpressions().get(0).evaluate(context));
@@ -615,7 +615,7 @@ public class ExpressionManager {
      * Tangent expression.
      */
     private static class TanExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public TanExpressionDescriptor() {
@@ -629,7 +629,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("tan", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.tan(getExpressions().get(0).evaluate(context));
@@ -639,7 +639,7 @@ public class ExpressionManager {
     }
 
     private static class TanhExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public TanhExpressionDescriptor() {
@@ -653,7 +653,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("tanh", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.tanh(getExpressions().get(0).evaluate(context));
@@ -663,7 +663,7 @@ public class ExpressionManager {
     }
 
     private static class AtanExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public AtanExpressionDescriptor() {
@@ -677,7 +677,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("atan", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.atan(getExpressions().get(0).evaluate(context));
@@ -687,7 +687,7 @@ public class ExpressionManager {
     }
 
     private static class LogisticExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public LogisticExpressionDescriptor() {
@@ -701,7 +701,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("logistic", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     double t = getExpressions().get(0).evaluate(context);
@@ -715,7 +715,7 @@ public class ExpressionManager {
      * Square Root.
      */
     private static class SquareRootExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public SquareRootExpressionDescriptor() {
@@ -729,7 +729,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("sqrt", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.sqrt(getExpressions().get(0).evaluate(context));
@@ -742,7 +742,7 @@ public class ExpressionManager {
      * Sine expression.
      */
     private static class SinExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public SinExpressionDescriptor() {
@@ -756,7 +756,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("sin", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.sin(getExpressions().get(0).evaluate(context));
@@ -766,7 +766,7 @@ public class ExpressionManager {
     }
 
     private static class SinhExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public SinhExpressionDescriptor() {
@@ -780,7 +780,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("sinh", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.sinh(getExpressions().get(0).evaluate(context));
@@ -790,7 +790,7 @@ public class ExpressionManager {
     }
 
     private static class AsinExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public AsinExpressionDescriptor() {
@@ -804,7 +804,7 @@ public class ExpressionManager {
                         " argument.");
             }
             return new AbstractExpression("asin", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return FastMath.asin(getExpressions().get(0).evaluate(context));
@@ -819,7 +819,7 @@ public class ExpressionManager {
      * @author Tyler Gibson
      */
     private static class PowExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public PowExpressionDescriptor() {
@@ -834,7 +834,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("pow", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     Expression exp1 = getExpressions().get(0);
@@ -847,7 +847,7 @@ public class ExpressionManager {
     }
 
     private static class PowExpressionDescriptor2 extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public PowExpressionDescriptor2() {
@@ -862,7 +862,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("^", Position.INFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     Expression exp1 = getExpressions().get(0);
@@ -875,7 +875,7 @@ public class ExpressionManager {
     }
 
     private static class ExpExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public ExpExpressionDescriptor() {
             super("Exponential", "exp", Position.PREFIX, false);
@@ -889,7 +889,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("exp", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     Expression exp1 = getExpressions().get(0);
@@ -900,7 +900,7 @@ public class ExpressionManager {
     }
 
     private static class MaxExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public MaxExpressionDescriptor() {
@@ -913,7 +913,7 @@ public class ExpressionManager {
                 throw new ExpressionInitializationException("max must have two or more arguments.");
             }
             return new AbstractExpression("max", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     double max = getExpressions().get(0).evaluate(context);
@@ -930,7 +930,7 @@ public class ExpressionManager {
     }
 
     private static class MinExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public MinExpressionDescriptor() {
@@ -943,7 +943,7 @@ public class ExpressionManager {
                 throw new ExpressionInitializationException("min must have two or more arguments.");
             }
             return new AbstractExpression("min", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     double min = getExpressions().get(0).evaluate(context);
@@ -960,7 +960,7 @@ public class ExpressionManager {
     }
 
     private static class ChiSquareExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public ChiSquareExpressionDescriptor() {
             super("Chi Square", "ChiSquare", Position.PREFIX, false);
@@ -974,7 +974,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("ChiSquare", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -993,7 +993,7 @@ public class ExpressionManager {
     }
 
     private static class GammaExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public GammaExpressionDescriptor() {
             super("Gamma", "Gamma", Position.PREFIX, false);
@@ -1007,7 +1007,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Gamma", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1028,7 +1028,7 @@ public class ExpressionManager {
     }
 
     private static class BetaExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public BetaExpressionDescriptor() {
             super("Beta", "Beta", Position.PREFIX, false);
@@ -1042,7 +1042,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Beta", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1062,7 +1062,7 @@ public class ExpressionManager {
     }
 
     private static class CauchyExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public CauchyExpressionDescriptor() {
             super("Cauchy", "Cauchy", Position.PREFIX, false);
@@ -1076,7 +1076,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Cauchy", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1097,7 +1097,7 @@ public class ExpressionManager {
 
 
     private static class FExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public FExpressionDescriptor() {
             super("FDist", "FDist", Position.PREFIX, false);
@@ -1111,7 +1111,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("FDist", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1131,7 +1131,7 @@ public class ExpressionManager {
     }
 
     private static class GumbelExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public GumbelExpressionDescriptor() {
             super("Gumbel", "Gumbel", Position.PREFIX, false);
@@ -1145,7 +1145,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Gumbel", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1165,7 +1165,7 @@ public class ExpressionManager {
     }
 
     private static class LaplaceExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public LaplaceExpressionDescriptor() {
             super("Laplace", "Laplace", Position.PREFIX, false);
@@ -1179,7 +1179,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Laplace", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1199,7 +1199,7 @@ public class ExpressionManager {
     }
 
     private static class LevyExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public LevyExpressionDescriptor() {
             super("Levy", "Levy", Position.PREFIX, false);
@@ -1213,7 +1213,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Levy", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1233,7 +1233,7 @@ public class ExpressionManager {
     }
 
     private static class NakagamiExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public NakagamiExpressionDescriptor() {
             super("Nakagami", "Nakagami", Position.PREFIX, false);
@@ -1247,7 +1247,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Nakagami", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1267,7 +1267,7 @@ public class ExpressionManager {
     }
 
     private static class ParetoExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public ParetoExpressionDescriptor() {
             super("Pareto", "Pareto", Position.PREFIX, false);
@@ -1281,7 +1281,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Pareto", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1301,7 +1301,7 @@ public class ExpressionManager {
     }
 
     private static class TriangularExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public TriangularExpressionDescriptor() {
             super("Triangular", "Triangular", Position.PREFIX, false);
@@ -1315,7 +1315,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Triangular", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1337,7 +1337,7 @@ public class ExpressionManager {
     }
 
     private static class UniformExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public UniformExpressionDescriptor() {
             super("Uniform", "Uniform", Position.PREFIX, false);
@@ -1351,7 +1351,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Uniform", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1371,7 +1371,7 @@ public class ExpressionManager {
     }
 
     private static class UExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public UExpressionDescriptor() {
             super("Uniform", "U", Position.PREFIX, false);
@@ -1385,7 +1385,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Uniform", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1405,7 +1405,7 @@ public class ExpressionManager {
     }
 
     private static class WeibullExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public WeibullExpressionDescriptor() {
             super("Weibull", "Weibull", Position.PREFIX, false);
@@ -1419,7 +1419,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Weibull", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1439,7 +1439,7 @@ public class ExpressionManager {
     }
 
     private static class PoissonExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public PoissonExpressionDescriptor() {
             super("Poisson", "Poisson", Position.PREFIX, false);
@@ -1453,7 +1453,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Poisson", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1477,7 +1477,7 @@ public class ExpressionManager {
     }
 
     private static class IndicatorExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public IndicatorExpressionDescriptor() {
             super("Indicator", "Indicator", Position.PREFIX, false);
@@ -1491,7 +1491,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Indicator", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     Expression exp1 = getExpressions().get(0);
@@ -1506,7 +1506,7 @@ public class ExpressionManager {
     }
 
     private static class ExponentialExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public ExponentialExpressionDescriptor() {
             super("ExponentialDist", "ExponentialDist", Position.PREFIX, false);
@@ -1520,7 +1520,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("ExponentialDist", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1548,7 +1548,7 @@ public class ExpressionManager {
 
     // // "exp(Normal(0, 1))"
     private static class LogNormalExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public LogNormalExpressionDescriptor() {
             super("LogNormal", "LogNormal", Position.PREFIX, false);
@@ -1562,7 +1562,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("LogNormal", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1598,7 +1598,7 @@ public class ExpressionManager {
     }
 
     private static class NormalExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public NormalExpressionDescriptor() {
             super("Normal", "Normal", Position.PREFIX, false);
@@ -1612,7 +1612,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Normal", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1632,7 +1632,7 @@ public class ExpressionManager {
     }
 
     private static class TruncNormalExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public TruncNormalExpressionDescriptor() {
             super("TruncNormal", "TruncNormal", Position.PREFIX, false);
@@ -1646,7 +1646,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("TruncNormal", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     Expression exp1 = getExpressions().get(0);
@@ -1673,7 +1673,7 @@ public class ExpressionManager {
     }
 
     private static class NExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public NExpressionDescriptor() {
             super("Normal", "N", Position.PREFIX, false);
@@ -1687,7 +1687,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("N", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1710,7 +1710,7 @@ public class ExpressionManager {
     }
 
     private static class DiscreteExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public DiscreteExpressionDescriptor() {
             super("Discrete", "Discrete", Position.PREFIX, false);
@@ -1724,7 +1724,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Discrete", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     double[] p = new double[getExpressions().size()];
@@ -1772,7 +1772,7 @@ public class ExpressionManager {
 
     // "0.3 * Normal(-2, 0.5) + 0.7 * Normal(2, 0.5)
     private static class MixtureDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public MixtureDescriptor() {
             super("Mixture", "Mixture", Position.PREFIX, false);
@@ -1786,7 +1786,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Mixture", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     List<Expression> exp = getExpressions();
@@ -1827,7 +1827,7 @@ public class ExpressionManager {
     }
 
     private static class StudentTExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public StudentTExpressionDescriptor() {
             super("StudentT", "StudentT", Position.PREFIX, false);
@@ -1841,7 +1841,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("StudentT", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
@@ -1865,7 +1865,7 @@ public class ExpressionManager {
      * Draws from the U(a1, b2) U U(a3, a4)...
      */
     private static class SplitExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public SplitExpressionDescriptor() {
             super("Split", "Split", Position.PREFIX, false);
@@ -1879,7 +1879,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Split", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     if (getExpressions().size() < 2) {
@@ -1930,7 +1930,7 @@ public class ExpressionManager {
      * For boolean "and". Will return true if all sub-expressions evaluate to a non-zero value and false otherwise.
      */
     private static class AndExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
 
         public AndExpressionDescriptor() {
@@ -1943,7 +1943,7 @@ public class ExpressionManager {
                 throw new ExpressionInitializationException("Must have at least two arguments.");
             }
             return new AbstractExpression("AND", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     boolean allOnes = true;
@@ -1965,7 +1965,7 @@ public class ExpressionManager {
      * For boolean "Or". Will return 1.0 if at least one of the sub-expressions is non-zero.
      */
     private static class OrExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public OrExpressionDescriptor() {
             super("Or", "OR", Position.PREFIX, true);
@@ -1976,7 +1976,7 @@ public class ExpressionManager {
                 throw new ExpressionInitializationException("Must have at least two arguments.");
             }
             return new AbstractExpression("OR", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     for (Expression exp : getExpressions()) {
@@ -1994,7 +1994,7 @@ public class ExpressionManager {
      * For boolean "Or". Will return 1.0 if at least one of the sub-expressions is non-zero.
      */
     private static class XOrExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public XOrExpressionDescriptor() {
             super("Exclusive or", "XOR", Position.PREFIX, false);
@@ -2005,7 +2005,7 @@ public class ExpressionManager {
                 throw new ExpressionInitializationException("Must have two arguments.");
             }
             return new AbstractExpression("XOR", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     double first = getExpressions().get(0).evaluate(context);
@@ -2020,7 +2020,7 @@ public class ExpressionManager {
     }
 
     private static class LessThanExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public LessThanExpressionDescriptor() {
             super("Less Than", "<", Position.BOTH, true);
@@ -2032,7 +2032,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("<", Position.BOTH, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     List<Expression> expressions = getExpressions();
@@ -2045,7 +2045,7 @@ public class ExpressionManager {
     }
 
     private static class LessThanOrEqualExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public LessThanOrEqualExpressionDescriptor() {
             super("Less Than Or Equals", "<=", Position.BOTH, true);
@@ -2057,7 +2057,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("<=", Position.BOTH, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     List<Expression> expressions = getExpressions();
@@ -2070,7 +2070,7 @@ public class ExpressionManager {
     }
 
     private static class EqualsExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public EqualsExpressionDescriptor() {
             super("Equals", "=", Position.BOTH, true);
@@ -2082,7 +2082,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("=", Position.BOTH, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     List<Expression> expressions = getExpressions();
@@ -2095,7 +2095,7 @@ public class ExpressionManager {
     }
 
     private static class GreaterThanExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public GreaterThanExpressionDescriptor() {
             super("Greater Than", ">", Position.BOTH, true);
@@ -2107,7 +2107,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("<", Position.BOTH, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     List<Expression> expressions = getExpressions();
@@ -2120,7 +2120,7 @@ public class ExpressionManager {
     }
 
     private static class GreaterThanOrEqualExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public GreaterThanOrEqualExpressionDescriptor() {
             super("Greater Than Or Equals", ">=", Position.BOTH, true);
@@ -2132,7 +2132,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("<", Position.BOTH, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     List<Expression> expressions = getExpressions();
@@ -2145,7 +2145,7 @@ public class ExpressionManager {
     }
 
     private static class IfExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public IfExpressionDescriptor() {
             super("If", "IF", Position.PREFIX, true);
@@ -2157,7 +2157,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("IF", Position.BOTH, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     List<Expression> expressions = getExpressions();
@@ -2171,7 +2171,7 @@ public class ExpressionManager {
     }
 
     private static class NewExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public NewExpressionDescriptor() {
             super("New Parameter", "NEW", Position.PREFIX, true);
@@ -2187,7 +2187,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("NEW", Position.BOTH, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return Double.NaN;
@@ -2197,7 +2197,7 @@ public class ExpressionManager {
     }
 
     private static class NewExpressionDescriptor2 extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public NewExpressionDescriptor2() {
             super("New Parameter", "new", Position.PREFIX, true);
@@ -2213,7 +2213,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("new", Position.BOTH, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return Double.NaN;
@@ -2223,7 +2223,7 @@ public class ExpressionManager {
     }
 
     private static class TSumExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public TSumExpressionDescriptor() {
             super("Template Sum", "TSUM", Position.PREFIX, true);
@@ -2235,7 +2235,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("TSUM", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return Double.NaN;
@@ -2245,7 +2245,7 @@ public class ExpressionManager {
     }
 
     private static class TSumExpressionDescriptor2 extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public TSumExpressionDescriptor2() {
             super("Template Sum", "tsum", Position.PREFIX, true);
@@ -2257,7 +2257,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("tsum", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return Double.NaN;
@@ -2267,7 +2267,7 @@ public class ExpressionManager {
     }
 
     private static class TProductExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public TProductExpressionDescriptor() {
             super("Template Product", "TPROD", Position.PREFIX, true);
@@ -2279,7 +2279,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("TPROD", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return Double.NaN;
@@ -2289,7 +2289,7 @@ public class ExpressionManager {
     }
 
     private static class TProductExpressionDescriptor2 extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public TProductExpressionDescriptor2() {
             super("Template Product", "tprod", Position.PREFIX, true);
@@ -2301,7 +2301,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("tprod", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     return Double.NaN;
@@ -2314,7 +2314,7 @@ public class ExpressionManager {
     //First term should be a random draw that will be used to select a category index based on the (un-normalized)
     //weights given in the rest of the terms
     private static class DiscErrorExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public DiscErrorExpressionDescriptor() {
             super("DiscError", "DiscError", Position.PREFIX, false);
@@ -2328,7 +2328,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("DiscError", Position.PREFIX, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     double[] p = new double[getExpressions().size() - 1];
@@ -2380,7 +2380,7 @@ public class ExpressionManager {
     //the first term is an index (non-negative integer) that tells the expression which of the rest of the terms to
     //return
     private static class SwitchExpressionDescriptor extends AbstractExpressionDescriptor {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public SwitchExpressionDescriptor() {
             super("Switch", "Switch", Position.PREFIX, true);
@@ -2393,7 +2393,7 @@ public class ExpressionManager {
             }
 
             return new AbstractExpression("Switch", Position.BOTH, expressions) {
-                static final long serialVersionUID = 23L;
+                private static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
                     List<Expression> expressions = getExpressions();

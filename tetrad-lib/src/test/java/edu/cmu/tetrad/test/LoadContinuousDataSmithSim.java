@@ -19,7 +19,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class LoadContinuousDataSmithSim implements Simulation, HasParameterValues {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final int index;
     private final String path;
     private final List<String> usedParameters = new ArrayList<>();

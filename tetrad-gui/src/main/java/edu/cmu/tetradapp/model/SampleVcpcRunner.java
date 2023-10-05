@@ -45,7 +45,7 @@ import java.util.Set;
  */
 public class SampleVcpcRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private IndependenceFactsModel independenceFactsModel;
     private Graph trueGraph;
     private SemPm semPm;

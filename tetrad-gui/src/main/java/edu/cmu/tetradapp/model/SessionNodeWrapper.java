@@ -38,7 +38,7 @@ import java.io.ObjectInputStream;
  * @see SessionWrapper
  */
 public class SessionNodeWrapper extends GraphNode {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The SessionNode being wrapped.

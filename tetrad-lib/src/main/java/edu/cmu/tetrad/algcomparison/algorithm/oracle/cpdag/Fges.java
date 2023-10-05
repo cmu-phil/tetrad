@@ -37,7 +37,7 @@ import java.util.List;
 @Bootstrapping
 public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph, ReturnsBootstrapGraphs {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();

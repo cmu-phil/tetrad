@@ -18,7 +18,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class PositiveCorrScore implements ScoreWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     double alpha = 0.001;
     private DataModel dataSet;
 

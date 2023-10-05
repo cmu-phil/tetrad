@@ -41,7 +41,7 @@ import java.util.List;
 // in principle, so we've removed the bootstrapping annotation from it and deleted the bootstrapping code.
 public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private Knowledge knowledge = new Knowledge();
 
     private IndependenceWrapper test;

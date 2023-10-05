@@ -37,7 +37,7 @@ import java.util.SortedSet;
  * Constructs as a (manual) update graph.
  */
 public final class ManualLagGraph implements LagGraph {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial

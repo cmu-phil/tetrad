@@ -36,7 +36,7 @@ import java.util.*;
  * @author josephramsey
  */
 public class IndependenceFacts implements DataModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private List<Node> nodes = new ArrayList<>();
 
     private Set<IndependenceFact> unsortedFacts = new LinkedHashSet<>();

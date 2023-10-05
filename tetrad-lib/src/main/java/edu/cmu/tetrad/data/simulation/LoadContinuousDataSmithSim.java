@@ -25,7 +25,7 @@ import java.util.List;
  */
 @Experimental
 public class LoadContinuousDataSmithSim implements Simulation, HasParameterValues {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final String path;
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();

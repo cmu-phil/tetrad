@@ -39,7 +39,7 @@ import java.util.List;
 @Bootstrapping
 public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();

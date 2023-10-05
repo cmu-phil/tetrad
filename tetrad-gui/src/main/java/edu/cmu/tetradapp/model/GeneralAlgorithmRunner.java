@@ -61,7 +61,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         Unmarshallable, IndTestProducer,
         KnowledgeBoxInput {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Map<String, Object> userAlgoSelections = new HashMap<>();
     private DataWrapper dataWrapper;
     private String name;

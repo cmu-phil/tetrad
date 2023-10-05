@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class SemImWrapper implements SessionModel {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private List<SemIm> semIms;
 
     /**

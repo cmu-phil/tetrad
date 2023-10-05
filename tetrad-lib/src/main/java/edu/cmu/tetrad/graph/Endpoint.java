@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  */
 public enum Endpoint implements TetradSerializable {
     TAIL, ARROW, CIRCLE, STAR, NULL;
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 }
 
 

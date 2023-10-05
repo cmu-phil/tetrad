@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class FasRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private Graph externalGraph;
 
     //============================CONSTRUCTORS============================//

@@ -18,7 +18,7 @@ import java.util.Set;
  */
 public class FirstInflection implements Algorithm {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final double low;
     private final double high;
     private final double increment;

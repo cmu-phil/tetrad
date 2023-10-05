@@ -46,7 +46,7 @@ import java.util.Map;
  * @author josephramsey
  */
 public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshallable, DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Map<Graph, Double> graphsToScores;
     /**
      * Transient graph scorer, null if non exists (or needs to be refreshed).

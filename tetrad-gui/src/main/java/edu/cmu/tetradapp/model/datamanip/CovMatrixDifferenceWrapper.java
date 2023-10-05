@@ -38,7 +38,7 @@ import org.apache.commons.math3.util.FastMath;
  * @author Tyler Gibson
  */
 public class CovMatrixDifferenceWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Splits the given data set by collinear columns.

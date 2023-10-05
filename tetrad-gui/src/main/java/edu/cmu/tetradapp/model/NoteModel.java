@@ -36,7 +36,7 @@ import javax.swing.text.StyledDocument;
  * @author josephramsey
  */
 public class NoteModel implements SessionModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private StyledDocument note = new DefaultStyledDocument();
     private String name;

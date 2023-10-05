@@ -22,7 +22,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class StandardizedSemSimulation implements Simulation {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private SemPm pm;
     private StandardizedSemIm standardizedIm;

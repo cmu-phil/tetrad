@@ -73,7 +73,7 @@ import java.util.*;
  */
 public final class NumberObjectDataSet
         implements DataSet {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private Map<String, String> columnToTooltip = new HashMap<>();
     /**
      * The name of the data model. This is not used internally; it is only here in case an external class wants this

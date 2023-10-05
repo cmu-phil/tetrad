@@ -35,7 +35,7 @@ import java.text.NumberFormat;
  * @author josephramsey
  */
 public class RegressionResult implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * True iff this model assumes a zero intercept.

@@ -44,7 +44,7 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
  * @author Erin Korber (added remove latents functionality July 2004)
  */
 public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Graph targetGraph;
     private final Graph referenceGraph;
     private final Parameters params;

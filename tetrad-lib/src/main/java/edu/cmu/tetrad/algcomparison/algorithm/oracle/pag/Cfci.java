@@ -29,7 +29,7 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 @Bootstrapping
 public class Cfci implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();

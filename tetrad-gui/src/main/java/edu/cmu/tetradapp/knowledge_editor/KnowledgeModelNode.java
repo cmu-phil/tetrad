@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Map<String, Object> attributes = new HashMap<>();
     /**
      * @serial

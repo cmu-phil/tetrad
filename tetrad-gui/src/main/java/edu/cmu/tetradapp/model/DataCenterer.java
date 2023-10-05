@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class DataCenterer extends DataWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
     private DataCenterer(DataWrapper wrapper, Parameters params) {

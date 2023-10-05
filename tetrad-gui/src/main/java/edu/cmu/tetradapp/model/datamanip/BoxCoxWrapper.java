@@ -32,7 +32,7 @@ import org.apache.commons.math3.util.FastMath;
  * @author Tyler
  */
 public class BoxCoxWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Constructs a new time series dataset.

@@ -63,7 +63,7 @@ import java.util.*;
  */
 public final class BoxDataSet implements DataSet {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * Case ID's. These are strings associated with some or all of the cases of the dataset.
      *

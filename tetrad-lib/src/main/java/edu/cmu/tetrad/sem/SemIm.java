@@ -65,7 +65,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 public final class SemIm implements Im, ISemIm {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * The Sem PM containing the graph and the freeParameters to be estimated. For now a defensive copy of this is not
      * being constructed, since it is not used anywhere in the code except in the the constructor and in its accessor

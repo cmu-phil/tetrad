@@ -34,7 +34,7 @@ import java.text.NumberFormat;
  * @author Michael Freenor
  */
 public class EdgeWeightComparison implements SessionModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final SemIm reference;
     private final SemIm target;
     private String name;

@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class LinearFisherModel implements Simulation, TakesData {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private final List<DataModel> shocks;
     private List<DataSet> dataSets = new ArrayList<>();

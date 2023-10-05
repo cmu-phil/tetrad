@@ -35,7 +35,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class LinearFunction implements UpdateFunction {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The wrapped polynomial function that's doing all the work.

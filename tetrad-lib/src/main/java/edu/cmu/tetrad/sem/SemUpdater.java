@@ -45,7 +45,7 @@ import java.util.List;
  */
 public class SemUpdater implements TetradSerializable {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final SemIm semIm;
     private SemEvidence evidence;
 

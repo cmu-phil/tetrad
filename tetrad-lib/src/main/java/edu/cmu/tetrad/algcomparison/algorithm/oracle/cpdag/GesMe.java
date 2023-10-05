@@ -33,7 +33,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 @Experimental
 public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final ScoreWrapper score = new SemBicScoreDeterministic();
     private boolean compareToTrue;
     private List<Graph> bootstrapGraphs = new ArrayList<>();

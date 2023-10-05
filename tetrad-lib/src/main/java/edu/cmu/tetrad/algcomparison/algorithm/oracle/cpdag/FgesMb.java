@@ -38,7 +38,7 @@ import java.util.List;
 public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
         ReturnsBootstrapGraphs {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
     private String targetName;

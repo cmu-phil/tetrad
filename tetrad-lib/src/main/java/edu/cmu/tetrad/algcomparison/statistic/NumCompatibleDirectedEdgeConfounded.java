@@ -13,7 +13,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.compatible;
  * @author josephramsey
  */
 public class NumCompatibleDirectedEdgeConfounded implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

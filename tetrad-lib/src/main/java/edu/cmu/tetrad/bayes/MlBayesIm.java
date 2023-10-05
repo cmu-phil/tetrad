@@ -76,7 +76,7 @@ public final class MlBayesIm implements BayesIm {
      * Indicates that new rows in this BayesIm should be initialized randomly.
      */
     public static final int RANDOM = 1;
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-3;
 
     /**

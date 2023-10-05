@@ -40,7 +40,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class Edge implements TetradSerializable, Comparable<Edge> {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Node node1;
     private final Node node2;
     private Endpoint endpoint1;

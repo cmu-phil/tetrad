@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @author Tyler Gibson
  */
 public class BidirectedToUndirectedWrapper extends GraphWrapper implements DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     public BidirectedToUndirectedWrapper(GraphSource source, Parameters parameters) {

@@ -16,7 +16,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParameterValues {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final String path;
     private final String prefix;
     private final List<String> usedParameters = new ArrayList<>();

@@ -48,7 +48,7 @@ import java.util.List;
  * @author Frank Wimberly
  */
 public class LogisticRegression implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The data set that was supplied.
@@ -387,7 +387,7 @@ public class LogisticRegression implements TetradSerializable {
     //================================== Public Methods =======================================//
 
     public static class Result implements TetradSerializable {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
         private final double chiSq;
         private final double alpha;
         private final List<String> regressorNames;

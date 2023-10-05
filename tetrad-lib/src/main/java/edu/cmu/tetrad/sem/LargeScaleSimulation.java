@@ -51,7 +51,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 public final class LargeScaleSimulation {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final List<Node> variableNodes;
     private final Graph graph;
     private int[][] parents;

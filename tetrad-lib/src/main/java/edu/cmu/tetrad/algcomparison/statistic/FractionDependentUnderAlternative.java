@@ -14,7 +14,7 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
  * @author josephramsey
  */
 public class FractionDependentUnderAlternative implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private double alpha = 0.01;
 
     public FractionDependentUnderAlternative() {

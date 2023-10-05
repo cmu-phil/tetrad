@@ -12,7 +12,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.compatible;
  * @author josephramsey
  */
 public class NumCompatiblePossiblyDirectedEdgeNonAncestors implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

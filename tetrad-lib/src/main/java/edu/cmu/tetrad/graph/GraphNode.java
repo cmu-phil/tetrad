@@ -35,7 +35,7 @@ import java.util.Map;
  */
 public class GraphNode implements Node {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Map<String, Object> attributes = new HashMap<>();
     /**
      * The name of the node.

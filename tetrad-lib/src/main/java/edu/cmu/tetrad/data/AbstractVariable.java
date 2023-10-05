@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.NamingProtocol;
  */
 public abstract class AbstractVariable implements Variable {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public static int LAST_ID;
 

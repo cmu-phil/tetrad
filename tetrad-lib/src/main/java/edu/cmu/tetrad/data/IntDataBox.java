@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class IntDataBox implements DataBox {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The stored short data.

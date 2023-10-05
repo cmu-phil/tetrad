@@ -44,7 +44,7 @@ import java.util.*;
  * @see BayesIm
  */
 public final class BayesPm implements Pm, VariableSource {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The underlying graph that's being parameterized.

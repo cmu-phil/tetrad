@@ -36,7 +36,7 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
     public static final List<String> PAG_SAMPLING_RFCI_PARAMETERS = new LinkedList<>();
     public static final List<String> RFCI_PARAMETERS = new LinkedList<>();
     public static final List<String> PROBABILISTIC_TEST_PARAMETERS = new LinkedList<>();
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     static {
         // algorithm parameters

@@ -51,7 +51,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * Currently we are not allowing bidirected edges in the SEM graph.
  */
 public class StandardizedSemIm implements Simulator {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final int sampleSize;
     /**
      * The SEM model.
@@ -824,7 +824,7 @@ public class StandardizedSemIm implements Simulator {
      * @author josephramsey
      */
     public static final class ParameterRange implements TetradSerializable {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         private final Edge edge;
         private final double coef;

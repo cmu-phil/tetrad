@@ -1643,7 +1643,7 @@ public class Comparison {
 
     private static class AlgorithmWrapper implements Algorithm {
 
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
         private final Algorithm algorithm;
         private final Parameters parameters;
         private final List<String> overriddenParameters = new ArrayList<>();
@@ -1707,7 +1707,7 @@ public class Comparison {
 
     private static class AlgorithmSimulationWrapper implements Algorithm {
 
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
         private final SimulationWrapper simulationWrapper;
         private final AlgorithmWrapper algorithmWrapper;
 
@@ -1753,7 +1753,7 @@ public class Comparison {
     }
 
     private static class SimulationWrapper implements Simulation {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
         private final Simulation simulation;
         private List<Graph> graphs;
         private List<DataModel> dataModels;

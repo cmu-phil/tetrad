@@ -29,7 +29,7 @@ import java.util.List;
 @General
 public class CciTest implements IndependenceWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {

@@ -39,7 +39,7 @@ import java.util.Set;
  * @author josephramsey
  */
 public class DeltaSextadTest {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final int N;
     private final ICovarianceMatrix cov;
     private final List<Node> variables;

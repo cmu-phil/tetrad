@@ -32,7 +32,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public final class KnowledgeEdge implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial

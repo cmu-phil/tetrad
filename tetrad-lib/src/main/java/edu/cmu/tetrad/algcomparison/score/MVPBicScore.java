@@ -26,7 +26,7 @@ import java.util.List;
 )
 public class MVPBicScore implements ScoreWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {

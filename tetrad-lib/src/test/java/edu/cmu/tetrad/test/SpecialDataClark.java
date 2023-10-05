@@ -29,7 +29,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * @author josephramsey
  */
 public class SpecialDataClark implements Simulation {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private final List<BayesIm> ims = new ArrayList<>();
     private BayesPm pm;

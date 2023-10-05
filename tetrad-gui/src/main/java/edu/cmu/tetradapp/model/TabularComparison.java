@@ -46,7 +46,7 @@ import java.util.*;
 public final class TabularComparison implements SessionModel, SimulationParamsSource,
         DoNotAddOldModel {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Graph targetGraph;
     private final Graph referenceGraph;
     private final Parameters params;

@@ -46,7 +46,7 @@ import java.util.List;
  */
 public class IonRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, DoNotAddOldModel, IonInput {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private List<Graph> graphs;
 
     //=========================CONSTRUCTORS================================//

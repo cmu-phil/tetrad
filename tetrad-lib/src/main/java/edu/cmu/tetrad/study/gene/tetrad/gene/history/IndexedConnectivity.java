@@ -38,7 +38,7 @@ import java.util.SortedSet;
  * @author josephramsey
  */
 public class IndexedConnectivity implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The factors in the graph, in the order that they are used.

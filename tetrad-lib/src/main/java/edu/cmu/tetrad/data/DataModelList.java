@@ -38,7 +38,7 @@ import java.util.List;
 public final class DataModelList extends AbstractList<DataModel>
         implements DataModel {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The list of models.

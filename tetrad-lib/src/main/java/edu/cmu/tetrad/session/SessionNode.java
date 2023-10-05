@@ -62,7 +62,7 @@ import java.util.*;
  */
 public class SessionNode implements Node {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * A map from model classes to parameter objects.
      *

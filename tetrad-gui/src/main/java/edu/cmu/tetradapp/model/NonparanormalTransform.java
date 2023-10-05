@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  */
 public class NonparanormalTransform extends DataWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
     public NonparanormalTransform(DataWrapper wrapper, Parameters params) {

@@ -677,7 +677,7 @@ public class Cstar {
      * Represents a single record in the returned table for CSTaR.
      */
     public static class Record implements TetradSerializable {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
         private final Node causeNode;
         private final Node target;
         private final double pi;

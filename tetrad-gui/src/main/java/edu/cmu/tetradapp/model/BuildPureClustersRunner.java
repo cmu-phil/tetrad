@@ -51,7 +51,7 @@ import java.util.List;
  */
 public class BuildPureClustersRunner extends AbstractMimRunner
         implements GraphSource, Unmarshallable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * To reidentify variables.

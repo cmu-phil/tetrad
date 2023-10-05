@@ -32,7 +32,7 @@ import org.apache.commons.math3.util.FastMath;
  * @author josephramsey
  */
 public class PartialCorrelationPdf implements Function, TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Number of data points in the sample.

@@ -24,7 +24,7 @@ import java.util.List;
 //@Experimental
 public class CciScore implements ScoreWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
     @Override

@@ -21,7 +21,7 @@ import java.util.Vector;
  */
 @Bootstrapping
 public class FactorAnalysis implements Algorithm {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public Graph search(DataModel ds, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {

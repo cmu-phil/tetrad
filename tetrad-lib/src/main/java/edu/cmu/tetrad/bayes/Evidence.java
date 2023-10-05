@@ -38,7 +38,7 @@ import java.util.List;
  * @author josephramsey
  */
 public final class Evidence implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * A proposition stating what we know for each variable.

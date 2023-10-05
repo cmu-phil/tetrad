@@ -35,7 +35,7 @@ import java.util.List;
 @Bootstrapping
 public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstrapGraphs {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 

@@ -37,7 +37,7 @@ import java.util.List;
  * @author josephramsey
  */
 public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The BayesIm which this updater modifies.

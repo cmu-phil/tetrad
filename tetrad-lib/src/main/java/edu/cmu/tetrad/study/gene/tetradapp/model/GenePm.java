@@ -33,7 +33,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public abstract class GenePm implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The wrapped lag workbench.

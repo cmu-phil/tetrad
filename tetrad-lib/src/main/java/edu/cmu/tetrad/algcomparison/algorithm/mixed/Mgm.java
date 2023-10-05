@@ -25,7 +25,7 @@ import java.util.List;
 @Bootstrapping
 public class Mgm implements Algorithm {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public Mgm() {
     }

@@ -40,7 +40,7 @@ import java.util.*;
  */
 public class KnowledgeBoxModel implements SessionModel, ParamsResettable, KnowledgeEditable {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Graph sourceGraph = new EdgeListGraph();
     private String name;
     private Parameters params;

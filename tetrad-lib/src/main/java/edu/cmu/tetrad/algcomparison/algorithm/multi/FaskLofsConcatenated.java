@@ -28,7 +28,7 @@ import java.util.List;
  */
 @Bootstrapping
 public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Lofs.Rule rule;
     private Knowledge knowledge = new Knowledge();
 

@@ -34,7 +34,7 @@ import java.util.List;
 @Bootstrapping
 public class Bpc implements Algorithm, ClusterAlgorithm {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public Bpc() {
     }

@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.RandomUtil;
  * Settings | File Templates.
  */
 public class Indicator implements Distribution {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private double p;
 

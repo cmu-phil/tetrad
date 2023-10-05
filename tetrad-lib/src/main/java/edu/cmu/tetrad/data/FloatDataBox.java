@@ -30,7 +30,7 @@ import java.util.List;
  * Stores a 2D array of float data. Note that the missing value marker for this box is Float.NaN.
  */
 public class FloatDataBox implements DataBox {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The stored float data.

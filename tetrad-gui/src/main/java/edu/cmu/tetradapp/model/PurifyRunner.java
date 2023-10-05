@@ -39,7 +39,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 public class PurifyRunner extends AbstractMimRunner implements GraphSource, KnowledgeBoxInput {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     //============================CONSTRUCTORS============================//
 

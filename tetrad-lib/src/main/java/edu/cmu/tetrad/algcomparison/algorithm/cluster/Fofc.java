@@ -34,7 +34,7 @@ import java.util.List;
 @Bootstrapping
 public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private Knowledge knowledge = new Knowledge();
 
     public Fofc() {

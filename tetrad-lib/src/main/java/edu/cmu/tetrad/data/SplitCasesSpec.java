@@ -37,7 +37,7 @@ import java.util.List;
  * @author josephramsey
  */
 public final class SplitCasesSpec implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Breakpoints, for continuous data.

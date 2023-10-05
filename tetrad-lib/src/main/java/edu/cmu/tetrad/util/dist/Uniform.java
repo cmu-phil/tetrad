@@ -34,7 +34,7 @@ import java.text.NumberFormat;
  * @author josephramsey
  */
 public class Uniform implements Distribution {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The lower bound of the range from which numbers are drawn uniformly.

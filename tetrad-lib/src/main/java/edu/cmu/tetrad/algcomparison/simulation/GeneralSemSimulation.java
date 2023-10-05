@@ -25,7 +25,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class GeneralSemSimulation implements Simulation {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private GeneralizedSemPm pm;
     private GeneralizedSemIm im;

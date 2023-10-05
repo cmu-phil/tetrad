@@ -46,7 +46,7 @@ import java.util.SortedSet;
  * @author Gregory Li
  */
 public class ActiveLagGraph implements LagGraph {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Underlying graph representing the update graph.

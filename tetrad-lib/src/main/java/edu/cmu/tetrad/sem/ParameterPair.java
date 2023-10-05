@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author josephramsey
  */
 public class ParameterPair implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The first element of the ordered pair.  Can be null.

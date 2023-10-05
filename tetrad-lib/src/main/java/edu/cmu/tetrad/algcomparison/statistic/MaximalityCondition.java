@@ -11,7 +11,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class MaximalityCondition implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

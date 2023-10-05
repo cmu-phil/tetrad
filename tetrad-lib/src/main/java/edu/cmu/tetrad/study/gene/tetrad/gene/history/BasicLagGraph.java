@@ -42,7 +42,7 @@ import java.util.*;
  * @author josephramsey
  */
 public final class BasicLagGraph implements LagGraph {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * For each factor, stores the set of lagged factors which map into it. (Maps Strings to SortedSets of Strings.)

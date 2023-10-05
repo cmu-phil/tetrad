@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
  * @author Tyler Gibson
  */
 public class OrderedPair<E> implements TetradSerializable, TetradSerializableExcluded {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The "First" node.

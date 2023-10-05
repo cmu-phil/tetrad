@@ -16,7 +16,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * @author josephramsey
  */
 public class PvalueDistanceToAlpha implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private double alpha = 0.01;
 
     public PvalueDistanceToAlpha(double alpha) {

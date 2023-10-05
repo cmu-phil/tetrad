@@ -39,7 +39,7 @@ public final class NodeType implements TetradSerializable {
     public static final NodeType LOCK = new NodeType("Lock");
     public static final NodeType NO_TYPE = new NodeType("No type");
     public static final NodeType[] TYPES = {NodeType.MEASURED, NodeType.LATENT, NodeType.ERROR, NodeType.NO_TYPE, NodeType.RANDOMIZE, NodeType.LOCK};
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     // Declarations required for serialization.
     private static int nextOrdinal;
     /**

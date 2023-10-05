@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.Node;
  * @author josephramsey
  */
 public class NoCyclicPathsCondition implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

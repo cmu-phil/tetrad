@@ -22,7 +22,7 @@ import java.util.*;
  */
 public class ConditionalGaussianSimulation implements Simulation {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();

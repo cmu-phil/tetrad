@@ -31,7 +31,7 @@ import java.text.NumberFormat;
  * Stores the result of an independence test.
  */
 public final class IndependenceResultIndFacts implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final int index;
     private final String fact;

@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private List<Graph> graphs = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();

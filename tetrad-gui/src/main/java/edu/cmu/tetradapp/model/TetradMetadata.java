@@ -39,7 +39,7 @@ import java.util.Date;
  */
 public class TetradMetadata
         implements TetradSerializable, TetradMetadataIndirectRef {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The version of Tetrad that saved this session out.

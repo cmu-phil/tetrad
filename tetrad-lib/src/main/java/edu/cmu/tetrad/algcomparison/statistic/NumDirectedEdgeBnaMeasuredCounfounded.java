@@ -15,7 +15,7 @@ import static edu.cmu.tetrad.algcomparison.statistic.NumCommonMeasuredAncestorBi
  * @author josephramsey
  */
 public class NumDirectedEdgeBnaMeasuredCounfounded implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

@@ -32,7 +32,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @author Tyler Gibson
  */
 public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     public PagFromDagGraphWrapper(GraphSource source, Parameters parameters) {

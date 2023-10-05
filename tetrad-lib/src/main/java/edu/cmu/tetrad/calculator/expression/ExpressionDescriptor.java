@@ -63,7 +63,7 @@ public interface ExpressionDescriptor extends TetradSerializable {
         PREFIX,
         BOTH;
 
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public static Position serializableInstance() {
             return Position.NEITHER;

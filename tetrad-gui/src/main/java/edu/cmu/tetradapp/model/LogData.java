@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * @author Jeremy Espino
  */
 public class LogData extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
 

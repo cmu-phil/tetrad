@@ -33,7 +33,7 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 @Experimental
 public class RfciBsc implements Algorithm, HasKnowledge {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final IndependenceWrapper test = new ProbabilisticTest();
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();

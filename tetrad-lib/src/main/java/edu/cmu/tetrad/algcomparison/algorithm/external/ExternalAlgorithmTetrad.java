@@ -33,7 +33,7 @@ import java.io.IOException;
  * @author josephramsey
  */
 public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final String extDir;
     private final String shortDescription;
 

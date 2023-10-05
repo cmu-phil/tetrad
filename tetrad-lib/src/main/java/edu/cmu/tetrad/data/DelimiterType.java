@@ -42,7 +42,7 @@ public final class DelimiterType implements TetradSerializable {
             = new DelimiterType("Comma", ",");
     public static final DelimiterType COLON
             = new DelimiterType("Colon", ":");
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private static final DelimiterType[] TYPES = {DelimiterType.WHITESPACE, DelimiterType.TAB, DelimiterType.COMMA};
     // Declarations required for serialization.
     private static int nextOrdinal;

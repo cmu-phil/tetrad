@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 public class Paths implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final Graph graph;
 

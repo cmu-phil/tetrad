@@ -43,7 +43,7 @@ import java.util.Map;
 public class SemGraphWrapper implements GraphSource,
         KnowledgeBoxInput, SimulationParamsSource, DoNotAddOldModel, MultipleGraphSource {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private int numModels = 1;
     private int modelIndex;
     private String modelSourceName;

@@ -42,7 +42,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final DataSet data;
     /**
      * @serial Can be null.

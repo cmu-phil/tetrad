@@ -22,7 +22,7 @@ import java.util.Map;
  * @author josephramsey
  */
 public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath, ParameterValues {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final String path;
     private final Map<String, Object> parameterValues = new HashMap<>();
     private DataSet dataSet;

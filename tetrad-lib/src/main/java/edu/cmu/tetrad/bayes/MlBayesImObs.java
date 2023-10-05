@@ -65,7 +65,7 @@ import java.util.List;
  */
 public final class MlBayesImObs implements BayesIm {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;
 
     /**

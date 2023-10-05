@@ -32,7 +32,7 @@ import java.util.List;
 @Bootstrapping
 public class Rskew implements Algorithm, TakesExternalGraph {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private Algorithm algorithm;
     private Graph externalGraph;
 

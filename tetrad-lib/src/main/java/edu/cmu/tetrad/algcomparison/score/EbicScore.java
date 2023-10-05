@@ -26,7 +26,7 @@ import java.util.List;
 @LinearGaussian
 public class EbicScore implements ScoreWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
     @Override

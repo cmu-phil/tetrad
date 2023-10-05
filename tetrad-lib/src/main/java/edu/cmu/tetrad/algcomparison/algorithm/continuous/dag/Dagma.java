@@ -35,7 +35,7 @@ import java.util.List;
 @Bootstrapping
 public class Dagma implements Algorithm, ReturnsBootstrapGraphs {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     public Dagma() {}

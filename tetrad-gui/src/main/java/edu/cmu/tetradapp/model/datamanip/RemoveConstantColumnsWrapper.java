@@ -36,7 +36,7 @@ import edu.cmu.tetradapp.model.PcRunner;
  * @author Tyler Gibson
  */
 public class RemoveConstantColumnsWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     public RemoveConstantColumnsWrapper(DataWrapper data, Parameters params) {

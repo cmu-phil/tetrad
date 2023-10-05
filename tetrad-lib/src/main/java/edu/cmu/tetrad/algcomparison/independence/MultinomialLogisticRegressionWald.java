@@ -22,7 +22,7 @@ import java.util.List;
 //)
 public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {

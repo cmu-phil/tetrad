@@ -50,7 +50,7 @@ import java.util.List;
  * @author Erin Korber (added remove latents functionality July 2004)
  */
 public final class CPDAGFitModel implements SessionModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Parameters parameters;
     private final DataModelList dataModelList;
     private String name;

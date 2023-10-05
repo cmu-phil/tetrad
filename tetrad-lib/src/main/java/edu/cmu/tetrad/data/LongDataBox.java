@@ -30,7 +30,7 @@ import java.util.List;
  * Stores a 2D array of long data. Note that the missing value marker for this box is -99.
  */
 public class LongDataBox implements DataBox {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The stored long data.

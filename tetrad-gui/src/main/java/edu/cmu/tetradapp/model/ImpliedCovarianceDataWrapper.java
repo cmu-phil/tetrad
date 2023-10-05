@@ -40,7 +40,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class ImpliedCovarianceDataWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private SemIm semIm;
 
     //==============================CONSTRUCTORS=============================//

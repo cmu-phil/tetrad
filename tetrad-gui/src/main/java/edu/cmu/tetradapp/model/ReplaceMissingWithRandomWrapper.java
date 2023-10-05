@@ -36,7 +36,7 @@ import java.io.ObjectInputStream;
  * @author Frank Wimberly based on similar class by Ramsey
  */
 public class ReplaceMissingWithRandomWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Cannot be null.

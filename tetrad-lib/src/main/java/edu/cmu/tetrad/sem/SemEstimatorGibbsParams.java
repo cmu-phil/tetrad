@@ -34,7 +34,7 @@ import java.io.ObjectInputStream;
  * @author Frank Wimberly
  */
 public final class SemEstimatorGibbsParams implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final double tolerance;
     private SemIm startIm;
     private boolean flatPrior;

@@ -35,7 +35,7 @@ import java.util.List;
  * @author josephramsey
  */
 public final class Polynomial implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The terms of the polynomial.

@@ -36,7 +36,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public class BasalInitializer implements Initializer {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The update function this is initializing for.

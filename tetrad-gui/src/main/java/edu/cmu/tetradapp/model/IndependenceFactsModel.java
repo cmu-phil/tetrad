@@ -40,7 +40,7 @@ import java.util.*;
  * @author josephramsey
  */
 public class IndependenceFactsModel implements KnowledgeBoxInput {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private IndependenceFacts facts = new IndependenceFacts();
     private String name = "";

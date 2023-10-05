@@ -35,7 +35,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     public ExtractStructureModelWrapper(GraphSource source, Parameters parameters) {

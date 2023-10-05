@@ -20,7 +20,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class LoadMadelynData implements Simulation, HasParameterValues {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final String directory;
     private final String suffix;
     private final int structure;

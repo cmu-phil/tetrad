@@ -35,7 +35,7 @@ import java.util.Arrays;
  * @author josephramsey
  */
 public final class Manipulation implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final VariableSource variableSource;
 

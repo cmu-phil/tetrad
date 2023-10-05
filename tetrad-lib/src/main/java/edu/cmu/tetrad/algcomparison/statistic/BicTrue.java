@@ -13,7 +13,7 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  * @author josephramsey
  */
 public class BicTrue implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private boolean precomputeCovariances = true;
 
     @Override
