@@ -1551,13 +1551,13 @@ public class Ion {
                     Node node2 = pag.getNode(edge.getNode2().getName());
 
                     if (Edges.isDirectedEdge(edge)) {
-                        if (!pag.paths().existsSemiDirectedPathFromTo(node1, Collections.singleton(node2))) {
+                        if (!pag.paths().existsSemiDirectedPath(node1, Collections.singleton(node2))) {
                             allAccountFor = false;
                             break GRAPH;
                         }
                     }
                     if (/*!pag.existsTrek(node1, node2) ||*/ Edges.isPartiallyOrientedEdge(edge)) {
-                        if (pag.paths().existsSemiDirectedPathFromTo(node2, Collections.singleton(node1))) {
+                        if (pag.paths().existsSemiDirectedPath(node2, Collections.singleton(node1))) {
                             allAccountFor = false;
                             break GRAPH;
                         }

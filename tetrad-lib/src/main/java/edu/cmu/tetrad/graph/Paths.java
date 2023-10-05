@@ -1184,7 +1184,7 @@ public class Paths implements TetradSerializable {
                 continue;
             }
 
-            if ((existsSemidirectedPath(r, x)) || existsSemidirectedPath(r, b)) {
+            if ((existsSemiDirectedPath(r, x)) || existsSemiDirectedPath(r, b)) {
                 return true;
             }
         }
@@ -1192,48 +1192,48 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-    public boolean existsSemidirectedPath(Node from, Node to) {
-        Queue<Node> Q = new LinkedList<>();
-        Set<Node> V = new HashSet<>();
-
-        for (Node u : graph.getAdjacentNodes(from)) {
-            Edge edge = graph.getEdge(from, u);
-            Node c = GraphUtils.traverseSemiDirected(from, edge);
-
-            if (c == null) {
-                continue;
-            }
-
-            if (!V.contains(c)) {
-                V.add(c);
-                Q.offer(c);
-            }
-        }
-
-        while (!Q.isEmpty()) {
-            Node t = Q.remove();
-
-            if (t == to) {
-                return true;
-            }
-
-            for (Node u : graph.getAdjacentNodes(t)) {
-                Edge edge = graph.getEdge(t, u);
-                Node c = GraphUtils.traverseSemiDirected(t, edge);
-
-                if (c == null) {
-                    continue;
-                }
-
-                if (!V.contains(c)) {
-                    V.add(c);
-                    Q.offer(c);
-                }
-            }
-        }
-
-        return false;
-    }
+//    private boolean existsSemiDirectedPath(Node from, Node to) {
+//        Queue<Node> Q = new LinkedList<>();
+//        Set<Node> V = new HashSet<>();
+//
+//        for (Node u : graph.getAdjacentNodes(from)) {
+//            Edge edge = graph.getEdge(from, u);
+//            Node c = GraphUtils.traverseSemiDirected(from, edge);
+//
+//            if (c == null) {
+//                continue;
+//            }
+//
+//            if (!V.contains(c)) {
+//                V.add(c);
+//                Q.offer(c);
+//            }
+//        }
+//
+//        while (!Q.isEmpty()) {
+//            Node t = Q.remove();
+//
+//            if (t == to) {
+//                return true;
+//            }
+//
+//            for (Node u : graph.getAdjacentNodes(t)) {
+//                Edge edge = graph.getEdge(t, u);
+//                Node c = GraphUtils.traverseSemiDirected(t, edge);
+//
+//                if (c == null) {
+//                    continue;
+//                }
+//
+//                if (!V.contains(c)) {
+//                    V.add(c);
+//                    Q.offer(c);
+//                }
+//            }
+//        }
+//
+//        return false;
+//    }
 
     /**
      * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y.
@@ -1661,13 +1661,12 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-    public boolean existsSemiDirectedPathFromTo(Node node1, Node node2) {
-        return existsSemiDirectedPathFromTo(node1, Collections.singleton(node2));
-    }
+//    private boolean existsSemiDirectedPath(Node node1, Node node2) {
+//        return existsSemiDirectedPath(node1, Collections.singleton(node2));
+//    }
 
-    public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes) {
-        return existsSemiDirectedPathVisit(node1, nodes,
-                new LinkedList<>());
+    public boolean existsSemiDirectedPath(Node node1, Set<Node> nodes) {
+        return existsSemiDirectedPathVisit(node1, nodes, new LinkedList<>());
     }
 
     /**
@@ -1756,8 +1755,7 @@ public class Paths implements TetradSerializable {
     /**
      * @return true iff there is a semi-directed path from node1 to node2
      */
-    private boolean existsSemiDirectedPathVisit(Node node1, Set<Node> nodes2,
-                                                LinkedList<Node> path) {
+    private boolean existsSemiDirectedPathVisit(Node node1, Set<Node> nodes2, LinkedList<Node> path) {
         path.addLast(node1);
 
         for (Edge edge : graph.getEdges(node1)) {
@@ -1799,8 +1797,7 @@ public class Paths implements TetradSerializable {
     }
 
     public boolean possibleAncestor(Node node1, Node node2) {
-        return existsSemiDirectedPathFromTo(node1,
-                Collections.singleton(node2));
+        return existsSemiDirectedPath(node1, Collections.singleton(node2));
     }
 
     public static class AllCliquesAlgorithm {

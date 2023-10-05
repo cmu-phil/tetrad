@@ -1942,7 +1942,7 @@ public final class GraphUtils {
         for (Node m : graph.getNodes()) {
             if (!targets.contains(m)) {
                 for (Node n : targets) {
-                    if (graph.paths().existsSemidirectedPath(m, n)) {
+                    if (graph.paths().existsSemiDirectedPath(m, n)) {
                         continue M;
                     }
                 }

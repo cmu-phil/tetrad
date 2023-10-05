@@ -37,8 +37,8 @@ public class NoSemidirectedPrecision implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!estGraph.paths().existsSemiDirectedPathFromTo(x, y)) {
-                    if (!cpdag.paths().existsSemiDirectedPathFromTo(x, y)) {
+                if (!estGraph.paths().existsSemiDirectedPath(x, y)) {
+                    if (!cpdag.paths().existsSemiDirectedPath(x, y)) {
                         tp++;
                     } else {
                         fp++;
