@@ -18,7 +18,7 @@ import java.util.Vector;
  */
 class ScatterplotPanel extends JPanel {
     private final NumberFormat nf;
-    private final boolean removeMinPointsPerPlot;
+    private final boolean removeZeroPointsPerPlot;
     private ScatterPlot scatterPlot;
     private boolean drawAxes = false;
     private int pointSize = 5;
@@ -30,9 +30,9 @@ class ScatterplotPanel extends JPanel {
     /**
      * Constructor.
      */
-    public ScatterplotPanel(ScatterPlot ScatterPlot, boolean removeMinPointsPerPlot) {
+    public ScatterplotPanel(ScatterPlot ScatterPlot, boolean removeZeroPointsPerPlot) {
         this.scatterPlot = ScatterPlot;
-        this.removeMinPointsPerPlot = removeMinPointsPerPlot;
+        this.removeZeroPointsPerPlot = removeZeroPointsPerPlot;
 
         setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
@@ -101,9 +101,8 @@ class ScatterplotPanel extends JPanel {
         for (Point2D.Double _pt : pts) {
             if (Double.isNaN(_pt.getX()) || Double.isNaN(_pt.getY())) continue;
 
-            if (removeMinPointsPerPlot) {
-                if (_pt.getX() == xmin || _pt.getY() == ymin) continue;
-                if (_pt.getX() == xmax || _pt.getY() == ymax) continue;
+            if (removeZeroPointsPerPlot) {
+                if (_pt.getX() == 0 || _pt.getY() == 0) continue;
             }
 
             x = (int) (((_pt.getX() - xmin) / _xRange) * xRange + xMin);

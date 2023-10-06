@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class Histogram {
     private final DataSet dataSet;
-    private final boolean removeMinPointsPerPlot;
+    private final boolean removeZeroPointsPerPlot;
     private Node target;
     private int numBins = 10;
     private Map<Node, double[]> continuousIntervals;
@@ -45,13 +45,13 @@ public class Histogram {
     /**
      * This histogram is for variables in a particular data set. These may be continuous or discrete.
      */
-    public Histogram(DataSet dataSet, String target, boolean removeMinPointsPerPlot) {
+    public Histogram(DataSet dataSet, String target, boolean removeZeroPointsPerPlot) {
         if (dataSet.getVariables().size() < 1) {
             throw new IllegalArgumentException("Can't do histograms for an empty data sets.");
         }
 
         this.dataSet = dataSet;
-        this.removeMinPointsPerPlot = removeMinPointsPerPlot;
+        this.removeZeroPointsPerPlot = removeZeroPointsPerPlot;
         setTarget(target);
     }
 
@@ -163,10 +163,8 @@ public class Histogram {
     private List<Double> removeZeroPointsPerPlot(List<Double> data) {
         List<Double> _data = new ArrayList<>();
 
-        double min = StatUtils.min(asDoubleArray(data));
-
         for (double d : data) {
-            if (!removeMinPointsPerPlot || d != min) {
+            if (!removeZeroPointsPerPlot || d != 0) {
                 _data.add(d);
             }
         }

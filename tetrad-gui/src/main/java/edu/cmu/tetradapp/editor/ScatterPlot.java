@@ -53,7 +53,7 @@ public class ScatterPlot {
     private final Map<Node, Integer> discreteValues;
     private final Node _x;
     private final Node _y;
-    private boolean removeMinPointsPerPlot;
+    private boolean removeZeroPointsPerPlot;
     private JitterStyle jitterStyle = JitterStyle.None;
 
     /**
@@ -62,9 +62,9 @@ public class ScatterPlot {
      * @param includeLine             whether to include the regression line in the plot.
      * @param x                       y-axis variable name.
      * @param y                       x-axis variable name.
-     * @param removeMinPointsPerPlot whether to remove zero points per plot.
+     * @param removeZeroPointsPerPlot whether to remove zero points per plot.
      */
-    public ScatterPlot(DataSet dataSet, boolean includeLine, String x, String y, boolean removeMinPointsPerPlot) {
+    public ScatterPlot(DataSet dataSet, boolean includeLine, String x, String y, boolean removeZeroPointsPerPlot) {
         this.dataSet = dataSet;
         this.x = x;
         this.y = y;
@@ -73,7 +73,7 @@ public class ScatterPlot {
         this.includeLine = includeLine;
         this.continuousIntervals = new HashMap<>();
         this.discreteValues = new HashMap<>();
-        this.removeMinPointsPerPlot = removeMinPointsPerPlot;
+        this.removeZeroPointsPerPlot = removeZeroPointsPerPlot;
     }
 
     public void setJitterStyle(JitterStyle jitterStyle) {
@@ -100,7 +100,7 @@ public class ScatterPlot {
 
         double[] xdata = data.getColumn(_x).toArray();
         double[] ydata = data.getColumn(_y).toArray();
-        Result result = new Result(xdata, ydata, removeMinPointsPerPlot);
+        Result result = new Result(xdata, ydata, removeZeroPointsPerPlot);
         xdata = result.xdata;
         ydata = result.ydata;
 
@@ -116,18 +116,15 @@ public class ScatterPlot {
         public double[] xdata;
         public double[] ydata;
 
-        public Result(double[] xdata, double[] ydata, boolean removeMinPointsPerPlot) {
+        public Result(double[] xdata, double[] ydata, boolean removeZeroPointsPerPlot) {
             this.xdata = xdata;
             this.ydata = ydata;
 
-            double minx = StatUtils.min(xdata);
-            double miny = StatUtils.min(ydata);
-
-            if (removeMinPointsPerPlot) {
+            if (removeZeroPointsPerPlot) {
                 List<Double> x = new ArrayList<>();
                 List<Double> y = new ArrayList<>();
                 for (int i = 0; i < xdata.length; i++) {
-                    if (xdata[i] != minx && ydata[i] != miny) {
+                    if (xdata[i] != 0 && ydata[i] != 0) {
                         x.add(xdata[i]);
                         y.add(ydata[i]);
                     }
