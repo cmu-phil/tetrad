@@ -66,7 +66,7 @@ public final class TestHistogram {
         SemIm semIm = new SemIm(semPm);
         DataSet data = semIm.simulateData(sampleSize, false);
 
-        Histogram histogram = new Histogram(data, "X1");
+        Histogram histogram = new Histogram(data, "X1", removeZeroPointPerPlot);
 //        histogram.setTarget("X1");
         histogram.setNumBins(20);
 
@@ -97,7 +97,7 @@ public final class TestHistogram {
         // values when all of the unit tests are run are
         // once. TODO They produce stable values when
         // this particular test is run repeatedly.
-        Histogram histogram2 = new Histogram(data2, "X1");
+        Histogram histogram2 = new Histogram(data2, "X1", removeZeroPointPerPlot);
 //        histogram2.setTarget("X1");
         histogram2.getFrequencies();
 

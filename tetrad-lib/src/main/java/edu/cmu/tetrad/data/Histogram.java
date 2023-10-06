@@ -36,6 +36,7 @@ import java.util.Map;
  */
 public class Histogram {
     private final DataSet dataSet;
+    private final boolean removeMinPointsPerPlot;
     private Node target;
     private int numBins = 10;
     private Map<Node, double[]> continuousIntervals;
@@ -44,12 +45,13 @@ public class Histogram {
     /**
      * This histogram is for variables in a particular data set. These may be continuous or discrete.
      */
-    public Histogram(DataSet dataSet, String target) {
+    public Histogram(DataSet dataSet, String target, boolean removeMinPointsPerPlot) {
         if (dataSet.getVariables().size() < 1) {
             throw new IllegalArgumentException("Can't do histograms for an empty data sets.");
         }
 
         this.dataSet = dataSet;
+        this.removeMinPointsPerPlot = removeMinPointsPerPlot;
         setTarget(target);
     }
 
@@ -118,6 +120,7 @@ public class Histogram {
     public int[] getFrequencies() {
         if (this.target instanceof ContinuousVariable) {
             List<Double> _data = getConditionedDataContinuous();
+            _data = removeZeroPointsPerPlot(_data);
             double[] breakpoints = getBreakpoints(_data, this.numBins);
 
             int[] counts = new int[this.numBins];
@@ -155,6 +158,20 @@ public class Histogram {
         } else {
             throw new IllegalArgumentException("Unrecognized variable type.");
         }
+    }
+
+    private List<Double> removeZeroPointsPerPlot(List<Double> data) {
+        List<Double> _data = new ArrayList<>();
+
+        double min = StatUtils.min(asDoubleArray(data));
+
+        for (double d : data) {
+            if (!removeMinPointsPerPlot || d != min) {
+                _data.add(d);
+            }
+        }
+
+        return _data;
     }
 
     /**
