@@ -89,11 +89,14 @@ class DescriptiveStatsAction extends AbstractAction {
         assert dataSet != null;
         java.util.List<Node> constantColumns = DataUtils.getConstantColumns(dataSet);
         coonstantColumnsString += constantColumns.isEmpty() ? "None" : constantColumns.toString();
+        String nonsingularString = null;
 
-        String nonsingularString = "Example Nonsingular (2 vars): ";
-        CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
-        List<Node> exampleNonsingular = DataUtils.getExampleNonsingular(covarianceMatrix, 2);
-        nonsingularString += exampleNonsingular == null ? "None" : exampleNonsingular.toString();
+        if (dataSet.isContinuous()) {
+            nonsingularString = "Example Nonsingular (2 vars): ";
+            CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
+            List<Node> exampleNonsingular = DataUtils.getExampleNonsingular(covarianceMatrix, 2);
+            nonsingularString += exampleNonsingular == null ? "None" : exampleNonsingular.toString();
+        }
 
         Box box = Box.createVerticalBox();
 
@@ -128,7 +131,11 @@ class DescriptiveStatsAction extends AbstractAction {
         box.add(b1);
 
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel(nonsingularString));
+        if (nonsingularString != null) {
+            b2.add(new JLabel(nonsingularString));
+        }
+
+//        b2.add(new JLabel(nonsingularString));
         b2.add(Box.createHorizontalGlue());
         box.add(b2);
 
