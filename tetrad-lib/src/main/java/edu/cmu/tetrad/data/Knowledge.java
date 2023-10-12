@@ -160,10 +160,6 @@ public final class Knowledge implements TetradSerializable {
     private void ensureTiers(int tier) {
         for (int i = this.tierSpecs.size(); i <= tier; i++) {
             this.tierSpecs.add(new HashSet<>());
-
-//            for (int j = 0; j < i; j++) {
-//                this.forbiddenRulesSpecs.add(new OrderedPair<>(this.tierSpecs.get(i), this.tierSpecs.get(j)));
-//            }
         }
     }
 
@@ -266,9 +262,13 @@ public final class Knowledge implements TetradSerializable {
         this.knowledgeGroupRules.put(group, o);
 
         if (group.getType() == KnowledgeGroup.FORBIDDEN) {
-            this.forbiddenRulesSpecs.add(o);
+            if (!forbiddenRulesSpecs.contains(o)) {
+                this.forbiddenRulesSpecs.add(o);
+            }
         } else if (group.getType() == KnowledgeGroup.REQUIRED) {
-            this.requiredRulesSpecs.add(o);
+            if (!requiredRulesSpecs.contains(o)) {
+                this.requiredRulesSpecs.add(o);
+            }
         }
     }
 
@@ -546,7 +546,11 @@ public final class Knowledge implements TetradSerializable {
         Set<String> f1 = getExtent(var1);
         Set<String> f2 = getExtent(var2);
 
-        this.forbiddenRulesSpecs.add(new OrderedPair<>(f1, f2));
+        OrderedPair<Set<String>> o = new OrderedPair<>(f1, f2);
+
+        if (!forbiddenRulesSpecs.contains(o)) {
+            this.forbiddenRulesSpecs.add(o);
+        }
     }
 
     /**
@@ -586,7 +590,11 @@ public final class Knowledge implements TetradSerializable {
             }
         });
 
-        this.requiredRulesSpecs.add(new OrderedPair<>(f1, f2));
+        OrderedPair<Set<String>> o = new OrderedPair<>(f1, f2);
+
+        if (!requiredRulesSpecs.contains(o)) {
+            this.requiredRulesSpecs.add(o);
+        }
     }
 
     /**
@@ -613,9 +621,13 @@ public final class Knowledge implements TetradSerializable {
         this.requiredRulesSpecs.remove(old);
 
         if (group.getType() == KnowledgeGroup.FORBIDDEN) {
-            this.forbiddenRulesSpecs.add(o);
+            if (!forbiddenRulesSpecs.contains(o)) {
+                this.forbiddenRulesSpecs.add(o);
+            }
         } else if (group.getType() == KnowledgeGroup.REQUIRED) {
-            this.requiredRulesSpecs.add(o);
+            if (!requiredRulesSpecs.contains(o)) {
+                this.requiredRulesSpecs.add(o);
+            }
         }
 
         this.knowledgeGroups.set(index, group);
@@ -641,10 +653,14 @@ public final class Knowledge implements TetradSerializable {
         ensureTiers(tier);
         Set<String> varsInTier = this.tierSpecs.get(tier);
 
+        OrderedPair<Set<String>> o = new OrderedPair<>(varsInTier, varsInTier);
+
         if (forbidden) {
-            this.forbiddenRulesSpecs.add(new OrderedPair<>(varsInTier, varsInTier));
+            if (!forbiddenRulesSpecs.contains(o)) {
+                this.forbiddenRulesSpecs.add(o);
+            }
         } else {
-            this.forbiddenRulesSpecs.remove(new OrderedPair<>(varsInTier, varsInTier));
+            this.forbiddenRulesSpecs.remove(o);
         }
     }
 
@@ -759,10 +775,14 @@ public final class Knowledge implements TetradSerializable {
 
         for (int tierN = tier + 2; tierN < this.tierSpecs.size(); tierN++) {
             Set<String> varsInTierN = this.tierSpecs.get(tierN);
+            OrderedPair<Set<String>> o = new OrderedPair<>(varsInTier, varsInTierN);
+
             if (onlyCausesNext) {
-                this.forbiddenRulesSpecs.add(new OrderedPair<>(varsInTier, varsInTierN));
+                if (!forbiddenRulesSpecs.contains(o)) {
+                    this.forbiddenRulesSpecs.add(o);
+                }
             } else {
-                this.forbiddenRulesSpecs.remove(new OrderedPair<>(varsInTier, varsInTierN));
+                this.forbiddenRulesSpecs.remove(o);
             }
         }
     }
