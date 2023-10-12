@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -105,7 +104,7 @@ public class PcLingam {
 
         TetradLogger.getInstance().log("info", "Making list of all dags in CPDAG...");
 
-        List<Graph> dags = GraphSearchUtils.getAllGraphsByDirectingUndirectedEdges(_cpdag);
+        List<Graph> dags = GraphTransforms.getAllGraphsByDirectingUndirectedEdges(_cpdag);
 
         TetradLogger.getInstance().log("normalityTests", "Anderson Darling P value for Variables\n");
         NumberFormat nf = new DecimalFormat("0.0000");
@@ -152,7 +151,7 @@ public class PcLingam {
             TetradLogger.getInstance().log("normalityTests", getDataSet().getVariable(j) + ": " + nf.format(scores.get(maxj).pvals[j]));
         }
 
-        Graph ngDagCPDAG = GraphSearchUtils.cpdagFromDag(dag);
+        Graph ngDagCPDAG = GraphTransforms.cpdagForDag(dag);
 
         List<Node> nodes = ngDagCPDAG.getNodes();
 

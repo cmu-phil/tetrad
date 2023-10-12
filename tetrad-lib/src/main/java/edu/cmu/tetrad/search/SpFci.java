@@ -134,7 +134,7 @@ public final class SpFci implements IGraphSearch {
         }
 
         Knowledge knowledge2 = new Knowledge(knowledge);
-        addForbiddenReverseEdgesForDirectedEdges(GraphSearchUtils.cpdagForDag(graph), knowledge2);
+        addForbiddenReverseEdgesForDirectedEdges(GraphTransforms.cpdagForDag(graph), knowledge2);
 
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);

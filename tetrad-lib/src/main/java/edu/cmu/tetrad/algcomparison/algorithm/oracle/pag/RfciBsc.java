@@ -11,13 +11,12 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * Jan 4, 2019 4:32:05 PM
@@ -75,7 +74,8 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return dagToPag(new EdgeListGraph(graph));
+        Graph trueGraph = new EdgeListGraph(graph);
+        return GraphTransforms.dagToPag(trueGraph);
     }
 
     @Override

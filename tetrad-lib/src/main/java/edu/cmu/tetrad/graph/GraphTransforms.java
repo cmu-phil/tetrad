@@ -56,13 +56,6 @@ public class GraphTransforms {
         return dag;
     }
 
-    private static void direct(Node a, Node c, Graph graph) {
-        Edge before = graph.getEdge(a, c);
-        Edge after = Edges.directedEdge(a, c);
-        graph.removeEdge(before);
-        graph.addEdge(after);
-    }
-
     // Zhang 2008 Theorem 2
     public static Graph pagToMag(Graph pag) {
         Graph mag = new EdgeListGraph(pag.getNodes());
@@ -218,5 +211,13 @@ public class GraphTransforms {
     @NotNull
     public static Graph dagToPag(Graph trueGraph) {
         return new DagToPag(trueGraph).convert();
+    }
+
+
+    private static void direct(Node a, Node c, Graph graph) {
+        Edge before = graph.getEdge(a, c);
+        Edge after = Edges.directedEdge(a, c);
+        graph.removeEdge(before);
+        graph.addEdge(after);
     }
 }

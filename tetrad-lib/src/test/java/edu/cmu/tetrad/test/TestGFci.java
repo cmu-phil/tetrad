@@ -25,8 +25,6 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.BFci;
-import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.BdeuScore;
@@ -112,7 +110,7 @@ public class TestGFci {
 //        dagToPag.setMaxPathLength(maxPathLength);
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = GraphSearchUtils.dagToPag(dag);
+        Graph truePag = GraphTransforms.dagToPag(dag);
 
         outGraph = GraphUtils.replaceNodes(outGraph, truePag.getNodes());
 
@@ -197,7 +195,7 @@ public class TestGFci {
 //            dagToPag.setCompleteRuleSetUsed(false);
 //            Graph pag2 = dagToPag.convert();
 
-            Graph pag2 = GraphSearchUtils.dagToPag(dag);
+            Graph pag2 = GraphTransforms.dagToPag(dag);
 
             assertEquals(pag2, pag1);
         }

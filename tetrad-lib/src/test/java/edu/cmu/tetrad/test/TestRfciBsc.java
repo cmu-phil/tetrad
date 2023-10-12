@@ -8,7 +8,6 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.utils.BayesImParser;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import nu.xom.Builder;
@@ -96,7 +95,7 @@ public class TestRfciBsc {
 //        dagToPag.setCompleteRuleSetUsed(false);
 //        Graph PAG_True = dagToPag.convert();
 
-        Graph PAG_True = GraphSearchUtils.dagToPag(dag);
+        Graph PAG_True = GraphTransforms.dagToPag(dag);
 
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 
@@ -169,7 +168,7 @@ public class TestRfciBsc {
 //        dagToPag.setCompleteRuleSetUsed(false);
 //        Graph PAG_True = dagToPag.convert();
 
-        Graph PAG_True = GraphSearchUtils.dagToPag(dag);
+        Graph PAG_True = GraphTransforms.dagToPag(dag);
 
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 

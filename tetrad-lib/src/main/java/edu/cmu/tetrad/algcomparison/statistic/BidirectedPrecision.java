@@ -4,8 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
-
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
+import edu.cmu.tetrad.graph.GraphTransforms;
 
 /**
  * The bidirected edge precision.
@@ -27,7 +26,7 @@ public class BidirectedPrecision implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph pag = dagToPag(trueGraph);
+        Graph pag = GraphTransforms.dagToPag(trueGraph);
         int tp = 0;
         int fp = 0;
 

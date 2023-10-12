@@ -2,8 +2,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.SemBicScorer;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import static org.apache.commons.math3.util.FastMath.tanh;
 
@@ -38,7 +38,7 @@ public class BicEst implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
 //        double _true = SemBicScorer.scoreDag(SearchGraphUtils.dagFromCPDAG(trueGraph), dataModel);
-        return SemBicScorer.scoreDag(GraphSearchUtils.dagFromCPDAG(estGraph), dataModel, precomputeCovariances);
+        return SemBicScorer.scoreDag(GraphTransforms.dagFromCPDAG(estGraph, null), dataModel, precomputeCovariances);
     }
 
     @Override

@@ -160,7 +160,7 @@ public class RBExperiments {
 
         // get the true underlying PAG
 
-        Graph PAG_True = GraphSearchUtils.dagToPag(dag);
+        Graph PAG_True = GraphTransforms.dagToPag(dag);
 
         PAG_True = GraphUtils.replaceNodes(PAG_True, data.getVariables());
 
@@ -187,7 +187,7 @@ public class RBExperiments {
 
         // learn structure of constraints using empirical data
         Graph depCPDAG = runFGS(depData);
-        Graph estDepBN = GraphSearchUtils.dagFromCPDAG(depCPDAG);
+        Graph estDepBN = GraphTransforms.dagFromCPDAG(depCPDAG, null);
         System.out.println("estDepBN: " + estDepBN.getEdges());
         out.println("DepGraph(nodes,edges):" + estDepBN.getNumNodes() + "," + estDepBN.getNumEdges());
         System.out.println("Dependency graph done!");

@@ -36,8 +36,6 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
-
 /**
  * Basic graph utilities.
  *
@@ -1511,10 +1509,10 @@ public final class GraphUtils {
             return new EdgeListGraph(graph);
         } else if ("CPDAG".equals(type)) {
             params.set("graphComparisonType", "CPDAG");
-            return GraphSearchUtils.cpdagForDag(graph);
+            return GraphTransforms.cpdagForDag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
-            return dagToPag(graph);
+            return GraphTransforms.dagToPag(graph);
         } else {
             params.set("graphComparisonType", "DAG");
             return new EdgeListGraph(graph);

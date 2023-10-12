@@ -13,7 +13,6 @@ import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
@@ -400,7 +399,7 @@ public class RfciBsc implements IGraphSearch {
 
         Graph depPattern = fges.search();
         depPattern = GraphUtils.replaceNodes(depPattern, depData.getVariables());
-        Graph estDepBN = GraphSearchUtils.dagFromCPDAG(depPattern);
+        Graph estDepBN = GraphTransforms.dagFromCPDAG(depPattern, null);
 
         if (this.verbose) {
             this.out.println("estDepBN:");

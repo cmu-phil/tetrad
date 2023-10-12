@@ -21,8 +21,6 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
-
 /**
  * Does a comparison of algorithm results across algorithm type, sample sizes, etc.
  *
@@ -189,34 +187,38 @@ public class Comparison {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Pc search = new Pc(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(GraphSearchUtils.cpdagForDag(new EdgeListGraph(trueDag)));
+            Graph dag = new EdgeListGraph(trueDag);
+            result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Cpc search = new Cpc(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(GraphSearchUtils.cpdagForDag(new EdgeListGraph(trueDag)));
+            Graph dag = new EdgeListGraph(trueDag);
+            result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
             if (score == null) throw new IllegalArgumentException("Score not set.");
             Fges search = new Fges(score);
             search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
-            result.setCorrectResult(GraphSearchUtils.cpdagForDag(new EdgeListGraph(trueDag)));
+            Graph dag = new EdgeListGraph(trueDag);
+            result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES2) {
             if (score == null) throw new IllegalArgumentException("Score not set.");
             Fges search = new Fges(score);
             search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
-            result.setCorrectResult(GraphSearchUtils.cpdagForDag(new EdgeListGraph(trueDag)));
+            Graph dag = new EdgeListGraph(trueDag);
+            result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Fci search = new Fci(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(dagToPag(trueDag));
+            result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             GFci search = new GFci(test, score);
             result.setResultGraph(search.search());
-            result.setCorrectResult(dagToPag(trueDag));
+            result.setCorrectResult(GraphTransforms.dagToPag(trueDag));
         } else {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }

@@ -8,7 +8,6 @@ import edu.cmu.tetrad.search.BFci;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import org.apache.commons.math3.util.FastMath;
@@ -111,7 +110,7 @@ public class DataForCalibrationRfci {
 //
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = GraphSearchUtils.dagToPag(dag);
+        Graph truePag = GraphTransforms.dagToPag(dag);
 
         System.out.println("true PAG construction Done!");
 

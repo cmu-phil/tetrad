@@ -39,7 +39,6 @@ import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 import org.reflections.Reflections;
@@ -53,8 +52,6 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
-
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * Nov 14, 2017 12:00:31 PM
@@ -499,12 +496,12 @@ public class TimeoutComparison {
 
                     if (isSaveCPDAGs()) {
                         File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
-                        GraphSaveLoadUtils.saveGraph(GraphSearchUtils.cpdagForDag(graph), file3, false);
+                        GraphSaveLoadUtils.saveGraph(GraphTransforms.cpdagForDag(graph), file3, false);
                     }
 
                     if (isSavePags()) {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                        GraphSaveLoadUtils.saveGraph(dagToPag(graph), file4, false);
+                        GraphSaveLoadUtils.saveGraph(GraphTransforms.dagToPag(graph), file4, false);
                     }
                 }
 
@@ -1104,9 +1101,11 @@ public class TimeoutComparison {
         if (this.comparisonGraph == ComparisonGraph.true_DAG) {
             comparisonGraph = new EdgeListGraph(trueGraph);
         } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
-            comparisonGraph = GraphSearchUtils.cpdagForDag(new EdgeListGraph(trueGraph));
+            Graph dag = new EdgeListGraph(trueGraph);
+            comparisonGraph = GraphTransforms.cpdagForDag(dag);
         } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
-            comparisonGraph = dagToPag(new EdgeListGraph(trueGraph));
+            Graph trueGraph1 = new EdgeListGraph(trueGraph);
+            comparisonGraph = GraphTransforms.dagToPag(trueGraph1);
         } else {
             throw new IllegalArgumentException("Unrecognized graph type.");
         }

@@ -3,8 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.algcomparison.statistic.utils.BidirectedConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
-
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
+import edu.cmu.tetrad.graph.GraphTransforms;
 
 /**
  * The bidirected true positives.
@@ -26,7 +25,7 @@ public class BidirectedTP implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph pag = dagToPag(trueGraph);
+        Graph pag = GraphTransforms.dagToPag(trueGraph);
         BidirectedConfusion confusion = new BidirectedConfusion(pag, estGraph);
         return confusion.getTp();
     }
