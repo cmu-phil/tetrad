@@ -133,6 +133,11 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             int index = (int) round((1.0 - this.percent) * pValues.size());
             double pValue = pValues.get(index);
 
+            if (Double.isNaN(pValue)) {
+                throw new RuntimeException("NaN p-value encountered when testing " +
+                        LogUtilsSearch.independenceFact(x, y, _z));
+            }
+
             boolean independent = pValue > _cutoff;
 
             if (this.verbose) {

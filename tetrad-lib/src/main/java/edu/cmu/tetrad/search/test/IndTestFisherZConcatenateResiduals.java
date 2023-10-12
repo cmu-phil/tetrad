@@ -164,6 +164,11 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         }
 
         double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(fisherZ)));
+
+        if (Double.isNaN(pValue)) {
+            throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
+        }
+
         this.pValue = pValue;
         boolean independent = pValue > this.alpha;
 

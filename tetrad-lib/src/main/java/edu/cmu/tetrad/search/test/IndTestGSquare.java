@@ -192,6 +192,11 @@ public final class IndTestGSquare implements IndependenceTest {
         GSquareTest.Result result = this.gSquareTest.calcGSquare(testIndices);
         this.pValue = result.getPValue();
 
+        if (Double.isNaN(this.pValue)) {
+            throw new RuntimeException("Undefined p-value encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, _z));
+        }
+
         if (this.verbose) {
             if (result.isIndep()) {
                 TetradLogger.getInstance().forceLogMessage(

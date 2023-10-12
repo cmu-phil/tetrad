@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
@@ -206,8 +207,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         try {
             p = getPValue(x, y, z);
         } catch (SingularMatrixException e) {
-            return new IndependenceResult(new IndependenceFact(x, y, z),
-                    true, p, alpha - p);
+            throw new RuntimeException("Singular matrix encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
         }
 
         boolean independent = p > this.alpha;
@@ -220,8 +220,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         }
 
         if (Double.isNaN(p)) {
-            return new IndependenceResult(new IndependenceFact(x, y, z),
-                    true, p, alpha - p);
+            throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
         } else {
             return new IndependenceResult(new IndependenceFact(x, y, z),
                     independent, p, alpha - p);

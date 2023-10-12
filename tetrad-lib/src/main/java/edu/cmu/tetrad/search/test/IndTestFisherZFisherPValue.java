@@ -147,6 +147,11 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
                     "For the Fisher method, all component p values in the calculation may not be zero, " +
                             "\nsince not all p values can be ignored. Maybe try calculating AR residuals.");
             double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * n);
+
+            if (Double.isNaN(p)) {
+                throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
+            }
+
             this.pValue = p;
 
             boolean independent = p > this.alpha;

@@ -222,7 +222,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         double pValue;
 
         if (Double.isNaN(lik0)) {
-            pValue = NaN;
+            throw new RuntimeException("Undefined likelihood encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
         } else {
             pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
         }

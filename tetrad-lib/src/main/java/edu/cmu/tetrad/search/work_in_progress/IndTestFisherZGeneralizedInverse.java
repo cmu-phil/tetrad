@@ -205,6 +205,10 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, getPValue()));
         }
 
+        if (Double.isNaN(getPValue())) {
+            throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(xVar, yVar, _z));
+        }
+
         if (this.verbose) {
             if (indFisher) {
                 TetradLogger.getInstance().forceLogMessage(

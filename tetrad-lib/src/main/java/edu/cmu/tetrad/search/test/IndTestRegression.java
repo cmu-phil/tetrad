@@ -142,6 +142,11 @@ public final class IndTestRegression implements IndependenceTest {
 
         double p = result.getP()[1];
 
+        if (Double.isNaN(p)) {
+            throw new RuntimeException("Undefined p-value encountered when testing " +
+                    LogUtilsSearch.independenceFact(xVar, yVar, zList));
+        }
+
         boolean independent = p > this.alpha;
 
         if (this.verbose) {
