@@ -66,7 +66,7 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
             System.out.println("Loading graph from " + file.getAbsolutePath());
             Graph graph = GraphSaveLoadUtils.loadGraphBNTPcMatrix(dataSet.getVariables(), dataSet2);
 
-            LayoutUtil.circleLayout(graph);
+            LayoutUtil.defaultLayout(graph);
 
             return graph;
         } catch (IOException e) {

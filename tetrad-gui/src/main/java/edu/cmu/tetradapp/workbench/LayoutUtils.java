@@ -446,7 +446,7 @@ public class LayoutUtils {
             }
         }
 
-        LayoutUtil.circleLayout(graph);
+        LayoutUtil.defaultLayout(graph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.layered;
     }
@@ -499,7 +499,7 @@ public class LayoutUtils {
 
         int m = FastMath.min(r.width, r.height) / 2;
 
-        LayoutUtil.circleLayout(graph);
+        LayoutUtil.defaultLayout(graph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.circle;
     }

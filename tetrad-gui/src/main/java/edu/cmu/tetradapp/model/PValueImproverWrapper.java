@@ -249,7 +249,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             GraphSearchUtils.arrangeByKnowledgeTiers(this.graph, knowledge);
         } else {
-            LayoutUtil.circleLayout(this.graph);
+            LayoutUtil.defaultLayout(this.graph);
         }
 
         setResultGraph(GraphSearchUtils.cpdagForDag(this.graph));

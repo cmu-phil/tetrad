@@ -30,9 +30,22 @@ public class LayoutUtil {
     }
 
     /**
-     * Arranges the nodes in the graph in a circle.
+     * Arranges the nodes in the graph in a circle if there are 20 or fewer nodes, otherwise arranges them in a square.
+     * @param graph the graph to be arranged.
      */
-    public static void circleLayout(Graph graph) {
+    public static void defaultLayout(Graph graph) {
+        if (graph.getNumNodes() <= 20) {
+            circleLayout(graph);
+        } else {
+            squareLayout(graph);
+        }
+    }
+
+    /**
+     * Arranges the nodes in the graph in a circle.
+     * @param graph the graph to be arranged.
+     */
+    private static void circleLayout(Graph graph) {
         if (graph == null) {
             return;
         }
@@ -202,7 +215,7 @@ public class LayoutUtil {
         }
 
         if (sourceGraph == null) {
-            circleLayout(resultGraph);
+            defaultLayout(resultGraph);
             return true;
         }
 
@@ -302,7 +315,7 @@ public class LayoutUtil {
         //============================PUBLIC METHODS==========================//
 
         public void doLayout() {
-            circleLayout(this.graph);
+            defaultLayout(this.graph);
 
             this.monitor = new ProgressMonitor(null, "Energy settling...",
                     "Energy = ?", 0, 100);
@@ -763,7 +776,7 @@ public class LayoutUtil {
         //============================PUBLIC METHODS==========================//
 
         public void doLayout() {
-            circleLayout(this.graph);
+            defaultLayout(this.graph);
 
             List<List<Node>> components = this.graph.paths().connectedComponents();
 

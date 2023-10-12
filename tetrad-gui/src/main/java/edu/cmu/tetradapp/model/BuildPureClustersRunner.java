@@ -244,7 +244,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 
         try {
             Graph graph = new MarshalledObject<>(searchGraph).get();
-            LayoutUtil.circleLayout(graph);
+            LayoutUtil.defaultLayout(graph);
             LayoutUtil.fruchtermanReingoldLayout(graph);
             setResultGraph(graph);
             setClusters(MimUtils.convertToClusters(graph, getData().getVariables()));

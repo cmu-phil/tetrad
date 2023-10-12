@@ -79,7 +79,7 @@ class LoadGraphPcalg extends AbstractAction {
         Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
         Graph graph = GraphSaveLoadUtils.loadGraphPcalg(file);
-        LayoutUtil.circleLayout(graph);
+        LayoutUtil.defaultLayout(graph);
         this.graphEditable.setGraph(graph);
     }
 }

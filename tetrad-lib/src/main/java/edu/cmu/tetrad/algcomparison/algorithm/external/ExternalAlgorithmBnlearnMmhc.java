@@ -87,7 +87,7 @@ public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
                 }
             }
 
-            LayoutUtil.circleLayout(graph);
+            LayoutUtil.defaultLayout(graph);
 
             return graph;
         } catch (IOException e) {

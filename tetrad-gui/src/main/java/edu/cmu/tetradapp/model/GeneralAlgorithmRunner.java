@@ -282,7 +282,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
             Graph graph = algo.search(null, this.parameters);
 
-            LayoutUtil.circleLayout(graph);
+            LayoutUtil.defaultLayout(graph);
 
             graphList.add(graph);
         } else {
@@ -332,7 +332,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                             Graph graph = this.algorithm.search(dataSet, this.parameters);
 
-                            LayoutUtil.circleLayout(graph);
+                            LayoutUtil.defaultLayout(graph);
 
                             graphList.add(graph);
                         } else if (dataModel instanceof DataSet) {
@@ -351,7 +351,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                             }
 
                             Graph graph = this.algorithm.search(dataSet, this.parameters);
-                            LayoutUtil.circleLayout(graph);
+                            LayoutUtil.defaultLayout(graph);
 
                             graphList.add(graph);
                         }
@@ -385,15 +385,15 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                         if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
                             Graph graph = algo.search(data, this.parameters);
-                            LayoutUtil.circleLayout(graph);
+                            LayoutUtil.defaultLayout(graph);
                             graphList.add(graph);
                         } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
                             Graph graph = algo.search(data, this.parameters);
-                            LayoutUtil.circleLayout(graph);
+                            LayoutUtil.defaultLayout(graph);
                             graphList.add(graph);
                         } else if (data.isMixed() && algDataType == DataType.Mixed) {
                             Graph graph = algo.search(data, this.parameters);
-                            LayoutUtil.circleLayout(graph);
+                            LayoutUtil.defaultLayout(graph);
                             graphList.add(graph);
                         } else {
                             throw new IllegalArgumentException("The algorithm was not expecting that type of data.");
@@ -409,7 +409,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
         } else {
             for (Graph graph : graphList) {
-                LayoutUtil.circleLayout(graph);
+                LayoutUtil.defaultLayout(graph);
             }
         }
 

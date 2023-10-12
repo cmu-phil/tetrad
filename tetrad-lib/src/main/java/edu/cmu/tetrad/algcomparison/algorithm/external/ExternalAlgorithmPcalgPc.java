@@ -90,7 +90,7 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
             System.out.println("Loading graph from " + file.getAbsolutePath());
             Graph graph = ExternalAlgorithmPcalgPc.loadGraphPcAlgMatrix(dataSet2);
 
-            LayoutUtil.circleLayout(graph);
+            LayoutUtil.defaultLayout(graph);
 
             return graph;
         } catch (IOException e) {

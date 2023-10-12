@@ -187,7 +187,7 @@ public class VcpcRunner extends AbstractAlgorithmRunner
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
-            LayoutUtil.circleLayout(graph);
+            LayoutUtil.defaultLayout(graph);
         }
 
         setResultGraph(graph);

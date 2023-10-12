@@ -62,7 +62,7 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
         File file2 = new File(parent + "/structure_" + this.structure + "_graph.txt");
         System.out.println("Loading graph from " + file2.getAbsolutePath());
         this.graph = GraphSaveLoadUtils.loadGraphTxt(file2);
-        LayoutUtil.circleLayout(this.graph);
+        LayoutUtil.defaultLayout(this.graph);
 
         if (parameters.get("numRuns") != null) {
             parameters.set("numRuns", parameters.get("numRuns"));

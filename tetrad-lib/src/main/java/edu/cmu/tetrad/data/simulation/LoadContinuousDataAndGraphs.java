@@ -49,7 +49,7 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                     System.out.println("Loading graph from " + file2.getAbsolutePath());
                     this.graphs.add(GraphSaveLoadUtils.loadGraphTxt(file2));
 
-                    LayoutUtil.circleLayout(this.graphs.get(i));
+                    LayoutUtil.defaultLayout(this.graphs.get(i));
 
                     File file1 = new File(this.path + "/data/data." + (i + 1) + ".txt");
 
