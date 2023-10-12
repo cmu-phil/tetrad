@@ -45,7 +45,7 @@ public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge
                 dataSets.add((DataSet) dataModel);
             }
 
-            DataSet dataSet = DataUtils.concatenate(dataSets);
+            DataSet dataSet = DataTransforms.concatenate(dataSets);
 
             FasLofs search = new FasLofs(dataSet, this.rule);
             search.setDepth(parameters.getInt(Params.DEPTH));

@@ -2,10 +2,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.SemGraph;
@@ -79,7 +76,7 @@ public class SemSimulation implements Simulation {
             DataSet dataSet = simulate(graph, parameters);
 
             if (parameters.getBoolean(Params.STANDARDIZE)) {
-                dataSet = DataUtils.standardizeData(dataSet);
+                dataSet = DataTransforms.standardizeData(dataSet);
             }
 
             double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
@@ -95,11 +92,12 @@ public class SemSimulation implements Simulation {
             }
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.shuffleColumns(dataSet);
+                dataSet = DataTransforms.shuffleColumns(dataSet);
             }
 
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+                double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
+                dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
             }
 
             dataSet.setName("" + (i + 1));

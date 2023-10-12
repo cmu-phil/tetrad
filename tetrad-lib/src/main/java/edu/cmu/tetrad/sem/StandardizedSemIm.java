@@ -144,7 +144,7 @@ public class StandardizedSemIm implements Simulator {
             // This code estimates the new coefficients from simulated data from the old model.
             DataSet dataSet = im.simulateData(this.sampleSize, false);
             Matrix _dataSet = dataSet.getDoubleData();
-            _dataSet = DataUtils.standardizeData(_dataSet);
+            _dataSet = DataTransforms.standardizeData(_dataSet);
             DataSet dataSetStandardized = new BoxDataSet(new VerticalDoubleDataBox(_dataSet.toArray()), dataSet.getVariables());
 
             SemEstimator estimator = new SemEstimator(dataSetStandardized, im.getSemPm());
@@ -581,7 +581,7 @@ public class StandardizedSemIm implements Simulator {
         if (latentDataSaved) {
             return fullDataSet;
         } else {
-            return DataUtils.restrictToMeasured(fullDataSet);
+            return DataTransforms.restrictToMeasured(fullDataSet);
         }
     }
 

@@ -2,7 +2,7 @@ package edu.cmu.tetrad.calibration;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.BFci;
 import edu.cmu.tetrad.search.Rfci;
@@ -122,7 +122,7 @@ public class DataForCalibrationRfci {
         DataSet data = simulator.simulateDataReducedForm(numCases);
 
         // To remove the columns related to latent variables from dataset
-        data = DataUtils.restrictToMeasured(data);
+        data = DataTransforms.restrictToMeasured(data);
         System.out.println("Data simulation done");
 
         System.out.println("Covariance matrix done");
@@ -349,7 +349,7 @@ public class DataForCalibrationRfci {
     }
 
     public DataSet bootStrapSampling(DataSet data, int bootsrapSampleSize) {
-        return DataUtils.getBootstrapSample(data, bootsrapSampleSize);
+        return DataTransforms.getBootstrapSample(data, bootsrapSampleSize);
     }
 
     public Graph learnBNRFCI(DataSet bootstrapSample, int depth, Graph truePag) {

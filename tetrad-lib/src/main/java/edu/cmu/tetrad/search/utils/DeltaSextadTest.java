@@ -69,7 +69,7 @@ public class DeltaSextadTest {
 
         this.cov = new CovarianceMatrix(dataSet);
 
-        Matrix centered = DataUtils.centerData(dataSet.getDoubleData());
+        Matrix centered = DataTransforms.centerData(dataSet.getDoubleData());
         this.data = centered.transpose().toArray();
         this.N = dataSet.getNumRows();
         this.variables = dataSet.getVariables();

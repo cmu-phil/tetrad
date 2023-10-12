@@ -59,7 +59,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
             for (DataModel dataModel : dataModelList) {
                 dataSets.add((DataSet) dataModel);
             }
-            newData.addAll((DataUtils.shuffleColumns2(dataSets)));
+            newData.addAll((DataTransforms.shuffleColumns2(dataSets)));
         } else {
 
             for (DataModel dataModel : dataModelList) {

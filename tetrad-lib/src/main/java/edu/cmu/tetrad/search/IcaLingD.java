@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
@@ -148,7 +148,7 @@ public class IcaLingD {
         TetradLogger.getInstance().forceLogMessage("");
 
         Matrix X = data.getDoubleData();
-        X = DataUtils.centerData(X).transpose();
+        X = DataTransforms.centerData(X).transpose();
         FastIca fastIca = new FastIca(X, X.getNumRows());
         fastIca.setVerbose(false);
         fastIca.setMaxIterations(fastIcaMaxIter);

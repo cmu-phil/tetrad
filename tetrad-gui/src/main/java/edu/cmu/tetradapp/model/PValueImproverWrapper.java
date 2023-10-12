@@ -368,7 +368,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
             }
         }
 
-        return DataUtils.restrictToMeasured(fullDataSet);
+        return DataTransforms.restrictToMeasured(fullDataSet);
     }
 
     /**

@@ -121,7 +121,7 @@ class DescriptiveStats {
         }
 
         table.setToken(rowindex, 0, "Constant Columns:");
-        List<Node> constantColumns = DataUtils.getConstantColumns(dataSet);
+        List<Node> constantColumns = DataTransforms.getConstantColumns(dataSet);
         table.setToken(rowindex++, 1, constantColumns.isEmpty() ? "None" : constantColumns.toString());
 
         table.setToken(rowindex, 0, "Example Nonsingular (2 - 3 vars):");

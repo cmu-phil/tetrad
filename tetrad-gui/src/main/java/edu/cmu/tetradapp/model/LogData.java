@@ -50,7 +50,7 @@ public class LogData extends DataWrapper {
             boolean isUnlog = params.getBoolean("unlog");
             int base = params.getInt("base");
 
-            DataSet dataSet2 = DataUtils.logData(dataSet, a, isUnlog, base);
+            DataSet dataSet2 = DataTransforms.logData(dataSet, a, isUnlog, base);
             outList.add(dataSet2);
         }
 

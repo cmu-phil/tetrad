@@ -749,7 +749,7 @@ public class PerformanceTests {
 
         DataSet data = simulator.simulateDataFisher(numCases);
 
-        data = DataUtils.restrictToMeasured(data);
+        data = DataTransforms.restrictToMeasured(data);
 
         System.out.println("Finishing simulation");
 
@@ -1364,7 +1364,7 @@ public class PerformanceTests {
 
             DataSet data = simulator.simulateDataFisher(numCases);
 
-            data = DataUtils.restrictToMeasured(data);
+            data = DataTransforms.restrictToMeasured(data);
 
             System.out.println("Finishing simulation");
 

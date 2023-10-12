@@ -1174,7 +1174,7 @@ public final class SemIm implements Im, ISemIm {
             }
         }
 
-        return latentDataSaved ? fullData : DataUtils.restrictToMeasured(fullData);
+        return latentDataSaved ? fullData : DataTransforms.restrictToMeasured(fullData);
     }
 
     private double getNextNormal(double mean, double stdDev) {
@@ -1272,7 +1272,7 @@ public final class SemIm implements Im, ISemIm {
         if (latentDataSaved) {
             return fullDataSet;
         } else {
-            return DataUtils.restrictToMeasured(fullDataSet);
+            return DataTransforms.restrictToMeasured(fullDataSet);
         }
     }
 
@@ -1445,7 +1445,7 @@ public final class SemIm implements Im, ISemIm {
         if (latentDataSaved) {
             return fullDataSet;
         } else {
-            return DataUtils.restrictToMeasured(fullDataSet);
+            return DataTransforms.restrictToMeasured(fullDataSet);
         }
     }
 
@@ -1539,7 +1539,7 @@ public final class SemIm implements Im, ISemIm {
         if (latentDataSaved) {
             return fullDataSet;
         } else {
-            return DataUtils.restrictToMeasured(fullDataSet);
+            return DataTransforms.restrictToMeasured(fullDataSet);
         }
     }
 

@@ -341,7 +341,7 @@ public class RfciBsc implements IGraphSearch {
             public BootstrapDepDataTask(int row_index, int rows) {
                 this.row_index = row_index;
 
-                DataSet bsData = DataUtils.getBootstrapSample(dataSet, rows);
+                DataSet bsData = DataTransforms.getBootstrapSample(dataSet, rows);
                 this.bsTest = new IndTestProbabilistic(bsData);
                 this.bsTest.setThreshold(RfciBsc.this.thresholdNoRandomConstrainSearch);
                 if (RfciBsc.this.thresholdNoRandomConstrainSearch) {

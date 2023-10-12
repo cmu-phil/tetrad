@@ -56,7 +56,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
                 dataSets.add((DataSet) dataModel);
             }
 
-            DataSet dataSet = DataUtils.concatenate(dataSets);
+            DataSet dataSet = DataTransforms.concatenate(dataSets);
 
             Graph initial = null;
             if (this.externalGraph != null) {

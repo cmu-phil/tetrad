@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
@@ -250,7 +250,7 @@ public final class Fask implements IGraphSearch {
         long start = MillisecondTimes.timeMillis();
         NumberFormat nf = new DecimalFormat("0.000");
 
-        DataSet dataSet = DataUtils.standardizeData(this.dataSet);
+        DataSet dataSet = DataTransforms.standardizeData(this.dataSet);
 
         List<Node> variables = dataSet.getVariables();
         double[][] lrs = getLrScores(); // Sets D.
@@ -476,7 +476,7 @@ public final class Fask implements IGraphSearch {
      */
     public double[][] getLrScores() {
         List<Node> variables = this.dataSet.getVariables();
-        double[][] D = DataUtils.standardizeData(this.dataSet).getDoubleData().transpose().toArray();
+        double[][] D = DataTransforms.standardizeData(this.dataSet).getDoubleData().transpose().toArray();
 
         double[][] lr = new double[variables.size()][variables.size()];
 

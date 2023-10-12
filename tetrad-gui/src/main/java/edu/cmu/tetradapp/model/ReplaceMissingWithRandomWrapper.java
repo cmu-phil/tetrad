@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -49,7 +49,7 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
 
-        this.outputDataSet = DataUtils.replaceMissingWithRandom(dataSet);
+        this.outputDataSet = DataTransforms.replaceMissingWithRandom(dataSet);
         setDataModel(this.outputDataSet);
         setSourceGraph(wrapper.getSourceGraph());
 

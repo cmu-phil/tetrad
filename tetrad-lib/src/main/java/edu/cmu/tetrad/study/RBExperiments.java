@@ -156,7 +156,7 @@ public class RBExperiments {
         // simulate data from instantiated model
         DataSet fullData = im.simulateData(numCases, /*round * 1000000 + 71512,*/ true);
         refineData(fullData);
-        DataSet data = DataUtils.restrictToMeasured(fullData);
+        DataSet data = DataTransforms.restrictToMeasured(fullData);
 
         // get the true underlying PAG
 
@@ -369,7 +369,8 @@ public class RBExperiments {
         System.out.println("HCopy size: " + HCopy.size());
 
         for (int b = 0; b < numBootstrapSamples; b++) {
-            DataSet bsData = DataUtils.getBootstrapSample(data, data.getNumRows());
+            int sampleSize = data.getNumRows();
+            DataSet bsData = DataTransforms.getBootstrapSample(data, sampleSize);
             IndTestProbabilistic bsTest = new IndTestProbabilistic(bsData);
             bsTest.setThreshold(threshold);
             for (IndependenceFact f : HCopy.keySet()) {

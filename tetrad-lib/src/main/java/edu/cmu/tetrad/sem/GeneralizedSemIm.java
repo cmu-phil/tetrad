@@ -459,7 +459,7 @@ public class GeneralizedSemIm implements Im, Simulator {
         if (latentDataSaved) {
             return fullDataSet;
         } else {
-            return DataUtils.restrictToMeasured(fullDataSet);
+            return DataTransforms.restrictToMeasured(fullDataSet);
         }
     }
 
@@ -591,7 +591,7 @@ public class GeneralizedSemIm implements Im, Simulator {
         if (latentDataSaved) {
             return fullDataSet;
         } else {
-            return DataUtils.restrictToMeasured(fullDataSet);
+            return DataTransforms.restrictToMeasured(fullDataSet);
         }
     }
 
@@ -730,7 +730,7 @@ public class GeneralizedSemIm implements Im, Simulator {
         if (latentDataSaved) {
             return fullDataSet;
         } else {
-            return DataUtils.restrictToMeasured(fullDataSet);
+            return DataTransforms.restrictToMeasured(fullDataSet);
         }
 
     }
@@ -875,7 +875,7 @@ public class GeneralizedSemIm implements Im, Simulator {
         }
 
         BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
-        return DataUtils.restrictToMeasured(boxDataSet);
+        return DataTransforms.restrictToMeasured(boxDataSet);
     }
 
 
@@ -1064,7 +1064,7 @@ public class GeneralizedSemIm implements Im, Simulator {
         if (latentDataSaved) {
             return fullDataSet;
         } else {
-            return DataUtils.restrictToMeasured(fullDataSet);
+            return DataTransforms.restrictToMeasured(fullDataSet);
         }
 
     }

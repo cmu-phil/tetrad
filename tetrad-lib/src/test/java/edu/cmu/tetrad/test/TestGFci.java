@@ -87,7 +87,7 @@ public class TestGFci {
         simulator.setCoefRange(.5, 1.5);
         simulator.setVarRange(1, 3);
         data = simulator.simulateDataFisher(sampleSize);
-        data = DataUtils.restrictToMeasured(data);
+        data = DataTransforms.restrictToMeasured(data);
 
         ICovarianceMatrix cov = new CovarianceMatrix(data);
 
@@ -221,7 +221,7 @@ public class TestGFci {
 
         DataSet data = im.simulateData(1000, false);
 
-        data = DataUtils.restrictToMeasured(data);
+        data = DataTransforms.restrictToMeasured(data);
 
 //        System.out.println(data.getCorrelationMatrix());
 

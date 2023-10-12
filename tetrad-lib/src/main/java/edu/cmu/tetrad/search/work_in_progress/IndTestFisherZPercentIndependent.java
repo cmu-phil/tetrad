@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.search.work_in_progress;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -70,7 +67,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         this.data = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
-            dataSet = DataUtils.center(dataSet);
+            dataSet = DataTransforms.center(dataSet);
             Matrix _data = dataSet.getDoubleData();
             this.data.add(_data);
         }
@@ -195,17 +192,17 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      * @throws UnsupportedOperationException
      */
     public DataSet getData() {
-        return DataUtils.concatenate(this.dataSets);
+        return DataTransforms.concatenate(this.dataSets);
     }
 
     public ICovarianceMatrix getCov() {
         List<DataSet> _dataSets = new ArrayList<>();
 
         for (DataSet d : this.dataSets) {
-            _dataSets.add(DataUtils.standardizeData(d));
+            _dataSets.add(DataTransforms.standardizeData(d));
         }
 
-        return new CovarianceMatrix(DataUtils.concatenate(this.dataSets));
+        return new CovarianceMatrix(DataTransforms.concatenate(this.dataSets));
     }
 
     @Override

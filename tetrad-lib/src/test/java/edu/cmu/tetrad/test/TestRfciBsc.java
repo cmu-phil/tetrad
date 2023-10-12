@@ -4,7 +4,7 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.utils.BayesImParser;
@@ -88,7 +88,7 @@ public class TestRfciBsc {
         // simulate data from instantiated model
         DataSet fullData = bayesIm.simulateData(sampleSize, true);
         TestRfciBsc.refineData(fullData);
-        DataSet dataSet = DataUtils.restrictToMeasured(fullData);
+        DataSet dataSet = DataTransforms.restrictToMeasured(fullData);
 
         // get the true underlying PAG
 //        DagToPag dagToPag = new DagToPag(dag);
@@ -161,7 +161,7 @@ public class TestRfciBsc {
         DataSet fullData = im.simulateData(sampleSize, true);
         TestRfciBsc.refineData(fullData);
 
-        DataSet dataSet = DataUtils.restrictToMeasured(fullData);
+        DataSet dataSet = DataTransforms.restrictToMeasured(fullData);
 
         // get the true underlying PAG
 //        DagToPag dagToPag = new DagToPag(dag);

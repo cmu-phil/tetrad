@@ -919,7 +919,7 @@ public class TestFges {
     }
 
     private Graph searchSemFges(DataSet Dk) {
-        Dk = DataUtils.convertNumericalDiscreteToContinuous(Dk);
+        Dk = DataTransforms.convertNumericalDiscreteToContinuous(Dk);
         SemBicScore score = new SemBicScore(new CovarianceMatrix(Dk));
         score.setPenaltyDiscount(2.0);
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);

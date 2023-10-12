@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.data;
 
 
-import edu.cmu.tetrad.data.*;
+import cern.colt.list.DoubleArrayList;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Matrix;
@@ -13,6 +13,7 @@ import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.util.FastMath;
 
+import java.rmi.MarshalledObject;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -68,7 +69,7 @@ public class DataTransforms {
                 throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
             }
 
-            Matrix data2 = DataUtils.standardizeData(dataSet.getDoubleData());
+            Matrix data2 = standardizeData(dataSet.getDoubleData());
 
             DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), dataSet.getVariables());
             outList.add(dataSet2);
@@ -96,7 +97,7 @@ public class DataTransforms {
                 throw new IllegalArgumentException("Not a continuous data set: " + model.getName());
             }
 
-            Matrix data2 = DataUtils.centerData(model.getDoubleData());
+            Matrix data2 = centerData(model.getDoubleData());
             List<Node> list = model.getVariables();
             List<Node> list2 = new ArrayList<>(list);
 
@@ -731,6 +732,304 @@ public class DataTransforms {
         for (int j = 0; j < keepCols.size(); j++) newCols[j] = keepCols.get(j);
 
         return dataSet.subsetColumns(newCols);
+    }
+
+    public static Matrix standardizeData(Matrix data) {
+        Matrix data2 = data.copy();
+
+        for (int j = 0; j < data2.getNumColumns(); j++) {
+            double sum = 0.0;
+
+            for (int i = 0; i < data2.getNumRows(); i++) {
+                sum += data2.get(i, j);
+            }
+
+            double mean = sum / data.getNumRows();
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                data2.set(i, j, data.get(i, j) - mean);
+            }
+
+            double norm = 0.0;
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                double v = data2.get(i, j);
+                norm += v * v;
+            }
+
+            norm = FastMath.sqrt(norm / (data.getNumRows() - 1));
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                data2.set(i, j, data2.get(i, j) / norm);
+            }
+        }
+
+        return data2;
+    }
+
+    public static double[] standardizeData(double[] data) {
+        double[] data2 = new double[data.length];
+
+        double sum = 0.0;
+
+        for (double d : data) {
+            sum += d;
+        }
+
+        double mean = sum / data.length;
+
+        for (int i = 0; i < data.length; i++) {
+            data2[i] = data[i] - mean;
+        }
+
+        double norm = 0.0;
+
+        for (double v : data2) {
+            norm += v * v;
+        }
+
+        norm = FastMath.sqrt(norm / (data2.length - 1));
+
+        for (int i = 0; i < data2.length; i++) {
+            data2[i] = data2[i] / norm;
+        }
+
+        return data2;
+    }
+
+    public static DoubleArrayList standardizeData(DoubleArrayList data) {
+        DoubleArrayList data2 = new DoubleArrayList(data.size());
+
+        double sum = 0.0;
+
+        for (int i = 0; i < data.size(); i++) {
+            sum += data.get(i);
+        }
+
+        double mean = sum / data.size();
+
+        for (int i = 0; i < data.size(); i++) {
+            data2.add(data.get(i) - mean);
+        }
+
+        double norm = 0.0;
+
+        for (int i = 0; i < data2.size(); i++) {
+            double v = data2.get(i);
+            norm += v * v;
+        }
+
+        norm = FastMath.sqrt(norm / (data2.size() - 1));
+
+        for (int i = 0; i < data2.size(); i++) {
+            data2.set(i, data2.get(i) / norm);
+        }
+
+        return data2;
+    }
+
+    public static double[] center(double[] d) {
+        double sum = 0.0;
+
+        for (double v : d) {
+            sum += v;
+        }
+
+        double mean = sum / d.length;
+        double[] d2 = new double[d.length];
+
+        for (int i = 0; i < d.length; i++) {
+            d2[i] = d[i] - mean;
+        }
+
+        return d2;
+    }
+
+    public static Matrix centerData(Matrix data) {
+        Matrix data2 = data.copy();
+
+        for (int j = 0; j < data2.getNumColumns(); j++) {
+            double sum = 0.0;
+
+            for (int i = 0; i < data2.getNumRows(); i++) {
+                sum += data2.get(i, j);
+            }
+
+            double mean = sum / data.getNumRows();
+
+            for (int i = 0; i < data.getNumRows(); i++) {
+                data2.set(i, j, data.get(i, j) - mean);
+            }
+        }
+
+        return data2;
+    }
+
+    public static Matrix concatenate(Matrix... dataSets) {
+        int totalSampleSize = 0;
+
+        for (Matrix dataSet : dataSets) {
+            totalSampleSize += dataSet.getNumRows();
+        }
+
+        int numColumns = dataSets[0].getNumColumns();
+        Matrix allData = new Matrix(totalSampleSize, numColumns);
+        int q = 0;
+        int r;
+
+        for (Matrix dataSet : dataSets) {
+            r = dataSet.getNumRows();
+
+            for (int i = 0; i < r; i++) {
+                for (int j = 0; j < numColumns; j++) {
+                    allData.set(q + i, j, dataSet.get(i, j));
+                }
+            }
+
+            q += r;
+        }
+
+        return allData;
+    }
+
+    /**
+     * @return a sample with replacement with the given sample size from the given dataset.
+     */
+    public static Matrix getBootstrapSample(Matrix data, int sampleSize) {
+        int actualSampleSize = data.getNumRows();
+
+        int[] rows = new int[sampleSize];
+
+        for (int i = 0; i < rows.length; i++) {
+            rows[i] = RandomUtil.getInstance().nextInt(actualSampleSize);
+        }
+
+        int[] cols = new int[data.getNumColumns()];
+        for (int i = 0; i < cols.length; i++) cols[i] = i;
+
+        return data.getSelection(rows, cols);
+    }
+
+    public static void copyColumn(Node node, DataSet source, DataSet dest) {
+        int sourceColumn = source.getColumn(node);
+        int destColumn = dest.getColumn(node);
+        if (sourceColumn < 0) {
+            throw new NullPointerException("The given node was not in the source dataset");
+        }
+        if (destColumn < 0) {
+            throw new NullPointerException("The given node was not in the destination dataset");
+        }
+        int sourceRows = source.getNumRows();
+        int destRows = dest.getNumRows();
+        if (node instanceof ContinuousVariable) {
+            for (int i = 0; i < destRows && i < sourceRows; i++) {
+                dest.setDouble(i, destColumn, source.getDouble(i, sourceColumn));
+            }
+        } else if (node instanceof DiscreteVariable) {
+            for (int i = 0; i < destRows && i < sourceRows; i++) {
+                dest.setInt(i, destColumn, source.getInt(i, sourceColumn));
+            }
+        } else {
+            throw new IllegalArgumentException("The given variable most be discrete or continuous");
+        }
+    }
+
+    /**
+     * Adds missing data values to cases in accordance with probabilities specified in a double array which has as many
+     * elements as there are columns in the input dataset.  Hence, if the first element of the array of probabilities is
+     * alpha, then the first column will contain a -99 (or other missing value code) in a given case with probability
+     * alpha. This method will be useful in generating datasets which can be used to test algorithm that handle missing
+     * data and/or latent variables. Author:  Frank Wimberly
+     *
+     * @param inData The data to which random missing data is to be added.
+     * @param probs  The probability of adding missing data to each column.
+     * @return The new data sets with missing data added.
+     */
+    public static DataSet addMissingData(
+            DataSet inData, double[] probs) {
+        DataSet outData;
+
+        outData = inData.copy();
+
+        if (probs.length != outData.getNumColumns()) {
+            throw new IllegalArgumentException(
+                    "Wrong number of elements in prob array");
+        }
+
+        for (double prob : probs) {
+            if (prob < 0.0 || prob > 1.0) {
+                throw new IllegalArgumentException("Probability out of range");
+            }
+        }
+
+        for (int j = 0; j < outData.getNumColumns(); j++) {
+            Node node = outData.getVariable(j);
+
+            if (node instanceof ContinuousVariable) {
+                for (int i = 0; i < outData.getNumRows(); i++) {
+                    if (RandomUtil.getInstance().nextDouble() < probs[j]) {
+                        outData.setDouble(i, j, Double.NaN);
+                    }
+                }
+            } else if (node instanceof DiscreteVariable) {
+                for (int i = 0; i < outData.getNumRows(); i++) {
+                    if (RandomUtil.getInstance().nextDouble() < probs[j]) {
+                        outData.setInt(i, j, -99);
+                    }
+                }
+            }
+        }
+
+        return outData;
+    }
+
+    public static DataSet replaceMissingWithRandom(DataSet inData) {
+        DataSet outData;
+
+        try {
+            outData = new MarshalledObject<>(inData).get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        for (int j = 0; j < outData.getNumColumns(); j++) {
+            Node variable = outData.getVariable(j);
+
+            if (variable instanceof DiscreteVariable) {
+                List<Integer> values = new ArrayList<>();
+
+                for (int i = 0; i < outData.getNumRows(); i++) {
+                    int value = outData.getInt(i, j);
+                    if (value == -99) continue;
+                    values.add(value);
+                }
+
+                Collections.sort(values);
+
+                for (int i = 0; i < outData.getNumRows(); i++) {
+                    if (outData.getInt(i, j) == -99) {
+                        int value = RandomUtil.getInstance().nextInt(values.size());
+                        outData.setInt(i, j, values.get(value));
+                    }
+                }
+            } else {
+                double min = Double.POSITIVE_INFINITY;
+                double max = Double.NEGATIVE_INFINITY;
+
+                for (int i = 0; i < outData.getNumRows(); i++) {
+                    double value = outData.getDouble(i, j);
+                    if (value < min) min = value;
+                    if (value > max) max = value;
+                }
+
+                for (int i = 0; i < outData.getNumRows(); i++) {
+                    double random = RandomUtil.getInstance().nextDouble();
+                    outData.setDouble(i, j, min + random * (max - min));
+                }
+            }
+        }
+
+        return outData;
     }
 }
 

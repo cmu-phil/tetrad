@@ -44,7 +44,7 @@ public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstra
             DataSet dataSet = SimpleDataLoader.getContinuousDataSet(dataModel);
             dataSet = dataSet.copy();
 
-            dataSet = DataUtils.standardizeData(dataSet);
+            dataSet = DataTransforms.standardizeData(dataSet);
             double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
 
             if (variance > 0) {
