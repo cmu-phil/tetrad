@@ -13,6 +13,13 @@ import edu.cmu.tetrad.graph.Graph;
 public class ArrowheadFpr implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs the statistic.
+     */
+    public ArrowheadFpr() {
+
+    }
+
     @Override
     public String getAbbreviation() {
         return "AHFPR";

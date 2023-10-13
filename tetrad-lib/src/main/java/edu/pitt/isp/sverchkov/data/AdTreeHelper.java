@@ -30,14 +30,33 @@ import java.util.List;
  */
 class AdTreeHelper implements Serializable {
 
+    /**
+     * The number of attributes.
+     */
     protected final int m; // The number of attributes
+
+    /**
+     * The airities of the attributes. The i-th element of this array is the airity of the i-th attribute.
+     */
     protected final int[] airities;
 
+    /**
+     * Constructs an AD tree helper for the given data set.
+     *
+     * @param m The number of attributes.
+     */
     protected AdTreeHelper(int m) {
         this.m = m;
         this.airities = new int[m];
     }
 
+    /**
+     * Constructs an AD tree helper for the given data set.
+     *
+     * @param assignment The assignment of values to attributes.
+     * @param ptr        The root of the AD tree.
+     * @return The number of instances in the data set that match the given assignment.
+     */
     protected int count(int[] assignment, CountNode ptr) {
         if (null == ptr) return 0;
 
@@ -63,6 +82,9 @@ class AdTreeHelper implements Serializable {
         return null == ptr ? 0 : ptr.count;
     }
 
+    /**
+     * Constructs an AD tree helper for the given data set.
+     */
     protected class CountNode implements Serializable {
         protected final int count;
         protected final VaryNode[] vary;
@@ -77,6 +99,9 @@ class AdTreeHelper implements Serializable {
         }
     }
 
+    /**
+     * Constructs an AD tree helper for the given data set.
+     */
     protected class VaryNode implements Serializable {
         protected final CountNode[] values;
         protected int mcv = -1;
@@ -118,6 +143,5 @@ class AdTreeHelper implements Serializable {
                 }
         }
     }
-
 }
 

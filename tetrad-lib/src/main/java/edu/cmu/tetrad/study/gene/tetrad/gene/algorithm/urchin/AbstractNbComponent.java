@@ -77,6 +77,10 @@ public abstract class AbstractNbComponent implements NbComponent {
         return this.name;
     }
 
+    /**
+     * Sets the name.
+     * @param name the name.
+     */
     public void setName(String name) {
         if (!NamingProtocol.isLegalName(name)) {
             throw new IllegalArgumentException(
@@ -125,6 +129,10 @@ public abstract class AbstractNbComponent implements NbComponent {
      */
     public abstract void update();
 
+    /**
+     * Returns the parents.
+     * @return These parents.
+     */
     public NbComponent[] getParents() {
         return this.parents;
     }

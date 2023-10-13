@@ -15,6 +15,13 @@ import edu.cmu.tetrad.graph.Graph;
 public class ArrowheadTn implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs the statistic.
+     */
+    public ArrowheadTn() {
+
+    }
+
     @Override
     public String getAbbreviation() {
         return "AHTN";

@@ -52,7 +52,9 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-
+    /**
+     * No-arg constructor. Used for reflection; do not delete.
+     */
     public Bfci() {
         // Used for reflection; do not delete.
     }

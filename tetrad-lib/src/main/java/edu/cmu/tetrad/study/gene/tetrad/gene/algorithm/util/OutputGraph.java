@@ -31,6 +31,7 @@ public interface OutputGraph {
 
     /**
      * Returns the number of variables over which the graph is defined.
+     * @return the number of variables over which the graph is defined.
      */
     int getSize();
 
@@ -38,6 +39,7 @@ public interface OutputGraph {
      * Returns the indices of the parent variables for the given variable.
      *
      * @param index the index of the variable whose parents are requested.
+     * @return the indices of the parent variables for the given variable.
      */
     int[] getParents(int index);
 
@@ -49,16 +51,23 @@ public interface OutputGraph {
      * position in getParents(i), for i = 0,..., getParents(i).length.
      *
      * @param index the lags of the variable whose parents are requested.
+     * @return the lags of the parent variables for the given variable, provided parents have associated time lags;
+     * otherwise, returns null.
      */
     int[] getLags(int index);
 
     /**
      * Returns the name of the variable at the given index.
+     *
+     * @param index the index of the variable whose name is requested.
+     * @return the name of the variable at the given index.
      */
     String getNodeName(int index);
 
     /**
      * Returns the name of the graph
+     *
+     * @return the name of the graph
      */
     String getGraphName();
 

@@ -61,6 +61,8 @@ public class AndersonDarlingTest {
 
     /**
      * Constructs an Anderson-Darling test for the given column of data.
+     *
+     * @param data the column of data to be analyzed.
      */
     public AndersonDarlingTest(double[] data) {
         this.data = data;
@@ -68,6 +70,8 @@ public class AndersonDarlingTest {
     }
 
     /**
+     * Constructs an Anderson-Darling test for the given column of data.
+     *
      * @return the A^2 statistic.
      */
     public double getASquared() {
@@ -75,6 +79,8 @@ public class AndersonDarlingTest {
     }
 
     /**
+     * Constructs an Anderson-Darling test for the given column of data.
+     *
      * @return the A^2* statistic, which is the A^2 statistic adjusted heuristically for sample size.
      */
     public double getASquaredStar() {
@@ -82,6 +88,8 @@ public class AndersonDarlingTest {
     }
 
     /**
+     * Constructs an Anderson-Darling test for the given column of data.
+     *
      * @return the p value of the A^2* statistic, which is interpolated using exponential functions.
      */
     public double getP() {

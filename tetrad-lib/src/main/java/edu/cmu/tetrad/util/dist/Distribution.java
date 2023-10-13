@@ -35,12 +35,14 @@ public interface Distribution extends TetradSerializable {
     long serialVersionUID = 23L;
 
     /**
-     * @return Ibid.
+     * Returns the number of parameters in the distribution.
+     * @return the number of parameters.
      */
     int getNumParameters();
 
     /**
-     * @return Ibid.
+     * Returns the name of the distribution.
+     * @return the name.
      */
     String getName();
 
@@ -53,6 +55,7 @@ public interface Distribution extends TetradSerializable {
     void setParameter(int index, double value);
 
     /**
+     * Returns the index'th parameter.
      * @param index Ibid. Muist be &lt;= 0 and &lt; # parameters.
      * @return The Ibid.
      */
@@ -67,6 +70,7 @@ public interface Distribution extends TetradSerializable {
     String getParameterName(int index);
 
     /**
+     * Returns the next random number from the distribution.
      * @return Ibid.
      */
     double nextRandom();

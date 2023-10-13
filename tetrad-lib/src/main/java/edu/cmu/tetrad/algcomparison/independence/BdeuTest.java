@@ -29,6 +29,12 @@ public class BdeuTest implements IndependenceWrapper {
 
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Returns the test.
+     * @param dataSet    The data set to test independence against.
+     * @param parameters The paramters of the test.
+     * @return Ibid.
+     */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         BdeuScore score = new BdeuScore(SimpleDataLoader.getDiscreteDataSet(dataSet));
@@ -37,16 +43,28 @@ public class BdeuTest implements IndependenceWrapper {
         return new ScoreIndTest(score);
     }
 
+    /**
+     * Returns the description of the test.
+     * @return Ibid.
+     */
     @Override
     public String getDescription() {
         return "BDeu Test";
     }
 
+    /**
+     * Returns the data type of the test.
+     * @return Ibid.
+     */
     @Override
     public DataType getDataType() {
         return DataType.Discrete;
     }
 
+    /**
+     * Returns the parameters of the test.
+     * @return Ibid.
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

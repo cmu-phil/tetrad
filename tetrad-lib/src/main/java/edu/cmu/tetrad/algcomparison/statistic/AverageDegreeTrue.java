@@ -11,6 +11,13 @@ import edu.cmu.tetrad.graph.Graph;
 public class AverageDegreeTrue implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs the statistic.
+     */
+    public AverageDegreeTrue() {
+
+    }
+
     @Override
     public String getAbbreviation() {
         return "AvgDegTrue";

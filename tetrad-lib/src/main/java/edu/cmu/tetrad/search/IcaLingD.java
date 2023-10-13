@@ -244,7 +244,7 @@ public class IcaLingD {
      * Thresholds the given matrix, sending any small entries in absolute value to zero.
      *
      * @param M         The matrix to threshold.
-     * @param threshold The value such that M(i, j) is set to zero if |M(i, j)| < threshold. Should be non-negative.
+     * @param threshold The value such that M(i, j) is set to zero if |M(i, j)| &lt; threshold. Should be non-negative.
      * @return The thresholded matrix.
      */
     public static Matrix threshold(Matrix M, double threshold) {

@@ -501,7 +501,7 @@ public final class FciOrient {
     }
 
     /**
-     * Implements the double-triangle orientation rule, which states that if D*-oB, A*->B<-*C and A*-oDo-*C, and !adj(a,
+     * Implements the double-triangle orientation rule, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-oDo-*C, and !adj(a,
      * c), D*-oB, then D*->B.
      * <p>
      * This is Zhang's rule R3.
@@ -979,7 +979,7 @@ public final class FciOrient {
      * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
      * <p>
-     * R9: If Ao->C and there is an uncovered p.d. path u=<A,B,..,C> such that C,B nonadjacent, then A-->C.
+     * R9: If Ao-&gt;C and there is an uncovered p.d. path u=&lt;A,B,..,C&gt; such that C,B nonadjacent, then A--&gt;C.
      *
      * @param a The node A.
      * @param c The node C.
@@ -1170,8 +1170,8 @@ public final class FciOrient {
      * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
      * <p>
-     * R10: If Ao->C, B-->C<--D, there is an uncovered p.d. path u1=<A,M,...,B> and an uncovered p.d. path u2=
-     * <A,N,...,D> with M != N and M,N nonadjacent then A-->C.
+     * R10: If Ao-&gt;C, B--&gt;C&lt;--D, there is an uncovered p.d. path u1=&lt;A,M,...,B&gt; and an uncovered p.d. path u2=
+     * &lt;A,N,...,D&gt; with M != N and M,N nonadjacent then A--&gt;C.
      *
      * @param a The node A.
      * @param c The node C.

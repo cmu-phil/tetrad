@@ -12,6 +12,14 @@ import edu.cmu.tetrad.graph.Graph;
 public class AdjacencyPrecision implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs the statistic.
+     */
+    public AdjacencyPrecision() {
+
+    }
+
+
     @Override
     public String getAbbreviation() {
         return "AP";

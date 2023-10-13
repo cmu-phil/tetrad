@@ -72,6 +72,10 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
     //==============================CONSTRUCTORS===========================//
 
+    /**
+     * Constructs a new updater for the given Bayes net.
+     * @param bayesIm the Bayes net to be updated.
+     */
     public ApproximateUpdater(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -83,6 +87,8 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Constructs a new updater for the given Bayes net.
+     * @param bayesIm the Bayes net to be updated.
+     * @param evidence the evidence for the update.
      */
     public ApproximateUpdater(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) {
@@ -94,6 +100,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
+     * Returns a simple exemplar of this class to test serialization.
      * @return a simple exemplar of this class to test serialization.
      */
     public static ApproximateUpdater serializableInstance() {

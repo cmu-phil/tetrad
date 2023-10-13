@@ -65,6 +65,8 @@ public final class BayesPm implements Pm, VariableSource {
     /**
      * Construct a new BayesPm using the given DAG, assigning each variable two values named "value1" and "value2"
      * unless nodes are discrete variables with categories already defined.
+     *
+     * @param graph Ibid.
      */
     public BayesPm(Graph graph) {
         if (graph == null) {
@@ -92,6 +94,9 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Constructs a new BayesPm using a given DAG, using as much information from the old BayesPm as possible.
+     *
+     * @param graph      Ibid.
+     * @param oldBayesPm Ibid.
      */
     public BayesPm(Graph graph, BayesPm oldBayesPm) {
         this(graph, oldBayesPm, 2, 2);
@@ -102,6 +107,10 @@ public final class BayesPm implements Pm, VariableSource {
      * <code>lowerBound</code> and
      * <code>upperBound</code>. Uses a fixed number of values if lowerBound ==
      * upperBound. The values are named "value1" ... "valuen".
+     *
+     * @param graph      Ibid.
+     * @param lowerBound Ibid.
+     * @param upperBound Ibid.
      */
     public BayesPm(Graph graph, int lowerBound, int upperBound) {
         if (graph == null) {
@@ -118,6 +127,11 @@ public final class BayesPm implements Pm, VariableSource {
      * variables not in the old BayesPm, assigns each variable a random number of values between
      * <code>lowerBound</code> and <code>upperBound</code>. Uses a fixed number
      * of values if lowerBound == upperBound. The values are named "value1" ... "valuen".
+     *
+     * @param graph      Ibid.
+     * @param oldBayesPm Ibid.
+     * @param lowerBound Ibid.
+     * @param upperBound Ibid.
      */
     public BayesPm(Graph graph, BayesPm oldBayesPm, int lowerBound,
                    int upperBound) {
@@ -145,6 +159,8 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Copy constructor.
+     *
+     * @param bayesPm Ibid.
      */
     public BayesPm(BayesPm bayesPm) {
         this.dag = bayesPm.dag;
@@ -162,6 +178,8 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return Ibid.
      */
     public static BayesPm serializableInstance() {
         return new BayesPm(Dag.serializableInstance());
@@ -170,6 +188,11 @@ public final class BayesPm implements Pm, VariableSource {
 
     //=========================PUBLIC METHODS=============================//
 
+    /**
+     * Returns the parameter names.
+     *
+     * @return Ibid.
+     */
     public static List<String> getParameterNames() {
         List<String> parameters = new ArrayList<>();
         parameters.add("minCategories");
@@ -194,6 +217,8 @@ public final class BayesPm implements Pm, VariableSource {
     }
 
     /**
+     * Returns the DAG.
+     *
      * @return the DAG as a Graph.
      */
     public Graph getDag() {
@@ -201,6 +226,9 @@ public final class BayesPm implements Pm, VariableSource {
     }
 
     /**
+     * Returns the number of values for the given node.
+     *
+     * @param node Ibid.
      * @return the number of values for the given node.
      */
     public int getNumCategories(Node node) {
@@ -214,6 +242,10 @@ public final class BayesPm implements Pm, VariableSource {
     }
 
     /**
+     * Returns the index'th value for the given node.
+     *
+     * @param node  Ibid.
+     * @param index Ibid.
      * @return the index'th value for the given node.
      */
     public String getCategory(Node node, int index) {
@@ -237,6 +269,10 @@ public final class BayesPm implements Pm, VariableSource {
     }
 
     /**
+     * Returns the index of the given category for the given node.
+     *
+     * @param node     Ibid.
+     * @param category Ibid.
      * @return the index of the given category for the given node.
      */
     public int getCategoryIndex(Node node, String category) {
@@ -246,6 +282,9 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Sets the number of values for the given node to the given number.
+     *
+     * @param node          Ibid.
+     * @param numCategories Ibid.
      */
     public void setNumCategories(Node node, int numCategories) {
         if (!this.nodesToVariables.containsKey(node)) {
@@ -283,6 +322,8 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Will return true if the argument is a BayesPm with the same graph and variables.
+     *
+     * @param o Ibid.
      */
     public boolean equals(Object o) {
         if (o == null) {
@@ -299,6 +340,12 @@ public final class BayesPm implements Pm, VariableSource {
 
     }
 
+    /**
+     * Sets the number of values for the given node to the given number.
+     *
+     * @param node       Ibid.
+     * @param categories Ibid.
+     */
     public void setCategories(Node node, List<String> categories) {
         mapNodeToVariable(node, categories);
     }
@@ -313,6 +360,11 @@ public final class BayesPm implements Pm, VariableSource {
         return variables;
     }
 
+    /**
+     * Returns the variable names.
+     *
+     * @return Ibid.
+     */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
         List<String> names = new ArrayList<>();
@@ -325,11 +377,19 @@ public final class BayesPm implements Pm, VariableSource {
         return names;
     }
 
+    /**
+     * Returns the variable for the given node.
+     *
+     * @param node Ibid.
+     * @return Ibid.
+     */
     public Node getVariable(Node node) {
         return this.nodesToVariables.get(node);
     }
 
     /**
+     * Returns the measured nodes.
+     *
      * @return the list of measured variableNodes.
      */
     public List<Node> getMeasuredNodes() {
@@ -346,6 +406,7 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Prints out the list of values for each node.
+     * @return Ibid.
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
@@ -368,23 +429,41 @@ public final class BayesPm implements Pm, VariableSource {
         return buf.toString();
     }
 
+    /**
+     * Returns the node by the given name.
+     * @param nodeName Ibid.
+     * @return Ibid.
+     */
     public Node getNode(String nodeName) {
         return this.dag.getNode(nodeName);
     }
 
+    /**
+     * Returns the node at the given index.
+     * @param index Ibid.
+     * @return Ibid.
+     */
     public Node getNode(int index) {
         return getVariables().get(index);
     }
 
+    /**
+     * Returns the node index.
+     * @return -1.
+     */
     public int getNodeIndex() {
         return -1;
     }
 
-    //=========================PRIVATE METHODS=============================//
-
+    /**
+     * Returns the number of nodes.
+     * @return Ibid.
+     */
     public int getNumNodes() {
         return this.dag.getNumNodes();
     }
+
+    //=========================PRIVATE METHODS=============================//
 
     private void copyAvailableInformationFromOldBayesPm(BayesPm oldbayesPm,
                                                         int lowerBound, int upperBound) {

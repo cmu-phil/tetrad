@@ -41,92 +41,125 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     long serialVersionUID = 23L;
 
     /**
+     * Returns the name of this node.
+     *
      * @return the name of the node.
      */
     String getName();
 
     /**
      * Sets the name of this node.
+     *
      * @param name the name of this node.
      */
     void setName(String name);
 
     /**
+     * Returns the node type for this node.
+     *
      * @return the node type for this node.
      */
     NodeType getNodeType();
 
     /**
      * Sets the node type for this node.
+     *
+     * @param nodeType the node type for this node.
      */
     void setNodeType(NodeType nodeType);
 
     /**
+     * Returns the node shape for this node.
+     *
      * @return the intervention type
      */
     NodeVariableType getNodeVariableType();
 
     /**
      * Sets the type (domain, interventional status, interventional value..) for this node variable
+     *
+     * @param nodeVariableType the type (domain, interventional status, interventional value..) for this node variable
      */
     void setNodeVariableType(NodeVariableType nodeVariableType);
 
     /**
+     * Returns the intervention type for this node.
+     *
      * @return a string representation of the node.
      */
     String toString();
 
     /**
+     * Returns the x coordinate of the center of this node.
+     *
      * @return the x coordinate of the center of the node.
      */
     int getCenterX();
 
     /**
      * Sets the x coordinate of the center of this node.
+     *
      * @param centerX This coordinate.
      */
     void setCenterX(int centerX);
 
     /**
+     * Returns the y coordinate of the center of this node.
+     *
      * @return the y coordinate of the center of the node.
      */
     int getCenterY();
 
     /**
      * Sets the y coordinate of the center of this node.
+     *
      * @param centerY This coordinate.
      */
     void setCenterY(int centerY);
 
     /**
      * Sets the (x, y) coordinates of the center of this node.
-     * @param centerX  The x coordinate.
+     *
+     * @param centerX The x coordinate.
      * @param centerY The y coordinate.
      */
     void setCenter(int centerX, int centerY);
 
     /**
      * Adds a property change listener.
+     *
      * @param l This listener.
      */
     void addPropertyChangeListener(PropertyChangeListener l);
 
     /**
+     * Removes a property change listener.
+     *
      * @return a hashcode for this variable.
      */
     int hashCode();
 
     /**
+     * Tests whether this variable is equal to the given variable.
+     *
      * @return true iff this variable is equal to the given variable.
      */
     boolean equals(Object o);
 
     /**
      * Creates a new node of the same type as this one with the given name.
+     *
+     * @param name the name of the new node.
+     * @return the new node.
      */
     Node like(String name);
 
-    //    /**
+    /**
+     * Returns the hashcode for this node.
+     *
+     * @param node the object to be compared.
+     * @return the hashcode for this node.
+     */
     default int compareTo(Node node) {
         String node1 = getName();
         String node2 = node.getName();

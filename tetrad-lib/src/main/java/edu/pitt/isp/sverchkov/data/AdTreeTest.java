@@ -36,10 +36,23 @@ import java.util.List;
 import java.util.TreeMap;
 
 /**
+ * <p>A test of the AD tree implementation.</p>
  * Author : Jeremy Espino MD Created  6/24/15 3:32 PM
  */
 public class AdTreeTest {
 
+    /**
+     * Creates a new AdTreeTest object.
+     */
+    public AdTreeTest() {
+    }
+
+    /**
+     * Test the AD tree
+     *
+     * @param args ignored
+     * @throws Exception if something goes wrong
+     */
     public static void main(String[] args) throws Exception {
         final int columns = 40;
         final int numEdges = 40;

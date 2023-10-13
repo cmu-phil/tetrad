@@ -52,6 +52,10 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
 
     //===========================CONSTRUCTORS==========================//
 
+    /**
+     * Constructs a BayesImProbs object from the given BayesIm.
+     * @param bayesIm Ibid.
+     */
     public BayesImProbs(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -80,6 +84,8 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a simple exemplar of this class to test serialization.
      */
     public static BayesImProbs serializableInstance() {
         return new BayesImProbs(MlBayesIm.serializableInstance());

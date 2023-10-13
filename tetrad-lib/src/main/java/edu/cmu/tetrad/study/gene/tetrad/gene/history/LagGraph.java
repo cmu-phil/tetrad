@@ -92,12 +92,15 @@ public interface LagGraph extends TetradSerializable {
 
     /**
      * Gets the maximum allowable lag. Edges may not be added with lags greated than this.
+     * @return the maximum allowable lag.
      */
     int getMaxLagAllowable();
 
     /**
      * Sets the maximum allowable lag. Edges may not be added with lags greater than this. This value must be &gt;= the
      * getModel value of getMaxLag().
+     *
+     * @param maxLagAllowable the maximum allowable lag.
      */
     void setMaxLagAllowable(int maxLagAllowable);
 
@@ -131,6 +134,9 @@ public interface LagGraph extends TetradSerializable {
 
     /**
      * Renames a factor, changing all occurances of the old name to the new one
+     *
+     * @param oldName the old name
+     * @param newName the new name
      */
     void renameFactor(String oldName, String newName);
 
@@ -155,12 +161,31 @@ public interface LagGraph extends TetradSerializable {
      */
     String toString();
 
+    /**
+     * Returns a string representation of the graph, indicating for each factor which lagged factors map into it.
+     * @param base the base name of the factors.
+     * @param numFactors the number of factors.
+     */
     void addFactors(String base, int numFactors);
 
+    /**
+     * Sets the location.
+     * @param factor the factor.
+     * @param point the point.
+     */
     void setLocation(String factor, PointXy point);
 
+    /**
+     * Gets the location.
+     * @param factor the factor.
+     * @return the location.
+     */
     PointXy getLocation(String factor);
 
+    /**
+     * Gets the locations.
+     * @return the locations.
+     */
     Map getLocations();
 }
 

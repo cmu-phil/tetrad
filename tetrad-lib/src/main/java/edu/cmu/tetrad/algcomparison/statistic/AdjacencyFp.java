@@ -12,6 +12,12 @@ import edu.cmu.tetrad.graph.Graph;
 public class AdjacencyFp implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs the statistic.
+     */
+    public AdjacencyFp() {
+    }
+
     @Override
     public String getAbbreviation() {
         return "AFP";

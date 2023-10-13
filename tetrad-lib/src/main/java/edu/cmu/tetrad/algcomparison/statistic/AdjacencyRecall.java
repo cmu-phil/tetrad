@@ -12,6 +12,13 @@ import edu.cmu.tetrad.graph.Graph;
 public class AdjacencyRecall implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs the statistic.
+     */
+    public AdjacencyRecall() {
+
+    }
+
     @Override
     public String getAbbreviation() {
         return "AR";

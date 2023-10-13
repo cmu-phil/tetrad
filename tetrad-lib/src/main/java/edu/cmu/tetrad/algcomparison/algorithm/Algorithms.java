@@ -11,6 +11,9 @@ import java.util.List;
 public class Algorithms {
     private final List<Algorithm> algorithms = new ArrayList<>();
 
+    /**
+     * Constructs an empty list of algorithms.
+     */
     public Algorithms() {
     }
 

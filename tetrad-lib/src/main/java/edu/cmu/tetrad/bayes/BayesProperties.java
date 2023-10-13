@@ -101,6 +101,8 @@ public final class BayesProperties {
 
     /**
      * Calculates the p-value of the graph with respect to the given data.
+     *
+     * @param graph The graph.
      */
     public LikelihoodRet getLikelihoodRatioP(Graph graph) {
 
@@ -154,6 +156,8 @@ public final class BayesProperties {
 
     /**
      * Call after calling getLikelihoodP().
+     *
+     * @return The chi-squared statistic.
      */
     public double getChisq() {
         return this.chisq;
@@ -161,6 +165,8 @@ public final class BayesProperties {
 
     /**
      * Call after calling getLikelihoodP().
+     *
+     * @return The degrees of freedom.
      */
     public double getDof() {
         return this.dof;
@@ -168,6 +174,8 @@ public final class BayesProperties {
 
     /**
      * Call after calling getLikelihoodP().
+     *
+     * @return The BIC.
      */
     public double getBic() {
         return this.bic;
@@ -175,6 +183,8 @@ public final class BayesProperties {
 
     /**
      * Call after calling getLikelihoodP().
+     *
+     * @return The likelihood.
      */
     public double getLikelihood() {
         return this.likelihood;

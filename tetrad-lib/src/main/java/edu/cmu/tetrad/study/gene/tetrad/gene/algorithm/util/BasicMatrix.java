@@ -55,7 +55,15 @@ public abstract class BasicMatrix {
      * Minimum float value
      */
     public static final float MIN_FLOAT = -BasicMatrix.MAX_FLOAT;
+
+    /**
+     * Name of the matrix
+     */
     protected String name;
+
+    /**
+     * Number of rows ( == # columns) of this matrix
+     */
     protected int n;
 
     /**
@@ -67,6 +75,9 @@ public abstract class BasicMatrix {
     /**
      * Creates a matrix with <code>nrows</code> rows, and with name
      * <code>mname</code>.
+     *
+     * @param mname name of the matrix
+     * @param nrows number of rows in the matrix
      */
     public BasicMatrix(String mname, int nrows) {
         this.name = mname;
@@ -89,6 +100,9 @@ public abstract class BasicMatrix {
      * examples above they appear in different lines for more readability of the file. The file may have less elements
      * than the total needed to fill the matrix.  If it has more elements an illegal argument exception will be
      * generated.
+     *
+     * @param fname name of the file to read the matrix from
+     * @throws IOException if there is an error reading the file
      */
     public BasicMatrix(String fname) throws IOException {
         // Create and prepare stream tokenizer
@@ -153,6 +167,8 @@ public abstract class BasicMatrix {
 
     /**
      * Returns # rows ( == # columns) of this matrix
+     *
+     * @return # rows ( == # columns) of this matrix
      */
     public int getSize() {
         return this.n;
@@ -160,6 +176,8 @@ public abstract class BasicMatrix {
 
     /**
      * Returns name of this matrix
+     *
+     * @return name of this matrix
      */
     public String getName() {
         return this.name;
@@ -167,6 +185,8 @@ public abstract class BasicMatrix {
 
     /**
      * Sets the name of this matrix
+     *
+     * @param newName new name of this matrix
      */
     public void setName(String newName) {
         this.name = newName;
@@ -174,6 +194,8 @@ public abstract class BasicMatrix {
 
     /**
      * Returns a specially formatted string with all the contents of this matrix
+     *
+     * @return a specially formatted string with all the contents of this matrix
      */
     public String toString() {
         StringBuilder s = new StringBuilder(this.getClass().getName() + " " + this.name + "\n" + this.n +
@@ -188,6 +210,12 @@ public abstract class BasicMatrix {
         return s.toString();
     }
 
+    /**
+     * Throws a bad index exception.
+     *
+     * @param r row index
+     * @param c column index
+     */
     protected void badIndexXcp(int r, int c) {
         throw new IllegalArgumentException(
                 "Bad index (" + r + "," + c + ") for matrix of size " + this.n);
@@ -200,12 +228,20 @@ public abstract class BasicMatrix {
 
     /**
      * Returns the value stored at element (r,c) as a double
+     *
+     * @param r row index
+     * @param c column index
+     * @return the value stored at element (r,c) as a double
      */
     public abstract double getDoubleValue(int r, int c);
 
     /**
      * Assigns double value x in matrix element (r, c). Notice the presence of this method does not really force the
      * implementing class to actually store doubles.
+     *
+     * @param r row index
+     * @param c column index
+     * @param x value to be assigned to element (r,c)
      */
     public abstract void setDoubleValue(int r, int c, double x);
 

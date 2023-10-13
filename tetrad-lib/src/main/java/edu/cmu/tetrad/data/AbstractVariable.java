@@ -36,6 +36,9 @@ public abstract class AbstractVariable implements Variable {
 
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The last ID assigned to a variable.
+     */
     public static int LAST_ID;
 
     /**
@@ -102,12 +105,12 @@ public abstract class AbstractVariable implements Variable {
      * getValueClass()) for this variable; otherwise, it should fail. In
      * general, checkValue() should not fail a value for simply not being an instance of a particular class.
      * Since this method is not
-     * static<, subclasses may (but need not) provide for
+     * static, subclasses may (but need not) provide for
      * instance-specific value checking.
      *
      * @param value a value
-     * @return <tt>true</tt> if the value is an acceptable value for
-     * <tt>this</tt> variable, and <tt>false</tt> otherwise
+     * @return true if the value is an acceptable value for
+     * this variable, and false otherwise
      */
     public boolean checkValue(Object value) {
         return true;
