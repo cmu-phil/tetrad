@@ -51,7 +51,7 @@ import java.util.Set;
  * time series in settings with unmeasured confounding. In Proceedings of 2018 ACM SIGKDD workshop on causal discovery
  * (pp. 23-47). PMLR.</p>
  *
- * <p>Entner, D., & Hoyer, P. O. (2010). On causal discovery from time series data using FCI. Probabilistic
+ * <p>Entner, D., &amp; Hoyer, P. O. (2010). On causal discovery from time series data using FCI. Probabilistic
  * graphical models, 121-128.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required

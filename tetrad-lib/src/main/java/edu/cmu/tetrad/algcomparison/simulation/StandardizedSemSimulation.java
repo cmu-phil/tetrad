@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Standardized SEM simulation.
+ *
  * @author josephramsey
  */
 public class StandardizedSemSimulation implements Simulation {

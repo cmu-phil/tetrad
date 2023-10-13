@@ -18,6 +18,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
+ * Time series SEM simulation.
+ *
  * @author josephramsey
  * @author danielmalinsky
  */

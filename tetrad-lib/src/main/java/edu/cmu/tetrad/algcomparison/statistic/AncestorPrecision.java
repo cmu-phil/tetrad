@@ -7,6 +7,8 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
+ * Ancestor precision.
+ *
  * @author josephramsey
  */
 public class AncestorPrecision implements Statistic {

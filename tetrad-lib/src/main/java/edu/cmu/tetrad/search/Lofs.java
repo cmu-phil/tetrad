@@ -48,7 +48,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * literature and can be googled, though we should certainly give this reference for several of them, to which we are
  * indebted:</p>
  *
- * <p>Hyvärinen, A., & Smith, S. M. (2013). Pairwise likelihood ratios for estimation
+ * <p>Hyvärinen, A., &amp; Smith, S. M. (2013). Pairwise likelihood ratios for estimation
  * of non-Gaussian structural equation models. The Journal of Machine Learning Research, 14(1), 111-152.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required

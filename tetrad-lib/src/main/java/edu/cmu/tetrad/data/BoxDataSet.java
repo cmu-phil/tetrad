@@ -55,7 +55,7 @@ import java.util.*;
  * Knowledge may be associated with the data set, using the
  * <code>setKnowledge</code> method. This knowledge is not used internally to
  * the data set, but it may be retrieved by algorithms and used.
- * <p>
+ * </p>
  *
  * @author josephramsey
  * @see edu.cmu.tetrad.data.Variable

@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * MGM.
+ *
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(

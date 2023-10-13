@@ -44,7 +44,7 @@ import java.util.Collections;
  * This was an early attempt at this. For PC-LiNGAM, see this paper:</p>
  *
  * <p>Hoyer, P. O., Hyvarinen, A., Scheines, R., Spirtes, P. L., Ramsey, J., Lacerda, G.,
- * & Shimizu, S. (2012). Causal discovery of linear acyclic models with arbitrary distributions. arXiv preprint
+ * &amp; Shimizu, S. (2012). Causal discovery of linear acyclic models with arbitrary distributions. arXiv preprint
  * arXiv:1206.3260.</p>
  *
  * @author josephramsey

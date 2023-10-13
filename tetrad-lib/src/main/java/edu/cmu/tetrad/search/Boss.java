@@ -15,13 +15,13 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 /**
  * <p>Implements Best Order Score Search (BOSS). The following references are relevant:</p>
  *
- * <p>Lam, W. Y., Andrews, B., & Ramsey, J. (2022, August). Greedy relaxations of the sparsest permutation algorithm.
+ * <p>Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations of the sparsest permutation algorithm.
  * In Uncertainty in Artificial Intelligence (pp. 1052-1062). PMLR.</p>
  *
- * <p>Teyssier, M., & Koller, D. (2012). Ordering-based search: A simple and effective algorithm for learning Bayesian
+ * <p>Teyssier, M., &amp; Koller, D. (2012). Ordering-based search: A simple and effective algorithm for learning Bayesian
  * networks. arXiv preprint arXiv:1207.1429.</p>
  *
- * <p>Solus, L., Wang, Y., & Uhler, C. (2021). Consistency guarantees for greedy permutation-based causal inference
+ * <p>Solus, L., Wang, Y., &amp; Uhler, C. (2021). Consistency guarantees for greedy permutation-based causal inference
  * algorithms. Biometrika, 108(4), 795-814.</p>
  *
  * <p>The BOSS algorithm is based on the idea that implied DAGs for permutations are most optimal in their BIC scores
@@ -45,9 +45,9 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  *     <li>Return this CPDAG.</li>
  * </ol>
  *
- * <o>The optional BES step is needed for correctness, though with large
+ * <p>The optional BES step is needed for correctness, though with large
  * models is has very little effect on the output, since nearly all edges
- * are already oriented, so a parameter is included to turn that step off.</o>
+ * are already oriented, so a parameter is included to turn that step off.</p>
  *
  * <p>Knowledge can be used with this search. If tiered knowledge is used,
  * then the procedure is carried out for each tier separately, given the

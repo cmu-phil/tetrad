@@ -4,6 +4,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 
 /**
+ * No almost cyclic paths condition in MAG.
+ *
  * @author josephramsey
  */
 public class NoAlmostCyclicPathsInMagCondition implements Statistic {

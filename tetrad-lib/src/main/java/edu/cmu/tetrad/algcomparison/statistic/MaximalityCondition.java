@@ -8,6 +8,8 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
+ * MaximalMag statistic.
+ *
  * @author josephramsey
  */
 public class MaximalityCondition implements Statistic {

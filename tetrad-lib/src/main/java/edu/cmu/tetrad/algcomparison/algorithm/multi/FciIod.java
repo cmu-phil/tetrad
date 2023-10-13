@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * <p>Runs FCI on multiple datasets using the IOD pooled dataset independence test. The reference is here:</p>
  *
- * <p>Tillman, R., & Spirtes, P. (2011, June). Learning equivalence classes of acyclic models with latent and selection
+ * <p>Tillman, R., &amp; Spirtes, P. (2011, June). Learning equivalence classes of acyclic models with latent and selection
  * variables from multiple datasets with overlapping variables. In Proceedings of the Fourteenth International
  * Conference on Artificial Intelligence and Statistics (pp. 3-15). JMLR Workshop and Conference Proceedings.</p>
  *

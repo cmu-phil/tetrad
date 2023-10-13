@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Vector;
 
 /**
+ * Factor analysis.
+ *
  * @author josephramsey
  */
 @Bootstrapping

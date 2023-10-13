@@ -54,7 +54,7 @@ import java.util.*;
  * the data set, but it may be retrieved by algorithm and used.
  * <p>
  * This data set replaces an earlier Minitab-style DataSet class. The reasons for replacement are as follows.
- * <p>
+ * </p>
  * <ul> <li>COLT marices are optimized for double 2D matrix calculations in ways
  * that Java-style double[][] matrices are not. <li>The COLT library comes with
  * a wide range of linear algebra library methods that are better tested and

@@ -28,9 +28,8 @@ import cern.colt.matrix.DoubleMatrix1D;
  * h(x) where g(x) is a differentiable convex function (i.e. smooth) and h(x) is a convex but not necessarily
  * differentiable (i.e. non-smooth) and has a proximal operator prox_t(x) = argmin_z 1/(2t) norm2(x-z)^2 + h(z) has a
  * solution for any t &gt; 0. Typically g(x) will be a likelihood, and h(x) is a penalty term (as in l_1 in the lasso)
- * <p>
- * <p>
- * Created by ajsedgewick on 8/4/15.
+ *
+ * @author asedgewick 8/4/15
  */
 public abstract class ConvexProximal {
 

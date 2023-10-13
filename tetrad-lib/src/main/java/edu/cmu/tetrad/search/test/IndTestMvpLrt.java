@@ -39,7 +39,7 @@ import java.util.*;
  * variables are either continuous or discrete. This test is valid for both ordinal and non-ordinal discrete
  * searchVariables.</p>
  *
- * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2018). Scoring Bayesian networks of
+ * <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of
  * mixed variables. International journal of data science and analytics, 6, 3-18.</p>
  *
  * @author Bryan Andrews

@@ -7,6 +7,8 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
+ * Ancestor recall.
+ *
  * @author josephramsey
  */
 public class AncestorRecall implements Statistic {

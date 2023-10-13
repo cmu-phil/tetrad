@@ -36,7 +36,9 @@ import java.util.*;
  * Indexing of the variables works backwards: (a_i can't have children a_i ... a_m) ... not that that difference is
  * visible in the API.
  *
- * @author user
+ * @param <A> Attribute type
+ * @param <V> Value type
+ * @author jdramsey
  */
 public class AdTree<A, V> extends AdTreeHelper {
 

@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Bayes net simulation.
+ *
  * @author josephramsey
  */
 public class BayesNetSimulation implements Simulation {

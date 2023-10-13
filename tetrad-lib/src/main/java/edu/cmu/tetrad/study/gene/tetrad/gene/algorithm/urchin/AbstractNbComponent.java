@@ -25,6 +25,8 @@ import edu.cmu.tetrad.util.NamingProtocol;
 
 
 /**
+ * Abstract NB component.
+ *
  * @author Frank Wimberly
  */
 public abstract class AbstractNbComponent implements NbComponent {
@@ -39,6 +41,14 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     private double sd;
 
+    /**
+     * Constructs a new component with the given factor, power, parents, and
+     * @param factor the factor
+     * @param power the power
+     * @param parents the parents
+     * @param inhibitExcite the inhibit/excite
+     * @param name the namew
+     */
     public AbstractNbComponent(double factor, double power,
                                NbComponent[] parents, int[] inhibitExcite, String name) {
         setFactor(factor);
@@ -100,6 +110,9 @@ public abstract class AbstractNbComponent implements NbComponent {
         }
     }
 
+    /**
+     * Displays the parents.
+     */
     public void displayParents() {
         for (int i = 0; i < getNparents(); i++) {
             System.out.println(getParents()[i].getName() + " " +
@@ -107,52 +120,99 @@ public abstract class AbstractNbComponent implements NbComponent {
         }
     }
 
+    /**
+     * Updates.
+     */
     public abstract void update();
 
     public NbComponent[] getParents() {
         return this.parents;
     }
 
+    /**
+     * Sets the parents.
+     * @param parents the parents.
+     */
     public void setParents(NbComponent[] parents) {
         this.parents = parents;
     }
 
+    /**
+     * Returns the inhibit/excite.
+     * @return the inhibit/excite.
+     */
     public int[] getInhibitExcite() {
         return this.inhibitExcite;
     }
 
+    /**
+     * Sets the inhibit/excite.
+     * @param inhibitExcite the inhibit/excite.
+     */
     public void setInhibitExcite(int[] inhibitExcite) {
         this.inhibitExcite = inhibitExcite;
     }
 
+    /**
+     * Sets the number of parents.
+     * @return the number of parents.
+     */
     public int getNparents() {
         return this.nparents;
     }
 
+    /**
+     * Sets the number of parents.
+     * @param nparents the number of parents.
+     */
     public void setNparents(int nparents) {
         this.nparents = nparents;
     }
 
+    /**
+     * Returns the factor.
+     * @return the factor.
+     */
     public double getFactor() {
         return this.factor;
     }
 
+    /**
+     * Sets the factor.
+     * @param factor the factor.
+     */
     public void setFactor(double factor) {
         this.factor = factor;
     }
 
+    /**
+     * Returns the power.
+     * @return the power.
+     */
     public double getPower() {
         return this.power;
     }
 
+    /**
+     * Sets the power.
+     * @param power the power.
+     */
     public void setPower(double power) {
         this.power = power;
     }
 
+    /**
+     * Returns the standard deviation.
+     * @return the standard deviation.
+     */
     public double getSd() {
         return this.sd;
     }
 
+    /**
+     * Sets the standard deviation.
+     * @param sd the standard deviation.
+     */
     public void setSd(double sd) {
         this.sd = sd;
     }

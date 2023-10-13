@@ -6,6 +6,8 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
+ * Number of X-->Y visible in est.
+ *
  * @author josephramsey
  */
 public class NumVisibleEst implements Statistic {

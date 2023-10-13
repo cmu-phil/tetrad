@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Load data sets and graphs from a directory.
+ *
  * @author josephramsey
  */
 @Experimental

@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * GLASSO.
+ *
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(

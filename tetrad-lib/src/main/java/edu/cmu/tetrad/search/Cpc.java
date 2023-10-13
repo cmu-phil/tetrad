@@ -41,8 +41,8 @@ import java.util.Set;
  * <p>Ramsey, J., Zhang, J., &amp; Spirtes, P. L. (2012). Adjacency-faithfulness and conservative causal inference.
  * arXiv preprint arXiv:1206.6843.</p>
  *
- * <p>Conservative triple orientation is a method for orienting unshielded triples X*=-*Y*-*Z as one of the following:
- * (a) Collider, X->Y<-Z, (b) Noncollider, X-->Y-->Z, or X<-Y<-Z, or X<-Y->Z, (c) ambiguous between (a) or (b). One does
+ * <p>Conservative triple orientation is a method for orienting unshielded triples X*-*Y*-*Z as one of the following:
+ * (a) Collider, X-&gt;Y&lt;-Z, (b) Noncollider, X--&gt;Y--&gt;Z, or X&lt;-Y&lt;-Z, or X&lt;-Y-&gt;Z, (c) ambiguous between (a) or (b). One does
  * this by conditioning on subsets of adj(X) or adj(Z). One first checks conditional independence of X and Z conditional
  * on each of these subsets, then lists all of these subsets conditional on which X and Z are *independent*, then looks
  * thoough this list to see if Y is in them. If Y is in all of these subset, the triple is judged to be a noncollider;

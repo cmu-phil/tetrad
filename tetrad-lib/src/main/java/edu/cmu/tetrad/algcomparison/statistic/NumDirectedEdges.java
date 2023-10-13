@@ -6,6 +6,8 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
+ * Number of X-->Y in est.
+ *
  * @author josephramsey
  */
 public class NumDirectedEdges implements Statistic {

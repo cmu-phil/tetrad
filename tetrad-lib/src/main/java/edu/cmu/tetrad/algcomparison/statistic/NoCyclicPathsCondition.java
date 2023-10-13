@@ -5,6 +5,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
 /**
+ * No cyclic paths condition.
+ *
  * @author josephramsey
  */
 public class NoCyclicPathsCondition implements Statistic {

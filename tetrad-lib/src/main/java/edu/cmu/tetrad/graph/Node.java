@@ -47,6 +47,7 @@ public interface Node extends TetradSerializable, Comparable<Node> {
 
     /**
      * Sets the name of this node.
+     * @param name the name of this node.
      */
     void setName(String name);
 
@@ -82,6 +83,7 @@ public interface Node extends TetradSerializable, Comparable<Node> {
 
     /**
      * Sets the x coordinate of the center of this node.
+     * @param centerX This coordinate.
      */
     void setCenterX(int centerX);
 
@@ -92,16 +94,20 @@ public interface Node extends TetradSerializable, Comparable<Node> {
 
     /**
      * Sets the y coordinate of the center of this node.
+     * @param centerY This coordinate.
      */
     void setCenterY(int centerY);
 
     /**
      * Sets the (x, y) coordinates of the center of this node.
+     * @param centerX  The x coordinate.
+     * @param centerY The y coordinate.
      */
     void setCenter(int centerX, int centerY);
 
     /**
      * Adds a property change listener.
+     * @param l This listener.
      */
     void addPropertyChangeListener(PropertyChangeListener l);
 

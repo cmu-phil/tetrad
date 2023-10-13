@@ -8,6 +8,8 @@ import edu.cmu.tetrad.graph.NodeType;
 import java.util.List;
 
 /**
+ * Proportion of semi(X, Y) in estimated graph for which there is no semi(Y, X) in true graph.
+ *
  * @author josephramsey
  */
 public class ProportionSemidirectedPathsNotReversedEst implements Statistic {

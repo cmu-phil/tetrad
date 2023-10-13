@@ -29,6 +29,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 
 /**
+ * Lag graph.
+ *
  * @author josephramsey
  */
 public interface LagGraph extends TetradSerializable {

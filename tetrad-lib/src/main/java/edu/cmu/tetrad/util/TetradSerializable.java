@@ -40,8 +40,8 @@ import java.io.Serializable;
  * instance, binary serialization will load it in well under a second, whereas XML parsers that I've checked don't come
  * back in under 5 minutes.&gt; 0 <p>The test class that checks the above conditions are TestSerialization, which in
  * turn uses methods in TetradSerializableUtils. More details can be find there.&gt; 0
- * <p>
- * <p>See TestSerialization and TestSerializiableUtils.&gt; 0
+ * </p>
+ * <p>See TestSerialization and TestSerializiableUtils.&gt; 0</p>
  *
  * @author josephramsey
  */

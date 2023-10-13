@@ -6,6 +6,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 
 /**
+ * Number of X-->Y for which X-->Y visible in true PAG.
+ *
  * @author josephramsey
  */
 public class NumDirectedEdgeVisible implements Statistic {

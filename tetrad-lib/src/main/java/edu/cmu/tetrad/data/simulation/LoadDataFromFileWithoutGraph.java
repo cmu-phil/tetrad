@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Load data sets and graphs from a directory.
+ *
  * @author josephramsey
  */
 public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath, ParameterValues {

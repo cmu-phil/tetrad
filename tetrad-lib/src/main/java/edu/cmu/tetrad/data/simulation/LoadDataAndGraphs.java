@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Load data sets and graphs from a directory.
+ *
  * @author josephramsey
  */
 public class LoadDataAndGraphs implements Simulation {

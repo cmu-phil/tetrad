@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * Algorithm descriptions.
+ *
  * @author Zhou Yuan zhy19@pitt.edu
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */

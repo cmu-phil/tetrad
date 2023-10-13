@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Linear Fisher Model.
+ *
  * @author josephramsey
  */
 public class LinearFisherModel implements Simulation, TakesData {

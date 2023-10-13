@@ -43,7 +43,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * maximal only if the continuous variables are jointly Gaussian conditional on the discrete variables; in all other
  * cases, it will be less than maximal. The reference is here:</p>
  *
- * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
+ * <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
  * International journal of data science and analytics, 6, 3-18.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative

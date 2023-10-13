@@ -40,7 +40,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>Calculates independence from multiple datasets from using the Fisher method
  * of pooling independence results. See this paper for details:</p>
  *
- * <p>Tillman, R. E., & Eberhardt, F. (2014). Learning causal structure from
+ * <p>Tillman, R. E., &amp; Eberhardt, F. (2014). Learning causal structure from
  * multiple datasets with similar variable sets. Behaviormetrika, 41(1), 41-64.</p>
  *
  * @author robertillman

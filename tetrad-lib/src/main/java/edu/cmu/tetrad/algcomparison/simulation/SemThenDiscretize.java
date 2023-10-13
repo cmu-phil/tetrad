@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * SEM the discretize.
+ *
  * @author josephramsey
  */
 public class SemThenDiscretize implements Simulation {

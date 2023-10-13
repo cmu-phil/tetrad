@@ -22,6 +22,8 @@ import static org.apache.commons.math3.linear.MatrixUtils.createRealMatrix;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
+ * NL SEM simulation.
+ *
  * @author bryanandrews
  */
 public class NLSemSimulation implements Simulation {

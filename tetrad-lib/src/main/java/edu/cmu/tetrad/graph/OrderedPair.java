@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
  * An ordered pair of objects. This does not serialize well, unfortunately.
  *
  * @author Tyler Gibson
+ * @param <E> The type of the objects in the pair.
  */
 public class OrderedPair<E> implements TetradSerializable, TetradSerializableExcluded {
     private static final long serialVersionUID = 23L;

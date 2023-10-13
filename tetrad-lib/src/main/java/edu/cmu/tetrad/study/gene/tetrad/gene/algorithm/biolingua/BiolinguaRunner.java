@@ -24,7 +24,7 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.biolingua;
 import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.SymMatrixF;
 
 /**
- * Client of the Biolingua class, can be used to easily run the algorithm with different inputs.<p>
+ * <p>Client of the Biolingua class, can be used to easily run the algorithm with different inputs.</p>
  *
  * @author Raul Saavedra, rsaavedr@ai.uwf.edu
  */

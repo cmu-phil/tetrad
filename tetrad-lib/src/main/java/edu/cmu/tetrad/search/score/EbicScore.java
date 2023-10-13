@@ -38,7 +38,7 @@ import static org.apache.commons.math3.util.FastMath.log;
 /**
  * <p>Implements the extended BIC (EBIC) score. The reference is here:</p>
  *
- * <p>Chen, J., & Chen, Z. (2008). Extended Bayesian information criteria for
+ * <p>Chen, J., &amp; Chen, Z. (2008). Extended Bayesian information criteria for
  * model selection with large model spaces. Biometrika, 95(3), 759-771.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
