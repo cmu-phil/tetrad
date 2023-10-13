@@ -168,6 +168,29 @@ public class MarkovCheck {
             this.msep = msep;
             this.mconn = mconn;
         }
+
+        public String toString() {
+            StringBuilder builder = new StringBuilder("All subsets independence facts:\n");
+
+            builder.append("\n");
+
+            builder.append("M-separated:");
+
+            for (IndependenceFact fact : msep) {
+                builder.append(fact).append("\n");
+            }
+
+            builder.append('\n');
+            builder.append("M-connected:");
+
+            for (IndependenceFact fact : mconn) {
+                builder.append(fact).append("\n");
+            }
+
+            builder.append('\n');
+
+            return builder.toString();
+        }
     }
 
     /**
