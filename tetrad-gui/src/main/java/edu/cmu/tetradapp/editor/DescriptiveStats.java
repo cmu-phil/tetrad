@@ -100,8 +100,7 @@ class DescriptiveStats {
         table.setToken(rowindex, 0, "Skewness:");
         table.setToken(rowindex++, 1, nf.format(StatUtils.skewness(data)));
 
-        table.setToken(rowindex, 0, "" +
-                "Kurtosis:");
+        table.setToken(rowindex, 0, "" + "Kurtosis:");
         table.setToken(rowindex++, 1, nf.format(StatUtils.kurtosis(data)));
 
         if (continuous) {
