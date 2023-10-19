@@ -145,7 +145,6 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.CONFLICT_RULE);
         parameters.add(Params.MEEK_PREVENT_CYCLES);
-//        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);
 
