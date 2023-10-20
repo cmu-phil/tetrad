@@ -123,7 +123,6 @@ public final class BFci implements IGraphSearch {
 
         Graph graph = alg.search();
 
-        Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(graph);
 
         // GFCI extra edge removal step...
@@ -137,7 +136,7 @@ public final class BFci implements IGraphSearch {
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge2);
+        fciOrient.setKnowledge(knowledge);
 
         fciOrient.doFinalOrientation(graph);
 

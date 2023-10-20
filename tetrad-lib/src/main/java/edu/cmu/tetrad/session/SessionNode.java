@@ -1508,12 +1508,14 @@ public class SessionNode implements Node {
                 }
             }
 
-            if (arguments == null) {
-                arguments = assignParameters(constructorTypes, models);
+            if (constructorTypes.length == 0) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "UI models shouldn't have blank constructors. " +
+                        "This one did: " + modelClass.getName());
+                continue;
             }
 
-            if (constructorTypes.length == 0) {
-                continue;
+            if (arguments == null) {
+                arguments = assignParameters(constructorTypes, models);
             }
 
             if (arguments != null) {
@@ -1529,10 +1531,10 @@ public class SessionNode implements Node {
                     int begin = packagePath.lastIndexOf('.') + 1;
                     String name = packagePath.substring(begin);
 
-                    if (e.getTargetException() instanceof ThreadDeath) {
-                        e.printStackTrace();
-                        return;
-                    }
+//                    if (e.getTargetException() instanceof ThreadDeath) {
+//                        e.printStackTrace();
+//                        return;
+//                    }
 
                     e.printStackTrace();
 

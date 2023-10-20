@@ -214,6 +214,16 @@ public final class FciOrient {
         return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
     }
 
+    public static boolean isTailAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
+        if (!graph.isAdjacentTo(x, y)) return false;
+
+        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
+            return knowledge.isForbidden(x.getName(), y.getName());
+        }
+
+        return true;
+    }
+
     /**
      * Performs final FCI orientation on the given graph.
      *
@@ -468,8 +478,13 @@ public final class FciOrient {
                 return;
             }
 
-            graph.setEndpoint(c, b, Endpoint.TAIL);
+            if (!isTailAllowed(c, b, graph, knowledge)) {
+                return;
+            }
+
             graph.setEndpoint(b, c, Endpoint.ARROW);
+            graph.setEndpoint(c, b, Endpoint.TAIL);
+
             this.changeFlag = true;
 
             if (this.verbose) {
@@ -501,8 +516,8 @@ public final class FciOrient {
     }
 
     /**
-     * Implements the double-triangle orientation rule, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-oDo-*C, and !adj(a,
-     * c), D*-oB, then D*->B.
+     * Implements the double-triangle orientation rule, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-oDo-*C, and
+     * !adj(a, c), D*-oB, then D*->B.
      * <p>
      * This is Zhang's rule R3.
      */
@@ -841,6 +856,8 @@ public final class FciOrient {
                         ruleR10(a, c, graph);
                     }
                 }
+
+                ruleR11(a, c, graph);
             }
         }
     }
@@ -1003,7 +1020,8 @@ public final class FciOrient {
             }
             // We know u is as required: R9 applies!
 
-
+            if (!isTailAllowed(c, a, graph, knowledge)) continue;
+            ;
             graph.setEndpoint(c, a, Endpoint.TAIL);
 
             if (verbose) {
@@ -1015,6 +1033,30 @@ public final class FciOrient {
         }
 
         return false;
+    }
+
+    /**
+     * If Xo->Y and forbidden(X, Y) then X<->Y.
+     */
+    public boolean ruleR11(Node x, Node y, Graph graph) {
+        if (!graph.isAdjacentTo(x, y)) {
+            return false;
+        }
+
+        if (!(graph.getEndpoint(x, y) == Endpoint.ARROW && graph.getEndpoint(y, x) == Endpoint.CIRCLE)) {
+            return false;
+        }
+
+        if (!knowledge.isForbidden(x.getName(), y.getName())) return false;
+
+//        if (!isArrowheadAllowed(y, x, graph, knowledge)) {
+//            return false;
+//        }
+
+        graph.setEndpoint(y, x, Endpoint.ARROW);
+
+        this.changeFlag = true;
+        return true;
     }
 
     /**
@@ -1170,8 +1212,8 @@ public final class FciOrient {
      * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
      * <p>
-     * R10: If Ao-&gt;C, B--&gt;C&lt;--D, there is an uncovered p.d. path u1=&lt;A,M,...,B&gt; and an uncovered p.d. path u2=
-     * &lt;A,N,...,D&gt; with M != N and M,N nonadjacent then A--&gt;C.
+     * R10: If Ao-&gt;C, B--&gt;C&lt;--D, there is an uncovered p.d. path u1=&lt;A,M,...,B&gt; and an uncovered p.d.
+     * path u2= &lt;A,N,...,D&gt; with M != N and M,N nonadjacent then A--&gt;C.
      *
      * @param a The node A.
      * @param c The node C.

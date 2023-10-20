@@ -1786,6 +1786,7 @@ public final class GraphUtils {
     // Due to Spirtes.
     public static void gfciR0(Graph graph, Graph referenceCpdag, SepsetProducer sepsets, Knowledge knowledge) {
         graph.reorientAllWith(Endpoint.CIRCLE);
+
         fciOrientbk(knowledge, graph, graph.getNodes());
 
         List<Node> nodes = graph.getNodes();
