@@ -314,6 +314,12 @@ public final class Knowledge implements TetradSerializable {
             }
         }
 
+        this.forbiddenRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
+            if (!s1.equals(s2)) {
+                edges.add(new KnowledgeEdge(s1, s2));
+            }
+        })));
+
         return edges.iterator();
     }
 
