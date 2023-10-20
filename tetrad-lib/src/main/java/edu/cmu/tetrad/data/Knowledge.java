@@ -288,11 +288,31 @@ public final class Knowledge implements TetradSerializable {
     public Iterator<KnowledgeEdge> forbiddenEdgesIterator() {
         Set<KnowledgeEdge> edges = new HashSet<>();
 
-        this.forbiddenRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
-            if (!s1.equals(s2)) {
-                edges.add(new KnowledgeEdge(s1, s2));
+        for (int i = 0; i < tierSpecs.size(); i++) {
+            if (isTierForbiddenWithin(i)) {
+                Set<String> tier = tierSpecs.get(i);
+                for (String x : tier) {
+                    for (String y : tier) {
+                        if (!x.equals(y)) {
+                            edges.add(new KnowledgeEdge(x, y));
+                        }
+                    }
+                }
             }
-        })));
+        }
+
+        for (int i = this.tierSpecs.size() - 1; i >= 0; i--) {
+            for (int j = i; j >= 0; j--) {
+                Set<String> tieri = this.tierSpecs.get(i);
+                Set<String> tierj = this.tierSpecs.get(j);
+
+                for (String x : tieri) {
+                    for (String y : tierj) {
+                        edges.add(new KnowledgeEdge(x, y));
+                    }
+                }
+            }
+        }
 
         return edges.iterator();
     }
