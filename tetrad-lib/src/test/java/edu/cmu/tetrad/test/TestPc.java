@@ -126,9 +126,9 @@ public class TestPc {
                 "\n" +
                 "Graph Edges:\n" +
                 "1. ABILITY --> CITES\n" +
-                "2. ABILITY --- GPQ\n" +
-                "3. ABILITY --- PREPROD\n" +
-                "4. GPQ --- QFJ\n" +
+                "2. ABILITY --> GPQ\n" +
+                "3. ABILITY --> PREPROD\n" +
+                "4. GPQ --> QFJ\n" +
                 "5. PREPROD --> CITES\n" +
                 "6. PUBS --> CITES\n" +
                 "7. QFJ --> CITES\n" +
