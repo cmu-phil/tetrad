@@ -49,7 +49,6 @@ import static org.apache.commons.math3.util.FastMath.log;
 public class EbicScore implements Score {
     private final List<Node> variables;
     private final int sampleSize;
-    private DataSet dataSet;
     private ICovarianceMatrix covariances;
     private double N;
     private Matrix data;
@@ -81,8 +80,6 @@ public class EbicScore implements Score {
         if (dataSet == null) {
             throw new NullPointerException();
         }
-
-        this.dataSet = dataSet;
 
         this.variables = dataSet.getVariables();
         this.sampleSize = dataSet.getNumRows();
