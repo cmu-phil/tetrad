@@ -4,7 +4,7 @@ Please visit our [Tetrad web page](https://sites.google.com/view/tetradcausal) f
 
 ## Tetrad Application
 
-See out insructions for [Installing the Tetrad Application](https://github.com/cmu-phil/tetrad/blob/development/INSTALL_APPLICATION.md).
+See our insructions for [Installing the Tetrad Application](https://github.com/cmu-phil/tetrad/blob/development/INSTALL_APPLICATION.md).
 
 ## Install
 
