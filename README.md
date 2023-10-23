@@ -2,6 +2,10 @@
 
 Please visit our [Tetrad web page](https://sites.google.com/view/tetradcausal) for current links, a list of contributors, some history, documentation, descriptions, links for our various projects, Javadocs, and more.
 
+## Tetrad Application
+
+See out insructions for [installing the Tetrad applciation](https://github.com/cmu-phil/tetrad/blob/development/INSTALL_APPLICATION.md).
+
 ## Install
 
 Here's the git command to clone our project:
@@ -43,12 +47,6 @@ The project contains well-developed code in these packages:
 The tetrad-lib package contains the model code; the tetrad-gui package contains the view (GUI) code.
 
 A similar method can be followed for installing in some other IDE.
-
-## Tetrad Application
-
-See out insructions for [installing the Tetrad applciation](https://github.com/cmu-phil/tetrad/blob/development/INSTALL_APPLICATION.md).
-
-Our Tetrad Application is a graphical user interface tool that divides the analysis of causal problems into modular pieces that can be connected to reflect how causal problems should ideally be analyzed. This is helpful as an educational tool or for data analysis for those who prefer a visual interface. 
 
 
 ## Tetrad in Python
