@@ -14,7 +14,7 @@ Please see our [description](https://sites.google.com/view/tetradcausal/tetrad-i
 
 ## Tetrad in R
 
-We also have a project, [rpy-tetrad](https://github.com/cmu-phil/py-tetrad/tree/main/pytetrad/R), that allows you to incorporate _some_ Tetrad functionality in R. It's also new, and the installation for it is also still nonstandard, but has gotten good feedgack. This requires Python 3.5+ and Java JDK 9+.
+We also have a project, [rpy-tetrad](https://github.com/cmu-phil/py-tetrad/tree/main/pytetrad/R), that allows you to incorporate _some_ Tetrad functionality in R. It's also new, and the installation for it is also still nonstandard, but has gotten good feedback. This requires Python 3.5+ and Java JDK 9+.
 
 Please see our [description](https://sites.google.com/view/tetradcausal/tetrad-in-r?authuser=0).
 
