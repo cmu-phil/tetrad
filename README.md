@@ -57,13 +57,13 @@ Please see our [description](https://sites.google.com/view/tetradcausal/tetrad-i
 
 ## Tetrad in R
 
-We also have a project, [rpy-tetrad](https://github.com/cmu-phil/py-tetrad/tree/main/pytetrad/R), that allows you to incorporate _some_ Tetrad functionality in R. It's also new, and the installation for it is also still nonstandard, but has gotten good feedgack so. This requires Python 3.5+ and Java JDK 9+.
+We also have a project, [rpy-tetrad](https://github.com/cmu-phil/py-tetrad/tree/main/pytetrad/R), that allows you to incorporate _some_ Tetrad functionality in R. It's also new, and the installation for it is also still nonstandard, but has gotten good feedback so. This requires Python 3.5+ and Java JDK 9+.
 
 Please see our [description](https://sites.google.com/view/tetradcausal/tetrad-in-r?authuser=0).
 
 ## Tetrad at the Command Line
 
-In addition, we have a fully-developed tool, [Causal Coimmand](https://github.com/bd2kccd/causal-cmd), that lets you run arbitrary Tetrad searches at the command likne.
+In addition, we have a fully-developed tool, [Causal Coimmand](https://github.com/bd2kccd/causal-cmd), that lets you run arbitrary Tetrad searches at the command line.
 
 ## Problems? Comments?
 
