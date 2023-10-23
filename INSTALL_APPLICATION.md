@@ -4,7 +4,7 @@ This is a user interface tool that divides the analysis of causal problems into 
 
 Please use a recent Java JDK. See [Setting up Java for Tetrad](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Java-for-Tetrad). 
 
-To download the Tetrad jar, please click the following link:
+To download the Tetrad jar, please click the following link (which will always be updated to the latest version):
 
 https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.5.0/tetrad-gui-7.5.0-launch.jar
 
