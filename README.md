@@ -20,7 +20,7 @@ Please see our [description](https://sites.google.com/view/tetradcausal/tetrad-i
 
 ## Tetrad at the Command Line
 
-In addition, we have a fully-developed tool, [Causal Coimmand](https://github.com/bd2kccd/causal-cmd), that lets you run arbitrary Tetrad searches at the command likne.
+In addition, we have a fully-developed tool, [Causal Command](https://github.com/bd2kccd/causal-cmd), that lets you run arbitrary Tetrad searches at the command likne.
 
 ## Installallation for Programmers
 
