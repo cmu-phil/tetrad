@@ -48,7 +48,7 @@ A similar method can be followed for installing in some other IDE.
 
 Our Tetrad Application is a graphical user interface tool that divides the analysis of causal problems into modular pieces that can be connected to reflect how causal problems should ideally be analyzed. This is helpful as an educational tool or for data analysis for those who prefer a visual interface. 
 
-This requires a Java JDK. See setting up Java for Tetrad. 
+This requires a Java JDK. See [Setting up Java for Tetrad](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Java-for-Tetrad). 
 
 Currently, the Tetrad Application is a downloadable Java jar that can be launched on your specific platform in the usual ways for jars. First, determine which version of Java you are using by typing in a terminal window: 
 
