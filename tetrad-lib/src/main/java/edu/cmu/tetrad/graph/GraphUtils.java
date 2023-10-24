@@ -663,7 +663,10 @@ public final class GraphUtils {
         Set<Node> set = new HashSet<>();
 
         for (int i : indices) {
-            set.add(nodes.get(i));
+            if (i >= 0 && i < nodes.size()) {
+                set.add(nodes.get(i));
+            }
+//            set.add(nodes.get(i));
         }
 
         return set;
