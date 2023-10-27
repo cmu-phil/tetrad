@@ -220,12 +220,27 @@ public final class Knowledge implements TetradSerializable {
 
         for (String var : extent) {
             for (int i = 0; i < tierSpecs.size(); i++) {
-                if (i == tier) {
-                    this.tierSpecs.get(i).add(var);
-                } else {
-                    this.tierSpecs.get(i).remove(var);
+                if (i != tier) {
+                    if (tierSpecs.get(i).contains(var)) {
+                        throw new IllegalArgumentException("Variable " + var + " is already in tier " + i + ".");
+                    }
                 }
             }
+        }
+
+        for (int i = 0; i < tier; i++) {
+            for (String v : tierSpecs.get(i)) {
+                for (String w : extent) {
+                    if (isRequired(w, v)) {
+                        throw new IllegalArgumentException("Cannot add " + spec + " to tier " + tier
+                                + " because " + w + " --> " + v + " is required.");
+                    }
+                }
+            }
+        }
+
+        for (String var : extent) {
+            tierSpecs.get(tier).add(var);
         }
     }
 
