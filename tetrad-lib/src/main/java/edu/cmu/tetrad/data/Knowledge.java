@@ -256,6 +256,8 @@ public final class Knowledge implements TetradSerializable {
      * interface.
      */
     public void addKnowledgeGroup(KnowledgeGroup group) {
+        if (group == null) throw new NullPointerException("Knowledge group is null.");
+
         this.knowledgeGroups.add(group);
 
         OrderedPair<Set<String>> o = getGroupRule(group);
@@ -286,41 +288,8 @@ public final class Knowledge implements TetradSerializable {
      * Iterator over the KnowledgeEdge's representing forbidden edges.
      */
     public Iterator<KnowledgeEdge> forbiddenEdgesIterator() {
-        Set<KnowledgeEdge> edges = new HashSet<>();
-
-        for (int i = 0; i < tierSpecs.size(); i++) {
-            if (isTierForbiddenWithin(i)) {
-                Set<String> tier = tierSpecs.get(i);
-                for (String x : tier) {
-                    for (String y : tier) {
-                        if (!x.equals(y)) {
-                            edges.add(new KnowledgeEdge(x, y));
-                        }
-                    }
-                }
-            }
-        }
-
-        for (int i = this.tierSpecs.size() - 1; i >= 0; i--) {
-            for (int j = i; j >= 0; j--) {
-                Set<String> tieri = this.tierSpecs.get(i);
-                Set<String> tierj = this.tierSpecs.get(j);
-
-                for (String x : tieri) {
-                    for (String y : tierj) {
-                        edges.add(new KnowledgeEdge(x, y));
-                    }
-                }
-            }
-        }
-
-        this.forbiddenRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
-            if (!s1.equals(s2)) {
-                edges.add(new KnowledgeEdge(s1, s2));
-            }
-        })));
-
-        return edges.iterator();
+        List<KnowledgeEdge> forbiddenEdges = getListOfForbiddenEdges();
+        return forbiddenEdges.iterator();
     }
 
     /**
@@ -399,10 +368,6 @@ public final class Knowledge implements TetradSerializable {
      * Determines whether the edge var1 --&gt; var2 is forbidden.
      */
     public boolean isForbidden(String var1, String var2) {
-        if (isRequired(var1, var2)) {
-            return false;
-        }
-
         return isForbiddenByRules(var1, var2) || isForbiddenByTiers(var1, var2);
     }
 
@@ -558,6 +523,10 @@ public final class Knowledge implements TetradSerializable {
      */
     public void setForbidden(String var1, String var2) {
         if (isForbidden(var1, var2)) return;
+        if (isRequired(var1, var2)) {
+            throw new IllegalArgumentException("Cannot set forbidden edge " + var1 + " --> " + var2
+                    + " because it is required.");
+        }
 
         addVariable(var1);
         addVariable(var2);
@@ -590,6 +559,12 @@ public final class Knowledge implements TetradSerializable {
      * Marks the edge var1 --&gt; var2 as required.
      */
     public void setRequired(String var1, String var2) {
+        if (isRequired(var1, var1)) return;
+        if (isForbidden(var1, var2)) {
+            throw new IllegalArgumentException("Cannot set required edge " + var1 + " --> " + var2
+                    + " because it is forbidden.");
+        }
+
         addVariable(var1);
         addVariable(var2);
 
@@ -638,6 +613,8 @@ public final class Knowledge implements TetradSerializable {
         this.forbiddenRulesSpecs.remove(old);
         this.requiredRulesSpecs.remove(old);
 
+        knowledgeGroupRules.put(group, o);
+
         if (group.getType() == KnowledgeGroup.FORBIDDEN) {
             this.forbiddenRulesSpecs.add(o);
         } else if (group.getType() == KnowledgeGroup.REQUIRED) {
@@ -656,6 +633,47 @@ public final class Knowledge implements TetradSerializable {
         if (varsInTier != null) {
             varsInTier.clear();
         }
+
+        for (int i = 0; i < tierSpecs.size(); i++) {
+            if (isTierForbiddenWithin(i)) {
+                Set<String> _tier = tierSpecs.get(i);
+                for (String x : _tier) {
+                    for (String y : _tier) {
+                        if (!x.equals(y)) {
+                            if (isRequired(x, y)) {
+                                throw new IllegalArgumentException("Cannot set tier " + tier + " to " + vars
+                                        + " because " + x + " --> " + y + " is required.");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int i = this.tierSpecs.size() - 1; i >= 0; i--) {
+            for (int j = i; j >= 0; j--) {
+                Set<String> tieri = this.tierSpecs.get(i);
+                Set<String> tierj = this.tierSpecs.get(j);
+
+                for (String x : tieri) {
+                    for (String y : tierj) {
+                        if (isRequired(x, y)) {
+                            throw new IllegalArgumentException("Cannot set tier " + tier + " to " + vars
+                                    + " because " + x + " --> " + y + " is required.");
+                        }
+                    }
+                }
+            }
+        }
+
+        this.forbiddenRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
+            if (!s1.equals(s2)) {
+                if (isRequired(s1, s2)) {
+                    throw new IllegalArgumentException("Cannot set tier " + tier + " to " + vars
+                            + " because " + s1 + " --> " + s2 + " is required.");
+                }
+            }
+        })));
 
         vars.forEach(var -> addToTier(tier, var));
     }
@@ -733,9 +751,35 @@ public final class Knowledge implements TetradSerializable {
     public List<KnowledgeEdge> getListOfForbiddenEdges() {
         Set<KnowledgeEdge> edges = new HashSet<>();
 
-        this.forbiddenRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
-            if (!e1.equals(e2)) {
-                edges.add(new KnowledgeEdge(e1, e2));
+        for (int i = 0; i < tierSpecs.size(); i++) {
+            if (isTierForbiddenWithin(i)) {
+                Set<String> tier = tierSpecs.get(i);
+                for (String x : tier) {
+                    for (String y : tier) {
+                        if (!x.equals(y)) {
+                            edges.add(new KnowledgeEdge(x, y));
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int i = this.tierSpecs.size() - 1; i >= 0; i--) {
+            for (int j = i; j >= 0; j--) {
+                Set<String> tieri = this.tierSpecs.get(i);
+                Set<String> tierj = this.tierSpecs.get(j);
+
+                for (String x : tieri) {
+                    for (String y : tierj) {
+                        edges.add(new KnowledgeEdge(x, y));
+                    }
+                }
+            }
+        }
+
+        this.forbiddenRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
+            if (!s1.equals(s2)) {
+                edges.add(new KnowledgeEdge(s1, s2));
             }
         })));
 
