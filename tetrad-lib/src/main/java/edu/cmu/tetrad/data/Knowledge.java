@@ -218,16 +218,6 @@ public final class Knowledge implements TetradSerializable {
 
         Set<String> extent = getExtent(spec);
 
-        for (String var : extent) {
-            for (int i = 0; i < tierSpecs.size(); i++) {
-                if (i != tier) {
-                    if (tierSpecs.get(i).contains(var)) {
-                        throw new IllegalArgumentException("Variable " + var + " is already in tier " + i + ".");
-                    }
-                }
-            }
-        }
-
         for (int i = 0; i < tier; i++) {
             for (String v : tierSpecs.get(i)) {
                 for (String w : extent) {
@@ -236,6 +226,12 @@ public final class Knowledge implements TetradSerializable {
                                 + " because " + w + " --> " + v + " is required.");
                     }
                 }
+            }
+        }
+
+        for (Set<String> tierSpec : tierSpecs) {
+            for (String var : extent) {
+                tierSpec.remove(var);
             }
         }
 
