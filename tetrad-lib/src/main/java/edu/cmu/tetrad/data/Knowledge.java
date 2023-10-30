@@ -208,6 +208,7 @@ public final class Knowledge implements TetradSerializable {
         if (tier < 0) {
             throw new IllegalArgumentException();
         }
+
         if (spec == null) {
             throw new NullPointerException();
         }
@@ -217,17 +218,6 @@ public final class Knowledge implements TetradSerializable {
         ensureTiers(tier);
 
         Set<String> extent = getExtent(spec);
-
-        for (int i = 0; i < tier; i++) {
-            for (String v : tierSpecs.get(i)) {
-                for (String w : extent) {
-                    if (isRequired(w, v)) {
-                        throw new IllegalArgumentException("Cannot add " + spec + " to tier " + tier
-                                + " because " + w + " --> " + v + " is required.");
-                    }
-                }
-            }
-        }
 
         for (Set<String> tierSpec : tierSpecs) {
             for (String var : extent) {
@@ -534,10 +524,6 @@ public final class Knowledge implements TetradSerializable {
      */
     public void setForbidden(String var1, String var2) {
         if (isForbidden(var1, var2)) return;
-        if (isRequired(var1, var2)) {
-            throw new IllegalArgumentException("Cannot set forbidden edge " + var1 + " --> " + var2
-                    + " because it is required.");
-        }
 
         addVariable(var1);
         addVariable(var2);
@@ -571,10 +557,6 @@ public final class Knowledge implements TetradSerializable {
      */
     public void setRequired(String var1, String var2) {
         if (isRequired(var1, var1)) return;
-        if (isForbidden(var1, var2)) {
-            throw new IllegalArgumentException("Cannot set required edge " + var1 + " --> " + var2
-                    + " because it is forbidden.");
-        }
 
         addVariable(var1);
         addVariable(var2);
@@ -644,47 +626,6 @@ public final class Knowledge implements TetradSerializable {
         if (varsInTier != null) {
             varsInTier.clear();
         }
-
-        for (int i = 0; i < tierSpecs.size(); i++) {
-            if (isTierForbiddenWithin(i)) {
-                Set<String> _tier = tierSpecs.get(i);
-                for (String x : _tier) {
-                    for (String y : _tier) {
-                        if (!x.equals(y)) {
-                            if (isRequired(x, y)) {
-                                throw new IllegalArgumentException("Cannot set tier " + tier + " to " + vars
-                                        + " because " + x + " --> " + y + " is required.");
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        for (int i = this.tierSpecs.size() - 1; i >= 0; i--) {
-            for (int j = i; j >= 0; j--) {
-                Set<String> tieri = this.tierSpecs.get(i);
-                Set<String> tierj = this.tierSpecs.get(j);
-
-                for (String x : tieri) {
-                    for (String y : tierj) {
-                        if (isRequired(x, y)) {
-                            throw new IllegalArgumentException("Cannot set tier " + tier + " to " + vars
-                                    + " because " + x + " --> " + y + " is required.");
-                        }
-                    }
-                }
-            }
-        }
-
-        this.forbiddenRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
-            if (!s1.equals(s2)) {
-                if (isRequired(s1, s2)) {
-                    throw new IllegalArgumentException("Cannot set tier " + tier + " to " + vars
-                            + " because " + s1 + " --> " + s2 + " is required.");
-                }
-            }
-        })));
 
         vars.forEach(var -> addToTier(tier, var));
     }
