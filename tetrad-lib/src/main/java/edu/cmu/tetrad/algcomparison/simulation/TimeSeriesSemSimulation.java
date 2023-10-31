@@ -18,12 +18,14 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
+ * Time series SEM simulation.
+ *
  * @author josephramsey
  * @author danielmalinsky
  */
 public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private List<Graph> graphs = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
@@ -104,7 +106,8 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             dataSet = TsUtils.createLagData(dataSet, numLags);
 
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+                double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
+                dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
             }
 
             dataSet.setName("" + (i + 1));

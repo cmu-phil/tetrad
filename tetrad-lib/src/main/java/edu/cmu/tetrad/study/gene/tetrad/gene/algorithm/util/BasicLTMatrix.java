@@ -34,6 +34,9 @@ public abstract class BasicLTMatrix extends BasicMatrix {
 
     /**
      * Creates a lower triangular matrix with <code>nrows</code> rows.
+     *
+     * @param mname the name of the matrix
+     * @param nrows the number of rows in the matrix
      */
     public BasicLTMatrix(String mname, int nrows) {
         super(mname, nrows);
@@ -50,6 +53,9 @@ public abstract class BasicLTMatrix extends BasicMatrix {
      * number of blank delimiters: tabs, spaces, carriage returns.  In the examples above they appear in different lines
      * for more readability of the file. The file may have less elements than the total needed to fill the matrix.  If
      * it has more elements an illegal argument exception will be generated.
+     *
+     * @param fname the name of the file to read the matrix from
+     * @throws IOException if there is an error reading the file
      */
     public BasicLTMatrix(String fname)
             throws IOException {

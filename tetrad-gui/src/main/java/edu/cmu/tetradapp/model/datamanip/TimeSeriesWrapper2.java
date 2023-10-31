@@ -32,7 +32,7 @@ import edu.cmu.tetradapp.model.PcRunner;
  * @author Tyler
  */
 public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransferable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Constructs a new time series dataset.

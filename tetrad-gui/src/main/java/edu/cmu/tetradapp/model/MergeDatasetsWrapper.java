@@ -32,7 +32,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * @author Tyler Gibson
  */
 public class MergeDatasetsWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public MergeDatasetsWrapper(DataWrapper[] data, Parameters params) {
         construct(data);

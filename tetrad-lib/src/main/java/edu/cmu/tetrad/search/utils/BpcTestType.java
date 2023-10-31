@@ -54,7 +54,7 @@ public enum BpcTestType implements TetradSerializable {
     SAG, GAP;
 
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public static BpcTestType serializableInstance() {
         return BpcTestType.GAUSSIAN_PVALUE;

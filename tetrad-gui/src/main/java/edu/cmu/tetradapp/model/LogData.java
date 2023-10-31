@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * @author Jeremy Espino
  */
 public class LogData extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
 
@@ -50,7 +50,7 @@ public class LogData extends DataWrapper {
             boolean isUnlog = params.getBoolean("unlog");
             int base = params.getInt("base");
 
-            DataSet dataSet2 = DataUtils.logData(dataSet, a, isUnlog, base);
+            DataSet dataSet2 = DataTransforms.logData(dataSet, a, isUnlog, base);
             outList.add(dataSet2);
         }
 

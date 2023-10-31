@@ -37,7 +37,7 @@ import java.util.List;
  * @author josephramsey
  */
 public final class CorrelationMatrix extends CovarianceMatrix {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Constructs a new correlation matrix using the covariances in the given covariance matrix.

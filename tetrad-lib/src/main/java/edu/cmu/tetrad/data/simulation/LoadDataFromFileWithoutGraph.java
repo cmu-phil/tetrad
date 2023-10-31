@@ -19,10 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Load data sets and graphs from a directory.
+ *
  * @author josephramsey
  */
 public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath, ParameterValues {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final String path;
     private final Map<String, Object> parameterValues = new HashMap<>();
     private DataSet dataSet;
@@ -38,7 +40,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
             File file = new File(this.path);
             System.out.println("Loading data from " + file.getAbsolutePath());
             this.dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
-                    "*", true, Delimiter.TAB);
+                    "*", true, Delimiter.TAB, false);
         } catch (IOException e) {
             e.printStackTrace();
         }

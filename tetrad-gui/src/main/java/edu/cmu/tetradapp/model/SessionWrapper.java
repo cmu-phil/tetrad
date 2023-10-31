@@ -47,7 +47,7 @@ import java.util.*;
  * @see edu.cmu.tetrad.graph.Graph
  */
 public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndirectRef {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The session being wrapped.

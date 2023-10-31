@@ -37,7 +37,7 @@ import java.text.NumberFormat;
  * @author josephramsey
  */
 public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unmarshallable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial

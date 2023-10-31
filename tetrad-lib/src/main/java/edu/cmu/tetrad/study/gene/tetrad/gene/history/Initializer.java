@@ -31,6 +31,7 @@ public interface Initializer extends TetradSerializable {
 
     /**
      * Initializes a history array.
+     * @param historyArray the history array to initialize.
      */
     void initialize(double[][] historyArray);
 }

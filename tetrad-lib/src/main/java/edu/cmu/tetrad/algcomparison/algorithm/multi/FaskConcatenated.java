@@ -35,7 +35,7 @@ import java.util.List;
 @Bootstrapping
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
@@ -55,10 +55,10 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
             List<DataSet> centered = new ArrayList<>();
 
             for (DataModel dataSet : dataSets) {
-                centered.add(DataUtils.standardizeData((DataSet) dataSet));
+                centered.add(DataTransforms.standardizeData((DataSet) dataSet));
             }
 
-            DataSet dataSet = DataUtils.concatenate(centered);
+            DataSet dataSet = DataTransforms.concatenate(centered);
 
             dataSet.setNumberFormat(new DecimalFormat("0.000000000000000000"));
 

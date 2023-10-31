@@ -46,7 +46,7 @@ import java.util.concurrent.RecursiveTask;
  * models. Thorax, 74(7), 643-649.</p>
  *
  * <p>Max-P triple orientation is a method for orienting unshielded triples
- * X*=-*Y*-*Z as one of the following: (a) Collider, X->Y<-Z, or (b) Noncollider, X-->Y-->Z, or X<-Y<-Z, or X<-Y->Z. One
+ * X*=-*Y*-*Z as one of the following: (a) Collider, X-&gt;Y&lt;-Z, or (b) Noncollider, X--&gt;Y--&gt;Z, or X&lt;-Y&lt;-Z, or X&lt;-Y-&gt;Z. One
  * does this by conditioning on subsets of adj(X) or adj(Z). One first checks conditional independence of X and Z
  * conditional on each of these subsets, and lists the p-values for each test. Then, one chooses the conditioning set
  * out of all of these that maximizes the p-value. If this conditioning set contains Y, then the triple is judged to be

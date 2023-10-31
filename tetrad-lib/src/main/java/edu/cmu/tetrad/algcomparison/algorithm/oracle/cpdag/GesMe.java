@@ -9,9 +9,9 @@ import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import org.apache.commons.math3.util.FastMath;
@@ -33,7 +33,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 @Experimental
 public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final ScoreWrapper score = new SemBicScoreDeterministic();
     private boolean compareToTrue;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
@@ -191,7 +191,8 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
         if (this.compareToTrue) {
             return new EdgeListGraph(graph);
         } else {
-            return GraphSearchUtils.cpdagForDag(new EdgeListGraph(graph));
+            Graph dag = new EdgeListGraph(graph);
+            return GraphTransforms.cpdagForDag(dag);
         }
     }
 

@@ -19,37 +19,46 @@ public interface Simulation extends HasParameters, TetradSerializable {
 
     /**
      * Creates a data set and simulates data.
+     *
+     * @param parameters The parameters to use in the simulation.
+     * @param newModel If true, a new model is created. If false, the model is reused.
      */
     void createData(Parameters parameters, boolean newModel);
 
     /**
+     * Returns the number of data models.
      * @return The number of data sets to simulate.
      */
     int getNumDataModels();
 
     /**
+     * Returns the true graph at the given index.
      * @param index The index of the desired true graph.
      * @return That graph.
      */
     Graph getTrueGraph(int index);
 
     /**
+     * Returns the number of data sets to simulate.
      * @param index The index of the desired simulated data set.
      * @return That data set.
      */
     DataModel getDataModel(int index);
 
     /**
+     * Returns the data type of the data.
      * @return Returns the type of the data, continuous, discrete or mixed.
      */
     DataType getDataType();
 
     /**
+     * Returns the description of the simulation.
      * @return Returns a one-line description of the simulation, to be printed at the beginning of the report.
      */
     String getDescription();
 
     /**
+     * Returns the list of parameters used in the simulation.
      * @return Returns the parameters used in the simulation. These are the parameters whose values can be varied.
      */
     List<String> getParameters();

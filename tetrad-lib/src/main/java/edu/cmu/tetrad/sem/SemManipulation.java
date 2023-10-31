@@ -36,7 +36,7 @@ import java.util.List;
  * @author josephramsey
  */
 public final class SemManipulation implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Bayes IM that this is evidence for.

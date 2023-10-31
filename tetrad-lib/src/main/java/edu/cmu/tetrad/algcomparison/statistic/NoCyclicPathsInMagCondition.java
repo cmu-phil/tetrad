@@ -2,14 +2,16 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 /**
+ * No cyclic paths condition.
+ *
  * @author josephramsey
  */
 public class NoCyclicPathsInMagCondition implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
@@ -23,7 +25,7 @@ public class NoCyclicPathsInMagCondition implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph mag = GraphSearchUtils.pagToMag(estGraph);
+        Graph mag = GraphTransforms.pagToMag(estGraph);
 
         for (Node n : mag.getNodes()) {
             if (mag.paths().existsDirectedPathFromTo(n, n)) {

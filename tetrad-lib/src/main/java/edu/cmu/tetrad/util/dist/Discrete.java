@@ -33,7 +33,7 @@ import java.util.Arrays;
  * @author josephramsey
  */
 public class Discrete implements Distribution {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final double[] p;
 

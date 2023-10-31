@@ -28,7 +28,7 @@ package edu.cmu.tetrad.util;
  * @author josephramsey
  */
 public class PointXy implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The x coordinate.

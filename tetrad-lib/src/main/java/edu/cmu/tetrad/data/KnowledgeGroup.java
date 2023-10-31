@@ -41,7 +41,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      */
     public static final int REQUIRED = 1;
     public static final int FORBIDDEN = 2;
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * The left group of variables.
      *

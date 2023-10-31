@@ -43,7 +43,7 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
     public static final int EVENLY_DISTRIBUTED_VALUES = 1;
     public static final int EVENLY_DISTRIBUTED_INTERVALS = 2;
     public static final int NONE = 3;
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * Breakpoints, for continuous data.
      *

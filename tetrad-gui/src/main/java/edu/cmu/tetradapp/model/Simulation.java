@@ -43,7 +43,7 @@ import java.util.*;
 public class Simulation extends DataWrapper implements
         GraphSource, MultipleGraphSource {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private edu.cmu.tetrad.algcomparison.simulation.Simulation simulation;
     private Parameters parameters;

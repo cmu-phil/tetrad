@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings("RedundantIfStatement")
 public class Version implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The major version number. In release a.b.c-d, a. At time of creating this class, it's 4, and the minor version is

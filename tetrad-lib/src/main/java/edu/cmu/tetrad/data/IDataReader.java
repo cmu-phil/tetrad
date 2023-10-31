@@ -1,6 +1,8 @@
 package edu.cmu.tetrad.data;
 
 /**
+ * Identifies a class that can read data from a file.
+ *
  * @author josephramsey
  */
 public interface IDataReader {

@@ -24,7 +24,7 @@ import java.util.concurrent.RecursiveAction;
  */
 public class StabilitySelection implements Algorithm {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Algorithm algorithm;
 
     public StabilitySelection(Algorithm algorithm) {

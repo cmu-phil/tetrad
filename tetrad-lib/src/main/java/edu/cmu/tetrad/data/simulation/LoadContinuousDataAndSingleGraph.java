@@ -19,11 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Load data sets and graphs from a directory.
+ *
  * @author josephramsey
  */
 @Experimental
 public class LoadContinuousDataAndSingleGraph implements Simulation, HasParameterValues {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final String path;
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
@@ -51,7 +53,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 try {
                     DataSet data = SimpleDataLoader.loadContinuousData(file, "//", '\"',
-                            "*", true, Delimiter.TAB);
+                            "*", true, Delimiter.TAB, false);
                     this.dataSets.add(data);
                 } catch (Exception e) {
                     System.out.println("Couldn't parse " + file.getAbsolutePath());
@@ -74,7 +76,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             System.out.println("Loading graph from " + file.getAbsolutePath());
             this.graph = GraphSaveLoadUtils.loadGraphTxt(file);
 
-            LayoutUtil.circleLayout(this.graph);
+            LayoutUtil.defaultLayout(this.graph);
         }
 
         if (parameters.get(Params.NUM_RUNS) != null) {

@@ -13,7 +13,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class ErdosRenyi implements RandomGraph {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public Graph createGraph(Parameters parameters) {

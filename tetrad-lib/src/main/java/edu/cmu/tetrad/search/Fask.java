@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
@@ -250,7 +250,7 @@ public final class Fask implements IGraphSearch {
         long start = MillisecondTimes.timeMillis();
         NumberFormat nf = new DecimalFormat("0.000");
 
-        DataSet dataSet = DataUtils.standardizeData(this.dataSet);
+        DataSet dataSet = DataTransforms.standardizeData(this.dataSet);
 
         List<Node> variables = dataSet.getVariables();
         double[][] lrs = getLrScores(); // Sets D.
@@ -377,7 +377,7 @@ public final class Fask implements IGraphSearch {
                             continue;
                         }
 
-                        if (this.twoCycleScreeningCutoff > 0 && abs(faskLeftRightV2(x, y)) < this.twoCycleScreeningCutoff) {
+                        if (this.twoCycleScreeningCutoff > 0 && abs(faskLeftRightV2(x, y, empirical, delta)) < this.twoCycleScreeningCutoff) {
                             TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t2-cycle Prescreen"
                                     + "\t" + nf.format(lr)
                                     + "\t" + X + "...TC?..." + Y
@@ -476,7 +476,7 @@ public final class Fask implements IGraphSearch {
      */
     public double[][] getLrScores() {
         List<Node> variables = this.dataSet.getVariables();
-        double[][] D = DataUtils.standardizeData(this.dataSet).getDoubleData().transpose().toArray();
+        double[][] D = DataTransforms.standardizeData(this.dataSet).getDoubleData().transpose().toArray();
 
         double[][] lr = new double[variables.size()][variables.size()];
 
@@ -617,38 +617,38 @@ public final class Fask implements IGraphSearch {
      */
     public double leftRight(double[] x, double[] y) {
         if (this.leftRight == LeftRight.FASK1) {
-            return faskLeftRightV1(x, y);
+            return faskLeftRightV1(x, y, empirical, delta);
         } else if (this.leftRight == LeftRight.FASK2) {
-            return faskLeftRightV2(x, y);
+            return faskLeftRightV2(x, y, empirical, delta);
         } else if (this.leftRight == LeftRight.RSKEW) {
-            return robustSkew(x, y);
+            return robustSkew(x, y, empirical);
         } else if (this.leftRight == LeftRight.SKEW) {
-            return skew(x, y);
+            return skew(x, y, empirical);
         } else if (this.leftRight == LeftRight.TANH) {
-            return tanh(x, y);
+            return tanh(x, y, empirical);
         }
 
         throw new IllegalStateException("Left right rule not configured: " + this.leftRight);
     }
 
-    private double faskLeftRightV2(double[] x, double[] y) {
+    public static double faskLeftRightV2(double[] x, double[] y, boolean empirical, double delta) {
         double sx = skewness(x);
         double sy = skewness(y);
         double r = correlation(x, y);
         double lr = Fask.correxp(x, y, x) - Fask.correxp(x, y, y);
 
-        if (this.empirical) {
+        if (empirical) {
             lr *= signum(sx) * signum(sy);
         }
 
-        if (r < this.delta) {
+        if (r < delta) {
             lr *= -1;
         }
 
         return lr;
     }
 
-    private double faskLeftRightV1(double[] x, double[] y) {
+    public static double faskLeftRightV1(double[] x, double[] y, boolean empirical, double delta) {
         double left = Fask.cu(x, y, x) / (sqrt(Fask.cu(x, x, x) * Fask.cu(y, y, x)));
         double right = Fask.cu(x, y, y) / (sqrt(Fask.cu(x, x, y) * Fask.cu(y, y, y)));
         double lr = left - right;
@@ -657,19 +657,19 @@ public final class Fask implements IGraphSearch {
         double sx = skewness(x);
         double sy = skewness(y);
 
-        if (this.empirical) {
+        if (empirical) {
             r *= signum(sx) * signum(sy);
         }
 
         lr *= signum(r);
-        if (r < this.delta) lr *= -1;
+        if (r < delta) lr *= -1;
 
         return lr;
     }
 
-    private double robustSkew(double[] x, double[] y) {
+    public static double robustSkew(double[] x, double[] y, boolean empirical) {
 
-        if (this.empirical) {
+        if (empirical) {
             x = correctSkewness(x, skewness(x));
             y = correctSkewness(y, skewness(y));
         }
@@ -683,9 +683,9 @@ public final class Fask implements IGraphSearch {
         return correlation(x, y) * mean(lr);
     }
 
-    private double skew(double[] x, double[] y) {
+    public static double skew(double[] x, double[] y, boolean empirical) {
 
-        if (this.empirical) {
+        if (empirical) {
             x = correctSkewness(x, skewness(x));
             y = correctSkewness(y, skewness(y));
         }
@@ -699,9 +699,9 @@ public final class Fask implements IGraphSearch {
         return correlation(x, y) * mean(lr);
     }
 
-    private double tanh(double[] x, double[] y) {
+    private double tanh(double[] x, double[] y, boolean empirical) {
 
-        if (this.empirical) {
+        if (empirical) {
             x = correctSkewness(x, skewness(x));
             y = correctSkewness(y, skewness(y));
         }
@@ -715,7 +715,7 @@ public final class Fask implements IGraphSearch {
         return correlation(x, y) * mean(lr);
     }
 
-    private double g(double x) {
+    public static double g(double x) {
         return log(cosh(FastMath.max(x, 0)));
     }
 
@@ -727,7 +727,7 @@ public final class Fask implements IGraphSearch {
         return this.knowledge.isForbidden(Y.getName(), X.getName()) && this.knowledge.isForbidden(X.getName(), Y.getName());
     }
 
-    private double[] correctSkewness(double[] data, double sk) {
+    public static double[] correctSkewness(double[] data, double sk) {
         double[] data2 = new double[data.length];
         for (int i = 0; i < data.length; i++) data2[i] = data[i] * signum(sk);
         return data2;

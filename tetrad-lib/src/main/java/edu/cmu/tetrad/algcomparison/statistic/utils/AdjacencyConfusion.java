@@ -18,6 +18,11 @@ public class AdjacencyConfusion {
     private int fp;
     private int fn;
 
+    /**
+     * Constructs a new AdjacencyConfusion object from the given graphs.
+     * @param truth The true graph.
+     * @param est The estimated graph.
+     */
     public AdjacencyConfusion(Graph truth, Graph est) {
         this.tp = 0;
         this.fp = 0;
@@ -54,18 +59,34 @@ public class AdjacencyConfusion {
         this.tn = allEdges - this.fn - this.fp - this.fn;
     }
 
+    /**
+     * Returns the true positive count.
+     * @return the true positive count.
+     */
     public int getTp() {
         return this.tp;
     }
 
+    /**
+     * Returns the false positive count.
+     * @return the false positive count.
+     */
     public int getFp() {
         return this.fp;
     }
 
+    /**
+     * Returns the false negative count.
+     * @return the false negative count.
+     */
     public int getFn() {
         return this.fn;
     }
 
+    /**
+     * Returns the true negative count.
+     * @return the true negative count.
+     */
     public int getTn() {
         return this.tn;
     }

@@ -41,7 +41,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Can be null.

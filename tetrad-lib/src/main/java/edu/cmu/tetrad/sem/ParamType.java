@@ -49,7 +49,7 @@ public class ParamType implements TetradSerializable {
      * A covariance parameter. (Does not include variance freeParameters; these are indicated using VAR.)
      */
     public static final ParamType COVAR = new ParamType("Error Covariance");
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * A parameter of a distribution.
      */

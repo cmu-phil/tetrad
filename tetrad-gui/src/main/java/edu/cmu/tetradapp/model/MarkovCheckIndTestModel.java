@@ -40,7 +40,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final DataModel dataModel;
     private final Parameters parameters;
     private final Graph graph;

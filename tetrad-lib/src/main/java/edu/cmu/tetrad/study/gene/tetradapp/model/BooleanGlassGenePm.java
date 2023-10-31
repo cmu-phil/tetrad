@@ -32,7 +32,7 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.graph.RandomActiveLagGraph;
  * @author josephramsey
  */
 public class BooleanGlassGenePm extends GenePm implements SessionModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Can be null.n

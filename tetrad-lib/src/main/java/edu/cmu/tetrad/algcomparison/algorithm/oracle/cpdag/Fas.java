@@ -13,7 +13,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -36,7 +36,7 @@ import java.util.List;
 public class Fas implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
@@ -101,7 +101,8 @@ public class Fas implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphSearchUtils.cpdagForDag(new EdgeListGraph(graph));
+        Graph dag = new EdgeListGraph(graph);
+        return GraphTransforms.cpdagForDag(dag);
     }
 
     @Override

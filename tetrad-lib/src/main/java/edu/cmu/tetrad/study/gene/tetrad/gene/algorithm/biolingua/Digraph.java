@@ -50,6 +50,9 @@ public class Digraph extends BasicGraph {
 
     /**
      * Creates a OldDigraph with <code>gName</code> name, and <code>n</code> nodes.
+     *
+     * @param gName the name of the graph
+     * @param nNodes the number of nodes
      */
     public Digraph(String gName, int nNodes) {
         super(gName, nNodes);
@@ -57,6 +60,8 @@ public class Digraph extends BasicGraph {
 
     /**
      * Creates a OldDigraph reading it from file <code>fname</code>.
+     *
+     * @param fname the name of the file to read the graph from.
      */
     public Digraph(String fname) throws IOException {
         super(fname);
@@ -90,6 +95,9 @@ public class Digraph extends BasicGraph {
         return g2;
     }
 
+    /**
+     * Initializes the edges matrix
+     */
     protected void initializeEdges() {
         this.edges = new MatrixF("EdgeMatrix_" + this.graphName, this.nNodes);
         this.nParents = new int[this.nNodes];
@@ -97,6 +105,9 @@ public class Digraph extends BasicGraph {
 
     /**
      * Sets a value of edge between nodes i and j
+     * @param i the first node
+     * @param j the second node
+     * @param value the value of the edge
      */
     public void setEdge(int i, int j, double value) {
         double e = this.getEdges().getDoubleValue(i, j);
@@ -114,6 +125,8 @@ public class Digraph extends BasicGraph {
 
     /**
      * Returns the value of edge between nodes i and j
+     * @param i the first node
+     * @param j the second node
      */
     public double getEdge(int i, int j) {
         return this.getEdges().getDoubleValue(i, j);
@@ -121,6 +134,7 @@ public class Digraph extends BasicGraph {
 
     /**
      * Returns a string representation of the set of edges in this graph
+     * @return a string representation of the set of edges in this graph.
      */
     public String EdgesToString() {
         String s = "";
@@ -139,7 +153,9 @@ public class Digraph extends BasicGraph {
     }
 
     /**
-     * Returns the number of parents of node i
+     * Returns the number of parents of node i.
+     * @param i the node
+     * @return the number of parents of node i.
      */
     public int getNumParents(int i) {
         if ((i < 0) || (i >= this.getSize())) {
@@ -151,6 +167,7 @@ public class Digraph extends BasicGraph {
     /**
      * Returns an array with the indexes of the parents of node i. If node i has no parents it returns an array of size
      * 0 (e.g. not null)
+     * @param j the index of the node
      */
     public int[] getParents(int j) {
         if ((j < 0) || (j >= this.nNodes)) {
@@ -167,6 +184,10 @@ public class Digraph extends BasicGraph {
         return ap;
     }
 
+    /**
+     * Returns the edge matrix.
+     * @return the edge matrix.
+     */
     public MatrixF getEdges() {
         return this.edges;
     }

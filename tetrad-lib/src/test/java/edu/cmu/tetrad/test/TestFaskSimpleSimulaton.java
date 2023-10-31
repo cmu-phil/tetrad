@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 
@@ -96,9 +96,9 @@ public class TestFaskSimpleSimulaton {
             }
 
             // Center variables.
-            x = DataUtils.center(x);
-            y = DataUtils.center(y);
-            z = DataUtils.center(z);
+            x = DataTransforms.center(x);
+            y = DataTransforms.center(y);
+            z = DataTransforms.center(z);
 
             // Swap x and y so y->x instead.
             double[] w = x;
@@ -168,9 +168,9 @@ public class TestFaskSimpleSimulaton {
             }
 
             // Center variables.
-            x = DataUtils.center(x);
-            y = DataUtils.center(y);
-            z = DataUtils.center(z);
+            x = DataTransforms.center(x);
+            y = DataTransforms.center(y);
+            z = DataTransforms.center(z);
 
             // Swap x and y so y->x instead.
 

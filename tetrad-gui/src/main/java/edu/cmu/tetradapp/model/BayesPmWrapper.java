@@ -47,7 +47,7 @@ import java.util.Map;
  * @author josephramsey
  */
 public class BayesPmWrapper implements SessionModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private int numModels = 1;
     private int modelIndex;

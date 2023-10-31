@@ -47,7 +47,7 @@ import java.util.List;
  */
 public final class ClassifierBayesUpdaterDiscrete
         implements ClassifierDiscrete, TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The BayesIm instance used to create an updater.  Supplied as an argument to the constructor.

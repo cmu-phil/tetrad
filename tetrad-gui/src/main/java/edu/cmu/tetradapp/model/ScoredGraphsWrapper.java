@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.DagScorer;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
@@ -46,7 +46,7 @@ import java.util.Map;
  * @author josephramsey
  */
 public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshallable, DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Map<Graph, Double> graphsToScores;
     /**
      * Transient graph scorer, null if non exists (or needs to be refreshed).
@@ -69,7 +69,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     }
 
     public ScoredGraphsWrapper(Graph graph, DagScorer scorer) {
-        List<Graph> dags = GraphSearchUtils.generateCpdagDags(graph, true);
+        List<Graph> dags = GraphTransforms.generateCpdagDags(graph, true);
         this.graphsToScores = new HashMap<>();
         this.graphScorer = scorer;
 

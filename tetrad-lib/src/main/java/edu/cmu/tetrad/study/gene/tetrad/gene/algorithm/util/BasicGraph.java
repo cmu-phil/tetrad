@@ -52,11 +52,17 @@ public abstract class BasicGraph {
      */
     protected int nEdges;
 
+    /**
+     * Default constructor
+     */
     protected BasicGraph() {
     }
 
     /**
      * Creates a graph with <code>gName</code> name, and <code>n</code> nodes.
+     *
+     * @param gName name of the graph
+     * @param n     number of nodes
      */
     public BasicGraph(String gName, int n) {
         if (n <= 0) {
@@ -87,6 +93,9 @@ public abstract class BasicGraph {
      * (and also slash-star) style comments anywhere in the file.  Tokens can be separated by any number of blank
      * delimiters: tabs, spaces, carriage returns. Support of int, long, floating point, or doubles as edge values will
      * depend on how a subclass of Graph implement the set of edges.
+     *
+     * @param fname name of the file to read the graph from
+     * @throws IOException if there is a problem reading the file
      */
     public BasicGraph(String fname) throws IOException {
         // Create and prepare stream tokenizer
@@ -148,6 +157,8 @@ public abstract class BasicGraph {
 
     /**
      * Returns the name of the graph
+     *
+     * @return the name of the graph
      */
     public String getGraphName() {
         return this.graphName;
@@ -155,6 +166,8 @@ public abstract class BasicGraph {
 
     /**
      * Sets the name of the graph
+     *
+     * @param newName the new name of the graph
      */
     public void setGraphName(String newName) {
         this.graphName = newName;
@@ -162,6 +175,8 @@ public abstract class BasicGraph {
 
     /**
      * Returns the # nodes in this graph
+     *
+     * @return the # nodes in this graph
      */
     public int getSize() {
         return this.nNodes;
@@ -169,6 +184,9 @@ public abstract class BasicGraph {
 
     /**
      * Sets the name of node <code>i</code> in this graph
+     *
+     * @param i        the index of the node
+     * @param nodeName the new name of the node
      */
     public void setNodeName(int i, String nodeName) {
         if ((i < 0) || (i > this.nNodes - 1)) {
@@ -179,6 +197,9 @@ public abstract class BasicGraph {
 
     /**
      * Returns the name of node <code>i</code> in this graph
+     *
+     * @param i the index of the node
+     * @return the name of node <code>i</code> in this graph
      */
     public String getNodeName(int i) {
         if ((i < 0) || (i > this.nNodes - 1)) {
@@ -189,6 +210,8 @@ public abstract class BasicGraph {
 
     /**
      * Returns the Total # of edges in this graph
+     *
+     * @return the Total # of edges in this graph
      */
     public int getNumEdges() {
         return this.nEdges;
@@ -197,6 +220,8 @@ public abstract class BasicGraph {
     /**
      * Returns a specially formatted string with all the contents of this Graph. Actually this string is exactly the
      * same format expected when reading the graph from a file.
+     *
+     * @return a specially formatted string with all the contents of this Graph
      */
     public String toString() {
         StringBuilder s = new StringBuilder(this.getClass().getName() + " " + this.graphName + "\n" +
@@ -209,6 +234,11 @@ public abstract class BasicGraph {
         return s.toString();
     }
 
+    /**
+     * Returns a specially formatted string with all the contents of the set of edges in this Graph.
+     *
+     * @param i the index of the node
+     */
     protected void badNodeIndex(int i) {
         throw new IllegalArgumentException("Bad node index " + i +
                 " for Graph with " + this.nNodes + " nodes");
@@ -216,6 +246,8 @@ public abstract class BasicGraph {
 
     /**
      * Returns a clone of this graph
+     *
+     * @return a clone of this graph
      */
     public abstract Object clone();
 
@@ -226,16 +258,25 @@ public abstract class BasicGraph {
 
     /**
      * Sets a value of edge between nodes i and j
+     *
+     * @param i     the index of the node
+     * @param j     the index of the node
+     * @param value the value of the edge
      */
     public abstract void setEdge(int i, int j, double value);
 
     /**
      * Returns the value of edge between nodes i and j
+     *
+     * @param i the index of the node
+     * @param j the index of the node
+     * @return the value of the edge
      */
     public abstract double getEdge(int i, int j);
 
     /**
      * Returns a string representation of the set of edges in this graph
+     * @return a string representation of the set of edges in this graph
      */
     public abstract String EdgesToString();
 

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
@@ -54,7 +55,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     private final Map<String, Node> nameMap;
     private final NormalDistribution normal = new NormalDistribution(0, 1, 1e-15);
     private final Map<Node, Integer> nodesHash;
-    private final ICovarianceMatrix cor;
+    private ICovarianceMatrix cor = null;
     private List<Node> variables;
     private double alpha;
     private DataSet dataSet;
@@ -92,7 +93,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
             this.nodesHash = nodesHash;
         } else {
-            this.cor = new CorrelationMatrix(dataSet);
+//            this.cor = new CorrelationMatrix(dataSet);
 
             if (!(alpha >= 0 && alpha <= 1)) {
                 throw new IllegalArgumentException("Alpha mut be in [0, 1]");
@@ -201,14 +202,12 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-        double p = 0.0;
+        double p = Double.NaN;
+
         try {
             p = getPValue(x, y, z);
         } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, z));
-//            return new IndependenceResult(new IndependenceFact(x, y, z),
-//                    false, p, alpha - p);
+            throw new RuntimeException("Singular matrix encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
         }
 
         boolean independent = p > this.alpha;
@@ -221,22 +220,12 @@ public final class IndTestFisherZ implements IndependenceTest {
         }
 
         if (Double.isNaN(p)) {
-            return new IndependenceResult(new IndependenceFact(x, y, z),
-                    false, p, alpha - p);
+            throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
         } else {
             return new IndependenceResult(new IndependenceFact(x, y, z),
                     independent, p, alpha - p);
         }
     }
-
-//    /**
-//     * Returns the probability associated with the most recently computed independence test.
-//     *
-//     * @return This probability.
-//     */
-//    public double getPValue() {
-//        return this.p;
-//    }
 
     /**
      * Returns the p-value for x _||_ y | z.
@@ -264,10 +253,8 @@ public final class IndTestFisherZ implements IndependenceTest {
         this.r = r;
         double q = .5 * (log(1.0 + abs(r)) - log(1.0 - abs(r)));
         double fisherZ = sqrt(n - 3. - z.size()) * q;
-        double p = 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
 
-//        this.p = p;
-        return p;
+        return 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
     }
 
     /**

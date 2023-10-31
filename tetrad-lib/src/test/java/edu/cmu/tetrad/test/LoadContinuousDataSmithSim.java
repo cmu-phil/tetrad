@@ -19,7 +19,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class LoadContinuousDataSmithSim implements Simulation, HasParameterValues {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final int index;
     private final String path;
     private final List<String> usedParameters = new ArrayList<>();
@@ -51,7 +51,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
                 System.out.println("Loading graph from " + file.getAbsolutePath());
                 this.graph = readGraph(file);
 
-                LayoutUtil.circleLayout(this.graph);
+                LayoutUtil.defaultLayout(this.graph);
 
                 break;
             }
@@ -68,7 +68,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 try {
                     DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
-                            "*", true, Delimiter.TAB);
+                            "*", true, Delimiter.TAB, false);
 
                     if (dataSet.getVariables().size() > this.graph.getNumNodes()) {
                         List<Node> nodes = new ArrayList<>();
@@ -138,7 +138,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     public Graph readGraph(File file) {
         try {
             DataSet data = SimpleDataLoader.loadContinuousData(file, "//", '\"',
-                    "*", true, Delimiter.TAB);
+                    "*", true, Delimiter.TAB, false);
             List<Node> variables = data.getVariables();
 
             List<Node> _variables = new ArrayList<>();

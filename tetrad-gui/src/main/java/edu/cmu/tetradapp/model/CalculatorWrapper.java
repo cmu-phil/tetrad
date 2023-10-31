@@ -37,7 +37,7 @@ import java.util.List;
  * @author Tyler
  */
 public class CalculatorWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     /**

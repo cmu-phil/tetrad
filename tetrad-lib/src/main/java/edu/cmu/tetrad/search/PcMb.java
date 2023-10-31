@@ -37,7 +37,7 @@ import java.util.*;
  * Markov blankets. Note that this code has been converted to be consistent with the CPC algorithm. The reference is
  * here:</p>
  *
- * <p>Bai, X., Padman, R., Ramsey, J., & Spirtes, P. (2008). Tabu search-enhanced graphical models
+ * <p>Bai, X., Padman, R., Ramsey, J., &amp; Spirtes, P. (2008). Tabu search-enhanced graphical models
  * for classification in high dimensions. INFORMS Journal on Computing, 20(3), 423-437.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required

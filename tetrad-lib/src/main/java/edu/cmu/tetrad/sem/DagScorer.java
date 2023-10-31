@@ -47,7 +47,7 @@ import java.util.TreeSet;
  * @author josephramsey
  */
 public final class DagScorer implements TetradSerializable, Scorer {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final ICovarianceMatrix covMatrix;
     private final Matrix edgeCoef;

@@ -120,7 +120,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * A. Hyvarinen and E. Oja (2000) Independent Component Analysis: Algorithms and Applications, _Neural Networks_,
  * *13(4-5)*:411-430
- * <p>
+ * </p>
  *
  * @author josephramsey
  */

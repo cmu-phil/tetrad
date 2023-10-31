@@ -52,7 +52,7 @@ public class SimpleRandomizer implements GraphInitializer {
      * Indicates mean indegree.
      */
     public static final int MEAN = 2;
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * The indegree type of this randomizer.
      */

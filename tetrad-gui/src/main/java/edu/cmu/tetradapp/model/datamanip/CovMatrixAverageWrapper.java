@@ -41,7 +41,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public class CovMatrixAverageWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public CovMatrixAverageWrapper(DataWrapper[] covs, Parameters params) {
 

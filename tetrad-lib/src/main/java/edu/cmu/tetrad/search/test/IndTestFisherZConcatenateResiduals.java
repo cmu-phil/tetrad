@@ -164,6 +164,11 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         }
 
         double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(fisherZ)));
+
+        if (Double.isNaN(pValue)) {
+            throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
+        }
+
         this.pValue = pValue;
         boolean independent = pValue > this.alpha;
 
@@ -219,7 +224,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      * @return This data
      */
     public DataSet getData() {
-        return DataUtils.concatenate(this.dataSets);
+        return DataTransforms.concatenate(this.dataSets);
     }
 
     /**
@@ -232,10 +237,10 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         List<DataSet> _dataSets = new ArrayList<>();
 
         for (DataSet d : this.dataSets) {
-            _dataSets.add(DataUtils.standardizeData(d));
+            _dataSets.add(DataTransforms.standardizeData(d));
         }
 
-        return new CovarianceMatrix(DataUtils.concatenate(_dataSets));
+        return new CovarianceMatrix(DataTransforms.concatenate(_dataSets));
     }
 
     /**

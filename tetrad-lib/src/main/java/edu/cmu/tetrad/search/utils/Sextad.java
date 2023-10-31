@@ -11,7 +11,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class Sextad implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final int i;
     private final int j;

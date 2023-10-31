@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * GLASSO.
+ *
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
@@ -33,7 +35,7 @@ import java.util.List;
 @Experimental
 public class Glasso implements Algorithm {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public Graph search(DataModel ds, Parameters parameters) {
         DataSet _data = (DataSet) ds;

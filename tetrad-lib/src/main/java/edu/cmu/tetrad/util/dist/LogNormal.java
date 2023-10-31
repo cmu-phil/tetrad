@@ -30,7 +30,7 @@ import org.apache.commons.math3.util.FastMath;
  * @author josephramsey
  */
 public class LogNormal implements Distribution {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private double sd;
 

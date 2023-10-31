@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  */
 public class NonparanormalTransform extends DataWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
     public NonparanormalTransform(DataWrapper wrapper, Parameters params) {
@@ -41,7 +41,7 @@ public class NonparanormalTransform extends DataWrapper {
             throw new IllegalArgumentException("Data model must be a tabular continuous data set, not a covariance matrix.");
         }
 
-        DataSet nonparanormalTransformed = DataUtils.getNonparanormalTransformed((DataSet) dataModel);
+        DataSet nonparanormalTransformed = DataTransforms.getNonparanormalTransformed((DataSet) dataModel);
         nonparanormalTransformed.setKnowledge(dataModel.getKnowledge().copy());
 
         setDataModel(nonparanormalTransformed);

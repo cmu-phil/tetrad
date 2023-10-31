@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.RandomUtil;
  * @author josephramsey
  */
 public class Gamma implements Distribution {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private double alpha;
     private double lambda;

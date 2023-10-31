@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -43,7 +40,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>Calculates independence from multiple datasets from using the Fisher method
  * of pooling independence results. See this paper for details:</p>
  *
- * <p>Tillman, R. E., & Eberhardt, F. (2014). Learning causal structure from
+ * <p>Tillman, R. E., &amp; Eberhardt, F. (2014). Learning causal structure from
  * multiple datasets with similar variable sets. Behaviormetrika, 41(1), 41-64.</p>
  *
  * @author robertillman
@@ -150,6 +147,11 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
                     "For the Fisher method, all component p values in the calculation may not be zero, " +
                             "\nsince not all p values can be ignored. Maybe try calculating AR residuals.");
             double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * n);
+
+            if (Double.isNaN(p)) {
+                throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
+            }
+
             this.pValue = p;
 
             boolean independent = p > this.alpha;
@@ -215,7 +217,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
      * @return This data
      */
     public DataSet getData() {
-        return DataUtils.concatenate(this.dataSets);
+        return DataTransforms.concatenate(this.dataSets);
     }
 
     /**
@@ -227,10 +229,10 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         List<DataSet> _dataSets = new ArrayList<>();
 
         for (DataSet d : this.dataSets) {
-            _dataSets.add(DataUtils.standardizeData(d));
+            _dataSets.add(DataTransforms.standardizeData(d));
         }
 
-        return new CovarianceMatrix(DataUtils.concatenate(_dataSets));
+        return new CovarianceMatrix(DataTransforms.concatenate(_dataSets));
     }
 
     /**

@@ -37,7 +37,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public class SplitCasesWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Constructs the wrapper given some data and the params.

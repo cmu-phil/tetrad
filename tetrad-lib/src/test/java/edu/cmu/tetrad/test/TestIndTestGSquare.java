@@ -91,7 +91,8 @@ public class TestIndTestGSquare {
         System.out.println("Loading " + filename);
 
         return SimpleDataLoader.loadDiscreteData(new File(filename),
-                "//", '\"', "-99", true, Delimiter.TAB);
+                "//", '\"', "-99", true, Delimiter.TAB,
+                false);
     }
 }
 

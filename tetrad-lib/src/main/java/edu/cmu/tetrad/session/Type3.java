@@ -29,7 +29,7 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
  * A sample class to be wrapped in a SessionNode as a model.
  */
 public class Type3 implements SessionModel, TetradSerializableExcluded {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * It should be possible to construct a Type3-model with a Type1-node as parent.

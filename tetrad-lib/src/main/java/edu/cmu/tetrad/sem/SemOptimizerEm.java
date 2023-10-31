@@ -41,7 +41,7 @@ import java.util.List;
  * @author josephramsey Cleanup, modernization.
  */
 public class SemOptimizerEm implements SemOptimizer {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private static final double FUNC_TOLERANCE = 1.0e-6;
 

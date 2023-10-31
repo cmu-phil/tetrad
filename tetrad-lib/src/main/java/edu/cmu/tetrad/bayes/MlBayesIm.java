@@ -76,7 +76,7 @@ public final class MlBayesIm implements BayesIm {
      * Indicates that new rows in this BayesIm should be initialized randomly.
      */
     public static final int RANDOM = 1;
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-3;
 
     /**
@@ -944,7 +944,7 @@ public final class MlBayesIm implements BayesIm {
         constructSample(sampleSize, dataSet, map, tiers);
 
         if (!latentDataSaved) {
-            dataSet = DataUtils.restrictToMeasured(dataSet);
+            dataSet = DataTransforms.restrictToMeasured(dataSet);
         }
 
         return dataSet;
@@ -994,7 +994,7 @@ public final class MlBayesIm implements BayesIm {
         if (latentDataSaved) {
             return dataSet;
         } else {
-            return DataUtils.restrictToMeasured(dataSet);
+            return DataTransforms.restrictToMeasured(dataSet);
         }
     }
 

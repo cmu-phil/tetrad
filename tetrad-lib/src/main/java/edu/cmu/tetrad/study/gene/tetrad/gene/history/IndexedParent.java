@@ -33,7 +33,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public final class IndexedParent implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The index of the parent.

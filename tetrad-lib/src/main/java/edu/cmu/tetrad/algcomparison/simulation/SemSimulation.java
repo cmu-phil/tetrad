@@ -2,10 +2,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.SemGraph;
@@ -20,17 +17,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * SEM simulation.
+ *
  * @author josephramsey
  */
 public class SemSimulation implements Simulation {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private SemPm pm;
     private SemIm im;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private List<SemIm> ims = new ArrayList<>();
+    private long seed = -1L;
 
     public SemSimulation(RandomGraph graph) {
         this.randomGraph = graph;
@@ -78,7 +78,7 @@ public class SemSimulation implements Simulation {
             DataSet dataSet = simulate(graph, parameters);
 
             if (parameters.getBoolean(Params.STANDARDIZE)) {
-                dataSet = DataUtils.standardizeData(dataSet);
+                dataSet = DataTransforms.standardizeData(dataSet);
             }
 
             double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
@@ -94,11 +94,12 @@ public class SemSimulation implements Simulation {
             }
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.shuffleColumns(dataSet);
+                dataSet = DataTransforms.shuffleColumns(dataSet);
             }
 
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+                double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
+                dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
             }
 
             dataSet.setName("" + (i + 1));
@@ -163,25 +164,37 @@ public class SemSimulation implements Simulation {
         boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
 
         SemPm pm = this.pm;
+        SemIm im = this.im;
 
         if (pm == null) {
             pm = new SemPm(graph);
+            this.pm = pm;
         }
 
-        // Aargh, need to go through the motions of initializing the SEM IM each time so that if a
-        // random seed is set, the random number methods on RandomUtil will have been called the
-        // same number of times in the deterministic pseudorandom sequence. But we only want
-        // to keep the first one of these, because we want the IM for this SemSimulation object
-        // to be constant. Grr. And we have to do it this way because the parameters are needed to
-        // initialize the SEM IM but are only passed in this method and not available in the
-        // constructor. :-( So don't change this code!!! Please!!! -JR 2023/02/04
-        SemIm im = new SemIm(pm, parameters);
+        // If an im is already available, then we should use that im without creating new
+        // random parameter values.-JR 20231005
+        long seed = parameters.getLong(Params.SEED);
 
-        // Not setting this im messes up algcomparison. -JR 20230206
+        if (im != null) {
 
-//        if (this.im == null) {
-        this.im = im;
-//        }
+            // If the seed is set and has not changed, then we should call RandomUtil
+            // methods the same number of times as we would have if we had created a new im.
+            if (seed != -1 && seed == this.seed) {
+                for (int i = 0; i < this.im.getNumRandomCalls(); i++) {
+                    RandomUtil.getInstance().nextNormal(0, 1);
+                }
+            }
+
+            this.im = im;
+        } else {
+
+            // Otherwise, we should create a new im with new random parameter values.
+            // -JR 20231005
+            im = new SemIm(pm, parameters);
+            this.im = im;
+        }
+
+        this.seed = seed;
 
         // Need this in case the SEM IM is given externally.
         this.im.setParams(parameters);

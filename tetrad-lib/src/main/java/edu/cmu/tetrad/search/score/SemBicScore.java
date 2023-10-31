@@ -55,7 +55,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  *
  * <p>The version of the score due to Nandy et al. is given in this reference:</p>
  *
- * <p>Nandy, P., Hauser, A., & Maathuis, M. H. (2018). High-dimensional consistency
+ * <p>Nandy, P., Hauser, A., &amp; Maathuis, M. H. (2018). High-dimensional consistency
  * in score-based and hybrid structure learning. The Annals of Statistics, 46(6A), 3151-3183.</p>
  *
  * <p>This score may be used anywhere though where a linear, Gaussian score is needed.

@@ -33,7 +33,7 @@ import edu.cmu.tetradapp.model.PcRunner;
  * @author Tyler Gibson
  */
 public class ConvertNumericalDiscreteToContinuousWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public ConvertNumericalDiscreteToContinuousWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
@@ -52,7 +52,7 @@ public class ConvertNumericalDiscreteToContinuousWrapper extends DataWrapper {
             DataSet convertedData;
 
             try {
-                convertedData = DataUtils.convertNumericalDiscreteToContinuous(originalData);
+                convertedData = DataTransforms.convertNumericalDiscreteToContinuous(originalData);
             } catch (NumberFormatException e) {
                 throw new RuntimeException("There were some non-numeric values in that dataset.");
             }

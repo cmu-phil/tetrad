@@ -75,7 +75,7 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
         display.setEditable(false);
         display.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
-        LayoutUtil.circleLayout(graph);
+        LayoutUtil.defaultLayout(graph);
         LayoutUtil.fruchtermanReingoldLayout(graph);
 
         GraphWorkbench workbench = new GraphWorkbench(graph);
@@ -132,7 +132,7 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
             LayoutUtil.arrangeBySourceGraph(resultGraph,
                     getLatestWorkbenchGraph());
         } else {
-            LayoutUtil.circleLayout(resultGraph);
+            LayoutUtil.defaultLayout(resultGraph);
         }
     }
 

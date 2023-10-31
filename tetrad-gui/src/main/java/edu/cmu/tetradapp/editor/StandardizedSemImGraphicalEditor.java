@@ -42,7 +42,7 @@ import java.util.List;
  */
 final class StandardizedSemImGraphicalEditor extends JPanel {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Font size for parameter values in the graph.

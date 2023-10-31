@@ -4,13 +4,9 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataWriter;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -75,7 +71,7 @@ public class HsimAutoC {
         Graph estGraph = fges.search();
         //if (verbose) System.out.println(estGraph);
 
-        Graph estGraphDAG = GraphSearchUtils.dagFromCPDAG(estGraph);
+        Graph estGraphDAG = GraphTransforms.dagFromCPDAG(estGraph, null);
         Dag estDAG = new Dag(estGraphDAG);
         //Dag estDAG = new Dag(estGraph);
 

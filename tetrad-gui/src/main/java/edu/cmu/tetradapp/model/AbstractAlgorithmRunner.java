@@ -43,7 +43,7 @@ import java.util.*;
  */
 public abstract class AbstractAlgorithmRunner
         implements AlgorithmRunner, ParamsResettable, Unmarshallable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     final Map<String, String> paramSettings = new LinkedHashMap<>();
     private DataWrapper dataWrapper;
     /**

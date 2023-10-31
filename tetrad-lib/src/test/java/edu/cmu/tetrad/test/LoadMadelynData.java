@@ -20,7 +20,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class LoadMadelynData implements Simulation, HasParameterValues {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final String directory;
     private final String suffix;
     private final int structure;
@@ -46,7 +46,7 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
 
             try {
                 DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
-                        "*", true, Delimiter.TAB);
+                        "*", true, Delimiter.TAB, false);
                 this.dataSets.add(dataSet);
 
                 if (!(dataSet.isContinuous())) {
@@ -62,7 +62,7 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
         File file2 = new File(parent + "/structure_" + this.structure + "_graph.txt");
         System.out.println("Loading graph from " + file2.getAbsolutePath());
         this.graph = GraphSaveLoadUtils.loadGraphTxt(file2);
-        LayoutUtil.circleLayout(this.graph);
+        LayoutUtil.defaultLayout(this.graph);
 
         if (parameters.get("numRuns") != null) {
             parameters.set("numRuns", parameters.get("numRuns"));

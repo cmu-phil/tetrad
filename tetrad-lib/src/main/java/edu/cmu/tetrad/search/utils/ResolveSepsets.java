@@ -38,7 +38,7 @@ import java.util.*;
  * between sepsets learned for overlapping datasets. This occurs frequently when using the DCI and ION algorithm. A
  * reference is here:</p>
  *
- * <p>Tillman, R. E., & Eberhardt, F. (2014). Learning causal structure from
+ * <p>Tillman, R. E., &amp; Eberhardt, F. (2014). Learning causal structure from
  * multiple datasets with similar variable sets. Behaviormetrika, 41(1), 41-64.</p>
  *
  * @author roberttillman

@@ -32,7 +32,7 @@ import java.util.List;
  * @author josephramsey, after Frank Wimberly.
  */
 public final class Triple implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     // Note: Switching all uses of Underline to Triple, since they did the
     // same thing, and this allows for some useful generalizations, especially

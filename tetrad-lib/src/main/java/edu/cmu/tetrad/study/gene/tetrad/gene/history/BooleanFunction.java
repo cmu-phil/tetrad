@@ -33,7 +33,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public class BooleanFunction implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The array of parents for the stored boolean function.

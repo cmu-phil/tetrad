@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class SingleGraphAlg implements Algorithm, HasKnowledge {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Graph graph;
 
     public SingleGraphAlg(Graph graph) {

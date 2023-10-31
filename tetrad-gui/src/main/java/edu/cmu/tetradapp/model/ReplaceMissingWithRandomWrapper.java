@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -36,7 +36,7 @@ import java.io.ObjectInputStream;
  * @author Frank Wimberly based on similar class by Ramsey
  */
 public class ReplaceMissingWithRandomWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Cannot be null.
@@ -49,7 +49,7 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
 
-        this.outputDataSet = DataUtils.replaceMissingWithRandom(dataSet);
+        this.outputDataSet = DataTransforms.replaceMissingWithRandom(dataSet);
         setDataModel(this.outputDataSet);
         setSourceGraph(wrapper.getSourceGraph());
 

@@ -24,6 +24,10 @@ package edu.pitt.isp.sverchkov.data;
 import java.util.List;
 
 /**
+ * Data table implementation.
+ *
+ * @param <N> Type of variable names
+ * @param <V> Type of variable values
  * @author YUS24
  */
 public interface DataTable<N, V> extends Iterable<List<V>> {

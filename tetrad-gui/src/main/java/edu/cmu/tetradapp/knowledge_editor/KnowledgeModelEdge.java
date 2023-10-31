@@ -42,7 +42,7 @@ public class KnowledgeModelEdge extends Edge
     public static final int REQUIRED = 2;
     public static final int FORBIDDEN_BY_GROUPS = 3;
     public static final int REQUIRED_BY_GROUPS = 4;
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * The type of the node, FORBIDDEN or REQUIRED.
      *

@@ -38,7 +38,7 @@ import java.io.ObjectInputStream;
  * @author William Taysom -- 2003/06/14
  */
 public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper, Unmarshallable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Can be null.

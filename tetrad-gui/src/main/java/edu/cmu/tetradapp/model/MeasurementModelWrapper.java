@@ -44,7 +44,7 @@ import java.util.List;
  */
 public final class MeasurementModelWrapper implements ParamsResettable,
         KnowledgeBoxInput {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Clusters resulting from the last run of the algorithm.

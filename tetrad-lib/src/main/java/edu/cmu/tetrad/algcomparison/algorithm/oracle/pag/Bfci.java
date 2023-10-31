@@ -15,6 +15,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.BFci;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -23,8 +24,6 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 
 /**
@@ -47,13 +46,15 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 public class Bfci implements Algorithm, UsesScoreWrapper,
         TakesIndependenceWrapper, HasKnowledge, ReturnsBootstrapGraphs {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-
+    /**
+     * No-arg constructor. Used for reflection; do not delete.
+     */
     public Bfci() {
         // Used for reflection; do not delete.
     }
@@ -105,7 +106,7 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return dagToPag(graph);
+        return GraphTransforms.dagToPag(graph);
     }
 
     @Override

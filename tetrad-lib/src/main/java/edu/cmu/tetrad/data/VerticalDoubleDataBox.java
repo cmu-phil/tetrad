@@ -32,7 +32,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class VerticalDoubleDataBox implements DataBox {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The stored double data.

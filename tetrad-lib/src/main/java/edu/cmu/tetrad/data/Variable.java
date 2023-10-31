@@ -40,6 +40,8 @@ public interface Variable extends Node {
     long serialVersionUID = 23L;
 
     /**
+     * Returns the name of the variable.
+     *
      * @return the missing value marker as an object--i.e. a double if continuous, an Integer if discrete, etc.
      */
     Object getMissingValueMarker();

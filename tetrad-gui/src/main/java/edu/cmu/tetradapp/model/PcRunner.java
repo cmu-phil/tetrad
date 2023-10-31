@@ -40,7 +40,7 @@ import java.util.*;
  */
 public class PcRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private Graph externalGraph;
     private Set<Edge> pcAdjacent;
     private Set<Edge> pcNonadjacent;
@@ -147,7 +147,7 @@ public class PcRunner extends AbstractAlgorithmRunner
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
-            LayoutUtil.circleLayout(graph);
+            LayoutUtil.defaultLayout(graph);
         }
 
         setResultGraph(graph);

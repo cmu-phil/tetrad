@@ -45,7 +45,7 @@ import java.util.concurrent.RecursiveTask;
  * @see CorrelationMatrix
  */
 public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final double[] variances;
     private boolean verbose = false;
     /**

@@ -40,7 +40,7 @@ import java.util.List;
  * @author josephramsey
  */
 public final class SemProposition implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Cannot be null.

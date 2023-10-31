@@ -1,11 +1,7 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.graph.*;
 
 import static edu.cmu.tetrad.graph.GraphUtils.compatible;
 
@@ -15,7 +11,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.compatible;
  * @author josephramsey
  */
 public class NumCompatibleVisibleNonancestors implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
@@ -29,7 +25,7 @@ public class NumCompatibleVisibleNonancestors implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph pag = GraphSearchUtils.dagToPag(trueGraph);
+        Graph pag = GraphTransforms.dagToPag(trueGraph);
 
         int tp = 0;
         int fp = 0;

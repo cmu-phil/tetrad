@@ -45,6 +45,9 @@ public class BayesImParser {
 
     private boolean useDisplayNames;
 
+    /**
+     * Creates a new BayesImParser.
+     */
     public BayesImParser() {
     }
 

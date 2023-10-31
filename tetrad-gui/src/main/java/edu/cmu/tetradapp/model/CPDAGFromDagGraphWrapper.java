@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -33,7 +33,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @author Tyler Gibson
  */
 public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     public CPDAGFromDagGraphWrapper(GraphSource source, Parameters parameters) {
@@ -66,7 +66,7 @@ public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
 
 
     private static Graph getCPDAG(Graph graph) {
-        return GraphSearchUtils.cpdagFromDag(graph);
+        return GraphTransforms.cpdagForDag(graph);
     }
 
     @Override

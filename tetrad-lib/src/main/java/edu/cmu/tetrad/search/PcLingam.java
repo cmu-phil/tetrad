@@ -25,11 +25,11 @@ import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
 import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -100,96 +100,36 @@ public class PcLingam {
      * @return This graph.
      */
     public Graph search() {
+        Graph toOrient = new EdgeListGraph(cpdag);
 
-        Graph _cpdag = GraphUtils.bidirectedToUndirected(getCpdag());
+        DataSet standardized = DataTransforms.standardizeData(this.dataSet);
+        double[][] _data = standardized.getDoubleData().transpose().toArray();
+        GraphUtils.replaceNodes(toOrient, standardized.getVariables());
 
-        TetradLogger.getInstance().log("info", "Making list of all dags in CPDAG...");
+        List<Node> nodes = standardized.getVariables();
 
-        List<Graph> dags = GraphSearchUtils.getAllGraphsByDirectingUndirectedEdges(_cpdag);
+        for (Edge edge : cpdag.getEdges()) {
+            if (Edges.isUndirectedEdge(edge)) {
+                Node X = edge.getNode1();
+                Node Y = edge.getNode2();
 
-        TetradLogger.getInstance().log("normalityTests", "Anderson Darling P value for Variables\n");
-        NumberFormat nf = new DecimalFormat("0.0000");
+                int i = nodes.indexOf(X);
+                int j = nodes.indexOf(Y);
 
-        if (dags.isEmpty()) {
-            return null;
-        }
+                double lr = Fask.faskLeftRightV2(_data[i], _data[j], true,  0);
 
-        Matrix data = getDataSet().getDoubleData();
-        List<Node> variables = getDataSet().getVariables();
-
-        if (dags.size() == 0) {
-            throw new IllegalArgumentException("The data set is empty.");
-        }
-
-        // Check that all the dags and the data contain the same variables.
-
-        List<Score> scores = new ArrayList<>();
-
-        for (Graph dag : dags) {
-            scores.add(getScore(dag, data, variables));
-        }
-
-        double maxScore = 0.0;
-        int maxj = -1;
-
-        for (int j = 0; j < dags.size(); j++) {
-            double _score = scores.get(j).score;
-
-            if (_score > maxScore) {
-                maxScore = _score;
-                maxj = j;
+                if (lr > 0.0) {
+                    toOrient.removeEdge(edge);
+                    toOrient.addDirectedEdge(X, Y);
+                } else {
+                    toOrient.removeEdge(edge);
+                    toOrient.addDirectedEdge(Y, X);
+                }
             }
         }
 
-        Graph dag = dags.get(maxj);
-        this.pValues = scores.get(maxj).pvals;
-
-        TetradLogger.getInstance().log("graph", "winning dag = " + dag);
-
-        TetradLogger.getInstance().log("normalityTests", "Anderson Darling P value for Residuals\n");
-
-        for (int j = 0; j < getDataSet().getNumColumns(); j++) {
-            TetradLogger.getInstance().log("normalityTests", getDataSet().getVariable(j) + ": " + nf.format(scores.get(maxj).pvals[j]));
-        }
-
-        Graph ngDagCPDAG = GraphSearchUtils.cpdagFromDag(dag);
-
-        List<Node> nodes = ngDagCPDAG.getNodes();
-
-        for (Edge edge : ngDagCPDAG.getEdges()) {
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
-
-            double p1 = getPValues()[nodes.indexOf(node1)];
-            double p2 = getPValues()[nodes.indexOf(node2)];
-
-            boolean node1Nongaussian = p1 < this.alpha;
-            boolean node2Nongaussian = p2 < this.alpha;
-
-            if (node1Nongaussian || node2Nongaussian) {
-                if (!Edges.isUndirectedEdge(edge)) {
-                    continue;
-                }
-
-                ngDagCPDAG.removeEdge(edge);
-                ngDagCPDAG.addEdge(dag.getEdge(node1, node2));
-
-                if (node1Nongaussian) {
-                    TetradLogger.getInstance().log("edgeOrientations", node1 + " nongaussian ");
-                }
-
-                if (node2Nongaussian) {
-                    TetradLogger.getInstance().log("edgeOrientations", node2 + " nongaussian ");
-                }
-
-                TetradLogger.getInstance().log("nongaussianOrientations", "Nongaussian orientation: " + dag.getEdge(node1, node2));
-            }
-        }
-
-        new MeekRules().orientImplied(ngDagCPDAG);
-
-        TetradLogger.getInstance().log("graph", "Returning: " + ngDagCPDAG);
-        return ngDagCPDAG;
+        TetradLogger.getInstance().log("graph", "Returning: " + toOrient);
+        return toOrient;
     }
 
     /**

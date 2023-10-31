@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.DataFilter;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ class RemoveConstantColumnsDataFilter implements DataFilter {
      * @return - new dataset with constant columns removed.
      */
     public DataSet filter(DataSet dataSet) {
-        return DataUtils.removeConstantColumns(dataSet);
+        return DataTransforms.removeConstantColumns(dataSet);
     }
 
     //================================ Inner classes ===============================//

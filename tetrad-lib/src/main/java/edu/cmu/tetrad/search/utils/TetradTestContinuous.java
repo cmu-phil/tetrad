@@ -599,7 +599,7 @@ public final class TetradTestContinuous implements TetradTest {
     }
 
     static class OneFactorEstimator extends SimpleFactorEstimator {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         public OneFactorEstimator(ICovarianceMatrix sampleCov, double sig,
                                   int nvar) {
@@ -623,7 +623,7 @@ public final class TetradTestContinuous implements TetradTest {
     }
 
     static class TwoFactorsEstimator extends SimpleFactorEstimator {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         int nleft;
 

@@ -33,7 +33,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public class ChiSquare implements Distribution {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The stored degees of freedom. Needed because the wrapped distribution does not provide getters for its

@@ -51,7 +51,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 public final class LargeScaleSimulation {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final List<Node> variableNodes;
     private final Graph graph;
     private int[][] parents;
@@ -265,7 +265,7 @@ public final class LargeScaleSimulation {
         }
 
         BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
-        return DataUtils.restrictToMeasured(boxDataSet);
+        return DataTransforms.restrictToMeasured(boxDataSet);
     }
 
     /**
@@ -357,7 +357,7 @@ public final class LargeScaleSimulation {
         }
 
         BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
-        return DataUtils.restrictToMeasured(boxDataSet);
+        return DataTransforms.restrictToMeasured(boxDataSet);
     }
 
     public DataSet simulateDataFisher(int intervalBetweenShocks, int intervalBetweenRecordings, int sampleSize, double epsilon, boolean saveLatentVars) {
@@ -426,7 +426,7 @@ public final class LargeScaleSimulation {
 
         BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(all), continuousVars);
 
-        return saveLatentVars ? boxDataSet : DataUtils.restrictToMeasured(boxDataSet);
+        return saveLatentVars ? boxDataSet : DataTransforms.restrictToMeasured(boxDataSet);
     }
 
     private void setupModel(int size) {

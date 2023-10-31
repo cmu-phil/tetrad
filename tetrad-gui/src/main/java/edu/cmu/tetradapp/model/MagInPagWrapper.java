@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @author Tyler Gibson
  */
 public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public MagInPagWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
@@ -47,7 +47,7 @@ public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
     }
 
     private static Graph getGraph(Graph graph) {
-        return GraphSearchUtils.pagToMag(graph);
+        return GraphTransforms.pagToMag(graph);
     }
 
 

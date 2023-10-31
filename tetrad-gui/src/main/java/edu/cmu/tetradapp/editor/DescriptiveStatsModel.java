@@ -108,9 +108,6 @@ class DescriptiveStatsModel extends AbstractTableModel {
         names.add("Kurtosis");
         stats.add(StatUtils.kurtosis(data));
 
-        names.add("Skewness");
-        stats.add(StatUtils.skewness(data));
-
 
         if (continuous) {
             double[] median = DescriptiveStats.median(data);

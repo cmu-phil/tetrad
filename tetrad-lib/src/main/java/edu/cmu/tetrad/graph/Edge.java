@@ -40,7 +40,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class Edge implements TetradSerializable, Comparable<Edge> {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Node node1;
     private final Node node2;
     private Endpoint endpoint1;
@@ -317,10 +317,6 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     public final int hashCode() {
-
-        // Equality of nodes can only dependent on the object identity of the
-        // nodes, not on their name. Otherwise, the identity of an edge could be
-        // changed by changing the name of one of its nodes.
         return 1;
     }
 
@@ -338,12 +334,6 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         // Equality of nodes can only dependent on the object identity of the
         // nodes, not on their name. Otherwise, the identity of an edge could be
         // changed by changing the name of one of its nodes.
-
-//        String name1 = getNode1().getName();
-//        String name2 = getNode2().getName();
-//        String name1b = edge.getNode1().getName();
-//        String name2b = edge.getNode2().getName();
-
         Node node1 = getNode1();
         Node node2 = getNode2();
         Node node1b = edge.getNode1();
@@ -354,19 +344,10 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         Endpoint end1b = edge.getEndpoint1();
         Endpoint end2b = edge.getEndpoint2();
 
-//        if (name1.hashCode() == name1b.hashCode() && name2.hashCode() == name2b.hashCode()
-//                && name1.equals(name1b) && name2.equals(name2b)) {
-//            return end1 == end1b && end2 == end2b;
-//        } else {
-//            return name1.hashCode() == name2b.hashCode() && name2.hashCode() == name1b.hashCode()
-//                    && name1.equals(name2b) && name2.equals(name1b) && end1 == end2b && end2 == end1b;
-//        }
+        boolean equals1 = node1 == node1b && node2 == node2b && end1 == end1b && end2 == end2b;
+        boolean equals2 = node1 == node2b && node2 == node1b && end1 == end2b && end2 == end1b;
 
-        if (node1 == node1b && node2 == node2b) {
-            return end1 == end1b && end2 == end2b;
-        } else {
-            return node1 == node2b && node2 == node1b && end1 == end2b && end2 == end1b;
-        }
+        return equals1 || equals2;
     }
 
     public int compareTo(Edge _edge) {

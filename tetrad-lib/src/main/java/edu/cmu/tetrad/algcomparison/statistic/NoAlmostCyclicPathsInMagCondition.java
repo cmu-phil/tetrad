@@ -1,17 +1,15 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.graph.*;
 
 /**
+ * No almost cyclic paths condition in MAG.
+ *
  * @author josephramsey
  */
 public class NoAlmostCyclicPathsInMagCondition implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
@@ -25,7 +23,7 @@ public class NoAlmostCyclicPathsInMagCondition implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph mag = GraphSearchUtils.pagToMag(estGraph);
+        Graph mag = GraphTransforms.pagToMag(estGraph);
 
         for (Edge e : mag.getEdges()) {
             Node x = e.getNode1();

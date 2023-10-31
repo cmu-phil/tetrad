@@ -35,7 +35,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class DataStandardizer extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
 
@@ -54,7 +54,7 @@ public class DataStandardizer extends DataWrapper {
                 throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
             }
 
-            Matrix data2 = DataUtils.standardizeData(dataSet.getDoubleData());
+            Matrix data2 = DataTransforms.standardizeData(dataSet.getDoubleData());
             List<Node> list = dataSet.getVariables();
 
             DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);

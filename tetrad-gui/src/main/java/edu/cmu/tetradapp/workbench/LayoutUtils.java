@@ -446,7 +446,7 @@ public class LayoutUtils {
             }
         }
 
-        LayoutUtil.circleLayout(graph);
+        LayoutUtil.defaultLayout(graph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.layered;
     }
@@ -492,19 +492,14 @@ public class LayoutUtils {
         for (Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
                 ((SemGraph) graph).setShowErrorTerms(false);
-//                graph.removeNode(node);
             }
         }
 
         Rectangle r = layoutEditable.getVisibleRect();
 
         int m = FastMath.min(r.width, r.height) / 2;
-        int radius = m - 50;
-        int centerx = r.x + m;
-        int centery = r.y + m;
 
-//        DataGraphUtils.circleLayout(graph, 200, 200, 150);
-        LayoutUtil.circleLayout(graph);
+        LayoutUtil.defaultLayout(graph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.circle;
     }
@@ -515,13 +510,11 @@ public class LayoutUtils {
         for (Node node : new ArrayList<>(graph.getNodes())) {
             if (node.getNodeType() == NodeType.ERROR) {
                 ((SemGraph) graph).setShowErrorTerms(false);
-//                graph.removeNode(node);
             }
         }
 
         Rectangle r = layoutEditable.getVisibleRect();
 
-//        LayoutUtil.circleLayout(graph);
         LayoutUtil.squareLayout(graph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.circle;
@@ -641,6 +634,19 @@ public class LayoutUtils {
         }
     }
 
+    public static void layoutByCausalOrder(LayoutEditable layoutEditable) {
+        Graph graph = layoutEditable.getGraph();
+
+        for (Node node : new ArrayList<>(graph.getNodes())) {
+            if (node.getNodeType() == NodeType.ERROR) {
+                graph.removeNode(node);
+            }
+        }
+
+        LayoutUtil.layoutByCausalOrder(graph);
+        layoutEditable.layoutByGraph(graph);
+        LayoutUtils.layout = Layout.layered;
+    }
 
 
     public enum Layout {

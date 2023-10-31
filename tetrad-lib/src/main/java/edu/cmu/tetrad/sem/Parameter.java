@@ -39,7 +39,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public final class Parameter implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The default distribution from which initial values are drawn for this distribution.

@@ -45,7 +45,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final DataSet dataSet;
     private Graph fullGraph;
     private ICovarianceMatrix covMatrix;
@@ -121,7 +121,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         CovarianceMatrix cov = new CovarianceMatrix(data);
 
         Graph structureGraph = mimbuild.search(partition, latentNames, cov);
-        LayoutUtil.circleLayout(structureGraph);
+        LayoutUtil.defaultLayout(structureGraph);
         LayoutUtil.fruchtermanReingoldLayout(structureGraph);
 
         ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
@@ -129,7 +129,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         TetradLogger.getInstance().log("details", "Latent covs = \n" + latentsCov);
 
         Graph fullGraph = mimbuild.getFullGraph();
-        LayoutUtil.circleLayout(fullGraph);
+        LayoutUtil.defaultLayout(fullGraph);
         LayoutUtil.fruchtermanReingoldLayout(fullGraph);
 
         setResultGraph(fullGraph);

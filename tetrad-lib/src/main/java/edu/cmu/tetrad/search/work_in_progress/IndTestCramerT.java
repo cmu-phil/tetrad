@@ -245,6 +245,10 @@ public final class IndTestCramerT implements IndependenceTest {
         boolean independent = isZero(this.storedR, size, getAlpha());
         double pValue = getPValue();
 
+        if (Double.isNaN(pValue)) {
+            throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
+        }
+
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(

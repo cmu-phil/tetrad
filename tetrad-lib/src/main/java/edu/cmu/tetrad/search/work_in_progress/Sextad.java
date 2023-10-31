@@ -32,7 +32,7 @@ import java.util.List;
  * Represents an ordered sextad of variables.
  */
 public class Sextad implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final Node i;
     private final Node j;

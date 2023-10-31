@@ -9,7 +9,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Bootstrapping
 public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
     private Algorithm externalGraph;
@@ -56,7 +56,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
                 dataSets.add((DataSet) dataModel);
             }
 
-            DataSet dataSet = DataUtils.concatenate(dataSets);
+            DataSet dataSet = DataTransforms.concatenate(dataSets);
 
             Graph initial = null;
             if (this.externalGraph != null) {
@@ -140,7 +140,8 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         if (this.compareToTrue) {
             return new EdgeListGraph(graph);
         } else {
-            return GraphSearchUtils.cpdagForDag(new EdgeListGraph(graph));
+            Graph dag = new EdgeListGraph(graph);
+            return GraphTransforms.cpdagForDag(dag);
         }
     }
 

@@ -191,7 +191,7 @@ public class RegressionEditor extends JPanel {
 
         this.runner.execute();
         Graph graph = this.runner.getOutGraph();
-        LayoutUtil.circleLayout(graph);
+        LayoutUtil.defaultLayout(graph);
         LayoutUtil.fruchtermanReingoldLayout(graph);
         this.workbench.setGraph(graph);
         RegressionResult report = this.runner.getResult();

@@ -22,11 +22,13 @@ import static org.apache.commons.math3.linear.MatrixUtils.createRealMatrix;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
+ * NL SEM simulation.
+ *
  * @author bryanandrews
  */
 public class NLSemSimulation implements Simulation {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
@@ -160,7 +162,7 @@ public class NLSemSimulation implements Simulation {
             DataSet dataSet = new BoxDataSet(new DoubleDataBox(data.getData()), continuousVars);
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.shuffleColumns(dataSet);
+                dataSet = DataTransforms.shuffleColumns(dataSet);
             }
 
             dataSet.setName(String.valueOf(i + 1));

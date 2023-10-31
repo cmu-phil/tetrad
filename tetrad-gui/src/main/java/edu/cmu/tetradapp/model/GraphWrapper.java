@@ -50,7 +50,7 @@ import java.util.Map;
  */
 public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProducer,
         SimulationParamsSource, GraphSettable, MultipleGraphSource {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private int numModels = 1;
     private int modelIndex;
     private String modelSourceName;
@@ -133,7 +133,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             setGraph(new EdgeListGraph(wrapper.getVariables()));
         }
 
-        LayoutUtil.circleLayout(getGraph());
+        LayoutUtil.defaultLayout(getGraph());
     }
 
     public GraphWrapper(GeneralizedSemImWrapper wrapper) {

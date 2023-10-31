@@ -56,7 +56,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class BooleanGlassFunction implements UpdateFunction {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The indexed connectivity "snapshot" of the lag graph.

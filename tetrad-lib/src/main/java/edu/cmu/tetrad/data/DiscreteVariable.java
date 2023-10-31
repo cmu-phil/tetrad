@@ -47,13 +47,13 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public final class DiscreteVariable extends AbstractVariable {
+public final class DiscreteVariable extends AbstractVariable implements Node {
 
     /**
      * This is the index in the data which represents missing data internally for this variable.
      */
     public static final int MISSING_VALUE = -99;
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * The string displayed for missing values.
      */

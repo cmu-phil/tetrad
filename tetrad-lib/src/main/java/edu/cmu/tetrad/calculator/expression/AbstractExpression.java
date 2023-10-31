@@ -34,7 +34,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 abstract class AbstractExpression implements Expression {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The sub expressionts

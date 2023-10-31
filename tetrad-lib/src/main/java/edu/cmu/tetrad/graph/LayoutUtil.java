@@ -5,10 +5,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class LayoutUtil {
     public static void kamadaKawaiLayout(Graph graph, boolean randomlyInitialized, double naturalEdgeLength, double springConstant, double stopEnergy) {
@@ -33,9 +30,22 @@ public class LayoutUtil {
     }
 
     /**
-     * Arranges the nodes in the graph in a circle.
+     * Arranges the nodes in the graph in a circle if there are 20 or fewer nodes, otherwise arranges them in a square.
+     * @param graph the graph to be arranged.
      */
-    public static void circleLayout(Graph graph) {
+    public static void defaultLayout(Graph graph) {
+        if (graph.getNumNodes() <= 20) {
+            circleLayout(graph);
+        } else {
+            squareLayout(graph);
+        }
+    }
+
+    /**
+     * Arranges the nodes in the graph in a circle.
+     * @param graph the graph to be arranged.
+     */
+    private static void circleLayout(Graph graph) {
         if (graph == null) {
             return;
         }
@@ -44,7 +54,7 @@ public class LayoutUtil {
         int centery = 120 + 7 * graph.getNumNodes();
         int radius = centerx - 50;
 
-        List<Node> nodes = new ArrayList<>(graph.getNodes());
+        List<Node> nodes = graph.getNodes();
         Collections.sort(nodes);
 
         double rad = 6.28 / nodes.size();
@@ -114,6 +124,86 @@ public class LayoutUtil {
         }
     }
 
+    public static void layoutByCausalOrder(Graph graph) {
+        List<List<Node>> tiers = getTiers(graph);
+
+        int y = 0;
+
+        for (List<Node> tier : tiers) {
+            y += 60;
+
+            if (tier.isEmpty()) continue;
+
+            Node node = tier.get(0);
+
+            int width = 80;
+
+            int x = width / 2 + 10;
+
+            node.setCenterX(x);
+            node.setCenterY(y);
+
+            int lastHalf = width / 2;
+
+            for (int i = 1; i < tier.size(); i++) {
+                node = tier.get(i);
+                int thisHalf = width / 2;
+                x += lastHalf + thisHalf + 5;
+                node.setCenterX(x);
+                node.setCenterY(y);
+                lastHalf = thisHalf;
+            }
+        }
+    }
+
+    /**
+     * Finds the set of nodes which have no children, followed by the set of their parents, then the set of the parents'
+     * parents, and so on.  The result is returned as a List of Lists.
+     *
+     * @return the tiers of this digraph.
+     */
+    /**
+     * Finds the set of nodes which have no children, followed by the set of their parents, then the set of the parents'
+     * parents, and so on.  The result is returned as a List of Lists.
+     *
+     * @return the tiers of this digraph.
+     */
+    private static List<List<Node>> getTiers(Graph graph) {
+        Set<Node> found = new HashSet<>();
+        List<List<Node>> tiers = new LinkedList<>();
+
+        // first copy all the nodes into 'notFound'.
+        Set<Node> notFound = new HashSet<>(graph.getNodes());
+
+        // repeatedly run through the nodes left in 'notFound'.  If any node
+        // has all of its parents already in 'found', then add it to the
+        // getModel tier.
+        while (!notFound.isEmpty()) {
+            List<Node> thisTier = new LinkedList<>();
+
+            for (Node node : notFound) {
+                if (found.containsAll(graph.getParents(node))) {
+                    thisTier.add(node);
+                }
+            }
+
+            if (thisTier.isEmpty()) {
+                tiers.add(new ArrayList<>(notFound));
+                break;
+            }
+
+            // shift all the nodes in this tier from 'notFound' to 'found'.
+            thisTier.forEach(notFound::remove);
+            found.addAll(thisTier);
+
+            // add the getModel tier to the list of tiers.
+            tiers.add(thisTier);
+        }
+
+        return tiers;
+    }
+
+
     /**
      * Arranges the nodes in the result graph according to their positions in the source graph.
      *
@@ -125,7 +215,7 @@ public class LayoutUtil {
         }
 
         if (sourceGraph == null) {
-            circleLayout(resultGraph);
+            defaultLayout(resultGraph);
             return true;
         }
 
@@ -225,7 +315,7 @@ public class LayoutUtil {
         //============================PUBLIC METHODS==========================//
 
         public void doLayout() {
-            circleLayout(this.graph);
+            defaultLayout(this.graph);
 
             this.monitor = new ProgressMonitor(null, "Energy settling...",
                     "Energy = ?", 0, 100);
@@ -686,7 +776,7 @@ public class LayoutUtil {
         //============================PUBLIC METHODS==========================//
 
         public void doLayout() {
-            circleLayout(this.graph);
+            defaultLayout(this.graph);
 
             List<List<Node>> components = this.graph.paths().connectedComponents();
 

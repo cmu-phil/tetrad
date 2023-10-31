@@ -135,8 +135,8 @@ public class MeekRules {
 
     /**
      * Returns a complete set of all the edges that were changed in the course of orientation, as a map from the
-     * previous edges in the graph to the new, changed edges for the same node pair. For example, if X->Y was changed to
-     * X<-Y, thie map will send X->Y to X<-Y.
+     * previous edges in the graph to the new, changed edges for the same node pair. For example, if X-&gt;Y was changed to
+     * X&lt;-Y, thie map will send X-&gt;Y to X&lt;-Y.
      *
      * @return This map.
      */
