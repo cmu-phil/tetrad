@@ -55,7 +55,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     private final Map<String, Node> nameMap;
     private final NormalDistribution normal = new NormalDistribution(0, 1, 1e-15);
     private final Map<Node, Integer> nodesHash;
-    private final ICovarianceMatrix cor;
+    private ICovarianceMatrix cor = null;
     private List<Node> variables;
     private double alpha;
     private DataSet dataSet;
@@ -93,7 +93,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
             this.nodesHash = nodesHash;
         } else {
-            this.cor = new CorrelationMatrix(dataSet);
+//            this.cor = new CorrelationMatrix(dataSet);
 
             if (!(alpha >= 0 && alpha <= 1)) {
                 throw new IllegalArgumentException("Alpha mut be in [0, 1]");
