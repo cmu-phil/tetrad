@@ -219,7 +219,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                     // Update the graphWrapper
                     graphWrapper.setGraph(targetGraph);
                     // Also need to update the UI
-                    updateBootstrapTable(targetGraph);
+//                    updateBootstrapTable(targetGraph);
                 }
             } else if ("modelChanged".equals(propertyName)) {
                 firePropertyChange("modelChanged", null, null);
@@ -358,7 +358,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                 updateGraphWorkbench(graphWrapper.getGraph());
 
                 // Update the bootstrap table
-                updateBootstrapTable(graphWrapper.getGraph());
+//                updateBootstrapTable(graphWrapper.getGraph());
             });
 
             // Put together

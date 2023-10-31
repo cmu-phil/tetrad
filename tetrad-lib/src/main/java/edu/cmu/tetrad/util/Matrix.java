@@ -36,24 +36,20 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public class Matrix implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final RealMatrix apacheData;
     private int m, n;
 
     public Matrix(double[][] data) {
-        this.m = data.length;
-        this.n = this.m == 0 ? 0 : data[0].length;
-
         if (data.length == 0) {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
-            if (m * n <= 4096) {
-                apacheData = (RealMatrix) new Array2DRowRealMatrix(data);
-            } else {
-                apacheData = (RealMatrix) new BlockRealMatrix(data);
-            }
+            this.apacheData = new BlockRealMatrix(data);
         }
+
+        this.m = data.length;
+        this.n = this.m == 0 ? 0 : data[0].length;
     }
 
     public Matrix(RealMatrix data) {
@@ -67,11 +63,7 @@ public class Matrix implements TetradSerializable {
         if (m == 0 || n == 0) {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
-            if (m * n <= 4096) {
-                apacheData = (RealMatrix) new Array2DRowRealMatrix(m, n);
-            } else {
-                apacheData = (RealMatrix) new BlockRealMatrix(m, n);
-            }
+            this.apacheData = new BlockRealMatrix(m, n);
         }
 
         this.m = m;
@@ -83,7 +75,9 @@ public class Matrix implements TetradSerializable {
     }
 
     public static Matrix identity(int rows) {
-        return new Matrix(org.apache.commons.math3.linear.MatrixUtils.createRealIdentityMatrix(rows));
+        Matrix m = new Matrix(rows, rows);
+        for (int i = 0; i < rows; i++) m.set(i, i, 1);
+        return m;
     }
 
     public static Matrix sparseMatrix(int m, int n) {
@@ -124,12 +118,22 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix getSelection(int[] rows, int[] cols) {
-        if (rows.length == 0 || cols.length == 0) {
-            return new Matrix(rows.length, cols.length);
+        Matrix m = new Matrix(rows.length, cols.length);
+
+        for (int i = 0; i < rows.length; i++) {
+            for (int j = 0; j < cols.length; j++) {
+                m.set(i, j, this.apacheData.getEntry(rows[i], cols[j]));
+            }
         }
 
-        RealMatrix subMatrix = this.apacheData.getSubMatrix(rows, cols);
-        return new Matrix(subMatrix.getData());
+        return m;
+
+//        if (rows.length == 0 || cols.length == 0) {
+//            return new Matrix(rows.length, cols.length);
+//        }
+//
+//        RealMatrix subMatrix = this.apacheData.getSubMatrix(rows, cols);
+//        return new Matrix(subMatrix.getData());
     }
 
     public Matrix copy() {
@@ -206,19 +210,13 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix inverse() throws SingularMatrixException {
-        if (m == 0 || n == 0) {
+        if (!isSquare()) throw new IllegalArgumentException("I can only invert square matrices.");
+
+        if (getNumRows() == 0) {
             return new Matrix(0, 0);
-        } else {
-            return new Matrix(org.apache.commons.math3.linear.MatrixUtils.inverse(this.apacheData));
         }
 
-//        if (!isSquare()) throw new IllegalArgumentException("I can only invert square matrices.");
-//
-//        if (getNumRows() == 0) {
-//            return new Matrix(0, 0);
-//        }
-//
-//        return new Matrix(new LUDecomposition(this.apacheData, 1e-10).getSolver().getInverse());
+        return new Matrix(new LUDecomposition(this.apacheData, 1e-10).getSolver().getInverse());
     }
 
     public Matrix symmetricInverse() {
@@ -276,7 +274,7 @@ public class Matrix implements TetradSerializable {
     }
 
     public boolean isSymmetric(double tolerance) {
-        return edu.cmu.tetrad.util.MatrixUtils.isSymmetric(this.apacheData.getData(), tolerance);
+        return MatrixUtils.isSymmetric(this.apacheData.getData(), tolerance);
     }
 
     public Matrix minus(Matrix mb) {

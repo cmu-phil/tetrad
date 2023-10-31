@@ -26,7 +26,7 @@ import java.util.List;
 @Mixed
 public class DegenerateGaussianLRT implements IndependenceWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {

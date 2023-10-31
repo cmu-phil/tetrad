@@ -36,7 +36,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public class BasalInitializer implements Initializer {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The update function this is initializing for.
@@ -65,6 +65,11 @@ public class BasalInitializer implements Initializer {
     /**
      * Constructs a new history that will initialize genes using the given basal expression and initial standard
      * deviation.
+     *
+     * @param updateFunction  the update function this is initializing for.
+     * @param basalExpression the average expression level that all unregulated genes are initialized to.
+     * @param initStDev       the standard deviation of a normal distribution N(basalExpression, sem.D.) that random
+     *                        initial values for unregulated genes are set to.
      */
     public BasalInitializer(UpdateFunction updateFunction,
                             double basalExpression, double initStDev) {
@@ -85,6 +90,7 @@ public class BasalInitializer implements Initializer {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     * @return a simple exemplar of this class to test serialization.
      */
     public static BasalInitializer serializableInstance() {
         return new BasalInitializer(BooleanGlassFunction.serializableInstance(),

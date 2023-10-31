@@ -50,7 +50,7 @@ public class ParamConstraintType implements TetradSerializable {
      */
     public static final ParamConstraintType NONE =
             new ParamConstraintType("NONE");
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private static final ParamConstraintType[] TYPES = {ParamConstraintType.LT, ParamConstraintType.GT, ParamConstraintType.EQ, ParamConstraintType.NONE};
     // Declarations required for serialization.
     private static int NEXT_ORDINAL;

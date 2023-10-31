@@ -43,7 +43,7 @@ import java.util.Set;
  */
 public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private SemIm semIm;
     private Set<Edge> sfVcpcAdjacent;
@@ -162,7 +162,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
-            LayoutUtil.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.defaultLayout(graph);
         }
 
         setResultGraph(graph);

@@ -41,7 +41,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirecte
  */
 public class ForbiddenGraphModel extends KnowledgeBoxModel {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private Graph resultGraph = new EdgeListGraph();
 

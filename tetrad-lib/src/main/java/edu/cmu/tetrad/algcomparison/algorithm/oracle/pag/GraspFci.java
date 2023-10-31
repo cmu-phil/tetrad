@@ -14,6 +14,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TsUtils;
@@ -23,8 +24,6 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 
 /**
@@ -46,7 +45,7 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 public class GraspFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
@@ -88,7 +87,7 @@ public class GraspFci implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
-            search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
+            search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
             search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
 
             // FCI
@@ -119,7 +118,7 @@ public class GraspFci implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return dagToPag(graph);
+        return GraphTransforms.dagToPag(graph);
     }
 
     @Override
@@ -143,7 +142,7 @@ public class GraspFci implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         params.add(Params.GRASP_NONSINGULAR_DEPTH);
         params.add(Params.GRASP_ORDERED_ALG);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
-        params.add(Params.GRASP_USE_DATA_ORDER);
+        params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 
         // FCI

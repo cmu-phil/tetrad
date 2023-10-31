@@ -33,7 +33,7 @@ import java.io.IOException;
  * @author josephramsey
  */
 public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final String extDir;
     private final String shortDescription;
 
@@ -56,7 +56,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
         File file = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
         System.out.println(file.getAbsolutePath());
         Graph graph = GraphSaveLoadUtils.loadGraphTxt(file);
-        LayoutUtil.circleLayout(graph, 225, 200, 150);
+        LayoutUtil.defaultLayout(graph);
         return graph;
     }
 

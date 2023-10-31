@@ -13,7 +13,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * @author josephramsey
  */
 public final class IndependenceResult implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final IndependenceFact fact;
     private final boolean indep;

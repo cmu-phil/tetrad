@@ -21,7 +21,7 @@ import java.util.Map;
  */
 @Experimental
 public class LinearSineSimulation implements Simulation {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
@@ -106,7 +106,8 @@ public class LinearSineSimulation implements Simulation {
             DataSet dataSet = simulate(graph, parameters);
 
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+                double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
+                dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
             }
 
             dataSet.setName("" + (i + 1));

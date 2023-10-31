@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @author Tyler Gibson
  */
 public class BidirectedToUndirectedWrapper extends GraphWrapper implements DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     public BidirectedToUndirectedWrapper(GraphSource source, Parameters parameters) {
@@ -43,7 +43,7 @@ public class BidirectedToUndirectedWrapper extends GraphWrapper implements DoNot
 
 
     public BidirectedToUndirectedWrapper(Graph graph) {
-        super(BidirectedToUndirectedWrapper.pickDagFromCPDAG(graph), "Make Bidirected Edges Undirected");
+        super(GraphUtils.bidirectedToUndirected(graph), "Make Bidirected Edges Undirected");
         TetradLogger.getInstance().log("graph", getGraph() + "");
     }
 
@@ -55,10 +55,6 @@ public class BidirectedToUndirectedWrapper extends GraphWrapper implements DoNot
 
     //======================== Private Methods ================================//
 
-
-    private static Graph pickDagFromCPDAG(Graph graph) {
-        return GraphUtils.bidirectedToUndirected(graph);
-    }
 
     @Override
     public boolean allowRandomGraph() {

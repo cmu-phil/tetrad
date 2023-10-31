@@ -39,7 +39,7 @@ import java.util.List;
 @Experimental
 public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private Knowledge knowledge = new Knowledge();
     private ScoreWrapper score;
     private IndependenceWrapper test;

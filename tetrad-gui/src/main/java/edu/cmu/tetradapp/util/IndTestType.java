@@ -60,7 +60,7 @@ public final class IndTestType implements TetradSerializable {
             new IndTestType("Fisher Z Pooled Residuals", DataType.Continuous);
     public static final IndTestType FISHER = new IndTestType("Fisher (Fisher Z)", DataType.Continuous);
     public static final IndTestType TIPPETT = new IndTestType("Tippett (Fisher Z)", DataType.Continuous);
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private static final IndTestType[] TYPES = {IndTestType.DEFAULT, IndTestType.CORRELATION_T, IndTestType.FISHER_Z,
             IndTestType.LINEAR_REGRESSION, IndTestType.CONDITIONAL_CORRELATION, IndTestType.SEM_BIC, IndTestType.LOGISTIC_REGRESSION,
             IndTestType.MIXED_MLR, IndTestType.FISHER_ZD,

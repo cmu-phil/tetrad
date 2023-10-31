@@ -662,8 +662,9 @@ public class TeyssierScorer {
     private Pair getGrowShrinkScore(int p) {
         Node n = this.pi.get(p);
         Set<Node> prefix = new HashSet<>(getPrefix(p));
-        LinkedHashSet<Node> parents = new LinkedHashSet<>();
-        double sMax = this.trees.get(n).trace(prefix, this.variables, parents);
+        Set<Node> all = new HashSet<>(this.variables);
+        HashSet<Node> parents = new LinkedHashSet<>();
+        double sMax = this.trees.get(n).trace(prefix, all, parents);
 
         return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
     }

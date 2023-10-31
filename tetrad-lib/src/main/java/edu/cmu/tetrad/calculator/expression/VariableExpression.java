@@ -33,7 +33,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public class VariableExpression implements Expression {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The variable that is being evaluated.

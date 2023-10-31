@@ -44,7 +44,7 @@ import java.util.Map;
 public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProducer,
         SimulationParamsSource, MultipleGraphSource {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private int numModels = 1;
     private int modelIndex;
     private String modelSourceName;
@@ -128,7 +128,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
             setGraph(new EdgeListGraph(wrapper.getVariables()));
         }
 
-        LayoutUtil.circleLayout(getGraph(), 200, 200, 150);
+        LayoutUtil.defaultLayout(getGraph());
     }
 
     public DagWrapper(BayesPmWrapper wrapper) {

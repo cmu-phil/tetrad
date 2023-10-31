@@ -42,7 +42,7 @@ import java.util.*;
  */
 public class LogisticRegressionRunner implements AlgorithmRunner, RegressionModel {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Parameters params;
     private final List<String> variableNames;
     private String name;

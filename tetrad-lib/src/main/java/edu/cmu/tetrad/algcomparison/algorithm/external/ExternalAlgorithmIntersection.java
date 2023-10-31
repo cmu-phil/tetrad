@@ -29,7 +29,7 @@ import java.util.Set;
  * @author josephramsey
  */
 public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final ExternalAlgorithm[] algorithms;
     private final String shortDescription;
     private long elapsed = -99;

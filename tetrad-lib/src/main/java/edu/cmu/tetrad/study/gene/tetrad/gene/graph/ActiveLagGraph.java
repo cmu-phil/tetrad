@@ -46,7 +46,7 @@ import java.util.SortedSet;
  * @author Gregory Li
  */
 public class ActiveLagGraph implements LagGraph {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Underlying graph representing the update graph.
@@ -70,6 +70,8 @@ public class ActiveLagGraph implements LagGraph {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a simple exemplar of this class to test serialization.
      */
     public static ActiveLagGraph serializableInstance() {
         return new ActiveLagGraph();
@@ -79,13 +81,17 @@ public class ActiveLagGraph implements LagGraph {
 
     /**
      * Registers a listener to events concerning the lag graph.
+     *
+     * @param l the listener
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
         getPropertyChangeManager().addPropertyChangeListener(l);
     }
 
-    /*
+    /**
      * Unregisters a listener for events concerning the lag graph.
+     *
+     * @param l the listener
      */
     public void removePropertyChangeListener(PropertyChangeListener l) {
         getPropertyChangeManager().removePropertyChangeListener(l);
@@ -106,8 +112,7 @@ public class ActiveLagGraph implements LagGraph {
                 }
 
                 this.lagGraph.addEdge(factor, laggedFactor);
-                getPropertyChangeManager().firePropertyChange("edgeAdded", null,
-                        new LaggedEdge(factor, laggedFactor));
+                getPropertyChangeManager().firePropertyChange("edgeAdded", null, new LaggedEdge(factor, laggedFactor));
             } catch (Exception ignored) {
             }
         }
@@ -118,16 +123,14 @@ public class ActiveLagGraph implements LagGraph {
      */
     public void addFactor(String factor) {
         if (!NamingProtocol.isLegalName(factor)) {
-            throw new IllegalArgumentException(
-                    NamingProtocol.getProtocolDescription());
+            throw new IllegalArgumentException(NamingProtocol.getProtocolDescription());
         }
 
         // no exception is thrown if the factor is already in the graph
         if (!existsFactor(factor)) {
             try {
                 this.lagGraph.addFactor(factor);
-                getPropertyChangeManager().firePropertyChange("nodeAdded", null,
-                        factor);
+                getPropertyChangeManager().firePropertyChange("nodeAdded", null, factor);
             } catch (Exception ignored) {
             }
         }
@@ -141,8 +144,7 @@ public class ActiveLagGraph implements LagGraph {
         if (existsEdge(factor, laggedFactor)) {
             try {
                 this.lagGraph.removeEdge(factor, laggedFactor);
-                getPropertyChangeManager().firePropertyChange("edgeRemoved",
-                        new LaggedEdge(factor, laggedFactor), null);
+                getPropertyChangeManager().firePropertyChange("edgeRemoved", new LaggedEdge(factor, laggedFactor), null);
             } catch (Exception e) {
                 // Igore.
             }
@@ -156,8 +158,7 @@ public class ActiveLagGraph implements LagGraph {
     public void removeFactor(String factor) {
         try {
             this.lagGraph.removeFactor(factor);
-            getPropertyChangeManager().firePropertyChange("nodeRemoved", factor,
-                    null);
+            getPropertyChangeManager().firePropertyChange("nodeRemoved", factor, null);
 
             // search through and find edges which were sourced by this factor
             // and remove them
@@ -191,8 +192,7 @@ public class ActiveLagGraph implements LagGraph {
     public void renameFactor(String oldName, String newName) {
         try {
             this.lagGraph.renameFactor(oldName, newName);
-            getPropertyChangeManager().firePropertyChange("factorRenamed",
-                    oldName, newName);
+            getPropertyChangeManager().firePropertyChange("factorRenamed", oldName, newName);
         } catch (IllegalArgumentException e) {
             // ignore
         }
@@ -234,8 +234,7 @@ public class ActiveLagGraph implements LagGraph {
         if (maxLagAllowable >= getMaxLag()) {
             this.lagGraph.setMaxLagAllowable(maxLagAllowable);
             this.lagGraph.setMaxLagAllowable(maxLagAllowable);
-            getPropertyChangeManager().firePropertyChange("maxLagAllowable",
-                    null, getMaxLagAllowable());
+            getPropertyChangeManager().firePropertyChange("maxLagAllowable", null, getMaxLagAllowable());
         }
     }
 
@@ -279,8 +278,7 @@ public class ActiveLagGraph implements LagGraph {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
         if (this.lagGraph == null) {

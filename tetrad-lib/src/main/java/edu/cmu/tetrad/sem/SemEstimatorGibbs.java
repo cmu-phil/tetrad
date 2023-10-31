@@ -41,7 +41,7 @@ import java.util.List;
  * @author Frank Wimberly
  */
 public final class SemEstimatorGibbs {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final int numIterations;
     private final double stretch1;

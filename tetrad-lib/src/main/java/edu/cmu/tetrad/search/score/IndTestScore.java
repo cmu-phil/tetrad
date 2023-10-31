@@ -41,7 +41,6 @@ import java.util.List;
  *
  * @author josephramsey
  * @see IndependenceTest
- * @see IndependenceTest#getScore()
  */
 public class IndTestScore implements Score {
 

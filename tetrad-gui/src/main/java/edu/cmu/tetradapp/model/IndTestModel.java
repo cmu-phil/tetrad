@@ -37,7 +37,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class IndTestModel implements SessionModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final List<IndTestProducer> indTestProducers;
     private String name = "";

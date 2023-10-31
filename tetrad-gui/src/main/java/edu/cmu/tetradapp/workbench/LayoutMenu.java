@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -123,6 +124,16 @@ public class LayoutMenu extends JMenu {
             LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
         });
 
+        JMenuItem squareLayout = new JMenuItem("Squiare");
+        this.add(squareLayout);
+
+        squareLayout.addActionListener(e -> {
+            LayoutUtils.squareLayout(LayoutMenu.this.getLayoutEditable());
+
+            // Copy the laid out graph to the clipboard.
+            LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
+        });
+
 
         JMenuItem fruchtermanReingold = new JMenuItem("Fruchterman-Reingold");
         this.add(fruchtermanReingold);
@@ -161,18 +172,7 @@ public class LayoutMenu extends JMenu {
 
         causalOrder.addActionListener(e -> {
             LayoutEditable layoutEditable13 = LayoutMenu.this.getLayoutEditable();
-            Graph graph = layoutEditable13.getGraph();
-
-            for (Node node : new ArrayList<>(graph.getNodes())) {
-                if (node.getNodeType() == NodeType.ERROR) {
-                    graph.removeNode(node);
-                }
-            }
-
-            CausalOrder layout1 = new CausalOrder(layoutEditable13);
-            layout1.doLayout();
-            layoutEditable13.layoutByGraph(graph);
-            LayoutUtils.layout = LayoutUtils.Layout.distanceFromSelected;
+            LayoutUtils.layoutByCausalOrder(layoutEditable13);
 
             // Copy the laid out graph to the clipboard.
             getCopyLayoutAction().actionPerformed(null);

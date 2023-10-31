@@ -14,7 +14,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class SemidirectedRecall implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
@@ -38,8 +38,8 @@ public class SemidirectedRecall implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.paths().existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
-                    if (estGraph.paths().existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
+                if (trueGraph.paths().existsSemiDirectedPath(x, Collections.singleton(y))) {
+                    if (estGraph.paths().existsSemiDirectedPath(x, Collections.singleton(y))) {
                         tp++;
                     } else {
                         fn++;

@@ -2,8 +2,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class NoSemidirectedPrecision implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
@@ -29,7 +29,7 @@ public class NoSemidirectedPrecision implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0, fp = 0;
 
-        Graph cpdag = GraphSearchUtils.cpdagForDag(trueGraph);
+        Graph cpdag = GraphTransforms.cpdagForDag(trueGraph);
 
         List<Node> nodes = estGraph.getNodes();
 
@@ -37,8 +37,8 @@ public class NoSemidirectedPrecision implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!estGraph.paths().existsSemiDirectedPathFromTo(x, y)) {
-                    if (!cpdag.paths().existsSemiDirectedPathFromTo(x, y)) {
+                if (!estGraph.paths().existsSemiDirectedPath(x, y)) {
+                    if (!cpdag.paths().existsSemiDirectedPath(x, y)) {
                         tp++;
                     } else {
                         fp++;

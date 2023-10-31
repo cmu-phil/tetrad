@@ -312,7 +312,7 @@ public class Discretizer {
                 }
 
             } else {
-                DataUtils.copyColumn(variable, this.sourceDataSet, newDataSet);
+                DataTransforms.copyColumn(variable, this.sourceDataSet, newDataSet);
             }
         }
         return newDataSet;

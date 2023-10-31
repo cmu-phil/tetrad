@@ -218,7 +218,7 @@ public final class Params {
     public static final String GRASP_ORDERED_ALG = "graspOrderedAlg";
     public static final String GRASP_USE_SCORE = "graspUseScore";
     public static final String GRASP_USE_RASKUTTI_UHLER = "graspUseRaskuttiUhler";
-    public static final String GRASP_USE_DATA_ORDER = "graspUseDataOrder";
+    public static final String USE_DATA_ORDER = "useDataOrder";
     public static final String ALLOW_INTERNAL_RANDOMNESS = "allowInternalRandomness";
     public static final String GRASP_DEPTH = "graspDepth";
     public static final String GRASP_SINGULAR_DEPTH = "graspSingularDepth";
@@ -253,6 +253,7 @@ public final class Params {
     public static final String PI_THR = "piThr";
     public static final String REMOVE_EFFECT_NODES = "removeEffectNodes";
     public static final String SAMPLE_STYLE = "sampleStyle";
+    public static final String NUM_THREADS = "numThreads";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

@@ -45,7 +45,7 @@ import java.util.Set;
  */
 public class SampleVcpcRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private IndependenceFactsModel independenceFactsModel;
     private Graph trueGraph;
     private SemPm semPm;
@@ -196,7 +196,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
-            LayoutUtil.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.defaultLayout(graph);
         }
 
         setResultGraph(graph);

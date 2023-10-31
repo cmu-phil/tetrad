@@ -28,7 +28,6 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -41,7 +40,6 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -90,8 +88,7 @@ public class TestPc {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge(
-                knowledge);
+        checkWithKnowledge(knowledge);
     }
 
     @Test
@@ -129,9 +126,9 @@ public class TestPc {
                 "\n" +
                 "Graph Edges:\n" +
                 "1. ABILITY --> CITES\n" +
-                "2. ABILITY --- GPQ\n" +
-                "3. ABILITY --- PREPROD\n" +
-                "4. GPQ --- QFJ\n" +
+                "2. ABILITY --> GPQ\n" +
+                "3. ABILITY --> PREPROD\n" +
+                "4. GPQ --> QFJ\n" +
                 "5. PREPROD --> CITES\n" +
                 "6. PUBS --> CITES\n" +
                 "7. QFJ --> CITES\n" +
@@ -202,6 +199,7 @@ public class TestPc {
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert("A---B,B-->C,D");
+        resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
 //        System.out.println("Knowledge = " + knowledge);
         System.out.println("True graph = " + graph);
@@ -219,7 +217,7 @@ public class TestPc {
             MsepTest test = new MsepTest(graph);
             Pc pc = new Pc(test);
             Graph CPDAG = pc.search();
-            Graph CPDAG2 = GraphSearchUtils.cpdagFromDag(graph);
+            Graph CPDAG2 = GraphTransforms.cpdagForDag(graph);
             assertEquals(CPDAG, CPDAG2);
         }
     }
@@ -648,7 +646,7 @@ public class TestPc {
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(10000, false);
-            Graph comparison = dagToPag(dag);
+            Graph comparison = GraphTransforms.dagToPag(dag);
             IndTestFisherZ test = new IndTestFisherZ(data, 0.1);
 
 

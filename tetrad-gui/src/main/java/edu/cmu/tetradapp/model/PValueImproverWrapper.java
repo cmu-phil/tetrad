@@ -45,7 +45,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 public class PValueImproverWrapper extends AbstractAlgorithmRunner {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final DataWrapper dataWrapper;
     private final Parameters params = new Parameters();
     /**
@@ -249,10 +249,10 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             GraphSearchUtils.arrangeByKnowledgeTiers(this.graph, knowledge);
         } else {
-            LayoutUtil.circleLayout(this.graph, 200, 200, 150);
+            LayoutUtil.defaultLayout(this.graph);
         }
 
-        setResultGraph(GraphSearchUtils.cpdagForDag(this.graph));
+        setResultGraph(GraphTransforms.cpdagForDag(this.graph));
     }
 
     public boolean supportsKnowledge() {
@@ -368,7 +368,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
             }
         }
 
-        return DataUtils.restrictToMeasured(fullDataSet);
+        return DataTransforms.restrictToMeasured(fullDataSet);
     }
 
     /**

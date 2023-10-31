@@ -16,6 +16,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.util.Collections.shuffle;
 
 
 /**
@@ -385,23 +386,48 @@ public class Grasp {
     }
 
     private void makeValidKnowledgeOrder(List<Node> order) {
-        if (!this.knowledge.isEmpty()) {
-            order.sort((a, b) -> {
-                if (a.getName().equals(b.getName())) return 0;
-                else if (this.knowledge.isRequired(a.getName(), b.getName())) return -1;
-                else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
-                else return 0;
-            });
+        if (this.knowledge.isEmpty()) return;
+
+        int index = 0;
+
+        Set<String> tier = new HashSet<>(this.knowledge.getVariablesNotInTiers());
+        for (int i = 0; i < order.size(); i++) {
+            if (tier.contains(order.get(i).getName())) {
+                Node x = order.remove(i);
+                order.add(index++, x);
+            }
+        }
+
+        for (int i = 0; i < this.knowledge.getNumTiers(); i++) {
+            tier = new HashSet<>(this.knowledge.getTier(i));
+            for (int j = 0; j < order.size(); j++) {
+                if (tier.contains(order.get(j).getName())) {
+                    Node x = order.remove(j);
+                    order.add(index++, x);
+                }
+            }
+        }
+
+        if (this.knowledge.isEmpty()) return;
+        for (int i = 1; i < order.size(); i++) {
+            String a = order.get(i).getName();
+            for (int j = 0; j < i; j++) {
+                String b = order.get(j).getName();
+                if (this.knowledge.isRequired(a, b)) {
+                    Node x = order.remove(i);
+                    order.add(j, x);
+                    break;
+                }
+            }
         }
     }
-
 
     private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
                           Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
         List<Node> vars = scorer.getPi();
 
         if (allowInternalRandomness) {
-            RandomUtil.shuffle(vars);
+            shuffle(vars);
         }
 
         for (Node y : vars) {
@@ -409,7 +435,7 @@ public class Grasp {
             List<Node> parents = new ArrayList<>(scorer.getParents(y));
 
             if (allowInternalRandomness) {
-                RandomUtil.shuffle(parents);
+                shuffle(parents);
             }
 
             for (Node x : parents) {

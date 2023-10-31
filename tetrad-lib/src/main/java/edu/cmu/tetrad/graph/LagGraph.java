@@ -31,7 +31,7 @@ import java.util.*;
  * @author josephramsey
  */
 public class LagGraph implements Graph {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final List<String> variables = new ArrayList<>();
     private final Map<String, List<Node>> laggedVariables = new HashMap<>();
     private final Map<String, Object> attributes = new HashMap<>();

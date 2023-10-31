@@ -27,7 +27,7 @@ package edu.cmu.tetrad.calculator.expression;
  * @author Tyler Gibson
  */
 abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The human-readable name for the descriptor.
@@ -111,7 +111,7 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
      * Basic implementation of expression signature.
      */
     public static class Signature implements ExpressionSignature {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
         private final String[] arguments;
         private String signature;
 

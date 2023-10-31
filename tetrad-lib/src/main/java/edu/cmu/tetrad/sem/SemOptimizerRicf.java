@@ -33,7 +33,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @author josephramsey
  */
 public class SemOptimizerRicf implements SemOptimizer {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private int numRestarts = 1;
 
     /**

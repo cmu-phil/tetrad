@@ -31,7 +31,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private LinkedList<edu.cmu.tetrad.search.Cstar.Record> records;

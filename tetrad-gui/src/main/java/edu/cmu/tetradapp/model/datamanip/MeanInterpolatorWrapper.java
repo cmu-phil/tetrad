@@ -33,7 +33,7 @@ import edu.cmu.tetradapp.model.PcRunner;
  * @author Tyler Gibson
  */
 public class MeanInterpolatorWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     public MeanInterpolatorWrapper(DataWrapper data, Parameters params) {

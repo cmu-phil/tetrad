@@ -26,7 +26,7 @@ import java.util.List;
 @Mixed
 public class ConditionalGaussianBicScore implements ScoreWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
     @Override

@@ -36,7 +36,7 @@ import edu.cmu.tetradapp.model.PcRunner;
  * @author Tyler Gibson
  */
 public class CovMatrixSumWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Splits the given data set by collinear columns.

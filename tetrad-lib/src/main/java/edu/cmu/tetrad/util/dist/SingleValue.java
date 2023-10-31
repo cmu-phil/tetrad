@@ -27,7 +27,7 @@ package edu.cmu.tetrad.util.dist;
  * @author josephramsey
  */
 public class SingleValue implements Distribution {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial

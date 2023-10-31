@@ -39,7 +39,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @author josephramsey
  */
 public class RemoveNullEdgesGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public RemoveNullEdgesGraphWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());

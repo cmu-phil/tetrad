@@ -2,8 +2,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.SemBicScorer;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import static org.apache.commons.math3.util.FastMath.tanh;
 
@@ -13,7 +13,7 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  * @author josephramsey
  */
 public class BicDiff implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private boolean precomputeCovariances = true;
 
     @Override
@@ -28,8 +28,8 @@ public class BicDiff implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double _true = SemBicScorer.scoreDag(GraphSearchUtils.dagFromCPDAG(trueGraph), dataModel, precomputeCovariances);
-        double est = SemBicScorer.scoreDag(GraphSearchUtils.dagFromCPDAG(estGraph), dataModel, precomputeCovariances);
+        double _true = SemBicScorer.scoreDag(GraphTransforms.dagFromCPDAG(trueGraph, null), dataModel, precomputeCovariances);
+        double est = SemBicScorer.scoreDag(GraphTransforms.dagFromCPDAG(estGraph, null), dataModel, precomputeCovariances);
         return (_true - est);
     }
 

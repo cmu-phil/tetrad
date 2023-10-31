@@ -36,7 +36,7 @@ import java.io.IOException;
  * @author josephramsey
  */
 public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final String extDir;
     private final String shortDescription;
 
@@ -62,11 +62,11 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
 
         try {
             DataSet dataSet2 = SimpleDataLoader.loadContinuousData(file, "//", '\"',
-                    "*", true, Delimiter.TAB);
+                    "*", true, Delimiter.TAB, false);
             System.out.println("Loading graph from " + file.getAbsolutePath());
             Graph graph = GraphSaveLoadUtils.loadGraphBNTPcMatrix(dataSet.getVariables(), dataSet2);
 
-            LayoutUtil.circleLayout(graph, 225, 200, 150);
+            LayoutUtil.defaultLayout(graph);
 
             return graph;
         } catch (IOException e) {

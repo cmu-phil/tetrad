@@ -8,10 +8,12 @@ import edu.cmu.tetrad.graph.NodeType;
 import java.util.List;
 
 /**
+ * Proportion of semi(X, Y) in true graph for which there is no semi(Y, Z) in estimated graph.
+ *
  * @author josephramsey
  */
 public class ProportionSemidirectedPathsNotReversedTrue implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
@@ -35,8 +37,8 @@ public class ProportionSemidirectedPathsNotReversedTrue implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.paths().existsSemiDirectedPathFromTo(x, y)) {
-                    if (!estGraph.paths().existsSemiDirectedPathFromTo(y, x)) {
+                if (trueGraph.paths().existsSemiDirectedPath(x, y)) {
+                    if (!estGraph.paths().existsSemiDirectedPath(y, x)) {
                         tp++;
                     } else {
                         fn++;

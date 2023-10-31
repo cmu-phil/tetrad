@@ -2,16 +2,18 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import java.util.List;
 
 /**
+ * MaximalMag statistic.
+ *
  * @author josephramsey
  */
 public class MaximalityCondition implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
@@ -27,7 +29,7 @@ public class MaximalityCondition implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = estGraph;
 
-        Graph mag = GraphSearchUtils.pagToMag(estGraph);
+        Graph mag = GraphTransforms.pagToMag(estGraph);
 
         List<Node> nodes = pag.getNodes();
 

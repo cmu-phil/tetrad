@@ -44,7 +44,7 @@ import java.util.List;
 ///////////////////////////////////////////////////////////
 public class BayesImWrapperObs implements SessionModel, Memorable {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Can be null.

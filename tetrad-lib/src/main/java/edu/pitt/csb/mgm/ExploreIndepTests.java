@@ -24,8 +24,8 @@ package edu.pitt.csb.mgm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.work_in_progress.IndTestMultinomialLogisticRegression;
 import edu.cmu.tetrad.util.MillisecondTimes;
 
@@ -38,7 +38,8 @@ public class ExploreIndepTests {
     public static void main(String[] args) {
         try {
             String path = ExampleMixedSearch.class.getResource("test_data").getPath();
-            Graph trueGraph = GraphSearchUtils.cpdagFromDag(GraphSaveLoadUtils.loadGraphTxt(new File(path, "DAG_0_graph.txt")));
+            Graph dag3 = GraphSaveLoadUtils.loadGraphTxt(new File(path, "DAG_0_graph.txt"));
+            Graph trueGraph = GraphTransforms.cpdagForDag(dag3);
             DataSet ds = MixedUtils.loadDataSet(path, "DAG_0_data.txt");
 
             IndTestMultinomialLogisticRegression indMix = new IndTestMultinomialLogisticRegression(ds, .05);
@@ -54,15 +55,18 @@ public class ExploreIndepTests {
             s3.setStable(true);
 
             long time = MillisecondTimes.timeMillis();
-            Graph g1 = GraphSearchUtils.cpdagFromDag(s1.search());
+            Graph dag2 = s1.search();
+            Graph g1 = GraphTransforms.cpdagForDag(dag2);
             System.out.println("Mix Time " + ((MillisecondTimes.timeMillis() - time) / 1000.0));
 
             time = MillisecondTimes.timeMillis();
-            Graph g2 = GraphSearchUtils.cpdagFromDag(s2.search());
+            Graph dag1 = s2.search();
+            Graph g2 = GraphTransforms.cpdagForDag(dag1);
             System.out.println("Wald lin Time " + ((MillisecondTimes.timeMillis() - time) / 1000.0));
 
             time = MillisecondTimes.timeMillis();
-            Graph g3 = GraphSearchUtils.cpdagFromDag(s3.search());
+            Graph dag = s3.search();
+            Graph g3 = GraphTransforms.cpdagForDag(dag);
             System.out.println("Wald log Time " + ((MillisecondTimes.timeMillis() - time) / 1000.0));
 
             System.out.println(MixedUtils.EdgeStatHeader);

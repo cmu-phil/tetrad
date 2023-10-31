@@ -13,7 +13,14 @@ import edu.cmu.tetrad.graph.Graph;
  * @author josephramsey
  */
 public class ArrowheadRecall implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
+
+    /**
+     * Constructs the statistic.
+     */
+    public ArrowheadRecall() {
+
+    }
 
     @Override
     public String getAbbreviation() {

@@ -55,7 +55,7 @@ import java.util.*;
  * Knowledge may be associated with the data set, using the
  * <code>setKnowledge</code> method. This knowledge is not used internally to
  * the data set, but it may be retrieved by algorithms and used.
- * <p>
+ * </p>
  *
  * @author josephramsey
  * @see edu.cmu.tetrad.data.Variable
@@ -63,7 +63,7 @@ import java.util.*;
  */
 public final class BoxDataSet implements DataSet {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * Case ID's. These are strings associated with some or all of the cases of the dataset.
      *

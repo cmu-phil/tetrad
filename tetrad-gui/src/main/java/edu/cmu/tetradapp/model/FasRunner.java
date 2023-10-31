@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class FasRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private Graph externalGraph;
 
     //============================CONSTRUCTORS============================//
@@ -150,7 +150,7 @@ public class FasRunner extends AbstractAlgorithmRunner
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
-            LayoutUtil.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.defaultLayout(graph);
         }
 
         setResultGraph(graph);

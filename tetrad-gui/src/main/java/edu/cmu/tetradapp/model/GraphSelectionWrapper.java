@@ -41,7 +41,7 @@ import java.util.*;
  * @author josephramsey
  */
 public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Parameters params;
     private List<Node> selectedNodes;
     private List<Graph> graphs = new ArrayList<>();

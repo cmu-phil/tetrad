@@ -35,7 +35,7 @@ import java.text.NumberFormat;
  * @author josephramsey
  */
 public class Normal implements Distribution {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The mean of the distribution.

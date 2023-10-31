@@ -35,7 +35,7 @@ import java.util.stream.IntStream;
  * @author Ricardo Silva
  */
 public final class Clusters implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * This is used to store information on pure measurement models (when the graph is a measurement/structural model).

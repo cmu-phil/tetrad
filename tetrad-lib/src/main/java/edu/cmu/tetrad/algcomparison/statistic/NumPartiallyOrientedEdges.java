@@ -6,10 +6,12 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
+ * Number of Xo->Y in est.
+ *
  * @author josephramsey
  */
 public class NumPartiallyOrientedEdges implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

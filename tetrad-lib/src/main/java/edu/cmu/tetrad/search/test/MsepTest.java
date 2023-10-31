@@ -228,6 +228,11 @@ public class MsepTest implements IndependenceTest {
             pValue = 0.0;
         }
 
+        if (Double.isNaN(pvalue)) {
+            throw new RuntimeException("Undefined p-value encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, z));
+        }
+
         this.pvalue = pValue;
 
         return new IndependenceResult(new IndependenceFact(x, y, z), mSeparated, pValue, pvalue == 1 ? -1 : 1);

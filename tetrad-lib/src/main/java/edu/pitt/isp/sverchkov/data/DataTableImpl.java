@@ -27,7 +27,11 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * Data table implementation.
+ *
  * @author YUS24
+ * @param <N> Type of variable names
+ * @param <V> Type of variable values
  */
 public class DataTableImpl<N, V> implements DataTable<N, V> {
 

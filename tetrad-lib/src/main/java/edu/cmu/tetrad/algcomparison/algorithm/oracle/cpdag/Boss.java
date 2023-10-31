@@ -37,7 +37,7 @@ import java.util.List;
 @Bootstrapping
 public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         ReturnsBootstrapGraphs {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
@@ -70,7 +70,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
             boss.setUseBes(parameters.getBoolean(Params.USE_BES));
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            boss.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
+            boss.setNumThreads(parameters.getInt(Params.NUM_THREADS));
+            boss.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
+            boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
             PermutationSearch permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(this.knowledge);
 
@@ -111,8 +113,10 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         // Parameters
         params.add(Params.USE_BES);
         params.add(Params.NUM_STARTS);
-        params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
         params.add(Params.TIME_LAG);
+        params.add(Params.NUM_THREADS);
+        params.add(Params.USE_DATA_ORDER);
+        params.add(Params.VERBOSE);
 
         return params;
     }

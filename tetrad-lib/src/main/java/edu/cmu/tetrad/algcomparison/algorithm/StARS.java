@@ -23,7 +23,7 @@ import java.util.concurrent.RecursiveAction;
  */
 public class StARS implements Algorithm {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final double low;
     private final double high;
     private final String parameter;

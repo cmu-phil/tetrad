@@ -18,7 +18,7 @@ import org.apache.commons.math3.util.FastMath;
  * @author josephramsey
  */
 public class MathewsCorrArrow implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

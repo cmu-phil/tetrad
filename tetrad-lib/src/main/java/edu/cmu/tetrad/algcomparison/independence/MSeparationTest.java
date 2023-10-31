@@ -23,7 +23,7 @@ import java.util.List;
 )
 public class MSeparationTest implements IndependenceWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private Graph graph;
 
     /**

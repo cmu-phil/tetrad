@@ -6,7 +6,6 @@ import edu.cmu.tetrad.graph.*;
 import java.util.List;
 
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * The bidirected true positives.
@@ -14,7 +13,7 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
  * @author josephramsey
  */
 public class LatentCommonAncestorFalseNegativeBidirected implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
@@ -28,7 +27,7 @@ public class LatentCommonAncestorFalseNegativeBidirected implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph pag = dagToPag(trueGraph);
+        Graph pag = GraphTransforms.dagToPag(trueGraph);
 
         int fn = 0;
 

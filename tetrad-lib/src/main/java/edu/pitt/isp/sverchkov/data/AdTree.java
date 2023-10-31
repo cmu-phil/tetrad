@@ -36,7 +36,9 @@ import java.util.*;
  * Indexing of the variables works backwards: (a_i can't have children a_i ... a_m) ... not that that difference is
  * visible in the API.
  *
- * @author user
+ * @param <A> Attribute type
+ * @param <V> Value type
+ * @author jdramsey
  */
 public class AdTree<A, V> extends AdTreeHelper {
 
@@ -45,6 +47,10 @@ public class AdTree<A, V> extends AdTreeHelper {
     private final List<VHelper> values;
     private final CountNode root;
 
+    /**
+     * Constructs an AD tree for the given data set.
+     * @param data The data set.
+     */
     public AdTree(DataTable<A, V> data) {
         super(data.columnCount());
 
@@ -100,12 +106,22 @@ public class AdTree<A, V> extends AdTreeHelper {
         this.root = new CountNode(this.m, array);
     }
 
+    /**
+     * Returns the number of rows in the data set.
+     * @param attribute The attribute to count.
+     * @return The number of rows in the data set.
+     */
     public List<V> values(A attribute) {
         int index = Objects.requireNonNull(this.attributeLookup.get(attribute),
                 "Attribute " + attribute.toString() + " not found.");
         return this.values.get(index).list;
     }
 
+    /**
+     * Returns the number of rows in the data set.
+     * @param assignment The assignment to count.
+     * @return The number of rows in the data set.
+     */
     public int count(Map<A, V> assignment) {
         int[] a = new int[this.m];
         for (int i = 0; i < this.m; i++) {
@@ -117,6 +133,12 @@ public class AdTree<A, V> extends AdTreeHelper {
         return count(a, this.root);
     }
 
+    /**
+     * Returns the number of rows in the data set.
+     * @param attribute The attribute to count.
+     * @param assignment The assignment to count.
+     * @return The number of rows in the data set.
+     */
     public Map<V, Integer> counts(A attribute, Map<A, V> assignment) {
 
         List<V> vlist = this.values.get(this.attributeLookup.get(attribute)).list;
@@ -130,10 +152,20 @@ public class AdTree<A, V> extends AdTreeHelper {
         return result;
     }
 
+    /**
+     * Converts to XML.
+     * @return The XML document.
+     * @throws ParserConfigurationException if something goes wrong
+     */
     public Document toXML() throws ParserConfigurationException {
         return toXML(DocumentBuilderFactory.newInstance().newDocumentBuilder());
     }
 
+    /**
+     * Converts to XML.
+     * @param builder The builder.
+     * @return The XML document.
+     */
     public Document toXML(DocumentBuilder builder) {
         Document doc = builder.newDocument();
 

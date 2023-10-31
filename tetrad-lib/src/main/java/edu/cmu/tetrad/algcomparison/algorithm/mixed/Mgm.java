@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * MGM.
+ *
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
@@ -25,7 +27,7 @@ import java.util.List;
 @Bootstrapping
 public class Mgm implements Algorithm {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public Mgm() {
     }

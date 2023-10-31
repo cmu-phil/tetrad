@@ -42,7 +42,7 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
  */
 public class EdgeListGraph implements Graph, TripleClassifier {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * The edges in the graph.
      *
@@ -54,7 +54,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      *
      * @serial
      */
-    final Map<Node, Set<Edge>> edgeLists;
+    Map<Node, Set<Edge>> edgeLists;
     /**
      * A list of the nodes in the graph, in the order in which they were added.
      *
@@ -662,30 +662,36 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public boolean addEdge(Edge edge) {
-        synchronized (this.edgeLists) {
-            if (edge == null) {
-                throw new NullPointerException();
-            }
-
-            Set<Edge> edgeList1 = this.edgeLists.get(edge.getNode1());
-            Set<Edge> edgeList2 = this.edgeLists.get(edge.getNode2());
-
-            edgeList1.add(edge);
-            edgeList2.add(edge);
-            this.edgesSet.add(edge);
-
-            if (Edges.isDirectedEdge(edge)) {
-                Node node = Edges.getDirectedEdgeTail(edge);
-
-                if (node.getNodeType() == NodeType.ERROR) {
-                    getPcs().firePropertyChange("nodeAdded", null, node);
-                }
-            }
-
-            getPcs().firePropertyChange("edgeAdded", null, edge);
-            return true;
+        if (edge == null) {
+            throw new NullPointerException("Null edge.");
         }
 
+        Map<Node, Set<Edge>> edgeListMap = this.edgeLists;
+
+        synchronized (edgeListMap) {
+
+            // Someoone may have changed the name of one of these variables, in which
+            // case we need to reconstitute the edgeLists map, since the name of a
+            // node is used part of the definition of node equality.
+            if (!edgeLists.containsKey(edge.getNode1()) || !edgeLists.containsKey(edge.getNode2())) {
+                this.edgeLists = new HashMap<>(this.edgeLists);
+            }
+
+            this.edgeLists.get(edge.getNode1()).add(edge);
+            this.edgeLists.get(edge.getNode2()).add(edge);
+            this.edgesSet.add(edge);
+        }
+
+        if (Edges.isDirectedEdge(edge)) {
+            Node node = Edges.getDirectedEdgeTail(edge);
+
+            if (node.getNodeType() == NodeType.ERROR) {
+                getPcs().firePropertyChange("nodeAdded", null, node);
+            }
+        }
+
+        getPcs().firePropertyChange("edgeAdded", null, edge);
+        return true;
     }
 
     /**

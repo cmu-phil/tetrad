@@ -36,7 +36,7 @@ import java.util.*;
 @Bootstrapping
 public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
         ReturnsBootstrapGraphs {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
@@ -84,7 +84,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
             // variables as Tier 2 and the rest as Tier 1, and run BOSS again and return
             // the result.
 
-            Knowledge knowledge = new Knowledge();;
+            Knowledge knowledge = new Knowledge();
             for (Node node : targets) knowledge.addToTier(2, node.getName());
             for (Node node : dataSet.getVariables()) {
                 if (!targets.contains(node)) knowledge.addToTier(1, node.getName());
@@ -96,7 +96,6 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
             edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
             boss.setUseBes(parameters.getBoolean(Params.USE_BES));
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            boss.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
             PermutationSearch permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(knowledge);
             permutationSearch.search();
@@ -126,7 +125,6 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
             boss = new edu.cmu.tetrad.search.Boss(score);
             boss.setUseBes(parameters.getBoolean(Params.USE_BES));
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            boss.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
             permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(knowledge);
 
@@ -169,7 +167,6 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
         // Parameters
         params.add(Params.USE_BES);
         params.add(Params.NUM_STARTS);
-        params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
         params.add(Params.TARGETS);
         params.add(Params.TRIMMING_STYLE);
 

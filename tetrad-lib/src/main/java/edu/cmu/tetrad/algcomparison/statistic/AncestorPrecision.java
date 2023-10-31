@@ -7,21 +7,45 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
+ * Ancestor precision.
+ *
  * @author josephramsey
  */
 public class AncestorPrecision implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs the statistic.
+     */
+    public AncestorPrecision() {
+
+    }
+
+    /**
+     * Returns the name of the statistic.
+     * @return the name of the statistic
+     */
     @Override
     public String getAbbreviation() {
         return "Anc-Prec";
     }
 
+    /**
+     * Returns the description of the statistic.
+     * @return the description of the statistic
+     */
     @Override
     public String getDescription() {
         return "Proportion of X~~>Y in the estimated graph for which also X~~>Y in true graph";
     }
 
+    /**
+     * Calculates the statistic.
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return the statistic
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -45,6 +69,11 @@ public class AncestorPrecision implements Statistic {
         return tp / (double) (tp + fp);
     }
 
+    /**
+     * Returns the norm value of the statistic.
+     * @param value The norm value of the statistic.
+     * @return the norm value of the statistic
+     */
     @Override
     public double getNormValue(double value) {
         return value;

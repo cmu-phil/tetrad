@@ -35,7 +35,7 @@ import java.util.ArrayList;
  * @author josephramsey
  */
 public class PolynomialFunction implements UpdateFunction {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The "snapshot" indexed connectivity of the initial lag graph.

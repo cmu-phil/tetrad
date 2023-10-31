@@ -39,7 +39,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.removeNonSkeletonEdges;
  */
 public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private Graph resultGraph = new EdgeListGraph();
 

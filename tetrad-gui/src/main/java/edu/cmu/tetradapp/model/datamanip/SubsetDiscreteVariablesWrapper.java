@@ -37,7 +37,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public class SubsetDiscreteVariablesWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     public SubsetDiscreteVariablesWrapper(DataWrapper data, Parameters params) {

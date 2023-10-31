@@ -32,7 +32,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author Frank Wimberly
  */
 public class ParamConstraint implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     private final double number;

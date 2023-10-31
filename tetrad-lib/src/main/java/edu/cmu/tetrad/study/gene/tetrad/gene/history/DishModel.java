@@ -37,7 +37,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public class DishModel implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * An array of dish bumps for each dish.
      *

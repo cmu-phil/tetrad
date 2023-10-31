@@ -86,6 +86,12 @@ public class BesPermutation {
 //        this.depth = depth;
 //    }
 
+    /**
+     * Runs BES.
+     * @param graph The graph.
+     * @param order The order.
+     * @param suborder The suborder.
+     */
     public void bes(Graph graph, List<Node> order, List<Node> suborder) {
         Map<Node, Integer> hashIndices = new HashMap<>();
         SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();

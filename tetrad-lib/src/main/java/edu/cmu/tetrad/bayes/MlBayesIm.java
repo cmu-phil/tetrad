@@ -76,9 +76,9 @@ public final class MlBayesIm implements BayesIm {
      * Indicates that new rows in this BayesIm should be initialized randomly.
      */
     public static final int RANDOM = 1;
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-3;
-    final long[] seed = {new Date().getTime()};
+
     /**
      * The associated Bayes PM model.
      *
@@ -133,7 +133,7 @@ public final class MlBayesIm implements BayesIm {
     /**
      * Constructs a new BayesIm from the given BayesPm, initializing values either as MANUAL or RANDOM. If initialized
      * manually, all values will be set to Double.NaN ("?") in each row; if initialized randomly, all values will
-     * distributed randomly in each row.
+     * distribute randomly in each row.
      *
      * @param bayesPm              the given Bayes PM. Carries with it the underlying graph model.
      * @param initializationMethod either MANUAL or RANDOM.
@@ -944,7 +944,7 @@ public final class MlBayesIm implements BayesIm {
         constructSample(sampleSize, dataSet, map, tiers);
 
         if (!latentDataSaved) {
-            dataSet = DataUtils.restrictToMeasured(dataSet);
+            dataSet = DataTransforms.restrictToMeasured(dataSet);
         }
 
         return dataSet;
@@ -994,7 +994,7 @@ public final class MlBayesIm implements BayesIm {
         if (latentDataSaved) {
             return dataSet;
         } else {
-            return DataUtils.restrictToMeasured(dataSet);
+            return DataTransforms.restrictToMeasured(dataSet);
         }
     }
 

@@ -27,11 +27,9 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.commons.math3.util.FastMath;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -349,128 +347,6 @@ public final class GraphSearchUtils {
         }
     }
 
-    /**
-     * @return the cpdag to which the given DAG belongs.
-     */
-    public static Graph cpdagFromDag(Graph dag) {
-        Graph graph = new EdgeListGraph(dag);
-        GraphSearchUtils.basicCpdag(graph);
-        MeekRules rules = new MeekRules();
-        rules.orientImplied(graph);
-        return graph;
-    }
-
-    public static Graph dagFromCPDAG(Graph graph) {
-        return GraphSearchUtils.dagFromCPDAG(graph, null);
-    }
-
-    public static Graph dagFromCPDAG(Graph graph, Knowledge knowledge) {
-        Graph dag = new EdgeListGraph(graph);
-
-        for (Edge edge : dag.getEdges()) {
-            if (Edges.isBidirectedEdge(edge)) {
-                throw new IllegalArgumentException("That 'cpdag' contains a bidirected edge.");
-            }
-        }
-
-        MeekRules rules = new MeekRules();
-
-        if (knowledge != null) {
-            rules.setKnowledge(knowledge);
-        }
-
-        rules.setRevertToUnshieldedColliders(false);
-
-        NEXT:
-        while (true) {
-            for (Edge edge : dag.getEdges()) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                if (Edges.isUndirectedEdge(edge) && !graph.paths().isAncestorOf(y, x)) {
-                    GraphSearchUtils.direct(x, y, dag);
-                    rules.orientImplied(dag);
-                    continue NEXT;
-                }
-            }
-
-            break;
-        }
-
-        return dag;
-    }
-
-    private static void direct(Node a, Node c, Graph graph) {
-        Edge before = graph.getEdge(a, c);
-        Edge after = Edges.directedEdge(a, c);
-        graph.removeEdge(before);
-        graph.addEdge(after);
-    }
-
-    // Zhang 2008 Theorem 2
-    public static Graph pagToMag(Graph pag) {
-        Graph mag = new EdgeListGraph(pag.getNodes());
-        for (Edge e : pag.getEdges()) mag.addEdge(new Edge(e));
-
-        List<Node> nodes = mag.getNodes();
-
-        Graph pcafci = new EdgeListGraph(nodes);
-
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = 0; j < nodes.size(); j++) {
-                if (i == j) continue;
-
-                Node x = nodes.get(i);
-                Node y = nodes.get(j);
-
-                if (mag.getEndpoint(y, x) == Endpoint.CIRCLE && mag.getEndpoint(x, y) == Endpoint.ARROW) {
-                    mag.setEndpoint(y, x, Endpoint.TAIL);
-                }
-
-                if (mag.getEndpoint(y, x) == Endpoint.TAIL && mag.getEndpoint(x, y) == Endpoint.CIRCLE) {
-                    mag.setEndpoint(x, y, Endpoint.ARROW);
-                }
-
-                if (mag.getEndpoint(y, x) == Endpoint.CIRCLE && mag.getEndpoint(x, y) == Endpoint.CIRCLE) {
-                    pcafci.addEdge(mag.getEdge(x, y));
-                }
-            }
-        }
-
-        for (Edge e : pcafci.getEdges()) {
-            e.setEndpoint1(Endpoint.TAIL);
-            e.setEndpoint2(Endpoint.TAIL);
-        }
-
-        W:
-        while (true) {
-            for (Edge e : pcafci.getEdges()) {
-                if (Edges.isUndirectedEdge(e)) {
-                    Node x = e.getNode1();
-                    Node y = e.getNode2();
-
-                    pcafci.setEndpoint(y, x, Endpoint.TAIL);
-                    pcafci.setEndpoint(x, y, Endpoint.ARROW);
-
-                    MeekRules meekRules = new MeekRules();
-                    meekRules.setRevertToUnshieldedColliders(false);
-                    meekRules.orientImplied(pcafci);
-
-                    continue W;
-                }
-            }
-
-            break;
-        }
-
-        for (Edge e : pcafci.getEdges()) {
-            mag.removeEdge(e.getNode1(), e.getNode2());
-            mag.addEdge(e);
-        }
-
-        return mag;
-    }
-
     public static LegalPagRet isLegalPag(Graph pag) {
 
         for (Node n : pag.getNodes()) {
@@ -480,7 +356,7 @@ public final class GraphSearchUtils {
             }
         }
 
-        Graph mag = pagToMag(pag);
+        Graph mag = GraphTransforms.pagToMag(pag);
 
         LegalMagRet legalMag = isLegalMag(mag);
 
@@ -488,7 +364,7 @@ public final class GraphSearchUtils {
             return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
         }
 
-        Graph pag2 = GraphSearchUtils.dagToPag(mag);
+        Graph pag2 = GraphTransforms.dagToPag(mag);
 
         if (!pag.equals(pag2)) {
             String edgeMismatch = "";
@@ -825,86 +701,6 @@ public final class GraphSearchUtils {
         return subsets;
     }
 
-    /**
-     * Generates the list of DAGs in the given cpdag.
-     */
-    public static List<Graph> generateCpdagDags(Graph cpdag, boolean orientBidirectedEdges) {
-        if (orientBidirectedEdges) {
-            cpdag = GraphUtils.removeBidirectedOrientations(cpdag);
-        }
-
-        return GraphSearchUtils.getDagsInCpdagMeek(cpdag, new Knowledge());
-    }
-
-    public static List<Graph> getDagsInCpdagMeek(Graph cpdag, Knowledge knowledge) {
-        DagInCpcagIterator iterator = new DagInCpcagIterator(cpdag, knowledge);
-        List<Graph> dags = new ArrayList<>();
-
-        while (iterator.hasNext()) {
-            Graph graph = iterator.next();
-
-            try {
-                if (knowledge.isViolatedBy(graph)) {
-                    continue;
-                }
-
-                dags.add(graph);
-            } catch (IllegalArgumentException e) {
-                System.out.println("Found a non-DAG: " + graph);
-            }
-        }
-
-        return dags;
-    }
-
-    public static List<Graph> getAllGraphsByDirectingUndirectedEdges(Graph skeleton) {
-        List<Graph> graphs = new ArrayList<>();
-        List<Edge> edges = new ArrayList<>(skeleton.getEdges());
-
-        List<Integer> undirectedIndices = new ArrayList<>();
-
-        for (int i = 0; i < edges.size(); i++) {
-            if (Edges.isUndirectedEdge(edges.get(i))) {
-                undirectedIndices.add(i);
-            }
-        }
-
-        int[] dims = new int[undirectedIndices.size()];
-
-        for (int i = 0; i < undirectedIndices.size(); i++) {
-            dims[i] = 2;
-        }
-
-        CombinationGenerator gen = new CombinationGenerator(dims);
-        int[] comb;
-
-        while ((comb = gen.next()) != null) {
-            Graph graph = new EdgeListGraph(skeleton.getNodes());
-
-            for (Edge edge : edges) {
-                if (!Edges.isUndirectedEdge(edge)) {
-                    graph.addEdge(edge);
-                }
-            }
-
-            for (int i = 0; i < undirectedIndices.size(); i++) {
-                Edge edge = edges.get(undirectedIndices.get(i));
-                Node node1 = edge.getNode1();
-                Node node2 = edge.getNode2();
-
-                if (comb[i] == 1) {
-                    graph.addEdge(Edges.directedEdge(node1, node2));
-                } else {
-                    graph.addEdge(Edges.directedEdge(node2, node1));
-                }
-            }
-
-            graphs.add(graph);
-        }
-
-        return graphs;
-    }
-
     // The published version.
     public static CpcTripleType getCpcTripleType(Node x, Node y, Node z,
                                                  IndependenceTest test, int depth,
@@ -977,14 +773,6 @@ public final class GraphSearchUtils {
         }
     }
 
-    public static Graph cpdagForDag(Graph dag) {
-        Graph cpdag = new EdgeListGraph(dag);
-        MeekRules rules = new MeekRules();
-        rules.setRevertToUnshieldedColliders(true);
-        rules.orientImplied(cpdag);
-        return cpdag;
-    }
-
     /**
      * Tsamardinos, I., Brown, L. E., and Aliferis, C. F. (2006). The max-min hill-climbing Bayesian network structure
      * learning algorithm. Machine learning, 65(1), 31-78.
@@ -996,8 +784,8 @@ public final class GraphSearchUtils {
 
         try {
             estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
-            trueGraph = GraphSearchUtils.cpdagForDag(trueGraph);
-            estGraph = GraphSearchUtils.cpdagForDag(estGraph);
+            trueGraph = GraphTransforms.cpdagForDag(trueGraph);
+            estGraph = GraphTransforms.cpdagForDag(estGraph);
 
             // Will check mixedness later.
             if (trueGraph.paths().existsDirectedCycle()) {
@@ -1273,11 +1061,6 @@ public final class GraphSearchUtils {
         }
 
         return counts;
-    }
-
-    @NotNull
-    public static Graph dagToPag(Graph trueGraph) {
-        return new DagToPag(trueGraph).convert();
     }
 
     /**

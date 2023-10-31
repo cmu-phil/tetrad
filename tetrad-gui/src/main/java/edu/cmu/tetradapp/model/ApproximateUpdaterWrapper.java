@@ -37,7 +37,7 @@ import java.text.NumberFormat;
  * @author William Taysom -- 2003/06/14
  */
 public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, Unmarshallable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Can be null.

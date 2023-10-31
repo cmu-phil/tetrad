@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class GraphComparisonParams extends SessionAdapter
         implements ExecutionRestarter {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The data set to which records are appended.

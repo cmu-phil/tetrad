@@ -29,10 +29,24 @@ import edu.cmu.tetrad.data.DataSet;
  * @author josephramsey
  */
 public interface DiscreteScore extends Score {
+
+    /**
+     * Sets the structure prior.
+     * @param structurePrior Ibid.
+     *
+     */
     void setStructurePrior(double structurePrior);
 
+    /**
+     * Sets the sample prior.
+     * @param samplePrior Ibid.
+     */
     void setSamplePrior(double samplePrior);
 
+    /**
+     * Returns the dataset.
+     * @return Ibid.
+     */
     DataSet getDataSet();
 }
 

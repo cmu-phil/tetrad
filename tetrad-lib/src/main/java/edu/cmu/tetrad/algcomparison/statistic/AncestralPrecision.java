@@ -12,18 +12,40 @@ import java.util.List;
  * @author josephramsey
  */
 public class AncestralPrecision implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs the statistic.
+     */
+    public AncestralPrecision() {
+
+    }
+
+    /**
+     * Returns the name of the statistic.
+     * @return the name of the statistic
+     */
     @Override
     public String getAbbreviation() {
         return "AncP";
     }
 
+    /**
+     * Returns the description of the statistic.
+     * @return the description of the statistic
+     */
     @Override
     public String getDescription() {
         return "Proportion of X~~>Y for which X~~>Y in true";
     }
 
+    /**
+     * Calculates the statistic.
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return the statistic
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0, fp = 0;
@@ -47,6 +69,11 @@ public class AncestralPrecision implements Statistic {
         return tp / (double) (tp + fp);
     }
 
+    /**
+     * Returns the norm value of the statistic.
+     * @param value The value of the statistic.
+     * @return  the value of the statistic
+     */
     @Override
     public double getNormValue(double value) {
         return value;

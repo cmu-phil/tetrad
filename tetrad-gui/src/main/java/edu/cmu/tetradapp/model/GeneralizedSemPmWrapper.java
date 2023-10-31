@@ -44,7 +44,7 @@ import java.util.Set;
  */
 public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * The wrapped SemPm.
      *

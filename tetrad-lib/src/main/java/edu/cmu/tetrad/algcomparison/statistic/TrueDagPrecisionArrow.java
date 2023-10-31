@@ -8,10 +8,12 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
+ * The proportion of X*->Y in the estimated graph for which there is no path Y~~>X in the true graph.
+ *
  * @author josephramsey
  */
 public class TrueDagPrecisionArrow implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

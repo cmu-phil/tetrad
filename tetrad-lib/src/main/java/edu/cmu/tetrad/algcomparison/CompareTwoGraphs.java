@@ -85,11 +85,11 @@ public class CompareTwoGraphs {
                 if (printStars) {
                     boolean directedInGraph1 = false;
 
-                    if (Edges.isDirectedEdge(edge) && trueGraph.paths().existsSemidirectedPath(node1, node2)) {
+                    if (Edges.isDirectedEdge(edge) && trueGraph.paths().existsSemiDirectedPath(node1, node2)) {
                         directedInGraph1 = true;
                     } else if ((Edges.isUndirectedEdge(edge) || Edges.isBidirectedEdge(edge))
-                            && (trueGraph.paths().existsSemidirectedPath(node1, node2)
-                            || trueGraph.paths().existsSemidirectedPath(node2, node1))) {
+                            && (trueGraph.paths().existsSemiDirectedPath(node1, node2)
+                            || trueGraph.paths().existsSemiDirectedPath(node2, node1))) {
                         directedInGraph1 = true;
                     }
 

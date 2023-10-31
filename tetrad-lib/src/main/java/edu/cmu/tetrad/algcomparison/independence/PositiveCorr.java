@@ -16,7 +16,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class PositiveCorr implements IndependenceWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private double alpha = 0.001;
 
     @Override

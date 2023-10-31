@@ -41,7 +41,7 @@ import java.io.ObjectInputStream;
  * @author Frank Wimberly adapted for EM Bayes estimator and structural EM Bayes search
  */
 public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Can be null.

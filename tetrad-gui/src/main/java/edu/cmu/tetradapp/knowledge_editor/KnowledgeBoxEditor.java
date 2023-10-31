@@ -691,7 +691,7 @@ public class KnowledgeBoxEditor extends JPanel {
                 this.edgeWorkbench.getGraph());
 
         if (!arrangedAll) {
-            LayoutUtil.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.defaultLayout(graph);
         }
 
         this.edgeWorkbench.setGraph(graph);
@@ -726,7 +726,6 @@ public class KnowledgeBoxEditor extends JPanel {
     private void setShowRequired(boolean showRequired) {
         this.showRequired = showRequired;
     }
-
     private void setShowForbiddenByTiers(boolean showForbiddenByTiers) {
         this.showForbiddenByTiers = showForbiddenByTiers;
     }

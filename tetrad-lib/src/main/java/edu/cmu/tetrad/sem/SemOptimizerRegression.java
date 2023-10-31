@@ -38,7 +38,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class SemOptimizerRegression implements SemOptimizer {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private int numRestarts = 1;
 
     /**

@@ -43,7 +43,7 @@ import java.util.List;
 public class SemEstimatorWrapper implements SessionModel {
     ;//}, Unmarshallable {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Parameters params;
     private final SemPm semPm;
     /**

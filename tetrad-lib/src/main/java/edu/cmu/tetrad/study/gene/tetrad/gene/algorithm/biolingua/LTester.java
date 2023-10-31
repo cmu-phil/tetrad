@@ -24,9 +24,7 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.biolingua;
 import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.*;
 
 /**
- * Class that makes some very simple tests on the classes LtMatrix, Graph, and Biolingua<p>
- * <p>
- * TODO: make it a junit testing class
+ * <p>Class that makes some very simple tests on the classes LtMatrix, Graph, and Biolingua</p>
  *
  * @author Raul Saavedra, rsaavedr@ai.uwf.edu
  */

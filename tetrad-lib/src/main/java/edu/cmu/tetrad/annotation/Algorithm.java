@@ -32,12 +32,28 @@ import java.lang.annotation.*;
 @Documented
 public @interface Algorithm {
 
+    /**
+     * Name of the algorithm.
+     * @return name of the algorithm
+     */
     String name();
 
+    /**
+     * Command of the algorithm.
+     * @return command of the algorithm
+     */
     String command();
 
+    /**
+     * Description of the algorithm.
+     * @return description of the algorithm
+     */
     AlgType algoType();
 
+    /**
+     * Description of the algorithm.
+     * @return description of the algorithm
+     */
     DataType[] dataType() default DataType.All;
 
 }

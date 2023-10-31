@@ -42,7 +42,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public class ShiftDataWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Constructs the wrapper given some data and the params.

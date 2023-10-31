@@ -41,7 +41,7 @@ import java.util.List;
 public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         UsesScoreWrapper, ReturnsBootstrapGraphs {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge;

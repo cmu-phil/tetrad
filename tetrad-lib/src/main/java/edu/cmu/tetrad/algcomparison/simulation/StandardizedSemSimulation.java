@@ -2,10 +2,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.sem.SemIm;
@@ -19,10 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Standardized SEM simulation.
+ *
  * @author josephramsey
  */
 public class StandardizedSemSimulation implements Simulation {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private SemPm pm;
     private StandardizedSemIm standardizedIm;
@@ -69,7 +68,8 @@ public class StandardizedSemSimulation implements Simulation {
             DataSet dataSet = simulate(graph, parameters);
 
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+                double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
+                dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
             }
 
             dataSet.setName("" + (i + 1));

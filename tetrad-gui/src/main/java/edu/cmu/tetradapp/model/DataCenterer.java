@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class DataCenterer extends DataWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
     private DataCenterer(DataWrapper wrapper, Parameters params) {
@@ -49,7 +49,7 @@ public class DataCenterer extends DataWrapper {
 
             DataSet dataSet = (DataSet) model;
 
-            Matrix data2 = DataUtils.centerData(dataSet.getDoubleData());
+            Matrix data2 = DataTransforms.centerData(dataSet.getDoubleData());
             List<Node> list = dataSet.getVariables();
             DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);
             dataSet2.setName(model.getName());

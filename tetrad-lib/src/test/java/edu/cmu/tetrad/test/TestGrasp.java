@@ -33,7 +33,6 @@ import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
-import edu.cmu.tetrad.algcomparison.independence.SemBicDTest;
 import edu.cmu.tetrad.algcomparison.score.GicScores;
 import edu.cmu.tetrad.algcomparison.score.MSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -95,7 +94,7 @@ public final class TestGrasp {
 
 //        new TestGrasp().testMsep();
 
-        new TestGrasp().testJaime();
+        new TestGrasp().testPredictGoodStats();
 
     }
 
@@ -254,9 +253,9 @@ public final class TestGrasp {
 
         Parameters params = new Parameters();
 
-        params.set(Params.NUM_MEASURES, 20);
+        params.set(Params.NUM_MEASURES, 100);
         params.set(Params.NUM_LATENTS, 0);
-        params.set(Params.AVG_DEGREE, 6);
+        params.set(Params.AVG_DEGREE, 10);
 
         params.set(Params.DIFFERENT_GRAPHS, true);
 
@@ -264,16 +263,16 @@ public final class TestGrasp {
         params.set(Params.SAMPLE_SIZE, 1000);
 
         params.set(Params.NUM_RUNS, 1);
-        params.set(Params.PARALLELIZED, false);
+//        params.set(Params.PARALLELIZED, false);
 
-        params.set(Params.ALPHA, 0.05);
-        params.set(Params.PENALTY_DISCOUNT, 1.0, 2.0, 4.0);
-        params.set(Params.POISSON_LAMBDA, 1, 2, 4);
-        params.set(Params.ZS_RISK_BOUND, 0.001, 0.01, 0.05, 0.1);
+//        params.set(Params.ALPHA, 0.05);
+        params.set(Params.PENALTY_DISCOUNT, 4.0);
+//        params.set(Params.POISSON_LAMBDA, 1, 2, 4);
+//        params.set(Params.ZS_RISK_BOUND, 0.001, 0.01, 0.05, 0.1);
 
-        params.set(Params.STABLE_FAS, false, true);
-        params.set(Params.USE_MAX_P_HEURISTIC, false, true);
-        params.set(Params.USE_BES, false, true);
+//        params.set(Params.STABLE_FAS, false, true);
+//        params.set(Params.USE_MAX_P_HEURISTIC, false, true);
+//        params.set(Params.USE_BES, false, true);
 
 //        params.set(Params.GRASP_DEPTH, 3);
 //        params.set(Params.GRASP_SINGULAR_DEPTH, 1);
@@ -287,17 +286,17 @@ public final class TestGrasp {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Pc(new FisherZ()));
-        algorithms.add(new Pc(new SemBicDTest()));
-        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
-        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
-        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
-        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+//        algorithms.add(new Pc(new FisherZ()));
+//        algorithms.add(new Pc(new SemBicDTest()));
+//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+//        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+//        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
         algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
-        algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+//        algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+//        algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
 
         Statistics statistics = new Statistics();
 //        statistics.add(new ParameterColumn(Params.ALPHA));
@@ -306,26 +305,28 @@ public final class TestGrasp {
 //        statistics.add(new ParameterColumn(Params.ZS_RISK_BOUND));
 //        statistics.add(new FractionDependentUnderNull(0.01));
 //        statistics.add(new FractionDependentUnderNull());
-        statistics.add(new PvalueUniformityUnderNull(0.01));
+//        statistics.add(new PvalueUniformityUnderNull(0.01));
 //        statistics.add(new PvalueDistanceToAlpha(0.01));
-        statistics.add(new MarkovAdequacyScore());
-        statistics.add(new BicEst(2));
-//        statistics.add(new AdjacencyPrecision());
+//        statistics.add(new MarkovAdequacyScore());
+//        statistics.add(new BicEst(2));
+        statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
-//        statistics.add(new ArrowheadRecall());
+        statistics.add(new ArrowheadRecall());
 //        statistics.add(new ArrowheadPrecisionCommonEdges());
 //        statistics.add(new ArrowheadRecallCommonEdges());
 //        statistics.add(new StructuralHammingDistance());
 
-        statistics.setWeight("MAS", 1.0);
+        statistics.add(new ElapsedCpuTime());
+
+//        statistics.setWeight("MAS", 1.0);
 
         Comparison comparison = new Comparison();
         comparison.setParallelized(false);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
-        comparison.setSortByUtility(true);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+//        comparison.setSortByUtility(true);
         comparison.setShowAlgorithmIndices(true);
-        comparison.compareFromSimulations("pvalue_comparison", simulations, algorithms, statistics, params);
+        comparison.compareFromSimulations("grasp_boss_timing", simulations, algorithms, statistics, params);
     }
 
     //    @Test
@@ -353,7 +354,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, true);
+        params.set(Params.USE_DATA_ORDER, true);
         params.set(Params.ALLOW_INTERNAL_RANDOMNESS, false);
         params.set(Params.CACHE_SCORES, true);
         params.set(Params.VERBOSE, true);
@@ -533,7 +534,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 0);//1);
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
         params.set(Params.CACHE_SCORES, true);
 
 
@@ -590,7 +591,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, true);
+        params.set(Params.USE_DATA_ORDER, true);
         params.set(Params.ALLOW_INTERNAL_RANDOMNESS, false);
         params.set(Params.CACHE_SCORES, true);
         params.set(Params.VERBOSE, true);
@@ -740,7 +741,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_ORDERED_ALG, true);
 //        params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
         params.set(Params.CACHE_SCORES, true);
 //        params.set(Params.GRASP_ALG, false);
 
@@ -806,7 +807,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
         params.set(Params.GRASP_USE_VP_SCORING, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
 
         params.set(Params.GRASP_ALG, false);
 
@@ -1038,7 +1039,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 0, 1);
         params.set(Params.GRASP_ORDERED_ALG, false);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
         params.set(Params.CACHE_SCORES, true);
 
         Algorithms algorithms = new Algorithms();
@@ -1164,7 +1165,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
         params.set(Params.GRASP_ORDERED_ALG, false);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
         params.set(Params.CACHE_SCORES, true);
 
 
@@ -1959,7 +1960,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.
@@ -2046,7 +2047,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.USE_DATA_ORDER, false);
 
         Statistics statistics = new Statistics();
         statistics.add(new ParameterColumn(Params.NUM_MEASURES));
@@ -2478,7 +2479,7 @@ public final class TestGrasp {
         // Flags
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
         params.set(Params.GRASP_USE_SCORE, true);
-        params.set(Params.GRASP_USE_DATA_ORDER, true);
+        params.set(Params.USE_DATA_ORDER, true);
         params.set(Params.NUM_STARTS, 1);
 
         // default for GIC scores is gic = 4, pd = 1.
@@ -2601,7 +2602,7 @@ public final class TestGrasp {
         // Flags
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
         params.set(Params.GRASP_USE_SCORE, true);
-        params.set(Params.GRASP_USE_DATA_ORDER, true);
+        params.set(Params.USE_DATA_ORDER, true);
         params.set(Params.NUM_STARTS, 1);
 
         // default for GIC scores is gic = 4, pd = 1.
@@ -2661,7 +2662,7 @@ public final class TestGrasp {
             Graph trueGraph = RandomGraph.randomGraph(20, 8, 40,
                     100, 100, 100, false);
 
-            Graph truePag = GraphSearchUtils.dagToPag(trueGraph);
+            Graph truePag = GraphTransforms.dagToPag(trueGraph);
 
             trueGraphMap.put(i, new HashMap<>());
             trueGraphs.add(trueGraph);
@@ -3155,7 +3156,7 @@ public final class TestGrasp {
 
                         if (g1.equals(g2)) gsCount++;
                         gsShd += GraphSearchUtils.structuralHammingDistance(
-                                GraphSearchUtils.cpdagForDag(g1), GraphSearchUtils.cpdagForDag(g2));
+                                GraphTransforms.cpdagForDag(g1), GraphTransforms.cpdagForDag(g2));
 
                         for (int i = 0; i < alpha.length; i++) {
 //                            test.setAlpha(alpha[i]);
@@ -3170,7 +3171,7 @@ public final class TestGrasp {
 
                             if (g1.equals(g3)) pearlCounts[i]++;
                             pearlShd[i] += GraphSearchUtils.structuralHammingDistance(
-                                    GraphSearchUtils.cpdagForDag(g1), GraphSearchUtils.cpdagForDag(g3));
+                                    GraphTransforms.cpdagForDag(g1), GraphTransforms.cpdagForDag(g3));
                         }
                     }
 
@@ -3385,7 +3386,7 @@ public final class TestGrasp {
 //            String path = "/Users/josephramsey/Downloads/sample100genes.csv1.imputed.txt";
             String path = "/Users/josephramsey/Downloads/Arabidopsis_dataset_Wdtf.csv1.impute.txt";
             DataSet data = SimpleDataLoader.loadContinuousData(new File(path), "//", '\"',
-                    "*", true, Delimiter.TAB);
+                    "*", true, Delimiter.TAB, false);
 
             System.out.println(data.getNumColumns());
 

@@ -35,7 +35,7 @@ import java.util.List;
  * @author josephramsey
  */
 public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * Keeps a reference to the dataModel source that has been provided (hopefully either a dataModel model or a
      * graph).

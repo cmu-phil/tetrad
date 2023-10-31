@@ -11,7 +11,7 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  * @author josephramsey
  */
 public class NumAmbiguousTriples implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @author Tyler Gibson
  */
 public class GenerateCompleteGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     public GenerateCompleteGraphWrapper(GraphSource source, Parameters parameters) {

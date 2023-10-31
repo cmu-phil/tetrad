@@ -12,7 +12,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public static boolean existsLatentCommonAncestor(Graph trueGraph, Edge edge) {
         List<Node> nodes = trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode1()));

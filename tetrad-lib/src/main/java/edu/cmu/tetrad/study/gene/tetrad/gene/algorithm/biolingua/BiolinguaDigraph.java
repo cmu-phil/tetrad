@@ -27,7 +27,7 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.OutputGraph;
 import java.io.IOException;
 
 /**
- * Implements a digraph to be used by the Biolingua algorithm.<p>
+ * <p>Implements a digraph to be used by the Biolingua algorithm.</p>
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
@@ -37,6 +37,9 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     /**
      * Creates a BiolinguaDigraph with name <code>gName</code> and
      * <code>n</code> nodes
+     *
+     * @param gName the name of the graph
+     * @param n     the number of nodes
      */
     public BiolinguaDigraph(String gName, int n) {
         super(gName, n);
@@ -44,14 +47,18 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
 
     /**
      * Creates a BiolinguaDigraph reading it from file <code>fname</code>.
+     *
+     * @param fname the name of the file to read the graph from.
+     * @throws IOException if an error occurs while reading the file.
      */
-    public BiolinguaDigraph(String fname)
-            throws IOException {
+    public BiolinguaDigraph(String fname) throws IOException {
         super(fname);
     }
 
     /**
      * Copy constructor.
+     *
+     * @param digraph the graph to copy.
      */
     public BiolinguaDigraph(BiolinguaDigraph digraph) {
         this("Clone_of_[" + digraph + "]", digraph.nNodes);
@@ -65,6 +72,8 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
 
     /**
      * Returns a clone of this graph
+     *
+     * @return a clone of this graph
      */
     public Object clone() {
         BiolinguaDigraph g2 = new BiolinguaDigraph(
@@ -79,7 +88,10 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     }
 
     /**
-     * Returns true if node p is parent of node c.<p>
+     * Returns true if node p is parent of node c.
+     *
+     * @param p the parent node
+     * @param c the child node
      */
     public boolean isParent(int p, int c) {
         return (this.getEdges().getDoubleValue(p, c) != 0.0);
@@ -87,6 +99,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
 
     /**
      * Returns a string with the indexes of all parents of node i separated by spaces (useful for printouts)
+     * @param i the node whose parents are requested
      */
     public String strOfParents(int i) {
         int[] ap = this.getParents(i);
@@ -101,6 +114,8 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
 
     /**
      * Returns null (no lag information is stored in a BiolinguaDigraph).
+     * @param i the node whose parents are requested
+     * @return null (no lag information is stored in a BiolinguaDigraph).
      */
     public int[] getLags(int i) {
         return null;
@@ -109,6 +124,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     /**
      * Returns a specially formatted string with all the contents of this Graph. Actually this string is compliant with
      * the same format expected when reading the graph from a file.
+     * @return a specially formatted string with all the contents of this Graph.
      */
     public String toString() {
         String s = this.getClass().getName() + " " + this.graphName + "\n" +

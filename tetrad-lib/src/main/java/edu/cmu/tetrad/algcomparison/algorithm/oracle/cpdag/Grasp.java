@@ -39,7 +39,7 @@ import java.util.List;
 @Bootstrapping
 public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
         HasKnowledge, ReturnsBootstrapGraphs {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
@@ -80,7 +80,7 @@ public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             grasp.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             grasp.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             grasp.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
-            grasp.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
+            grasp.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
             grasp.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
             grasp.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -130,7 +130,7 @@ public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         params.add(Params.GRASP_NONSINGULAR_DEPTH);
         params.add(Params.GRASP_ORDERED_ALG);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
-        params.add(Params.GRASP_USE_DATA_ORDER);
+        params.add(Params.USE_DATA_ORDER);
         params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);

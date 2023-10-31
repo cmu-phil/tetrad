@@ -43,7 +43,7 @@ import java.util.*;
 public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         DoNotAddOldModel, SimulationParamsSource, MultipleDataSource {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * Maps columns to discretization specs so that user's work is not forgotten from one editing of the same data set
      * to the next.

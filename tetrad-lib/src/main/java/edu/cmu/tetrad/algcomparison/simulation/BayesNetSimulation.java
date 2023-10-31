@@ -7,8 +7,8 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
@@ -19,11 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Bayes net simulation.
+ *
  * @author josephramsey
  */
 public class BayesNetSimulation implements Simulation {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private BayesPm pm;
     private BayesIm im;
@@ -31,15 +33,30 @@ public class BayesNetSimulation implements Simulation {
     private List<Graph> graphs = new ArrayList<>();
     private List<BayesIm> ims = new ArrayList<>();
 
+    /**
+     * Constructs a new BayesNetSimulation.
+     *
+     * @param graph The graph.
+     */
     public BayesNetSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
+    /**
+     * Constructs a new BayesNetSimulation.
+     *
+     * @param pm The Bayes PM.
+     */
     public BayesNetSimulation(BayesPm pm) {
         this.randomGraph = new SingleGraph(pm.getDag());
         this.pm = pm;
     }
 
+    /**
+     * Constructs a new BayesNetSimulation.
+     *
+     * @param im The Bayes IM.
+     */
     public BayesNetSimulation(BayesIm im) {
         this.randomGraph = new SingleGraph(im.getDag());
         this.im = im;
@@ -48,6 +65,12 @@ public class BayesNetSimulation implements Simulation {
         this.ims.add(im);
     }
 
+    /**
+     * Creates the data.
+     *
+     * @param parameters The parameters to use in the simulation.
+     * @param newModel   If true, a new model is created. If false, the model is reused.
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -72,11 +95,12 @@ public class BayesNetSimulation implements Simulation {
             DataSet dataSet = simulate(graph, parameters);
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.shuffleColumns(dataSet);
+                dataSet = DataTransforms.shuffleColumns(dataSet);
             }
 
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+                double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
+                dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
             }
 
             dataSet.setName("" + (i + 1));
@@ -84,11 +108,23 @@ public class BayesNetSimulation implements Simulation {
         }
     }
 
+    /**
+     * Returns the simulated data set.
+     *
+     * @param index The index of the desired simulated data set.
+     * @return Ibid.
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /**
+     * Returns the true graph.
+     *
+     * @param index The index of the desired true graph.
+     * @return Ibid.
+     */
     @Override
     public Graph getTrueGraph(int index) {
         if (this.graphs.isEmpty()) {
@@ -98,11 +134,21 @@ public class BayesNetSimulation implements Simulation {
         }
     }
 
+    /**
+     * Returns the description.
+     *
+     * @return Ibid.
+     */
     @Override
     public String getDescription() {
         return "Bayes net simulation using " + this.randomGraph.getDescription();
     }
 
+    /**
+     * Returns the parameters.
+     *
+     * @return Ibid.
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -130,16 +176,33 @@ public class BayesNetSimulation implements Simulation {
         return parameters;
     }
 
+    /**
+     * Returns the number of data sets.
+     *
+     * @return Ibid.
+     */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /**
+     * Returns the data type.
+     *
+     * @return Ibid.
+     */
     @Override
     public DataType getDataType() {
         return DataType.Discrete;
     }
 
+    /**
+     * Simulates a dataset.
+     *
+     * @param graph      The graph.
+     * @param parameters The parameters.
+     * @return Ibid.
+     */
     private DataSet simulate(Graph graph, Parameters parameters) {
         boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
 
@@ -168,6 +231,10 @@ public class BayesNetSimulation implements Simulation {
         }
     }
 
+    /**
+     * Returns the list of Bayes IMs.
+     * @return Ibid.
+     */
     public List<BayesIm> getBayesIms() {
         return this.ims;
     }

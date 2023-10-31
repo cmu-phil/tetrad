@@ -324,6 +324,11 @@ public final class IndTestHsic implements IndependenceTest {
         evalCdf /= this.perms;
         this.pValue = 1.0 - evalCdf;
 
+        if (Double.isNaN(this.pValue)) {
+            throw new RuntimeException("Undefined p-value encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, _z));
+        }
+
         // reject if pvalue <= alpha
         boolean independent = this.pValue <= this.alpha;
 

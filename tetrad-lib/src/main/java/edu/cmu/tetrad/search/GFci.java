@@ -124,29 +124,23 @@ public final class GFci implements IGraphSearch {
         fges.setOut(this.out);
         graph = fges.search();
 
-        Graph fgesGraph = new EdgeListGraph(graph);
+        Knowledge knowledge2 = new Knowledge(knowledge);
+        Graph referenceDag = new EdgeListGraph(graph);
 
+        // GFCI extra edge removal step...
         SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
-        gfciExtraEdgeRemovalStep(graph, fgesGraph, nodes, sepsets);
-        GraphUtils.gfciR0(graph, fgesGraph, sepsets, knowledge);
-
-        if (this.possibleMsepSearchDone) {
-            graph.paths().removeByPossibleMsep(independenceTest, null);
-        }
+        gfciExtraEdgeRemovalStep(graph, referenceDag, nodes, sepsets);
+        GraphUtils.gfciR0(graph, referenceDag, sepsets, knowledge);
 
         FciOrient fciOrient = new FciOrient(sepsets);
-
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(this.knowledge);
+        fciOrient.setVerbose(verbose);
+        fciOrient.setKnowledge(knowledge2);
 
         fciOrient.doFinalOrientation(graph);
-
-        GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
-
         return graph;
     }
 

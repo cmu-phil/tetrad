@@ -28,7 +28,7 @@ import org.apache.commons.math3.linear.RealVector;
  * Vector wrapping matrix library.
  */
 public class Vector implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final RealVector data;
 

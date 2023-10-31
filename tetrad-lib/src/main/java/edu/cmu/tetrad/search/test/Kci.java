@@ -1,9 +1,6 @@
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -82,7 +79,7 @@ public class Kci implements IndependenceTest {
      * @param alpha The alpha value of the test.
      */
     public Kci(DataSet data, double alpha) {
-        this.data = DataUtils.standardizeData(data);
+        this.data = DataTransforms.standardizeData(data);
 //        _data = data.getDoubleData().transpose().toArray();
 
         this.variables = data.getVariables();

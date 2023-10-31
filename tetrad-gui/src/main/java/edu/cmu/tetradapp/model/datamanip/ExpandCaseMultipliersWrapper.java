@@ -33,7 +33,7 @@ import edu.cmu.tetradapp.model.PcRunner;
  * @author Tyler Gibson
  */
 public class ExpandCaseMultipliersWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     public ExpandCaseMultipliersWrapper(DataWrapper data, Parameters params) {

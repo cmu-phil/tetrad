@@ -2,10 +2,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.SemGraph;
@@ -22,10 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * General SEM simulation.
+ *
  * @author josephramsey
  */
 public class GeneralSemSimulation implements Simulation {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final RandomGraph randomGraph;
     private GeneralizedSemPm pm;
     private GeneralizedSemIm im;
@@ -78,7 +77,7 @@ public class GeneralSemSimulation implements Simulation {
             DataSet dataSet = simulate(graph, parameters);
 
             if (parameters.getBoolean(Params.STANDARDIZE)) {
-                dataSet = DataUtils.standardizeData(dataSet);
+                dataSet = DataTransforms.standardizeData(dataSet);
             }
 
             double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
@@ -94,15 +93,16 @@ public class GeneralSemSimulation implements Simulation {
             }
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.shuffleColumns(dataSet);
+                dataSet = DataTransforms.shuffleColumns(dataSet);
             }
 
             if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
-                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+                double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
+                dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
             }
 
             dataSet.setName("" + (i + 1));
-            this.dataSets.add(DataUtils.restrictToMeasured(dataSet));
+            this.dataSets.add(DataTransforms.restrictToMeasured(dataSet));
         }
     }
 

@@ -113,6 +113,12 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         double score = this.cci.isIndependent(x, y, z);
         this.score = score;
         double p = this.cci.getPValue(score);
+
+        if (Double.isNaN(p)) {
+            throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
+
+        }
+
         boolean independent = p > this.alpha;
 
         if (this.verbose) {

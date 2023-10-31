@@ -22,7 +22,7 @@ import java.util.List;
 //)
 public class SemBicScoreDeterministic implements ScoreWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
     @Override

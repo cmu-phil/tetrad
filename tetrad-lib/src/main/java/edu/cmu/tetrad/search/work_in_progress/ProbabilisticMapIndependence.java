@@ -127,6 +127,12 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
     public IndependenceResult checkIndependence(Node x, Node y, Node... z) {
         double pInd = probConstraint(BCInference.OP.independent, x, y, z);
         double p = this.probOp(pInd);
+
+        if (Double.isNaN(p)) {
+            throw new RuntimeException("Undefined p-value encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, GraphUtils.asSet(z)));
+        }
+
         posterior = p;
         boolean independent = p > 0.5;
 

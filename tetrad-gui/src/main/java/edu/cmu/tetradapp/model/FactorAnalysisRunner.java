@@ -37,7 +37,7 @@ import java.util.Vector;
  * @author Michael Freenor
  */
 public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private String output;
 

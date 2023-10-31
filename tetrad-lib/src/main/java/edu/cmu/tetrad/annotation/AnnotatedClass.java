@@ -35,15 +35,28 @@ public class AnnotatedClass<T extends Annotation> implements Serializable {
 
     private final T annotation;
 
+    /**
+     * Creates an annotated class.
+     * @param clazz class
+     * @param annotation annotation
+     */
     public AnnotatedClass(Class clazz, T annotation) {
         this.clazz = clazz;
         this.annotation = annotation;
     }
 
+    /**
+     * Gets the class.
+     * @return class
+     */
     public Class getClazz() {
         return this.clazz;
     }
 
+    /**
+     * Gets the annotation.
+     * @return annotation
+     */
     public T getAnnotation() {
         return this.annotation;
     }

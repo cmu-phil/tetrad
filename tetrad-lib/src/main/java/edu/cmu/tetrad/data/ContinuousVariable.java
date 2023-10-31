@@ -37,11 +37,11 @@ import java.util.Map;
  * @author Willie Wheeler 07/99
  * @author josephramsey modifications 12/00
  */
-public final class ContinuousVariable extends AbstractVariable {
+public final class ContinuousVariable extends AbstractVariable implements Variable {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
-    /**
+/**
      * This is the value which represents missing data in data columns for this variable.
      */
     private static final double MISSING_VALUE = Double.NaN;
@@ -90,7 +90,7 @@ public final class ContinuousVariable extends AbstractVariable {
         this.nodeType = variable.nodeType;
         this.centerX = variable.centerX;
         this.centerY = variable.centerY;
-        this.nodeVariableType = getNodeVariableType();
+        this.nodeVariableType = variable.nodeVariableType;
     }
 
     /**

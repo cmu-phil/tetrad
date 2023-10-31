@@ -23,6 +23,8 @@ package edu.cmu.tetrad.util;
 
 
 /**
+ * Indexed matrix.
+ *
  * @author josephramsey Returns values of the given square matrix, where the indices are remapped via the given indices
  * array. If the supplied matrix is 6 x 6, for example, and the indices set are [5 4 2 1], then getValue(1, 2) will
  * return element [4][2] of the given matrix.

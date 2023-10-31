@@ -41,7 +41,7 @@ import java.util.prefs.Preferences;
  * @author Tyler
  */
 public class DiscretizationWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     /**

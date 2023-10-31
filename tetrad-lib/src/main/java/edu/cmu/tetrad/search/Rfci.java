@@ -40,7 +40,7 @@ import java.util.*;
  * the FCI algorithm. The goal of of the algorithm is to avoid certain expensive steps in the FCI procedure in a correct
  * way. This was introduced here:</p>
  *
- * <p>Colombo, D., Maathuis, M. H., Kalisch, M., & Richardson, T. S. (2012). Learning
+ * <p>Colombo, D., Maathuis, M. H., Kalisch, M., &amp; Richardson, T. S. (2012). Learning
  * high-dimensional directed acyclic graphs with latent and selection variables. The Annals of Statistics, 294-321.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required

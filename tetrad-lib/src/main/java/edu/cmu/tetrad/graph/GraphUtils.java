@@ -36,8 +36,6 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
-
 /**
  * Basic graph utilities.
  *
@@ -665,7 +663,10 @@ public final class GraphUtils {
         Set<Node> set = new HashSet<>();
 
         for (int i : indices) {
-            set.add(nodes.get(i));
+            if (i >= 0 && i < nodes.size()) {
+                set.add(nodes.get(i));
+            }
+//            set.add(nodes.get(i));
         }
 
         return set;
@@ -1511,10 +1512,10 @@ public final class GraphUtils {
             return new EdgeListGraph(graph);
         } else if ("CPDAG".equals(type)) {
             params.set("graphComparisonType", "CPDAG");
-            return GraphSearchUtils.cpdagForDag(graph);
+            return GraphTransforms.cpdagForDag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
-            return dagToPag(graph);
+            return GraphTransforms.dagToPag(graph);
         } else {
             params.set("graphComparisonType", "DAG");
             return new EdgeListGraph(graph);
@@ -1715,7 +1716,7 @@ public final class GraphUtils {
      * Converts a string spec of a graph--for example, "X1--&gt;X2, X1---X3, X2o-&gt;X4, X3&lt;-&gt;X4" to a Graph. The
      * spec consists of a comma separated list of edge specs of the forms just used in the previous sentence.
      * Unconnected nodes may be listed separately--example: "X,Y-&gt;Z". To specify a node as latent, use "Latent()."
-     * Example: "Latent(L1),Y-&gt;L1".
+     * Example: "Latent(L1),Y-&gt;L1."
      */
     public static Graph convert(String spec) {
         Graph graph = new EdgeListGraph();
@@ -1788,6 +1789,7 @@ public final class GraphUtils {
     // Due to Spirtes.
     public static void gfciR0(Graph graph, Graph referenceCpdag, SepsetProducer sepsets, Knowledge knowledge) {
         graph.reorientAllWith(Endpoint.CIRCLE);
+
         fciOrientbk(knowledge, graph, graph.getNodes());
 
         List<Node> nodes = graph.getNodes();
@@ -1942,7 +1944,7 @@ public final class GraphUtils {
         for (Node m : graph.getNodes()) {
             if (!targets.contains(m)) {
                 for (Node n : targets) {
-                    if (graph.paths().existsSemidirectedPath(m, n)) {
+                    if (graph.paths().existsSemiDirectedPath(m, n)) {
                         continue M;
                     }
                 }

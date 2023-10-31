@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author josephramsey
  */
 public final class SepsetMap implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Map<Node, HashSet<Node>> parents = new HashMap<>();
     private Map<Set<Node>, Set<Node>> sepsets = new ConcurrentHashMap<>();
     private Map<Set<Node>, Double> pValues = new ConcurrentHashMap<>();

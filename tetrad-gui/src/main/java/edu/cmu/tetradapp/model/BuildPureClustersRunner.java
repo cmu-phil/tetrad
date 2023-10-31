@@ -51,7 +51,7 @@ import java.util.List;
  */
 public class BuildPureClustersRunner extends AbstractMimRunner
         implements GraphSource, Unmarshallable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * To reidentify variables.
@@ -244,7 +244,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 
         try {
             Graph graph = new MarshalledObject<>(searchGraph).get();
-            LayoutUtil.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.defaultLayout(graph);
             LayoutUtil.fruchtermanReingoldLayout(graph);
             setResultGraph(graph);
             setClusters(MimUtils.convertToClusters(graph, getData().getVariables()));

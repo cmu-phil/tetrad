@@ -39,7 +39,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private List<Graph> graphs;
     private String name = "";
 

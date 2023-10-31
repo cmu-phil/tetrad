@@ -83,7 +83,6 @@ public final class BFci implements IGraphSearch {
     private int depth = -1;
     private boolean doDiscriminatingPathRule = true;
     private boolean bossUseBes = false;
-    private boolean allowInternalRandomness = false;
 
 
     /**
@@ -119,13 +118,11 @@ public final class BFci implements IGraphSearch {
         Boss subAlg = new Boss(this.score);
         subAlg.setUseBes(bossUseBes);
         subAlg.setNumStarts(this.numStarts);
-        subAlg.setAllowInternalRandomness(this.allowInternalRandomness);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
 
         Graph graph = alg.search();
 
-        Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(graph);
 
         // GFCI extra edge removal step...
@@ -139,7 +136,7 @@ public final class BFci implements IGraphSearch {
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge2);
+        fciOrient.setKnowledge(knowledge);
 
         fciOrient.doFinalOrientation(graph);
 
@@ -214,7 +211,4 @@ public final class BFci implements IGraphSearch {
         this.bossUseBes = useBes;
     }
 
-    public void setAllowInternalRandomness(boolean allowInternalRandomness) {
-        this.allowInternalRandomness = allowInternalRandomness;
-    }
 }

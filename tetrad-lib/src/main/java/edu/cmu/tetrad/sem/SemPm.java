@@ -43,7 +43,7 @@ import java.util.*;
  * @author josephramsey
  */
 public final class SemPm implements Pm, TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The structural model graph that this sem parametric model is based on.

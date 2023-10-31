@@ -13,7 +13,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -36,7 +36,7 @@ import java.util.List;
 @Bootstrapping
 public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
@@ -124,7 +124,8 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphSearchUtils.cpdagForDag(new EdgeListGraph(graph));
+        Graph dag = new EdgeListGraph(graph);
+        return GraphTransforms.cpdagForDag(dag);
     }
 
     @Override

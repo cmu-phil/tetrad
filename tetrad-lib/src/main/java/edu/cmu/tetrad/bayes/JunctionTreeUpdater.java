@@ -32,7 +32,7 @@ import java.util.List;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * The BayesIm which this updater modifies.
      *

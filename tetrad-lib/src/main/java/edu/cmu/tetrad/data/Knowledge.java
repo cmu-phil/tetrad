@@ -51,12 +51,12 @@ public final class Knowledge implements TetradSerializable {
 
     private static final long serialVersionUID = 23L;
 
-//    private static final Pattern VARNAME_PATTERN = Pattern.compile("[A-Za-z0-9:_\\-.]+");
+    //    private static final Pattern VARNAME_PATTERN = Pattern.compile("[A-Za-z0-9:_\\-.]+");
 //    private static final Pattern SPEC_PATTERN = Pattern.compile("[A-Za-z0-9:-_,\\-.*]+");
     private static final Pattern COMMAN_DELIM = Pattern.compile(",");
     private final Set<String> variables;
-    private final List<OrderedPair<Set<String>>> forbiddenRulesSpecs;
-    private final List<OrderedPair<Set<String>>> requiredRulesSpecs;
+    private final Set<OrderedPair<Set<String>>> forbiddenRulesSpecs;
+    private final Set<OrderedPair<Set<String>>> requiredRulesSpecs;
     private final List<Set<String>> tierSpecs;
     // Legacy.
     private final List<KnowledgeGroup> knowledgeGroups;
@@ -65,8 +65,8 @@ public final class Knowledge implements TetradSerializable {
 
     public Knowledge() {
         this.variables = new HashSet<>();
-        this.forbiddenRulesSpecs = new ArrayList<>();
-        this.requiredRulesSpecs = new ArrayList<>();
+        this.forbiddenRulesSpecs = new HashSet<>();
+        this.requiredRulesSpecs = new HashSet<>();
         this.tierSpecs = new ArrayList<>();
         this.knowledgeGroups = new LinkedList<>();
         this.knowledgeGroupRules = new HashMap<>();
@@ -160,10 +160,6 @@ public final class Knowledge implements TetradSerializable {
     private void ensureTiers(int tier) {
         for (int i = this.tierSpecs.size(); i <= tier; i++) {
             this.tierSpecs.add(new HashSet<>());
-
-//            for (int j = 0; j < i; j++) {
-//                this.forbiddenRulesSpecs.add(new OrderedPair<>(this.tierSpecs.get(i), this.tierSpecs.get(j)));
-//            }
         }
     }
 
@@ -212,6 +208,7 @@ public final class Knowledge implements TetradSerializable {
         if (tier < 0) {
             throw new IllegalArgumentException();
         }
+
         if (spec == null) {
             throw new NullPointerException();
         }
@@ -222,14 +219,14 @@ public final class Knowledge implements TetradSerializable {
 
         Set<String> extent = getExtent(spec);
 
-        for (String var : extent) {
-            for (int i = 0; i < tierSpecs.size(); i++) {
-                if (i == tier) {
-                    this.tierSpecs.get(i).add(var);
-                } else {
-                    this.tierSpecs.get(i).remove(var);
-                }
+        for (Set<String> tierSpec : tierSpecs) {
+            for (String var : extent) {
+                tierSpec.remove(var);
             }
+        }
+
+        for (String var : extent) {
+            tierSpecs.get(tier).add(var);
         }
     }
 
@@ -260,6 +257,8 @@ public final class Knowledge implements TetradSerializable {
      * interface.
      */
     public void addKnowledgeGroup(KnowledgeGroup group) {
+        if (group == null) throw new NullPointerException("Knowledge group is null.");
+
         this.knowledgeGroups.add(group);
 
         OrderedPair<Set<String>> o = getGroupRule(group);
@@ -290,15 +289,8 @@ public final class Knowledge implements TetradSerializable {
      * Iterator over the KnowledgeEdge's representing forbidden edges.
      */
     public Iterator<KnowledgeEdge> forbiddenEdgesIterator() {
-        Set<KnowledgeEdge> edges = new HashSet<>();
-
-        this.forbiddenRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
-            if (!s1.equals(s2)) {
-                edges.add(new KnowledgeEdge(s1, s2));
-            }
-        })));
-
-        return edges.iterator();
+        List<KnowledgeEdge> forbiddenEdges = getListOfForbiddenEdges();
+        return forbiddenEdges.iterator();
     }
 
     /**
@@ -377,10 +369,6 @@ public final class Knowledge implements TetradSerializable {
      * Determines whether the edge var1 --&gt; var2 is forbidden.
      */
     public boolean isForbidden(String var1, String var2) {
-        if (isRequired(var1, var2)) {
-            return false;
-        }
-
         return isForbiddenByRules(var1, var2) || isForbiddenByTiers(var1, var2);
     }
 
@@ -546,7 +534,9 @@ public final class Knowledge implements TetradSerializable {
         Set<String> f1 = getExtent(var1);
         Set<String> f2 = getExtent(var2);
 
-        this.forbiddenRulesSpecs.add(new OrderedPair<>(f1, f2));
+        OrderedPair<Set<String>> o = new OrderedPair<>(f1, f2);
+
+        this.forbiddenRulesSpecs.add(o);
     }
 
     /**
@@ -566,6 +556,8 @@ public final class Knowledge implements TetradSerializable {
      * Marks the edge var1 --&gt; var2 as required.
      */
     public void setRequired(String var1, String var2) {
+        if (isRequired(var1, var1)) return;
+
         addVariable(var1);
         addVariable(var2);
 
@@ -586,7 +578,9 @@ public final class Knowledge implements TetradSerializable {
             }
         });
 
-        this.requiredRulesSpecs.add(new OrderedPair<>(f1, f2));
+        OrderedPair<Set<String>> o = new OrderedPair<>(f1, f2);
+
+        this.requiredRulesSpecs.add(o);
     }
 
     /**
@@ -611,6 +605,8 @@ public final class Knowledge implements TetradSerializable {
 
         this.forbiddenRulesSpecs.remove(old);
         this.requiredRulesSpecs.remove(old);
+
+        knowledgeGroupRules.put(group, o);
 
         if (group.getType() == KnowledgeGroup.FORBIDDEN) {
             this.forbiddenRulesSpecs.add(o);
@@ -641,10 +637,12 @@ public final class Knowledge implements TetradSerializable {
         ensureTiers(tier);
         Set<String> varsInTier = this.tierSpecs.get(tier);
 
+        OrderedPair<Set<String>> o = new OrderedPair<>(varsInTier, varsInTier);
+
         if (forbidden) {
-            this.forbiddenRulesSpecs.add(new OrderedPair<>(varsInTier, varsInTier));
+            this.forbiddenRulesSpecs.add(o);
         } else {
-            this.forbiddenRulesSpecs.remove(new OrderedPair<>(varsInTier, varsInTier));
+            this.forbiddenRulesSpecs.remove(o);
         }
     }
 
@@ -705,9 +703,35 @@ public final class Knowledge implements TetradSerializable {
     public List<KnowledgeEdge> getListOfForbiddenEdges() {
         Set<KnowledgeEdge> edges = new HashSet<>();
 
-        this.forbiddenRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
-            if (!e1.equals(e2)) {
-                edges.add(new KnowledgeEdge(e1, e2));
+        for (int i = 0; i < tierSpecs.size(); i++) {
+            if (isTierForbiddenWithin(i)) {
+                Set<String> tier = tierSpecs.get(i);
+                for (String x : tier) {
+                    for (String y : tier) {
+                        if (!x.equals(y)) {
+                            edges.add(new KnowledgeEdge(x, y));
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int i = this.tierSpecs.size() - 1; i >= 0; i--) {
+            for (int j = i; j >= 0; j--) {
+                Set<String> tieri = this.tierSpecs.get(i);
+                Set<String> tierj = this.tierSpecs.get(j);
+
+                for (String x : tieri) {
+                    for (String y : tierj) {
+                        edges.add(new KnowledgeEdge(x, y));
+                    }
+                }
+            }
+        }
+
+        this.forbiddenRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
+            if (!s1.equals(s2)) {
+                edges.add(new KnowledgeEdge(s1, s2));
             }
         })));
 
@@ -759,10 +783,12 @@ public final class Knowledge implements TetradSerializable {
 
         for (int tierN = tier + 2; tierN < this.tierSpecs.size(); tierN++) {
             Set<String> varsInTierN = this.tierSpecs.get(tierN);
+            OrderedPair<Set<String>> o = new OrderedPair<>(varsInTier, varsInTierN);
+
             if (onlyCausesNext) {
-                this.forbiddenRulesSpecs.add(new OrderedPair<>(varsInTier, varsInTierN));
+                this.forbiddenRulesSpecs.add(o);
             } else {
-                this.forbiddenRulesSpecs.remove(new OrderedPair<>(varsInTier, varsInTierN));
+                this.forbiddenRulesSpecs.remove(o);
             }
         }
     }

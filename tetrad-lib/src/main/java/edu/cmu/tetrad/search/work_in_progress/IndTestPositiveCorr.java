@@ -177,6 +177,11 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
         double pValue = getPValue();
 
+        if (Double.isNaN(pValue)) {
+            throw new RuntimeException("Undefined p-value encountered when testing " +
+                    LogUtilsSearch.independenceFact(x0, y0, _z0));
+        }
+
         return new IndependenceResult(new IndependenceFact(x0, y0, _z0), !possibleEdge, pValue, alpha - pValue);
     }
 

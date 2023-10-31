@@ -1689,13 +1689,13 @@ public class ProbUtils {
     }
 
     /**
-     * Bivariate normal CDF. Adapted from statlib, file general/gaut.c, by Ajay Shah. Adaptation for Java found in
-     * http://www.geocities.com/optionpage/utility.html --November 1st 2003, Ricardo Silva
+     * Bivariate normal CDF. Adapted from statlib, file general/gaut.c, by Ajay Shah. Adaptation for Java found
+     * <a href="http://www.geocities.com/optionpage/utility.html">here</a> --November 1st 2003, Ricardo Silva
      *
      * @param ah upper bound 1
      * @param ak upper bound 1
-     * @param r  correlation
-     * @return Prob(x1 & le ; ah, x2 & le ; ak)
+     * @param r  correlatiohn
+     * @return Prob(x1 &amp; le ; ah, x2 &amp; le ; ak)
      */
 
     public static double biNormalCdf(double ah, double ak, double r) {

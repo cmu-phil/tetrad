@@ -619,7 +619,7 @@ public class TetradLogger {
      * A empty config, where no event is active.
      */
     public static class EmptyConfig implements TetradLoggerConfig {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         private final boolean active;
 

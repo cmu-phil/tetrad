@@ -13,7 +13,7 @@ import static edu.cmu.tetrad.algcomparison.statistic.CommonAncestorTruePositiveB
  * @author josephramsey
  */
 public class CommonAncestorFalsePositiveBidirected implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
