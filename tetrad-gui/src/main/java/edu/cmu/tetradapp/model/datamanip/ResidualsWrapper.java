@@ -35,7 +35,7 @@ import edu.cmu.tetradapp.model.*;
  * @author Tyler
  */
 public class ResidualsWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Constructs a new time series dataset.

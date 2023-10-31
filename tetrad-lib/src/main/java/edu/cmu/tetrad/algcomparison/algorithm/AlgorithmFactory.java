@@ -37,6 +37,16 @@ public class AlgorithmFactory {
     private AlgorithmFactory() {
     }
 
+    /**
+     * Creates an algorithm.
+     *
+     * @param algoClass algorithm class
+     * @param test      independence test
+     * @param score     score
+     * @return algorithm
+     * @throws IllegalAccessException Reflection exception
+     * @throws InstantiationException Reflection exception
+     */
     public static Algorithm create(Class<? extends Algorithm> algoClass, IndependenceWrapper test, ScoreWrapper score)
             throws IllegalAccessException, InstantiationException {
         if (algoClass == null) {
@@ -65,6 +75,16 @@ public class AlgorithmFactory {
         return algorithm;
     }
 
+    /**
+     * Creates an algorithm.
+     * @param algoClass algorithm class
+     * @param test independence test
+     * @param score score
+     * @param externalGraph external graph
+     * @return algorithm
+     * @throws IllegalAccessException Reflection exception
+     * @throws InstantiationException Reflection exception
+     */
     public static Algorithm create(Class<? extends Algorithm> algoClass, IndependenceWrapper test, ScoreWrapper score, Graph externalGraph)
             throws IllegalAccessException, InstantiationException {
         Algorithm algorithm = AlgorithmFactory.create(algoClass, test, score);
@@ -75,6 +95,16 @@ public class AlgorithmFactory {
         return algorithm;
     }
 
+    /**
+     * Creates an algorithm.
+     *
+     * @param algoClass    algorithm class
+     * @param indTestClass independence test class
+     * @param scoreClass   score class
+     * @return algorithm
+     * @throws IllegalAccessException Reflection exception
+     * @throws InstantiationException Reflection exception
+     */
     public static Algorithm create(Class<? extends Algorithm> algoClass, Class<? extends IndependenceWrapper> indTestClass, Class<? extends ScoreWrapper> scoreClass)
             throws IllegalAccessException, InstantiationException {
         if (algoClass == null) {
@@ -87,6 +117,16 @@ public class AlgorithmFactory {
         return AlgorithmFactory.create(algoClass, test, score);
     }
 
+    /**
+     * Creates an algorithm.
+     * @param algoClass algorithm class
+     * @param indTestClass independence test class
+     * @param scoreClass score class
+     * @param externalGraph external graph
+     * @return algorithm
+     * @throws IllegalAccessException Reflection exception
+     * @throws InstantiationException Reflection exception
+     */
     public static Algorithm create(Class<? extends Algorithm> algoClass, Class<? extends IndependenceWrapper> indTestClass, Class<? extends ScoreWrapper> scoreClass, Graph externalGraph)
             throws IllegalAccessException, InstantiationException {
         Algorithm algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);

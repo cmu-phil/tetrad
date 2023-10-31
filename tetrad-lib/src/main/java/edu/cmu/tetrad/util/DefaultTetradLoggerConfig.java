@@ -31,7 +31,7 @@ import java.util.*;
  */
 public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The events that are supported.
@@ -136,7 +136,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
     //================================= Inner class ==================================//
 
     public static class DefaultEvent implements TetradLoggerConfig.Event {
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         private final String id;
         private final String description;

@@ -36,7 +36,7 @@ import java.util.*;
  * <p>Checks independence result by listing all tests with those variables, testing each one, and returning the
  * resolution of these test results. The reference is here:</p>
  *
- * <p>Tillman, R., & Spirtes, P. (2011, June). Learning equivalence classes of acyclic models with latent and selection
+ * <p>Tillman, R., &amp; Spirtes, P. (2011, June). Learning equivalence classes of acyclic models with latent and selection
  * variables from multiple datasets with overlapping variables. In Proceedings of the Fourteenth International
  * Conference on Artificial Intelligence and Statistics (pp. 3-15). JMLR Workshop and Conference Proceedings.</p>
  *

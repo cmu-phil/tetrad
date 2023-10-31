@@ -33,7 +33,6 @@ import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -162,7 +161,7 @@ public class TestFci {
         knowledge.addToTier(2, "X3");
 
         checkSearch("Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3",
-                "X1o->X2,X2<-oX3", knowledge);
+                "X1<->X2,X2<->X3", knowledge);
     }
 
     @Test
@@ -202,7 +201,7 @@ public class TestFci {
 //        DagToPag dagToPag = new DagToPag(trueGraph);
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = GraphSearchUtils.dagToPag(trueGraph);
+        Graph truePag = GraphTransforms.dagToPag(trueGraph);
 
         assertEquals(graph, truePag);
     }

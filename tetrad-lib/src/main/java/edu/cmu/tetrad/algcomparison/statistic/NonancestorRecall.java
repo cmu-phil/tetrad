@@ -7,10 +7,12 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
+ * Number of NOT X~~>Y in true graph for which also NOT X~~>Y in estimated graph.
+ *
  * @author josephramsey
  */
 public class NonancestorRecall implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

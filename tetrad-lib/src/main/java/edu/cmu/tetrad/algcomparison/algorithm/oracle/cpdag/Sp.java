@@ -38,7 +38,7 @@ import java.util.List;
 @Bootstrapping
 @Experimental
 public class Sp implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBootstrapGraphs {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();

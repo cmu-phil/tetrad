@@ -43,7 +43,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @see CorrelationMatrix
  */
 public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final ICovarianceMatrix cov;
     private boolean verbose;
     /**

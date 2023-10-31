@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 import static edu.cmu.tetrad.graph.GraphUtils.compatible;
@@ -13,7 +12,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.compatible;
  * @author josephramsey
  */
 public class NumCompatibleDirectedEdgeConfounded implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
@@ -29,7 +28,7 @@ public class NumCompatibleDirectedEdgeConfounded implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         GraphUtils.addPagColoring(estGraph);
 
-        Graph pag = GraphSearchUtils.dagToPag(trueGraph);
+        Graph pag = GraphTransforms.dagToPag(trueGraph);
 
         int tp = 0;
         int fp = 0;

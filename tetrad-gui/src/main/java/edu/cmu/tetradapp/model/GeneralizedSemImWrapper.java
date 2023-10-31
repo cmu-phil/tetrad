@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Can be null.

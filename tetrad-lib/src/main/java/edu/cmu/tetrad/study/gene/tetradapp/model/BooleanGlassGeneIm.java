@@ -42,7 +42,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class BooleanGlassGeneIm implements SessionModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Can be null.

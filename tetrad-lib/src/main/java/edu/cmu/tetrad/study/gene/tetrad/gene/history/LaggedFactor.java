@@ -32,7 +32,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public class LaggedFactor implements Comparable, TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * The number of time steps back for the lagged factor.
      *

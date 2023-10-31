@@ -198,6 +198,11 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         double fisherZ = sqrt(n - 3 - z.size()) * abs(q);
         this.fisherZ = fisherZ;
 
+        if (Double.isNaN(fisherZ)) {
+            throw new RuntimeException("NaN Fisher's Z encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, z));
+        }
+
         boolean independent = fisherZ < this.cutoff;
 
         if (this.verbose) {

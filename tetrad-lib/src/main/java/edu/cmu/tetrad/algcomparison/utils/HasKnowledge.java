@@ -10,12 +10,14 @@ import edu.cmu.tetrad.data.Knowledge;
 public interface HasKnowledge {
 
     /**
+     * Returns a knowledge object.
      * @return a knowledge object.
      */
     Knowledge getKnowledge();
 
     /**
      * Sets a knowledge object.
+     * @param knowledge a knowledge object.
      */
     void setKnowledge(Knowledge knowledge);
 }

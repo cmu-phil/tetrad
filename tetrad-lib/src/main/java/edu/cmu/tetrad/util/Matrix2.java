@@ -36,7 +36,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public class Matrix2 implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final RealMatrix apacheData;
     private int m, n;

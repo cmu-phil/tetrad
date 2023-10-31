@@ -29,7 +29,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author josephramsey
  */
 public class StoredLagGraphParams implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The filename of the stored lag graph.

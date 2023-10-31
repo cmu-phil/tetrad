@@ -36,7 +36,7 @@ import java.util.List;
  * @author josephramsey
  */
 public final class TimeSeriesData implements DataModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial

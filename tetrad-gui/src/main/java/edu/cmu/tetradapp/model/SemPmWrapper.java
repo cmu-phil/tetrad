@@ -44,7 +44,7 @@ import java.util.List;
  */
 public class SemPmWrapper implements SessionModel {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private int numModels = 1;
     private int modelIndex;
     private String modelSourceName;
@@ -167,7 +167,7 @@ public class SemPmWrapper implements SessionModel {
         this(new EdgeListGraph(wrapper.getGraph()));
     }
 
-    public SemPmWrapper(DagInCPDAGWrapper wrapper) {
+    public SemPmWrapper(DagFromCPDAGWrapper wrapper) {
         this(new EdgeListGraph(wrapper.getGraph()));
     }
 

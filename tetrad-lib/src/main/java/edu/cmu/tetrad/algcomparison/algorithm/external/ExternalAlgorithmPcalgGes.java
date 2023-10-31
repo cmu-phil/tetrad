@@ -35,7 +35,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final String extDir;
     private final String shortDescription;
 

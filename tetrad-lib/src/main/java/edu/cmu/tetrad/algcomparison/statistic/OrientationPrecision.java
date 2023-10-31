@@ -10,7 +10,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @author bryanandrews, osephramsey
  */
 public class OrientationPrecision implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

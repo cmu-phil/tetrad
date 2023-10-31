@@ -28,9 +28,16 @@ package edu.pitt.dbmi.algo.bayesian.constraint.inference;
  */
 public class BayesianConstraintInferenceTest {
 
+    /**
+     * Constructor.
+     */
     public BayesianConstraintInferenceTest() {
     }
 
+    /**
+     * Main method.
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
         new BayesianConstraintInferenceTest().testMain();
     }

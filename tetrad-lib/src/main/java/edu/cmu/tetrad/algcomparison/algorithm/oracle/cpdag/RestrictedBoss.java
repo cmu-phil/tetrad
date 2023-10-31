@@ -36,7 +36,7 @@ import java.util.*;
 @Bootstrapping
 public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
         ReturnsBootstrapGraphs {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 

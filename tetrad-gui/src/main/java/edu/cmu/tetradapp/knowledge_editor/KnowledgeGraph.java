@@ -37,7 +37,7 @@ import java.util.*;
  * @author josephramsey
  */
 public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial

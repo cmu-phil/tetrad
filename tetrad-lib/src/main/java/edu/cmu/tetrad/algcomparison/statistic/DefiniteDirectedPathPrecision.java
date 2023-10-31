@@ -1,11 +1,7 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.graph.*;
 
 import java.util.List;
 
@@ -15,7 +11,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class DefiniteDirectedPathPrecision implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
@@ -32,7 +28,7 @@ public class DefiniteDirectedPathPrecision implements Statistic {
         int tp = 0, fp = 0;
 
         List<Node> nodes = trueGraph.getNodes();
-        Graph cpdag = GraphSearchUtils.cpdagForDag(trueGraph);
+        Graph cpdag = GraphTransforms.cpdagForDag(trueGraph);
 
         GraphUtils.addPagColoring(estGraph);
 

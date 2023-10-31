@@ -38,7 +38,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public class ReorderColumnsWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     public ReorderColumnsWrapper(DataWrapper data, Parameters params) {
@@ -59,7 +59,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
             for (DataModel dataModel : dataModelList) {
                 dataSets.add((DataSet) dataModel);
             }
-            newData.addAll((DataUtils.shuffleColumns2(dataSets)));
+            newData.addAll((DataTransforms.shuffleColumns2(dataSets)));
         } else {
 
             for (DataModel dataModel : dataModelList) {

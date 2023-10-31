@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.DagInCpcagIterator;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
@@ -55,7 +54,7 @@ public class TestDagInPatternIterator {
         Dag dag = new Dag(graph);
 
 
-        Graph CPDAG = GraphSearchUtils.cpdagFromDag(graph);
+        Graph CPDAG = GraphTransforms.cpdagForDag(graph);
 
         System.out.println(CPDAG);
 
@@ -176,7 +175,7 @@ public class TestDagInPatternIterator {
         Dag dag1 = new Dag(RandomGraph.randomGraph(nodes1, 0, 3,
                 30, 15, 15, false));
 
-        Graph CPDAG = GraphSearchUtils.cpdagForDag(dag1);
+        Graph CPDAG = GraphTransforms.cpdagForDag(dag1);
         List<Node> nodes = CPDAG.getNodes();
 
         // Make random knowedge.

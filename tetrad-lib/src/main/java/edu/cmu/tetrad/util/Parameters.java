@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  */
 public class Parameters implements TetradSerializable {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private Map<String, Object[]> parameters = new LinkedHashMap<>();
     private Set<String> usedParameters = new LinkedHashSet<>();

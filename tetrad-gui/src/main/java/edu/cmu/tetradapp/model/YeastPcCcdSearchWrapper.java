@@ -70,7 +70,7 @@ public class YeastPcCcdSearchWrapper {
 
         try {
             cds = SimpleDataLoader.loadContinuousData(new File(args[0]), "//", '\"',
-                    "*", true, Delimiter.TAB);
+                    "*", true, Delimiter.TAB, false);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -31,7 +31,7 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.history.SimpleRandomizer;
  */
 public class RandomActiveLagGraph extends ActiveLagGraph
         implements SessionModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private String name;
 

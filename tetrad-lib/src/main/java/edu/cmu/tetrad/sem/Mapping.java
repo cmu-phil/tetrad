@@ -37,7 +37,7 @@ import java.io.ObjectInputStream;
  * @author Joe Ramsey
  */
 public class Mapping implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The SemIm for which this is a mapping.

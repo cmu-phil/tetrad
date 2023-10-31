@@ -11,14 +11,13 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * Jan 29, 2023 3:45:09 PM
@@ -36,7 +35,7 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
     public static final List<String> PAG_SAMPLING_RFCI_PARAMETERS = new LinkedList<>();
     public static final List<String> RFCI_PARAMETERS = new LinkedList<>();
     public static final List<String> PROBABILISTIC_TEST_PARAMETERS = new LinkedList<>();
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     static {
         // algorithm parameters
@@ -81,7 +80,8 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return dagToPag(new EdgeListGraph(graph));
+        Graph trueGraph = new EdgeListGraph(graph);
+        return GraphTransforms.dagToPag(trueGraph);
     }
 
     @Override

@@ -42,7 +42,7 @@ import java.util.*;
 //////////////////////////////////////////////////////////////////////
 
 public final class StoredCellProbsObs implements TetradSerializable, DiscreteProbs {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final List<Node> variables;
     private final int[] parentDims;

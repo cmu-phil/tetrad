@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.RandomUtil;
  * @author josephramsey
  */
 public class Beta implements Distribution {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Ibid.
@@ -52,13 +52,17 @@ public class Beta implements Distribution {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return Ibid.
      */
     public static Beta serializableInstance() {
         return new Beta();
     }
 
     /**
-     * See interface.
+     * Returns the next random.
+     *
+     * @return Ibid.
      */
     public double nextRandom() {
         return RandomUtil.getInstance().nextBeta(this.alpha, this.beta);
@@ -66,6 +70,9 @@ public class Beta implements Distribution {
 
     /**
      * The order of parameters is alpha = 0, beta = 1.
+     *
+     * @param index the index of the parameter.
+     * @param value the value.
      */
     public void setParameter(int index, double value) {
         if (index == 0) {
@@ -79,6 +86,7 @@ public class Beta implements Distribution {
 
     /**
      * The order of parameters is alpha = 0, beta = 1.
+     * @param index the index.
      */
     public double getParameter(int index) {
         if (index == 0) {
@@ -92,6 +100,7 @@ public class Beta implements Distribution {
 
     /**
      * The order of parameters is alpha = 0, beta = 1.
+     * @param index the index.
      */
     public String getParameterName(int index) {
         if (index == 0) {

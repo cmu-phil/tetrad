@@ -108,7 +108,7 @@ class LoadBayesImXmlAction extends AbstractAction {
             }
 
             if (!allSpecified) {
-                LayoutUtil.circleLayout(bayesIm.getBayesPm().getDag());
+                LayoutUtil.defaultLayout(bayesIm.getBayesPm().getDag());
             }
 
             this.bayesImWrapper.setBayesIm(bayesIm);

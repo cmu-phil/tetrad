@@ -8,8 +8,8 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -28,7 +28,7 @@ import java.util.List;
 @Bootstrapping
 public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
@@ -44,7 +44,7 @@ public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstra
             DataSet dataSet = SimpleDataLoader.getContinuousDataSet(dataModel);
             dataSet = dataSet.copy();
 
-            dataSet = DataUtils.standardizeData(dataSet);
+            dataSet = DataTransforms.standardizeData(dataSet);
             double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
 
             if (variance > 0) {
@@ -85,7 +85,8 @@ public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstra
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphSearchUtils.cpdagForDag(new EdgeListGraph(graph));
+        Graph dag = new EdgeListGraph(graph);
+        return GraphTransforms.cpdagForDag(dag);
     }
 
     @Override

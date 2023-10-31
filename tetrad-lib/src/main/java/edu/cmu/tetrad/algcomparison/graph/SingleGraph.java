@@ -12,7 +12,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class SingleGraph implements RandomGraph {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final Graph graph;
 

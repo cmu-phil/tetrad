@@ -18,15 +18,21 @@ import java.util.Vector;
  */
 class ScatterplotPanel extends JPanel {
     private final NumberFormat nf;
+    private final boolean removeZeroPointsPerPlot;
     private ScatterPlot scatterPlot;
     private boolean drawAxes = false;
     private int pointSize = 5;
 
+    public ScatterplotPanel(ScatterPlot ScatterPlot) {
+        this(ScatterPlot, false);
+    }
+
     /**
      * Constructor.
      */
-    public ScatterplotPanel(ScatterPlot ScatterPlot) {
+    public ScatterplotPanel(ScatterPlot ScatterPlot, boolean removeZeroPointsPerPlot) {
         this.scatterPlot = ScatterPlot;
+        this.removeZeroPointsPerPlot = removeZeroPointsPerPlot;
 
         setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
@@ -41,10 +47,10 @@ class ScatterplotPanel extends JPanel {
      * Renders the view.
      */
     public void paintComponent(Graphics graphics) {
-        double xmin = this.scatterPlot.getXmin() - 0.000001;
-        double xmax = this.scatterPlot.getXmax() + 0.000001;
-        double ymin = this.scatterPlot.getYmin() - 0.000001;
-        double ymax = this.scatterPlot.getYmax() + 0.000001;
+        double xmin = this.scatterPlot.getXmin();// - 0.000001;
+        double xmax = this.scatterPlot.getXmax();// + 0.000001;
+        double ymin = this.scatterPlot.getYmin();// - 0.000001;
+        double ymax = this.scatterPlot.getYmax();// + 0.000001;
 
         Graphics2D g = (Graphics2D) graphics;
 
@@ -93,6 +99,12 @@ class ScatterplotPanel extends JPanel {
 
         g.setColor(Color.RED.darker());
         for (Point2D.Double _pt : pts) {
+            if (Double.isNaN(_pt.getX()) || Double.isNaN(_pt.getY())) continue;
+
+            if (removeZeroPointsPerPlot) {
+                if (_pt.getX() == 0 || _pt.getY() == 0) continue;
+            }
+
             x = (int) (((_pt.getX() - xmin) / _xRange) * xRange + xMin);
             y = (int) (((ymax - _pt.getY()) / _yRange) * yRange + yMin);
             g.fillOval(x - pointSize / 2, y - pointSize / 2, pointSize, pointSize);

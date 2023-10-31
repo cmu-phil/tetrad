@@ -38,9 +38,9 @@ import java.util.*;
  * <p>Richardson, T. S. (2013). A discovery algorithm for directed cyclic graphs. arXiv
  * preprint arXiv:1302.3599.</p>
  *
- * <p>See also Chapter 7 of:<p>
+ * <p>See also Chapter 7 of:</p>
  *
- * <p>Glymour, C. N., & Cooper, G. F. (Eds.). (1999). Computation, causation, and
+ * <p>Glymour, C. N., &amp; Cooper, G. F. (Eds.). (1999). Computation, causation, and
  * discovery. Aaai Press.</p>
  *
  * <p>The graph takes continuous data from a cyclic model as input and returns a cyclic

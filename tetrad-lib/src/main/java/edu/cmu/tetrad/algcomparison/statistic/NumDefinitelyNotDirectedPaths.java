@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 /**
  * The bidirected true positives.
@@ -10,7 +9,7 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
  * @author josephramsey
  */
 public class NumDefinitelyNotDirectedPaths implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
@@ -26,7 +25,7 @@ public class NumDefinitelyNotDirectedPaths implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int count = 0;
 
-        Graph cpdag = GraphSearchUtils.cpdagForDag(trueGraph);
+        Graph cpdag = GraphTransforms.cpdagForDag(trueGraph);
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isDirectedEdge(edge)) {

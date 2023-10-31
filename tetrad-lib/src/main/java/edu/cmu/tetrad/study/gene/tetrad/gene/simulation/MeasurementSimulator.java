@@ -53,7 +53,7 @@ import java.util.Arrays;
  * @see TestMeasurementSimulator
  */
 public class MeasurementSimulator implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Parameters parameters;
     private final int numDishes = 1;
 

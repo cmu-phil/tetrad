@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
  */
 public class JunctionTreeAlgorithm implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final TreeNode root;
 
@@ -546,7 +546,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
     private class TreeSeparator implements TetradSerializable {
 
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         private final double[] parentPotentials;
         private final double[] childPotentials;
@@ -600,7 +600,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
 
     private class TreeNode implements TetradSerializable {
 
-        static final long serialVersionUID = 23L;
+        private static final long serialVersionUID = 23L;
 
         /**
          * Distribution over this junction node according to its potentials.

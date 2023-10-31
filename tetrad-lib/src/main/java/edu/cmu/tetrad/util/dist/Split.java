@@ -36,7 +36,7 @@ import java.text.NumberFormat;
  */
 @SuppressWarnings("WeakerAccess")
 public class Split implements Distribution {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial

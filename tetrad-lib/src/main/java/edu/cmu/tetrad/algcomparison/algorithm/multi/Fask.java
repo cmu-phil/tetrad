@@ -40,7 +40,7 @@ import static edu.cmu.tetrad.util.Params.*;
         dataType = DataType.Continuous
 )
 public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Graph externalGraph;

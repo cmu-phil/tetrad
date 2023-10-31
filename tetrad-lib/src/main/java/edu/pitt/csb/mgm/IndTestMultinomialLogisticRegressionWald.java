@@ -244,6 +244,11 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
         independent = p > this.alpha;
 
+        if (Double.isNaN(p)) {
+            throw new RuntimeException("Undefined p-value encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, z));
+        }
+
         this.lastP = p;
 
         if (this.verbose) {
@@ -332,6 +337,12 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
                     p = val;
             }
         }
+
+        if (Double.isNaN(p)) {
+            throw new RuntimeException("Undefined p-value encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, z));
+        }
+
         this.lastP = p;
 
         boolean independent = p > this.alpha;

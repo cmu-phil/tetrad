@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class ConcatenateDatasetsWrapper extends DataWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public ConcatenateDatasetsWrapper(DataWrapper[] data, Parameters params) {
         construct(data);

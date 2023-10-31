@@ -45,7 +45,7 @@ import java.util.*;
  * @author josephramsey
  */
 public final class SemGraph implements Graph {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The underlying graph that stores all the information. This needs to be an EdgeListGraph or something at least

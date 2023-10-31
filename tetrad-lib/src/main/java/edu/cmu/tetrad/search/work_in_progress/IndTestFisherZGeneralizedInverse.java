@@ -27,7 +27,7 @@ import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -95,7 +95,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 
         this.dataSet = dataSet;
 
-        this.data = new DenseDoubleMatrix2D(DataUtils.center(this.dataSet).getDoubleData().toArray());
+        this.data = new DenseDoubleMatrix2D(DataTransforms.center(this.dataSet).getDoubleData().toArray());
         this.variables = Collections.unmodifiableList(this.dataSet.getVariables());
         setAlpha(alpha);
     }
@@ -203,6 +203,10 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 
         if (this.verbose) {
             TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, getPValue()));
+        }
+
+        if (Double.isNaN(getPValue())) {
+            throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(xVar, yVar, _z));
         }
 
         if (this.verbose) {

@@ -34,8 +34,11 @@ import edu.cmu.tetrad.util.NamingProtocol;
  */
 public abstract class AbstractVariable implements Variable {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
+    /**
+     * The last ID assigned to a variable.
+     */
     public static int LAST_ID;
 
     /**
@@ -94,20 +97,20 @@ public abstract class AbstractVariable implements Variable {
 
     /**
      * Checks to see whether the passed value is an acceptable value for
-     * <tt>this</tt> variable. For <tt>AbstractVariable</tt>, this method always
-     * returns <tt>true</tt>. Subclasses should override
-     * <tt>checkValue()</tt> in order to provide for subclass-specific value
+     * this variable. For AbstractVariable, this method always
+     * returns true. Subclasses should override
+     * checkValue() in order to provide for subclass-specific value
      * checking. The value should pass the test if it can be converted into an equivalent object of the correct class
      * type (see
-     * <tt>getValueClass()</tt>) for this variable; otherwise, it should fail. In
-     * general, <tt>checkValue()</tt> should not fail a value for simply not being an instance of a particular class.
+     * getValueClass()) for this variable; otherwise, it should fail. In
+     * general, checkValue() should not fail a value for simply not being an instance of a particular class.
      * Since this method is not
-     * <tt>static</tt>, subclasses may (but need not) provide for
+     * static, subclasses may (but need not) provide for
      * instance-specific value checking.
      *
      * @param value a value
-     * @return <tt>true</tt> if the value is an acceptable value for
-     * <tt>this</tt> variable, and <tt>false</tt> otherwise
+     * @return true if the value is an acceptable value for
+     * this variable, and false otherwise
      */
     public boolean checkValue(Object value) {
         return true;
@@ -122,57 +125,57 @@ public abstract class AbstractVariable implements Variable {
 
     public abstract Node like(String name);
 
-    @Override
-    public int compareTo(Node node) {
-        String node1 = getName();
-        String node2 = node.getName();
-
-        boolean isAlpha1 = Node.ALPHA.matcher(node1).matches();
-        boolean isAlpha2 = Node.ALPHA.matcher(node2).matches();
-        boolean isAlphaNum1 = Node.ALPHA_NUM.matcher(node1).matches();
-        boolean isAlphaNum2 = Node.ALPHA_NUM.matcher(node2).matches();
-        boolean isLag1 = Node.LAG.matcher(node1).matches();
-        boolean isLag2 = Node.LAG.matcher(node2).matches();
-
-        if (isAlpha1) {
-            if (isLag2) {
-                return -1;
-            }
-        } else if (isAlphaNum1) {
-            if (isAlphaNum2) {
-                String s1 = node1.replaceAll("\\d+", "");
-                String s2 = node2.replaceAll("\\d+", "");
-                if (s1.equals(s2)) {
-                    String n1 = node1.replaceAll("\\D+", "");
-                    String n2 = node2.replaceAll("\\D+", "");
-
-                    return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
-                } else {
-                    return s1.compareTo(s2);
-                }
-            } else if (isLag2) {
-                return -1;
-            }
-        } else if (isLag1) {
-            if (isAlpha2 || isAlphaNum2) {
-                return 1;
-            } else if (isLag2) {
-                String l1 = node1.replaceAll(":", "");
-                String l2 = node2.replaceAll(":", "");
-                String s1 = l1.replaceAll("\\d+", "");
-                String s2 = l2.replaceAll("\\d+", "");
-                if (s1.equals(s2)) {
-                    String n1 = l1.replaceAll("\\D+", "");
-                    String n2 = l2.replaceAll("\\D+", "");
-
-                    return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
-                } else {
-                    return s1.compareTo(s2);
-                }
-            }
-        }
-
-        return node1.compareTo(node2);
-    }
+//    @Override
+//    public int compareTo(Node node) {
+//        String node1 = getName();
+//        String node2 = node.getName();
+//
+//        boolean isAlpha1 = Node.ALPHA.matcher(node1).matches();
+//        boolean isAlpha2 = Node.ALPHA.matcher(node2).matches();
+//        boolean isAlphaNum1 = Node.ALPHA_NUM.matcher(node1).matches();
+//        boolean isAlphaNum2 = Node.ALPHA_NUM.matcher(node2).matches();
+//        boolean isLag1 = Node.LAG.matcher(node1).matches();
+//        boolean isLag2 = Node.LAG.matcher(node2).matches();
+//
+//        if (isAlpha1) {
+//            if (isLag2) {
+//                return -1;
+//            }
+//        } else if (isAlphaNum1) {
+//            if (isAlphaNum2) {
+//                String s1 = node1.replaceAll("\\d+", "");
+//                String s2 = node2.replaceAll("\\d+", "");
+//                if (s1.equals(s2)) {
+//                    String n1 = node1.replaceAll("\\D+", "");
+//                    String n2 = node2.replaceAll("\\D+", "");
+//
+//                    return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
+//                } else {
+//                    return s1.compareTo(s2);
+//                }
+//            } else if (isLag2) {
+//                return -1;
+//            }
+//        } else if (isLag1) {
+//            if (isAlpha2 || isAlphaNum2) {
+//                return 1;
+//            } else if (isLag2) {
+//                String l1 = node1.replaceAll(":", "");
+//                String l2 = node2.replaceAll(":", "");
+//                String s1 = l1.replaceAll("\\d+", "");
+//                String s2 = l2.replaceAll("\\d+", "");
+//                if (s1.equals(s2)) {
+//                    String n1 = l1.replaceAll("\\D+", "");
+//                    String n2 = l2.replaceAll("\\D+", "");
+//
+//                    return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
+//                } else {
+//                    return s1.compareTo(s2);
+//                }
+//            }
+//        }
+//
+//        return node1.compareTo(node2);
+//    }
 
 }

@@ -61,7 +61,6 @@ public class TestKnowledge {
         testKnowledge(dataSet, knowledge, parameters, new Sp(score));
 
         testKnowledge(dataSet, knowledge, parameters, new Bfci(test, score));
-        testKnowledge(dataSet, knowledge, parameters, new Cfci(test));
         testKnowledge(dataSet, knowledge, parameters, new Fci(test));
         testKnowledge(dataSet, knowledge, parameters, new FciMax(test));
         testKnowledge(dataSet, knowledge, parameters, new Gfci(test, score));

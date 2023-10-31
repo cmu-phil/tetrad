@@ -38,7 +38,7 @@ import java.util.List;
  * @author Choh Man Teng
  */
 public final class Identifiability implements ManipulatingBayesUpdater {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The BayesIm which this updater modifies.

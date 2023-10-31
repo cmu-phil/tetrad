@@ -17,7 +17,7 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
  * @author josephramsey
  */
 public class NumCommonMeasuredAncestorBidirected implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public static boolean existsCommonAncestor(Graph trueGraph, Edge edge) {
         List<Node> nodes = trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode1()));

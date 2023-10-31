@@ -27,7 +27,7 @@ import edu.cmu.tetrad.stat.correlation.RealCovarianceMatrixForkJoin;
  * @author Joseph D. Ramsey
  */
 public class CovariancesDoubleForkJoin {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final int numOfCols;
     private final double[][] covariances;

@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Scanner;
 
 /**
+ * Data tools.
+ *
  * @author YUS24
  */
 public class DataTools {

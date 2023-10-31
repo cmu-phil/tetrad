@@ -43,7 +43,7 @@ import java.text.NumberFormat;
 ///////////////////////////////////////
 
 public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unmarshallable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial

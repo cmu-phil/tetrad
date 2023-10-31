@@ -52,53 +52,75 @@ import java.util.List;
 public interface BayesIm extends VariableSource, Im, Simulator {
 
     /**
+     * Returns the underlying Bayes PM.
+     *
      * @return the underlying Bayes PM.
      */
     BayesPm getBayesPm();
 
     /**
+     * $Description
+     *
      * @return the underlying DAG.
      */
     Graph getDag();
 
     /**
+     * Returns the name of the given node.
+     *
      * @return the number of nodes in the model.
      */
     int getNumNodes();
 
     /**
+     * Returns the name of the given node.
+     *
+     * @param nodeIndex the index of the node.
      * @return the node corresponding to the given node index.
      */
     Node getNode(int nodeIndex);
 
     /**
+     * Returns the name of the given node.
+     *
      * @param name the name of the node.
      * @return the node with the given name in the associated graph.
      */
     Node getNode(String name);
 
     /**
+     * Returns the index of the given node.
+     *
      * @param node the given node.
      * @return the index for that node, or -1 if the node is not in the BayesIm.
      */
     int getNodeIndex(Node node);
 
     /**
+     * Returns the list of variables.
+     *
      * @return the list of variable for this Bayes net.
      */
     List<Node> getVariables();
 
     /**
+     * Returns the list of variable names.
+     *
      * @return the list of variable names for this Bayes net.
      */
     List<String> getVariableNames();
 
     /**
+     * Returns the list of measured variables.
+     *
      * @return the list of measured variableNodes.
      */
     List<Node> getMeasuredNodes();
 
     /**
+     * Returns the number of columns.
+     *
+     * @param nodeIndex the index of the node.
      * @return the number of columns in the table of the given node N with index 'nodeIndex'--that is, the number of
      * possible values that N can take on. That is, if P(N=v0 | P1=v1, P2=v2, ... Pn=vn) is a conditional probability
      * stored in 'probs', then the maximum number of rows in the table for N is #vals(N).
@@ -107,6 +129,9 @@ public interface BayesIm extends VariableSource, Im, Simulator {
     int getNumColumns(int nodeIndex);
 
     /**
+     * Returns the number of rows.
+     *
+     * @param nodeIndex the index of the node.
      * @return the number of rows in the table of the given node, which would be the total number of possible
      * combinations of parent values for a given node. That is, if P(N=v0 | P1=v1, P2=v2, ... Pn=vn) is a conditional
      * probability stored in 'probs', then the maximum number of rows in the table for N is #vals(P1) x #vals(P2) x ...
@@ -117,22 +142,35 @@ public interface BayesIm extends VariableSource, Im, Simulator {
     int getNumRows(int nodeIndex);
 
     /**
+     * Returns the number of parents for the given node.
+     *
      * @param nodeIndex the given node.
      * @return the number of parents of the given node.
      */
     int getNumParents(int nodeIndex);
 
     /**
+     * Returns the ith parent of the givne node.
+     *
+     * @param nodeIndex   the index of the node.
+     * @param parentIndex the index of the parent.
      * @return the given parent of the given node.
      */
     int getParent(int nodeIndex, int parentIndex);
 
     /**
+     * Returns the dimension of the given parent for the given node.
+     *
+     * @param nodeIndex   the index of the node.
+     * @param parentIndex the index of the parent.
      * @return the dimension of the given parent for the given node.
      */
     int getParentDim(int nodeIndex, int parentIndex);
 
     /**
+     * Returns the dimensions of the pararents of the given node.
+     *
+     * @param nodeIndex the index of the node.
      * @return (a defensive copy of) the array representing the dimensionality of each parent of a node, that is, the
      * number of values which that node can take on. The order of entries in this array is the same as the order of
      * entries of nodes returned by getParents() for that node.
@@ -141,6 +179,9 @@ public interface BayesIm extends VariableSource, Im, Simulator {
     int[] getParentDims(int nodeIndex);
 
     /**
+     * Returns the parents of the given node.
+     *
+     * @param nodeIndex the index of the node.
      * @return (a defensive copy of) the array containing all of the parents of a given node in the order in which they
      * are stored internally.
      * @see #getParentDims
@@ -148,6 +189,8 @@ public interface BayesIm extends VariableSource, Im, Simulator {
     int[] getParents(int nodeIndex);
 
     /**
+     * Returns the parents values of the given node.
+     *
      * @param nodeIndex the index of the node.
      * @param rowIndex  the index of the row in question.
      * @return an array containing the combination of parent values for a given node and given row in the probability
@@ -164,11 +207,18 @@ public interface BayesIm extends VariableSource, Im, Simulator {
     int[] getParentValues(int nodeIndex, int rowIndex);
 
     /**
+     * Returns the given parent value.
+     *
+     * @param nodeIndex the index of the node.
+     * @param rowIndex  the index of the row in question.
+     * @param colIndex  the index of the column in question.
      * @return the value in the probability table for the given node, at the given row and column.
      */
     int getParentValue(int nodeIndex, int rowIndex, int colIndex);
 
     /**
+     * Returns the probability for the given cell in the given CPT.
+     *
      * @param nodeIndex the index of the node in question.
      * @param rowIndex  the row in the table for this for node which represents the combination of parent values in
      *                  question.
@@ -184,6 +234,8 @@ public interface BayesIm extends VariableSource, Im, Simulator {
     double getProbability(int nodeIndex, int rowIndex, int colIndex);
 
     /**
+     * Returns a row index.
+     *
      * @return the row in the table at which the given combination of parent values is represented for the given node.
      * The row is calculated as a variable-base place-value number. For instance, if the array of parent dimensions is
      * [3, 5, 7] and the parent value combination is [2, 4, 5], then the row number is (7 * (5 * (3 * 0 + 2) + 4)) + 5 =
@@ -191,6 +243,8 @@ public interface BayesIm extends VariableSource, Im, Simulator {
      * <p>
      * Note: If the node has n values, the length of 'values' must be &gt;= the number of parents. Only the first n
      * values are used.
+     * @param nodeIndex the index of the node in question.
+     * @param values    the combination of parent values in question.
      * @see #getParentValues
      */
     int getRowIndex(int nodeIndex, int[] values);
@@ -202,11 +256,16 @@ public interface BayesIm extends VariableSource, Im, Simulator {
 
     /**
      * Normalizes all rows in the table associated with a given node.
+     *
+     * @param nodeIndex the index of the node in question.
      */
     void normalizeNode(int nodeIndex);
 
     /**
      * Normalizes the given row.
+     *
+     * @param nodeIndex the index of the node in question.
+     * @param rowIndex  the index of the row in question.
      */
     void normalizeRow(int nodeIndex, int rowIndex);
 
@@ -224,8 +283,7 @@ public interface BayesIm extends VariableSource, Im, Simulator {
      * @param value     the desired probability to be set.
      * @see #getProbability
      */
-    void setProbability(int nodeIndex, int rowIndex, int colIndex,
-                        double value);
+    void setProbability(int nodeIndex, int rowIndex, int colIndex, double value);
 
     /**
      * Sets the probability for the given node. The matrix row represent row index, the row in the table for this for
@@ -238,6 +296,10 @@ public interface BayesIm extends VariableSource, Im, Simulator {
     void setProbability(int nodeIndex, double[][] probMatrix);
 
     /**
+     * Returns the index of the given node in the given BayesIm.
+     *
+     * @param otherBayesIm the BayesIm in which the node is to be found.
+     * @param nodeIndex    the index of the node in this BayesIm.
      * @return the index of the node with the given name in the specified BayesIm.
      */
     int getCorrespondingNodeIndex(int nodeIndex, BayesIm otherBayesIm);
@@ -280,11 +342,18 @@ public interface BayesIm extends VariableSource, Im, Simulator {
     void clearTable(int nodeIndex);
 
     /**
+     * Returns true iff the given row in the given node has a Double.NaN value in it.
+     *
+     * @param nodeIndex the node for the table whose incomplete rows are to be checked.
+     * @param rowIndex  the index of the row in question.
      * @return true iff one of the values in the given row is Double.NaN.
      */
     boolean isIncomplete(int nodeIndex, int rowIndex);
 
     /**
+     * Returns true iff the given node has a Double.NaN value in it.
+     *
+     * @param nodeIndex the node for the table whose incomplete rows are to be checked.
      * @return true iff any value in the table for the given node is Double.NaN.
      */
     boolean isIncomplete(int nodeIndex);
@@ -293,33 +362,34 @@ public interface BayesIm extends VariableSource, Im, Simulator {
      * Simulates a sample with the given sample size.
      *
      * @param sampleSize the sample size.
+     * @param latentDataSaved true iff the latent data is to be saved.
      * @return the simulated sample as a DataSet.
      */
     DataSet simulateData(int sampleSize, boolean latentDataSaved);
-
-//    /**
-//     * Simulates a sample with the given sample size.
-//     *
-//     * @param sampleSize the sample size.
-//     * @return the simulated sample as a DataSet.
-//     */
-//    DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved);
 
     /**
      * Overwrites the given dataSet with a new simulated dataSet, to avoid allocating memory. The given dataSet must
      * have the necessary number of columns.
      *
+     * @param dataSet the dataSet to be overwritten.
+     * @param latentDataSaved true iff the latent data is to be saved.
      * @return the simulated sample as a DataSet.
      */
     DataSet simulateData(DataSet dataSet, boolean latentDataSaved);
 
     /**
+     * Returns true iff this Bayes net is equal to the given Bayes net. The sense of equality may vary depending on the
+     * type of Bayes net.
+     *
+     * @param o the Bayes net to be compared to this Bayes net.
      * @return true iff this bayes net is equal to the given Bayes net. The sense of equality may vary depending on the
      * type of Bayes net.
      */
     boolean equals(Object o);
 
     /**
+     * Returns a string representation for this Bayes net.
+     *
      * @return a string representation for this Bayes net.
      */
     String toString();

@@ -37,7 +37,7 @@ import java.util.List;
  * @author josephramsey
  */
 public final class DiscreteDiscretizationSpec implements TetradSerializable, DiscretizationSpec {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * Discrete remapping of categories, for discrete data.

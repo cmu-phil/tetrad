@@ -12,7 +12,7 @@ import edu.cmu.tetrad.graph.Node;
  * @author josephramsey
  */
 public class CommonAncestorTruePositiveBidirected implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public static boolean existsCommonAncestor(Graph trueGraph, Edge edge) {
 

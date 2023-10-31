@@ -48,7 +48,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * literature and can be googled, though we should certainly give this reference for several of them, to which we are
  * indebted:</p>
  *
- * <p>Hyvärinen, A., & Smith, S. M. (2013). Pairwise likelihood ratios for estimation
+ * <p>Hyvärinen, A., &amp; Smith, S. M. (2013). Pairwise likelihood ratios for estimation
  * of non-Gaussian structural equation models. The Journal of Machine Learning Research, 14(1), 111-152.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
@@ -364,7 +364,7 @@ public class Lofs {
     }
 
     private void ruleR1(Graph skeleton, Graph graph, List<Node> nodes) {
-        List<DataSet> centeredData = DataUtils.center(this.dataSets);
+        List<DataSet> centeredData = DataTransforms.center(this.dataSets);
         setDataSets(centeredData);
 
         for (Node node : nodes) {
@@ -442,7 +442,7 @@ public class Lofs {
     }
 
     private void ruleR2(Graph skeleton, Graph graph) {
-        List<DataSet> standardized = DataUtils.standardizeData(this.dataSets);
+        List<DataSet> standardized = DataTransforms.standardizeData(this.dataSets);
         setDataSets(standardized);
 
         Set<Edge> edgeList1 = skeleton.getEdges();
@@ -693,7 +693,7 @@ public class Lofs {
     }
 
     private void ruleR3(Graph graph) {
-        List<DataSet> standardized = DataUtils.standardizeData(this.dataSets);
+        List<DataSet> standardized = DataTransforms.standardizeData(this.dataSets);
         setDataSets(standardized);
 
         Set<Edge> edgeList1 = graph.getEdges();
@@ -789,8 +789,8 @@ public class Lofs {
     }
 
     private Graph entropyBased(Graph graph) {
-        DataSet dataSet = DataUtils.concatenate(this.dataSets);
-        dataSet = DataUtils.standardizeData(dataSet);
+        DataSet dataSet = DataTransforms.concatenate(this.dataSets);
+        dataSet = DataTransforms.standardizeData(dataSet);
         Graph _graph = new EdgeListGraph(graph.getNodes());
 
         for (Edge edge : graph.getEdges()) {
@@ -833,9 +833,9 @@ public class Lofs {
     }
 
     private Graph tanhGraph(Graph graph) {
-        DataSet dataSet = DataUtils.concatenate(this.dataSets);
+        DataSet dataSet = DataTransforms.concatenate(this.dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
-        dataSet = DataUtils.standardizeData(dataSet);
+        dataSet = DataTransforms.standardizeData(dataSet);
         double[][] data = dataSet.getDoubleData().transpose().toArray();
         Graph _graph = new EdgeListGraph(graph.getNodes());
         List<Node> nodes = dataSet.getVariables();
@@ -895,9 +895,9 @@ public class Lofs {
 
     // @param empirical True if the skew signs are estimated empirically.
     private Graph skewGraph(Graph graph, boolean empirical) {
-        DataSet dataSet = DataUtils.concatenate(this.dataSets);
+        DataSet dataSet = DataTransforms.concatenate(this.dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
-        dataSet = DataUtils.standardizeData(dataSet);
+        dataSet = DataTransforms.standardizeData(dataSet);
         double[][] data = dataSet.getDoubleData().transpose().toArray();
         Graph _graph = new EdgeListGraph(graph.getNodes());
         List<Node> nodes = dataSet.getVariables();
@@ -964,9 +964,9 @@ public class Lofs {
     private Graph robustSkewGraph(Graph graph, boolean empirical) {
         // DataUtils.standardizeData(dataSet));
         List<DataSet> _dataSets = new ArrayList<>(this.dataSets);
-        DataSet dataSet = DataUtils.concatenate(_dataSets);
+        DataSet dataSet = DataTransforms.concatenate(_dataSets);
         graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
-        dataSet = DataUtils.standardizeData(dataSet);
+        dataSet = DataTransforms.standardizeData(dataSet);
         double[][] data = dataSet.getDoubleData().transpose().toArray();
         List<Node> nodes = dataSet.getVariables();
         Map<Node, Integer> nodesHash = new HashMap<>();
@@ -1032,9 +1032,9 @@ public class Lofs {
 
     // cutoff is NaN if no thresholding is to be done, otherwise a threshold between 0 and 1.
     private Graph patelTauOrientation(Graph graph, double cutoff) {
-        List<DataSet> centered = DataUtils.center(this.dataSets);
-        DataSet concat = DataUtils.concatenate(centered);
-        DataSet dataSet = DataUtils.standardizeData(concat);
+        List<DataSet> centered = DataTransforms.center(this.dataSets);
+        DataSet concat = DataTransforms.concatenate(centered);
+        DataSet dataSet = DataTransforms.standardizeData(concat);
 
         Graph _graph = new EdgeListGraph(graph.getNodes());
 
@@ -1464,7 +1464,7 @@ public class Lofs {
         } else if (this.score == Lofs.Score.entropy) {
             return maxEntApprox(col);
         } else if (this.score == Lofs.Score.kurtosis) {
-            col = DataUtils.standardizeData(col);
+            col = DataTransforms.standardizeData(col);
             return -abs(kurtosis(col));
         } else if (this.score == Lofs.Score.skew) {
             return abs(skewness(col));
@@ -1577,7 +1577,7 @@ public class Lofs {
         }
 
         if (standardize) {
-            _f = DataUtils.standardizeData(_f);
+            _f = DataTransforms.standardizeData(_f);
         }
 
         return _f;
@@ -1696,7 +1696,7 @@ public class Lofs {
 
     private void resolveEdgeConditional(Graph graph, Node x, Node y) {
         if (this._data == null) {
-            this._data = DataUtils.centerData(this.matrices.get(0));
+            this._data = DataTransforms.centerData(this.matrices.get(0));
         }
         int xIndex = this.dataSets.get(0).getColumn(this.dataSets.get(0).getVariable(x.getName()));
         int yIndex = this.dataSets.get(0).getColumn(this.dataSets.get(0).getVariable(y.getName()));

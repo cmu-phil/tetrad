@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class BayesImWrapper implements SessionModel, Memorable {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private int numModels = 1;
     private int modelIndex;

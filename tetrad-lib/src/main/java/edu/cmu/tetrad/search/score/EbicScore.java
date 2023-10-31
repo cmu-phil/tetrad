@@ -38,7 +38,7 @@ import static org.apache.commons.math3.util.FastMath.log;
 /**
  * <p>Implements the extended BIC (EBIC) score. The reference is here:</p>
  *
- * <p>Chen, J., & Chen, Z. (2008). Extended Bayesian information criteria for
+ * <p>Chen, J., &amp; Chen, Z. (2008). Extended Bayesian information criteria for
  * model selection with large model spaces. Biometrika, 95(3), 759-771.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
@@ -49,7 +49,6 @@ import static org.apache.commons.math3.util.FastMath.log;
 public class EbicScore implements Score {
     private final List<Node> variables;
     private final int sampleSize;
-    private DataSet dataSet;
     private ICovarianceMatrix covariances;
     private double N;
     private Matrix data;
@@ -82,12 +81,10 @@ public class EbicScore implements Score {
             throw new NullPointerException();
         }
 
-        this.dataSet = dataSet;
-
         this.variables = dataSet.getVariables();
         this.sampleSize = dataSet.getNumRows();
 
-        DataSet _dataSet = DataUtils.center(dataSet);
+        DataSet _dataSet = DataTransforms.center(dataSet);
         this.data = _dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
@@ -206,29 +203,7 @@ public class EbicScore implements Score {
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {
-//        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
         this.covariances = covariances;
-
-//        boolean exists = false;
-//
-//        double correlationThreshold = 1.0;
-//        for (int i = 0; i < correlations.getSize(); i++) {
-//            for (int j = 0; j < correlations.getSize(); j++) {
-//                if (i == j) continue;
-//                double r = correlations.getValue(i, j);
-//                if (abs(r) > correlationThreshold) {
-//                    System.out.println("Absolute correlation too high: " + r);
-//                    exists = true;
-//                }
-//            }
-//        }
-//
-//        if (exists) {
-//            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
-//                    + ") in absolute value.");
-//        }
-
-
         this.N = covariances.getSampleSize();
     }
 

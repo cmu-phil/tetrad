@@ -41,7 +41,7 @@ import java.util.Map;
  * used to help determine conditional independence for the mixed continuous/discrete case from this information. The
  * references is as follows:</p>
  *
- * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2019, July). Learning high-dimensional
+ * <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2019, July). Learning high-dimensional
  * directed acyclic graphs with mixed data-types. In The 2019 ACM SIGKDD Workshop on Causal Discovery (pp. 4-21).
  * PMLR.</p>
  *

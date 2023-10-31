@@ -37,7 +37,7 @@ import java.util.List;
  * Degrees of freedom are calculated as in Fienberg (2007), this reference:</p>
  *
  * <p>Fienberg, S. E. (2007). The analysis of cross-classified categorical data.
- * Springer Science & Business Media.</p>
+ * Springer Science &amp; Business Media.</p>
  *
  * @author Frank Wimberly original version
  * @author josephramsey revision 10/01

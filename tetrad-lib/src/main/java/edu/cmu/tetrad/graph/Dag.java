@@ -33,7 +33,7 @@ import java.util.*;
  * @author josephramsey
  */
 public final class Dag implements Graph {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Graph graph;
     private final Set<Triple> underLineTriples = new HashSet<>();
     private final Set<Triple> dottedUnderLineTriples = new HashSet<>();

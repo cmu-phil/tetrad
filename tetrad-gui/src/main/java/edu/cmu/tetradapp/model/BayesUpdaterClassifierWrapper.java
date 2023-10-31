@@ -36,7 +36,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public class BayesUpdaterClassifierWrapper implements SessionModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Cannot be null.

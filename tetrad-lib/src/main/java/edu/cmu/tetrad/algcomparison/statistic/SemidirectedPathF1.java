@@ -13,7 +13,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @author Joseh Ramsey
  */
 public class SemidirectedPathF1 implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

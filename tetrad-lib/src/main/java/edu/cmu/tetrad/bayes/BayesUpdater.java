@@ -39,32 +39,58 @@ public interface BayesUpdater extends TetradSerializable {
     long serialVersionUID = 23L;
 
     /**
+     * Returns the marginal probability of the given variable taking the given value, given the evidence.
+     *
+     * @param variable variable index
+     * @param category category index
      * @return P(variable = value | evidence), where evidence is getEvidence().
      */
     double getMarginal(int variable, int category);
 
     /**
+     * Returns the joint marginal probability of the given variables taking the given values, given the evidence.
+     *
      * @return true if the getJointMarginal() method is supported.
      */
     boolean isJointMarginalSupported();
 
     /**
+     * Returns the joint marginal probability of the given variables taking the given values, given the evidence.
+     *
+     * @param variables variable indices
+     * @param values    category indices
      * @return P(variables[i] = values[i] | evidence), where evidence is getEvidence().
      */
     double getJointMarginal(int[] variables, int[] values);
 
     /**
      * Sets new evidence for the updater. Once this is called, old updating results should not longer be available.
+     *
+     * @param evidence evidence
      */
     void setEvidence(Evidence evidence);
 
     /**
+     * Returns the evidence for the updater.
+     *
      * @return the Bayes instantiated model that is being updated.
      */
     BayesIm getBayesIm();
 
+    /**
+     * Calculates the prior marginal probabilities of the given node.
+     *
+     * @param nodeIndex node index
+     * @return P(node = value), where value is the value of the node in the Bayes net.
+     */
     double[] calculatePriorMarginals(int nodeIndex);
 
+    /**
+     * Calculates the updated marginal probabilities of the given node, given the evidence.
+     *
+     * @param nodeIndex node index
+     * @return P(node = value | evidence), where value is the value of the node in the Bayes net.
+     */
     double[] calculateUpdatedMarginals(int nodeIndex);
 }
 

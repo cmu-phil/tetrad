@@ -39,7 +39,7 @@ import java.util.List;
  * score for mixed discrete/Gaussian data using the conditional Gaussian likelihood function (see). The reference is
  * here:</p>
  *
- * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
+ * <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
  * International journal of data science and analytics, 6, 3-18.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative

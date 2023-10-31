@@ -318,8 +318,8 @@ public final class Cfci implements IGraphSearch {
                 Set<Node> sepset = sepsets.get(x, z);
 
                 if (type == TripleType.COLLIDER || (sepset != null && !sepset.contains(y))) {
-                    if (isArrowheadAllowed(x, y) &&
-                            isArrowheadAllowed(z, y)) {
+                    if (FciOrient.isArrowheadAllowed(x, y, graph, knowledge) &&
+                            FciOrient.isArrowheadAllowed(z, y, graph, knowledge)) {
                         getGraph().setEndpoint(x, y, Endpoint.ARROW);
                         getGraph().setEndpoint(z, y, Endpoint.ARROW);
 
@@ -342,33 +342,6 @@ public final class Cfci implements IGraphSearch {
         if (this.verbose) {
             TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
         }
-    }
-
-    /**
-     * Helper method. Appears to check if an arrowhead is permitted by background knowledge.
-     *
-     * @param x The possible other node.
-     * @param y The possible point node.
-     * @return Whether the arrowhead is allowed.
-     */
-    private boolean isArrowheadAllowed(Node x, Node y) {
-        if (this.graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
-
-        if (this.graph.getEndpoint(x, y) == Endpoint.TAIL) {
-            return false;
-        }
-
-        if (this.graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
-        }
-
-        if (this.graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
-        }
-
-        return this.graph.getEndpoint(y, x) == Endpoint.CIRCLE;
     }
 
     private TripleType getTripleType(Node x, Node y, Node z,

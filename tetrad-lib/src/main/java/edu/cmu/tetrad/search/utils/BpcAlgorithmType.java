@@ -35,7 +35,7 @@ public enum BpcAlgorithmType implements TetradSerializable {
     FIND_ONE_FACTOR_CLUSTERS,
     FIND_TWO_FACTOR_CLUSTERS;
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public static BpcAlgorithmType serializableInstance() {
         return BpcAlgorithmType.BUILD_PURE_CLUSTERS;

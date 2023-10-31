@@ -23,7 +23,7 @@ import java.util.List;
 )
 public class MSeparationScore implements ScoreWrapper {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private Graph graph;
     private DataModel dataSet;
 

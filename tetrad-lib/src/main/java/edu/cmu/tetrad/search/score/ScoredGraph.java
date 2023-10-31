@@ -33,7 +33,7 @@ import org.jetbrains.annotations.NotNull;
  * @author josephramsey
  */
 public class ScoredGraph implements Comparable<ScoredGraph>, TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Graph graph;
     private final Double score;
 

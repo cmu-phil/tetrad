@@ -42,7 +42,7 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
  */
 public class EdgeListGraph implements Graph, TripleClassifier {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * The edges in the graph.
      *

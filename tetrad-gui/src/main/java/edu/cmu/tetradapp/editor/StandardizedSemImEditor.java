@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public final class StandardizedSemImEditor extends JPanel implements LayoutEditable {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The SemIm being edited.

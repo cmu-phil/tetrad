@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.CombinationIterator;
@@ -318,7 +319,13 @@ public final class IndTestUniformScatter implements IndependenceTest {
         int m = (int) pow(numCellsPerTable, 0.5);
 
         double p = getConditionallyIndependentUniformPvalue(data, xIndex, yIndex, _z, m, numCondCategories);
-        return new IndependenceResult(new IndependenceFact(x, y, z), p > alpha, p, alpha - p);
+
+        if (Double.isNaN(p)) {
+            throw new RuntimeException("Undefined p-value encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, z));
+        }
+
+        return new IndependenceResult(new IndependenceFact(x, y, z), p > alpha, p, p);
     }
 
     @Override

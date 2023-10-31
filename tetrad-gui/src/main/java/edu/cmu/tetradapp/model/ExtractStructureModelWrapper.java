@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -35,7 +34,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     public ExtractStructureModelWrapper(GraphSource source, Parameters parameters) {
@@ -80,7 +79,7 @@ public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotA
 
 
     private static Graph getCPDAG(Dag dag) {
-        return GraphSearchUtils.cpdagFromDag(dag);
+        return GraphTransforms.cpdagForDag(dag);
     }
 
     @Override

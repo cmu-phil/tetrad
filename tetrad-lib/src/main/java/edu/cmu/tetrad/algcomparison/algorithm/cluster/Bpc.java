@@ -4,15 +4,11 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.utils.BpcTestType;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -34,7 +30,7 @@ import java.util.List;
 @Bootstrapping
 public class Bpc implements Algorithm, ClusterAlgorithm {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     public Bpc() {
     }
@@ -94,7 +90,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
                 }
 
                 Graph structureGraph = mimbuild.search(partition, latentNames, cov);
-                LayoutUtil.circleLayout(structureGraph);
+                LayoutUtil.defaultLayout(structureGraph);
                 LayoutUtil.fruchtermanReingoldLayout(structureGraph);
 
                 ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
@@ -102,7 +98,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
                 TetradLogger.getInstance().log("details", "Latent covs = \n" + latentsCov);
 
                 Graph fullGraph = mimbuild.getFullGraph();
-                LayoutUtil.circleLayout(fullGraph);
+                LayoutUtil.defaultLayout(fullGraph);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
 
                 return fullGraph;
@@ -123,7 +119,8 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphSearchUtils.cpdagForDag(new EdgeListGraph(graph));
+        Graph dag = new EdgeListGraph(graph);
+        return GraphTransforms.cpdagForDag(dag);
     }
 
     @Override

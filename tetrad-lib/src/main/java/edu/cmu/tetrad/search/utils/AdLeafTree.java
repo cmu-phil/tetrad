@@ -100,6 +100,7 @@ public class AdLeafTree {
      * sets.
      *
      * @param A A list of discrete variables.
+     * @param B A discrete variable.
      * @return The list of index sets of the first variable varied by the second variable, and so on, to the last
      * variable.
      */

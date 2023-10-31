@@ -13,7 +13,7 @@ import org.apache.commons.math3.util.FastMath;
  * @author josephramsey, rubens (November 2016)
  */
 public class TwoCycleFalsePositive implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
+// For information as to what this class does, see the Javadoc, below.       //i
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
 // 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
 // Scheines, Joseph Ramsey, and Clark Glymour.                               //
@@ -131,7 +131,7 @@ public final class GraspFci implements IGraphSearch {
         alg.bestOrder(variables);
         Graph graph = alg.getGraph(true); // Get the DAG
 
-        Knowledge knowledge2 = new Knowledge(knowledge);
+//        Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(graph);
 
         // GFCI extra edge removal step...
@@ -145,7 +145,7 @@ public final class GraspFci implements IGraphSearch {
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(verbose);
-        fciOrient.setKnowledge(knowledge2);
+        fciOrient.setKnowledge(knowledge);
 
         fciOrient.doFinalOrientation(graph);
 

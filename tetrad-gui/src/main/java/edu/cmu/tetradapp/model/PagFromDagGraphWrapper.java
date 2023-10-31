@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -32,7 +32,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @author Tyler Gibson
  */
 public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
 
     public PagFromDagGraphWrapper(GraphSource source, Parameters parameters) {
@@ -47,7 +47,7 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-        Graph pag = GraphSearchUtils.dagToPag(graph);
+        Graph pag = GraphTransforms.dagToPag(graph);
         setGraph(pag);
 
         TetradLogger.getInstance().log("info", "\nGenerating allow_latent_common_causes from DAG.");

@@ -195,6 +195,11 @@ public class IndTestProbabilistic implements IndependenceTest {
 
         double p = pInd;
 
+        if (Double.isNaN(p)) {
+            throw new RuntimeException("Undefined p-value encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, GraphUtils.asSet(z)));
+        }
+
         posterior = p;
 
         boolean ind;

@@ -32,7 +32,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public class ManualLagGraphParams implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The number of variables per individual.

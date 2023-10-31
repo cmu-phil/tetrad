@@ -47,7 +47,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public abstract class AbstractMBSearchRunner extends DataWrapper implements MarkovBlanketSearchRunner {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * The source data model.
      *

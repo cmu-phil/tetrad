@@ -24,7 +24,7 @@ package edu.cmu.tetrad.util.dist;
 import edu.cmu.tetrad.util.RandomUtil;
 
 public class GaussianPower implements Distribution {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final double sd;
     private final String name;

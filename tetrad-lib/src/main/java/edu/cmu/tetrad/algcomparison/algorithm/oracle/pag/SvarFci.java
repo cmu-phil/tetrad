@@ -39,7 +39,7 @@ import java.util.List;
 public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Knowledge knowledge;
     private List<Graph> bootstrapGraphs = new ArrayList<>();

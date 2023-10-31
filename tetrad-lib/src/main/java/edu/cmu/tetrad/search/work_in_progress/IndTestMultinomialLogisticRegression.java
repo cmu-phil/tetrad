@@ -194,6 +194,12 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             double chisq = (ll0 - ll1);
             int df = this.variablesPerNode.get(y).size();
             double p = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(chisq);
+
+            if (Double.isNaN(p)) {
+                throw new RuntimeException("Undefined p-value encountered when testing " +
+                        LogUtilsSearch.independenceFact(x, y, z));
+            }
+
             pValues.add(p);
         }
 
@@ -263,6 +269,11 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
         double p = result.getP()[1];
         this.lastP = p;
+
+        if (Double.isNaN(p)) {
+            throw new RuntimeException("Undefined p-value encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, z));
+        }
 
         boolean indep = p > this.alpha;
 

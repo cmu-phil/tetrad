@@ -32,7 +32,7 @@ import java.io.ObjectInputStream;
  * @author gmli
  */
 public class LaggedEdge implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial

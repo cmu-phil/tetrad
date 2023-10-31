@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
-import org.jetbrains.annotations.NotNull;
 
 import java.beans.PropertyChangeListener;
 import java.util.Map;
@@ -42,89 +41,176 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     long serialVersionUID = 23L;
 
     /**
+     * Returns the name of this node.
+     *
      * @return the name of the node.
      */
     String getName();
 
     /**
      * Sets the name of this node.
+     *
+     * @param name the name of this node.
      */
     void setName(String name);
 
     /**
+     * Returns the node type for this node.
+     *
      * @return the node type for this node.
      */
     NodeType getNodeType();
 
     /**
      * Sets the node type for this node.
+     *
+     * @param nodeType the node type for this node.
      */
     void setNodeType(NodeType nodeType);
 
     /**
+     * Returns the node shape for this node.
+     *
      * @return the intervention type
      */
     NodeVariableType getNodeVariableType();
 
     /**
      * Sets the type (domain, interventional status, interventional value..) for this node variable
+     *
+     * @param nodeVariableType the type (domain, interventional status, interventional value..) for this node variable
      */
     void setNodeVariableType(NodeVariableType nodeVariableType);
 
     /**
+     * Returns the intervention type for this node.
+     *
      * @return a string representation of the node.
      */
     String toString();
 
     /**
+     * Returns the x coordinate of the center of this node.
+     *
      * @return the x coordinate of the center of the node.
      */
     int getCenterX();
 
     /**
      * Sets the x coordinate of the center of this node.
+     *
+     * @param centerX This coordinate.
      */
     void setCenterX(int centerX);
 
     /**
+     * Returns the y coordinate of the center of this node.
+     *
      * @return the y coordinate of the center of the node.
      */
     int getCenterY();
 
     /**
      * Sets the y coordinate of the center of this node.
+     *
+     * @param centerY This coordinate.
      */
     void setCenterY(int centerY);
 
     /**
      * Sets the (x, y) coordinates of the center of this node.
+     *
+     * @param centerX The x coordinate.
+     * @param centerY The y coordinate.
      */
     void setCenter(int centerX, int centerY);
 
     /**
      * Adds a property change listener.
+     *
+     * @param l This listener.
      */
     void addPropertyChangeListener(PropertyChangeListener l);
 
     /**
+     * Removes a property change listener.
+     *
      * @return a hashcode for this variable.
      */
     int hashCode();
 
     /**
+     * Tests whether this variable is equal to the given variable.
+     *
      * @return true iff this variable is equal to the given variable.
      */
     boolean equals(Object o);
 
     /**
      * Creates a new node of the same type as this one with the given name.
+     *
+     * @param name the name of the new node.
+     * @return the new node.
      */
     Node like(String name);
 
     /**
-     * Alphabetical order.
+     * Returns the hashcode for this node.
+     *
+     * @param node the object to be compared.
+     * @return the hashcode for this node.
      */
-    int compareTo(@NotNull Node node);
+    default int compareTo(Node node) {
+        String node1 = getName();
+        String node2 = node.getName();
+
+        boolean isAlpha1 = Node.ALPHA.matcher(node1).matches();
+        boolean isAlpha2 = Node.ALPHA.matcher(node2).matches();
+        boolean isAlphaNum1 = Node.ALPHA_NUM.matcher(node1).matches();
+        boolean isAlphaNum2 = Node.ALPHA_NUM.matcher(node2).matches();
+        boolean isLag1 = Node.LAG.matcher(node1).matches();
+        boolean isLag2 = Node.LAG.matcher(node2).matches();
+
+        if (isAlpha1) {
+            if (isLag2) {
+                return -1;
+            }
+        } else if (isAlphaNum1) {
+            if (isAlphaNum2) {
+                String s1 = node1.replaceAll("\\d+", "");
+                String s2 = node2.replaceAll("\\d+", "");
+                if (s1.equals(s2)) {
+                    String n1 = node1.replaceAll("\\D+", "");
+                    String n2 = node2.replaceAll("\\D+", "");
+
+                    return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
+                } else {
+                    return s1.compareTo(s2);
+                }
+            } else if (isLag2) {
+                return -1;
+            }
+        } else if (isLag1) {
+            if (isAlpha2 || isAlphaNum2) {
+                return 1;
+            } else if (isLag2) {
+                String l1 = node1.replaceAll(":", "");
+                String l2 = node2.replaceAll(":", "");
+                String s1 = l1.replaceAll("\\d+", "");
+                String s2 = l2.replaceAll("\\d+", "");
+                if (s1.equals(s2)) {
+                    String n1 = l1.replaceAll("\\D+", "");
+                    String n2 = l2.replaceAll("\\D+", "");
+
+                    return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
+                } else {
+                    return s1.compareTo(s2);
+                }
+            }
+        }
+
+        return node1.compareTo(node2);
+    }
 
     Map<String, Object> getAllAttributes();
 

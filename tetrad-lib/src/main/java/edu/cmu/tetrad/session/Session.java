@@ -66,7 +66,7 @@ import java.util.Set;
  * @see SessionEvent
  */
 public final class Session implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * The session nodes, stored as a Set of nodes.
      *

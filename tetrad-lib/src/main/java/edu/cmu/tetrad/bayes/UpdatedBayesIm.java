@@ -41,7 +41,7 @@ import java.util.*;
  */
 public final class UpdatedBayesIm implements BayesIm {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;
 
     /**

@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -38,7 +38,7 @@ import java.util.Arrays;
  * @author Frank Wimberly based on similar class by Ramsey
  */
 public class MissingDataInjectorWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Cannot be null.
@@ -59,7 +59,7 @@ public class MissingDataInjectorWrapper extends DataWrapper {
 
         Arrays.fill(probs, prob);
 
-        this.outputDataSet = DataUtils.addMissingData(dataSet, probs);
+        this.outputDataSet = DataTransforms.addMissingData(dataSet, probs);
         setDataModel(this.outputDataSet);
         setSourceGraph(wrapper.getSourceGraph());
 

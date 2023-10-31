@@ -30,7 +30,10 @@ import edu.cmu.tetrad.graph.Node;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +51,7 @@ public class PlotMatrix extends JPanel {
     private JList<Node> colSelector;
     private int numBins = 9;
     private boolean addRegressionLines = false;
+    private boolean removeZeroPointsPerPlot = false;
     private int[] lastRows = new int[]{0};
     private int[] lastCols = new int[]{0};
     private Map<Node, VariableConditioningEditor.ConditioningPanel> conditioningPanelMap = new HashMap<>();
@@ -72,11 +76,11 @@ public class PlotMatrix extends JPanel {
         charts = new JPanel();
 
         this.rowSelector.addListSelectionListener(e ->
-                constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector));
+                constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot()));
         this.colSelector.addListSelectionListener(e ->
-                constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector));
+                constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot()));
 
-        constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+        constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
 
         JMenuBar menuBar = new JMenuBar();
         JMenu settings = new JMenu("Settings");
@@ -87,9 +91,19 @@ public class PlotMatrix extends JPanel {
         addTrendLines.setSelected(false);
         settings.add(addTrendLines);
 
+        JMenuItem removeZeroPointsPerPlot = new JCheckBoxMenuItem("Remove Zero Points Per Plot");
+        removeZeroPointsPerPlot.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+        removeZeroPointsPerPlot.setSelected(false);
+        settings.add(removeZeroPointsPerPlot);
+
+        removeZeroPointsPerPlot.addActionListener(e -> {
+            setRemoveMinPointsPerPlot(!isRemoveTrendLinesPerPlot());
+            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
+        });
+
         addTrendLines.addActionListener(e -> {
             setAddRegressionLines(!isAddRegressionLines());
-            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
         });
 
         JMenuItem numBins = new JMenu("Set number of Bins for Histograms");
@@ -104,7 +118,7 @@ public class PlotMatrix extends JPanel {
 
             comp.addActionListener(e -> {
                 setNumBins(_i);
-                constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+                constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
             });
         }
 
@@ -133,17 +147,17 @@ public class PlotMatrix extends JPanel {
 
         menuItem1.addActionListener(e -> {
             this.jitterStyle = ScatterPlot.JitterStyle.Gaussian;
-            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
         });
 
         menuItem2.addActionListener(e -> {
             this.jitterStyle = ScatterPlot.JitterStyle.Uniform;
-            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
         });
 
         menuItem3.addActionListener(e -> {
             this.jitterStyle = ScatterPlot.JitterStyle.None;
-            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
         });
 
         settings.add(jitterDiscrete);
@@ -151,15 +165,13 @@ public class PlotMatrix extends JPanel {
         JMenuItem editConditioning = new JMenuItem("Edit Conditioning Variables...");
         editConditioning.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK));
 
-        editConditioning.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                VariableConditioningEditor conditioningEditor
-                        = new VariableConditioningEditor(dataSet, conditioningPanelMap);
-                conditioningEditor.setPreferredSize(new Dimension(300, 300));
-                JOptionPane.showMessageDialog(PlotMatrix.this, new JScrollPane(conditioningEditor));
-                conditioningPanelMap = conditioningEditor.getConditioningPanelMap();
-                constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
-            }
+        editConditioning.addActionListener(e -> {
+            VariableConditioningEditor conditioningEditor
+                    = new VariableConditioningEditor(dataSet, conditioningPanelMap);
+            conditioningEditor.setPreferredSize(new Dimension(300, 300));
+            JOptionPane.showMessageDialog(PlotMatrix.this, new JScrollPane(conditioningEditor));
+            conditioningPanelMap = conditioningEditor.getConditioningPanelMap();
+            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
         });
 
         settings.add(editConditioning);
@@ -186,7 +198,12 @@ public class PlotMatrix extends JPanel {
         setPreferredSize(new Dimension(750, 450));
     }
 
-    private void constructPlotMatrix(JPanel charts, DataSet dataSet, List<Node> nodes, JList<Node> rowSelector, JList<Node> colSelector) {
+    private void setRemoveMinPointsPerPlot(boolean removeZeroPointsPerPlot) {
+        this.removeZeroPointsPerPlot = removeZeroPointsPerPlot;
+    }
+
+    private void constructPlotMatrix(JPanel charts, DataSet dataSet, List<Node> nodes, JList<Node> rowSelector,
+                                     JList<Node> colSelector, boolean removeZeroPointsPerPlot) {
         int[] rowIndices = rowSelector.getSelectedIndices();
         int[] colIndices = colSelector.getSelectedIndices();
         charts.removeAll();
@@ -196,7 +213,7 @@ public class PlotMatrix extends JPanel {
         for (int rowIndex : rowIndices) {
             for (int colIndex : colIndices) {
                 if (rowIndex == colIndex) {
-                    Histogram histogram = new Histogram(dataSet, nodes.get(rowIndex).getName());
+                    Histogram histogram = new Histogram(dataSet, nodes.get(rowIndex).getName(), removeZeroPointsPerPlot);
 //                    histogram.setTarget(nodes.get(rowIndex).getName());
 
                     for (Node node : conditioningPanelMap.keySet()) {
@@ -228,7 +245,7 @@ public class PlotMatrix extends JPanel {
                     charts.add(panel);
                 } else {
                     ScatterPlot scatterPlot = new ScatterPlot(dataSet, addRegressionLines, nodes.get(colIndex).getName(),
-                            nodes.get(rowIndex).getName());
+                            nodes.get(rowIndex).getName(), removeZeroPointsPerPlot);
 
                     for (Node node : conditioningPanelMap.keySet()) {
                         if (node instanceof ContinuousVariable) {
@@ -248,7 +265,7 @@ public class PlotMatrix extends JPanel {
 
                     scatterPlot.setJitterStyle(jitterStyle);
 
-                    ScatterplotPanel panel = new ScatterplotPanel(scatterPlot);
+                    ScatterplotPanel panel = new ScatterplotPanel(scatterPlot, removeZeroPointsPerPlot);
                     panel.setDrawAxes(rowIndices.length == 1 && colIndices.length == 1);
                     panel.setMinimumSize(new Dimension(10, 10));
 
@@ -272,22 +289,22 @@ public class PlotMatrix extends JPanel {
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    if (rowSelector.getSelectedIndices().length == 1
-                            && colSelector.getSelectedIndices().length == 1) {
-                        rowSelector.setSelectedIndices(lastRows);
-                        colSelector.setSelectedIndices(lastCols);
-                        lastRows = new int[]{rowIndex};
-                        lastCols = new int[]{colIndex};
-                        constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
-                    } else {
-                        lastRows = rowSelector.getSelectedIndices();
-                        lastCols = colSelector.getSelectedIndices();
-                        rowSelector.setSelectedIndex(rowIndex);
-                        colSelector.setSelectedIndex(colIndex);
-                        constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
-                    }
+//                if (e.getClickCount() == 1) {
+                if (rowSelector.getSelectedIndices().length == 1
+                        && colSelector.getSelectedIndices().length == 1) {
+                    rowSelector.setSelectedIndices(lastRows);
+                    colSelector.setSelectedIndices(lastCols);
+                    lastRows = new int[]{rowIndex};
+                    lastCols = new int[]{colIndex};
+                    constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
+                } else {
+                    lastRows = rowSelector.getSelectedIndices();
+                    lastCols = colSelector.getSelectedIndices();
+                    rowSelector.setSelectedIndex(rowIndex);
+                    colSelector.setSelectedIndex(colIndex);
+                    constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
                 }
+//                }
             }
         });
     }
@@ -306,6 +323,10 @@ public class PlotMatrix extends JPanel {
 
     public void setAddRegressionLines(boolean addRegressionLines) {
         this.addRegressionLines = addRegressionLines;
+    }
+
+    public boolean isRemoveTrendLinesPerPlot() {
+        return removeZeroPointsPerPlot;
     }
 }
 

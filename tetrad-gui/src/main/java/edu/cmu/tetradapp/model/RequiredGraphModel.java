@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class RequiredGraphModel extends KnowledgeBoxModel {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     private final Graph resultGraph;
 

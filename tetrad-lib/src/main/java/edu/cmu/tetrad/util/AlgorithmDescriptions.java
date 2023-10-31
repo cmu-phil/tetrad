@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * Algorithm descriptions.
+ *
  * @author Zhou Yuan zhy19@pitt.edu
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
@@ -62,10 +64,19 @@ public class AlgorithmDescriptions {
         }
     }
 
+    /**
+     * Gets the instance of this class.
+     * @return instance of this class
+     */
     public static AlgorithmDescriptions getInstance() {
         return AlgorithmDescriptions.INSTANCE;
     }
 
+    /**
+     * Gets the description of the algorithm.
+     * @param shortName short name of the algorithm
+     * @return description of the algorithm
+     */
     public String get(String shortName) {
         String description = this.descriptions.get(shortName);
 

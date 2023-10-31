@@ -21,10 +21,12 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Load data sets and graphs from a directory.
+ *
  * @author josephramsey
  */
 public class LoadContinuousDataAndGraphs implements Simulation {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final String path;
     private final List<Graph> graphs = new ArrayList<>();
     private final List<String> usedParameters = new ArrayList<>();
@@ -49,13 +51,13 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                     System.out.println("Loading graph from " + file2.getAbsolutePath());
                     this.graphs.add(GraphSaveLoadUtils.loadGraphTxt(file2));
 
-                    LayoutUtil.circleLayout(this.graphs.get(i));
+                    LayoutUtil.defaultLayout(this.graphs.get(i));
 
                     File file1 = new File(this.path + "/data/data." + (i + 1) + ".txt");
 
                     System.out.println("Loading data from " + file1.getAbsolutePath());
                     DataSet data = SimpleDataLoader.loadContinuousData(file1, "//", '\"',
-                            "*", true, Delimiter.TAB);
+                            "*", true, Delimiter.TAB, false);
                     this.dataSets.add(data);
                 }
 

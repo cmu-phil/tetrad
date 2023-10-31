@@ -9,6 +9,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.math3.util.FastMath;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -74,39 +75,9 @@ public class MarkovCheck {
         resultsDep.clear();
 
         if (setType == ConditioningSetType.ALL_SUBSETS) {
-            List<Node> variables = independenceTest.getVariables();
-            List<Node> nodes = new ArrayList<>(variables);
-            Collections.sort(nodes);
-
-            for (Node x : nodes) {
-                List<Node> other = new ArrayList<>(graph.getNodes());
-                Collections.sort(other);
-                other.remove(x);
-
-                List<IndependenceFact> msep = new ArrayList<>();
-                List<IndependenceFact> mconn = new ArrayList<>();
-
-                for (Node y : other) {
-                    List<Node> _other = new ArrayList<>(other);
-                    _other.remove(y);
-
-                    SublistGenerator generator = new SublistGenerator(_other.size(), _other.size());
-                    int[] list;
-
-                    while ((list = generator.next()) != null) {
-                        Set<Node> z = GraphUtils.asSet(list, _other);
-
-                        if (this.msep.isMSeparated(x, y, z)) {
-                            msep.add(new IndependenceFact(x, y, z));
-                        } else {
-                            mconn.add(new IndependenceFact(x, y, z));
-                        }
-                    }
-                }
-
-                generateResultsAllSubsets(true, msep, mconn);
-                generateResultsAllSubsets(false, msep, mconn);
-            }
+            AllSubsetsIndependenceFacts result = getAllSubsetsIndependenceFacts(graph);
+            generateResultsAllSubsets(true, result.msep, result.mconn);
+            generateResultsAllSubsets(false, result.msep, result.mconn);
         } else {
             List<Node> variables = independenceTest.getVariables();
             List<Node> nodes = new ArrayList<>(variables);
@@ -150,6 +121,74 @@ public class MarkovCheck {
 
         calcStats(true);
         calcStats(false);
+    }
+
+    @NotNull
+    public static AllSubsetsIndependenceFacts getAllSubsetsIndependenceFacts(Graph graph) {
+        List<Node> variables = new ArrayList<>(graph.getNodes());
+        MsepTest msepTest = new MsepTest(graph);
+
+        List<Node> nodes = new ArrayList<>(variables);
+        Collections.sort(nodes);
+
+        List<IndependenceFact> msep = new ArrayList<>();
+        List<IndependenceFact> mconn = new ArrayList<>();
+
+        for (Node x : nodes) {
+            List<Node> other = new ArrayList<>(variables);
+            Collections.sort(other);
+            other.remove(x);
+
+            for (Node y : other) {
+                List<Node> _other = new ArrayList<>(other);
+                _other.remove(y);
+
+                SublistGenerator generator = new SublistGenerator(_other.size(), _other.size());
+                int[] list;
+
+                while ((list = generator.next()) != null) {
+                    Set<Node> z = GraphUtils.asSet(list, _other);
+
+                    if (msepTest.isMSeparated(x, y, z)) {
+                        msep.add(new IndependenceFact(x, y, z));
+                    } else {
+                        mconn.add(new IndependenceFact(x, y, z));
+                    }
+                }
+            }
+        }
+        return new AllSubsetsIndependenceFacts(msep, mconn);
+    }
+
+    public static class AllSubsetsIndependenceFacts {
+        public final List<IndependenceFact> msep;
+        public final List<IndependenceFact> mconn;
+
+        public AllSubsetsIndependenceFacts(List<IndependenceFact> msep, List<IndependenceFact> mconn) {
+            this.msep = msep;
+            this.mconn = mconn;
+        }
+
+        public String toStringIndep() {
+            StringBuilder builder = new StringBuilder("All subsets independence facts:\n");
+
+            for (IndependenceFact fact : msep) {
+                builder.append(fact).append("\n");
+            }
+
+            return builder.toString();
+        }
+
+
+        public String toStringDep() {
+            StringBuilder builder = new StringBuilder("All subsets independence facts:\n");
+
+            for (IndependenceFact fact : mconn) {
+                builder.append(fact).append("\n");
+            }
+
+            return builder.toString();
+        }
     }
 
     /**

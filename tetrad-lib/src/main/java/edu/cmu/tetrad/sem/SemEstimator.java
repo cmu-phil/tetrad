@@ -42,7 +42,7 @@ import java.util.List;
  * @author josephramsey
  */
 public final class SemEstimator implements TetradSerializable {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * The SemPm containing the graph and the freeParameters to be estimated.

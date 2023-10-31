@@ -4,8 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
-
-import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
+import edu.cmu.tetrad.graph.GraphTransforms;
 
 /**
  * The bidirected true positives.
@@ -13,7 +12,7 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
  * @author josephramsey
  */
 public class BidirectedTrue implements Statistic {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
@@ -27,7 +26,7 @@ public class BidirectedTrue implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph pag = dagToPag(trueGraph);
+        Graph pag = GraphTransforms.dagToPag(trueGraph);
 
         int t = 0;
 

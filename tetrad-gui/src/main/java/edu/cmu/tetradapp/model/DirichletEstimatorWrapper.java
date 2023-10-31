@@ -40,7 +40,7 @@ import java.io.ObjectInputStream;
  */
 public class DirichletEstimatorWrapper implements SessionModel {
 
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     /**
      * @serial Cannot be null.
      */

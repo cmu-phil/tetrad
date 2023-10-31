@@ -85,6 +85,11 @@ public class ScoreIndTest implements IndependenceTest {
 
         double v = this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y),
                 varIndices(z1));
+
+        if (Double.isNaN(v)) {
+            throw new RuntimeException("Undefined score bump encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, z));
+        }
         this.bump = v;
 
         int N = score.getSampleSize();

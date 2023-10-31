@@ -45,7 +45,7 @@ import java.util.*;
  * @author Frank Wimberly after Joe Ramsey's PcRunner
  */
 public class RegressionRunner implements AlgorithmRunner, RegressionModel {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Parameters params;
     private final DataModelList dataModels;
     private final List<String> variableNames;

@@ -32,7 +32,7 @@ import java.util.*;
  * @author josephramsey
  */
 public class TimeLagGraph implements Graph {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
     private final Map<String, Object> attributes = new HashMap<>();
     /**
      * Fires property change events.

@@ -34,7 +34,7 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public class BootstrapSamplerWrapper extends DataWrapper {
-    static final long serialVersionUID = 23L;
+    private static final long serialVersionUID = 23L;
 
     /**
      * @serial Cannot be null.
