@@ -2,10 +2,9 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
 import java.util.*;
@@ -30,7 +29,7 @@ public class BssPc {
         this.data = data;
         this.n = data.getNumRows();
         this.reps = 10;
-        this.threshold = 0.1;
+        this.threshold = 0.5;
         this.sets = new HashMap<>();
         this.graph = new EdgeListGraph(data.getVariables());
         this.lambda = 2.0;
@@ -89,6 +88,36 @@ public class BssPc {
             }
         }
 
+        for (Set<Node> key : this.sets.keySet()) {
+            if ((key.size() == 3) && (sets.get(key) > (this.threshold * this.reps))) {
+                Iterator<Node> itr = key.iterator();
+                Node a = itr.next();
+                Node b = itr.next();
+                Node c = itr.next();
+                triple(a, b, c);
+                triple(b, a, c);
+                triple(c, a, b);
+            }
+        }
+
+        MeekRules meekRules = new MeekRules();
+        meekRules.orientImplied(this.graph);
+
         return this.graph;
+    }
+
+    private void triple(Node a, Node b, Node c) {
+        if (!this.graph.isAdjacentTo(a, b)) return;
+        if (!this.graph.isAdjacentTo(a, c)) return;
+        if (this.graph.isAdjacentTo(b, c)) return;
+        Edge edge;
+
+        edge = this.graph.getEdge(a, b);
+        if (edge.getNode1() == a) edge.setEndpoint1(Endpoint.ARROW);
+        if (edge.getNode2() == a) edge.setEndpoint2(Endpoint.ARROW);
+
+        edge = this.graph.getEdge(a, c);
+        if (edge.getNode1() == a) edge.setEndpoint1(Endpoint.ARROW);
+        if (edge.getNode2() == a) edge.setEndpoint2(Endpoint.ARROW);
     }
 }
