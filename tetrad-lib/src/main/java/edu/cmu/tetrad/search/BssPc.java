@@ -17,7 +17,8 @@ public class BssPc {
     private final DataSet data;
     private final int n;
     private int reps;
-    private double threshold;
+    private double doubleThreshold;
+    private double tripleThreshold;
     private final Map<Set, Integer> sets;
     private final Graph graph;
     private double lambda;
@@ -28,13 +29,14 @@ public class BssPc {
     public BssPc(DataSet data) {
         this.data = data;
         this.n = data.getNumRows();
-        this.reps = 10;
-        this.threshold = 0.5;
+        this.reps = 100;
+        this.doubleThreshold= 0.5;
+        this.tripleThreshold= 0.5;
         this.sets = new HashMap<>();
         this.graph = new EdgeListGraph(data.getVariables());
         this.lambda = 2.0;
         this.bes = false;
-        this.restarts = 1;
+        this.restarts = 10;
         this.threads = -1;
     }
 
@@ -66,6 +68,7 @@ public class BssPc {
 
                 while ((choice = cg.next()) != null) {
                     Set<Node> S = asSet(choice, parents);
+                    if (S.size() != 2) continue;
                     S.add(node);
                     if (!this.sets.containsKey(S)) this.sets.put(S, 0);
                     this.sets.put(S, this.sets.get(S) + 1);
@@ -82,14 +85,14 @@ public class BssPc {
         }
 
         for (Set<Node> key : this.sets.keySet()) {
-            if ((key.size() == 2) && (sets.get(key) > (this.threshold * this.reps))) {
+            if ((key.size() == 2) && (sets.get(key) > (this.doubleThreshold * this.reps))) {
                 Iterator<Node> itr = key.iterator();
                 this.graph.addUndirectedEdge(itr.next(), itr.next());
             }
         }
 
         for (Set<Node> key : this.sets.keySet()) {
-            if ((key.size() == 3) && (sets.get(key) > (this.threshold * this.reps))) {
+            if ((key.size() == 3) && (sets.get(key) > (this.tripleThreshold * this.reps))) {
                 Iterator<Node> itr = key.iterator();
                 Node a = itr.next();
                 Node b = itr.next();
@@ -101,6 +104,7 @@ public class BssPc {
         }
 
         MeekRules meekRules = new MeekRules();
+        meekRules.setRevertToUnshieldedColliders(false);
         meekRules.orientImplied(this.graph);
 
         return this.graph;
@@ -119,5 +123,61 @@ public class BssPc {
         edge = this.graph.getEdge(a, c);
         if (edge.getNode1() == a) edge.setEndpoint1(Endpoint.ARROW);
         if (edge.getNode2() == a) edge.setEndpoint2(Endpoint.ARROW);
+    }
+
+    public int getReps() {
+        return reps;
+    }
+
+    public void setReps(int reps) {
+        this.reps = reps;
+    }
+
+    public double getDoubleThreshold() {
+        return doubleThreshold;
+    }
+
+    public void setDoubleThreshold(double doubleThreshold) {
+        this.doubleThreshold = doubleThreshold;
+    }
+
+    public double getTripleThreshold() {
+        return tripleThreshold;
+    }
+
+    public void setTripleThreshold(double tripleThreshold) {
+        this.tripleThreshold = tripleThreshold;
+    }
+
+    public double getLambda() {
+        return lambda;
+    }
+
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
+    }
+
+    public boolean isBes() {
+        return bes;
+    }
+
+    public void setBes(boolean bes) {
+        this.bes = bes;
+    }
+
+    public int getRestarts() {
+        return restarts;
+    }
+
+    public void setRestarts(int restarts) {
+        this.restarts = restarts;
+    }
+
+    public int getThreads() {
+        return threads;
+    }
+
+    public void setThreads(int threads) {
+        this.threads = threads;
     }
 }

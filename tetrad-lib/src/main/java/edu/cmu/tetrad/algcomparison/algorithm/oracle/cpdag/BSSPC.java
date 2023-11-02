@@ -7,9 +7,12 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BssPc;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "BSSPC",
@@ -29,6 +32,13 @@ public class BSSPC implements Algorithm{
     public Graph search(DataModel dataModel, Parameters parameters) {
         DataSet data = SimpleDataLoader.getContinuousDataSet(dataModel);
         BssPc search = new BssPc(data);
+        search.setReps(parameters.getInt(Params.NUMBER_RESAMPLING, 10));
+        search.setDoubleThreshold(parameters.getDouble(Params.THRESHOLD_B, 0.8));
+        search.setTripleThreshold(parameters.getDouble(Params.W_THRESHOLD, 0.2));
+        search.setLambda(parameters.getDouble(Params.PENALTY_DISCOUNT, 2));
+        search.setBes(parameters.getBoolean(Params.USE_BES, false));
+        search.setRestarts(parameters.getInt(Params.NUM_STARTS, 1));
+        search.setThreads(parameters.getInt(Params.NUM_THREADS, 1));
         return search.search();
     }
 
@@ -49,6 +59,16 @@ public class BSSPC implements Algorithm{
     public List<String> getParameters() {
         ArrayList<String> params = new ArrayList<>();
         // Parameters
+
+        params.add(Params.NUMBER_RESAMPLING);
+        params.add(Params.THRESHOLD_B);
+        params.add(Params.W_THRESHOLD);
+        params.add(Params.PENALTY_DISCOUNT);
+
+        params.add(Params.USE_BES);
+        params.add(Params.NUM_STARTS);
+        params.add(Params.NUM_THREADS);
+
         return params;
     }
 }
