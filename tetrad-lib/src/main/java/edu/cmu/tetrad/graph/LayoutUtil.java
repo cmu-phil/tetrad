@@ -45,7 +45,7 @@ public class LayoutUtil {
      * Arranges the nodes in the graph in a circle.
      * @param graph the graph to be arranged.
      */
-    private static void circleLayout(Graph graph) {
+    public static void circleLayout(Graph graph) {
         if (graph == null) {
             return;
         }
