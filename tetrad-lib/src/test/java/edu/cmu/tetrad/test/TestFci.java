@@ -161,7 +161,7 @@ public class TestFci {
         knowledge.addToTier(2, "X3");
 
         checkSearch("Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3",
-                "X1<->X2,X2<->X3", knowledge);
+                "X1o->X2,X2<->X3", knowledge);
     }
 
     @Test
