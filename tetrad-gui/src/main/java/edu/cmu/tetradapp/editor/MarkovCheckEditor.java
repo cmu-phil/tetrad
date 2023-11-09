@@ -106,16 +106,16 @@ public class MarkovCheckEditor extends JPanel {
 
         conditioningSetTypeJComboBox.addActionListener(e -> {
             switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
-                case "\"Parents(X) (\\\"Local Markov\\\")\"":
+                case "Parents(X) (Local Markov)":
                     model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.LOCAL_MARKOV);
                     break;
-                case "Parents(X) for a Valid Order (\"Ordered Local Markov\")":
+                case "Parents(X) for a Valid Order (Ordered Local Markov)":
                     model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.ORDERED_LOCAL_MARKOV);
                     break;
                 case "MarkovBlanket(X)":
                     model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.MARKOV_BLANKET);
                     break;
-                case "All Subsets (\"Global Markov\")":
+                case "All Subsets (Global Markov)":
                     model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.GLOBAL_MARKOV);
                     break;
                 default:
