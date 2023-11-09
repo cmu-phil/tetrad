@@ -74,7 +74,7 @@ public class MarkovCheck {
         resultsIndep.clear();
         resultsDep.clear();
 
-        if (setType == ConditioningSetType.ALL_SUBSETS) {
+        if (setType == ConditioningSetType.GLOBAL_MARKOV) {
             AllSubsetsIndependenceFacts result = getAllSubsetsIndependenceFacts(graph);
             generateResultsAllSubsets(true, result.msep, result.mconn);
             generateResultsAllSubsets(false, result.msep, result.mconn);
@@ -83,12 +83,29 @@ public class MarkovCheck {
             List<Node> nodes = new ArrayList<>(variables);
             Collections.sort(nodes);
 
+            List<Node> order = graph.paths().getValidOrder(graph.getNodes(), true);
+
             for (Node x : nodes) {
                 Set<Node> z;
 
                 switch (setType) {
-                    case PARENTS:
+                    case LOCAL_MARKOV:
                         z = new HashSet<>(graph.getParents(x));
+                        break;
+                    case ORDERED_LOCAL_MARKOV:
+                        if (order == null) throw new IllegalArgumentException("No valid order found.");
+                        z = new HashSet<>(graph.getParents(x));
+
+                        // Keep only the parents in Prefix(x).
+                        for (Node w : new ArrayList<>(z)) {
+                            int i1 = order.indexOf(x);
+                            int i2 = order.indexOf(w);
+                            
+                            if (i2 >= i1) {
+                                z.remove(w);
+                            }
+                        }
+
                         break;
                     case MARKOV_BLANKET:
                         z = GraphUtils.markovBlanket(x, graph);
@@ -542,6 +559,6 @@ public class MarkovCheck {
      * setting, and PAG_MB uses a Markov blanket of the target variable in a PAG setting.
      */
     public enum ConditioningSetType {
-        PARENTS, MARKOV_BLANKET, ALL_SUBSETS
+        LOCAL_MARKOV, ORDERED_LOCAL_MARKOV, MARKOV_BLANKET, GLOBAL_MARKOV
     }
 }

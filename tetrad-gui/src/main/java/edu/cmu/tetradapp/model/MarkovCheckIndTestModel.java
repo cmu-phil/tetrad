@@ -64,7 +64,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
     }
 
     public void setIndependenceTest(IndependenceTest test) {
-        this.markovCheck = new MarkovCheck(this.graph, test, this.markovCheck == null ? MarkovCheck.ConditioningSetType.PARENTS : this.markovCheck.getSetType());
+        this.markovCheck = new MarkovCheck(this.graph, test, this.markovCheck == null ? MarkovCheck.ConditioningSetType.LOCAL_MARKOV : this.markovCheck.getSetType());
 
     }
 
