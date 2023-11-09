@@ -362,7 +362,6 @@ public class DemixerMMLKun {
         }
 
         Matrix diffsMatrix = new Matrix(diffs);
-
         Matrix mah = diffsMatrix.times(covIn);
 
         double val;
