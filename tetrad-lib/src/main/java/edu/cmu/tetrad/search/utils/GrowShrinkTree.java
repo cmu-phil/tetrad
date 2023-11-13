@@ -110,7 +110,11 @@ public class GrowShrinkTree {
             this.grow = new AtomicBoolean(false);
             this.shrink = new AtomicBoolean(false);
 
-            this.growScore = this.tree.localScore();
+            Double localScore = this.tree.localScore();
+
+//            this.growScore = Double.isNaN(localScore) ? 0 : localScore;
+
+            this.growScore = localScore;
         }
 
         private GSTNode(GrowShrinkTree tree, Node add, Set<Node> parents) {
