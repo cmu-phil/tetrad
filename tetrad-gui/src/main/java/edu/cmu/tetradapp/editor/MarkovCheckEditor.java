@@ -27,8 +27,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -107,16 +107,16 @@ public class MarkovCheckEditor extends JPanel {
         conditioningSetTypeJComboBox.addActionListener(e -> {
             switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
                 case "Parents(X) (Local Markov)":
-                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.LOCAL_MARKOV);
+                    model.getMarkovCheck().setSetType(ConditioningSetType.LOCAL_MARKOV);
                     break;
                 case "Parents(X) for a Valid Order (Ordered Local Markov)":
-                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.ORDERED_LOCAL_MARKOV);
+                    model.getMarkovCheck().setSetType(ConditioningSetType.ORDERED_LOCAL_MARKOV);
                     break;
                 case "MarkovBlanket(X)":
-                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.MARKOV_BLANKET);
+                    model.getMarkovCheck().setSetType(ConditioningSetType.MARKOV_BLANKET);
                     break;
                 case "All Subsets (Global Markov)":
-                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.GLOBAL_MARKOV);
+                    model.getMarkovCheck().setSetType(ConditioningSetType.GLOBAL_MARKOV);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown conditioning set type: " +
@@ -125,7 +125,7 @@ public class MarkovCheckEditor extends JPanel {
 
             class MyWatchedProcess extends WatchedProcess {
                 public void watch() {
-                    if (model.getMarkovCheck().getSetType() == MarkovCheck.ConditioningSetType.GLOBAL_MARKOV && model.getVars().size() > 12) {
+                    if (model.getMarkovCheck().getSetType() == ConditioningSetType.GLOBAL_MARKOV && model.getVars().size() > 12) {
                         int ret = JOptionPane.showOptionDialog(MarkovCheckEditor.this,
                                 "The all subsets option is exponential and can become extremely slow beyond 12" +
                                         "\nvariables. You may possibly be required to force quit Tetrad. Continue?", "Warning",
