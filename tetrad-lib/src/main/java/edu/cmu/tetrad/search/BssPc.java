@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.score.DegenerateGaussianScore;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -41,13 +42,12 @@ public class BssPc {
     }
 
     public Graph search() {
-        for (int i = 0; i < reps; i++) {
+        for (int i = 0; i < this.reps; i++) {
             System.out.println(i);
 
             DataSet resampled = DataTransforms.getBootstrapSample(this.data, this.n);
-            SemBicScore score = new SemBicScore(resampled, true);
+            DegenerateGaussianScore score = new DegenerateGaussianScore(resampled, true);
             score.setPenaltyDiscount(this.lambda);
-            score.setStructurePrior(0);
 
             Boss boss = new Boss(score);
             boss.setUseBes(this.bes);
@@ -103,9 +103,9 @@ public class BssPc {
             }
         }
 
-        MeekRules meekRules = new MeekRules();
-        meekRules.setRevertToUnshieldedColliders(false);
-        meekRules.orientImplied(this.graph);
+//        MeekRules meekRules = new MeekRules();
+//        meekRules.setRevertToUnshieldedColliders(false);
+//        meekRules.orientImplied(this.graph);
 
         return this.graph;
     }

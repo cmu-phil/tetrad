@@ -17,8 +17,7 @@ import java.util.Set;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "BSSPC",
         command = "bsspc",
-        algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.Continuous
+        algoType = AlgType.forbid_latent_common_causes
 )
 public class BSSPC implements Algorithm{
     private static final long serialVersionUID = 23L;
@@ -30,11 +29,13 @@ public class BSSPC implements Algorithm{
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-        DataSet data = SimpleDataLoader.getContinuousDataSet(dataModel);
+        DataSet data = SimpleDataLoader.getMixedDataSet(dataModel);
         BssPc search = new BssPc(data);
+
         search.setReps(parameters.getInt(Params.NUMBER_RESAMPLING, 10));
         search.setDoubleThreshold(parameters.getDouble(Params.THRESHOLD_B, 0.8));
         search.setTripleThreshold(parameters.getDouble(Params.W_THRESHOLD, 0.2));
+
         search.setLambda(parameters.getDouble(Params.PENALTY_DISCOUNT, 2));
         search.setBes(parameters.getBoolean(Params.USE_BES, false));
         search.setRestarts(parameters.getInt(Params.NUM_STARTS, 1));
@@ -52,7 +53,7 @@ public class BSSPC implements Algorithm{
 
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Mixed;
     }
 
     @Override

@@ -499,7 +499,7 @@ public class LayoutUtils {
 
         int m = FastMath.min(r.width, r.height) / 2;
 
-        LayoutUtil.defaultLayout(graph);
+        LayoutUtil.circleLayout(graph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.circle;
     }
