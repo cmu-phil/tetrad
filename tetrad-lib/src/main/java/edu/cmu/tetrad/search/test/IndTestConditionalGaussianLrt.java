@@ -35,7 +35,6 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or
@@ -65,7 +64,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         this.data = data;
         this.likelihood = new ConditionalGaussianLikelihood(data);
         this.likelihood.setDiscretize(discretize);
-        this.nodesHash = new ConcurrentSkipListMap<>();
+        this.nodesHash = new HashMap<>();
 
         List<Node> variables = data.getVariables();
 
