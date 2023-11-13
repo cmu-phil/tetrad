@@ -69,7 +69,10 @@ public class SemBicScorer {
                 parentIndices[count++] = hashIndices.get(parent);
             }
 
-            _score += score.localScore(hashIndices.get(node), parentIndices);
+            double score1 = score.localScore(hashIndices.get(node), parentIndices);
+            if (!Double.isNaN(score1)) {
+                _score += score1;
+            }
         }
 
         return _score;

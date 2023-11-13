@@ -496,6 +496,12 @@ public class MarkovCheckEditor extends JPanel {
 //        scroll.setPreferredSize(new Dimension(400, 400));
         b1.add(scroll);
 
+        Box b1a = Box.createHorizontalBox();
+        JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
+        b1a.add(label);
+        b1a.add(Box.createHorizontalGlue());
+        b1.add(b1a);
+
         Box b4 = Box.createHorizontalBox();
         b4.add(Box.createGlue());
         b4.add(Box.createHorizontalStrut(10));
@@ -681,6 +687,12 @@ public class MarkovCheckEditor extends JPanel {
         JScrollPane scroll = new JScrollPane(table);
 //        scroll.setPreferredSize(new Dimension(400, 400));
         b1.add(scroll);
+
+        Box b1a = Box.createHorizontalBox();
+        JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
+        b1a.add(label);
+        b1a.add(Box.createHorizontalGlue());
+        b1.add(b1a);
 
         Box b4 = Box.createHorizontalBox();
         b4.add(Box.createGlue());
