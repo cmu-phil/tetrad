@@ -609,13 +609,10 @@ public class TeyssierScorer {
     private void recalculate(int p) {
         if (this.prefixes.get(p) == null || !this.prefixes.get(p).containsAll(getPrefix(p))) {
             Pair p2 = getParentsInternal(p);
-
-            double score1 = scores.get(p).score;
-
-            if (scores.get(p) == null || Double.isNaN(score1)) {
+            if (scores.get(p) == null) {
                 this.runningScore += p2.score;
             } else {
-                this.runningScore += p2.score - score1;
+                this.runningScore += p2.score - scores.get(p).score;
             }
             this.scores.set(p, p2);
         }
@@ -628,11 +625,7 @@ public class TeyssierScorer {
             if (this.scores.get(i) == null) {
                 recalculate(i);
             }
-            double score1 = this.scores.get(i).getScore();
-
-//            if (!Double.isNaN(score1)) {
-                score += score1;
-//            }
+            score += this.scores.get(i).getScore();
         }
 
         return score;
