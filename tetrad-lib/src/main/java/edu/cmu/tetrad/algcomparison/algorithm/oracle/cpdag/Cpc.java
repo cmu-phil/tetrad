@@ -23,6 +23,8 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
+
 /**
  * Conservative PC (CPC).
  *
@@ -107,7 +109,9 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(knowledge);
             search.setConflictRule(conflictRule);
-            return search.search();
+            Graph graph = search.search();
+            stampWithBic(graph, dataModel);
+            return graph;
         } else {
             Cpc pcAll = new Cpc(this.test);
 

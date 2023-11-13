@@ -23,6 +23,8 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
+
 /**
  * Peter/Clark algorithm (PC).
  *
@@ -30,16 +32,16 @@ import java.util.List;
  */
 @edu.cmu.tetrad.annotation.Algorithm(name = "PC-LiNGAM", command = "pc-lingam", algoType = AlgType.forbid_latent_common_causes)
 @Bootstrapping
-public class PcLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, ReturnsBootstrapGraphs {
+public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, ReturnsBootstrapGraphs {
     private static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-    public PcLingam() {
+    public BossLingam() {
     }
 
-    public PcLingam(ScoreWrapper scoreWrapper) {
+    public BossLingam(ScoreWrapper scoreWrapper) {
         this.score = scoreWrapper;
     }
 
@@ -69,11 +71,13 @@ public class PcLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Retu
 
             Graph cpdag = permutationSearch.search();
 
-            edu.cmu.tetrad.search.PcLingam pcLingam = new edu.cmu.tetrad.search.PcLingam(cpdag, (DataSet) dataModel);
+            edu.cmu.tetrad.search.PcLingam bossLingam = new edu.cmu.tetrad.search.PcLingam(cpdag, (DataSet) dataModel);
+            Graph graph = bossLingam.search();
 
-            return pcLingam.search();
+            stampWithBic(graph, dataModel);
+            return graph;
         } else {
-            PcLingam pcAll = new PcLingam(this.score);
+            BossLingam pcAll = new BossLingam(this.score);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));

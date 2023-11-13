@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.statistic.BicEst;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
@@ -15,6 +16,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -98,6 +100,11 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
 
             graph = search.search();
 
+            if (!graph.getAllAttributes().containsKey("BIC")) {
+                graph.addAttribute("BIC", new BicEst().getValue(null, graph, dataModel));
+            }
+
+            LogUtilsSearch.stampWithScores(graph, dataModel, score);
             return graph;
         } else {
             Fges fges = new Fges(this.score);

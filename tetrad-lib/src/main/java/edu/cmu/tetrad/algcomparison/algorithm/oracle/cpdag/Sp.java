@@ -16,6 +16,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -43,7 +44,6 @@ public class Sp implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBoo
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-
     public Sp() {
         // Used in reflection; do not delete.
     }
@@ -69,8 +69,9 @@ public class Sp implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBoo
             Score score = this.score.getScore(dataModel, parameters);
             PermutationSearch permutationSearch = new PermutationSearch(new edu.cmu.tetrad.search.Sp(score));
             permutationSearch.setKnowledge(this.knowledge);
-
-            return permutationSearch.search();
+            Graph graph = permutationSearch.search();
+            LogUtilsSearch.stampWithScores(graph, dataModel, score);
+            return graph;
         } else {
             Sp algorithm = new Sp(this.score);
 

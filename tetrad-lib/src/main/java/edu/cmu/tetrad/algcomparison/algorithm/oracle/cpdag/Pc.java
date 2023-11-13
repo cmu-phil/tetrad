@@ -23,6 +23,8 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
+
 /**
  * Peter/Clark algorithm (PC).
  *
@@ -106,7 +108,9 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             search.setKnowledge(this.knowledge);
             search.setStable(parameters.getBoolean(Params.STABLE_FAS));
             search.setConflictRule(conflictRule);
-            return search.search();
+            Graph graph = search.search();
+            stampWithBic(graph, dataModel);
+            return graph;
         } else {
             Pc pcAll = new Pc(this.test);
 
