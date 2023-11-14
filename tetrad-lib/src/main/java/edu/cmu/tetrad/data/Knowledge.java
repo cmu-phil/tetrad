@@ -740,7 +740,7 @@ public final class Knowledge implements TetradSerializable {
         }
 
         for (int i = this.tierSpecs.size() - 1; i >= 0; i--) {
-            for (int j = i; j >= 0; j--) {
+            for (int j = i - 1; j >= 0; j--) {
                 Set<String> tieri = this.tierSpecs.get(i);
                 Set<String> tierj = this.tierSpecs.get(j);
 
