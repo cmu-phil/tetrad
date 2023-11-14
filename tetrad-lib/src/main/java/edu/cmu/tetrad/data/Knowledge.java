@@ -740,6 +740,9 @@ public final class Knowledge implements TetradSerializable {
         }
 
         for (int i = this.tierSpecs.size() - 1; i >= 0; i--) {
+
+            // Make sure this iterates from i - 1 to 0 or else all directed edges will be
+            // forbidden within tiers!
             for (int j = i - 1; j >= 0; j--) {
                 Set<String> tieri = this.tierSpecs.get(i);
                 Set<String> tierj = this.tierSpecs.get(j);

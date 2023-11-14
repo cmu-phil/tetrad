@@ -44,7 +44,7 @@ public class SemBicScorer {
         SemBicScore score;
 
         if (data instanceof ICovarianceMatrix) {
-            score = new SemBicScore((ICovarianceMatrix) dag);
+            score = new SemBicScore((ICovarianceMatrix) data);
         } else if (data instanceof DataSet) {
             score = new SemBicScore((DataSet) data, precomputeCovariances);
         } else {
