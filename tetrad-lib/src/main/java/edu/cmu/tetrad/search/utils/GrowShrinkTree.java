@@ -56,12 +56,22 @@ public class GrowShrinkTree {
         return this.index.get(node);
     }
 
+//    public Double localScore() {
+//        return this.score.localScore(this.nodeIndex);
+//    }
+//
+//    public Double localScore(int[] X) {
+//        return this.score.localScore(this.nodeIndex, X);
+//    }
+
     public Double localScore() {
-        return this.score.localScore(this.nodeIndex);
+        double score = this.score.localScore(this.nodeIndex);
+        return Double.isNaN(score) ? 0 : score;
     }
 
     public Double localScore(int[] X) {
-        return this.score.localScore(this.nodeIndex, X);
+        double score = this.score.localScore(this.nodeIndex, X);
+        return Double.isNaN(score) ? Double.NEGATIVE_INFINITY : score;
     }
 
     public boolean isRequired(Node node) {

@@ -11,6 +11,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IcaLingD;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -56,6 +57,7 @@ public class IcaLingam implements Algorithm, ReturnsBootstrapGraphs {
             TetradLogger.getInstance().forceLogMessage(bHat.toString());
             TetradLogger.getInstance().forceLogMessage(graph.toString());
 
+            LogUtilsSearch.stampWithBic(graph, dataSet);
             return graph;
         } else {
             IcaLingam algorithm = new IcaLingam();

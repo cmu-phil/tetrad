@@ -74,7 +74,7 @@ public class MarkovCheck {
         resultsIndep.clear();
         resultsDep.clear();
 
-        if (setType == ConditioningSetType.ALL_SUBSETS) {
+        if (setType == ConditioningSetType.GLOBAL_MARKOV) {
             AllSubsetsIndependenceFacts result = getAllSubsetsIndependenceFacts(graph);
             generateResultsAllSubsets(true, result.msep, result.mconn);
             generateResultsAllSubsets(false, result.msep, result.mconn);
@@ -83,12 +83,29 @@ public class MarkovCheck {
             List<Node> nodes = new ArrayList<>(variables);
             Collections.sort(nodes);
 
+            List<Node> order = graph.paths().getValidOrder(graph.getNodes(), true);
+
             for (Node x : nodes) {
                 Set<Node> z;
 
                 switch (setType) {
-                    case PARENTS:
+                    case LOCAL_MARKOV:
                         z = new HashSet<>(graph.getParents(x));
+                        break;
+                    case ORDERED_LOCAL_MARKOV:
+                        if (order == null) throw new IllegalArgumentException("No valid order found.");
+                        z = new HashSet<>(graph.getParents(x));
+
+                        // Keep only the parents in Prefix(x).
+                        for (Node w : new ArrayList<>(z)) {
+                            int i1 = order.indexOf(x);
+                            int i2 = order.indexOf(w);
+                            
+                            if (i2 >= i1) {
+                                z.remove(w);
+                            }
+                        }
+
                         break;
                     case MARKOV_BLANKET:
                         z = GraphUtils.markovBlanket(x, graph);
@@ -161,8 +178,8 @@ public class MarkovCheck {
     }
 
     public static class AllSubsetsIndependenceFacts {
-        public final List<IndependenceFact> msep;
-        public final List<IndependenceFact> mconn;
+        private final List<IndependenceFact> msep;
+        private final List<IndependenceFact> mconn;
 
         public AllSubsetsIndependenceFacts(List<IndependenceFact> msep, List<IndependenceFact> mconn) {
             this.msep = msep;
@@ -188,6 +205,14 @@ public class MarkovCheck {
             }
 
             return builder.toString();
+        }
+
+        public List<IndependenceFact> getMsep() {
+            return msep;
+        }
+
+        public List<IndependenceFact> getMconn() {
+            return mconn;
         }
     }
 
@@ -536,12 +561,4 @@ public class MarkovCheck {
     }
 
 
-    /**
-     * The type of conditioning set to use for the Markov check. The default is PARENTS, which uses the parents of the
-     * target variable to predict the separation set. DAG_MB uses the Markov blanket of the target variable in a DAG
-     * setting, and PAG_MB uses a Markov blanket of the target variable in a PAG setting.
-     */
-    public enum ConditioningSetType {
-        PARENTS, MARKOV_BLANKET, ALL_SUBSETS
-    }
 }

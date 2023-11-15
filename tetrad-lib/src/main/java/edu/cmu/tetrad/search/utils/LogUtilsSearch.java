@@ -21,14 +21,18 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.algcomparison.statistic.BicEst;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.NumberFormat;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Contains utilities for logging search steps.
@@ -138,6 +142,51 @@ public class LogUtilsSearch {
         }
 
         return fact.toString();
+    }
+
+    public static Map<Node, Integer> buildIndexing(List<Node> nodes) {
+        Map<Node, Integer> hashIndices = new HashMap<>();
+
+        int i = -1;
+
+        for (Node n : nodes) {
+            hashIndices.put(n, ++i);
+        }
+
+        return hashIndices;
+    }
+
+    @NotNull
+    public static void stampWithScores(Graph graph, DataModel dataModel, Score score) {
+        if (!graph.getAllAttributes().containsKey("Score")) {
+            Graph dag = GraphTransforms.dagFromCPDAG(graph);
+            Map<Node, Integer> hashIndices = buildIndexing(dag.getNodes());
+
+            double _score = 0.0;
+
+            for (Node node : dag.getNodes()) {
+                List<Node> x = dag.getParents(node);
+
+                int[] parentIndices = new int[x.size()];
+
+                int count = 0;
+                for (Node parent : x) {
+                    parentIndices[count++] = hashIndices.get(parent);
+                }
+
+                _score += score.localScore(hashIndices.get(node), parentIndices);
+            }
+
+            graph.addAttribute("Score", _score);
+        }
+
+        stampWithBic(graph, dataModel);
+    }
+
+    public static void stampWithBic(Graph graph, DataModel dataModel) {
+        if (!graph.getAllAttributes().containsKey("BIC")) {
+            graph.addAttribute("BIC", new BicEst().getValue(null, graph, dataModel));
+        }
     }
 }
 

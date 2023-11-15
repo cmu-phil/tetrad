@@ -625,8 +625,7 @@ public class TeyssierScorer {
             if (this.scores.get(i) == null) {
                 recalculate(i);
             }
-            double score1 = this.scores.get(i).getScore();
-            score += score1;
+            score += this.scores.get(i).getScore();
         }
 
         return score;
