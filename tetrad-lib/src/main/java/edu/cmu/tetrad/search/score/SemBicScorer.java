@@ -44,7 +44,7 @@ public class SemBicScorer {
         SemBicScore score;
 
         if (data instanceof ICovarianceMatrix) {
-            score = new SemBicScore((ICovarianceMatrix) dag);
+            score = new SemBicScore((ICovarianceMatrix) data);
         } else if (data instanceof DataSet) {
             score = new SemBicScore((DataSet) data, precomputeCovariances);
         } else {
@@ -69,7 +69,10 @@ public class SemBicScorer {
                 parentIndices[count++] = hashIndices.get(parent);
             }
 
-            _score += score.localScore(hashIndices.get(node), parentIndices);
+            double score1 = score.localScore(hashIndices.get(node), parentIndices);
+            if (!Double.isNaN(score1)) {
+                _score += score1;
+            }
         }
 
         return _score;

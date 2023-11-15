@@ -41,7 +41,7 @@ import java.util.Collections;
  * generalized. Instead of hard-coding FAS, an arbitrary algorithm can be used to obtain adjacencies. Instead of
  * hard-coding robust skew, and arbitrary algorithm can be used to to pairwise orientation. Instead of orienting all
  * edges, an option can be given to just orient the edges that are unoriented in the input graph (see, e.g., PC LiNGAM).
- * This was an early attempt at this. For PC-LiNGAM, see this paper:</p>
+ * This was an early attempt at this. For BOSS-LiNGAM, see this paper:</p>
  *
  * <p>Hoyer, P. O., Hyvarinen, A., Scheines, R., Spirtes, P. L., Ramsey, J., Lacerda, G.,
  * &amp; Shimizu, S. (2012). Causal discovery of linear acyclic models with arbitrary distributions. arXiv preprint

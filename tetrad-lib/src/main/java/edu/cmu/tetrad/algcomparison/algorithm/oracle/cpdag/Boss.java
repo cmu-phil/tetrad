@@ -15,6 +15,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -51,7 +52,6 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         this.score = score;
     }
 
-
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -75,8 +75,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
             PermutationSearch permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(this.knowledge);
-
-            return permutationSearch.search();
+            Graph graph = permutationSearch.search();
+            LogUtilsSearch.stampWithScores(graph, dataModel, score);
+            return graph;
         } else {
             Boss algorithm = new Boss(this.score);
 

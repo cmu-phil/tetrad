@@ -13,6 +13,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -56,6 +57,7 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
             Graph graph = search.search();
             TetradLogger.getInstance().forceLogMessage(graph.toString());
 
+            LogUtilsSearch.stampWithBic(graph, dataSet);
             return graph;
         } else {
             DirectLingam algorithm = new DirectLingam();

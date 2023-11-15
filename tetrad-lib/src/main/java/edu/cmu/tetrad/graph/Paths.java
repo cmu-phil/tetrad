@@ -30,7 +30,7 @@ public class Paths implements TetradSerializable {
      *
      * @param initialOrder Variables in the order will be kept as close to this initial order as possible, either the
      *                     forward order or the reverse order, depending on the next parameter.
-     * @param forward      Whether the variable will be iterated over in forward or reverse direction.
+     * @param forward      Whether the variables will be iterated over in forward or reverse direction.
      * @return The valid causal order found.
      */
     public List<Node> getValidOrder(List<Node> initialOrder, boolean forward) {

@@ -30,19 +30,16 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.util.FastMath;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>Implements the PC-LiNGAM algorithm which first finds a CPDAG for the variables
+ * <p>Implements the BOSS-LiNGAM algorithm which first finds a CPDAG for the variables
  * and then uses a non-Gaussian orientation method to orient the undirected edges. The reference is as follows:
  *
  * <p>>Hoyer et al., "Causal discovery of linear acyclic models with arbitrary
@@ -65,7 +62,7 @@ import java.util.List;
  * @author patrickhoyer
  * @author josephramsey
  */
-public class PcLingam {
+public class BossLingam {
     private final Graph cpdag;
     private final DataSet dataSet;
     private double[] pValues;
@@ -78,7 +75,7 @@ public class PcLingam {
      * @param cpdag   The CPDAG whose unoriented edges are to be oriented.
      * @param dataSet Teh dataset to use.
      */
-    public PcLingam(Graph cpdag, DataSet dataSet)
+    public BossLingam(Graph cpdag, DataSet dataSet)
             throws IllegalArgumentException {
 
         if (cpdag == null) {
