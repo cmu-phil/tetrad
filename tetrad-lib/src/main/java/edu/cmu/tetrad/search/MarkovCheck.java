@@ -178,8 +178,8 @@ public class MarkovCheck {
     }
 
     public static class AllSubsetsIndependenceFacts {
-        public final List<IndependenceFact> msep;
-        public final List<IndependenceFact> mconn;
+        private final List<IndependenceFact> msep;
+        private final List<IndependenceFact> mconn;
 
         public AllSubsetsIndependenceFacts(List<IndependenceFact> msep, List<IndependenceFact> mconn) {
             this.msep = msep;
@@ -205,6 +205,14 @@ public class MarkovCheck {
             }
 
             return builder.toString();
+        }
+
+        public List<IndependenceFact> getMsep() {
+            return msep;
+        }
+
+        public List<IndependenceFact> getMconn() {
+            return mconn;
         }
     }
 
