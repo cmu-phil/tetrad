@@ -540,10 +540,10 @@ public class MarkovCheckEditor extends JPanel {
         b6a.add(bernoulliPLabelDep);
         b0b1.add(b6a);
 
-        Box b7 = Box.createHorizontalBox();
-        b7.add(Box.createHorizontalGlue());
-        b7.add(masLabelDep);
-        b0b1.add(b7);
+//        Box b7 = Box.createHorizontalBox();
+//        b7.add(Box.createHorizontalGlue());
+//        b7.add(masLabelDep);
+//        b0b1.add(b7);
 
         b0b1.add(Box.createVerticalGlue());
         b0.add(b0b1);
@@ -738,10 +738,10 @@ public class MarkovCheckEditor extends JPanel {
         b6a.add(bernoulliPLabelIndep);
         b0b1.add(b6a);
 
-        Box b7 = Box.createHorizontalBox();
-        b7.add(Box.createHorizontalGlue());
-        b7.add(masLabelIndep);
-        b0b1.add(b7);
+//        Box b7 = Box.createHorizontalBox();
+//        b7.add(Box.createHorizontalGlue());
+//        b7.add(masLabelIndep);
+//        b0b1.add(b7);
 
         b0.add(b0b1);
 
