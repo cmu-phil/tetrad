@@ -85,6 +85,8 @@ public class MarkovCheckEditor extends JPanel {
     private JLabel ksLabelIndep;
     private JLabel masLabelDep;
     private JLabel masLabelIndep;
+    private JLabel bernoulliPLabelDep;
+    private JLabel bernoulliPLabelIndep;
     private int sortDir;
     private int lastSortCol;
     private IndependenceWrapper independenceWrapper;
@@ -533,6 +535,11 @@ public class MarkovCheckEditor extends JPanel {
         b6.add(ksLabelDep);
         b0b1.add(b6);
 
+        Box b6a = Box.createHorizontalBox();
+        b6a.add(Box.createHorizontalGlue());
+        b6a.add(bernoulliPLabelDep);
+        b0b1.add(b6a);
+
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(masLabelDep);
@@ -726,6 +733,11 @@ public class MarkovCheckEditor extends JPanel {
         b6.add(ksLabelIndep);
         b0b1.add(b6);
 
+        Box b6a = Box.createHorizontalBox();
+        b6a.add(Box.createHorizontalGlue());
+        b6a.add(bernoulliPLabelIndep);
+        b0b1.add(b6a);
+
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(masLabelIndep);
@@ -768,6 +780,14 @@ public class MarkovCheckEditor extends JPanel {
             ksLabelDep = new JLabel();
         }
 
+        if (bernoulliPLabelIndep == null) {
+            bernoulliPLabelIndep = new JLabel();
+        }
+
+        if (bernoulliPLabelDep == null) {
+            bernoulliPLabelDep = new JLabel();
+        }
+
         if (fractionDepLabelIndep == null) {
             fractionDepLabelIndep = new JLabel();
         }
@@ -784,14 +804,23 @@ public class MarkovCheckEditor extends JPanel {
             masLabelDep = new JLabel();
         }
 
-        ksLabelIndep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
+        ksLabelIndep.setText("P-value of KS Uniformity Test = "
                 + ((Double.isNaN(model.getMarkovCheck().getKsPValue(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getKsPValue(true)))));
-        ksLabelDep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
+        ksLabelDep.setText("P-value of KS Uniformity Test = "
                 + ((Double.isNaN(model.getMarkovCheck().getKsPValue(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getKsPValue(false)))));
+
+        bernoulliPLabelIndep.setText("P-value of Bernoulli Test = "
+                + ((Double.isNaN(model.getMarkovCheck().getBernoulliPValue(true))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBernoulliPValue(true)))));
+        bernoulliPLabelDep.setText("P-value of Bernoulli Test = "
+                + ((Double.isNaN(model.getMarkovCheck().getBernoulliPValue(false))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBernoulliPValue(false)))));
         fractionDepLabelIndep.setText("% dependent = "
                 + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(true))
                 ? "-"

@@ -14,8 +14,8 @@ public class UniformityTest {
         double[] data = points.stream().mapToDouble(Double::doubleValue).toArray();
 
         // Create a uniform distribution with the same range as the data
-        double min = points.stream().min(Double::compareTo).orElse(0.0);
-        double max = points.stream().max(Double::compareTo).orElse(1.0);
+        double min = 0.0;//points.stream().min(Double::compareTo).orElse(0.0);
+        double max = 1.0;//points.stream().max(Double::compareTo).orElse(1.0);
         UniformRealDistribution distribution;
         try {
             distribution = new UniformRealDistribution(min, max);

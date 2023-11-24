@@ -6,8 +6,11 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.test.RowsSettable;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.UniformityTest;
+import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,6 +53,8 @@ public class MarkovCheck {
     private double fractionDependentDep = Double.NaN;
     private double ksPValueIndep = Double.NaN;
     private double ksPValueDep = Double.NaN;
+    private double bernoulliPIndep = Double.NaN;
+    private double bernoulliPDep = Double.NaN;
 
     /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
@@ -304,6 +309,14 @@ public class MarkovCheck {
         }
     }
 
+    public double getBernoulliPValue(boolean indep) {
+        if (indep) {
+            return bernoulliPIndep;
+        } else {
+            return bernoulliPDep;
+        }
+    }
+
     /**
      * Returns the Markov Adequacy Score for the graph. This is zero if the p-value of the KS test of Uniformity is less
      * than alpha, and the fraction of dependent pairs otherwise. This is only for continuous Gaussian data, as it
@@ -389,21 +402,61 @@ public class MarkovCheck {
                     Node x = fact.getX();
                     Node y = fact.getY();
                     Set<Node> z = fact.getZ();
-                    boolean verbose = independenceTest.isVerbose();
-                    independenceTest.setVerbose(false);
-                    IndependenceResult result;
-                    try {
-                        result = independenceTest.checkIndependence(x, y, z);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                    boolean indep = result.isIndependent();
-                    double pValue = result.getPValue();
-                    independenceTest.setVerbose(verbose);
 
-                    if (!Double.isNaN(pValue)) {
-                        results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+                    if (independenceTest instanceof RowsSettable) {
+                        for (int t = 0; t < 5; t++) {
+                            List<Integer> rows = getSubsampleRows(0.8);
+//                            List<Integer> rows = getBoostrapSample(1.0);
+                            ((RowsSettable) independenceTest).setRows(rows);
+
+                            boolean verbose = independenceTest.isVerbose();
+                            independenceTest.setVerbose(false);
+                            IndependenceResult result;
+                            try {
+                                result = independenceTest.checkIndependence(x, y, z);
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                            boolean indep = result.isIndependent();
+                            double pValue = result.getPValue();
+                            independenceTest.setVerbose(verbose);
+
+                            if (!Double.isNaN(pValue)) {
+                                results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+                            }
+                        }
+                    } else {
+                        boolean verbose = independenceTest.isVerbose();
+                        independenceTest.setVerbose(false);
+                        IndependenceResult result;
+                        try {
+                            result = independenceTest.checkIndependence(x, y, z);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                        boolean indep = result.isIndependent();
+                        double pValue = result.getPValue();
+                        independenceTest.setVerbose(verbose);
+
+                        if (!Double.isNaN(pValue)) {
+                            results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+                        }
                     }
+//                    boolean verbose = independenceTest.isVerbose();
+//                    independenceTest.setVerbose(false);
+//                    IndependenceResult result;
+//                    try {
+//                        result = independenceTest.checkIndependence(x, y, z);
+//                    } catch (Exception e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                    boolean indep = result.isIndependent();
+//                    double pValue = result.getPValue();
+//                    independenceTest.setVerbose(verbose);
+//
+//                    if (!Double.isNaN(pValue)) {
+//                        results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+//                    }
                 }
 
                 return results;
@@ -436,6 +489,27 @@ public class MarkovCheck {
                 }
             }
         }
+    }
+
+    private List<Integer> getSubsampleRows(double v) {
+        int sampleSize = independenceTest.getSampleSize();
+        int subsampleSize = (int) FastMath.ceil(sampleSize * v);
+        List<Integer> rows = new ArrayList<>(sampleSize);
+        for (int i = 0; i < sampleSize; i++) {
+            rows.add(i);
+        }
+        Collections.shuffle(rows);
+        return rows.subList(0, subsampleSize);
+    }
+
+    private List<Integer> getBoostrapSample(double v) {
+        int sampleSize = independenceTest.getSampleSize();
+        int subsampleSize = (int) FastMath.floor(sampleSize * v);
+        List<Integer> rows = new ArrayList<>(sampleSize);
+        for (int i = 0; i < subsampleSize; i++) {
+            rows.add(RandomUtil.getInstance().nextInt(sampleSize));
+        }
+        return rows;
     }
 
     private void generateResultsAllSubsets(boolean indep, List<IndependenceFact> msep, List<IndependenceFact> mconn) {
@@ -534,16 +608,32 @@ public class MarkovCheck {
         if (indep) {
             if (pValues.size() < 2) {
                 ksPValueIndep = Double.NaN;
+                bernoulliPIndep = Double.NaN;
             } else {
                 ksPValueIndep = UniformityTest.getPValue(pValues);
+                bernoulliPIndep = getBernoulliP(pValues, independenceTest.getAlpha());
             }
         } else {
             if (pValues.size() < 2) {
                 ksPValueDep = Double.NaN;
+                bernoulliPDep = Double.NaN;
             } else {
                 ksPValueDep = UniformityTest.getPValue(pValues);
+                bernoulliPDep = getBernoulliP(pValues, independenceTest.getAlpha());
             }
         }
+    }
+
+    private double getBernoulliP(List<Double> pValues, double alpha) {
+        int successes = 0;
+
+        for (double pValue : pValues) {
+            if (pValue > alpha) successes++;
+        }
+
+        int n = pValues.size();
+        BinomialDistribution bd = new BinomialDistribution(n, 1.0 - alpha);
+        return (1.0 - bd.cumulativeProbability(successes));
     }
 
     private int getChunkSize(int n) {
