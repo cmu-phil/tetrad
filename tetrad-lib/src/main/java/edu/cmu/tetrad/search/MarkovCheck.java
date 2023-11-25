@@ -610,7 +610,7 @@ public class MarkovCheck {
                 ksPValueIndep = Double.NaN;
                 bernoulliPIndep = Double.NaN;
             } else {
-                ksPValueIndep = UniformityTest.getPValue(pValues);
+                ksPValueIndep = UniformityTest.getPValue(pValues, 0.0, 1.0);
                 bernoulliPIndep = getBernoulliP(pValues, independenceTest.getAlpha());
             }
         } else {
@@ -618,7 +618,7 @@ public class MarkovCheck {
                 ksPValueDep = Double.NaN;
                 bernoulliPDep = Double.NaN;
             } else {
-                ksPValueDep = UniformityTest.getPValue(pValues);
+                ksPValueDep = UniformityTest.getPValue(pValues, 0.0, 1.0);
                 bernoulliPDep = getBernoulliP(pValues, independenceTest.getAlpha());
             }
         }

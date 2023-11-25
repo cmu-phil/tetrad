@@ -10,23 +10,30 @@ import java.util.List;
 public class UniformityTest {
 
     public static double getPValue(List<Double> points) {
-        // Convert the list to a primitive double array
-        double[] data = points.stream().mapToDouble(Double::doubleValue).toArray();
 
         // Create a uniform distribution with the same range as the data
-        double min = 0.0;//points.stream().min(Double::compareTo).orElse(0.0);
-        double max = 1.0;//points.stream().max(Double::compareTo).orElse(1.0);
-        UniformRealDistribution distribution;
+        double min = points.stream().min(Double::compareTo).orElse(0.0);
+        double max = points.stream().max(Double::compareTo).orElse(1.0);
+
+        return getPValue(points, min, max);
+    }
+
+    public static double getPValue(List<Double> points, double min, double max) {
+
+        // Create a uniform distribution with the same range as the data
         try {
-            distribution = new UniformRealDistribution(min, max);
+            double[] data = points.stream().mapToDouble(Double::doubleValue).toArray();
+
+            UniformRealDistribution distribution = new UniformRealDistribution(min, max);
+
+            // Perform the Kolmogorov-Smirnov test
+            KolmogorovSmirnovTest test = new KolmogorovSmirnovTest();
+            return test.kolmogorovSmirnovTest(distribution, data);
         } catch (NumberIsTooLargeException e) {
             e.printStackTrace();
             return Double.NaN;
         }
 
-        // Perform the Kolmogorov-Smirnov test
-        KolmogorovSmirnovTest test = new KolmogorovSmirnovTest();
-        return test.kolmogorovSmirnovTest(distribution, data);
     }
 
     public static void main(String[] args) {
