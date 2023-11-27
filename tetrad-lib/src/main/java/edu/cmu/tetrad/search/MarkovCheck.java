@@ -33,11 +33,6 @@ import static org.apache.commons.math3.util.FastMath.min;
  * the p-values are tested for Uniformity using the Kolmogorov-Smirnov test; these should be dependent. Also, a fraction
  * of dependent judgments is returned, which should be maximal./p>
  *
- * <p>A "Markov adequacy score" is also given, which simply returns zero if the Markov p-value Uniformity test
- * fails and the fraction of dependent judgments for the local Faithfulness check otherwise. Maximizing this score picks
- * out models for which Markov holds and faithfulness holds to the extend possible; these model should generally have
- * good accuracy scores.</p>
- *
  * @author josephramsey
  */
 public class MarkovCheck {
@@ -55,6 +50,7 @@ public class MarkovCheck {
     private double ksPValueDep = Double.NaN;
     private double bernoulliPIndep = Double.NaN;
     private double bernoulliPDep = Double.NaN;
+    private int numResamples = 1;
 
     /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
@@ -67,82 +63,6 @@ public class MarkovCheck {
         this.independenceTest = independenceTest;
         this.msep = new MsepTest(this.graph);
         this.setType = setType;
-    }
-
-    /**
-     * Generates all results, for both the local Markov and local Faithfulness checks, for each node in the graph given
-     * the parents of that node. These results are stored in the resultsIndep and resultsDep lists.
-     *
-     * @see #getResults(boolean)
-     */
-    public void generateResults() {
-        resultsIndep.clear();
-        resultsDep.clear();
-
-        if (setType == ConditioningSetType.GLOBAL_MARKOV) {
-            AllSubsetsIndependenceFacts result = getAllSubsetsIndependenceFacts(graph);
-            generateResultsAllSubsets(true, result.msep, result.mconn);
-            generateResultsAllSubsets(false, result.msep, result.mconn);
-        } else {
-            List<Node> variables = independenceTest.getVariables();
-            List<Node> nodes = new ArrayList<>(variables);
-            Collections.sort(nodes);
-
-            List<Node> order = graph.paths().getValidOrder(graph.getNodes(), true);
-
-            for (Node x : nodes) {
-                Set<Node> z;
-
-                switch (setType) {
-                    case LOCAL_MARKOV:
-                        z = new HashSet<>(graph.getParents(x));
-                        break;
-                    case ORDERED_LOCAL_MARKOV:
-                        if (order == null) throw new IllegalArgumentException("No valid order found.");
-                        z = new HashSet<>(graph.getParents(x));
-
-                        // Keep only the parents in Prefix(x).
-                        for (Node w : new ArrayList<>(z)) {
-                            int i1 = order.indexOf(x);
-                            int i2 = order.indexOf(w);
-                            
-                            if (i2 >= i1) {
-                                z.remove(w);
-                            }
-                        }
-
-                        break;
-                    case MARKOV_BLANKET:
-                        z = GraphUtils.markovBlanket(x, graph);
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknown separation set type: " + setType);
-                }
-
-                Set<Node> msep = new HashSet<>();
-                Set<Node> mconn = new HashSet<>();
-
-                List<Node> other = new ArrayList<>(graph.getNodes());
-                Collections.sort(other);
-                other.removeAll(z);
-
-                for (Node y : other) {
-                    if (y == x) continue;
-                    if (z.contains(x) || z.contains(y)) continue;
-                    if (this.msep.isMSeparated(x, y, z)) {
-                        msep.add(y);
-                    } else {
-                        mconn.add(y);
-                    }
-                }
-
-                generateResults(true, x, z, msep, mconn);
-                generateResults(false, x, z, msep, mconn);
-            }
-        }
-
-        calcStats(true);
-        calcStats(false);
     }
 
     @NotNull
@@ -182,43 +102,80 @@ public class MarkovCheck {
         return new AllSubsetsIndependenceFacts(msep, mconn);
     }
 
-    public static class AllSubsetsIndependenceFacts {
-        private final List<IndependenceFact> msep;
-        private final List<IndependenceFact> mconn;
+    /**
+     * Generates all results, for both the local Markov and local Faithfulness checks, for each node in the graph given
+     * the parents of that node. These results are stored in the resultsIndep and resultsDep lists.
+     *
+     * @see #getResults(boolean)
+     */
+    public void generateResults() {
+        resultsIndep.clear();
+        resultsDep.clear();
 
-        public AllSubsetsIndependenceFacts(List<IndependenceFact> msep, List<IndependenceFact> mconn) {
-            this.msep = msep;
-            this.mconn = mconn;
-        }
+        if (setType == ConditioningSetType.GLOBAL_MARKOV) {
+            AllSubsetsIndependenceFacts result = getAllSubsetsIndependenceFacts(graph);
+            generateResultsAllSubsets(true, result.msep, result.mconn);
+            generateResultsAllSubsets(false, result.msep, result.mconn);
+        } else {
+            List<Node> variables = independenceTest.getVariables();
+            List<Node> nodes = new ArrayList<>(variables);
+            Collections.sort(nodes);
 
-        public String toStringIndep() {
-            StringBuilder builder = new StringBuilder("All subsets independence facts:\n");
+            List<Node> order = graph.paths().getValidOrder(graph.getNodes(), true);
 
-            for (IndependenceFact fact : msep) {
-                builder.append(fact).append("\n");
+            for (Node x : nodes) {
+                Set<Node> z;
+
+                switch (setType) {
+                    case LOCAL_MARKOV:
+                        z = new HashSet<>(graph.getParents(x));
+                        break;
+                    case ORDERED_LOCAL_MARKOV:
+                        if (order == null) throw new IllegalArgumentException("No valid order found.");
+                        z = new HashSet<>(graph.getParents(x));
+
+                        // Keep only the parents in Prefix(x).
+                        for (Node w : new ArrayList<>(z)) {
+                            int i1 = order.indexOf(x);
+                            int i2 = order.indexOf(w);
+
+                            if (i2 >= i1) {
+                                z.remove(w);
+                            }
+                        }
+
+                        break;
+                    case MARKOV_BLANKET:
+                        z = GraphUtils.markovBlanket(x, graph);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unknown separation set type: " + setType);
+                }
+
+                Set<Node> msep = new HashSet<>();
+                Set<Node> mconn = new HashSet<>();
+
+                List<Node> other = new ArrayList<>(graph.getNodes());
+                Collections.sort(other);
+                other.removeAll(z);
+
+                for (Node y : other) {
+                    if (y == x) continue;
+                    if (z.contains(x) || z.contains(y)) continue;
+                    if (this.msep.isMSeparated(x, y, z)) {
+                        msep.add(y);
+                    } else {
+                        mconn.add(y);
+                    }
+                }
+
+                generateResults(true, x, z, msep, mconn);
+                generateResults(false, x, z, msep, mconn);
             }
-
-            return builder.toString();
         }
 
-
-        public String toStringDep() {
-            StringBuilder builder = new StringBuilder("All subsets independence facts:\n");
-
-            for (IndependenceFact fact : mconn) {
-                builder.append(fact).append("\n");
-            }
-
-            return builder.toString();
-        }
-
-        public List<IndependenceFact> getMsep() {
-            return msep;
-        }
-
-        public List<IndependenceFact> getMconn() {
-            return mconn;
-        }
+        calcStats(true);
+        calcStats(false);
     }
 
     /**
@@ -318,23 +275,6 @@ public class MarkovCheck {
     }
 
     /**
-     * Returns the Markov Adequacy Score for the graph. This is zero if the p-value of the KS test of Uniformity is less
-     * than alpha, and the fraction of dependent pairs otherwise. This is only for continuous Gaussian data, as it
-     * hard-codes the Fisher Z test for the local Markov and Faithfulness check.
-     *
-     * @param alpha The alpha level for the KS test of Uniformity. An alpha level greater than this will be considered
-     *              uniform.
-     * @return The Markov Adequacy Score for this graph given the data.
-     */
-    public double getMarkovAdequacyScore(double alpha) {
-        if (getKsPValue(true) > alpha) {
-            return getFractionDependent(false);
-        } else {
-            return 0.0;
-        }
-    }
-
-    /**
      * Returns the variables of the independence test.
      *
      * @return The variables of the independence test.
@@ -342,6 +282,23 @@ public class MarkovCheck {
     public List<Node> getVariables() {
         return new ArrayList<>(independenceTest.getVariables());
     }
+
+//    /**
+//     * Returns the Markov Adequacy Score for the graph. This is zero if the p-value of the KS test of Uniformity is less
+//     * than alpha, and the fraction of dependent pairs otherwise. This is only for continuous Gaussian data, as it
+//     * hard-codes the Fisher Z test for the local Markov and Faithfulness check.
+//     *
+//     * @param alpha The alpha level for the KS test of Uniformity. An alpha level greater than this will be considered
+//     *              uniform.
+//     * @return The Markov Adequacy Score for this graph given the data.
+//     */
+//    public double getMarkovAdequacyScore(double alpha) {
+//        if (getKsPValue(true) > alpha) {
+//            return getFractionDependent(false);
+//        } else {
+//            return 0.0;
+//        }
+//    }
 
     /**
      * Returns the variable with the given name.
@@ -403,29 +360,29 @@ public class MarkovCheck {
                     Node y = fact.getY();
                     Set<Node> z = fact.getZ();
 
-                    if (independenceTest instanceof RowsSettable) {
-                        for (int t = 0; t < 5; t++) {
-                            List<Integer> rows = getSubsampleRows(0.8);
-//                            List<Integer> rows = getBoostrapSample(1.0);
-                            ((RowsSettable) independenceTest).setRows(rows);
-
-                            boolean verbose = independenceTest.isVerbose();
-                            independenceTest.setVerbose(false);
-                            IndependenceResult result;
-                            try {
-                                result = independenceTest.checkIndependence(x, y, z);
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                            boolean indep = result.isIndependent();
-                            double pValue = result.getPValue();
-                            independenceTest.setVerbose(verbose);
-
-                            if (!Double.isNaN(pValue)) {
-                                results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-                            }
-                        }
-                    } else {
+//                    if (independenceTest instanceof RowsSettable) {
+//                        for (int t = 0; t < getNumResamples(); t++) {
+//                            List<Integer> rows = getSubsampleRows(0.8);
+////                            List<Integer> r5ows = getBoostrapSample(1.0);
+//                            ((RowsSettable) independenceTest).setRows(rows);
+//
+//                            boolean verbose = independenceTest.isVerbose();
+//                            independenceTest.setVerbose(false);
+//                            IndependenceResult result;
+//                            try {
+//                                result = independenceTest.checkIndependence(x, y, z);
+//                            } catch (Exception e) {
+//                                throw new RuntimeException(e);
+//                            }
+//                            boolean indep = result.isIndependent();
+//                            double pValue = result.getPValue();
+//                            independenceTest.setVerbose(verbose);
+//
+//                            if (!Double.isNaN(pValue)) {
+//                                results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+//                            }
+//                        }
+//                    } else {
                         boolean verbose = independenceTest.isVerbose();
                         independenceTest.setVerbose(false);
                         IndependenceResult result;
@@ -441,7 +398,7 @@ public class MarkovCheck {
                         if (!Double.isNaN(pValue)) {
                             results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
                         }
-                    }
+//                    }
 //                    boolean verbose = independenceTest.isVerbose();
 //                    independenceTest.setVerbose(false);
 //                    IndependenceResult result;
@@ -589,7 +546,14 @@ public class MarkovCheck {
     }
 
     private void calcStats(boolean indep) {
-        List<IndependenceResult> results = getResultsLocal(indep);
+        List<IndependenceResult> results = new ArrayList<>(getResultsLocal(indep));
+
+//        Collections.shuffle(_results);
+//
+//        List<IndependenceResult> results = new ArrayList<>();
+//        for (int i = 0; i < _results.size() / getNumResamples(); i++) {
+//            results.add(_results.get(i));
+//        }
 
         int dependent = 0;
 
@@ -624,16 +588,28 @@ public class MarkovCheck {
         }
     }
 
+    /**
+     * Returns a Bernoulli p-value for the hypothesis that the distribution of p-values is not Uniform under the null
+     * hypothesis. Values less than alpha imply non-uniform distributions.
+     * @param pValues The p-values.
+     * @param alpha The alpha level. Rejections with p-values less than this are considered dependent.
+     * @return The Bernoulli p-value for non-uniformity.
+     */
     private double getBernoulliP(List<Double> pValues, double alpha) {
-        int successes = 0;
+        int dependentJudgments = 0;
 
         for (double pValue : pValues) {
-            if (pValue > alpha) successes++;
+            if (pValue < alpha) dependentJudgments++;
         }
 
         int n = pValues.size();
-        BinomialDistribution bd = new BinomialDistribution(n, 1.0 - alpha);
-        return (1.0 - bd.cumulativeProbability(successes));
+
+        // The left tail of this binomial distribution is a p-value for getting too few dependent judgments for
+        // the distribution to count as uniform.
+        BinomialDistribution bd = new BinomialDistribution(n, alpha);
+
+        // We want the area to the right of this, so we subtract from 1.
+        return (1.0 - bd.cumulativeProbability(dependentJudgments)) / 2.0 + (bd.probability(n - dependentJudgments) / 2.0);
     }
 
     private int getChunkSize(int n) {
@@ -647,6 +623,53 @@ public class MarkovCheck {
             return this.resultsIndep;
         } else {
             return this.resultsDep;
+        }
+    }
+
+    public int getNumResamples() {
+        return numResamples;
+    }
+
+    public void setNumResamples(int numResamples) {
+        this.numResamples = numResamples;
+    }
+
+    public static class AllSubsetsIndependenceFacts {
+        private final List<IndependenceFact> msep;
+        private final List<IndependenceFact> mconn;
+
+        public AllSubsetsIndependenceFacts(List<IndependenceFact> msep, List<IndependenceFact> mconn) {
+            this.msep = msep;
+            this.mconn = mconn;
+        }
+
+        public String toStringIndep() {
+            StringBuilder builder = new StringBuilder("All subsets independence facts:\n");
+
+            for (IndependenceFact fact : msep) {
+                builder.append(fact).append("\n");
+            }
+
+            return builder.toString();
+        }
+
+
+        public String toStringDep() {
+            StringBuilder builder = new StringBuilder("All subsets independence facts:\n");
+
+            for (IndependenceFact fact : mconn) {
+                builder.append(fact).append("\n");
+            }
+
+            return builder.toString();
+        }
+
+        public List<IndependenceFact> getMsep() {
+            return msep;
+        }
+
+        public List<IndependenceFact> getMconn() {
+            return mconn;
         }
     }
 

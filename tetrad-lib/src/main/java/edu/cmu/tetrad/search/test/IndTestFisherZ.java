@@ -49,7 +49,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author josephramsey
  * @author Frank Wimberly
  */
-public final class IndTestFisherZ implements IndependenceTest {
+public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     private final Map<String, Integer> indexMap;
     private final Map<String, Node> nameMap;
     private final NormalDistribution normal = new NormalDistribution(0, 1, 1e-15);
@@ -73,7 +73,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @param alpha   The alpha level of the test.
      */
     public IndTestFisherZ(DataSet dataSet, double alpha) {
-        this.dataSet = dataSet;
+        this.dataSet = dataSet.copy();
 
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
@@ -544,12 +544,12 @@ public final class IndTestFisherZ implements IndependenceTest {
                 }
             }
 
+            this.rows = rows;
             this.cor = null;
         } else {
             this.cor = new CorrelationMatrix(dataSet);
+            this.rows = null;
         }
-
-        this.rows = rows;
     }
 }
 

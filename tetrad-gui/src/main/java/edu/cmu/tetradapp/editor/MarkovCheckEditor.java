@@ -83,8 +83,8 @@ public class MarkovCheckEditor extends JPanel {
     private JLabel fractionDepLabelDep;
     private JLabel ksLabelDep;
     private JLabel ksLabelIndep;
-    private JLabel masLabelDep;
-    private JLabel masLabelIndep;
+//    private JLabel masLabelDep;
+//    private JLabel masLabelIndep;
     private JLabel bernoulliPLabelDep;
     private JLabel bernoulliPLabelIndep;
     private int sortDir;
@@ -796,13 +796,13 @@ public class MarkovCheckEditor extends JPanel {
             fractionDepLabelDep = new JLabel();
         }
 
-        if (masLabelIndep == null) {
-            masLabelIndep = new JLabel();
-        }
-
-        if (masLabelDep == null) {
-            masLabelDep = new JLabel();
-        }
+//        if (masLabelIndep == null) {
+//            masLabelIndep = new JLabel();
+//        }
+//
+//        if (masLabelDep == null) {
+//            masLabelDep = new JLabel();
+//        }
 
         ksLabelIndep.setText("P-value of KS Uniformity Test = "
                 + ((Double.isNaN(model.getMarkovCheck().getKsPValue(true))
@@ -829,14 +829,14 @@ public class MarkovCheckEditor extends JPanel {
                 + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(false)))));
-        masLabelIndep.setText("Markov Adequacy Score = "
-                + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
-                ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
-        masLabelDep.setText("Markov Adequacy Score = "
-                + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
-                ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
+//        masLabelIndep.setText("Markov Adequacy Score = "
+//                + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
+//                ? "-"
+//                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
+//        masLabelDep.setText("Markov Adequacy Score = "
+//                + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
+//                ? "-"
+//                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
 
 
         conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + conditioningSetTypeJComboBox.getSelectedItem() + ")");
