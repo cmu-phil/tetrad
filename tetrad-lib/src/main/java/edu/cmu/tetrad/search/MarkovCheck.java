@@ -360,29 +360,29 @@ public class MarkovCheck {
                     Node y = fact.getY();
                     Set<Node> z = fact.getZ();
 
-//                    if (independenceTest instanceof RowsSettable) {
-//                        for (int t = 0; t < getNumResamples(); t++) {
-//                            List<Integer> rows = getSubsampleRows(0.8);
-////                            List<Integer> r5ows = getBoostrapSample(1.0);
-//                            ((RowsSettable) independenceTest).setRows(rows);
-//
-//                            boolean verbose = independenceTest.isVerbose();
-//                            independenceTest.setVerbose(false);
-//                            IndependenceResult result;
-//                            try {
-//                                result = independenceTest.checkIndependence(x, y, z);
-//                            } catch (Exception e) {
-//                                throw new RuntimeException(e);
-//                            }
-//                            boolean indep = result.isIndependent();
-//                            double pValue = result.getPValue();
-//                            independenceTest.setVerbose(verbose);
-//
-//                            if (!Double.isNaN(pValue)) {
-//                                results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-//                            }
-//                        }
-//                    } else {
+                    if (indep && independenceTest instanceof RowsSettable) {
+                        for (int t = 0; t < getNumResamples(); t++) {
+                            List<Integer> rows = getSubsampleRows(0.5);
+//                            List<Integer> r5ows = getBoostrapSample(1.0);
+                            ((RowsSettable) independenceTest).setRows(rows);
+
+                            boolean verbose = independenceTest.isVerbose();
+                            independenceTest.setVerbose(false);
+                            IndependenceResult result;
+                            try {
+                                result = independenceTest.checkIndependence(x, y, z);
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                            boolean indep = result.isIndependent();
+                            double pValue = result.getPValue();
+                            independenceTest.setVerbose(verbose);
+
+                            if (!Double.isNaN(pValue)) {
+                                results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+                            }
+                        }
+                    } else {
                         boolean verbose = independenceTest.isVerbose();
                         independenceTest.setVerbose(false);
                         IndependenceResult result;
@@ -398,22 +398,22 @@ public class MarkovCheck {
                         if (!Double.isNaN(pValue)) {
                             results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
                         }
-//                    }
-//                    boolean verbose = independenceTest.isVerbose();
-//                    independenceTest.setVerbose(false);
-//                    IndependenceResult result;
-//                    try {
-//                        result = independenceTest.checkIndependence(x, y, z);
-//                    } catch (Exception e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                    boolean indep = result.isIndependent();
-//                    double pValue = result.getPValue();
-//                    independenceTest.setVerbose(verbose);
-//
-//                    if (!Double.isNaN(pValue)) {
-//                        results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-//                    }
+                    }
+                    boolean verbose = independenceTest.isVerbose();
+                    independenceTest.setVerbose(false);
+                    IndependenceResult result;
+                    try {
+                        result = independenceTest.checkIndependence(x, y, z);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    boolean indep = result.isIndependent();
+                    double pValue = result.getPValue();
+                    independenceTest.setVerbose(verbose);
+
+                    if (!Double.isNaN(pValue)) {
+                        results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+                    }
                 }
 
                 return results;
