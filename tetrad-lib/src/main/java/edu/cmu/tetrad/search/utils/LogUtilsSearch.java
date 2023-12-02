@@ -185,7 +185,12 @@ public class LogUtilsSearch {
 
     public static void stampWithBic(Graph graph, DataModel dataModel) {
         if (!graph.getAllAttributes().containsKey("BIC")) {
-            graph.addAttribute("BIC", new BicEst().getValue(null, graph, dataModel));
+            try {
+                graph.addAttribute("BIC", new BicEst().getValue(null, graph, dataModel));
+            } catch (Exception e) {
+                e.printStackTrace();
+//                throw new RuntimeException(e);
+            }
         }
     }
 }

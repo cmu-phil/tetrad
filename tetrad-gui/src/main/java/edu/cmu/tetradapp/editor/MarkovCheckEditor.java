@@ -48,6 +48,8 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
@@ -232,7 +234,22 @@ public class MarkovCheckEditor extends JPanel {
         box1.add(indTestJComboBox);
         JButton params = new JButton("Params");
         box1.add(params);
+        JButton refresh = new JButton("Refresh");
+        box1.add(refresh);
+        DoubleTextField percent = new DoubleTextField(0.5, 4, new DecimalFormat("0.0"));
+        box1.add(new JLabel("% Sample:"));
+        box1.add(percent);
         box1.add(Box.createHorizontalGlue());
+
+        refresh.addActionListener(e -> refreshResult(model, percent));
+
+        percent.setFilter((value, oldValue) -> {
+            if (value < 0.0 || value > 1.0) {
+                return oldValue;
+            } else {
+                return value;
+            }
+        });
 
         setLabelTexts();
 
@@ -244,19 +261,7 @@ public class MarkovCheckEditor extends JPanel {
 
                 @Override
                 public void watch() {
-                    setTest();
-                    model.getMarkovCheck().generateResults();
-                    tableModelIndep.fireTableDataChanged();
-                    tableModelDep.fireTableDataChanged();
-                    histogramPanelDep.removeAll();
-                    histogramPanelIndep.removeAll();
-                    histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
-                    histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
-                    histogramPanelDep.validate();
-                    histogramPanelIndep.validate();
-                    histogramPanelDep.repaint();
-                    histogramPanelIndep.repaint();
-                    setLabelTexts();
+                    refreshResult(model, percent);
                 }
             }
 
@@ -312,6 +317,23 @@ public class MarkovCheckEditor extends JPanel {
 //        box.setPreferredSize(new Dimension(750, 550));
 
         add(box);
+    }
+
+    private void refreshResult(MarkovCheckIndTestModel model, DoubleTextField percent) {
+        setTest();
+        model.getMarkovCheck().setPercentResammple(percent.getValue());
+        model.getMarkovCheck().generateResults();
+        tableModelIndep.fireTableDataChanged();
+        tableModelDep.fireTableDataChanged();
+        histogramPanelDep.removeAll();
+        histogramPanelIndep.removeAll();
+        histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
+        histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+        histogramPanelDep.validate();
+        histogramPanelIndep.validate();
+        histogramPanelDep.repaint();
+        histogramPanelIndep.repaint();
+        setLabelTexts();
     }
 
     @NotNull

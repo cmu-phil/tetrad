@@ -61,6 +61,7 @@ public abstract class WatchedProcess {
             try {
                 watch();
             } catch (InterruptedException e) {
+                e.printStackTrace();
                 // Thread was interrupted while sleeping, so exit the loop and terminate
                 System.out.println("Thread was interrupted while watching. Stopping...");
                 return;
