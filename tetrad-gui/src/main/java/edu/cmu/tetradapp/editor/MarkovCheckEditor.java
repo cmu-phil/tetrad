@@ -890,9 +890,6 @@ public class MarkovCheckEditor extends JPanel {
                 + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
-
-
-
         bernoulliPLabelIndep.setText("P-value of Bernoulli Test = "
                 + ((Double.isNaN(model.getMarkovCheck().getBernoulliPValue(true))
                 ? "-"
