@@ -48,8 +48,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
@@ -89,6 +87,10 @@ public class MarkovCheckEditor extends JPanel {
 //    private JLabel masLabelIndep;
     private JLabel bernoulliPLabelDep;
     private JLabel bernoulliPLabelIndep;
+    private JLabel andersonDarlingA2LabelDep;
+    private JLabel andersonDarlingA2LabelIndep;
+    private JLabel andersonDarlingPLabelDep;
+    private JLabel andersonDarlingPLabelIndep;
     private int sortDir;
     private int lastSortCol;
     private IndependenceWrapper independenceWrapper;
@@ -437,7 +439,7 @@ public class MarkovCheckEditor extends JPanel {
                     IndependenceFact fact = model.getResults(false).get(rowIndex).getFact();
 
                     List<Node> Z = new ArrayList<>(fact.getZ());
-                    Collections.sort(Z);
+//                    Collections.sort(Z);
 
                     String z = Z.stream().map(Node::getName).collect(Collectors.joining(", "));
 
@@ -562,6 +564,16 @@ public class MarkovCheckEditor extends JPanel {
         b6a.add(bernoulliPLabelDep);
         b0b1.add(b6a);
 
+        Box b6b = Box.createHorizontalBox();
+        b6b.add(Box.createHorizontalGlue());
+        b6b.add(andersonDarlingA2LabelDep);
+        b0b1.add(b6b);
+
+        Box b6c = Box.createHorizontalBox();
+        b6c.add(Box.createHorizontalGlue());
+        b6c.add(andersonDarlingPLabelDep);
+        b0b1.add(b6c);
+
 //        Box b7 = Box.createHorizontalBox();
 //        b7.add(Box.createHorizontalGlue());
 //        b7.add(masLabelDep);
@@ -636,7 +648,7 @@ public class MarkovCheckEditor extends JPanel {
                     IndependenceFact fact = model.getResults(true).get(rowIndex).getFact();
 
                     List<Node> Z = new ArrayList<>(fact.getZ());
-                    Collections.sort(Z);
+//                    Collections.sort(Z);
 
                     String z = Z.stream().map(Node::getName).collect(Collectors.joining(", "));
 
@@ -760,6 +772,16 @@ public class MarkovCheckEditor extends JPanel {
         b6a.add(bernoulliPLabelIndep);
         b0b1.add(b6a);
 
+        Box b6b = Box.createHorizontalBox();
+        b6b.add(Box.createHorizontalGlue());
+        b6b.add(andersonDarlingA2LabelIndep);
+        b0b1.add(b6b);
+
+        Box b6c = Box.createHorizontalBox();
+        b6c.add(Box.createHorizontalGlue());
+        b6c.add(andersonDarlingPLabelIndep);
+        b0b1.add(b6c);
+
 //        Box b7 = Box.createHorizontalBox();
 //        b7.add(Box.createHorizontalGlue());
 //        b7.add(masLabelIndep);
@@ -810,6 +832,22 @@ public class MarkovCheckEditor extends JPanel {
             bernoulliPLabelDep = new JLabel();
         }
 
+        if (andersonDarlingA2LabelIndep == null) {
+            andersonDarlingA2LabelIndep = new JLabel();
+        }
+
+        if (andersonDarlingA2LabelDep == null) {
+            andersonDarlingA2LabelDep = new JLabel();
+        }
+
+        if (andersonDarlingPLabelIndep == null) {
+            andersonDarlingPLabelIndep = new JLabel();
+        }
+
+        if (andersonDarlingPLabelDep == null) {
+            andersonDarlingPLabelDep = new JLabel();
+        }
+
         if (fractionDepLabelIndep == null) {
             fractionDepLabelIndep = new JLabel();
         }
@@ -834,6 +872,26 @@ public class MarkovCheckEditor extends JPanel {
                 + ((Double.isNaN(model.getMarkovCheck().getKsPValue(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getKsPValue(false)))));
+
+        andersonDarlingA2LabelIndep.setText("A^2 = "
+                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingA2Star(true))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingA2Star(true)))));
+        andersonDarlingA2LabelDep.setText("A^2* = "
+                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingA2Star(false))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingA2Star(false)))));
+
+        andersonDarlingPLabelIndep.setText("P-value of the Anderson-Darling test = "
+                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(true))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(true)))));
+        andersonDarlingPLabelDep.setText("P-value of the Anderson-Darling test = "
+                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(false))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
+
+
 
         bernoulliPLabelIndep.setText("P-value of Bernoulli Test = "
                 + ((Double.isNaN(model.getMarkovCheck().getBernoulliPValue(true))

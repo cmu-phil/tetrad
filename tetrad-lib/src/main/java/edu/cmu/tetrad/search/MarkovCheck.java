@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
@@ -11,6 +12,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.math3.distribution.BinomialDistribution;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -49,6 +51,10 @@ public class MarkovCheck {
     private double fractionDependentDep = Double.NaN;
     private double ksPValueIndep = Double.NaN;
     private double ksPValueDep = Double.NaN;
+    private double aSquaredStarIndep = Double.NaN;
+    private double aSquaredStarDep = Double.NaN;
+    private double andersonDarlingPIndep = Double.NaN;
+    private double andersonDarlingPDep = Double.NaN;
     private double bernoulliPIndep = Double.NaN;
     private double bernoulliPDep = Double.NaN;
     private int numResamples = 1;
@@ -73,14 +79,14 @@ public class MarkovCheck {
         MsepTest msepTest = new MsepTest(graph);
 
         List<Node> nodes = new ArrayList<>(variables);
-        Collections.sort(nodes);
+//        Collections.sort(nodes);
 
         Set<IndependenceFact> msep = new HashSet<>();
         Set<IndependenceFact> mconn = new HashSet<>();
 
         for (Node x : nodes) {
             List<Node> other = new ArrayList<>(variables);
-            Collections.sort(other);
+//            Collections.sort(other);
             other.remove(x);
 
             for (Node y : other) {
@@ -122,12 +128,14 @@ public class MarkovCheck {
         } else {
             List<Node> variables = independenceTest.getVariables();
             List<Node> nodes = new ArrayList<>(variables);
-            Collections.sort(nodes);
+//            Collections.sort(nodes);
 
             List<Node> order = null;
 
-            if (!graph.paths().existsDirectedCycle()) {
+            try {
                 order = graph.paths().getValidOrder(graph.getNodes(), true);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             Set<IndependenceFact> msep = new HashSet<>();
@@ -169,7 +177,7 @@ public class MarkovCheck {
                     }
 
                     List<Node> other = new ArrayList<>(graph.getNodes());
-                    Collections.sort(other);
+//                    Collections.sort(other);
                     other.removeAll(z);
 
                     for (Node w : other) {
@@ -280,6 +288,22 @@ public class MarkovCheck {
             return ksPValueIndep;
         } else {
             return ksPValueDep;
+        }
+    }
+
+    public double getAndersonDarlingA2Star(boolean indep) {
+        if (indep) {
+            return aSquaredStarIndep;
+        } else {
+            return aSquaredStarDep;
+        }
+    }
+
+    public double getAndersonDarlingP(boolean indep) {
+        if (indep) {
+            return andersonDarlingPIndep;
+        } else {
+            return andersonDarlingPDep;
         }
     }
 
@@ -550,22 +574,32 @@ public class MarkovCheck {
         }
 
         List<Double> pValues = getPValues(results);
+        double aSquaredStar = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1)).getASquaredStar();
 
         if (indep) {
             if (pValues.size() < 2) {
                 ksPValueIndep = Double.NaN;
                 bernoulliPIndep = Double.NaN;
+                aSquaredStarIndep = Double.NaN;
+                andersonDarlingPIndep = Double.NaN;
             } else {
                 ksPValueIndep = UniformityTest.getPValue(pValues, 0.0, 1.0);
                 bernoulliPIndep = getBernoulliP(pValues, independenceTest.getAlpha());
+                aSquaredStarIndep = aSquaredStar;
+                andersonDarlingPIndep = 1. - new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1)).getProbTail(pValues.size(), aSquaredStar);
             }
         } else {
             if (pValues.size() < 2) {
                 ksPValueDep = Double.NaN;
                 bernoulliPDep = Double.NaN;
+                aSquaredStarDep = Double.NaN;
+                andersonDarlingPDep = Double.NaN;
+
             } else {
                 ksPValueDep = UniformityTest.getPValue(pValues, 0.0, 1.0);
                 bernoulliPDep = getBernoulliP(pValues, independenceTest.getAlpha());
+                aSquaredStarDep = aSquaredStar;
+                andersonDarlingPDep = 1. - new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1)).getProbTail(pValues.size(), aSquaredStar);
             }
         }
     }
@@ -656,13 +690,13 @@ public class MarkovCheck {
 
         public List<IndependenceFact> getMsep() {
             List<IndependenceFact> facts = new ArrayList<>(msep);
-            Collections.sort(facts);
+//            Collections.sort(facts);
             return facts;
         }
 
         public List<IndependenceFact> getMconn() {
             List<IndependenceFact> facts = new ArrayList<>(mconn);
-            Collections.sort(facts);
+//            Collections.sort(facts);
             return facts;
         }
     }

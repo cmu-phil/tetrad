@@ -21,11 +21,16 @@
 
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.RealDistribution;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.util.FastMath;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Implements the Anderson-Darling test against the given CDF, with P values calculated as in R's ad.test method (in
@@ -118,22 +123,78 @@ public class GeneralAndersonDarlingTest {
         }
 
         double a = -n - (1.0 / numSummed) * h;
-        double aa = (1 + 0.75 / numSummed + 2.25 / FastMath.pow(numSummed, 2)) * a;
+        double aa = (1 + 0.75 / numSummed + 2.25 / pow(numSummed, 2)) * a;
         double p;
 
         if (aa < 0.2) {
-            p = 1 - FastMath.exp(-13.436 + 101.14 * aa - 223.73 * aa * aa);
+            p = 1 - exp(-13.436 + 101.14 * aa - 223.73 * aa * aa);
         } else if (aa < 0.34) {
-            p = 1 - FastMath.exp(-8.318 + 42.796 * aa - 59.938 * aa * aa);
+            p = 1 - exp(-8.318 + 42.796 * aa - 59.938 * aa * aa);
         } else if (aa < 0.6) {
-            p = FastMath.exp(0.9177 - 4.279 * aa - 1.38 * aa * aa);
+            p = exp(0.9177 - 4.279 * aa - 1.38 * aa * aa);
         } else {
-            p = FastMath.exp(1.2937 - 5.709 * aa + 0.0186 * aa * aa);
+            p = exp(1.2937 - 5.709 * aa + 0.0186 * aa * aa);
         }
 
         this.aSquared = a;
         this.aSquaredStar = aa;
         this.p = p;
+    }
+
+    private double c(double n) {
+        return .01265 + .1757 / n;
+    }
+
+    private double g1(double x) {
+        return sqrt(x) * (1 - x) * (49 * x - 102);
+    }
+
+    private double g2(double x) {
+        return -.00022633 + (6.54034 - (14.6538 - (14.458 - (8.259 - 1.91864 * x) * x) * x) * x) * x;
+    }
+
+    private double g3(double x) {
+        return -130.2137 + (745.2337 - (1705.091 - (1950.646 - (1116.360 - 255.7844 * x) * x) * x) * x) * x;
+    }
+
+    private double errfix(double n, double x) {
+        if (x < c(n)) {
+            return (.0037 / pow(n, 3) + .00078 / pow(n, 2) + .00006 / n) * g1(x / c(n));
+        } else if (x < .8) {
+            return (.04213 / n + .01365 / pow(n , 2)) * g2((x - c(n)) / (.8 - c(n)));
+        } else {
+            return g3(x) / n;
+        }
+    }
+
+    private double adinf(double z) {
+        if (0 < z && z < 2) {
+            return pow(z, -0.5) * exp(-1.2337141 / z) * (2.00012 + (0.247105 - (.0649821 - (.0347962 - (.0116720 - .00168691 * z) * z) * z) * z) * z);
+        } else if (z >= 2) {
+            return exp( -exp(1.0776 - (2.30695 - (.43424 - (.082433 - (.008056 - .0003146 * z) * z) * z) * z) * z));
+        } else {
+           return 0;
+        }
+    }
+
+    public double getProbTail(double n, double z) {
+        return adinf(z) + errfix(n, adinf(z));
+    }
+
+    public static void main(String[] args) {
+        List<Double> data = new ArrayList<>();
+
+        for (int i = 0; i < 500; i++) {
+//            data.add(RandomUtil.getInstance().nextUniform(0, 1));
+            data.add(RandomUtil.getInstance().nextBeta(2, 5));
+        }
+
+        GeneralAndersonDarlingTest test = new GeneralAndersonDarlingTest(data, new UniformRealDistribution(0, 1));
+
+        System.out.println(test.getASquared());
+        System.out.println(test.getASquaredStar());
+        System.out.println(test.getP());
+        System.out.println(test.getProbTail(data.size(), test.getASquaredStar()));
     }
 }
 
