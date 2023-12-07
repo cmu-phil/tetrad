@@ -59,7 +59,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     private List<Node> variables;
     private double alpha;
     private DataSet dataSet;
-    private boolean verbose = true;
+    private boolean verbose = false;
     //    private double p = Double.NaN;
     private double r = Double.NaN;
     private List<Integer> rows = null;

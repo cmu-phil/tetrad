@@ -137,12 +137,12 @@ public class MarkovCheck {
             List<Node> variables = independenceTest.getVariables();
             List<Node> nodes = new ArrayList<>(variables);
 
-            List<Node> order;
+            List<Node> order = null;
 
             try {
                 order = graph.paths().getValidOrder(graph.getNodes(), true);
             } catch (Exception e) {
-                throw new RuntimeException("Error getting valid order: " + e.getMessage());
+                // Leave null. Not an error here. Just means we can't use the ordered local Markov check.
             }
 
             Set<IndependenceFact> allIndependenceFacts = new HashSet<>();

@@ -145,8 +145,10 @@ public class Pc implements IGraphSearch {
      * @see IFas
      */
     public Graph search(IFas fas, Set<Node> nodes) {
-        this.logger.forceLogMessage("Starting PC algorithm");
-        this.logger.forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        if (verbose) {
+            this.logger.forceLogMessage("Starting PC algorithm");
+            this.logger.forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         long startTime = MillisecondTimes.timeMillis();
 
@@ -189,9 +191,11 @@ public class Pc implements IGraphSearch {
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
-        this.logger.forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.forceLogMessage("Finishing PC Algorithm.");
-        this.logger.flush();
+        if (verbose) {
+            this.logger.forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            this.logger.forceLogMessage("Finishing PC Algorithm.");
+            this.logger.flush();
+        }
 
         return this.graph;
     }
