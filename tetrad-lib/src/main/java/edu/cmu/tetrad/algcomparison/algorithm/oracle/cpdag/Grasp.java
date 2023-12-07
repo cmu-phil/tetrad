@@ -16,6 +16,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.TsUtils;
@@ -89,7 +90,11 @@ public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             grasp.setKnowledge(this.knowledge);
             grasp.bestOrder(score.getVariables());
             Graph graph = grasp.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG));
-            LogUtilsSearch.stampWithScores(graph, dataModel, score);
+
+            if (!(score instanceof GraphScore)) {
+                LogUtilsSearch.stampWithScores(graph, dataModel, score);
+            }
+
             return graph;
         } else {
             Grasp algorithm = new Grasp(this.test, this.score);

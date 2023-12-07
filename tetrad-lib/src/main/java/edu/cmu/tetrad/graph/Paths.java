@@ -1706,6 +1706,10 @@ public class Paths implements TetradSerializable {
         return !isMConnectedTo(node1, node2, z);
     }
 
+    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, Map<Node, Set<Node>> ancestors) {
+        return !isMConnectedTo(node1, node2, z, ancestors);
+    }
+
     /**
      * @return true iff there is a semi-directed path from node1 to node2
      */

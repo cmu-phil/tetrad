@@ -254,7 +254,7 @@ public class MsepTest implements IndependenceTest {
             }
         }
 
-        return getGraph().paths().isMSeparatedFrom(x, y, z);
+        return getGraph().paths().isMSeparatedFrom(x, y, z, ancestorMap);
     }
 
     /**
