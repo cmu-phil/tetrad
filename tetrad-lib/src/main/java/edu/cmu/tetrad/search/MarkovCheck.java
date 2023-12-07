@@ -63,7 +63,7 @@ public class MarkovCheck {
      *
      * @param graph            The graph.
      * @param independenceTest The test over the variables of the graph.
-     * @param setType The type of conditioning sets to use in the Markov check.
+     * @param setType          The type of conditioning sets to use in the Markov check.
      */
     public MarkovCheck(Graph graph, IndependenceTest independenceTest, ConditioningSetType setType) {
         this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
@@ -199,6 +199,9 @@ public class MarkovCheck {
             generateMseps(new ArrayList<>(allIndependenceFacts), msep, mconn, new MsepTest(graph));
             generateResults(msep, true);
             generateResults(mconn, false);
+
+            this.numTestsindep = msep.size();
+            this.numTestsDep = mconn.size();
         }
 
         calcStats(true);
@@ -295,6 +298,7 @@ public class MarkovCheck {
 
     /**
      * Returns the Anderson-Darling A^2* statistic for the given list of results.
+     *
      * @param indep True if for implied independencies, false if for implied dependencies.
      * @return The Anderson-Darling A^2* statistic for the given list of results.
      */
@@ -308,6 +312,7 @@ public class MarkovCheck {
 
     /**
      * Returns the Anderson-Darling p-value for the given list of results.
+     *
      * @param indep True if for implied independencies, false if for implied dependencies.
      * @return The Anderson-Darling p-value for the given list of results.
      */
@@ -321,6 +326,7 @@ public class MarkovCheck {
 
     /**
      * Returns the Bernoulli p-value for the given list of results.
+     *
      * @param indep True if for implied independencies, false if for implied dependencies.
      * @return The Bernoulli p-value for the given list of results.
      */
@@ -329,6 +335,20 @@ public class MarkovCheck {
             return bernoulliPIndep;
         } else {
             return bernoulliPDep;
+        }
+    }
+
+    /**
+     * Returns the number of tests for the given list of results.
+     *
+     * @param indep True if for implied independencies, false if for implied dependencies.
+     * @return The number of tests for the given list of results.
+     */
+    public int getNumTests(boolean indep) {
+        if (indep) {
+            return numTestsindep;
+        } else {
+            return numTestsDep;
         }
     }
 
@@ -373,22 +393,21 @@ public class MarkovCheck {
     /**
      * Generates the m-separation sets for the given list of independence facts. The m-separation sets are stored in the
      * msep and mconn sets.
+     *
      * @param allIndependenceFacts The list of independence facts.
-     * @param msep The set of m-separation facts.
-     * @param mconn The set of m-connection facts.
-     * @param msepTest The m-separation test.
+     * @param msep                 The set of m-separation facts.
+     * @param mconn                The set of m-connection facts.
+     * @param msepTest             The m-separation test.
      */
     private void generateMseps(List<IndependenceFact> allIndependenceFacts, Set<IndependenceFact> msep, Set<IndependenceFact> mconn,
                                MsepTest msepTest) {
         class IndCheckTask implements Callable<Pair<Set<IndependenceFact>, Set<IndependenceFact>>> {
-            private final int from;
-            private final int to;
+            private final int index;
             private final List<IndependenceFact> facts;
             private final MsepTest msepTest;
 
-            IndCheckTask(int from, int to, List<IndependenceFact> facts, MsepTest test) {
-                this.from = from;
-                this.to = to;
+            IndCheckTask(int index, List<IndependenceFact> facts, MsepTest test) {
+                this.index = index;
                 this.facts = facts;
                 this.msepTest = test;
             }
@@ -398,19 +417,16 @@ public class MarkovCheck {
                 Set<IndependenceFact> msep = new HashSet<>();
                 Set<IndependenceFact> mconn = new HashSet<>();
 
-                for (int i = from; i < to; i++) {
-                    if (Thread.interrupted()) break;
-                    IndependenceFact fact = facts.get(i);
+                IndependenceFact fact = facts.get(index);
 
-                    Node x = fact.getX();
-                    Node y = fact.getY();
-                    Set<Node> z = fact.getZ();
+                Node x = fact.getX();
+                Node y = fact.getY();
+                Set<Node> z = fact.getZ();
 
-                    if (this.msepTest.isMSeparated(x, y, z)) {
-                        msep.add(fact);
-                    } else {
-                        mconn.add(fact);
-                    }
+                if (this.msepTest.isMSeparated(x, y, z)) {
+                    msep.add(fact);
+                } else {
+                    mconn.add(fact);
                 }
 
                 return new Pair<>(msep, mconn);
@@ -418,11 +434,9 @@ public class MarkovCheck {
         }
 
         List<Callable<Pair<Set<IndependenceFact>, Set<IndependenceFact>>>> tasks = new ArrayList<>();
-        int chunkSize = getChunkSize(allIndependenceFacts.size());
 
-        for (int i = 0; i < allIndependenceFacts.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
-            IndCheckTask task = new IndCheckTask(i, min(i + chunkSize, allIndependenceFacts.size()),
-                    allIndependenceFacts, msepTest);
+        for (int i = 0; i < allIndependenceFacts.size() && !Thread.currentThread().isInterrupted(); i++) {
+            IndCheckTask task = new IndCheckTask(i, allIndependenceFacts, msepTest);
 
             if (!parallelized) {
                 Pair<Set<IndependenceFact>, Set<IndependenceFact>> _results = task.call();
@@ -450,19 +464,18 @@ public class MarkovCheck {
 
     /**
      * Generates the results for the given set of independence facts.
+     *
      * @param facts The set of independence facts.
-     * @param msep True if for implied independencies, false if for implied dependencies.
+     * @param msep  True if for implied independencies, false if for implied dependencies.
      */
     private void generateResults(Set<IndependenceFact> facts, boolean msep) {
         class IndCheckTask implements Callable<Pair<Set<IndependenceResult>, Set<IndependenceResult>>> {
-            private final int from;
-            private final int to;
+            private final int index;
             private final List<IndependenceFact> facts;
             private final IndependenceTest independenceTest;
 
-            IndCheckTask(int from, int to, List<IndependenceFact> facts, IndependenceTest test) {
-                this.from = from;
-                this.to = to;
+            IndCheckTask(int index, List<IndependenceFact> facts, IndependenceTest test) {
+                this.index = index;
                 this.facts = facts;
                 this.independenceTest = test;
             }
@@ -472,56 +485,53 @@ public class MarkovCheck {
                 Set<IndependenceResult> resultsIndep = new HashSet<>();
                 Set<IndependenceResult> resultsDep = new HashSet<>();
 
-                for (int i = from; i < to; i++) {
-                    if (Thread.interrupted()) break;
-                    IndependenceFact fact = facts.get(i);
+                IndependenceFact fact = facts.get(index);
 
-                    Node x = fact.getX();
-                    Node y = fact.getY();
-                    Set<Node> z = fact.getZ();
+                Node x = fact.getX();
+                Node y = fact.getY();
+                Set<Node> z = fact.getZ();
 
-                    if (independenceTest instanceof RowsSettable) {
-                        List<Integer> rows = getSubsampleRows(percentResammple);
-                        ((RowsSettable) independenceTest).setRows(rows);
+                if (independenceTest instanceof RowsSettable) {
+                    List<Integer> rows = getSubsampleRows(percentResammple);
+                    ((RowsSettable) independenceTest).setRows(rows);
 
-                        boolean verbose = independenceTest.isVerbose();
-                        independenceTest.setVerbose(false);
-                        IndependenceResult result;
-                        try {
-                            result = independenceTest.checkIndependence(x, y, z);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
+                    boolean verbose = independenceTest.isVerbose();
+                    independenceTest.setVerbose(false);
+                    IndependenceResult result;
+                    try {
+                        result = independenceTest.checkIndependence(x, y, z);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    boolean indep = result.isIndependent();
+                    double pValue = result.getPValue();
+                    independenceTest.setVerbose(verbose);
+
+                    if (!Double.isNaN(pValue)) {
+                        if (msep) {
+                            resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+                        } else {
+                            resultsDep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
                         }
-                        boolean indep = result.isIndependent();
-                        double pValue = result.getPValue();
-                        independenceTest.setVerbose(verbose);
+                    }
+                } else {
+                    boolean verbose = independenceTest.isVerbose();
+                    independenceTest.setVerbose(false);
+                    IndependenceResult result;
+                    try {
+                        result = independenceTest.checkIndependence(x, y, z);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    boolean indep = result.isIndependent();
+                    double pValue = result.getPValue();
+                    independenceTest.setVerbose(verbose);
 
-                        if (!Double.isNaN(pValue)) {
-                            if (msep) {
-                                resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-                            } else {
-                                resultsDep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-                            }
-                        }
-                    } else {
-                        boolean verbose = independenceTest.isVerbose();
-                        independenceTest.setVerbose(false);
-                        IndependenceResult result;
-                        try {
-                            result = independenceTest.checkIndependence(x, y, z);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                        boolean indep = result.isIndependent();
-                        double pValue = result.getPValue();
-                        independenceTest.setVerbose(verbose);
-
-                        if (!Double.isNaN(pValue)) {
-                            if (msep) {
-                                resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-                            } else {
-                                resultsDep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-                            }
+                    if (!Double.isNaN(pValue)) {
+                        if (msep) {
+                            resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+                        } else {
+                            resultsDep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
                         }
                     }
                 }
@@ -532,10 +542,8 @@ public class MarkovCheck {
 
         List<Callable<Pair<Set<IndependenceResult>, Set<IndependenceResult>>>> tasks = new ArrayList<>();
 
-        int chunkSize = getChunkSize(facts.size());
-
-        for (int i = 0; i < facts.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
-            IndCheckTask task = new IndCheckTask(i, min(facts.size(), min(i + chunkSize, facts.size())), new ArrayList<>(facts), independenceTest);
+        for (int i = 0; i < facts.size() && !Thread.currentThread().isInterrupted(); i++) {
+            IndCheckTask task = new IndCheckTask(i, new ArrayList<>(facts), independenceTest);
 
             if (!parallelized) {
                 Pair<Set<IndependenceResult>, Set<IndependenceResult>> _results = task.call();
@@ -562,6 +570,7 @@ public class MarkovCheck {
 
     /**
      * Calculates the statistics for the given list of results.
+     *
      * @param indep True if for implied independencies, false if for implied dependencies.
      */
     private void calcStats(boolean indep) {
@@ -612,6 +621,7 @@ public class MarkovCheck {
 
     /**
      * Returns a list of row indices for a subsample of the data set.
+     *
      * @param v The fraction of the data set to use.
      * @return A list of row indices for a subsample of the data set.
      */
@@ -628,7 +638,8 @@ public class MarkovCheck {
 
     /**
      * Generates the results for the given set of independence facts, for both the local Markov and local Faithfulness
-     * @param msep The set of m-separation facts.
+     *
+     * @param msep  The set of m-separation facts.
      * @param mconn The set of m-connection facts.
      */
     private void generateResultsAllSubsets(Set<IndependenceFact> msep, Set<IndependenceFact> mconn) {
@@ -639,8 +650,9 @@ public class MarkovCheck {
     /**
      * Returns a Bernoulli p-value for the hypothesis that the distribution of p-values is not Uniform under the null
      * hypothesis. Values less than alpha imply non-uniform distributions.
+     *
      * @param pValues The p-values.
-     * @param alpha The alpha level. Rejections with p-values less than this are considered dependent.
+     * @param alpha   The alpha level. Rejections with p-values less than this are considered dependent.
      * @return The Bernoulli p-value for non-uniformity.
      */
     private double getBernoulliP(List<Double> pValues, double alpha) {
@@ -662,6 +674,7 @@ public class MarkovCheck {
 
     /**
      * Returns the chunk size for parallelization.
+     *
      * @param n The number of items to chunk.
      * @return The chunk size for parallelization.
      */
@@ -675,6 +688,7 @@ public class MarkovCheck {
 
     /**
      * Returns the list of results for the given condition.
+     *
      * @param indep True if for implied independencies, false if for implied dependencies.
      * @return The list of results for the given condition.
      */
