@@ -679,7 +679,7 @@ public class MarkovCheck {
         BinomialDistribution bd = new BinomialDistribution(n, alpha);
 
         // We want the area to the right of this, so we subtract from 1.
-        return (1.0 - bd.cumulativeProbability(dependentJudgments)) + (bd.probability(n - dependentJudgments) / 2.0);
+        return (1.0 - bd.cumulativeProbability(dependentJudgments)) + (bd.probability(n - dependentJudgments));
     }
 
     /**
