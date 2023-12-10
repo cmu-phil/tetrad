@@ -52,8 +52,8 @@ public class MarkovCheck {
     private double aSquaredStarDep = Double.NaN;
     private double andersonDarlingPIndep = Double.NaN;
     private double andersonDarlingPDep = Double.NaN;
-    private double bernoulliPIndep = Double.NaN;
-    private double bernoulliPDep = Double.NaN;
+    private double binomialPIndep = Double.NaN;
+    private double binomialPDep = Double.NaN;
     private double percentResammple = 0.5;
     private int numTestsindep = 0;
     private int numTestsDep = 0;
@@ -325,16 +325,16 @@ public class MarkovCheck {
     }
 
     /**
-     * Returns the Bernoulli p-value for the given list of results.
+     * Returns the Binomial p-value for the given list of results.
      *
      * @param indep True if for implied independencies, false if for implied dependencies.
-     * @return The Bernoulli p-value for the given list of results.
+     * @return The Binomial p-value for the given list of results.
      */
-    public double getBernoulliPValue(boolean indep) {
+    public double getBinomialPValue(boolean indep) {
         if (indep) {
-            return bernoulliPIndep;
+            return binomialPIndep;
         } else {
-            return bernoulliPDep;
+            return binomialPDep;
         }
     }
 
@@ -405,6 +405,7 @@ public class MarkovCheck {
             private final int index;
             private final List<IndependenceFact> facts;
             private final MsepTest msepTest;
+            private boolean stopThread = false;
 
             IndCheckTask(int index, List<IndependenceFact> facts, MsepTest test) {
                 this.index = index;
@@ -431,6 +432,14 @@ public class MarkovCheck {
 
                 return new Pair<>(msep, mconn);
             }
+
+            public boolean isStopThread() {
+                return stopThread;
+            }
+
+            public void setStopThread(boolean stopThread) {
+                this.stopThread = stopThread;
+            }
         }
 
         List<Callable<Pair<Set<IndependenceFact>, Set<IndependenceFact>>>> tasks = new ArrayList<>();
@@ -453,8 +462,9 @@ public class MarkovCheck {
 
             for (Future<Pair<Set<IndependenceFact>, Set<IndependenceFact>>> future : theseResults) {
                 try {
-                    msep.addAll(future.get().getFirst());
-                    mconn.addAll(future.get().getSecond());
+                    Pair<Set<IndependenceFact>, Set<IndependenceFact>> setSetPair = future.get();
+                    msep.addAll(setSetPair.getFirst());
+                    mconn.addAll(setSetPair.getSecond());
                 } catch (InterruptedException | ExecutionException e) {
                     throw new RuntimeException(e);
                 }
@@ -594,25 +604,25 @@ public class MarkovCheck {
         if (indep) {
             if (pValues.size() < 2) {
                 ksPValueIndep = Double.NaN;
-                bernoulliPIndep = Double.NaN;
+                binomialPIndep = Double.NaN;
                 aSquaredStarIndep = Double.NaN;
                 andersonDarlingPIndep = Double.NaN;
             } else {
                 ksPValueIndep = UniformityTest.getPValue(pValues, 0.0, 1.0);
-                bernoulliPIndep = getBernoulliP(pValues, independenceTest.getAlpha());
+                binomialPIndep = getBinomialP(pValues, independenceTest.getAlpha());
                 aSquaredStarIndep = aSquaredStar;
                 andersonDarlingPIndep = 1. - new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1)).getProbTail(pValues.size(), aSquaredStar);
             }
         } else {
             if (pValues.size() < 2) {
                 ksPValueDep = Double.NaN;
-                bernoulliPDep = Double.NaN;
+                binomialPDep = Double.NaN;
                 aSquaredStarDep = Double.NaN;
                 andersonDarlingPDep = Double.NaN;
 
             } else {
                 ksPValueDep = UniformityTest.getPValue(pValues, 0.0, 1.0);
-                bernoulliPDep = getBernoulliP(pValues, independenceTest.getAlpha());
+                binomialPDep = getBinomialP(pValues, independenceTest.getAlpha());
                 aSquaredStarDep = aSquaredStar;
                 andersonDarlingPDep = 1. - new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1)).getProbTail(pValues.size(), aSquaredStar);
             }
@@ -648,14 +658,14 @@ public class MarkovCheck {
     }
 
     /**
-     * Returns a Bernoulli p-value for the hypothesis that the distribution of p-values is not Uniform under the null
+     * Returns a Binonial p-value for the hypothesis that the distribution of p-values is not Uniform under the null
      * hypothesis. Values less than alpha imply non-uniform distributions.
      *
      * @param pValues The p-values.
      * @param alpha   The alpha level. Rejections with p-values less than this are considered dependent.
-     * @return The Bernoulli p-value for non-uniformity.
+     * @return The Binomial p-value for non-uniformity.
      */
-    private double getBernoulliP(List<Double> pValues, double alpha) {
+    private double getBinomialP(List<Double> pValues, double alpha) {
         int dependentJudgments = 0;
 
         for (double pValue : pValues) {
@@ -669,7 +679,7 @@ public class MarkovCheck {
         BinomialDistribution bd = new BinomialDistribution(n, alpha);
 
         // We want the area to the right of this, so we subtract from 1.
-        return (1.0 - bd.cumulativeProbability(dependentJudgments)) / 2.0 + (bd.probability(n - dependentJudgments) / 2.0);
+        return (1.0 - bd.cumulativeProbability(dependentJudgments)) + (bd.probability(n - dependentJudgments) / 2.0);
     }
 
     /**

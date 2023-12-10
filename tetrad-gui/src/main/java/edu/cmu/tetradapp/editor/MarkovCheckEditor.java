@@ -85,8 +85,8 @@ public class MarkovCheckEditor extends JPanel {
     private JLabel ksLabelIndep;
 //    private JLabel masLabelDep;
 //    private JLabel masLabelIndep;
-    private JLabel bernoulliPLabelDep;
-    private JLabel bernoulliPLabelIndep;
+    private JLabel binomialPLabelDep;
+    private JLabel binomialPLabelIndep;
     private JLabel andersonDarlingA2LabelDep;
     private JLabel andersonDarlingA2LabelIndep;
     private JLabel andersonDarlingPLabelDep;
@@ -561,7 +561,7 @@ public class MarkovCheckEditor extends JPanel {
 
         Box b6a = Box.createHorizontalBox();
         b6a.add(Box.createHorizontalGlue());
-        b6a.add(bernoulliPLabelDep);
+        b6a.add(binomialPLabelDep);
         b0b1.add(b6a);
 
         Box b6b = Box.createHorizontalBox();
@@ -769,7 +769,7 @@ public class MarkovCheckEditor extends JPanel {
 
         Box b6a = Box.createHorizontalBox();
         b6a.add(Box.createHorizontalGlue());
-        b6a.add(bernoulliPLabelIndep);
+        b6a.add(binomialPLabelIndep);
         b0b1.add(b6a);
 
         Box b6b = Box.createHorizontalBox();
@@ -824,12 +824,12 @@ public class MarkovCheckEditor extends JPanel {
             ksLabelDep = new JLabel();
         }
 
-        if (bernoulliPLabelIndep == null) {
-            bernoulliPLabelIndep = new JLabel();
+        if (binomialPLabelIndep == null) {
+            binomialPLabelIndep = new JLabel();
         }
 
-        if (bernoulliPLabelDep == null) {
-            bernoulliPLabelDep = new JLabel();
+        if (binomialPLabelDep == null) {
+            binomialPLabelDep = new JLabel();
         }
 
         if (andersonDarlingA2LabelIndep == null) {
@@ -890,14 +890,14 @@ public class MarkovCheckEditor extends JPanel {
                 + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
-        bernoulliPLabelIndep.setText("P-value of Bernoulli Test = "
-                + ((Double.isNaN(model.getMarkovCheck().getBernoulliPValue(true))
+        binomialPLabelIndep.setText("P-value of Binomial Test = "
+                + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(true))
                 ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBernoulliPValue(true)))));
-        bernoulliPLabelDep.setText("P-value of Bernoulli Test = "
-                + ((Double.isNaN(model.getMarkovCheck().getBernoulliPValue(false))
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue(true)))));
+        binomialPLabelDep.setText("P-value of Binomial Test = "
+                + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(false))
                 ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBernoulliPValue(false)))));
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue(false)))));
         fractionDepLabelIndep.setText("% dependent = "
                 + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(true))
                 ? "-"

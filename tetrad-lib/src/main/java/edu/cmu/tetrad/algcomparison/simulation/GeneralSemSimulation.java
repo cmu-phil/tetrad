@@ -66,8 +66,6 @@ public class GeneralSemSimulation implements Simulation {
         this.ims = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
-            System.out.println("Simulating dataset #" + (i + 1));
-
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = this.randomGraph.createGraph(parameters);
             }
