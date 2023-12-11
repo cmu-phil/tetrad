@@ -47,7 +47,7 @@ public final class ParamDescriptions {
         ));
 
         // Read the copied maunal/index.html from within the jar
-        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("docs/manual/index.html")) {
             if (inputStream != null) {
                 doc = Jsoup.parse(inputStream, "UTF-8", "");
             }
