@@ -95,7 +95,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         }
 
         // Initialize helpSet - Zhou
-        String helpHS = "/resources/javahelp/TetradHelp.hs";
+        String helpHS = "/docs/javahelp/TetradHelp.hs";
 
         try {
             URL url = this.getClass().getResource(helpHS);
