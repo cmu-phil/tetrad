@@ -666,10 +666,10 @@ public class MarkovCheck {
      * @return The Binomial p-value for non-uniformity.
      */
     private double getBinomialP(List<Double> pValues, double alpha) {
-        int dependentJudgments = 0;
+        int independentJudgements = 0;
 
         for (double pValue : pValues) {
-            if (pValue < alpha) dependentJudgments++;
+            if (pValue > alpha) independentJudgements++;
         }
 
         int n = pValues.size();
@@ -679,7 +679,7 @@ public class MarkovCheck {
         BinomialDistribution bd = new BinomialDistribution(n, alpha);
 
         // We want the area to the right of this, so we subtract from 1.
-        return (1.0 - bd.cumulativeProbability(dependentJudgments)) + (bd.probability(n - dependentJudgments));
+        return (1.0 - bd.cumulativeProbability(independentJudgements)) + (bd.probability(n - independentJudgements));
     }
 
     /**
