@@ -323,7 +323,7 @@ public class MarkovCheckEditor extends JPanel {
 
     private void refreshResult(MarkovCheckIndTestModel model, DoubleTextField percent) {
         setTest();
-        model.getMarkovCheck().setPercentResammple(percent.getValue());
+        model.getMarkovCheck().setPercentResample(percent.getValue());
         model.getMarkovCheck().generateResults();
         tableModelIndep.fireTableDataChanged();
         tableModelDep.fireTableDataChanged();

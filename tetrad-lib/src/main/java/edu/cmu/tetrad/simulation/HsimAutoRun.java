@@ -89,7 +89,7 @@ public class HsimAutoRun {
             //if (verbose) System.out.println(estGraph);
 
             Graph estCPDAG = new EdgeListGraph(estGraph);
-            Graph estGraphDAG = GraphTransforms.dagFromCPDAG(estCPDAG, null);
+            Graph estGraphDAG = GraphTransforms.dagFromCpdag(estCPDAG, null);
             Dag estDAG = new Dag(estGraphDAG);
 
             //===========Identify the nodes to be resimulated===========

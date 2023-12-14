@@ -64,7 +64,7 @@ public class HsimRobustCompare {
         //create various simulated data sets
 
         ////let's do the full simulated data set first: a dag in the FGES CPDAG fit to the data set.
-        Graph fgesDag = GraphTransforms.dagFromCPDAG(oGraphOut, null);
+        Graph fgesDag = GraphTransforms.dagFromCpdag(oGraphOut, null);
 
         Dag fgesdag2 = new Dag(fgesDag);
         BayesPm simBayesPm = new BayesPm(fgesdag2, bayesPm);

@@ -166,7 +166,7 @@ public final class HbsmsGes implements Hbsms {
     }
 
     public Score scoreGraph(Graph graph) {
-        Graph dag = GraphTransforms.dagFromCPDAG(graph, getKnowledge());
+        Graph dag = GraphTransforms.dagFromCpdag(graph, getKnowledge());
 
         this.scorer.score(dag);
         return new Score(this.scorer);

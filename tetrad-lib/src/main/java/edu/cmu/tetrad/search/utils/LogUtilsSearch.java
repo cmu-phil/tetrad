@@ -159,7 +159,7 @@ public class LogUtilsSearch {
     @NotNull
     public static void stampWithScores(Graph graph, DataModel dataModel, Score score) {
         if (!graph.getAllAttributes().containsKey("Score")) {
-            Graph dag = GraphTransforms.dagFromCPDAG(graph);
+            Graph dag = GraphTransforms.dagFromCpdag(graph);
             Map<Node, Integer> hashIndices = buildIndexing(dag.getNodes());
 
             double _score = 0.0;

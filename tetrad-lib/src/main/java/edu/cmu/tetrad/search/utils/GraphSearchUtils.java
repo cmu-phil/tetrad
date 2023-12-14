@@ -347,6 +347,37 @@ public final class GraphSearchUtils {
         }
     }
 
+    public static boolean isCpdag(Graph graph) {
+        MeekRules rules = new MeekRules();
+        rules.setRevertToUnshieldedColliders(true);
+        rules.orientImplied(graph);
+
+        NEXT:
+        while (true) {
+            for (Edge edge : graph.getEdges()) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+
+                if (Edges.isUndirectedEdge(edge)) {
+                    direct(x, y, graph);
+                    rules.orientImplied(graph);
+                    continue NEXT;
+                }
+            }
+
+            break;
+        }
+
+        return !graph.paths().existsDirectedCycle();
+    }
+
+    private static void direct(Node a, Node c, Graph graph) {
+        Edge before = graph.getEdge(a, c);
+        Edge after = Edges.directedEdge(a, c);
+        graph.removeEdge(before);
+        graph.addEdge(after);
+    }
+
     public static LegalPagRet isLegalPag(Graph pag) {
 
         for (Node n : pag.getNodes()) {

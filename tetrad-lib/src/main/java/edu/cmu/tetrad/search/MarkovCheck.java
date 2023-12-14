@@ -54,7 +54,7 @@ public class MarkovCheck {
     private double andersonDarlingPDep = Double.NaN;
     private double binomialPIndep = Double.NaN;
     private double binomialPDep = Double.NaN;
-    private double percentResammple = 0.5;
+    private double percentResample = 0.5;
     private int numTestsindep = 0;
     private int numTestsDep = 0;
 
@@ -150,7 +150,8 @@ public class MarkovCheck {
             Set<IndependenceFact> mconn = new HashSet<>();
 
             for (int i = 0; i < nodes.size(); i++) {
-                for (int j = i + 1; j < nodes.size(); j++) {
+                for (int j = 0; j < nodes.size(); j++) {
+                    if (i == j) continue;
                     Node x = nodes.get(i);
                     Node y = nodes.get(j);
 
@@ -383,11 +384,11 @@ public class MarkovCheck {
     /**
      * Sets the percentage of all samples to use when resampling for each conditional independence test.
      *
-     * @param percentResammple The percentage of all samples to use when resampling for each conditional independence
+     * @param percentResample The percentage of all samples to use when resampling for each conditional independence
      *                         test.
      */
-    public void setPercentResammple(double percentResammple) {
-        this.percentResammple = percentResammple;
+    public void setPercentResample(double percentResample) {
+        this.percentResample = percentResample;
     }
 
     /**
@@ -502,7 +503,7 @@ public class MarkovCheck {
                 Set<Node> z = fact.getZ();
 
                 if (independenceTest instanceof RowsSettable) {
-                    List<Integer> rows = getSubsampleRows(percentResammple);
+                    List<Integer> rows = getSubsampleRows(percentResample);
                     ((RowsSettable) independenceTest).setRows(rows);
 
                     boolean verbose = independenceTest.isVerbose();
@@ -672,14 +673,14 @@ public class MarkovCheck {
             if (pValue > alpha) independentJudgements++;
         }
 
-        int n = pValues.size();
+        int p = pValues.size();
 
         // The left tail of this binomial distribution is a p-value for getting too few dependent judgments for
         // the distribution to count as uniform.
-        BinomialDistribution bd = new BinomialDistribution(n, alpha);
+        BinomialDistribution bd = new BinomialDistribution(p, alpha);
 
         // We want the area to the right of this, so we subtract from 1.
-        return (1.0 - bd.cumulativeProbability(independentJudgements)) + (bd.probability(n - independentJudgements));
+        return (1.0 - bd.cumulativeProbability(independentJudgements)) + (bd.probability(p - independentJudgements));
     }
 
     /**

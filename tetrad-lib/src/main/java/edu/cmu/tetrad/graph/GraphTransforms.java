@@ -16,11 +16,11 @@ import java.util.List;
  * @author josephramsey
  */
 public class GraphTransforms {
-    public static Graph dagFromCPDAG(Graph graph) {
-        return dagFromCPDAG(graph, null);
+    public static Graph dagFromCpdag(Graph graph) {
+        return dagFromCpdag(graph, null);
     }
 
-    public static Graph dagFromCPDAG(Graph graph, Knowledge knowledge) {
+    public static Graph dagFromCpdag(Graph graph, Knowledge knowledge) {
         Graph dag = new EdgeListGraph(graph);
 
         for (Edge edge : dag.getEdges()) {
@@ -54,6 +54,30 @@ public class GraphTransforms {
         }
 
         return dag;
+    }
+
+    public static boolean isCpdag(Graph graph) {
+        MeekRules rules = new MeekRules();
+        rules.setRevertToUnshieldedColliders(true);
+        rules.orientImplied(graph);
+
+        NEXT:
+        while (true) {
+            for (Edge edge : graph.getEdges()) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+
+                if (Edges.isUndirectedEdge(edge)) {
+                    direct(x, y, graph);
+                    rules.orientImplied(graph);
+                    continue NEXT;
+                }
+            }
+
+            break;
+        }
+
+        return !graph.paths().existsDirectedCycle();
     }
 
     // Zhang 2008 Theorem 2
