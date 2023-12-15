@@ -100,7 +100,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
 
             graph = search.search();
 
-            if (!graph.getAllAttributes().containsKey("BIC")) {
+            if (dataModel.isContinuous() && !graph.getAllAttributes().containsKey("BIC")) {
                 graph.addAttribute("BIC", new BicEst().getValue(null, graph, dataModel));
             }
 
