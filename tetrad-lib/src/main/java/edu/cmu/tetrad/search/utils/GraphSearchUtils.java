@@ -347,10 +347,39 @@ public final class GraphSearchUtils {
         }
     }
 
+    /**
+     * Returns true just in case the given graph is a CPDAG.
+     * @param graph the graph to check.
+     * @return true just in case the given graph is a CPDAG.
+     */
     public static boolean isCpdag(Graph graph) {
+
+        // Make sure all of the edges are directed or undirected.
+        for (Edge edge : graph.getEdges()) {
+            if (!(Edges.isDirectedEdge(edge) || Edges.isUndirectedEdge(edge))) {
+                return false;
+            }
+        }
+
+        // Make sure there are no 2-cycles.
+        List<Node> nodes = graph.getNodes();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                if (graph.getEdges(nodes.get(i), nodes.get(j)).size() > 1) {
+                    return false;
+                }
+            }
+        }
+
+        // Make sure there's no way to orient a directed cycle using the Meek rules.
         MeekRules rules = new MeekRules();
         rules.setRevertToUnshieldedColliders(true);
         rules.orientImplied(graph);
+
+        if (graph.paths().existsDirectedCycle()) return false;
+
+        rules.setRevertToUnshieldedColliders(false);
 
         NEXT:
         while (true) {
@@ -359,16 +388,25 @@ public final class GraphSearchUtils {
                 Node y = edge.getNode2();
 
                 if (Edges.isUndirectedEdge(edge)) {
-                    direct(x, y, graph);
-                    rules.orientImplied(graph);
+                    Graph _graph = new EdgeListGraph(graph);
+                    direct(x, y, _graph);
+                    rules.orientImplied(_graph);
+                    if (_graph.paths().existsDirectedCycle()) return false;
+
+                    _graph = new EdgeListGraph(graph);
+                    direct(y, x, _graph);
+                    rules.orientImplied(_graph);
+                    if (_graph.paths().existsDirectedCycle()) return false;
+
+                    graph = _graph;
                     continue NEXT;
                 }
-            }
+             }
 
             break;
         }
 
-        return !graph.paths().existsDirectedCycle();
+        return true;
     }
 
     private static void direct(Node a, Node c, Graph graph) {
