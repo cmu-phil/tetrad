@@ -1142,10 +1142,20 @@
                 <editor-class>edu.cmu.tetradapp.editor.EdgeWeightComparisonEditor</editor-class>
             </model>
             <model name="Model Fit" acronym="Model Fit"
-                   help="Model Fit" category="Simuation-Algorithm Comparisons">
+                   help="Model Fit" category="Simulation-Algorithm Comparisons">
                 <model-class>edu.cmu.tetradapp.model.CPDAGFitModel
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.CPDAGFitEditor</editor-class>
+            </model>
+            <model name="Check Knowledge" acronym="Check Knowledge"
+                   help="check_knowledge" category="Graph-Knowledge Comparisons">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.CheckKnowledgeModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.CheckKnowledgeEditor</editor-class>
             </model>
         </models>
         <display-component image="graphIcon.gif"/>
