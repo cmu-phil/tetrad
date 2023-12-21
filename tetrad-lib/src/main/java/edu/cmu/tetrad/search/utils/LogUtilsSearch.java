@@ -184,7 +184,7 @@ public class LogUtilsSearch {
     }
 
     public static void stampWithBic(Graph graph, DataModel dataModel) {
-        if (!graph.getAllAttributes().containsKey("BIC")) {
+        if (dataModel.isContinuous() && !graph.getAllAttributes().containsKey("BIC")) {
             try {
                 graph.addAttribute("BIC", new BicEst().getValue(null, graph, dataModel));
             } catch (Exception e) {
