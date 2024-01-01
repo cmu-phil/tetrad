@@ -135,8 +135,7 @@ public class ChiSquareTest {
             System.arraycopy(combination, 0, coords, 2, combination.length);
 
             long total = getCellTable().calcMargin(coords, bothVars);
-
-            if (total == 0) continue;
+            if (total < ((long) testIndices[0] * (long) testIndices[1])) continue;
 
             double _xSquare = 0.0;
 
@@ -149,18 +148,18 @@ public class ChiSquareTest {
                     long sumCol = getCellTable().calcMargin(coords, secondVar);
                     long observed = getCellTable().getValue(coords);
 
-                    if (sumRow == 0L) {
+                    if (sumRow < 2) {
                         attestedRows[i] = false;
-                        continue;
                     }
 
-                    if (sumCol == 0L) {
+                    if (sumCol < 2) {
                         attestedCols[j] = false;
-                        continue;
                     }
 
-                    double expected = (sumRow * sumCol) / (double) total;
-                    _xSquare += FastMath.pow(observed - expected, 2.0) / expected;
+                    if (attestedRows[i] && attestedCols[j]) {
+                        double expected = (sumRow * sumCol) / (double) total;
+                        _xSquare += FastMath.pow(observed - expected, 2.0) / expected;
+                    }
                 }
             }
 
@@ -179,15 +178,17 @@ public class ChiSquareTest {
                 }
             }
 
-            if (numAttestedRows > 0 && numAttestedCols > 0) {
-                df += (numAttestedRows - 1) * (numAttestedCols - 1);
+            int _df = (numAttestedRows - 1) * (numAttestedCols - 1);
+
+            if (_df > 0) {
+                df += _df;
                 xSquare += _xSquare;
             }
         }
 
-        // If df == 0, this is definitely an independent table.
+        // If df == 0, this is definitely an independent table, but we can't assign a p-value.
         if (df == 0) {
-            final double pValue = 1.0;
+            final double pValue = Double.NaN;
             return new Result(xSquare, pValue, 0, true);
         }
 

@@ -158,15 +158,15 @@ public final class GSquareTest {
 
                     boolean skip = false;
 
-                    if (sumRow == 0) {
-                        attestedRows[i] = false;
-                        skip = true;
-                    }
-
-                    if (sumCol == 0) {
-                        attestedCols[j] = false;
-                        skip = true;
-                    }
+//                    if (sumRow == 0) {
+//                        attestedRows[i] = false;
+//                        skip = true;
+//                    }
+//
+//                    if (sumCol == 0) {
+//                        attestedCols[j] = false;
+//                        skip = true;
+//                    }
 
                     if (skip) {
                         continue;

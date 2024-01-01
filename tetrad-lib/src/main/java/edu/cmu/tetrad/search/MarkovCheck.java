@@ -22,8 +22,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
-import static org.apache.commons.math3.util.FastMath.min;
-
 /**
  * <p>Checks whether a graph is locally Markov or locally Faithful given a data set. First a lists of m-separation
  * predictions are made for each pair of variables in the graph given the parents of one of the variables, one list (for
@@ -43,7 +41,7 @@ public class MarkovCheck {
     private final List<IndependenceResult> resultsIndep = new ArrayList<>();
     private final List<IndependenceResult> resultsDep = new ArrayList<>();
     private ConditioningSetType setType;
-    private boolean parallelized = true;
+    private boolean parallelized = false;
     private double fractionDependentIndep = Double.NaN;
     private double fractionDependentDep = Double.NaN;
     private double ksPValueIndep = Double.NaN;
