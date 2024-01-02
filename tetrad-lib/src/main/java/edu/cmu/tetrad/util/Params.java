@@ -254,6 +254,8 @@ public final class Params {
     public static final String REMOVE_EFFECT_NODES = "removeEffectNodes";
     public static final String SAMPLE_STYLE = "sampleStyle";
     public static final String NUM_THREADS = "numThreads";
+    public static String MIN_COUNT_PER_TABLE = "minCountPerTable";
+
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

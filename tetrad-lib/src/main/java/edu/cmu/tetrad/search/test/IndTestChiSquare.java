@@ -38,8 +38,8 @@ import java.util.Set;
 /**
  * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
  * variable not in S, by applying a conditional Chi Square test. A description of such a test is given in Fienberg, "The
- * Analysis of Cross-Classified Categorical Data," 2nd edition.
- * The formulas for the degrees of freedom used in this test are equivalent to the formulation on page 142 of Fienberg.
+ * Analysis of Cross-Classified Categorical Data," 2nd edition. The formulas for the degrees of freedom used in this
+ * test are equivalent to the formulation on page 142 of Fienberg.
  *
  * @author josephramsey
  * @see ChiSquareTest
@@ -72,6 +72,8 @@ public final class IndTestChiSquare implements IndependenceTest {
      * constructor.
      */
     private int df;
+
+    private int minCountPerTable = 20;
 
     private boolean verbose;
 
@@ -341,6 +343,32 @@ public final class IndTestChiSquare implements IndependenceTest {
          * values of conditioning variables, that coefs as 'determining.'
          */
         return 0.99;
+    }
+
+    /**
+     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
+     * included in the overall chi-square and degrees of freedom. The default is 20. Note that this should not be too
+     * small, or the chi-square distribution will not be a good approximation to the distribution of the test
+     * statistic.
+     *
+     * @return The minimum number of counts per conditional table for chi-square for that table and its degrees of
+     * freedom to be included in the overall chi-square and degrees of freedom.
+     */
+    public int getMinCountPerTable() {
+        return minCountPerTable;
+    }
+
+    /**
+     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
+     * included in the overall chi-square and degrees of freedom. The default is 20. Note that this should not be too
+     * small, or the chi-square distribution will not be a good approximation to the distribution of the test
+     * statistic.
+     *
+     * @param minCountPerTable The minimum number of counts per conditional table for chi-square for that table and its
+     *                         degrees of freedom to be included in the overall chi-square and degrees of freedom.
+     */
+    public void setMinCountPerTable(int minCountPerTable) {
+        this.minCountPerTable = minCountPerTable;
     }
 }
 

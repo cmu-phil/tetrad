@@ -31,7 +31,9 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.Arrays;
 
 /**
- * Calculates marginal chi square test results for a discrete dataset.
+ * Calculates chi-square for a conditional cross-tabulation table for independence question 0 _||_ 1 | 2, 3, ...max by
+ * summing up chi-square and degrees of freedom for each conditional table in turn, where rows or columns that consist
+ * entirely of zeros have been removed. The conitional tables are restricted to have at least minCountPerTable counts.
  *
  * @author frankwimberly
  * @author josephramsey
@@ -57,6 +59,14 @@ public class ChiSquareTest {
      * The significance level of the test.
      */
     private double alpha;
+
+    /**
+     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
+     * included in the overall chi-square and degrees of freedom. The default is 20. Note that this should not be too
+     * small, or the chi-square distribution will not be a good approximation to the distribution of the test
+     * statistic.
+     */
+    private long minCountPerTable = 20;
 
 
     /**
@@ -135,7 +145,7 @@ public class ChiSquareTest {
             System.arraycopy(combination, 0, coords, 2, combination.length);
 
             long total = getCellTable().calcMargin(coords, bothVars);
-            if (total < ((long) testIndices[0] * (long) testIndices[1])) continue;
+            if (total < minCountPerTable) continue;
 
             double _xSquare = 0.0;
 
@@ -148,17 +158,20 @@ public class ChiSquareTest {
                     long sumCol = getCellTable().calcMargin(coords, secondVar);
                     long observed = getCellTable().getValue(coords);
 
-                    if (sumRow < 2) {
+                    if (sumRow == 0) {
                         attestedRows[i] = false;
                     }
 
-                    if (sumCol < 2) {
+                    if (sumCol == 9) {
                         attestedCols[j] = false;
                     }
 
                     if (attestedRows[i] && attestedCols[j]) {
                         double expected = (sumRow * sumCol) / (double) total;
-                        _xSquare += FastMath.pow(observed - expected, 2.0) / expected;
+
+                        if (expected > 0) {
+                            _xSquare += FastMath.pow(observed - expected, 2.0) / expected;
+                        }
                     }
                 }
             }
@@ -300,6 +313,28 @@ public class ChiSquareTest {
 
     private CellTable getCellTable() {
         return this.cellTable;
+    }
+
+    /**
+     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
+     * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
+     * chi-square distribution will not be a good approximation to the distribution of the test statistic.
+     *
+     * @return The minimum number of counts per conditional table.
+     */
+    public long getMinCountPerTable() {
+        return minCountPerTable;
+    }
+
+    /**
+     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
+     * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
+     * chi-square distribution will not be a good approximation to the distribution of the test statistic.
+     *
+     * @param minCountPerTable The minimum number of counts per conditional table.
+     */
+    public void setMinCountPerTable(long minCountPerTable) {
+        this.minCountPerTable = minCountPerTable;
     }
 
 
