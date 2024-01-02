@@ -47,6 +47,7 @@ public class ChiSquare implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
+        params.add(Params.MIN_COUNT_PER_TABLE);
         return params;
     }
 
