@@ -83,7 +83,6 @@ public final class CellTable {
                 try {
                     coords[j] = dataSet.getInt(i, indices[j]);
                 } catch (Exception e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     coords[j] = dataSet.getInt(i, j);
                 }
 
@@ -116,7 +115,7 @@ public final class CellTable {
     public long calcMargin(int[] coords) {
         int[] coordCopy = internalCoordCopy(coords);
 
-        int sum = 0;
+        long sum = 0;
         int i = -1;
 
         while (++i < coordCopy.length) {
@@ -137,7 +136,7 @@ public final class CellTable {
     /**
      * An alternative way to specify a marginal calculation. In this case, coords specifies a particular cell in the
      * table, and varIndices is an array containing the indices of the variables over which the margin sum should be
-     * calculated. The sum is over the cell specified by 'coord' and all of the cells which differ from that cell in any
+     * calculated. The sum is over the cell specified by 'coord' and all the cells which differ from that cell in any
      * of the specified coordinates.
      *
      * @param coords     an <code>int[]</code> value
@@ -158,16 +157,7 @@ public final class CellTable {
      * Makes a copy of the coordinate array so that the original is not messed up.
      */
     private int[] internalCoordCopy(int[] coords) {
-        int[] coordCopy = Arrays.copyOf(coords, coords.length);
-
-//        if ((this.coordCopy == null) ||
-//                (this.coordCopy.length != coords.length)) {
-//            this.coordCopy = new int[coords.length];
-//        }
-//
-//        System.arraycopy(coords, 0, this.coordCopy, 0, coords.length);
-
-        return coordCopy;
+        return Arrays.copyOf(coords, coords.length);
     }
 
     private int getMissingValue() {
