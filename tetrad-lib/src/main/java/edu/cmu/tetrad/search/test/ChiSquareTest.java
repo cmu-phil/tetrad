@@ -30,10 +30,12 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.util.Arrays;
 
+import static org.apache.commons.math3.util.FastMath.pow;
+
 /**
  * Calculates chi-square for a conditional cross-tabulation table for independence question 0 _||_ 1 | 2, 3, ...max by
  * summing up chi-square and degrees of freedom for each conditional table in turn, where rows or columns that consist
- * entirely of zeros have been removed. The conitional tables are restricted to have at least minCountPerTable counts.
+ * entirely of zeros have been removed. The conditional tables are restricted to have at least minCountPerTable counts.
  *
  * @author frankwimberly
  * @author josephramsey
@@ -134,78 +136,59 @@ public class ChiSquareTest {
         // Make a chi square table for each condition combination, strike zero rows and columns and calculate
         // chi square and degrees of freedom for the remaining rows and columns in the table. See Friedman.
         while (combinationIterator.hasNext()) {
-            boolean[] attestedRows = new boolean[numRows];
-            boolean[] attestedCols = new boolean[numCols];
-
-            Arrays.fill(attestedRows, true);
-            Arrays.fill(attestedCols, true);
-
             int[] combination = combinationIterator.next();
 
             System.arraycopy(combination, 0, coords, 2, combination.length);
 
-            long total = getCellTable().calcMargin(coords, bothVars);
-            if (total < minCountPerTable) continue;
-
             double _xSquare = 0.0;
+            int zeros = 0;
 
             for (int i = 0; i < numRows; i++) {
                 for (int j = 0; j < numCols; j++) {
                     coords[0] = i;
                     coords[1] = j;
 
-                    long sumRow = getCellTable().calcMargin(coords, firstVar);
-                    long sumCol = getCellTable().calcMargin(coords, secondVar);
-                    long observed = getCellTable().getValue(coords);
+                    double sumRow = getCellTable().calcMargin(coords, firstVar);
+                    double sumCol = getCellTable().calcMargin(coords, secondVar);
+                    double observed = getCellTable().getValue(coords);
+                    double total = getCellTable().calcMargin(coords, bothVars);
 
-                    if (sumRow == 0) {
-                        attestedRows[i] = false;
-                    }
-
-                    if (sumCol == 9) {
-                        attestedCols[j] = false;
-                    }
-
-                    if (attestedRows[i] && attestedCols[j]) {
-                        double expected = (sumRow * sumCol) / (double) total;
+                    if (total >= minCountPerTable) {
+                        double expected = (sumRow * sumCol) / (total);
 
                         if (expected > 0) {
-                            _xSquare += FastMath.pow(observed - expected, 2.0) / expected;
+                            _xSquare += pow(observed - expected, 2.0) / expected;
+                        } else {
+                            zeros++;
                         }
+                    } else {
+                        zeros += numRows * numCols;
                     }
                 }
             }
 
-            int numAttestedRows = 0;
-            int numAttestedCols = 0;
+            int _df = (numRows - 1) * (numCols - 1) - zeros;
 
-            for (boolean attestedRow : attestedRows) {
-                if (attestedRow) {
-                    numAttestedRows++;
-                }
-            }
-
-            for (boolean attestedCol : attestedCols) {
-                if (attestedCol) {
-                    numAttestedCols++;
-                }
-            }
-
-            int _df = (numAttestedRows - 1) * (numAttestedCols - 1);
-
+            // There were free degrees of freedom in the table, so we count this chi-square and df.
             if (_df > 0) {
                 df += _df;
                 xSquare += _xSquare;
             }
         }
 
-        // If df == 0, this is definitely an independent table, but we can't assign a p-value.
+        // None of the conditional tables had enough counts to be included in the overall chi-square.
         if (df == 0) {
-            final double pValue = Double.NaN;
-            return new Result(xSquare, pValue, 0, true);
+            return new Result(xSquare, Double.NaN, df, true);
         }
 
+        // Cannot be NaN.
         double pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(xSquare);
+
+        // The Chi-Square distribution doesn't go out this far numerically, so this value can't be trusted.
+        if (pValue == 1.0) {
+            return new Result(xSquare, Double.NaN, df, false);
+        }
+
         boolean indep = (pValue > getAlpha());
         return new Result(xSquare, pValue, df, indep);
     }

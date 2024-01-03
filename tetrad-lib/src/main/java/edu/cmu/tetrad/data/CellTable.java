@@ -23,7 +23,9 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.util.MultiDimIntTable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -35,17 +37,12 @@ import java.util.Arrays;
  */
 public final class CellTable {
 
-
-//    /**
-//     * Stores a copy of coordinates for temporary use. (Reused.)
-//     */
-//    private int[] coordCopy;
-
     private final MultiDimIntTable table;
     /**
      * The value used in the data for missing values.
      */
     private int missingValue = -99;
+    private List<Integer> rows;
 
     /**
      * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
@@ -57,6 +54,17 @@ public final class CellTable {
     }
 
     public void addToTable(DataSet dataSet, int[] indices) {
+        if (rows == null) {
+            rows = new ArrayList<>();
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                rows.add(i);
+            }
+        } else {
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i) >= dataSet.getNumRows()) throw new IllegalArgumentException("Row " + i + " is too large.");
+            }
+        }
+
         int[] dims = new int[indices.length];
 
         for (int i = 0; i < indices.length; i++) {
@@ -70,7 +78,7 @@ public final class CellTable {
         int[] coords = new int[indices.length];
 
         points:
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
+        for (int i : rows) {
             for (int j = 0; j < indices.length; j++) {
                 try {
                     coords[j] = dataSet.getInt(i, indices[j]);
@@ -172,6 +180,15 @@ public final class CellTable {
 
     public long getValue(int[] testCell) {
         return this.table.getValue(testCell);
+    }
+
+    public void setRows(List<Integer> rows) {
+        if (rows == null) throw new NullPointerException("Rows is null.");
+        for (int i = 0; i < rows.size(); i++) {
+            if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
+            if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+        }
+        this.rows = rows;
     }
 }
 

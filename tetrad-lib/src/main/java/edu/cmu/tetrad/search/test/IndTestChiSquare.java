@@ -101,6 +101,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
         this.variables = new ArrayList<>(dataSet.getVariables());
         this.chiSquareTest = new ChiSquareTest(dataSet, alpha);
+        this.chiSquareTest.setMinCountPerTable(minCountPerTable);
     }
 
     /**
@@ -369,6 +370,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      */
     public void setMinCountPerTable(int minCountPerTable) {
         this.minCountPerTable = minCountPerTable;
+        this.chiSquareTest.setMinCountPerTable(minCountPerTable);
     }
 }
 

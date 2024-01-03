@@ -516,7 +516,9 @@ public class MarkovCheck {
                     double pValue = result.getPValue();
                     independenceTest.setVerbose(verbose);
 
-                    if (!Double.isNaN(pValue)) {
+                    if (Double.isNaN(pValue)) {
+                        System.out.println("Skipping " + fact + " because p-value is NaN.");
+                    } else {
                         if (msep) {
                             resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
                         } else {
@@ -536,7 +538,9 @@ public class MarkovCheck {
                     double pValue = result.getPValue();
                     independenceTest.setVerbose(verbose);
 
-                    if (!Double.isNaN(pValue)) {
+                    if (Double.isNaN(pValue)) {
+                        System.out.println("Skipping " + fact + " because p-value is NaN.");
+                    } else {
                         if (msep) {
                             resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
                         } else {
