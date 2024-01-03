@@ -42,7 +42,7 @@ import java.util.Set;
  * equivalent to the formulation on page 142 of Fienberg.
  *
  * @author josephramsey
- * @see GSquareTest
+ * @see ChiSquareTest
  */
 public final class IndTestGSquare implements IndependenceTest {
 
@@ -53,7 +53,7 @@ public final class IndTestGSquare implements IndependenceTest {
     /**
      * The G Square tester.
      */
-    private final GSquareTest gSquareTest;
+    private final ChiSquareTest gSquareTest;
     /**
      * The variables in the discrete data sets or which conditional independence judgements are desired.
      */
@@ -101,7 +101,7 @@ public final class IndTestGSquare implements IndependenceTest {
         this.alpha = alpha;
 
         this.variables = new ArrayList<>(dataSet.getVariables());
-        this.gSquareTest = new GSquareTest(dataSet, alpha);
+        this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE);
     }
 
     /**
@@ -187,15 +187,8 @@ public final class IndTestGSquare implements IndependenceTest {
             }
         }
 
-        //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
-
-        GSquareTest.Result result = this.gSquareTest.calcGSquare(testIndices);
+        ChiSquareTest.Result result = this.gSquareTest.calcChiSquare(testIndices);
         this.pValue = result.getPValue();
-
-//        if (Double.isNaN(this.pValue)) {
-//            throw new RuntimeException("Undefined p-value encountered when testing " +
-//                    LogUtilsSearch.independenceFact(x, y, _z));
-//        }
 
         if (this.verbose) {
             if (result.isIndep()) {

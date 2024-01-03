@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.util.CombinationIterator;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.util.FastMath;
 
 import static org.apache.commons.math3.util.FastMath.pow;
 
@@ -38,25 +39,24 @@ import static org.apache.commons.math3.util.FastMath.pow;
  * @author josephramsey
  */
 public class ChiSquareTest {
+    public enum TestType {
+        CHI_SQUARE,
+        G_SQUARE
+    }
 
-    /**
-     * The data set this test uses.
-     */
+    // The type of test to perform.
+    private TestType testType = TestType.CHI_SQUARE;
+
+    // The data set this test uses.
     private final DataSet dataSet;
 
-    /**
-     * The number of values for each variable in the data.
-     */
+    // The number of values for each variable in the data.
     private final int[] dims;
 
-    /**
-     * Stores the data in the form of a cell table.
-     */
+    // Stores the data in the form of a cell table.
     private final CellTable cellTable;
 
-    /**
-     * The significance level of the test.
-     */
+    // The significance level of the test.
     private double alpha;
 
     /**
@@ -70,10 +70,11 @@ public class ChiSquareTest {
     /**
      * Constructs a test using the given data set and significance level.
      *
-     * @param dataSet A data set consisting entirely of discrete variables.
-     * @param alpha   The significance level, usually 0.05.
+     * @param dataSet  A data set consisting entirely of discrete variables.
+     * @param alpha    The significance level, usually 0.05.
+     * @param testType The type of test to perform, either CHI_SQUARE or G_SQUARE.
      */
-    public ChiSquareTest(DataSet dataSet, double alpha) {
+    public ChiSquareTest(DataSet dataSet, double alpha, TestType testType) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance level must be in " +
                     "[0, 1]: " + alpha);
@@ -87,6 +88,7 @@ public class ChiSquareTest {
             this.getDims()[i] = variable.getNumCategories();
         }
 
+        this.testType = testType;
         this.dataSet = dataSet;
         this.alpha = alpha;
         this.cellTable = new CellTable(null);
@@ -153,7 +155,17 @@ public class ChiSquareTest {
                         double expected = (sumRow * sumCol) / (total);
 
                         if (expected > 0) {
-                            _xSquare += pow(observed - expected, 2.0) / expected;
+                            if (testType == TestType.CHI_SQUARE) {
+                                _xSquare += pow(observed - expected, 2.0) / expected;
+                            } else if (testType == TestType.G_SQUARE) {
+                                if (observed > 0) {
+                                    _xSquare += 2.0 * observed * FastMath.log(observed / expected);
+                                } else {
+                                    zeros++;
+                                }
+                            } else {
+                                throw new IllegalArgumentException("Unknown test type: " + testType);
+                            }
                         } else {
                             zeros++;
                         }

@@ -100,7 +100,7 @@ public final class IndTestChiSquare implements IndependenceTest {
         this.dataSet = dataSet;
 
         this.variables = new ArrayList<>(dataSet.getVariables());
-        this.chiSquareTest = new ChiSquareTest(dataSet, alpha);
+        this.chiSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.CHI_SQUARE);
         this.chiSquareTest.setMinCountFraction(minCountFraction);
     }
 
