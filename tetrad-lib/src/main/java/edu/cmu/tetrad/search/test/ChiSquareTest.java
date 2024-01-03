@@ -26,9 +26,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.util.CombinationIterator;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.util.FastMath;
-
-import java.util.Arrays;
 
 import static org.apache.commons.math3.util.FastMath.pow;
 
@@ -63,12 +60,11 @@ public class ChiSquareTest {
     private double alpha;
 
     /**
-     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
-     * included in the overall chi-square and degrees of freedom. The default is 20. Note that this should not be too
-     * small, or the chi-square distribution will not be a good approximation to the distribution of the test
-     * statistic.
+     * The minimum number of counts per conditional table for chi-square expressed as a multiple of the total number of
+     * cells in the table. Note that this should not be too small, or the chi-square distribution will not be a good
+     * approximation to the distribution of the test statistic.
      */
-    private long minCountPerTable = 20;
+    private double minCountFraction = 2.0;
 
 
     /**
@@ -153,7 +149,7 @@ public class ChiSquareTest {
                     double observed = getCellTable().getValue(coords);
                     double total = getCellTable().calcMargin(coords, bothVars);
 
-                    if (total >= minCountPerTable) {
+                    if (total >= minCountFraction * (numRows * numCols)) {
                         double expected = (sumRow * sumCol) / (total);
 
                         if (expected > 0) {
@@ -305,8 +301,8 @@ public class ChiSquareTest {
      *
      * @return The minimum number of counts per conditional table.
      */
-    public long getMinCountPerTable() {
-        return minCountPerTable;
+    public double getMinCountFraction() {
+        return minCountFraction;
     }
 
     /**
@@ -314,10 +310,10 @@ public class ChiSquareTest {
      * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
      * chi-square distribution will not be a good approximation to the distribution of the test statistic.
      *
-     * @param minCountPerTable The minimum number of counts per conditional table.
+     * @param minCountFraction The minimum number of counts per conditional table.
      */
-    public void setMinCountPerTable(long minCountPerTable) {
-        this.minCountPerTable = minCountPerTable;
+    public void setMinCountFraction(double minCountFraction) {
+        this.minCountFraction = minCountFraction;
     }
 
 

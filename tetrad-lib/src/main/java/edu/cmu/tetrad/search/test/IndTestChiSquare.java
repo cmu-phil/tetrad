@@ -73,7 +73,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      */
     private int df;
 
-    private int minCountPerTable = 20;
+    private int minCountFraction = 20;
 
     private boolean verbose;
 
@@ -101,7 +101,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
         this.variables = new ArrayList<>(dataSet.getVariables());
         this.chiSquareTest = new ChiSquareTest(dataSet, alpha);
-        this.chiSquareTest.setMinCountPerTable(minCountPerTable);
+        this.chiSquareTest.setMinCountFraction(minCountFraction);
     }
 
     /**
@@ -347,30 +347,28 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
-     * included in the overall chi-square and degrees of freedom. The default is 20. Note that this should not be too
-     * small, or the chi-square distribution will not be a good approximation to the distribution of the test
-     * statistic.
+     * The minimum number of counts per conditional table for chi-square expressed as a fraction of the total number of
+     * cells in the conditional table. Default is 2. Note that this should not be too small, or the chi-square
+     * distribution will not be a good approximation to the distribution of the test statistic.
      *
-     * @return The minimum number of counts per conditional table for chi-square for that table and its degrees of
-     * freedom to be included in the overall chi-square and degrees of freedom.
+     * @return The minimum number of counts per conditional table expressed as a fraction of the total number of cells
+     * in the conditional table.
      */
-    public int getMinCountPerTable() {
-        return minCountPerTable;
+    public int getMinCountFraction() {
+        return minCountFraction;
     }
 
     /**
-     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
-     * included in the overall chi-square and degrees of freedom. The default is 20. Note that this should not be too
-     * small, or the chi-square distribution will not be a good approximation to the distribution of the test
-     * statistic.
+     * The minimum number of counts per conditional table for chi-square expressed as a fraction of the total number of
+     * cells in the conditional table. Default is 2. Note that this should not be too small, or the chi-square
+     * distribution will not be a good approximation to the distribution of the test statistic.
      *
-     * @param minCountPerTable The minimum number of counts per conditional table for chi-square for that table and its
-     *                         degrees of freedom to be included in the overall chi-square and degrees of freedom.
+     * @param minCountFraction The minimum number of counts per conditional table expressed as a fraction of the total
+     *                         number of cells in the conditional table.
      */
-    public void setMinCountPerTable(int minCountPerTable) {
-        this.minCountPerTable = minCountPerTable;
-        this.chiSquareTest.setMinCountPerTable(minCountPerTable);
+    public void setMinCountFraction(int minCountFraction) {
+        this.minCountFraction = minCountFraction;
+        this.chiSquareTest.setMinCountFraction(minCountFraction);
     }
 }
 

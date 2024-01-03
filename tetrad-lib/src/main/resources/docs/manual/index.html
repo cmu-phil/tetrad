@@ -5442,28 +5442,6 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="minCountPerTable">minCountPerTable</h3>
-        <ul
-                class="minCountPerTable_list">
-            <li>Short Description: <span id="minCountPerTable_short_desc">
-            		Minimum count per conditional table </span></li>
-            <li>Long Description: <span id="minCountPerTable_long_desc">
-                    The minimum number of counts per conditional table for chi-square for that table
-                    and its degrees of freedom to be included in the overall chi-square and degrees of
-                    freedom. The default is 20. Note that this should not be too small, or the
-                    chi-square distribution will not be a good approximation to the distribution of
-                    the test statistic.</span></li>
-            <li>Default Value: <span
-                    id="minCountPerTable_default_value">20</span></li>
-            <li>Lower
-                Bound: <span id="minCountPerTable_lower_bound">1</span></li>
-            <li>Upper Bound: <span
-                    id="minCountPerTable_upper_bound">2147483647</span></li>
-            <li>Value Type:
-                <span id="minCountPerTable_value_type">Integer</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
             id="determinismThreshold">determinismThreshold</h3>
         <ul
                 class="parameter_description_list">
@@ -6502,6 +6480,27 @@ tabs will not appear.</p> -->
                     id="kernelRegressionSampleSize_upper_bound">2147483647</span></li>
             <li>Value Type: <span
                     id="kernelRegressionSampleSize_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="minCountFraction">minCountFraction</h3>
+        <ul
+                class="minCountFraction_list">
+            <li>Short Description: <span id="minCountFraction_short_desc">
+            		Minimum fraction of number of cells in a conditional table. </span></li>
+            <li>Long Description: <span id="minCountFraction_long_desc">
+                    The minimum number of counts per conditional table for chi-square expressed as
+                    a fraction of the total number of cells in the conditional table. Default is 2.
+                    Note that this should not be too small, or the chi-square distribution will not
+                    be a good approximation to the distribution of the test statistic</span></li>
+            <li>Default Value: <span
+                    id="minCountFraction_default_value">2.0</span></li>
+            <li>Lower
+                Bound: <span id="minCountFraction_lower_bound">0.0</span></li>
+            <li>Upper Bound: <span
+                    id="minCountFraction_upper_bound">Infinity</span></li>
+            <li>Value Type:
+                <span id="minCountFraction_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description" id="kernelType">kernelType</h3>
