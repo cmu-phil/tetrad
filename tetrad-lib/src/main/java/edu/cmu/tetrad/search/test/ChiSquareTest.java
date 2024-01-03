@@ -233,9 +233,9 @@ public class ChiSquareTest {
             for (int i = 0; i < numValues; i++) {
                 coords[0] = i;
 
-                long numi = this.getCellTable().getValue(coords);
+                long value = this.getCellTable().getValue(coords);
 
-                if ((double) numi / total >= p) {
+                if ((double) value / total >= p) {
                     dominates = true;
                 }
             }
@@ -299,17 +299,6 @@ public class ChiSquareTest {
      * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
      * chi-square distribution will not be a good approximation to the distribution of the test statistic.
      *
-     * @return The minimum number of counts per conditional table.
-     */
-    public double getMinCountFraction() {
-        return minCountFraction;
-    }
-
-    /**
-     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
-     * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
-     * chi-square distribution will not be a good approximation to the distribution of the test statistic.
-     *
      * @param minCountFraction The minimum number of counts per conditional table.
      */
     public void setMinCountFraction(double minCountFraction) {
@@ -340,7 +329,7 @@ public class ChiSquareTest {
         private final int df;
 
         /**
-         * Whether the conditional independence holds or not. (True if it does, false if it doesn't.
+         * Whether the conditional independence holds or not. (True if it does, false if it doesn't.)
          */
         private final boolean isIndep;
 
