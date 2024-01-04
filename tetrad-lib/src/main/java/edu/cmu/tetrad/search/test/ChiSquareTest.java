@@ -178,7 +178,7 @@ public class ChiSquareTest {
             }
 
             // Sum up chi square and degrees of freedom for the conditional table. Keep track of zeroes in the table
-            // and substract them from the degrees of freedom. If there are no free degrees of freedom, don't increment
+            // and subtract them from the degrees of freedom. If there are no free degrees of freedom, don't increment
             // the chi square or degrees of freedom.
             int zeros = 0;
             double _xSquare = 0.0;
