@@ -72,7 +72,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     private double pValue;
     /**
      * The lower bound of percentages of observation of some category in the data, given some particular combination of
-     * values of conditioning variables, that coefs as 'determining."
+     * values of conditioning variables, that coefs as 'determining.'
      */
     private double determinationP = 0.99;
     private boolean verbose;
@@ -224,7 +224,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Return the list of variables over which this independence checker is capable of determinine independence
+     * Return the list of variables over which this independence checker is capable of determining independence
      * relations-- that is, all the variables in the given graph or the given data set.
      *
      * @return This list.
@@ -307,7 +307,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Sets the threshold for making judgments of detemrination.
+     * Sets the threshold for making judgments of determination.
      *
      * @param determinationP This threshold.
      */

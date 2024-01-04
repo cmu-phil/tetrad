@@ -48,11 +48,9 @@ public class ChiSquareTest {
     // Stores the data in the form of a cell table.
     private final CellTable cellTable;
     // The type of test to perform.
-    private TestType testType = TestType.CHI_SQUARE;
+    private final TestType testType;
     // The significance level of the test.
     private double alpha;
-    // The rows used in the data.
-    private List<Integer> rows = null;
     /**
      * The minimum number of counts per conditional table for chi-square expressed as a multiple of the total number of
      * cells in the table. Note that this should not be too small, or the chi-square distribution will not be a good
@@ -123,7 +121,6 @@ public class ChiSquareTest {
         int numCols = this.getCellTable().getNumValues(1);
 
         CombinationIterator combinationIterator = new CombinationIterator(condDims);
-        boolean allRepresented = true;
 
         // Make a chi square table for each condition combination, strike zero rows and columns and calculate
         // chi square and degrees of freedom for the remaining rows and columns in the table. See Friedman.
@@ -323,7 +320,7 @@ public class ChiSquareTest {
      */
     public void setRows(List<Integer> rows) {
         this.cellTable.setRows(rows);
-        this.rows = rows;
+        // The rows used in the data.
     }
 
     private int[] selectFromArray(int[] arr, int[] indices) {
