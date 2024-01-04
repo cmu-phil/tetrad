@@ -61,15 +61,15 @@ public final class CellTable {
             }
         } else {
             for (int i = 0; i < rows.size(); i++) {
-                if (rows.get(i) >= dataSet.getNumRows()) throw new IllegalArgumentException("Row " + i + " is too large.");
+                if (rows.get(i) >= dataSet.getNumRows())
+                    throw new IllegalArgumentException("Row " + i + " is too large.");
             }
         }
 
         int[] dims = new int[indices.length];
 
         for (int i = 0; i < indices.length; i++) {
-            DiscreteVariable variable =
-                    (DiscreteVariable) dataSet.getVariable(indices[i]);
+            DiscreteVariable variable = (DiscreteVariable) dataSet.getVariable(indices[i]);
             dims[i] = variable.getNumCategories();
         }
 
@@ -136,8 +136,8 @@ public final class CellTable {
     /**
      * An alternative way to specify a marginal calculation. In this case, coords specifies a particular cell in the
      * table, and varIndices is an array containing the indices of the variables over which the margin sum should be
-     * calculated. The sum is over the cell specified by 'coord' and all the cells which differ from that cell in any
-     * of the specified coordinates.
+     * calculated. The sum is over the cell specified by 'coord' and all the cells which differ from that cell in any of
+     * the specified coordinates.
      *
      * @param coords     an <code>int[]</code> value
      * @param marginVars an <code>int[]</code> value
@@ -173,12 +173,16 @@ public final class CellTable {
     }
 
     public void setRows(List<Integer> rows) {
-        if (rows == null) throw new NullPointerException("Rows is null.");
-        for (int i = 0; i < rows.size(); i++) {
-            if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
-            if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+        if (rows == null) {
+            this.rows = null;
+        } else {
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
+                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+            }
+
+            this.rows = rows;
         }
-        this.rows = rows;
     }
 }
 

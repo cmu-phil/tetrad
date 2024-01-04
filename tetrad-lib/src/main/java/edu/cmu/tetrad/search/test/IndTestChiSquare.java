@@ -44,7 +44,7 @@ import java.util.Set;
  * @author josephramsey
  * @see ChiSquareTest
  */
-public final class IndTestChiSquare implements IndependenceTest {
+public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * The Chi Square tester.
@@ -76,6 +76,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     private int minCountFraction = 20;
 
     private boolean verbose;
+    private List<Integer> rows = null;
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -351,24 +352,42 @@ public final class IndTestChiSquare implements IndependenceTest {
      * cells in the conditional table. Default is 2. Note that this should not be too small, or the chi-square
      * distribution will not be a good approximation to the distribution of the test statistic.
      *
-     * @return The minimum number of counts per conditional table expressed as a fraction of the total number of cells
-     * in the conditional table.
-     */
-    public int getMinCountFraction() {
-        return minCountFraction;
-    }
-
-    /**
-     * The minimum number of counts per conditional table for chi-square expressed as a fraction of the total number of
-     * cells in the conditional table. Default is 2. Note that this should not be too small, or the chi-square
-     * distribution will not be a good approximation to the distribution of the test statistic.
-     *
      * @param minCountFraction The minimum number of counts per conditional table expressed as a fraction of the total
      *                         number of cells in the conditional table.
      */
     public void setMinCountFraction(int minCountFraction) {
         this.minCountFraction = minCountFraction;
         this.chiSquareTest.setMinCountFraction(minCountFraction);
+    }
+
+    /**
+     * Returns the rows used for the test. If null, all rows are used.
+     * @return The rows used for the test. Can be null.
+     */
+    @Override
+    public List<Integer> getRows() {
+        return new ArrayList<>(rows);
+    }
+
+    /**
+     * Sets the rows to use for the test. If null, all rows are used.
+     * @param rows The rows to use for the test. Can be null.
+     */
+    @Override
+    public void setRows(List<Integer> rows) {
+        if (rows == null) {
+            this.rows = null;
+            chiSquareTest.setRows(null);
+        } else {
+            for (int i : rows) {
+                if (i < 0 || i >= dataSet.getNumRows()) {
+                    throw new IllegalArgumentException("Row " + i + " is out of bounds.");
+                }
+            }
+
+            this.rows = new ArrayList<>(rows);
+            chiSquareTest.setRows(this.rows);
+        }
     }
 }
 

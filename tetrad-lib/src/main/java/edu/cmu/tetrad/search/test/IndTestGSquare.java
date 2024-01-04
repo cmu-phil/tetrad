@@ -44,7 +44,7 @@ import java.util.Set;
  * @author josephramsey
  * @see ChiSquareTest
  */
-public final class IndTestGSquare implements IndependenceTest {
+public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
     /**
      * The standard number formatter for Tetrad.
@@ -76,6 +76,8 @@ public final class IndTestGSquare implements IndependenceTest {
      */
     private double determinationP = 0.99;
     private boolean verbose;
+    private int minCountFraction;
+    private List<Integer> rows = null;
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -102,6 +104,7 @@ public final class IndTestGSquare implements IndependenceTest {
 
         this.variables = new ArrayList<>(dataSet.getVariables());
         this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE);
+        this.gSquareTest.setMinCountFraction(minCountFraction);
     }
 
     /**
@@ -339,6 +342,49 @@ public final class IndTestGSquare implements IndependenceTest {
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * The minimum number of counts per conditional table for chi-square expressed as a fraction of the total number of
+     * cells in the conditional table. Default is 2. Note that this should not be too small, or the chi-square
+     * distribution will not be a good approximation to the distribution of the test statistic.
+     *
+     * @param minCountFraction The minimum number of counts per conditional table expressed as a fraction of the total
+     *                         number of cells in the conditional table.
+     */
+    public void setMinCountFraction(int minCountFraction) {
+        this.minCountFraction = minCountFraction;
+        this.gSquareTest.setMinCountFraction(minCountFraction);
+    }
+
+    /**
+     * Returns the rows used for the test. If null, all rows are used.
+     * @return The rows used for the test. Can be null.
+     */
+    @Override
+    public List<Integer> getRows() {
+        return new ArrayList<>(rows);
+    }
+
+    /**
+     * Sets the rows to use for the test. If null, all rows are used.
+     * @param rows The rows to use for the test. Can be null.
+     */
+    @Override
+    public void setRows(List<Integer> rows) {
+        if (rows == null) {
+            this.rows = null;
+            gSquareTest.setRows(null);
+        } else {
+            for (int i : rows) {
+                if (i < 0 || i >= dataSet.getNumRows()) {
+                    throw new IllegalArgumentException("Row " + i + " is out of bounds.");
+                }
+            }
+
+            this.rows = new ArrayList<>(rows);
+            gSquareTest.setRows(this.rows);
+        }
     }
 }
 

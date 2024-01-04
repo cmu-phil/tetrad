@@ -25,9 +25,13 @@ import edu.cmu.tetrad.data.CellTable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.util.CombinationIterator;
+import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
+import java.util.List;
+
+import static org.apache.commons.math3.util.FastMath.log;
 import static org.apache.commons.math3.util.FastMath.pow;
 
 /**
@@ -39,33 +43,24 @@ import static org.apache.commons.math3.util.FastMath.pow;
  * @author josephramsey
  */
 public class ChiSquareTest {
-    public enum TestType {
-        CHI_SQUARE,
-        G_SQUARE
-    }
-
-    // The type of test to perform.
-    private TestType testType = TestType.CHI_SQUARE;
-
     // The data set this test uses.
     private final DataSet dataSet;
-
     // The number of values for each variable in the data.
     private final int[] dims;
-
     // Stores the data in the form of a cell table.
     private final CellTable cellTable;
-
+    // The type of test to perform.
+    private TestType testType = TestType.CHI_SQUARE;
     // The significance level of the test.
     private double alpha;
-
+    // The rows used in the data.
+    private List<Integer> rows = null;
     /**
      * The minimum number of counts per conditional table for chi-square expressed as a multiple of the total number of
      * cells in the table. Note that this should not be too small, or the chi-square distribution will not be a good
      * approximation to the distribution of the test statistic.
      */
     private double minCountFraction = 2.0;
-
 
     /**
      * Constructs a test using the given data set and significance level.
@@ -138,28 +133,71 @@ public class ChiSquareTest {
 
             System.arraycopy(combination, 0, coords, 2, combination.length);
 
+            boolean[] zeroRows = new boolean[numRows];
+            boolean[] zeroCols = new boolean[numCols];
+            double[] sumRows = new double[numRows];
+            double[] sumCols = new double[numCols];
+
+            for (int i = 0; i < numRows; i++) {
+                coords[0] = i;
+
+                sumRows[i] = getCellTable().calcMargin(coords, secondVar);
+
+                if (sumRows[i] == 0) {
+                    zeroRows[i] = true;
+                }
+            }
+
+            for (int j = 0; j < numCols; j++) {
+                coords[1] = j;
+
+                sumCols[j] = getCellTable().calcMargin(coords, firstVar);
+
+                if (sumCols[j] == 0) {
+                    zeroCols[j] = true;
+                }
+            }
+
+            double total = getCellTable().calcMargin(coords, bothVars);
+
+            // Count non-zero rows and columns
+            int numNonZeroRows = 0;
+            int numNonZeroCols = 0;
+
+            for (int i = 0; i < numRows; i++) {
+                if (!zeroRows[i]) {
+                    numNonZeroRows++;
+                }
+            }
+
+            for (int j = 0; j < numCols; j++) {
+                if (!zeroCols[j]) {
+                    numNonZeroCols++;
+                }
+            }
+
             double _xSquare = 0.0;
             int zeros = 0;
 
-            for (int i = 0; i < numRows; i++) {
-                for (int j = 0; j < numCols; j++) {
-                    coords[0] = i;
-                    coords[1] = j;
+            if (total < minCountFraction * (numNonZeroRows * numNonZeroCols)) {
+                zeros += numNonZeroRows * numNonZeroCols;
+            } else {
+                for (int i = 0; i < numRows; i++) {
+                    for (int j = 0; j < numCols; j++) {
+                        if (sumRows[i] == 0 || sumCols[j] == 0) continue;
 
-                    double sumRow = getCellTable().calcMargin(coords, firstVar);
-                    double sumCol = getCellTable().calcMargin(coords, secondVar);
-                    double observed = getCellTable().getValue(coords);
-                    double total = getCellTable().calcMargin(coords, bothVars);
+                        coords[0] = i;
+                        coords[1] = j;
 
-                    if (total >= minCountFraction * (numRows * numCols)) {
-                        double expected = (sumRow * sumCol) / (total);
+                        double observed = getCellTable().getValue(coords);
+                        double expected = (sumRows[i] * sumCols[j]) / (total);
 
                         if (expected > 0) {
                             if (testType == TestType.CHI_SQUARE) {
                                 _xSquare += pow(observed - expected, 2.0) / expected;
                             } else if (testType == TestType.G_SQUARE) {
                                 if (observed > 0) {
-                                    _xSquare += 2.0 * observed * FastMath.log(observed / expected);
+                                    _xSquare += 2.0 * observed * log(observed / expected);
                                 } else {
                                     zeros++;
                                 }
@@ -169,13 +207,11 @@ public class ChiSquareTest {
                         } else {
                             zeros++;
                         }
-                    } else {
-                        zeros += numRows * numCols;
                     }
                 }
             }
 
-            int _df = (numRows - 1) * (numCols - 1) - zeros;
+            int _df = (numNonZeroRows - 1) * (numNonZeroCols - 1) - zeros;
 
             // There were free degrees of freedom in the table, so we count this chi-square and df.
             if (_df > 0) {
@@ -186,10 +222,10 @@ public class ChiSquareTest {
 
         // None of the conditional tables had enough counts to be included in the overall chi-square.
         if (df == 0) {
-            return new Result(xSquare, Double.NaN, df, true);
+            return new Result(xSquare, Double.NaN, df, false);
         }
 
-        // Cannot be NaN.
+        // Cannot be NaN at this point.
         double pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(xSquare);
 
         // The Chi-Square distribution doesn't go out this far numerically, so this value can't be trusted.
@@ -283,6 +319,15 @@ public class ChiSquareTest {
         this.alpha = alpha;
     }
 
+    /**
+     * Sets the rows to use in the data.
+     *
+     * @param rows The rows to use.
+     */
+    public void setRows(List<Integer> rows) {
+        this.cellTable.setRows(rows);
+        this.rows = rows;
+    }
 
     private int[] selectFromArray(int[] arr, int[] indices) {
         int[] retArr = new int[indices.length];
@@ -317,6 +362,10 @@ public class ChiSquareTest {
         this.minCountFraction = minCountFraction;
     }
 
+    public enum TestType {
+        CHI_SQUARE,
+        G_SQUARE
+    }
 
     /**
      * Simple class to store the parameters of the result returned by the G Square test.
