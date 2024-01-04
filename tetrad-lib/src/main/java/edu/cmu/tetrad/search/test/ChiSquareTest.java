@@ -125,6 +125,7 @@ public class ChiSquareTest {
         int numCols = this.getCellTable().getNumValues(1);
 
         CombinationIterator combinationIterator = new CombinationIterator(condDims);
+        boolean allRepresented = true;
 
         // Make a chi square table for each condition combination, strike zero rows and columns and calculate
         // chi square and degrees of freedom for the remaining rows and columns in the table. See Friedman.
@@ -176,11 +177,14 @@ public class ChiSquareTest {
                 }
             }
 
-            double _xSquare = 0.0;
+            // Sum up chi square and degrees of freedom for the conditional table. Keep track of zeroes in the table
+            // and substract them from the degrees of freedom. If there are no free degrees of freedom, don't increment
+            // the chi square or degrees of freedom.
             int zeros = 0;
+            double _xSquare = 0.0;
 
-            if (total < minCountFraction * (numNonZeroRows * numNonZeroCols)) {
-                zeros += numNonZeroRows * numNonZeroCols;
+            if (total < minCountFraction * numNonZeroRows * numNonZeroCols) {
+                zeros += (numNonZeroRows - 1) * (numNonZeroCols - 1);
             } else {
                 for (int i = 0; i < numRows; i++) {
                     for (int j = 0; j < numCols; j++) {
@@ -217,21 +221,15 @@ public class ChiSquareTest {
             if (_df > 0) {
                 df += _df;
                 xSquare += _xSquare;
+            } else {
+
+                // Not all conditional tables were represented, so we can't trust this result.
+                return new Result(Double.NaN, Double.NaN, -1, false);
             }
         }
 
-        // None of the conditional tables had enough counts to be included in the overall chi-square.
-        if (df == 0) {
-            return new Result(xSquare, Double.NaN, df, false);
-        }
-
-        // Cannot be NaN at this point.
+        // At this point in the code, the p-value cannot be NaN.
         double pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(xSquare);
-
-        // The Chi-Square distribution doesn't go out this far numerically, so this value can't be trusted.
-        if (pValue == 1.0) {
-            return new Result(xSquare, Double.NaN, df, false);
-        }
 
         boolean indep = (pValue > getAlpha());
         return new Result(xSquare, pValue, df, indep);
