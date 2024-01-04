@@ -217,8 +217,9 @@ public class ChiSquareTest {
 
             int _df = (numNonZeroRows - 1) * (numNonZeroCols - 1) - zeros;
 
-            // There were free degrees of freedom in the table, so we count this chi-square and df.
             if (_df > 0) {
+
+                // There were free degrees of freedom in the table, so we count this chi-square and df.
                 df += _df;
                 xSquare += _xSquare;
             } else {
