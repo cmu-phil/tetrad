@@ -25,9 +25,7 @@ import edu.cmu.tetrad.data.CellTable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.util.CombinationIterator;
-import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
 
@@ -225,7 +223,7 @@ public class ChiSquareTest {
             } else {
 
                 // Not all conditional tables were represented, so we can't trust this result.
-                return new Result(Double.NaN, Double.NaN, -1, false);
+                return new Result(Double.NaN, Double.NaN, -1, false, false);
             }
         }
 
@@ -372,51 +370,86 @@ public class ChiSquareTest {
      * @author Frank Wimberly
      */
     public static class Result {
-
-        /**
-         * The chi square value.
-         */
         private final double chiSquare;
-
-        /**
-         * The pValue of the result.
-         */
         private final double pValue;
-
-        /**
-         * The adjusted degrees of freedom.
-         */
         private final int df;
-
-        /**
-         * Whether the conditional independence holds or not. (True if it does, false if it doesn't.)
-         */
         private final boolean isIndep;
+        private final boolean isValid;
 
         /**
          * Constructs a new g square result using the given parameters.
+         *
+         * @param chiSquare The chi square value.
+         * @param pValue    The pValue of the result.
+         * @param df        The adjusted degrees of freedom.
+         * @param isIndep   Whether the conditional independence holds or not. (True if it does, false if it doesn't.)
          */
         public Result(double chiSquare, double pValue, int df, boolean isIndep) {
+            this(chiSquare, pValue, df, isIndep, true);
+        }
+
+        /**
+         * Constructs a new g square result using the given parameters.
+         *
+         * @param chiSquare The chi square value.
+         * @param pValue    The pValue of the result.
+         * @param df        The adjusted degrees of freedom.
+         * @param isIndep   Whether the conditional independence holds or not. (True if it does, false if it doesn't.)
+         * @param isValid   Whether the result is isValid or not.
+         */
+        public Result(double chiSquare, double pValue, int df, boolean isIndep, boolean isValid) {
             this.chiSquare = chiSquare;
             this.pValue = pValue;
             this.df = df;
             this.isIndep = isIndep;
+            this.isValid = isValid;
         }
 
+        /**
+         * Returns the chi square value, or NaN if the chi square value cannot be determined.
+         *
+         * @return the chi square value.
+         */
         public double getXSquare() {
             return this.chiSquare;
         }
 
+        /**
+         * Returns the pValue of the result, or NaN if the p-value cannot be determined.
+         *
+         * @return the pValue of the result.
+         */
         public double getPValue() {
             return this.pValue;
         }
 
+        /**
+         * Returns the adjusted degrees of freedom, or -1 if the degrees of freedom cannot be determined.
+         *
+         * @return the adjusted degrees of freedom.
+         */
         public int getDf() {
             return this.df;
         }
 
+        /**
+         * Returns whether the conditional independence holds or not. (True if it does, false if it doesn't.) For
+         * invalid results, this method returns a value set by the test.
+         *
+         * @return whether the conditional independence holds or not.
+         */
         public boolean isIndep() {
             return this.isIndep;
+        }
+
+        /**
+         * Returns whether the result is valid or not. A result is valid if its judgment of independence is not
+         * indeterminate.
+         *
+         * @return whether the result is valid or not.
+         */
+        public boolean isValid() {
+            return isValid;
         }
     }
 }
