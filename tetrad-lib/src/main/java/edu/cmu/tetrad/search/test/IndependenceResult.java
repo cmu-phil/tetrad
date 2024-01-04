@@ -109,7 +109,7 @@ public final class IndependenceResult implements TetradSerializable {
     }
 
     /**
-     * Returns a string represnetation of this independence fact.
+     * Returns a string representation of this independence fact.
      *
      * @return This string.
      */
