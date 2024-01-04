@@ -35,20 +35,30 @@ import static org.apache.commons.math3.util.FastMath.pow;
 /**
  * Calculates chi-square for a conditional cross-tabulation table for independence question 0 _||_ 1 | 2, 3, ...max by
  * summing up chi-square and degrees of freedom for each conditional table in turn, where rows or columns that consist
- * entirely of zeros have been removed. The conditional tables are restricted to have at least minCountPerTable counts.
+ * entirely of zeros have been removed. The adjusted conditional tables are required to have at least c * numNonZeroRows
+ * * numNonZeroCols counts, where c is a parameter. The default value of c is 0. If any conditional table has fewer than
+ * c * numNonZeroRows * numNonZeroCols counts or zero free degrees of freedom, the test is invalid. Otherwise, the test
+ * is valid and the chi-square and degrees of freedom are calculated by summing up the chi-square and degrees of freedom
+ * for each conditional table. The p-value is calculated from the chi-square and degrees of freedom using the
+ * chi-square distribution.
  *
  * @author frankwimberly
  * @author josephramsey
  */
 public class ChiSquareTest {
+
     // The data set this test uses.
     private final DataSet dataSet;
+
     // The number of values for each variable in the data.
     private final int[] dims;
+
     // Stores the data in the form of a cell table.
     private final CellTable cellTable;
+
     // The type of test to perform.
     private final TestType testType;
+
     // The significance level of the test.
     private double alpha;
     /**
