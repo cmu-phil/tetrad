@@ -22,7 +22,7 @@ import java.util.List;
         command = "g-square-test",
         dataType = DataType.Discrete
 )
-public class Gsquare implements IndependenceWrapper {
+public class GSquare implements IndependenceWrapper {
 
     private static final long serialVersionUID = 23L;
 
