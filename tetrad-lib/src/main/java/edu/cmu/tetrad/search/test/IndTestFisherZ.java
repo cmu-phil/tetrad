@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
@@ -49,7 +50,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author josephramsey
  * @author Frank Wimberly
  */
-public final class IndTestFisherZ implements IndependenceTest {
+public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     private final Map<String, Integer> indexMap;
     private final Map<String, Node> nameMap;
     private final NormalDistribution normal = new NormalDistribution(0, 1, 1e-15);
@@ -61,6 +62,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     private boolean verbose = true;
     //    private double p = Double.NaN;
     private double r = Double.NaN;
+    private List<Integer> rows = null;
 
 
     /**
@@ -497,6 +499,10 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+        if (this.rows != null) {
+            return this.rows;
+        }
+
         List<Integer> rows = new ArrayList<>();
 
         K:
@@ -509,6 +515,33 @@ public final class IndTestFisherZ implements IndependenceTest {
         }
 
         return rows;
+    }
+
+    /**
+     * Returns the rows used in the test.
+     * @return The rows used in the test.
+     */
+    public List<Integer> getRows() {
+        return rows;
+    }
+
+    /**
+     * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except
+     * those with missing values.
+     * @param rows The rows to use.
+     */
+    public void setRows(List<Integer> rows) {
+        if (dataSet == null) {
+            throw new IllegalStateException("Cannot set rows without a data set.");
+        }
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            if (rows.get(i) < 0 || rows.get(i) >= sampleSize()) {
+                throw new IllegalArgumentException("Row index out of bounds.");
+            }
+        }
+
+        this.rows = rows;
     }
 }
 
