@@ -49,20 +49,18 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author josephramsey
  * @author Frank Wimberly
  */
-public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
+public final class IndTestFisherZ implements IndependenceTest {
     private final Map<String, Integer> indexMap;
     private final Map<String, Node> nameMap;
     private final NormalDistribution normal = new NormalDistribution(0, 1, 1e-15);
     private final Map<Node, Integer> nodesHash;
-    private final int sampleSize;
     private ICovarianceMatrix cor = null;
     private List<Node> variables;
     private double alpha;
     private DataSet dataSet;
-    private boolean verbose = false;
+    private boolean verbose = true;
     //    private double p = Double.NaN;
     private double r = Double.NaN;
-    private List<Integer> rows = null;
 
 
     /**
@@ -73,7 +71,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      * @param alpha   The alpha level of the test.
      */
     public IndTestFisherZ(DataSet dataSet, double alpha) {
-        this.dataSet = dataSet.copy();
+        this.dataSet = dataSet;
 
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
@@ -115,8 +113,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
             this.nodesHash = nodesHash;
         }
-
-        this.sampleSize = dataSet.getNumRows();
     }
 
     /**
@@ -141,8 +137,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         }
 
         this.nodesHash = nodesHash;
-        this.sampleSize = dataSet.getNumRows();
-
     }
 
     /**
@@ -166,8 +160,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         }
 
         this.nodesHash = nodesHash;
-        this.sampleSize = cor.getSampleSize();
-
     }
 
 
@@ -364,7 +356,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      */
     @Override
     public int getSampleSize() {
-        return this.sampleSize();
+        return this.cor.getSampleSize();
     }
 
     /**
@@ -477,7 +469,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     private int sampleSize() {
-        return sampleSize;
+        return covMatrix().getSampleSize();
     }
 
     private ICovarianceMatrix covMatrix() {
@@ -505,10 +497,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
-        if (rows != null) {
-            return rows;
-        }
-
         List<Integer> rows = new ArrayList<>();
 
         K:
@@ -521,35 +509,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         }
 
         return rows;
-    }
-
-    /**
-     * Gets the rows to use for the test. These rows over override testwise deletion
-     * if set.
-     * @return The rows to use for the test. Can be null.
-     */
-    public List<Integer> getRows() {
-        return rows;
-    }
-
-    /**
-     * Sets the rows to use for the test. This will override testwise deletion.
-     * @param rows The rows to use for the test. Can be null.
-     */
-    public void setRows(List<Integer> rows) {
-        if (rows != null) {
-            for (int i = 0; i < rows.size(); i++) {
-                if (rows.get(i) < 0 || rows.get(i) > sampleSize()) {
-                    throw new IllegalArgumentException("Row index = " + i + "=" + rows.get(i) + " is out of bounds.");
-                }
-            }
-
-            this.rows = rows;
-            this.cor = null;
-        } else {
-            this.cor = new CorrelationMatrix(dataSet);
-            this.rows = null;
-        }
     }
 }
 
