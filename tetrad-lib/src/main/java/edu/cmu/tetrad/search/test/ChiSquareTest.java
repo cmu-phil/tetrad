@@ -189,7 +189,7 @@ public class ChiSquareTest {
             double _xSquare = 0.0;
 
             if (total < minCountFraction * numNonZeroRows * numNonZeroCols) {
-                zeros += (numNonZeroRows - 1) * (numNonZeroCols - 1);
+                zeros += (numNonZeroRows) * (numNonZeroCols);
             } else {
                 for (int i = 0; i < numRows; i++) {
                     for (int j = 0; j < numCols; j++) {
