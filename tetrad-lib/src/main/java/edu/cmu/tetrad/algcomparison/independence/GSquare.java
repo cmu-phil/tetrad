@@ -29,7 +29,7 @@ public class GSquare implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         IndTestGSquare test = new IndTestGSquare(SimpleDataLoader.getDiscreteDataSet(dataSet), parameters.getDouble("test"));
-        test.setMinCountFraction(parameters.getInt(Params.MIN_COUNT_FRACTION));
+        test.setMinSumRowOrCol(parameters.getInt(Params.MIN_SUM_ROW_OR_COL));
         return test;
     }
 
@@ -47,7 +47,7 @@ public class GSquare implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
-        params.add(Params.MIN_COUNT_FRACTION);
+        params.add(Params.MIN_SUM_ROW_OR_COL);
         return params;
     }
 }

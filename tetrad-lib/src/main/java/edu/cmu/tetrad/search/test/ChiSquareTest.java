@@ -66,7 +66,7 @@ public class ChiSquareTest {
      * cells in the table. Note that this should not be too small, or the chi-square distribution will not be a good
      * approximation to the distribution of the test statistic.
      */
-    private double minCountFraction = 2.0;
+    private int minSumRowOrCol = 0;
 
     /**
      * Constructs a test using the given data set and significance level.
@@ -149,7 +149,7 @@ public class ChiSquareTest {
 
                 sumRows[i] = getCellTable().calcMargin(coords, secondVar);
 
-                if (sumRows[i] == 0) {
+                if (sumRows[i] < minSumRowOrCol) {
                     zeroRows[i] = true;
                 }
             }
@@ -159,7 +159,7 @@ public class ChiSquareTest {
 
                 sumCols[j] = getCellTable().calcMargin(coords, firstVar);
 
-                if (sumCols[j] == 0) {
+                if (sumCols[j] < minSumRowOrCol) {
                     zeroCols[j] = true;
                 }
             }
@@ -188,13 +188,11 @@ public class ChiSquareTest {
             int zeros = 0;
             double _xSquare = 0.0;
 
-            if (total < minCountFraction * numNonZeroRows * numNonZeroCols) {
-                zeros += (numNonZeroRows) * (numNonZeroCols);
+            if (total == 0 || (numNonZeroRows < 2 && numNonZeroCols < 2)) {
+                continue;
             } else {
                 for (int i = 0; i < numRows; i++) {
                     for (int j = 0; j < numCols; j++) {
-                        if (sumRows[i] == 0 || sumCols[j] == 0) continue;
-
                         coords[0] = i;
                         coords[1] = j;
 
@@ -227,11 +225,11 @@ public class ChiSquareTest {
                 // There were free degrees of freedom in the table, so we count this chi-square and df.
                 df += _df;
                 xSquare += _xSquare;
-            } else {
-
-                // Not all conditional tables were represented, so we can't trust this result.
-                return new Result(Double.NaN, Double.NaN, -1, false, false);
             }
+        }
+
+        if (df == 0) {
+            return new Result(Double.NaN, Double.NaN, -1, false, false);
         }
 
         // At this point in the code, the p-value cannot be NaN.
@@ -360,10 +358,10 @@ public class ChiSquareTest {
      * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
      * chi-square distribution will not be a good approximation to the distribution of the test statistic.
      *
-     * @param minCountFraction The minimum number of counts per conditional table.
+     * @param minSumRowOrCol The minimum number of counts per conditional table.
      */
-    public void setMinCountFraction(double minCountFraction) {
-        this.minCountFraction = minCountFraction;
+    public void setMinSumRowOrCol(int minSumRowOrCol) {
+        this.minSumRowOrCol = minSumRowOrCol;
     }
 
     public enum TestType {

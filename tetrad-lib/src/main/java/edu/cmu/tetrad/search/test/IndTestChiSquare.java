@@ -73,7 +73,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
      */
     private int df;
 
-    private int minCountFraction = 20;
+    private int minSumRowOrCol = 0;
 
     private boolean verbose;
     private List<Integer> rows = null;
@@ -102,7 +102,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
         this.variables = new ArrayList<>(dataSet.getVariables());
         this.chiSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.CHI_SQUARE);
-        this.chiSquareTest.setMinCountFraction(minCountFraction);
+        this.chiSquareTest.setMinSumRowOrCol(minSumRowOrCol);
     }
 
     /**
@@ -352,12 +352,12 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
      * cells in the conditional table. Default is 2. Note that this should not be too small, or the chi-square
      * distribution will not be a good approximation to the distribution of the test statistic.
      *
-     * @param minCountFraction The minimum number of counts per conditional table expressed as a fraction of the total
+     * @param minSumRowOrCol The minimum number of counts per conditional table expressed as a fraction of the total
      *                         number of cells in the conditional table.
      */
-    public void setMinCountFraction(int minCountFraction) {
-        this.minCountFraction = minCountFraction;
-        this.chiSquareTest.setMinCountFraction(minCountFraction);
+    public void setMinSumRowOrCol(int minSumRowOrCol) {
+        this.minSumRowOrCol = minSumRowOrCol;
+        this.chiSquareTest.setMinSumRowOrCol(minSumRowOrCol);
     }
 
     /**

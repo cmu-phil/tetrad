@@ -4,6 +4,7 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.*;
@@ -1588,7 +1589,10 @@ public class Paths implements TetradSerializable {
 
     public boolean existsDirectedCycle() {
         for (Node node : graph.getNodes()) {
-            if (existsDirectedPathFromTo(node, node)) return true;
+            if (existsDirectedPathFromTo(node, node)) {
+                TetradLogger.getInstance().forceLogMessage("Cycle found at node " + node.getName() + ".");
+                return true;
+            }
         }
         return false;
     }

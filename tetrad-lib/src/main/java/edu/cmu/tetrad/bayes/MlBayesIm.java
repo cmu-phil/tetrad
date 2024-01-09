@@ -32,10 +32,7 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.pow;
@@ -235,15 +232,24 @@ public final class MlBayesIm implements BayesIm {
         return row;
     }
 
+//    static int strong_ = 0;
+
+    Random random = new Random();
+
     private static double[] getRandomWeights3(int size) {
-        assert size >= 0;
+        assert size > 0;
 
         double[] row = new double[size];
         double sum = 0.0;
 
         for (int i = 0; i < size; i++) {
-            row[i] = RandomUtil.getInstance().nextUniform(0.05, 0.95);
-//            row[i] = RandomUtil.getInstance().nextBeta(size / 4d, size);
+            //noinspection StatementWithEmptyBody
+            for (int j = 0; j < RandomUtil.getInstance().nextInt(10); j++) {
+                // empty
+            }
+
+            row[i] = pow(RandomUtil.getInstance().nextUniform(0.0, 1.0), 3);
+
             sum += row[i];
         }
 
