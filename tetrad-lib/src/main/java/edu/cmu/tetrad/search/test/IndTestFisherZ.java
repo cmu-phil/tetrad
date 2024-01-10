@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
@@ -203,7 +202,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-        double p = Double.NaN;
+        double p;
 
         try {
             p = getPValue(x, y, z);
@@ -519,6 +518,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * Returns the rows used in the test.
+     *
      * @return The rows used in the test.
      */
     public List<Integer> getRows() {
@@ -526,8 +526,9 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except
-     * those with missing values.
+     * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
+     * values.
+     *
      * @param rows The rows to use.
      */
     public void setRows(List<Integer> rows) {
@@ -535,8 +536,8 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
             throw new IllegalStateException("Cannot set rows without a data set.");
         }
 
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            if (rows.get(i) < 0 || rows.get(i) >= sampleSize()) {
+        for (Integer row : rows) {
+            if (row < 0 || row >= sampleSize()) {
                 throw new IllegalArgumentException("Row index out of bounds.");
             }
         }

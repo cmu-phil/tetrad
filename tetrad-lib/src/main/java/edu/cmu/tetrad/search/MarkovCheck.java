@@ -636,7 +636,7 @@ public class MarkovCheck {
      */
     private List<Integer> getSubsampleRows(double v) {
         int sampleSize = independenceTest.getSampleSize();
-        int subsampleSize = (int) FastMath.ceil(sampleSize * v);
+        int subsampleSize = (int) FastMath.floor(sampleSize * v);
         List<Integer> rows = new ArrayList<>(sampleSize);
         for (int i = 0; i < sampleSize; i++) {
             rows.add(i);
