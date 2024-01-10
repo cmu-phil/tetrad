@@ -29,8 +29,7 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.log;
-import static org.apache.commons.math3.util.FastMath.pow;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Calculates chi-square for a conditional cross-tabulation table for independence question 0 _||_ 1 | 2, 3, ...max by
@@ -185,7 +184,7 @@ public class ChiSquareTest {
             // Sum up chi square and degrees of freedom for the conditional table. Keep track of zeroes in the table
             // and subtract them from the degrees of freedom. If there are no free degrees of freedom, don't increment
             // the chi square or degrees of freedom.
-            int zeros = 0;
+            int terms = 0;
             double _xSquare = 0.0;
 
             if (total == 0 || (numNonZeroRows < 2 && numNonZeroCols < 2)) {
@@ -202,23 +201,25 @@ public class ChiSquareTest {
                         if (expected > 0) {
                             if (testType == TestType.CHI_SQUARE) {
                                 _xSquare += pow(observed - expected, 2.0) / expected;
+                                terms++;
                             } else if (testType == TestType.G_SQUARE) {
                                 if (observed > 0) {
                                     _xSquare += 2.0 * observed * log(observed / expected);
+                                    terms++;
                                 } else {
-                                    zeros++;
+//                                    zeros++;
                                 }
                             } else {
                                 throw new IllegalArgumentException("Unknown test type: " + testType);
                             }
                         } else {
-                            zeros++;
+//                            zeros++;
                         }
                     }
                 }
             }
 
-            int _df = (numNonZeroRows - 1) * (numNonZeroCols - 1) - zeros;
+            int _df = min((numNonZeroRows - 1) * (numNonZeroCols - 1), terms);
 
             if (_df > 0) {
 
