@@ -38,8 +38,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * * numNonZeroCols counts, where c is a parameter. The default value of c is 0. If any conditional table has fewer than
  * c * numNonZeroRows * numNonZeroCols counts or zero free degrees of freedom, the test is invalid. Otherwise, the test
  * is valid and the chi-square and degrees of freedom are calculated by summing up the chi-square and degrees of freedom
- * for each conditional table. The p-value is calculated from the chi-square and degrees of freedom using the
- * chi-square distribution.
+ * for each conditional table. The p-value is calculated from the chi-square and degrees of freedom using the chi-square
+ * distribution.
  *
  * @author frankwimberly
  * @author josephramsey
@@ -186,8 +186,10 @@ public class ChiSquareTest {
             // the chi square or degrees of freedom.
             int terms = 0;
             double _xSquare = 0.0;
+            int zeros = 0;
 
-            if (total == 0 || (numNonZeroRows < 2 && numNonZeroCols < 2)) {
+            if (total == 0 || (numNonZeroRows < 2 || numNonZeroCols < 2)) {
+//                return new Result(Double.NaN, Double.NaN, 0, true, false);
                 continue;
             } else {
                 for (int i = 0; i < numRows; i++) {
@@ -195,8 +197,12 @@ public class ChiSquareTest {
                         coords[0] = i;
                         coords[1] = j;
 
+                        if (zeroRows[i] || zeroCols[j]) {
+                            continue;
+                        }
+
                         double observed = getCellTable().getValue(coords);
-                        double expected = (sumRows[i] * sumCols[j]) / (total);
+                        double expected = (sumRows[i] * sumCols[j]) / total;
 
                         if (expected > 0) {
                             if (testType == TestType.CHI_SQUARE) {
@@ -207,37 +213,39 @@ public class ChiSquareTest {
                                     _xSquare += 2.0 * observed * log(observed / expected);
                                     terms++;
                                 } else {
-//                                    zeros++;
+                                    zeros++;
                                 }
                             } else {
                                 throw new IllegalArgumentException("Unknown test type: " + testType);
                             }
                         } else {
-//                            zeros++;
+                            zeros++;
                         }
                     }
                 }
             }
 
-            int _df = min((numNonZeroRows - 1) * (numNonZeroCols - 1), terms);
+            int maxDf = (numNonZeroRows - 1) * (numNonZeroCols - 1);
+            int _df = min(maxDf, terms);
+
+//            _df = (numNonZeroRows - 1) * (numNonZeroCols - 1) - zeros;
 
             if (_df > 0) {
-
-                // There were free degrees of freedom in the table, so we count this chi-square and df.
                 df += _df;
                 xSquare += _xSquare;
             }
         }
 
         if (df == 0) {
-            return new Result(Double.NaN, Double.NaN, -1, false, false);
+
+            // If no conditional table had positive degrees of freedom, the test is invalid.
+            return new Result(Double.NaN, Double.NaN, 0, true, false);
+        } else {
+
+            // Otherwise, we can calculate a p-value for the test.
+            double pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(xSquare);
+            return new Result(xSquare, pValue, df, (pValue > getAlpha()), true);
         }
-
-        // At this point in the code, the p-value cannot be NaN.
-        double pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(xSquare);
-
-        boolean indep = (pValue > getAlpha());
-        return new Result(xSquare, pValue, df, indep);
     }
 
     /**
