@@ -389,12 +389,24 @@ public final class GraphSearchUtils {
 
                 if (Edges.isUndirectedEdge(edge)) {
                     Graph _graph = new EdgeListGraph(graph);
-                    direct(x, y, _graph);
+
+                    if (!_graph.paths().isAncestorOf(y, x)) {
+                        direct(x, y, graph);
+                    } else {
+                        direct(y, x, graph);
+                    }
+
                     rules.orientImplied(_graph);
                     if (_graph.paths().existsDirectedCycle()) return false;
 
                     _graph = new EdgeListGraph(graph);
-                    direct(y, x, _graph);
+
+                    if (!_graph.paths().isAncestorOf(y, x)) {
+                        direct(x, y, graph);
+                    } else {
+                        direct(y, x, graph);
+                    }
+
                     rules.orientImplied(_graph);
                     if (_graph.paths().existsDirectedCycle()) return false;
 

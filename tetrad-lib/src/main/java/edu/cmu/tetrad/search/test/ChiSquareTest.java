@@ -186,7 +186,6 @@ public class ChiSquareTest {
             // the chi square or degrees of freedom.
             int terms = 0;
             double _xSquare = 0.0;
-            int zeros = 0;
 
             if (total == 0 || (numNonZeroRows < 2 || numNonZeroCols < 2)) {
 //                return new Result(Double.NaN, Double.NaN, 0, true, false);
@@ -212,14 +211,10 @@ public class ChiSquareTest {
                                 if (observed > 0) {
                                     _xSquare += 2.0 * observed * log(observed / expected);
                                     terms++;
-                                } else {
-                                    zeros++;
                                 }
                             } else {
                                 throw new IllegalArgumentException("Unknown test type: " + testType);
                             }
-                        } else {
-                            zeros++;
                         }
                     }
                 }
@@ -227,8 +222,6 @@ public class ChiSquareTest {
 
             int maxDf = (numNonZeroRows - 1) * (numNonZeroCols - 1);
             int _df = min(maxDf, terms);
-
-//            _df = (numNonZeroRows - 1) * (numNonZeroCols - 1) - zeros;
 
             if (_df > 0) {
                 df += _df;
@@ -337,7 +330,6 @@ public class ChiSquareTest {
      */
     public void setRows(List<Integer> rows) {
         this.cellTable.setRows(rows);
-        // The rows used in the data.
     }
 
     private int[] selectFromArray(int[] arr, int[] indices) {
