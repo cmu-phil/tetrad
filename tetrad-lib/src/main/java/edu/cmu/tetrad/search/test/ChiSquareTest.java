@@ -345,6 +345,9 @@ public class ChiSquareTest {
         this.minSumRowOrCol = minSumRowOrCol;
     }
 
+    /**
+     * The type of test to perform.
+     */
     public enum TestType {
         CHI_SQUARE,
         G_SQUARE
