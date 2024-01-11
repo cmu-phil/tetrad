@@ -75,15 +75,13 @@ public class ChiSquareTest {
      */
     public ChiSquareTest(DataSet dataSet, double alpha, TestType testType) {
         if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Significance level must be in " +
-                    "[0, 1]: " + alpha);
+            throw new IllegalArgumentException("Significance level must be in " + "[0, 1]: " + alpha);
         }
 
         this.dims = new int[dataSet.getNumColumns()];
 
         for (int i = 0; i < getDims().length; i++) {
-            DiscreteVariable variable =
-                    (DiscreteVariable) dataSet.getVariable(i);
+            DiscreteVariable variable = (DiscreteVariable) dataSet.getVariable(i);
             this.getDims()[i] = variable.getNumCategories();
         }
 
@@ -124,8 +122,7 @@ public class ChiSquareTest {
         int df = 0;
 
         int[] condDims = new int[testIndices.length - 2];
-        System.arraycopy(selectFromArray(getDims(), testIndices), 2, condDims, 0,
-                condDims.length);
+        System.arraycopy(selectFromArray(getDims(), testIndices), 2, condDims, 0, condDims.length);
 
         int[] coords = new int[testIndices.length];
         int numRows = this.getCellTable().getNumValues(0);
@@ -194,8 +191,14 @@ public class ChiSquareTest {
                             double d = observed - expected;
                             _xSquare += (d * d) / expected;
                         } else if (testType == TestType.G_SQUARE) {
+
+                            // The G-square test is a likelihood ratio test, so we need to take the log of the
+                            // observed/expected ratio. When observed is zero, we add 0 to the total. This is the
+                            // correct thing to do, since the limit of x * log(x) as x approaches zero is zero.
                             if (observed > 0) {
                                 _xSquare += 2.0 * observed * log(observed / expected);
+                            } else {
+                                _xSquare += 0.0;
                             }
                         } else {
                             throw new IllegalArgumentException("Unknown test type: " + testType);
@@ -241,14 +244,12 @@ public class ChiSquareTest {
         int[] firstVar = {0};
 
         int[] condDims = new int[testIndices.length - 1];
-        System.arraycopy(selectFromArray(getDims(), testIndices), 1, condDims, 0,
-                condDims.length);
+        System.arraycopy(selectFromArray(getDims(), testIndices), 1, condDims, 0, condDims.length);
 
         int[] coords = new int[testIndices.length];
         int numValues = this.getCellTable().getNumValues(0);
 
-        CombinationIterator combinationIterator =
-                new CombinationIterator(condDims);
+        CombinationIterator combinationIterator = new CombinationIterator(condDims);
 
         while (combinationIterator.hasNext()) {
             int[] combination = combinationIterator.next();
@@ -296,8 +297,7 @@ public class ChiSquareTest {
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Significance level must be in " +
-                    "[0, 1]: " + alpha);
+            throw new IllegalArgumentException("Significance level must be in " + "[0, 1]: " + alpha);
         }
 
         this.alpha = alpha;
@@ -349,8 +349,7 @@ public class ChiSquareTest {
      * The type of test to perform.
      */
     public enum TestType {
-        CHI_SQUARE,
-        G_SQUARE
+        CHI_SQUARE, G_SQUARE
     }
 
     /**
