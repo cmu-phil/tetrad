@@ -29,7 +29,7 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Calculates chi-square for a conditional cross-tabulation table for independence question 0 _||_ 1 | 2, 3, ...max by
@@ -135,62 +135,45 @@ public class ChiSquareTest {
         // chi square and degrees of freedom for the remaining rows and columns in the table. See Friedman.
         while (combinationIterator.hasNext()) {
             int[] combination = combinationIterator.next();
-
             System.arraycopy(combination, 0, coords, 2, combination.length);
 
-            boolean[] zeroRows = new boolean[numRows];
-            boolean[] zeroCols = new boolean[numCols];
             double[] sumRows = new double[numRows];
             double[] sumCols = new double[numCols];
-
-            for (int i = 0; i < numRows; i++) {
-                coords[0] = i;
-
-                sumRows[i] = getCellTable().calcMargin(coords, secondVar);
-
-                if (sumRows[i] < minSumRowOrCol) {
-                    zeroRows[i] = true;
-                }
-            }
-
-            for (int j = 0; j < numCols; j++) {
-                coords[1] = j;
-
-                sumCols[j] = getCellTable().calcMargin(coords, firstVar);
-
-                if (sumCols[j] < minSumRowOrCol) {
-                    zeroCols[j] = true;
-                }
-            }
-
-            double total = getCellTable().calcMargin(coords, bothVars);
-
-            // Count non-zero rows and columns
+            boolean[] zeroRows = new boolean[numRows];
+            boolean[] zeroCols = new boolean[numCols];
             int numNonZeroRows = 0;
             int numNonZeroCols = 0;
 
             for (int i = 0; i < numRows; i++) {
-                if (!zeroRows[i]) {
+                coords[0] = i;
+                sumRows[i] = getCellTable().calcMargin(coords, secondVar);
+
+                if (sumRows[i] < minSumRowOrCol) {
+                    zeroRows[i] = true;
+                } else {
                     numNonZeroRows++;
                 }
             }
 
             for (int j = 0; j < numCols; j++) {
-                if (!zeroCols[j]) {
+                coords[1] = j;
+                sumCols[j] = getCellTable().calcMargin(coords, firstVar);
+
+                if (sumCols[j] < minSumRowOrCol) {
+                    zeroCols[j] = true;
+                } else {
                     numNonZeroCols++;
                 }
             }
 
+            double total = getCellTable().calcMargin(coords, bothVars);
+
             // Sum up chi square and degrees of freedom for the conditional table. Keep track of zeroes in the table
             // and subtract them from the degrees of freedom. If there are no free degrees of freedom, don't increment
             // the chi square or degrees of freedom.
-            int terms = 0;
-            double _xSquare = 0.0;
+            if (total > 0 && numNonZeroRows > 1 && numNonZeroCols > 1) {
+                double _xSquare = 0.0;
 
-            if (total == 0 || (numNonZeroRows < 2 || numNonZeroCols < 2)) {
-//                return new Result(Double.NaN, Double.NaN, 0, true, false);
-                continue;
-            } else {
                 for (int i = 0; i < numRows; i++) {
                     for (int j = 0; j < numCols; j++) {
                         coords[0] = i;
@@ -201,31 +184,26 @@ public class ChiSquareTest {
                         }
 
                         double observed = getCellTable().getValue(coords);
+
+                        // Under the above conditions, expected > 0.
                         double expected = (sumRows[i] * sumCols[j]) / total;
 
-                        if (expected > 0) {
-                            if (testType == TestType.CHI_SQUARE) {
-                                _xSquare += pow(observed - expected, 2.0) / expected;
-                                terms++;
-                            } else if (testType == TestType.G_SQUARE) {
-                                if (observed > 0) {
-                                    _xSquare += 2.0 * observed * log(observed / expected);
-                                    terms++;
-                                }
-                            } else {
-                                throw new IllegalArgumentException("Unknown test type: " + testType);
+                        if (testType == TestType.CHI_SQUARE) {
+                            double d = observed - expected;
+                            _xSquare += (d * d) / expected;
+                        } else if (testType == TestType.G_SQUARE) {
+                            if (observed > 0) {
+                                _xSquare += 2.0 * observed * log(observed / expected);
                             }
+                        } else {
+                            throw new IllegalArgumentException("Unknown test type: " + testType);
                         }
                     }
                 }
-            }
 
-            int maxDf = (numNonZeroRows - 1) * (numNonZeroCols - 1);
-            int _df = min(maxDf, terms);
-
-            if (_df > 0) {
-                df += _df;
+                int _df = (numNonZeroRows - 1) * (numNonZeroCols - 1);
                 xSquare += _xSquare;
+                df += _df;
             }
         }
 
