@@ -32,17 +32,15 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * Calculates chi-square for a conditional cross-tabulation table for independence question 0 _||_ 1 | 2, 3, ...max by
- * summing up chi-square and degrees of freedom for each conditional table in turn, where rows or columns that consist
- * entirely of zeros have been removed. The adjusted conditional tables are required to have at least c * numNonZeroRows
- * * numNonZeroCols counts, where c is a parameter. The default value of c is 0. If any conditional table has fewer than
- * c * numNonZeroRows * numNonZeroCols counts or zero free degrees of freedom, the test is invalid. Otherwise, the test
- * is valid and the chi-square and degrees of freedom are calculated by summing up the chi-square and degrees of freedom
- * for each conditional table. The p-value is calculated from the chi-square and degrees of freedom using the chi-square
- * distribution.
+ * Calculates chi-square or g-square for a conditional cross-tabulation table for independence question 0 _||_ 1 | 2, 3,
+ * ...max by summing up chi-square and degrees of freedom for each conditional table in turn, where rows or columns that
+ * sum to less than a given threshold have been removed. The adjusted conditional tables are required to have more than
+ * 0 total counts and at least 2 rows and 2 columns; otherwise, the test is judged to be invalid. Otherwise, a p-value
+ * is returned based on the Chi-Square distribution with the total degrees of freedom and total chi-square.
  *
  * @author frankwimberly
  * @author josephramsey
+ * @see TestType
  */
 public class ChiSquareTest {
 
@@ -60,9 +58,10 @@ public class ChiSquareTest {
 
     // The significance level of the test.
     private double alpha;
+
     /**
-     * The minimum number of counts per conditional table for chi-square expressed as a multiple of the total number of
-     * cells in the table. Note that this should not be too small, or the chi-square distribution will not be a good
+     * The minimum sum of a row or column for a conditional table to be included in the overall chi-square and degrees
+     * of freedom. Note that this should not be too small, or the chi-square distribution will not be a good
      * approximation to the distribution of the test statistic.
      */
     private int minSumRowOrCol = 0;
@@ -98,7 +97,10 @@ public class ChiSquareTest {
     /**
      * Calculates chi square for a conditional cross-tabulation table for independence question 0 _||_ 1 | 2, 3, ...max
      * by summing up chi square and degrees of freedom for each conditional table in turn, where rows or columns that
-     * consist entirely of zeros have been removed.
+     * with fewer than minSumRowOrCol counts have been removed. The adjusted conditional tables are required to have
+     * more than 0 total counts and at least 2 rows and 2 columns; otherwise, the test is judged to be invalid.
+     * Otherwise, a p-value is returned based on the Chi-Square distribution with the total degrees of freedom and total
+     * chi-square.
      *
      * @param testIndices These indices, in order.
      * @return a Chi square test result.
