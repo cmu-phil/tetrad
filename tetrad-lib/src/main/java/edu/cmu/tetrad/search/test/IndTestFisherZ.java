@@ -52,14 +52,13 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     private final Map<String, Integer> indexMap;
     private final Map<String, Node> nameMap;
-    private final NormalDistribution normal = new NormalDistribution(0, 1, 1e-15);
+    private final NormalDistribution normal = new NormalDistribution(0, 1);
     private final Map<Node, Integer> nodesHash;
     private ICovarianceMatrix cor = null;
     private List<Node> variables;
     private double alpha;
     private DataSet dataSet;
     private boolean verbose = true;
-    //    private double p = Double.NaN;
     private double r = Double.NaN;
     private List<Integer> rows = null;
 

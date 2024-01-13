@@ -189,7 +189,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
         int params = r * (c - 1);
 
-        double score = 2 * lik - this.penaltyDiscount * params * FastMath.log(N) + 2 * getPriorForStructure(parents.length);
+        double score = 2 * lik - this.penaltyDiscount * params * FastMath.log(N) - 2 * getPriorForStructure(parents.length);
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;

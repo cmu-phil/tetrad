@@ -170,6 +170,10 @@ public class ChiSquareTest {
             // Sum up chi square and degrees of freedom for the conditional table. Keep track of zeroes in the table
             // and subtract them from the degrees of freedom. If there are no free degrees of freedom, don't increment
             // the chi square or degrees of freedom.
+            if (total == 0) {
+                return new Result(Double.NaN, Double.NaN, 0, true, false);
+            }
+
             if (total > 0 && numNonZeroRows > 1 && numNonZeroCols > 1) {
                 double _xSquare = 0.0;
 
