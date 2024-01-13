@@ -3,6 +3,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.utils.DagInCpcagIterator;
 import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import org.jetbrains.annotations.NotNull;
@@ -20,14 +21,14 @@ public class GraphTransforms {
         return dagFromCpdag(graph, null);
     }
 
+    /**
+     * Returns a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
+     * @param graph the CPDAG
+     * @param knowledge the knowledge
+     * @return a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
+     */
     public static Graph dagFromCpdag(Graph graph, Knowledge knowledge) {
         Graph dag = new EdgeListGraph(graph);
-
-        for (Edge edge : dag.getEdges()) {
-            if (Edges.isBidirectedEdge(edge)) {
-                throw new IllegalArgumentException("That 'cpdag' contains a bidirected edge.");
-            }
-        }
 
         MeekRules rules = new MeekRules();
 
@@ -54,30 +55,6 @@ public class GraphTransforms {
         }
 
         return dag;
-    }
-
-    public static boolean isCpdag(Graph graph) {
-        MeekRules rules = new MeekRules();
-        rules.setRevertToUnshieldedColliders(true);
-        rules.orientImplied(graph);
-
-        NEXT:
-        while (true) {
-            for (Edge edge : graph.getEdges()) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                if (Edges.isUndirectedEdge(edge)) {
-                    direct(x, y, graph);
-                    rules.orientImplied(graph);
-                    continue NEXT;
-                }
-            }
-
-            break;
-        }
-
-        return !graph.paths().existsDirectedCycle();
     }
 
     // Zhang 2008 Theorem 2

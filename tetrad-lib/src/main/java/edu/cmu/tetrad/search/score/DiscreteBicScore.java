@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.help.UnsupportedOperationException;
@@ -50,7 +51,7 @@ public class DiscreteBicScore implements DiscreteScore {
     private final int[] numCategories;
     private List<Node> variables;
     private double penaltyDiscount = 1;
-    private double structurePrior = 1;
+    private double structurePrior = 0;
 
     /**
      * Constructor.
@@ -189,13 +190,26 @@ public class DiscreteBicScore implements DiscreteScore {
 
         int params = r * (c - 1);
 
-        double score = 2 * lik - this.penaltyDiscount * params * FastMath.log(N) - 2 * getPriorForStructure(parents.length);
+        double score = 2 * lik - this.penaltyDiscount * params * FastMath.log(N) + 2 * getPriorForStructure(parents.length);
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;
         } else {
             return score;
         }
+    }
+
+    /**
+     * Returns the number of parameters for a node given its parents.
+     */
+    public int numParameters(int node, int[] parents) {
+        int numRows = 1;
+
+        for (int k = 0; k < parents.length; k++) {
+            numRows *= this.numCategories[parents[k]];
+        }
+
+        return numRows * (this.numCategories[node] - 1);
     }
 
     /**

@@ -349,12 +349,13 @@ public final class GraphSearchUtils {
 
     /**
      * Returns true just in case the given graph is a CPDAG.
+     *
      * @param graph the graph to check.
      * @return true just in case the given graph is a CPDAG.
      */
-    public static boolean isCpdag(Graph graph) {
+    public static boolean isPdag(Graph graph) {
 
-        // Make sure all of the edges are directed or undirected.
+        // Make sure all the edges are directed or undirected.
         for (Edge edge : graph.getEdges()) {
             if (!(Edges.isDirectedEdge(edge) || Edges.isUndirectedEdge(edge))) {
                 return false;
@@ -370,6 +371,14 @@ public final class GraphSearchUtils {
                     return false;
                 }
             }
+        }
+
+        // Make sure there are no underlinings.
+        if (!graph.getUnderLines().isEmpty()) {
+            return false;
+        }
+        if (!graph.getDottedUnderlines().isEmpty()) {
+            return false;
         }
 
         // Make sure there's no way to orient a directed cycle using the Meek rules.
@@ -413,7 +422,7 @@ public final class GraphSearchUtils {
                     graph = _graph;
                     continue NEXT;
                 }
-             }
+            }
 
             break;
         }
@@ -471,7 +480,7 @@ public final class GraphSearchUtils {
                         "a MAG and PAG";
             }
 
-            if (!edgeMismatch.equals("")) {
+            if (!edgeMismatch.isEmpty()) {
                 reason = reason + ". " + edgeMismatch;
             }
 
@@ -597,7 +606,7 @@ public final class GraphSearchUtils {
         int x = 0;
         int y = 50 - ySpace;
 
-        if (notInTier.size() > 0) {
+        if (!notInTier.isEmpty()) {
             y += ySpace;
 
             for (String name : notInTier) {
@@ -721,7 +730,7 @@ public final class GraphSearchUtils {
 
         int pathLength = 1;
 
-        while (nextEdges.size() > 0) {
+        while (!nextEdges.isEmpty()) {
 //            System.out.println("Path length = " + pathLength);
             if (++pathLength > maxPathLength) {
                 return reachable;
@@ -918,20 +927,11 @@ public final class GraphSearchUtils {
                 if (!e1.equals(e2)) {
                     error++;
                 }
-            } else if (e2 == null) {
-                if (Edges.isUndirectedEdge(e1)) {
-                    error++;
-                } else {
-                    error++;
-                    error++;
-                }
+            } else if (Edges.isUndirectedEdge(Objects.requireNonNullElse(e2, e1))) {
+                error++;
             } else {
-                if (Edges.isUndirectedEdge(e2)) {
-                    error++;
-                } else {
-                    error++;
-                    error++;
-                }
+                error++;
+                error++;
             }
         }
 
