@@ -8,8 +8,7 @@
     <meta content="width=device-width, initial-scale=1, shrink-to-fit=no"
           name="viewport">
     <link href="css/normalize.css" rel="stylesheet">
-    <link
-            href="css/tetrad.css" rel="stylesheet">
+    <link href="css/tetrad.css" rel="stylesheet">
 </head>
 <body>
 
@@ -24,33 +23,19 @@
 
         <b>Table of Contents</b>
         <ul class="ul">
-            <li><a
-                    href="#introduction">Introduction</a></li>
-            <li><a
-                    href="#graph_box">Graph Box</a></li>
-            <li><a
-                    href="#compare_box">Compare Box</a></li>
-            <li><a
-                    href="#parametric_model_box">Parametric Model Box</a></li>
-            <li><a
-                    href="#instantiated_model_box">Instantiated Model Box</a></li>
-            <li><a
-                    href="#data_box">Data Box</a></li>
-            <li><a
-                    href="#estimator_box">Estimator Box</a></li>
-            <li><a
-                    href="#updater_box">Updater Box</a></li> <!-- <li><a
-        href="#classify_box">Classify Box</a></li> -->
-            <li><a
-                    href="#knowledge_box">Knowledge Box</a></li>
-            <li><a
-                    href="#simulation_box">Simulation Box</a></li>
-            <li><a
-                    href="#search_box">Search Box</a></li>
-            <li><a
-                    href="#regression_box">Regression Box</a></li>
-            <li><a
-                    href="#appendix">Appendix</a></li>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#graph_box">Graph Box</a></li>
+            <li><a href="#compare_box">Compare Box</a></li>
+            <li><a href="#parametric_model_box">Parametric Model Box</a></li>
+            <li><a href="#instantiated_model_box">Instantiated Model Box</a></li>
+            <li><a href="#data_box">Data Box</a></li>
+            <li><a href="#estimator_box">Estimator Box</a></li>
+            <li><a href="#updater_box">Updater Box</a></li>
+            <li><a href="#knowledge_box">Knowledge Box</a></li>
+            <li><a href="#simulation_box">Simulation Box</a></li>
+            <li><a href="#search_box">Search Box</a></li>
+            <li><a href="#regression_box">Regression Box</a></li>
+            <li><a href="#appendix">Appendix</a></li>
         </ul>
 
     </div>
@@ -113,10 +98,8 @@
     <p>The graph box can be used to create a new graph, or to copy or
         edit a graph from another box.</p>
 
-    <!-- Follow this example to create a list of items --> <h2>Possible
-    Parent Boxes of the Graph Box</h2>
+    <h2>Possible Parent Boxes of the Graph Box</h2>
 
-    <!-- Assign a class="ul" for pretty look -->
     <ul class="ul">
         <li>Another graph box</li>
         <li>A parametric model box</li>
@@ -127,10 +110,10 @@
         <li>A search box</li>
         <li>An updater box</li>
         <li>A regression box</li>
-    </ul> <!-- Follow this example to create a list
-    of items --> <h2>Possible Child Boxes of the Graph Box</h2>
+    </ul>
 
-    <!-- Assign a class="ul" for pretty look -->
+    <h2>Possible Child Boxes of the Graph Box</h2>
+
     <ul class="ul">
         <li>Another graph box</li>
         <li>A compare box</li>
@@ -202,7 +185,6 @@
 
     <p>Random graph generation is not available for time lag graphs. </p>
 
-
     <h2>Loading a Saved Graph</h2>
 
     <p>If you have previously saved a graph from Tetrad, you can load it
@@ -227,20 +209,7 @@
         new graph box in the workspace, and draw an arrow from the box whose
         graph you want to copy to the new graph box. When opened, the new graph
         box will automatically contain a direct copy of the graph its parent box
-        contains. </p> <!--    <p>The first method allows you to copy a graph
-    from any box which contains one. First, create a new graph box in the-->
-    <!--        workspace, and draw an arrow from the box whose graph you
-    want to copy to the new graph box. When opened, the--> <!--        new
-    graph box will automatically contain a direct copy of the graph its
-    parent box contains. </p>-->
-
-    <!--    <p>The second method allows you to copy a graph directly from
-    most types of graph box.--> <!--        First, highlight the graph in the
-    old graph box and click “Edit—Copy Selected Graph.”--> <!--        Then
-    open up your new graph box and click “Edit—Paste Selected Graph.”--> <!--
-           (Some types of graph box do not have this functionality; see
-    “Manipulating a Graph.”)</p>-->
-
+        contains. </p>
 
     <h2>Manipulating a Graph</h2>
 
@@ -1989,14 +1958,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         see conditional as well as marginal probabilities, and in “Single
         Variable” mode, you can see joint values. </p>
 
-    <!--    <h2>CPT Invariant Exact Updater</h2>-->
-
-    <!--    <p>The CPT invariant exact updater is more accurate than the-->
-    <!--        approximate updater, but slightly faster than the row summing exact-->
-    <!--        updater. Ifs window functions exactly as the approximate updater down,-->
-    <!--        with one exception: in “Multiple Variables” mode, you can see conditional-->
-    <!--        as well as marginal probabilities.</p>-->
-
     <h2>Junction Tree Exact Updater</h2>
 
     <p>The Junction Tree exact updater is another exact learning
@@ -2028,66 +1989,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>The rest of the window has the same functionality as a SEM
         instantiated model window, except as noted above.</p>
-
-
-    <!-- Disabled on 4/2/2019 <h1 id="classify_box"><span
-    class="section_heading">Classify Box</span></h1>
-
-	<p>The classify box takes as input a categorical data set and a Bayes
-instantiated model and, for a given variable, tries to predict that
-variable’s value in each case based on the other variables’ values in that
-case.</p>
-
-	<h2>Possible Parents Boxes of the Classify Box: </h2>
-
-	<ul class="ul"> <li>An instantiated model box</li> <li>A data box</li>
-<li>A simulation box</li> </ul>
-
-	<h2>Possible Child Boxes of the Classify Box: </h2>
-
-	<ul class="ul"> <li>None</li> </ul>
-
-
-	<h2>Using the Classify Box:</h2>
-
-	<p>Consider the following instantiated model, and a data set derived from
-it:</p>
-
-	<img src="images/classify_box_1.png" alt="" width="650">
-
-	<p>When they are input to the classify box, the following window results:
-</p>
-
-	<img src="images/classify_box_2.png" alt="" width="650">
-
-	<p>By clicking on the “Test Data” tab, we can see the data set which we
-input. Now, suppose we want to predict the values of X1 in each case. We
-select X1 from the scrolling menu at the top and click “Classify.” Three new
-tabs now appear: “Classification,” “ROC Plot,” and “Confusion Matrix.”  The
-classification tab, in this case, looks like this: </p>
-
-	<img src="images/classify_box_3.png" alt="" width="650">
-
-
-	<p>There is a column for each of the possible values which X1 can take,
-and for each case, Tetrad has computed the probability that X1 will take each
-value, based on the configuration of other variables in that case. It then
-chooses the category with the highest conditional probability, and assigns X1
-that value for that case. Comparison to the test data will show that the
-values are reasonably (though not completely) similar.</p>
-
-	<p>The ROC plot tab displays the receiver operating characteristic (ROC)
-curve for whichever value you specified before classification.</p>
-
-	<p>The confusion matrix tab provides information on how similar the
-estimated values of the target variable are to the true values (if the true
-values are available). </p>
-
-	<p>Because classification is a form of estimation, the variable which is
-classified does not have to be in the input data set; it merely has to be in
-the input instantiated model. In this case, the ROC plot and confusion matrix
-tabs will not appear.</p> -->
-
 
     <h1 id="knowledge_box"><span class="section_heading">Knowledge
     Box</span></h1>
@@ -3570,33 +3471,6 @@ tabs will not appear.</p> -->
 
     </p>
 
-    <!--    <h3>The GLASSO Algorithm</h3>-->
-
-    <!--    <h4>Description</h4>-->
-
-    <!--    <div id="glasso">-->
-
-    <!--        <p>A translation of the Fortran code for GLASSO
-    (Graphical LASSO—see Friedman, Tibshirani and Hastie, 2007)--> <!--
-          Like MGM, this produces an undirected graph in which parents are
-    always married.</p>-->
-
-    <!--    </div>-->
-
-    <!--    <h4>Input Assumptions</h4>-->
-
-    <!--    <p>The data are continuous.</p>-->
-
-    <!--    <h4>Output Format</h4>-->
-
-    <!--    <p>A Markov random field.</p>-->
-
-    <!--    <h4>Parameters</h4>-->
-
-    <!--    <p><a href="#maxit">maxit</a>, <a href="#ia">ia</a>, <a
-    href="#is">is</a>, <a href="#itr">itr</a>, <a href="#ipen">ipen</a>,-->
-    <!--        <a href="#thr">thr</a></p>-->
-
     <h3>The BPC/Mimbuild Algorithm</h3>
 
     <h4>Description</h4>
@@ -4381,25 +4255,6 @@ tabs will not appear.</p> -->
 
     <p><a href="#structurePrior">structurePrior</a></p>
 
-    <!--    <h3>Conditional Correlation Independence (CCI) Score</h3>-->
-
-    <!--    <div id="cci-score">--> <!--        <p>Conditional
-    Correlation Score returns 1 - p-value for the Conditional correlation
-    test. May be used as a--> <!--            score for the nonlinear case,
-    assuming additivity.</p>--> <!--    </div>-->
-
-    <!--    <h4>Parameters</h4>-->
-
-    <!--    <p><a href="#cciScoreAlpha">cciScoreAlpha</a>, <a
-    href="#numBasisFunctions">numBasisFunctions</a>, <a--> <!--
-    href="#kernelType">kernelType</a>, <a
-    href="#kernelMultiplier">kernelMultiplier</a>, <a
-    href="#basisType">basisType</a>,--> <!--        <a
-    href="#fastFDR">fastFDR</a>, <a
-    href="#kernelRegressionSampleSize">kernelRegressionSampleSize</a>, <a-->
-    <!--
-    href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>-->
-
     <h3>M-separation Score</h3>
 
     <div id="m-sep-score"><p> This uses m-separation to make something
@@ -4485,13 +4340,6 @@ tabs will not appear.</p> -->
     </p>
     </div>
 
-    <!--    <h3>MAG SEM BIC Score</h3>-->
-
-    <!--    <div id="mag-sem-bic-score"><p>-->
-    <!--        This gives a BIC score for a Mixed Ancestral Graph (MAG).-->
-    <!--    </p>-->
-    <!--    </div>-->
-
     <div id="parameters"><h2>Search Parameters</h2>
 
         <h3 class="parameter_description"
@@ -4515,8 +4363,7 @@ tabs will not appear.</p> -->
 
         <p>Note: You must specify the "Value Type" of each parameter, and
             the value type must be one of the following: Integer, Long, Double, String,
-            Boolean.</p> <!-- Insert the parameter descriptions here, must follow
-        the same structure and naming conventions -->
+            Boolean.</p>
 
         <h3 class="parameter_description"
             id="sampleStyle">sampleStyle</h3>
