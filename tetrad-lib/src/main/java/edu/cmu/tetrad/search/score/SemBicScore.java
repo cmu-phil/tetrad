@@ -144,6 +144,15 @@ public class SemBicScore implements Score {
         this.logN = log(sampleSize);
     }
 
+    /**
+     * Returns the variance of the residual of the regression of the ith variable on its parents.
+     *
+     * @param i                   The index of the variable.
+     * @param parents             The indices of the parents.
+     * @param covariances         The covariance matrix.
+     * @param calculateRowSubsets True if row subsets should be calculated.
+     * @return The variance of the residual of the regression of the ith variable on its parents.
+     */
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets)
             throws SingularMatrixException {
         int[] all = SemBicScore.concat(i, parents);
@@ -157,7 +166,7 @@ public class SemBicScore implements Score {
     }
 
     @NotNull
-    public static Matrix bStar(Matrix b) {
+    private static Matrix bStar(Matrix b) {
         Matrix byx = new Matrix(b.getNumRows() + 1, 1);
         byx.set(0, 0, 1);
         for (int j = 0; j < b.getNumRows(); j++) byx.set(j + 1, 0, -b.get(j, 0));
@@ -269,6 +278,8 @@ public class SemBicScore implements Score {
     }
 
     /**
+     * Returns the score for the given node and its parents.
+     *
      * @param i       The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
@@ -306,30 +317,47 @@ public class SemBicScore implements Score {
         }
     }
 
-
-//    private final Map<List<Integer>, Double> cache = new ConcurrentHashMap<>();
-
     /**
-     * Specialized scoring method for a single parent. Used to speed up the effect edges search.
+     * Returns the multiplier on the penalty term for this score.
+     *
+     * @return The multiplier on the penalty term for this score.
      */
-
-
     public double getPenaltyDiscount() {
         return this.penaltyDiscount;
     }
 
+    /**
+     * Sets the multiplier on the penalty term for this score.
+     *
+     * @param penaltyDiscount The multiplier on the penalty term for this score.
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    /**
+     * Returns the structure prior for this score.
+     *
+     * @return The structure prior for this score.
+     */
     public double getStructurePrior() {
         return this.structurePrior;
     }
 
+    /**
+     * Sets the structure prior for this score.
+     *
+     * @param structurePrior The structure prior for this score.
+     */
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
     }
 
+    /**
+     * Returns the covariance matrix.
+     *
+     * @return The covariance matrix.
+     */
     public ICovarianceMatrix getCovariances() {
         return this.covariances;
     }
@@ -342,32 +370,68 @@ public class SemBicScore implements Score {
 
     }
 
+    /**
+     * Returns the sample size.
+     *
+     * @return The sample size.
+     */
     public int getSampleSize() {
         return this.sampleSize;
     }
 
+    /**
+     * Returns true if the given bump is an effect edge.
+     *
+     * @param bump The bump.
+     * @return True if the given bump is an effect edge.
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
+    /**
+     * Returns the data model.
+     *
+     * @return The data model.
+     */
     public DataModel getDataModel() {
         return this.dataModel;
     }
 
+    /**
+     * Returns true if verbose output should be sent to out.
+     *
+     * @return True if verbose output should be sent to out.
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output should be sent to out.
+     *
+     * @param verbose True if verbose output should be sent to out.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Returns the variables of the covariance matrix.
+     *
+     * @return The variables of the covariance matrix.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);
     }
 
+    /**
+     * Sets the variables of the covariance matrix.
+     *
+     * @param variables The variables of the covariance matrix.
+     */
     public void setVariables(List<Node> variables) {
         if (this.covariances != null) {
             this.covariances.setVariables(variables);
@@ -376,11 +440,23 @@ public class SemBicScore implements Score {
         this.variables = variables;
     }
 
+    /**
+     * Returns the maximum degree of the score.
+     *
+     * @return The maximum degree of the score.
+     */
     @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(log(this.sampleSize));
     }
 
+    /**
+     * Returns true is the variables in z determine the variable y.
+     *
+     * @param z The set of nodes.
+     * @param y The node.
+     * @return True is the variables in z determine the variable y.
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
         int i = this.variables.indexOf(y);
@@ -401,7 +477,11 @@ public class SemBicScore implements Score {
         return false;
     }
 
-    //    @Override
+    /**
+     * Returns the data model.
+     *
+     * @return The data model.
+     */
     public DataModel getData() {
         return this.dataModel;
     }
