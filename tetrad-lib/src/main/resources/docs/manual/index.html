@@ -20,7 +20,7 @@
 <div class="inner">
 
     <div class="header"><h1>Tetrad Manual</h1>
-        <p>Last updated: 02/09/2023</p></div>
+        <p>Last updated: 1/14/2024</p></div>
 
     <!-- Table of Contents, give each section a unique id -->
     <div
@@ -69,7 +69,7 @@
 
     <ul class="ul">
         <li>Loading an existing data set, restricting
-            potential models using your a priori causal knowledge, and searching for
+            potential models using your a-priori causal knowledge, and searching for
             a model that explains it using one of Tetrad’s causal search algorithms
         </li>
         <li>Loading an existing causal graph and existing data set, and
@@ -98,7 +98,7 @@
 
     <p>In order to use a box, click on it in the sidebar, then click
         inside the workspace. This creates an empty box, which you can
-        instantiated by double-clicking. Most boxes have multiple options
+        be instantiated by double-clicking. Most boxes have multiple options
         available on instantiation, which will be explained in further detail in
         this manual.</p>
 
@@ -400,13 +400,13 @@
     <p>At the bottom of the graph box, the Edges and Edge Type
         Frequencies section provides an accounting of every edge in the graph,
         and how certain Tetrad is of its type. The first three columns contain a
-        list, in text form, of all of the edges in the graph. The columns to the
+        list, in text form, of all the edges in the graph. The columns to the
         right are all blank in manually constructed graphs, user-loaded graphs,
         and graphs output by searches with default settings. They are only filled
         in for graphs that are output by searches performed with bootstrapping.
         In those cases, the fourth column will contain the percentage of
         bootstrap outputs in which the edge type between these two variables
-        matches the edge type in the final graph. All of the columns to the right
+        matches the edge type in the final graph. All the columns to the right
         contain the percentages of the bootstrap outputs that output each
         possible edge type.</p>
 
@@ -672,7 +672,7 @@
     <h2>Bayes Parametric Models</h2>
 
     <p>A Bayes parametric model takes as input a DAG. Bayes PMs represent
-        causal structures in which all of the variables are categorical.</p>
+        causal structures in which all the variables are categorical.</p>
 
     <p>Bayes PMs consist of three components: the graphical
         representation of the causal structure of the model; for each named
@@ -711,7 +711,7 @@
         provided under the “Presets” tab on the right. If you choose one of these
         configurations, the number of categories associated with the current
         variable will automatically be changed to agree with the configuration
-        you have chosen. If you want all of the categories associated with a
+        you have chosen. If you want all the categories associated with a
         variable to have the same name with a number appended (e.g., x1, x2, x3),
         choose the “x1, x2, x3…” option under Presets.</p>
 
@@ -746,7 +746,7 @@
         terms.</p>
 
     <p>To change a parameter’s name or starting value for estimation,
-        double click on the parameter in the window.</p>
+        double-click on the parameter in the window.</p>
 
     <h2>Generalized SEM Parametric Models</h2>
 
@@ -785,11 +785,11 @@
         in the IM box, a fixed value of each parameter will be selected according
         to the specified distribution. </p>
 
-    <p>To edit an expression or parameter, double click on it (in any
+    <p>To edit an expression or parameter, double-click on it (in any
         tab). This will open up a window allowing you to change the function that
         defines the variable or distribution of the parameter.</p>
 
-    <p>For instance, if you double click on the expression next to X1
+    <p>For instance, if you double-click on the expression next to X1
         (b1*X5+E_X1), the following window opens:</p>
 
     <img alt="" src="images/parametric_model_box_7.png" width="500">
@@ -834,7 +834,7 @@
         product, with the dollar sign ($) functioning as a wild card. For
         example, in the image above, TSUM(NEW(b)*$) means that, for each parent
         variable of the variable in question, a new “b” will be created and
-        multiplied by the parent variable’s value, and then all of the products
+        multiplied by the parent variable’s value, and then all the products
         will be added together.</p>
 
 
@@ -909,15 +909,15 @@
         on the variable in the graph or choose it from the drop-down menu on the
         right. You can manually set a given probability value by overwriting the
         text box. Be warned that changing the value in one cell will delete the
-        values in all of the other cells in the row. Since the values in any row
-        must sum to one, if all of the cells in a row but one are set, Tetrad
+        values in all the other cells in the row. Since the values in any row
+        must sum to one, if all the cells in a row but one are set, Tetrad
         will automatically change the value in the last cell to make the sum
         correct. For instance, in the above model, if you change the first row
         such that the probability that X5 = 0 is 0.5000 and the probability that
         X5 = 1 is 0.4000, the probability that X5 = 2 will automatically be set
         to 0.1000.</p>
 
-    <p>If you right click on a cell in the table (or two-finger click on
+    <p>If you right-click on a cell in the table (or two-finger click on
         Macs), you can choose to randomize the probabilities in the row
         containing that cell, randomize the values in all incomplete rows in the
         table, randomize the entire table, or randomize the table of every
@@ -952,7 +952,7 @@
         three total (pseudo) data points in which X2=0 and X6=0. You can view the
         pseudocounts of any variable by clicking on it in the graph or choosing
         it from the drop-down menu at the top of the window. To edit the value of
-        a pseudocount, double click on it and overwrite it. The total count of a
+        a pseudocount, double-click on it and overwrite it. The total count of a
         row cannot be directly edited.</p>
 
     <p>From the pseudocounts, Tetrad determines the conditional
@@ -997,9 +997,9 @@
     <img alt="" src="images/instantiated_model_box_8.png" width="450">
 
     <p>You can now manually edit the values of parameters in one of two
-        ways. Double clicking on the parameter in the graph will open up a small
+        ways. Double-clicking on the parameter in the graph will open up a small
         text box for you to overwrite. Or you can click on the Tabular Editor
-        tab, which will show all of the parameters in a table which you can edit.
+        tab, which will show all the parameters in a table which you can edit.
         The Tabular Editor tab of our SEM IM looks like this:</p>
 
     <img alt="" src="images/instantiated_model_box_9.png" width="450">
@@ -1043,7 +1043,7 @@
     <img alt="" src="images/instantiated_model_box_12.png" width="450">
 
 
-    <p>To edit a parameter, double click on it. A slider will open at the
+    <p>To edit a parameter, double-click on it. A slider will open at the
         bottom of the window (shown above for the edge parameter between X1 and
         X2). Click and drag the slider to change the value of the parameter, or
         enter the specific value you wish into the box. The value must stay
@@ -1059,10 +1059,10 @@
 
     <p>It is possible to make a SEM IM with a time lag graph, even with latent
         variables. This does not work for other types of models, such as
-        Bayes IM's or for mixed data (for which no IM is currently available--
+        Bayes IMs or for mixed data (for which no IM is currently available--
         though mixed data can be simulated in the Simulate box with an appropriate
         choice of simulation model). Standardization for time lag model
-        is not currently avialable.</p>
+        is not currently available.</p>
 
     <p>The Implied Matrices tab works in the same way that it does in a
         normal SEM IM.</p>
@@ -1090,7 +1090,7 @@
         all variables and their formulae. You can change the cutoff point for
         long formulae by clicking Tools: Formula Cutoff.</p>
 
-    <p>If you double click on a formula in either the graph or the
+    <p>If you double-click on a formula in either the graph or the
         Variables tab, you can change the value of the parameters in that
         formula. </p>
 
@@ -1144,8 +1144,8 @@
 
     <h3>General Tabular Data</h3>
 
-    <p>To load data, create a data box with no parent. When you double
-        click it, an empty data window will appear: </p>
+    <p>To load data, create a data box with no parent. When you double-click
+        it, an empty data window will appear: </p>
 
     <img alt="" src="images/data_box_1.png" width="650">
 
@@ -1185,7 +1185,7 @@
     <h3>Metadata JSON File</h3>
     <p> Metadata is optional in general data
         handling. But it can be very helpful if you want to overwrite the data
-        type of a given variable column. And the metadata MUST be a JSON file
+        type of given variable column. And the metadata MUST be a JSON file
         like the following example. </p>
 
     <pre>
@@ -1327,7 +1327,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         `null`. The data type of each variable can either be discrete or
         continuous. We use a boolean flag to indicate the data type. From the
         above example, we only specified two domain variables in the metadata
-        JSON, any variables not specifed in the metadata will be treated as
+        JSON, any variables not specified in the metadata will be treated as
         domain variables.</p>
 
 
@@ -1401,10 +1401,10 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>This option looks for pairs of interventional variables (currently
         only discrete variables) that are deterministic and merges them into one
-        combined variable. For domain variables that are fully determinised,
+        combined variable. For domain variables that are fully determined,
         we'll add an attribute to them. Later in the knowledge box (Edges and
         Tiers), all the interventional variables (both status and value
-        variables) and the fully-determinised domain variables will be
+        variables) and the fully-determined domain variables will be
         automatically put to top tier. And all other domain variables will be
         placed in the second tier.</p>
 
@@ -1488,7 +1488,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>Takes a continuous tabular data set and increases its Gaussianity,
         using a nonparanormal transformation to smooth the variables. (Note: This
-        operation increases only marginal Gaussanity, not the joint, and in
+        operation increases only marginal Gaussianity, not the joint, and in
         linear systems may eliminate information about higher moments that can
         aid in non-Gaussian orientation procedures.) </p>
 
@@ -1496,7 +1496,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>The input for this operation is a directed acyclic graph (DAG) and
         a data set. Tetrad performs a linear regression on each variable in the
-        data set with respect to all of the variables that the graph shows to be
+        data set with respect to all the variables that the graph shows to be
         its parents, and derives the error terms. The output data set contains
         only the error terms.</p>
 
@@ -1518,7 +1518,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h3>Replace Missing Values with Column Mean</h3>
 
     <p>If you choose this operation, Tetrad will replace any missing
-        value markers with the average of all of the values in the column.
+        value markers with the average of all the values in the column.
         Replace Missing Values with Regression Predictions: If you choose this
         operation, Tetrad will perform a linear regression on the data in order
         to estimate the most likely value of any missing value.</p>
@@ -1633,7 +1633,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         cell contains the number 2) Tetrad will set every cell to the missing
         data marker.</p>
 
-    <p>Under the Tools tab, the Calculator tool allows you add and edit
+    <p>Under the Tools tab, the Calculator tool allows you to add or edit
         relationships between variables in the graph. For more information on how
         the Calculator tool works, see “Manipulating Data” section above.</p>
 
@@ -1642,7 +1642,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>Under the Tools tab, there are options to view information about your data in several
         formats.</p>
 
-    <p>The Plot Matrix tool shows a grid of scatterplots and histograms for selected variables.
+    <p>The Plot Matrix tool shows a grid of scatter plots and histograms for selected variables.
         This may be used for continuous, discrete, or mixtures of continuous and discrete data.
         To select which variables to include in the rows and columns of the grid, click the variable
         lists to the right of the tool. To select multiple variables in these lists, use the shift
@@ -1662,7 +1662,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         Double-click on the magnified plot to return to the grid.</p>
 
     <p>The “Settings” menu contains some tools to control the output. One may add regression lines
-        to the scatterplots or select the number of bins to include in the histograms.</p>
+        to the scatter plots or select the number of bins to include in the histograms.</p>
 
     <p>Finally, one may condition on ranges of variables or particular discrete values by
         selecting “Edit Conditioning Variables and Ranges.” This brings up a dialog that lets one
@@ -1695,9 +1695,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>The estimator box takes as input a data box (or simulation box)
         and a parametric model box and estimates, tests, and outputs an
-        instantiated model for the data. With the exception of the EM Bayes
+        instantiated model for the data. Except for the EM Bayes
         estimator, Tetrad estimators do not accept missing values. If your data
-        set contains missing values, the missing values can interpolated or
+        set contains missing values, the missing values can be interpolated or
         removed using the data box. (Note that missing values are allowed in
         various Tetrad search procedures; see the section on the search box.)</p>
 
@@ -1784,13 +1784,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         latent variables. </p>
 
     <p>Tetrad also provides two scores that can be used in estimation:
-        feasible generalized least squares (FGLS) and Full Information Maximum
+        feasible generalized the least squares (FGLS) and Full Information Maximum
         Likelihood (FML). </p>
 
     <p>If the graph for the SEM is a DAG, and we may assume that the SEM
         is linear with Gaussian error terms, we use multilinear regression to
         estimate coefficients and residual variances. Otherwise, we use a
-        standard maximum likelihoood fitting function (see Bollen, Structural
+        standard maximum likelihood fitting function (see Bollen, Structural
         Equations with Latent Variables, Wiley, 1989, pg. 107) to minimize the
         distance between (a) the covariance over the variables as implied by the
         coefficient and error covariance parameter values of the model and (b)
@@ -1799,7 +1799,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         minimized, yields the maximum likelihood estimation point in parameter
         space.</p>
 
-    <p>In either case, an Fml value may be obtained for the maximum
+    <p>In either case, a Fml value may be obtained for the maximum
         likelihood point in parameter space, either by regression or by direct
         minimization of the Fml function itself. The value of Fml at this minimum
         (maximum likelihood) point, multiplied by N - 1 (where N is the sample
@@ -1824,7 +1824,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         values of the estimation.</p>
 
     <p>The Model Statistics tab provides the degrees of freedom, chi
-        square, p value, comparative fit index (CFI), root mean square error of
+        square, p value, comparative fit index (CFI), root-mean-square error of
         approximation (RMSEA) and BIC score of a test of the model. It should be
         noted that while these test statistics are standard, they are not in
         general correct. See Mathias Drton, 2009, Likelihood ratio tests and
@@ -1834,16 +1834,6 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>When the EM algorithm is used with latent variable models, we
         recommend multiple random restarts. The number of restarts can be set in
         the lower right hand corner of the Estimator Box.
-
-        <!-- The figure on the left shows the EM results for a SEM model
-        with 1 restart. The figure on the right shows the EM results with 20
-        restarts. The results are very different. The estimates with 20
-        restarts are much closer to the true values. 100 restarts gives
-        estimates that are within .1 of the first decimal and .2 of the
-        second decimal.--> </p>
-
-    <img alt="" src="images/estimator_box_3.png" width="650">
-
 
     <h2>Generalized Estimator</h2>
 
@@ -2013,8 +2003,8 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h2>Junction Tree Exact Updater</h2>
 
-    <p>The Junction Tree exact updater is a another exact learning
-        algroithm. Its window functions exactly as the approximate updater down,
+    <p>The Junction Tree exact updater is another exact learning
+        algorithm. Its window functions exactly as the approximate updater down,
         with one exception: in “Multiple Variables” mode, you can see conditional
         as well as marginal probabilities.</p>
 
@@ -2142,7 +2132,7 @@ tabs will not appear.</p> -->
 
     <img alt="" src="images/knowledge_box_1.png" width="650">
 
-    <p>Tiers separate your variables into a time line. Variables in
+    <p>Tiers separate your variables into a timeline. Variables in
         higher-numbered tiers occur later than variables in lower-numbered tiers,
         which gives Tetrad information about causation. For example, a variable
         in Tier 3 could not possibly be a cause of a variable in Tier 1.</p>
@@ -2159,7 +2149,7 @@ tabs will not appear.</p> -->
         would find and select variables X1 and X10.</p>
 
     <p>You can also limit the search such that edges from one tier only
-        are added to the next immediate tier e.g,. if Tier 1 "Can cause only next
+        are added to the next immediate tier e.g., if Tier 1 "Can cause only next
         tier" is checked then edges from variables in Tier 1 to variables in Tier
         3 are forbidden.</p>
 
@@ -2314,7 +2304,7 @@ tabs will not appear.</p> -->
 
     <h5>Erdos Renyi DAG</h5>
 
-    <p> This option creates a DAG by randomly adding edgew with a given edge
+    <p> This option creates a DAG by randomly adding edges with a given edge
         probability. The graph is then oriented as a DAG by choosing a
         causal order.</p>
 
@@ -2555,7 +2545,7 @@ tabs will not appear.</p> -->
 
     <p>Choosing the correct algorithm for your needs is an important
         consideration. Tetrad provides over 30 search algorithms (and more are
-        added all of the time) each of which makes different assumptions about
+        added all the time) each of which makes different assumptions about
         the input data, uses different parameters, and produces different kinds
         of output. For instance, some algorithms produce Markov blankets or
         CPDAGs, and some produce full graphs; some algorithms work best with
@@ -2600,10 +2590,10 @@ tabs will not appear.</p> -->
             sample should ideally be i.i.d.. Simulations show that PC and several
             of the other algorithms described here often succeed when these
             assumptions, needed to prove their correctness, do not strictly hold.
-            The PC algorithm will sometimes output double headed edges. In the
-            large sample limit, double headed edges in the output indicate that
+            The PC algorithm will sometimes output double-headed edges. In the
+            large sample limit, double-headed edges in the output indicate that
             the adjacent variables have an unrecorded common cause, but PC tends
-            to produce false positive double headed edges on small samples.</p>
+            to produce false positive double-headed edges on small samples.</p>
 
         <p>The PC algorithm is correct whenever decision procedures for
             independence and conditional independence are available. The
@@ -2621,7 +2611,7 @@ tabs will not appear.</p> -->
             and Search for details on tests). In either case, the tests require
             an alpha value for rejecting the null hypothesis, which can be
             adjusted by the user. The procedures make no adjustment for multiple
-            testing. (For PC, CPC, JPC, JCPC, FCI, all testing searches.) </p>
+            testing. (For PC, CPC, FCI, all testing searches.) </p>
 
         <p>The PC algorithm as given in Causation, Prediction and Search (Spirtes,
             Glymour, and Scheines, 2000) comes with three heuristics designed
@@ -2633,7 +2623,7 @@ tabs will not appear.</p> -->
             Causation, Prediction, and Search for more details for these
             heuristics.</p>
 
-        <p>Note: If one wants to analyze time series data using this algorithms,
+        <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
             will automatically apply the time lag transform. The same goes for any
             algorithm that has this parameter available in the interface.</p>
@@ -2643,7 +2633,7 @@ tabs will not appear.</p> -->
     <h4>Input Assumptions</h4>
 
     <p>The algorithm effectively takes conditional independence facts as
-        input. Thus it will work for any type of data for which a conditional
+        input. Thus, it will work for any type of data for which a conditional
         independence facts are known. In the interface, it will work for linear,
         Gaussian data (the Fisher Z test), discrete multinomial data the Chi
         Square test) and mixed multinomial/Gaussian data (the Conditional
@@ -2653,12 +2643,12 @@ tabs will not appear.</p> -->
 
     <p>The graph outputs a CPDAG. This is an equivalence class of
         directed acyclic graphs (DAGs). Each DAG in the equivalence class has all
-        of the adjacencies (and no more) of the CPDAG. Each oriented edge in the
+        the adjacencies (and no more) of the CPDAG. Each oriented edge in the
         CPDAG is so oriented in each of the DAG in the equivalence class.
         Unoriented edges in the equivalence class cannot be oriented by
         conditional independence facts. For example, if the model is X->Y->Z, the
-        output will be X—Y—Z. There are not collider in this model, so the
-        algorithm will not detect one. Since there are not colliders, the Meek
+        output will be X—Y—Z. There are no collider in this model, so the
+        algorithm will not detect one. Since there are no colliders, the Meek
         cannot orient additional edges. If the model were X<-Y<-Z, the output
         would also be X—Y—Z; this model is in the same equivalence class as
         X->Y->Z. The model X->Y<-Z would be its own equivalence class, since the
@@ -2708,9 +2698,9 @@ tabs will not appear.</p> -->
             and Search for details on tests). In either case, the tests require
             an alpha value for rejecting the null hypothesis, which can be
             adjusted by the user. The procedures make no adjustment for multiple
-            testing. (For PC, CPC, JPC, JCPC, FCI, all testing searches.) </p>
+            testing. (For PC, CPC, FCI, all testing searches.) </p>
 
-        <p>Note: If one wants to analyze time series data using this algorithms,
+        <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
             will automatically apply the time lag transform. The same goes for any
             algorithm that has this parameter available in the interface.</p>
@@ -2756,7 +2746,7 @@ tabs will not appear.</p> -->
             or orient as a collider, arbitrarily. This guarantees that the
             resulting graph will be a CPDAG.</p>
 
-        <p>Note: If one wants to analyze time series data using this algorithms,
+        <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
             will automatically apply the time lag transform. The same goes for any
             algorithm that has this parameter available in the interface.</p>
@@ -2788,7 +2778,7 @@ tabs will not appear.</p> -->
             developed by Meek [Meek, 1997] called the Greedy Equivalence Search
             (GES). The algorithm was further developed and studied by Chickering
             [Chickering, 2002]. GES is a Bayesian algorithm that heuristically
-            searches the space of CBNs and returns the model with highest
+            searches the space of CBNs and returns the model with the highest
             Bayesian score it finds. In particular, GES starts its search with
             the empty graph. It then performs a forward stepping search in which
             edges are added between nodes in order to increase the Bayesian
@@ -2802,7 +2792,7 @@ tabs will not appear.</p> -->
         user-documentation-7_20_2016-sample-size.pdf">here</a>. The reference
             is Ramsey et al., 2017. </p>
 
-        <p> The algorithms requires a decomposable score—that is, a score
+        <p> The algorithm requires a decomposable score—that is, a score
             that for the entire DAG model is a sum of logged scores of each
             variables given its parents in the model. The algorithms can take all
             continuous data (using the SEM BIC score), all discrete data (using
@@ -2810,7 +2800,7 @@ tabs will not appear.</p> -->
             the Conditional Gaussian score); these are all decomposable scores.
         </p>
 
-        <p>Note: If one wants to analyze time series data using this algorithms,
+        <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
             will automatically apply the time lag transform. The same goes for any
             algorithm that has this parameter available in the interface.</p>
@@ -2837,55 +2827,6 @@ tabs will not appear.</p> -->
 
     <p>A CPDAG, same as PC.</p>
 
-
-    <h4>Parameters</h4>
-
-    <p><a href="#samplePrior">samplePrior</a>, <a
-            href="#structurePrior">structurePrior</a>, <a
-            href="#penaltyDiscount">penaltyDiscount</a>, <a
-            href="#symmetricFirstStep">symmetricFirstStep</a>, <a
-            href="#faithfulnessAssumed">faithfulnessAssumed</a>, <a
-            href="#parallelized">maxDegree</a>, <a href="#parallalism">parallelized</a>,
-        <a href="#verbose">verbose</a> <a href="#meekVerbose">meekVerbose</a></p>
-
-
-    <!--    <h3>The IMaGES Discrete Algorithm (BDeu Score)</h3>-->
-
-    <!--    <h4>Description</h4>-->
-
-    <!--    <div id="imgs_disc">-->
-
-    <!--        <p>Adjusts the discrete BDeu variable score of FGES so allow for-->
-    <!--            multiple datasets as input. The BDeu scores for each data set are-->
-    <!--            averaged at each step of the algorithm, producing a model for all-->
-    <!--            data sets that assumes they have the same graphical structure across-->
-    <!--            dataset. Note that in order to use this algorithm in a nontrivial-->
-    <!--            way, one needs to have loaded or simulated multiple dataset.</p>-->
-
-    <!--    </div>-->
-
-    <!--    <h4>Input Assumptions</h4>-->
-
-    <!--    <p>A set of discrete datasets with the same variables and sample-->
-    <!--        sizes.</p>-->
-
-    <!--    <h4>Output Format</h4>-->
-
-    <!--    <p>A CPDAG, interpreted as a common model for all datasets.</p>-->
-
-    <!--    <h4>Parameters</h4>-->
-
-    <!--    <p>All of the parameters from FGES are available for IMaGES.-->
-    <!--        Additionally:</p>-->
-
-    <!--    <p><a href="#numRuns">numRuns</a>, <a-->
-    <!--            href="#randomSelectionSize">randomSelectionSize</a></p>-->
-
-
-    <h3>The IMaGES Algorithm</h3>
-
-    <h4>Description</h4>
-
     <div id="images">
 
         <p>Adjusts the selected score for FGES so
@@ -2907,7 +2848,7 @@ tabs will not appear.</p> -->
 
     <h4>Parameters</h4>
 
-    <p>All of the parameters from FGES are available for IMaGES.
+    <p>All the parameters from FGES are available for IMaGES.
         Additionally:</p>
 
     <p><a href="#numRuns">numRuns</a>, <a
@@ -2935,12 +2876,12 @@ tabs will not appear.</p> -->
             subset of the observed variables; any conditioning set that leads to
             the removal of an adjacency is stored. After the adjacency phase, the
             resulting undirected graph has the correct set of adjacencies, but
-            all of the edges are unoriented. FCI then enters an orientation phase
+            all the edges are unoriented. FCI then enters an orientation phase
             that uses the stored conditioning sets that led to the removal of
             adjacencies to orient as many of the edges as possible. See [Spirtes,
             1993].</p>
 
-        <p>Note: If one wants to analyze time series data using this algorithms,
+        <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
             will automatically apply the time lag transform. The same goes for any
             algorithm that has this parameter available in the interface.</p>
@@ -2957,7 +2898,7 @@ tabs will not appear.</p> -->
 
     <h4>Parameters</h4>
 
-    <p>All of the parameters from FCI are below.</p>
+    <p>All the parameters from FCI are below.</p>
 
     <p><a href="#depth">depth</a>, <a
             href="#maxPathLength">maxPathLength</a>, <a
@@ -2972,7 +2913,7 @@ tabs will not appear.</p> -->
         <p>The FCI-Max algorithm simply changes the first collider
             orientation rule in FCI to use the PC-Max orientation.</p>
 
-        <p>Note: If one wants to analyze time series data using this algorithms,
+        <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
             will automatically apply the time lag transform. The same goes for any
             algorithm that has this parameter available in the interface.</p>
@@ -2990,7 +2931,7 @@ tabs will not appear.</p> -->
 
     <h4>Parameters</h4>
 
-    <p>All of the parameters from FCI are below.</p>
+    <p>All the parameters from FCI are below.</p>
 
     <p><a href="#depth">depth</a>, <a
             href="#maxPathLength">maxPathLength</a>, <a
@@ -3009,7 +2950,7 @@ tabs will not appear.</p> -->
             slow in some steps) and is almost as informative. See Colombo et al.,
             2012.</p>
 
-        <p>Note: If one wants to analyze time series data using this algorithms,
+        <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
             will automatically apply the time lag transform. The same goes for any
             algorithm that has this parameter available in the interface.</p>
@@ -3027,7 +2968,7 @@ tabs will not appear.</p> -->
 
     <h4>Parameters</h4>
 
-    <p>All of the parameters from FCI are available for RFCI.
+    <p>All the parameters from FCI are available for RFCI.
         Additionally:</p>
 
     <p><a href="#depth">depth</a>, <a
@@ -3043,13 +2984,13 @@ tabs will not appear.</p> -->
         <p>A modification of the RFCI algorithm which does probabilistic bootstrap
             sampling with respect to the RFCI PAG output.For discrete data only.
             Parameters are: (a) Number of search probabilistic models, (b) boostrap
-            ensemble method to use (see bootstrapping), (c) maximimum size of
+            ensemble method to use (see bootstrapping), (c) maximum size of
             conditioning set (depth), (d) maximum length of any discriminating path
             (a property for RFCI). This must use the probabilistic test, which must
             be selected. Parameters for the probabilistic test are (d) independence
             cutoff threshold, default 0.5, (e) prior equivalent sample size, and
             (f) whether the cutoff in (d) is used in the independence test calculation;
-            if not, then a coin flip is used (probaility 0.5).
+            if not, then a coin flip is used (probability 0.5).
         </p>
 
     </div>
@@ -3089,7 +3030,7 @@ tabs will not appear.</p> -->
                     href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/GFCIc-
         overview-11_22_2016.pdf">here (continuous variables)</a>.</p>
 
-        <p>Note: If one wants to analyze time series data using this algorithms,
+        <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
             will automatically apply the time lag transform. The same goes for any
             algorithm that has this parameter available in the interface.</p>
@@ -3118,16 +3059,16 @@ tabs will not appear.</p> -->
     <div id="grasp-fci">
 
         <p>GRaSP-FCI is wrapper around the GRaSP algorithm that replaces
-            the FGES step in GFCI with the more accurate GRaSP algrorithm, which
+            the FGES step in GFCI with the more accurate GRaSP algorithm, which
             reasons by considering permutations of variables. The second collider
-            orienatation step in GFCI is also done using permutation reasoning,
+            orientation step in GFCI is also done using permutation reasoning,
             leaving the discriminating path rule as the only rule that requires a
             "raw" conditional independence judgment. Ultimately this independence
             judgment can be decided using the same scoring apparatus as the other
-            permutation steps, so ultimatly GRaSP-FCI can be treated as a scoring
+            permutation steps, so ultimately GRaSP-FCI can be treated as a scoring
             algorithm.</p>
 
-        <p>Note: If one wants to analyze time series data using this algorithms,
+        <p>Note: If one wants to analyze time series data using this algorithm,
             one may set the time lag parameter to a value greater than 0, which
             will automatically apply the time lag transform. The same goes for any
             algorithm that has this parameter available in the interface.</p>
@@ -3154,7 +3095,7 @@ tabs will not appear.</p> -->
     <div id="spfci">
 
         <p>SP-FCI is wrapper around the SP algorithm that replaces
-            the FGES step in GFCI with the more accurate SP algrorithm, which
+            the FGES step in GFCI with the more accurate SP algorithm, which
             reasons by considering permutations of variables. This uses the
             same method for wrapping SP with an FCI method similar to GFCI
             as GRaSP-FCI. The difference is that SP considers every permutation
@@ -3162,7 +3103,7 @@ tabs will not appear.</p> -->
             can only be used for very small models, of up to about 8 or 9
             variables, because of the super-exponential step of considering
             every permutation of the variables. The second collider
-            orienatation step in GFCI is done using permutation reasoning,
+            orientation step in GFCI is done using permutation reasoning,
             leaving the discriminating path rule as the only rule that requires a
             "raw" conditional independence judgment. Ultimately this independence
             judgment can be decided using the same scoring apparatus as the other
@@ -3205,7 +3146,7 @@ tabs will not appear.</p> -->
             with the above naming convention. The new sample size will be the old
             sample size minus n.</p>
 
-        <p>Since this algorithms specifically requires time series data,
+        <p>Since this algorithm specifically requires time series data,
             one must set the time lag parameter to a value greater than 0, which
             will automatically apply the time lag transform.</p>
 
@@ -3251,7 +3192,7 @@ tabs will not appear.</p> -->
             is removed as the result of a score increase, all similar (or
             “homologous”) edges are also removed. </p>
 
-        <p>Since this algorithms specifically requires time series data,
+        <p>Since this algorithm specifically requires time series data,
             one must set the time lag parameter to a value greater than 0, which
             will automatically apply the time lag transform.</p>
 
@@ -3332,7 +3273,7 @@ tabs will not appear.</p> -->
             targets. In the interface, just one target may be specified. See
             Ramsey et al., 2017 for details. In the general case, finding the
             graph over the Markov blanket variables of a target (including the
-            target) is far faster than finding the CPDAG for all of the
+            target) is far faster than finding the CPDAG for all the
             variables.</p>
 
     </div>
@@ -3478,7 +3419,6 @@ tabs will not appear.</p> -->
             href="#graspNonSingularDepth">graspNonSingularDepth</a> <a
             href="#graspSingularDepth">graspSingularDepth</a> <a
             href="#graspOrderedAlg">graspOrderedAlg</a> <a
-            href="#graspUseVermaPearl">graspUseVermaPearl</a> <a
             href="#verbose">verbose</a> <a href="#numStarts">numStarts</a>
 
     </p>
@@ -3509,7 +3449,7 @@ tabs will not appear.</p> -->
         <p> graspNonsingularDepth - This controls the
             depth at which nonsingular tucks are explored.
         <p> graspSingularDepth
-            - This controls the depth at which singlular tucks are considered.
+            - This controls the depth at which singular tucks are considered.
         <p>
             numRestarts - By default 1; if > 1, additional random restarts are
             done, and the best of these results is returned.
@@ -3517,9 +3457,9 @@ tabs will not appear.</p> -->
             to singular depth 0, nonsingular depth 0. ESP corresponds to singular
             depth > 0, nonsingular depth = 0. GRaSP corresponds to singular depth >
             0, nonsingular depth > 0. In each case, an ordering option is available
-            to find best permutations from lower levels before proceeding to
+            to find the best permutations from lower levels before proceeding to
             higher levels.
-        <p> The algorithms works by building DAGs given
+        <p> The algorithm works by building DAGs given
             permutations in ways similar to those described in Raskutti and Uhler
             (ref?) and Solus et al. Two ways of building DAGs are considered, one
             independence-based, due to Raskutti and Uhler and a score-based
@@ -3539,7 +3479,6 @@ tabs will not appear.</p> -->
         <p>
             Raskutti, G., & Uhler, C. (2018). Learning directed acyclic graph
             models based on sparsest permutations. Stat, 7(1),
-            <e183 class=""></e183>
         <p> Solus,
             L., Wang, Y., Matejovicova, L., & Uhler, C. (2017). Consistency
             guarantees for permutation-based causal inference algorithms. arXiv
@@ -3565,7 +3504,6 @@ tabs will not appear.</p> -->
             href="#graspNonSingularDepth">graspNonSingularDepth</a> <a
             href="#graspSingularDepth">graspSingularDepth</a> <a
             href="#graspOrderedAlg">graspOrderedAlg</a> <a
-            href="#graspUseVermaPearl">graspUseVermaPearl</a> <a
             href="#verbose">verbose</a> <a href="#numStarts">numStarts</a>
 
     </p>
@@ -3580,7 +3518,7 @@ tabs will not appear.</p> -->
             generalizes and extends the GSP (Greedy Sparsest Permutation) algorithm.
             It has been tested to 1000 variables with an average degree of 20
             and gives near perfect precisions and recalls for N = 10,000 (with
-            recall that drop to 0.9 for N = 1000). The algorithms works by building DAGs given
+            recall that drop to 0.9 for N = 1000). The algorithm works by building DAGs given
             permutations in ways similar to those described in Raskutti and Uhler
             (ref?) and Solus et al.
         <p> The parameters are as
@@ -3588,14 +3526,14 @@ tabs will not appear.</p> -->
         <p> useBes - True if the final BES (Backward Equivalence Search)
             step is used from the GES (Greedy Equivalence Search) algorithm.
             This step is needed for correctness but for large models, since usually
-            nearly all edges are oriented in the CPDAG, it is heurically not needed.</p>
-        <p> numStarts - The number of times the algroithm should be re-run from different
+            nearly all edges are oriented in the CPDAG, it is heuristically not needed.</p>
+        <p> numStarts - The number of times the algorithm should be re-run from different
             random starting permutations. The model with the most optimal BIC score will
             be selected.</p>
         <p> allowInternalRandomness - If true, the algorithm allow the algorithm to
             use certain heuristic random steps. This can improve performance, but
             may make the algorithm non-deterministic.</p>
-        <p> timeLag - This creates a time-series model autimatically with a certain
+        <p> timeLag - This creates a time-series model automatically with a certain
             number of lags.
         <p> Knowledge of forbidden edges and required edges may be used with this
             algorithm. Also, knowledge of tiers may be used. If tiered knowledge is
@@ -3632,7 +3570,6 @@ tabs will not appear.</p> -->
             href="#graspNonSingularDepth">graspNonSingularDepth</a> <a
             href="#graspSingularDepth">graspSingularDepth</a> <a
             href="#graspOrderedAlg">graspOrderedAlg</a> <a
-            href="#graspUseVermaPearl">graspUseVermaPearl</a> <a
             href="#verbose">verbose</a> <a href="#numStarts">numStarts</a>
 
     </p>
@@ -3644,7 +3581,7 @@ tabs will not appear.</p> -->
     <!--    <div id="glasso">-->
 
     <!--        <p>A translation of the Fortran code for GLASSO
-    (Graphical LASSO—see Friedman, Tibshirani anad Hastie, 2007)--> <!--
+    (Graphical LASSO—see Friedman, Tibshirani and Hastie, 2007)--> <!--
           Like MGM, this produces an undirected graph in which parents are
     always married.</p>-->
 
@@ -3686,7 +3623,7 @@ tabs will not appear.</p> -->
             matrix over the latent variables that are parents of the measures and
             use some algorithm such as PC or GES to estimate a CPDAG over the
             latents. The algorithm to run PC or GES on this covariance matrix is
-            called MimBuild (“MIM” is the the graph, Multiple Indicator Model;
+            called MimBuild (“MIM” is the graph, Multiple Indicator Model;
             “Build” means build). In this way, one may recover causal structure
             over the latents. The more measures one has for each latent, the
             better the result is, generally. The larger the sample size the
@@ -3754,7 +3691,7 @@ tabs will not appear.</p> -->
             relevant tetrad constraints still hold. There are different ways of
             going about this. One could try to build one cluster up as far as
             possible, then remove all of those variables from the set, and try to
-            make a another cluster using the remaining variables (SAG, Seed and
+            make another cluster using the remaining variables (SAG, Seed and
             Grow). Or one can try in parallel to grow all possible clusters and
             then choose among the grown clusters using some criterion such as
             cluster size (GAP, Grow and Pick). In general, GAP is more accurate.
@@ -3775,8 +3712,8 @@ tabs will not appear.</p> -->
             variables. The algorithm will in effect remove one measure in each
             impure pair from consideration.
 
-            Note that for FOFC, a test is done for each final cluster as
-            to whether the variables in teh cluster are all mutually
+            Note that for FOFC, a test is done for each final cluster to see
+            whether the variables in the cluster are all mutually
             dependent. In the interface, in order to see teh results of this
             test, one needs to open the logging window. See the Logging menu.
         </p>
@@ -3791,11 +3728,11 @@ tabs will not appear.</p> -->
 
         <p>FTFC (Find Two Factor Clusters) is similar to FOFC, but
             instead of each cluster having one latent that is the parent of all
-            of the measure in the cluster, it instead has two such latents. So
+            the measure in the cluster, it instead has two such latents. So
             each measure has two latent parents; these are two “factors.”
             Similarly to FOFC, constraints are checked for, but in this case, the
             constraints must be sextad constraints, and more of them must be
-            satisfied for each pure cluster (see Kummerfelt et al., 2014). Thus,
+            satisfied for each pure cluster (see Kummerfeld et al., 2014). Thus,
             the number of measures in each cluster, once impure edges have been
             taken into account, must be at least six, preferably more.</p>
 
@@ -3844,7 +3781,7 @@ tabs will not appear.</p> -->
         <p> Our implementation of LiNGAM has one parameter, penalty
             discount, used for the FGES adjacency search. The method as
             implemented does not scale much beyond 10 variables, because it is
-            checking every permutation of all of the variables (twice). The
+            checking every permutation of all the variables (twice). The
             implementation of ICA we use is FastIca (Hyvärinen et al., 2004).
         </p>
 
@@ -3855,7 +3792,7 @@ tabs will not appear.</p> -->
         <p> Hyvärinen, A., Karhunen, J., & Oja, E. (2004). Independent
             component analysis (Vol. 46). John Wiley & Sons. </p></div>
 
-    <p>Direct LiNGAM is an implemention of said algorithms as specified in this reference: </p>
+    <p>Direct LiNGAM is an implementation of said algorithms as specified in this reference: </p>
 
     <p> Shimizu, S., Inazumi, T., Sogawa, Y., Hyvarinen, A., Kawahara, Y., Washio, T., ... & Hoyer, P. (2011).
         DirectLiNGAM: A direct method for learning a linear non-Gaussian structural equation model. Journal of
@@ -3868,7 +3805,7 @@ tabs will not appear.</p> -->
 
     <h4>Description</h4>
 
-    <div id="fask"><p>FASK learns a linear model in which all of the
+    <div id="fask"><p>FASK learns a linear model in which all the
         variables are skewed. </p>
 
         <p>The idea is as follows. First, FAS-stable is run on the data,
@@ -3928,7 +3865,7 @@ tabs will not appear.</p> -->
     <div id="fask-vote"><p>FASK-Vote is a metascript that learns a
         model from a list of datasets in a method similar to IMaGES (see). For
         adjacencies, it uses FAS-Stable with the voting-based score from IMaGES
-        used as a test (using all of the datasets, standardized), producing a
+        used as a test (using all the datasets, standardized), producing a
         single undirected graph G. It then orients each edge X--Y in G for each
         dataset using the FASK (see) left-right rule and orient X->Y if that rule
         orients X--Y as such in at least half of the datasets. The final graph is
@@ -4023,7 +3960,7 @@ tabs will not appear.</p> -->
 
     <h4>Output Format</h4>
 
-    <p>Orients all of the edges in the input graph using the selected
+    <p>Orients all the edges in the input graph using the selected
         score.</p>
 
     <h4>Parameters</h4>
@@ -4047,7 +3984,7 @@ tabs will not appear.</p> -->
         <p>The procedure is best used, however, as a command line procedure, in py-causal, rpy-causal, or Causal
             Command. Upon running the algorithm (even in the interface), a directory of result files will be
             produced as
-            a record, including the dataset used, the possible causes and effects used, all of the CPDAGs used and
+            a record, including the dataset used, the possible causes and effects used, all the CPDAGs used and
             the
             tables of their IDA effects, and the CStaR output table itself.</p>
         <p></p>
@@ -4062,8 +3999,8 @@ tabs will not appear.</p> -->
             If a
             directory already exists at the path, then any information available in path directory will be used to
             generate results in the path-.[n] directory.</p>
-        <p>Number of Subsamples. CStaR finds CPDAGs over subsampled data of size n / 2; this specifies how many
-            subsamples to use.</p>
+        <p>Number of Sub-samples. CStaR finds CPDAGs over sub-sampled data of size n / 2; this specifies how many
+            sub-samples to use.</p>
         <p>Minimum effect size. This allows a shorter table to be produced. It this is set to a value m > 0, then
             only
             records with PI > m will be displayed.</p>
@@ -4111,7 +4048,7 @@ tabs will not appear.</p> -->
 
     <h2>Statistical Tests</h2>
 
-    <p>All of the below tests do testwise deletion as a default way of
+    <p>All the below tests do testwise deletion as a default way of
         dealing with missing values. For testwise deletion, if a test, say, I(X,
         Y | Z), is done, columns for X, Y, and Z are scanned for missing values.
         If any row occurs in which X, Y, or Z is missing, that row is deleted
@@ -4137,11 +4074,6 @@ tabs will not appear.</p> -->
         and X conditional on Y and Z; the scores for the two models are
         subtracted, in that order. If the difference is negative, independence is
         inferred. </p></div>
-
-    <h4>Parameters</h4>
-
-    <p><a href="#equivalentSamplelSize">equivalentSamplelSize</a>, <a
-            href="#structurePrior">structurePrior</a></p>
 
     <h3>Fisher Z Test</h3>
 
@@ -4177,7 +4109,7 @@ tabs will not appear.</p> -->
         based on the paper, Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection
         criteria on high dimensions. The Journal 0of Machine Learning Research,
         13(1), 1037-1057. One needs to select which lambda to use in place of the
-        usual lambda for the linear, Gaussian BIC score. An penalty discount parameter
+        usual lambda for the linear, Gaussian BIC score. A penalty discount parameter
         may also be specified, though this is by default for these scores equal
         to 1 (since the lambda choice is essentially picking a penalty discount
         for you).
@@ -4220,7 +4152,7 @@ tabs will not appear.</p> -->
         to a (possibly nonlinear) function of its parents, plus some additive
         noise, where the noise may be arbitrarily distributed. That is, X =
         f(parent(X)) + E, where f is any function and E is noise however
-        distributed; the only requirement is that thre be the “+” in the formula
+        distributed; the only requirement is that there be the “+” in the formula
         separating the function from the noise. The noise can’t for instance, be
         multiplicative, e.g., X = f(parent(X)) x E. The goal of the method is to
         estimate whether X is independent of Y given variables Z, for some X, Y,
@@ -4260,7 +4192,7 @@ tabs will not appear.</p> -->
         property of graphs, not distributions. It's not really a test, but it can
         be used in place of a test of the true graph is known. This is a way to
         find out, for constraint-based algorithms, or even for some score-based
-        algorithms like FGES, what answer the algorithm would give if all of the
+        algorithms like FGES, what answer the algorithm would give if all the
         statistical decisions made are correct. Just draw an edge from the true
         graph to the algorithm--the m-separation option will appear, and you can
         then just run the search as usual. Note that D-Separation and M-separation
@@ -4320,7 +4252,7 @@ tabs will not appear.</p> -->
     <h4>Parameters</h4>
 
     <p><a href="#alpha">alpha</a>, <a
-            href="#kciUseAppromation">kciUseAppromation</a>, <a
+            href="#kciUseApproximation">kciUseApproximation</a>, <a
             href="#kernelMultiplier">kernelMultiplier</a>, <a
             href="#kciNumBootstraps">kciNumBootstraps</a>, <a
             href="#thresholdForNumEigenvalues">thresholdForNumEigenvalues</a>, <a
@@ -4335,13 +4267,13 @@ tabs will not appear.</p> -->
         Gaussian conditional on each combination of values for the discrete
         variables, though it will work fairly well even if that assumption does
         not hold strictly. This test may be used with any constraint-based
-        algorithm (PC, FCI, etc.). See See Andrews, B., Ramsey, J., & Cooper, G.
+        algorithm (PC, FCI, etc.). See Andrews, B., Ramsey, J., & Cooper, G.
         F. (2018). Scoring Bayesian networks of mixed variables. International
         journal of data science and analytics, 6(1), 3-18. </p></div>
 
     <div id="dg-lr-test"><p> Degenerate Gaussian Likelihood Ratio Test
         may be used for the case where there is a mixture of discrete and
-        Gaussian variables. Calculates a a likelihood ratio based on likelihood
+        Gaussian variables. Calculates a likelihood ratio based on likelihood
         that is calculated using a conditional Gaussian assumption. See Andrews,
         B., Ramsey, J., & Cooper, G. F. (2019). Learning high-dimensional
         directed acyclic graphs with mixed data-types. Proceedings of machine
@@ -4362,7 +4294,7 @@ tabs will not appear.</p> -->
         is available on the Set Parameters screen. When it is selected, the
         search will be performed multiple times on randomly selected subsets of
         the data, and the final output graph will be the result of a voting
-        procedure among all of the graphs. These subsets may be selected with
+        procedure among all the graphs. These subsets may be selected with
         replacement (bootstrapping) or without. There are also options for the
         user to set the size of the subset, and the number of resampling runs.
         The default number of resampling runs is zero, in which case no
@@ -4396,12 +4328,12 @@ tabs will not appear.</p> -->
         there are three columns. These are to capture various types of --> edges
         that may be found in estimated PAGs--whether the --> edge is visible and/or
         definitely direct. For estimated CPDAGs, these three columns may be summed.
-        Similarly for <-- edges.
+        Similarly, for <-- edges.
     </p>
 
     <h2>Scoring Functions</h2>
 
-    <p>Like the tests, above, all of the below tests do testwise deletion
+    <p>Like the tests, above, all the below tests do testwise deletion
         as a default way of dealing with missing values. For testwise deletion,
         if a score, say, score(X | Y, Z), is done, columns for X, Y, and Z are
         scanned for missing values. If any row occurs in which X, Y, or Z is
@@ -4425,9 +4357,6 @@ tabs will not appear.</p> -->
         more strongly dependent. </p></div>
 
     <h4>Parameters</h4>
-
-    <p><a href="#equivalentSampleSize">equivalentSampleSize</a>, <a
-            href="#equivalentSampleSize">samplePrior</a></p>
 
     <h3>Conditional Gaussian BIC Score</h3>
 
@@ -4533,7 +4462,7 @@ tabs will not appear.</p> -->
         the paper, Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection
         criteria on high dimensions. The Journal 0of Machine Learning Research,
         13(1), 1037-1057. One needs to select which lambda to use in place of the
-        usual lambda for the linear, Gaussian BIC score. An penalty discount parameter
+        usual lambda for the linear, Gaussian BIC score. A penalty discount parameter
         may also be specified, though this is by default for these scores equal
         to 1 (since the lambda choice is essentially picking a penalty discount
         for you).
@@ -4822,7 +4751,7 @@ tabs will not appear.</p> -->
         0.0)</span></li>
             <li>Long Description: <span id="alpha_long_desc">
         The cutoff, beyond which test results are judged as dependent, for a
-        statistical test of independence. Detaulf 0.05. Higher alpha yields a
+        statistical test of independence. Default 0.05. Higher alpha yields a
         sparser graph.</span></li>
             <li>Default Value: <span
                     id="alpha_default_value">0.01</span></li>
@@ -4970,7 +4899,7 @@ tabs will not appear.</p> -->
                     id="coefLow_short_desc"> Low end of coefficient range (min =
         0.0)</span></li>
             <li>Long Description: <span id="coefLow_long_desc">
-        The parameter m1 for coefficents drawn from U(-m2, -m1) U U(m1,
+        The parameter m1 for coefficients drawn from U(-m2, -m1) U U(m1,
         m2).</span></li>
             <li>Default Value: <span
                     id="coefLow_default_value">0.0</span></li>
@@ -5269,20 +5198,20 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="numSubsamples">numSubsamples</h3>
-        <ul class="numSubsamples_list">
-            <li>Short Description: <span id="numSubsamples_short_desc">Number of
-        subsamples</span></li>
+            id="numSub-samples">numSub-samples</h3>
+        <ul class="numSub-samples_list">
+            <li>Short Description: <span id="numSub-samples_short_desc">Number of
+        sub-samples</span></li>
             <li>Long Description: <span
-                    id="numSubsamples_long_desc">Number of subsamples</span></li>
+                    id="numSub-samples_long_desc">Number of sub-samples</span></li>
             <li>Default Value: <span
-                    id="numSubsamples_default_value">50</span></li>
+                    id="numSub-samples_default_value">50</span></li>
             <li>Lower Bound:
-                <span id="numSubsamples_lower_bound">1</span></li>
+                <span id="numSub-samples_lower_bound">1</span></li>
             <li>Upper Bound:
-                <span id="numSubsamples_upper_bound">500000</span></li>
+                <span id="numSub-samples_upper_bound">500000</span></li>
             <li>Value
-                Type: <span id="numSubsamples_value_type">Integer</span></li>
+                Type: <span id="numSub-samples_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description" id="covHigh">covHigh</h3>
@@ -5447,7 +5376,7 @@ tabs will not appear.</p> -->
                 class="parameter_description_list">
             <li>Short Description: <span
                     id="determinismThreshold_short_desc"> Threshold for judging a
-        regression of a variable onto its parents to be deternimistic (min =
+        regression of a variable onto its parents to be deterministic (min =
         0.0)</span></li>
             <li>Long Description: <span
                     id="determinismThreshold_long_desc"> When regressing a child variable
@@ -5509,7 +5438,7 @@ tabs will not appear.</p> -->
             <li>Long Description:
                 <span id="discretize_long_desc"> Yes if for the conditional Gaussian
         likelihood, when scoring X->D where X is continuous and D discrete,
-        one shoudl to simply discretize X for just those cases. If no, the
+        one should to simply discretize X for just those cases. If no, the
         integration will be exact.</span></li>
             <li>Default Value: <span
                     id="discretize_default_value">true</span></li>
@@ -5531,7 +5460,7 @@ tabs will not appear.</p> -->
             <li>Long
                 Description: <span id="calculateEuclidean_long_desc"> The generalized
         information criterion is defined with an information term that take a
-        Euclidean norm squares; the can be calculated directly. </span></li>
+        Euclidean norm squares; there can be calculated directly. </span></li>
             <li>Default Value: <span
                     id="calculateEuclidean_default_value">false</span></li>
             <li>Lower
@@ -6273,7 +6202,7 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="intervalBetweenShocks_short_desc"> Interval beween shocks (R. A.
+                    id="intervalBetweenShocks_short_desc"> Interval between shocks (R. A.
         Fisher simulation model) (min = 1)</span></li>
             <li>Long Description:
                 <span id="intervalBetweenShocks_long_desc"> This is a parameter for
@@ -6417,25 +6346,25 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="kciUseAppromation">kciUseAppromation</h3>
+            id="kciUseApproximation">kciUseApproximation</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="kciUseAppromation_short_desc">Use the approximate Gamma
+                    id="kciUseApproximation_short_desc">Use the approximate Gamma
         approximation algorithm</span></li>
             <li>Long Description: <span
-                    id="kciUseAppromation_long_desc"> Referring to Zhang, K., Peters, J.,
+                    id="kciUseApproximation_long_desc"> Referring to Zhang, K., Peters, J.,
         Janzing, D., & Schölkopf, B. (2012), if this parameter is set to
         ‘Yes’, the Gamma approximation algorithm is used; if no, the exact
         procedure is used.</span></li>
             <li>Default Value: <span
-                    id="kciUseAppromation_default_value">true</span></li>
+                    id="kciUseApproximation_default_value">true</span></li>
             <li>Lower
-                Bound: <span id="kciUseAppromation_lower_bound"></span></li>
+                Bound: <span id="kciUseApproximation_lower_bound"></span></li>
             <li>Upper Bound: <span
-                    id="kciUseAppromation_upper_bound"></span></li>
+                    id="kciUseApproximation_upper_bound"></span></li>
             <li>Value Type: <span
-                    id="kciUseAppromation_value_type">Boolean</span></li>
+                    id="kciUseApproximation_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6444,7 +6373,7 @@ tabs will not appear.</p> -->
                 class="parameter_description_list">
             <li>Short Description: <span
                     id="kernelMultiplier_short_desc">Bowman and Azzalini (1997) default
-        kernel bandwidhts should be multiplied by...</span></li>
+        kernel bandwidths should be multiplied by...</span></li>
             <li>Long
                 Description: <span id="kernelMultiplier_long_desc"> For the
         conditional correlation algorithm. Bowman, A. W., & Azzalini, A.
@@ -6510,7 +6439,7 @@ tabs will not appear.</p> -->
                     id="kernelType_short_desc">Kernel type (1 = Gaussian, 2 =
         Epinechnikov)</span></li>
             <li>Long Description: <span
-                    id="kernelType_long_desc"> For CCI, this determine which kernel type
+                    id="kernelType_long_desc"> For CCI, this determines which kernel type
         will be used (1 = Gaussian, 2 = Epinechnikov).</span></li>
             <li>Default Value: <span id="kernelType_default_value">2</span></li>
             <li>Lower Bound: <span id="kernelType_lower_bound">1</span></li>
@@ -6704,7 +6633,7 @@ tabs will not appear.</p> -->
         algorithm should go through orienting edges</span></li>
             <li>Long
                 Description: <span id="maxIterations_long_desc"> In orienting, this
-        algorith may go through a number of iterations, conditioning on more
+        algorithm may go through a number of iterations, conditioning on more
         and more variables until orientations are set. This sets that
         number.</span></li>
             <li>Default Value: <span
@@ -6917,7 +6846,7 @@ tabs will not appear.</p> -->
             <li>Long Description: <span
                     id="measurementVariance_long_desc"> If the value is greater than
         zero, independent Gaussian noise will be added with mean zero and the
-        given variance to each variables in the simulated output.</span>
+        given variance to each variable in the simulated output.</span>
             </li>
             <li>Default Value: <span
                     id="measurementVariance_default_value">0.0</span></li>
@@ -7008,7 +6937,7 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="noRandomlyDeterminedIndependence_short_desc"> Yes, if use the
+                    id="noRandomlyDeterminedIndependence_short_desc"> Yes, if using the
         cutoff threshold for the independence test.</span></li>
             <li>Long
                 Description: <span
@@ -7097,7 +7026,7 @@ tabs will not appear.</p> -->
             <li>Long Description: <span
                     id="numCategoriesToDiscretize_long_desc"> In case the exact algorithm
         is not used for discrete children and continuous parents is not used,
-        the This parameter gives the number of categories to use for this
+        this parameter gives the number of categories to use for this
         second (discretize) backup copy of the continuous variables. </span>
             </li>
             <li>Default Value: <span
@@ -7136,7 +7065,7 @@ tabs will not appear.</p> -->
                     id="numLatents_short_desc">Number of additional latent variables (min
         = 0)</span></li>
             <li>Long Description: <span
-                    id="numLatents_long_desc"> Thye numbger of additional latent
+                    id="numLatents_long_desc"> The number of additional latent
         variables to include in the datasets</span></li>
             <li>Default Value:
                 <span id="numLatents_default_value">0</span></li>
@@ -7237,7 +7166,7 @@ tabs will not appear.</p> -->
         edges</span></li>
             <li>Long Description: <span
                     id="numStructuralEdges_long_desc"> This is a parameter for generating
-        random multiple indictor models (MIMs). A structural edge is an edge
+        random multiple indicator models (MIMs). A structural edge is an edge
         connecting two structural nodes.</span></li>
             <li>Default Value:
                 <span id="numStructuralEdges_default_value">3</span></li>
@@ -7260,7 +7189,7 @@ tabs will not appear.</p> -->
         nodes</span></li>
             <li>Long Description: <span
                     id="numStructuralNodes_long_desc"> This is a parameter for generating
-        random multiple indictor models (MIMs). A structural node is one of
+        random multiple indicator models (MIMs). A structural node is one of
         the latent variables in the model; each structural node has a number
         of child measured variables.</span></li>
             <li>Default Value: <span
@@ -7301,7 +7230,7 @@ tabs will not appear.</p> -->
         first (default 1)</span></li>
             <li>Long Description: <span
                     id="numStarts_long_desc"> The number of times the algorithm should
-        srarted from different initializations. By default, the algorithm
+        be started from different initializations. By default, the algorithm
         will be run through at least once using the initialized parameters
         (zero random restarts).</span></li>
             <li>Default Value: <span
@@ -7416,25 +7345,25 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="graspBreakAFterImprovement">graspBreakAFterImprovement</h3>
+            id="graspBreakAfterImprovement">graspBreakAfterImprovement</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="graspBreakAFterImprovement_short_desc"> Yes if depth first search
+                    id="graspBreakAfterImprovement_short_desc"> Yes if depth first search
         returns after first improvement, No for depth first traversal.
         </span></li>
             <li>Long Description: <span
-                    id="graspBreakAFterImprovement_long_desc"> Exploring the full list in
+                    id="graspBreakAfterImprovement_long_desc"> Exploring the full list in
         every DFS call is equivalent to what we've been calling the Random
         Carnival Game procedure (RCG). </span></li>
             <li>Default Value: <span
-                    id="graspBreakAFterImprovement_default_value">true</span></li>
+                    id="graspBreakAfterImprovement_default_value">true</span></li>
             <li>Lower Bound: <span
-                    id="graspBreakAFterImprovement_lower_bound"></span></li>
+                    id="graspBreakAfterImprovement_lower_bound"></span></li>
             <li>Upper
-                Bound: <span id="graspBreakAFterImprovement_upper_bound"></span></li>
+                Bound: <span id="graspBreakAfterImprovement_upper_bound"></span></li>
             <li>Value Type: <span
-                    id="graspBreakAFterImprovement_value_type">Boolean</span></li>
+                    id="graspBreakAfterImprovement_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7628,7 +7557,7 @@ tabs will not appear.</p> -->
         tucks</span></li>
             <li>Long Description: <span
                     id="graspNonSingularDepth_long_desc"> This is the depth of recursion
-        at which multiple tucks may be consdidered per score improvement
+        at which multiple tucks may be considered per score improvement
         </span></li>
             <li>Default Value: <span
                     id="graspNonSingularDepth_default_value">1</span></li>
@@ -7669,7 +7598,7 @@ tabs will not appear.</p> -->
                     id="timeout_short_desc">Timeout (best graph returned, -1 = no
         timeout)</span></li>
             <li>Long Description: <span
-                    id="timeout_long_desc"> The algorithm will timeout at approximately
+                    id="timeout_long_desc"> The algorithm will time out at approximately
         this number of seconds from when it started and return the final
         graph found at that point. </span></li>
             <li>Default Value: <span
@@ -7789,7 +7718,7 @@ tabs will not appear.</p> -->
                 	be precomputed for tubular continuous data</span></li>
             <li>Long Description:
                 <span id="precomputeCovariances_long_desc">
-                For more than 5000 variables or so, set this to false to calculate covariances
+                For more than 5000 variables or so, set this to false in order to calculate covariances
                 on the fly from data.
         </span></li>
             <li>Default Value:
@@ -8071,7 +8000,7 @@ tabs will not appear.</p> -->
         in the graph (0 - 1)</span></li>
             <li>Long Description: <span
                     id="probTwoCycle_long_desc"> Any edge X*-*Y may be replaced with a
-        2-cycle (feedback loop) between X and Y with this probility.</span>
+        2-cycle (feedback loop) between X and Y with this probability.</span>
             </li>
             <li>Default Value: <span
                     id="probTwoCycle_default_value">0.0</span></li>
@@ -8110,7 +8039,7 @@ tabs will not appear.</p> -->
                 class="parameter_description_list">
             <li>Short Description: <span
                     id="randomizeColumns_short_desc">Yes if the order of the columns in
-        each datasets should be randomized</span></li>
+        each dataset should be randomized</span></li>
             <li>Long Description:
                 <span id="randomizeColumns_long_desc"> In the real world where
         unfaithfulness is an issue the order of variables in the data may for
@@ -8174,8 +8103,8 @@ tabs will not appear.</p> -->
                     id="resamplingEnsemble_short_desc">Ensemble method: Preserved (1),
         Highest (2), Majority (3)</span></li>
             <li>Long Description: <span
-                    id="resamplingEnsemble_long_desc"> Preserved = keep highest frequency
-        edges; Highest = keep highest frequency edges but ignore the no edge
+                    id="resamplingEnsemble_long_desc"> Preserved = keep the highest frequency
+        edges; Highest = keep the highest frequency edges but ignore the no edge
         case if maximal; Majority = keep edges only if their frequency is
         greater than 0.5. </span></li>
             <li>Default Value: <span
@@ -8240,7 +8169,7 @@ tabs will not appear.</p> -->
             <li>Short Description: <span
                     id="sampleSize_short_desc">Sample size (min = 1)</span></li>
             <li>Long
-                Description: <span id="sampleSize_long_desc"> Ddetermines now many
+                Description: <span id="sampleSize_long_desc"> Determines now many
         records should be generated for the data. The minimum number of
         records is 1; the default is set to 1000.</span></li>
             <li>Default
@@ -8407,7 +8336,7 @@ tabs will not appear.</p> -->
                     id="semBicRule_short_desc"> Lambda: 1 = Chickering, 2 = Nandy</span>
             </li>
             <li>Long Description: <span id="semBicRule_long_desc">The
-        Chickering Rule uses a the difference of BIC scores to add or remove
+        Chickering Rule uses the difference of BIC scores to add or remove
         edges. The Nandy et al. rule uses a single calculation of a partial
         correlation in place of the likelihood difference. </span></li>
             <li>Default Value: <span id="semBicRule_default_value">1</span></li>
@@ -8520,7 +8449,7 @@ tabs will not appear.</p> -->
                     id="standardize_short_desc">Yes if the data should be
         standardized</span></li>
             <li>Long Description: <span
-                    id="standardize_long_desc"> Yes if each varaibles in the data should
+                    id="standardize_long_desc"> Yes if each variable in the data should
         be standardized to have mean zero and variance 1. </span></li>
             <li>Default Value: <span
                     id="standardize_default_value">false</span></li>
@@ -8560,7 +8489,7 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="symmetricFirstStep_short_desc"> Yes if the first step step for
+                    id="symmetricFirstStep_short_desc"> Yes if the first step for
         FGES should do scoring for both X->Y and Y->X</span></li>
             <li>Long
                 Description: <span id="symmetricFirstStep_long_desc"> If Yes, scores
@@ -8638,11 +8567,11 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="thresholdNoRandomConstrainSearch_short_desc"> Yes, if use the
+                    id="thresholdNoRandomConstrainSearch_short_desc"> Yes, if using the
         cutoff threshold for the meta-constraints independence test (stage
         2).</span></li>
             <li>Long Description: <span
-                    id="thresholdNoRandomConstrainSearch_long_desc"> Yes, if use the
+                    id="thresholdNoRandomConstrainSearch_long_desc"> Yes, if using the
         cutoff threshold for the meta-constraints independence test (stage
         2).</span></li>
             <li>Default Value: <span
@@ -8660,7 +8589,7 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="thresholdNoRandomDataSearch_short_desc"> Yes, if use the cutoff
+                    id="thresholdNoRandomDataSearch_short_desc"> Yes, if using the cutoff
         threshold for the constraints independence test (stage 1).</span>
             </li>
             <li>Long Description: <span
@@ -8917,12 +8846,12 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="useGap_short_desc">Yes if the GAP algorithms should be used. No
+                    id="useGap_short_desc">Yes if the GAP algorithms should be used. Not
         if the SAG algorithm should be used</span></li>
             <li>Long
                 Description: <span id="useGap_long_desc"> True if one should first
         find all possible initial sets, grows these out, and then picks a
-        non-overlapping such largest sets from these. No if one should grow
+        non-overlapping such largest sets from these. Not if one should grow
         pure clusters one at a time, excluding variables found in earlier
         clusters.</span></li>
             <li>Default Value: <span
@@ -9010,13 +8939,13 @@ tabs will not appear.</p> -->
         <h3 class="parameter_description" id="useWishart">useWishart</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="useWishart_short_desc">Yes if the Wishart test shoud be used. No
+                    id="useWishart_short_desc">Yes if the Wishart test should be used. Not
         if the Delta test should be used</span></li>
             <li>Long Description:
                 <span id="useWishart_long_desc"> This is a parameter for the FOFC
         (Find One Factor Clusters) algorithm. There are two tests implemented
         there for testing for tetrads being zero, Wishart and Delta. This
-        parameter picks which of these tests should be use: ‘Yes’ for Wishart
+        parameter picks which of these tests should be used: ‘Yes’ for Wishart
         and ‘No’ for Delta.</span></li>
             <li>Default Value: <span
                     id="useWishart_default_value">false</span></li>
@@ -9131,7 +9060,7 @@ tabs will not appear.</p> -->
         applications should be printed or logged</span></li>
             <li>Long
                 Description: <span id="meekVerbose_long_desc"> If this parameter is
-        set to ‘Yes’, Meek rule appications will be printed out to the
+        set to ‘Yes’, Meek rule applications will be printed out to the
         log.</span></li>
             <li>Default Value: <span
                     id="meekVerbose_default_value">false</span></li>
@@ -9167,7 +9096,7 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="outputCpdag_short_desc">Yes if CPDAG should be ouput, no if a
+                    id="outputCpdag_short_desc">Yes if CPDAG should be output, no if a
         DAG.</span></li>
             <li>Long Description: <span
                     id="outputCpdag_long_desc">BOSS can output a DAG or the CPDAG of the
@@ -9208,12 +9137,12 @@ tabs will not appear.</p> -->
                 class="parameter_description_list">
             <li>Short Description: <span
                     id="include_structure_model_short_desc">Yes if the (MimBuild)
-        stucture model should be included in the output graph</span></li>
+        structure model should be included in the output graph</span></li>
             <li>Long Description: <span id="include_structure_model_long_desc">
         FOFC proper yields a measurement model--that is, a set of pure
         children for each of the discovered latents. One can estimate the
         structure over the latents (the structure model) using Mimbuild. This
-        struture model is included in the output if this parameter is set to
+        structure model is included in the output if this parameter is set to
         Yes.</span></li>
             <li>Default Value: <span
                     id="include_structure_model_default_value">true</span></li>
@@ -9278,7 +9207,7 @@ tabs will not appear.</p> -->
         simply click on another variable and click on the arrow again. </p>
 
     <p>To select a variable as a predictor variable, click on it in the
-        leftmost box, and then click on the second right- pointing arrow. To
+        leftmost box, and then click on the second right-pointing arrow. To
         remove a predictor variable, click on it in the predictor box and then
         click on the left-pointing arrow.</p>
 
@@ -9314,7 +9243,7 @@ tabs will not appear.</p> -->
             class="section_heading">Appendices</span></h1>
     <h2>An Introduction to
         PAGs</h2>
-    <p>Peter Spirites</p>
+    <p>Peter Spirtes</p>
 
     <p>The output of the FCI algorithm [Spirtes, 2001] is a partial
         ancestral graph (PAG), which is a graphical object that represents a set
@@ -9360,9 +9289,9 @@ tabs will not appear.</p> -->
         <tbody>
 
         <tr>
-            <td width="10%">A --> B</td>
+            <td>A --> B</td>
             <td>A is a cause of B. It may
-                be a direct or indirect cause that may include other measured
+                be a direct or indirect because that may include other measured
                 variables. Also, there may be an unmeasured confounder of A and B.
             </td>
             <td>B is not a cause of A.</td>
@@ -9413,8 +9342,8 @@ tabs will not appear.</p> -->
         an edge between A and B means "A is a cause of B"; an arrowhead ">" at
         the A end of an edge between A and B means "A is not a cause of B"; and a
         circle "o" at the A end of an edge between A and B means "can't tell
-        whether or not A is a cause of B". For example A --> B means that A is a
-        cause of B, and that B is not a cause of A in all of the CBNs represented
+        whether A is a cause of B". For example A --> B means that A is a
+        cause of B, and that B is not a cause of A in all the CBNs represented
         by the PAG. </p>
     <p>The PAG in Figure 2 shows examples of each type of
         edge, and the CBNs. Figure 1. show some examples of what kinds of CBNs
@@ -9477,8 +9406,8 @@ tabs will not appear.</p> -->
 
 
     <h2>Solving Out of Memory Errors</h2>
-    <p>By default Java will
-        allocate the smaller of 1/4 system memory or 1GB to the Java virtual
+    <p>By default, Java will
+        allocate the smaller option of 1/4 system memory or 1GB to the Java virtual
         machine (JVM). If you run out of memory (heap memory space) running your
         analyses you should increase the memory allocated to the JVM with the
         following switch '-XmxXXG' where XX is the number of gigabytes of ram you
@@ -9491,7 +9420,7 @@ tabs will not appear.</p> -->
 
     <h5>Adjacent</h5>
     <p>Two vertices in a graph are adjacent if there is
-        a directed, or undirected, or double headed edge between them.</p>
+        a directed, or undirected, or double-headed edge between them.</p>
 
     <h5>Degree</h5>
     <p>The total number of edges directed both into and
@@ -9561,23 +9490,6 @@ tabs will not appear.</p> -->
         Y or from Y to X, or two directed paths from a third variable Z into X
         and Y that do not intersect except at Z.</p>
 
-
 </div>
-
-<!-- Google Analytics: change UA-XXXXX-Y to be your site's ID. -->
-<script> window.ga = function () {
-    ga.q.push(arguments)
-};
-ga.q = [];
-ga.l = +new Date;
-ga('create', 'UA-XXXXX-Y', 'auto');
-ga('send', 'pageview')
-
-
-</script>
-<script async defer
-        src="https://www.google-analytics.com/analytics.js"></script>
-
 </body>
-
 </html>
