@@ -49,7 +49,7 @@ public class BdeuScore implements DiscreteScore {
     private final int sampleSize;
     private final int[] numCategories;
     private final DataSet dataSet;
-    private List<Node> variables;
+    private final List<Node> variables;
     private double samplePrior = 1d;
     private double structurePrior = 0d;
 
@@ -196,7 +196,7 @@ public class BdeuScore implements DiscreteScore {
      *
      * @param x The index of x.
      * @param y The index of y.
-     * @param z The indeces of the z variables.
+     * @param z The indices of the z variables.
      * @return The score difference.
      */
     @Override
@@ -212,23 +212,6 @@ public class BdeuScore implements DiscreteScore {
     @Override
     public List<Node> getVariables() {
         return this.variables;
-    }
-
-    /**
-     * Sets the variables to another of the same names, in the same order.
-     *
-     * @param variables The new varialbe list.
-     * @see edu.cmu.tetrad.algcomparison.algorithm.multi.Images
-     */
-    void setVariables(List<Node> variables) {
-        for (int i = 0; i < variables.size(); i++) {
-            if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
-                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
-                        "as the variable being substituted for it.");
-            }
-        }
-
-        this.variables = variables;
     }
 
     /**
@@ -280,7 +263,7 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * Returns the smaple prior.
+     * Returns the sample prior.
      *
      * @return This prior.
      */
@@ -306,7 +289,7 @@ public class BdeuScore implements DiscreteScore {
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
-        return "BDeu Score SampP " + nf.format(this.samplePrior) + " StuctP " + nf.format(this.structurePrior);
+        return "BDeu Score Sample prior = " + nf.format(this.samplePrior) + " Structure prior = " + nf.format(this.structurePrior);
     }
 
     /**
@@ -320,7 +303,7 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * This score does not implement a method to decide whehter a node is determined by its parents.
+     * This score does not implement a method to decide whether a node is determined by its parents.
      *
      * @param z The parents.
      * @param y The node.
