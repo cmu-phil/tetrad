@@ -2,6 +2,10 @@
 
 Please visit our [Tetrad web page](https://sites.google.com/view/tetradcausal) for current links, a list of contributors, some history, documentation, descriptions, links for our various projects, Javadocs, and more.
 
+# Note
+
+Starting 1/14/2024, the Tetrad codebase will target language level 17, and all jars will be compiled using Corretto's JDK 17.
+
 ## Tetrad Application
 
 See out insructions for [Installing the Tetrad Application](https://github.com/cmu-phil/tetrad/blob/development/INSTALL_APPLICATION.md).
