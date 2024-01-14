@@ -50,8 +50,8 @@ public class BdeuScore implements DiscreteScore {
     private final int[] numCategories;
     private final DataSet dataSet;
     private List<Node> variables;
-    private double samplePrior = 1;
-    private double structurePrior = 1;
+    private double samplePrior = 1d;
+    private double structurePrior = 0d;
 
     /**
      * Constructs a BDe score for the given dataset.

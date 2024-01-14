@@ -254,7 +254,7 @@ public final class Params {
     public static final String REMOVE_EFFECT_NODES = "removeEffectNodes";
     public static final String SAMPLE_STYLE = "sampleStyle";
     public static final String NUM_THREADS = "numThreads";
-    public static String MIN_SUM_ROW_OR_COL = "minSumRowOrCol";
+    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
 
 
     // All parameters that are found in HTML manual documentation

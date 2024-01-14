@@ -29,7 +29,7 @@ public class ChiSquare implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         IndTestChiSquare test = new IndTestChiSquare(SimpleDataLoader.getDiscreteDataSet(dataSet), parameters.getDouble(Params.ALPHA));
-        test.setMinSumRowOrCol(parameters.getInt(Params.MIN_SUM_ROW_OR_COL));
+        test.setMinCountPerCell(parameters.getDouble(Params.MIN_COUNT_PER_CELL));
         return test;
     }
 
@@ -47,7 +47,7 @@ public class ChiSquare implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
-        params.add(Params.MIN_SUM_ROW_OR_COL);
+        params.add(Params.MIN_COUNT_PER_CELL);
         return params;
     }
 }

@@ -29,6 +29,7 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.List;
 
+import static java.lang.StrictMath.floor;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
@@ -64,7 +65,7 @@ public class ChiSquareTest {
      * of freedom. Note that this should not be too small, or the chi-square distribution will not be a good
      * approximation to the distribution of the test statistic.
      */
-    private int minSumRowOrCol = 0;
+    private double minCountPerCell = 1.0;
 
     /**
      * Constructs a test using the given data set and significance level.
@@ -147,7 +148,7 @@ public class ChiSquareTest {
                 coords[0] = i;
                 sumRows[i] = getCellTable().calcMargin(coords, secondVar);
 
-                if (sumRows[i] < minSumRowOrCol) {
+                if (sumRows[i] == 0 || sumRows[i] < minCountPerCell * numCols) {
                     zeroRows[i] = true;
                 } else {
                     numNonZeroRows++;
@@ -156,9 +157,9 @@ public class ChiSquareTest {
 
             for (int j = 0; j < numCols; j++) {
                 coords[1] = j;
-                sumCols[j] = getCellTable().calcMargin(coords, firstVar);
+                sumCols[j] =  getCellTable().calcMargin(coords, firstVar);
 
-                if (sumCols[j] < minSumRowOrCol) {
+                if (sumCols[j] == 0 || sumCols[j] < minCountPerCell * numRows) {
                     zeroCols[j] = true;
                 } else {
                     numNonZeroCols++;
@@ -167,11 +168,8 @@ public class ChiSquareTest {
 
             double total = getCellTable().calcMargin(coords, bothVars);
 
-            // Sum up chi square and degrees of freedom for the conditional table. Keep track of zeroes in the table
-            // and subtract them from the degrees of freedom. If there are no free degrees of freedom, don't increment
-            // the chi square or degrees of freedom.
-            if (total == 0) {
-                return new Result(Double.NaN, Double.NaN, 0, true, false);
+            if (total < minCountPerCell * numRows * numCols) {
+                continue;
             }
 
             if (total > 0 && numNonZeroRows > 1 && numNonZeroCols > 1) {
@@ -192,8 +190,14 @@ public class ChiSquareTest {
                         double expected = (sumRows[i] * sumCols[j]) / total;
 
                         if (testType == TestType.CHI_SQUARE) {
-                            double d = observed - expected;
-                            _xSquare += (d * d) / expected;
+                            if (expected == 0) {
+                                throw new IllegalArgumentException("Total is zero.");
+                            }
+
+                            if (expected > 0.0) {
+                                double d = observed - expected;
+                                _xSquare += (d * d) / expected;
+                            }
                         } else if (testType == TestType.G_SQUARE) {
 
                             // The G-square test is a likelihood ratio test, so we need to take the log of the
@@ -211,6 +215,7 @@ public class ChiSquareTest {
                 }
 
                 int _df = (numNonZeroRows - 1) * (numNonZeroCols - 1);
+                if (_df == 0) _df = 1;
                 xSquare += _xSquare;
                 df += _df;
             }
@@ -343,10 +348,10 @@ public class ChiSquareTest {
      * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
      * chi-square distribution will not be a good approximation to the distribution of the test statistic.
      *
-     * @param minSumRowOrCol The minimum number of counts per conditional table.
+     * @param minCountPerCell The minimum number of counts per conditional table. The default is 1; this must be >= 0.
      */
-    public void setMinSumRowOrCol(int minSumRowOrCol) {
-        this.minSumRowOrCol = minSumRowOrCol;
+    public void setMinCountPerCell(double minCountPerCell) {
+        this.minCountPerCell = minCountPerCell;
     }
 
     /**

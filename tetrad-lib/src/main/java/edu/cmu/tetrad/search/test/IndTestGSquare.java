@@ -76,7 +76,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
      */
     private double determinationP = 0.99;
     private boolean verbose;
-    private int minSumRowOrCol;
+    private double minCountPerCell = 1.0;
     private List<Integer> rows = null;
 
     /**
@@ -104,7 +104,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
         this.variables = new ArrayList<>(dataSet.getVariables());
         this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE);
-        this.gSquareTest.setMinSumRowOrCol(minSumRowOrCol);
+        this.gSquareTest.setMinCountPerCell(minCountPerCell);
     }
 
     /**
@@ -345,16 +345,15 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * The minimum number of counts per conditional table for chi-square expressed as a fraction of the total number of
-     * cells in the conditional table. Default is 2. Note that this should not be too small, or the chi-square
-     * distribution will not be a good approximation to the distribution of the test statistic.
+     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
+     * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
+     * chi-square distribution will not be a good approximation to the distribution of the test statistic.
      *
-     * @param minSumRowOrCol The minimum number of counts per conditional table expressed as a fraction of the total
-     *                         number of cells in the conditional table.
+     * @param minCountPerCell The minimum number of counts per conditional table. The default is 1; this must be >= 0.
      */
-    public void setMinSumRowOrCol(int minSumRowOrCol) {
-        this.minSumRowOrCol = minSumRowOrCol;
-        this.gSquareTest.setMinSumRowOrCol(minSumRowOrCol);
+    public void setMinCountPerCell(double minCountPerCell) {
+        this.minCountPerCell = minCountPerCell;
+        this.gSquareTest.setMinCountPerCell(minCountPerCell);
     }
 
     /**
