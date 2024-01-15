@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.List;
@@ -162,6 +163,26 @@ public class Pc implements IGraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
+        PcCommon search = getPcCommon();
+
+        this.graph = search.search();
+        this.sepsets = fas.getSepsets();
+
+        this.numIndependenceTests = fas.getNumIndependenceTests();
+
+        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
+
+        if (verbose) {
+            this.logger.forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            this.logger.forceLogMessage("Finishing PC Algorithm.");
+            this.logger.flush();
+        }
+
+        return this.graph;
+    }
+
+    @NotNull
+    private PcCommon getPcCommon() {
         PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
         search.setMeekPreventCycles(meekPreventCycles);
@@ -183,21 +204,7 @@ public class Pc implements IGraphSearch {
         search.setConflictRule(conflictRule);
         search.setPcHeuristicType(pcHeuristicType);
         search.setVerbose(verbose);
-
-        this.graph = search.search();
-        this.sepsets = fas.getSepsets();
-
-        this.numIndependenceTests = fas.getNumIndependenceTests();
-
-        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
-
-        if (verbose) {
-            this.logger.forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-            this.logger.forceLogMessage("Finishing PC Algorithm.");
-            this.logger.flush();
-        }
-
-        return this.graph;
+        return search;
     }
 
     /**
