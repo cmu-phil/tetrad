@@ -17,22 +17,22 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  *
  * @author josephramsey
  */
-public class BayesParametersEst implements Statistic {
+public class NumParametersEst implements Statistic {
 
     @Serial
     private static final long serialVersionUID = 23L;
 
-    public BayesParametersEst() {
+    public NumParametersEst() {
     }
 
     @Override
     public String getAbbreviation() {
-        return "DiscreteBicParams";
+        return "NumParams";
     }
 
     @Override
     public String getDescription() {
-        return "Number of parameters for the estimated graph as a Bayes model";
+        return "Number of parameters for the estimated graph for a Bayes or SEM model";
     }
 
     @Override
@@ -59,6 +59,8 @@ public class BayesParametersEst implements Statistic {
             }
 
             return params;
+        } else if (dataModel.isContinuous()) {
+            return estGraph.getNumEdges();
         } else {
             throw new IllegalArgumentException("Data must be discrete");
         }

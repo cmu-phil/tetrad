@@ -356,7 +356,8 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      */
     @Override
     public int getSampleSize() {
-        return this.cor.getSampleSize();
+        if (dataSet != null) return dataSet.getNumRows();
+        else return this.cor.getSampleSize();
     }
 
     /**
@@ -469,7 +470,8 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     private int sampleSize() {
-        return covMatrix().getSampleSize();
+        if (dataSet != null) return dataSet.getNumRows();
+        else return covMatrix().getSampleSize();
     }
 
     private ICovarianceMatrix covMatrix() {
@@ -542,6 +544,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         }
 
         this.rows = rows;
+        cor = null;
     }
 }
 
