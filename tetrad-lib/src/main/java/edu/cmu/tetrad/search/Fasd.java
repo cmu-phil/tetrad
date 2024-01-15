@@ -299,7 +299,6 @@ public class Fasd implements IFas {
                     this.numIndependenceTests++;
                     result = test.checkIndependence(x, y, empty);
                 } catch (Exception e) {
-                    e.printStackTrace();
                     result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN, Double.NaN);
                 }
 

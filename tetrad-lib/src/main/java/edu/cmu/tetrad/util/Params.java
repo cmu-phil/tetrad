@@ -249,6 +249,7 @@ public final class Params {
     public static final String SAMPLE_STYLE = "sampleStyle";
     public static final String NUM_THREADS = "numThreads";
     public static String MIN_COUNT_PER_CELL = "minCountPerCell";
+    public static String PC_HEURISTIC = "pcHeuristic";
 
 
     // All parameters that are found in HTML manual documentation

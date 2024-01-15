@@ -283,7 +283,7 @@ public class SvarFas implements IFas {
                 //if the current nodes under consideration were already handled by similarNodes, skip this pair
                 String xName = x.getName();
                 String yName = y.getName();
-                boolean skippair = false;
+                boolean skipPair = false;
 
                 Iterator<Node> itx1 = simListX.iterator();
                 Iterator<Node> ity1 = simListY.iterator();
@@ -294,13 +294,13 @@ public class SvarFas implements IFas {
                     String simY = y1.getName();
                     if ((Objects.equals(xName, simX) && Objects.equals(yName, simY)) ||
                             (Objects.equals(xName, simY) && Objects.equals(yName, simX))) {
-                        skippair = true;
+                        skipPair = true;
                         System.out.println("Skipping pair x,y = " + xName + ", " + yName);
                         break;
                     }
                 }
 
-                if (skippair) continue;
+                if (skipPair) continue;
 
                 if (this.externalGraph != null) {
                     Node x2 = this.externalGraph.getNode(x.getName());
@@ -319,7 +319,6 @@ public class SvarFas implements IFas {
                     System.out.println("############# independence given empty set: x,y " + x + ", " +
                             y + " independence = " + result.isIndependent());
                 } catch (Exception e) {
-                    e.printStackTrace();
                     result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN, Double.NaN);
                 }
 
@@ -557,17 +556,17 @@ public class SvarFas implements IFas {
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
                 Set<Node> condSetAB = new HashSet<>();
                 for (Node tempNode : condSet) {
-                    int ind_temptier = this.knowledge.isInWhichTier(tempNode);
-                    List<String> temptier = this.knowledge.getTier(ind_temptier);
-                    int ind_temp = -1;
-                    for (int j = 0; j < temptier.size(); ++j) {
-                        if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(temptier.get(j)))) {
-                            ind_temp = j;
+                    int indTempTier = this.knowledge.isInWhichTier(tempNode);
+                    List<String> tempTier = this.knowledge.getTier(indTempTier);
+                    int indTemp = -1;
+                    for (int j = 0; j < tempTier.size(); ++j) {
+                        if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(tempTier.get(j)))) {
+                            indTemp = j;
                             break;
                         }
                     }
 
-                    int cond_diff = indx_tier - ind_temptier;
+                    int cond_diff = indx_tier - indTempTier;
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
                             || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016
@@ -576,7 +575,7 @@ public class SvarFas implements IFas {
                         continue;
                     }
                     List<String> new_tier = this.knowledge.getTier(condAB_tier);
-                    String tempNode1 = new_tier.get(ind_temp);
+                    String tempNode1 = new_tier.get(indTemp);
                     System.out.println("adding variable " + tempNode1 + " to SepSet");
                     condSetAB.add(test.getVariable(tempNode1));
                 }
@@ -597,17 +596,17 @@ public class SvarFas implements IFas {
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
                 Set<Node> condSetAB = new HashSet<>();
                 for (Node tempNode : condSet) {
-                    int ind_temptier = this.knowledge.isInWhichTier(tempNode);
-                    List<String> temptier = this.knowledge.getTier(ind_temptier);
+                    int indTempTier = this.knowledge.isInWhichTier(tempNode);
+                    List<String> tempTier = this.knowledge.getTier(indTempTier);
                     int ind_temp = -1;
-                    for (int j = 0; j < temptier.size(); ++j) {
-                        if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(temptier.get(j)))) {
+                    for (int j = 0; j < tempTier.size(); ++j) {
+                        if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(tempTier.get(j)))) {
                             ind_temp = j;
                             break;
                         }
                     }
 
-                    int cond_diff = indx_tier - ind_temptier;
+                    int cond_diff = indx_tier - indTempTier;
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
                             || this.knowledge.getTier(condAB_tier).size() == 1) { // added condition for time tier 05.29.2016

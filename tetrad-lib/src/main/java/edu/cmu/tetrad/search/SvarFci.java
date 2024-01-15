@@ -385,22 +385,22 @@ public final class SvarFci implements IGraphSearch {
                         break;
                     }
 
-                    int ind_temptier = this.knowledge.isInWhichTier(tempNode);
-                    List<String> temptier = this.knowledge.getTier(ind_temptier);
+                    int indTempTier = this.knowledge.isInWhichTier(tempNode);
+                    List<String> tempTier = this.knowledge.getTier(indTempTier);
                     int ind_temp = -1;
 
-                    for (int j = 0; j < temptier.size(); ++j) {
+                    for (int j = 0; j < tempTier.size(); ++j) {
                         if (Thread.currentThread().isInterrupted()) {
                             break;
                         }
 
-                        if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(temptier.get(j)))) {
+                        if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(tempTier.get(j)))) {
                             ind_temp = j;
                             break;
                         }
                     }
 
-                    int cond_diff = indx_tier - ind_temptier;
+                    int cond_diff = indx_tier - indTempTier;
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
 
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
@@ -434,18 +434,18 @@ public final class SvarFci implements IGraphSearch {
                         break;
                     }
 
-                    int ind_temptier = this.knowledge.isInWhichTier(tempNode);
-                    List<String> temptier = this.knowledge.getTier(ind_temptier);
+                    int indTempTier = this.knowledge.isInWhichTier(tempNode);
+                    List<String> tempTier = this.knowledge.getTier(indTempTier);
                     int ind_temp = -1;
 
-                    for (int j = 0; j < temptier.size(); ++j) {
-                        if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(temptier.get(j)))) {
+                    for (int j = 0; j < tempTier.size(); ++j) {
+                        if (getNameNoLag(tempNode.getName()).equals(getNameNoLag(tempTier.get(j)))) {
                             ind_temp = j;
                             break;
                         }
                     }
 
-                    int cond_diff = indx_tier - ind_temptier;
+                    int cond_diff = indx_tier - indTempTier;
                     int condAB_tier = this.knowledge.isInWhichTier(x1) - cond_diff;
 
                     if (condAB_tier < 0 || condAB_tier > (ntiers - 1)
