@@ -69,8 +69,6 @@ public final class GraphSearchUtils {
             // Orient to-->from
             graph.removeEdge(from, to);
             graph.addDirectedEdge(to, from);
-
-            TetradLogger.getInstance().log("knowledgeOrientations", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(to, from)));
         }
 
         for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {

@@ -300,7 +300,9 @@ public final class SvarGfci implements IGraphSearch {
      * Orients according to background knowledge
      */
     private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
-        this.logger.log("info", "Starting BK Orientation.");
+        if (verbose) {
+            this.logger.log("info", "Starting BK Orientation.");
+        }
 
         for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
@@ -344,7 +346,9 @@ public final class SvarGfci implements IGraphSearch {
             this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        this.logger.log("info", "Finishing BK Orientation.");
+        if (verbose) {
+            this.logger.log("info", "Finishing BK Orientation.");
+        }
     }
 
     private String getNameNoLag(Object obj) {
