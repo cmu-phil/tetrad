@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.help.UnsupportedOperationException;
@@ -34,7 +33,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * Calculates the discrete BIC score. The likelihood for this score is calculated as SUM(ln(P(X | Z) P(Z)) across all
+ * Calculates the discrete BIC score. The likelihood for this score is calculated as SUM(ln(P(X | Z) P(Z))) across all
  * cells in all conditional probability tables for the discrete model. The parameters are counted as SUM(rows * (cols -
  * 1)) for all conditional probability tables in the model. Then the BIC score is calculated as 2L - ck ln N, where c is
  * a multiplier on the penalty ("penalty discount").
