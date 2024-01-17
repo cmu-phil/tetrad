@@ -99,6 +99,7 @@ public class SepsetsGreedy implements SepsetProducer {
 
     @Override
     public void setVerbose(boolean verbose) {
+        independenceTest.setVerbose(verbose);
         this.verbose = verbose;
     }
 

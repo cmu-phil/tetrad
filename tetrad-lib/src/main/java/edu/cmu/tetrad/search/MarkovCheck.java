@@ -46,6 +46,8 @@ public class MarkovCheck {
     private double fractionDependentDep = Double.NaN;
     private double ksPValueIndep = Double.NaN;
     private double ksPValueDep = Double.NaN;
+    private double aSquaredIndep = Double.NaN;
+    private double aSquaredDep = Double.NaN;
     private double aSquaredStarIndep = Double.NaN;
     private double aSquaredStarDep = Double.NaN;
     private double andersonDarlingPIndep = Double.NaN;
@@ -292,6 +294,20 @@ public class MarkovCheck {
             return ksPValueIndep;
         } else {
             return ksPValueDep;
+        }
+    }
+
+    /**
+     * Returns the Anderson-Darling A^2 statistic for the given list of results.
+     *
+     * @param indep True if for implied independencies, false if for implied dependencies.
+     * @return The Anderson-Darling A^2 statistic for the given list of results.
+     */
+    public double getAndersonDarlingA2(boolean indep) {
+        if (indep) {
+            return aSquaredIndep;
+        } else {
+            return aSquaredDep;
         }
     }
 
@@ -598,32 +614,38 @@ public class MarkovCheck {
         }
 
         List<Double> pValues = getPValues(results);
-        double aSquaredStar = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1)).getASquaredStar();
+        GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
+        double aSquared = generalAndersonDarlingTest.getASquared();
+        double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
 
         if (indep) {
             if (pValues.size() < 2) {
                 ksPValueIndep = Double.NaN;
                 binomialPIndep = Double.NaN;
+                aSquaredIndep = Double.NaN;
                 aSquaredStarIndep = Double.NaN;
                 andersonDarlingPIndep = Double.NaN;
             } else {
                 ksPValueIndep = UniformityTest.getPValue(pValues, 0.0, 1.0);
                 binomialPIndep = getBinomialP(pValues, independenceTest.getAlpha());
+                aSquaredIndep = aSquared;
                 aSquaredStarIndep = aSquaredStar;
-                andersonDarlingPIndep = 1. - new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1)).getProbTail(pValues.size(), aSquaredStar);
+                andersonDarlingPIndep = 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
             }
         } else {
             if (pValues.size() < 2) {
                 ksPValueDep = Double.NaN;
                 binomialPDep = Double.NaN;
+                aSquaredDep = Double.NaN;
                 aSquaredStarDep = Double.NaN;
                 andersonDarlingPDep = Double.NaN;
 
             } else {
                 ksPValueDep = UniformityTest.getPValue(pValues, 0.0, 1.0);
                 binomialPDep = getBinomialP(pValues, independenceTest.getAlpha());
+                aSquaredDep = aSquared;
                 aSquaredStarDep = aSquaredStar;
-                andersonDarlingPDep = 1. - new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1)).getProbTail(pValues.size(), aSquaredStar);
+                andersonDarlingPDep = 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
             }
         }
     }
