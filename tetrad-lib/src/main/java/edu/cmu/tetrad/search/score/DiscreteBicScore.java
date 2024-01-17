@@ -153,8 +153,6 @@ public class DiscreteBicScore implements DiscreteScore {
 
         int[] myChild = this.data[node];
 
-        int N = 0;
-
         ROW:
         for (int i = 0; i < this.sampleSize; i++) {
             for (int p = 0; p < parents.length; p++) {
@@ -172,7 +170,6 @@ public class DiscreteBicScore implements DiscreteScore {
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;
-            N++;
         }
 
         //Finally, compute the score
@@ -198,7 +195,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
         int params = attestedRows * (c - 1);
 
-        double score = 2 * lik - this.penaltyDiscount * params * FastMath.log(N) + 2 * getPriorForStructure(parents.length);
+        double score = 2 * lik - this.penaltyDiscount * params * FastMath.log(sampleSize) + 2 * getPriorForStructure(parents.length);
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;
