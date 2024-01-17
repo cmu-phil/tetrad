@@ -211,13 +211,68 @@ public class DiscreteBicScore implements DiscreteScore {
      * Returns the number of parameters for a node given its parents.
      */
     public int numParameters(int node, int[] parents) {
-        int numRows = 1;
-
-        for (int k = 0; k < parents.length; k++) {
-            numRows *= this.numCategories[parents[k]];
+        if (!(this.variables.get(node) instanceof DiscreteVariable)) {
+            throw new IllegalArgumentException("Not discrete: " + this.variables.get(node));
         }
 
-        return numRows * (this.numCategories[node] - 1);
+        for (int t : parents) {
+            if (!(this.variables.get(t) instanceof DiscreteVariable)) {
+                throw new IllegalArgumentException("Not discrete: " + this.variables.get(t));
+            }
+        }
+
+        // Numbers of categories of parents.
+        int[] dims = new int[parents.length];
+
+        for (int p = 0; p < parents.length; p++) {
+            dims[p] = this.numCategories[parents[p]];
+        }
+
+        // Number of parent states.
+        int r = 1;
+
+        for (int p = 0; p < parents.length; p++) {
+            r *= dims[p];
+        }
+
+        // Conditional cell coefs of data for node given parents(node).
+        int[] n_j = new int[r];
+
+        int[] parentValues = new int[parents.length];
+
+        int[][] myParents = new int[parents.length][];
+        for (int i = 0; i < parents.length; i++) {
+            myParents[i] = this.data[parents[i]];
+        }
+
+        int[] myChild = this.data[node];
+
+        ROW:
+        for (int i = 0; i < this.sampleSize; i++) {
+            for (int p = 0; p < parents.length; p++) {
+                if (myParents[p][i] == -99) continue ROW;
+                parentValues[p] = myParents[p][i];
+            }
+
+            int childValue = myChild[i];
+
+            if (childValue == -99) {
+                continue;
+            }
+
+            int rowIndex = DiscreteBicScore.getRowIndex(dims, parentValues);
+            n_j[rowIndex]++;
+        }
+
+        int attestedRows = 0;
+
+        for (int rowIndex = 0; rowIndex < r; rowIndex++) {
+            if (n_j[rowIndex] > 0) {
+                attestedRows++;
+            }
+        }
+
+        return attestedRows * (this.numCategories[node] - 1);
     }
 
     /**
