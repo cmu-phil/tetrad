@@ -183,12 +183,20 @@ public class DiscreteBicScore implements DiscreteScore {
                 int cellCount = n_jk[rowIndex][childValue];
                 int rowCount = n_j[rowIndex];
 
-                if (cellCount == 0) continue;
+                if (cellCount == 0 || rowCount == 0) continue;
                 lik += cellCount * FastMath.log(cellCount / (double) rowCount);
             }
         }
 
-        int params = r * (c - 1);
+        int attestedRows = 0;
+
+        for (int rowIndex = 0; rowIndex < r; rowIndex++) {
+            if (n_j[rowIndex] > 0) {
+                attestedRows++;
+            }
+        }
+
+        int params = attestedRows * (c - 1);
 
         double score = 2 * lik - this.penaltyDiscount * params * FastMath.log(N) + 2 * getPriorForStructure(parents.length);
 
