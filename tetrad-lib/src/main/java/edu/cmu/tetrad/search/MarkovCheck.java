@@ -519,49 +519,34 @@ public class MarkovCheck {
                 if (independenceTest instanceof RowsSettable) {
                     List<Integer> rows = getSubsampleRows(percentResample);
                     ((RowsSettable) independenceTest).setRows(rows);
-
-                    boolean verbose = independenceTest.isVerbose();
-                    independenceTest.setVerbose(false);
-                    IndependenceResult result;
-                    try {
-                        result = independenceTest.checkIndependence(x, y, z);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                    boolean indep = result.isIndependent();
-                    double pValue = result.getPValue();
-                    independenceTest.setVerbose(verbose);
-
-                    if (!Double.isNaN(pValue)) {
-                        if (msep) {
-                            resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-                        } else {
-                            resultsDep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-                        }
-                    }
+                    addResults(resultsIndep, resultsDep, fact, x, y, z);
                 } else {
-                    boolean verbose = independenceTest.isVerbose();
-                    independenceTest.setVerbose(false);
-                    IndependenceResult result;
-                    try {
-                        result = independenceTest.checkIndependence(x, y, z);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                    boolean indep = result.isIndependent();
-                    double pValue = result.getPValue();
-                    independenceTest.setVerbose(verbose);
-
-                    if (!Double.isNaN(pValue)) {
-                        if (msep) {
-                            resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-                        } else {
-                            resultsDep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-                        }
-                    }
+                    addResults(resultsIndep, resultsDep, fact, x, y, z);
                 }
 
                 return new Pair<>(resultsIndep, resultsDep);
+            }
+
+            private void addResults(Set<IndependenceResult> resultsIndep, Set<IndependenceResult> resultsDep, IndependenceFact fact, Node x, Node y, Set<Node> z) {
+                boolean verbose = independenceTest.isVerbose();
+                independenceTest.setVerbose(false);
+                IndependenceResult result;
+                try {
+                    result = independenceTest.checkIndependence(x, y, z);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                boolean indep = result.isIndependent();
+                double pValue = result.getPValue();
+                independenceTest.setVerbose(verbose);
+
+                if (!Double.isNaN(pValue)) {
+                    if (msep) {
+                        resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+                    } else {
+                        resultsDep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+                    }
+                }
             }
         }
 

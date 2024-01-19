@@ -29,7 +29,6 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.List;
 
-import static java.lang.StrictMath.floor;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
@@ -157,7 +156,7 @@ public class ChiSquareTest {
 
             for (int j = 0; j < numCols; j++) {
                 coords[1] = j;
-                sumCols[j] =  getCellTable().calcMargin(coords, firstVar);
+                sumCols[j] = getCellTable().calcMargin(coords, firstVar);
 
                 if (sumCols[j] == 0 || sumCols[j] < minCountPerCell * numRows) {
                     zeroCols[j] = true;
