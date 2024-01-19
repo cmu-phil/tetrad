@@ -114,6 +114,11 @@ public class MarkovCheck {
                 while ((list = generator.next()) != null) {
                     Set<Node> z = GraphUtils.asSet(list, _other);
 
+                    if (!(getIndependenceNodes().contains(x) && getIndependenceNodes().contains(y)
+                            && new HashSet<>(getConditioningNodes()).containsAll(z))) {
+                        continue;
+                    }
+
                     if (msepTest.isMSeparated(x, y, z)) {
                         msep.add(new IndependenceFact(x, y, z));
                     } else {
@@ -147,7 +152,8 @@ public class MarkovCheck {
     /**
      * Generates all results, for both the local Markov and local Faithfulness checks, for each node in the graph given
      * the parents of that node. These results are stored in the resultsIndep and resultsDep lists. This should be
-     * called before any of the results methods.
+     * called before any of the results methods. Note that only results for X _||_ Y | Z1,..,Zn are generated, where X
+     * and Y are in the independenceNodes list and Z1,..,Zn are in the conditioningNodes list.
      *
      * @see #getResults(boolean)
      */
@@ -218,6 +224,12 @@ public class MarkovCheck {
                     for (Node w : other) {
                         if (w == x || w == y) continue;
                         if (z.contains(x) || z.contains(y) || z.contains(w)) continue;
+
+                        if (!(getIndependenceNodes().contains(x) && getIndependenceNodes().contains(y)
+                                && new HashSet<>(getConditioningNodes()).containsAll(z))) {
+                            continue;
+                        }
+
                         allIndependenceFacts.add(new IndependenceFact(x, y, z));
                     }
                 }
