@@ -20,6 +20,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +39,7 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
 @Bootstrapping
 public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs {
+    @Serial
     private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
@@ -63,22 +65,13 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
                 knowledge = timeSeries.getKnowledge();
             }
 
-            PcCommon.ConflictRule conflictRule;
-
-            switch (parameters.getInt(Params.CONFLICT_RULE)) {
-                case 1:
-                    conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
-                    break;
-                case 2:
-                    conflictRule = PcCommon.ConflictRule.ORIENT_BIDIRECTED;
-                    break;
-                case 3:
-                    conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-
-            }
+            PcCommon.ConflictRule conflictRule = switch (parameters.getInt(Params.CONFLICT_RULE)) {
+                case 1 -> PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+                case 2 -> PcCommon.ConflictRule.ORIENT_BIDIRECTED;
+                case 3 -> PcCommon.ConflictRule.OVERWRITE_EXISTING;
+                default ->
+                        throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+            };
 
             PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
                 case 0 -> PcCommon.PcHeuristicType.NONE;

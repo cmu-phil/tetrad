@@ -82,11 +82,10 @@ public class MarkovCheck {
     /**
      * Returns the set of independence facts used in the Markov check, for dsepation and dconnection separately.
      *
-     * @param graph The graph.
      * @return The set of independence facts used in the Markov check, for dsepation and dconnection separately.
      */
     @NotNull
-    public AllSubsetsIndependenceFacts getAllSubsetsIndependenceFacts(Graph graph) {
+    public AllSubsetsIndependenceFacts getAllSubsetsIndependenceFacts() {
         List<Node> variables = new ArrayList<>(getVariables(graph.getNodes(), independenceNodes, conditioningNodes));
 
         for (Node node : variables) {
@@ -162,7 +161,7 @@ public class MarkovCheck {
         resultsDep.clear();
 
         if (setType == ConditioningSetType.GLOBAL_MARKOV) {
-            AllSubsetsIndependenceFacts result = getAllSubsetsIndependenceFacts(graph);
+            AllSubsetsIndependenceFacts result = getAllSubsetsIndependenceFacts();
             generateResultsAllSubsets(result.msep, result.mconn);
             generateResultsAllSubsets(result.msep, result.mconn);
         } else {

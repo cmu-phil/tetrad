@@ -101,7 +101,7 @@ public class SemBicScore implements Score {
     private RuleType ruleType = RuleType.CHICKERING;
 
     // True iff the pseudo-inverse should be used instead of the inverse to avoid exceptions.
-    private static boolean usePseudoInverse = false;
+    private boolean usePseudoInverse = false;
 
 
     /**
@@ -158,7 +158,21 @@ public class SemBicScore implements Score {
      * @param calculateRowSubsets True if row subsets should be calculated.
      * @return The variance of the residual of the regression of the ith variable on its parents.
      */
-    public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets)
+    public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets) {
+        return SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets, false);
+    }
+
+    /**
+     * Returns the variance of the residual of the regression of the ith variable on its parents.
+     *
+     * @param i                   The index of the variable.
+     * @param parents             The indices of the parents.
+     * @param covariances         The covariance matrix.
+     * @param calculateRowSubsets True if row subsets should be calculated.
+     * @return The variance of the residual of the regression of the ith variable on its parents.
+     */
+    public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances,
+                                  boolean calculateRowSubsets, boolean usePseudoInverse)
             throws SingularMatrixException {
         int[] all = SemBicScore.concat(i, parents);
         Matrix cov = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
@@ -256,8 +270,8 @@ public class SemBicScore implements Score {
         return rows;
     }
 
-    public static void setUsePseudoInverse(boolean usePseudoInverse) {
-        SemBicScore.usePseudoInverse = usePseudoInverse;
+    public void setUsePseudoInverse(boolean usePseudoInverse) {
+        this.usePseudoInverse = usePseudoInverse;
     }
 
     @NotNull
@@ -310,7 +324,8 @@ public class SemBicScore implements Score {
         Arrays.sort(parents);
 
         try {
-            double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+            double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets,
+                    usePseudoInverse);
             lik = -(double) (this.sampleSize / 2.0) * log(varey);
         } catch (SingularMatrixException e) {
             System.out.println("Singularity encountered when scoring " +
