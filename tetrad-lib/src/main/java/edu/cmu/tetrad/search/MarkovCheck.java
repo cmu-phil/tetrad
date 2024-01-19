@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
@@ -58,6 +59,11 @@ public class MarkovCheck {
     private int numTestsindep = 0;
     private int numTestsDep = 0;
 
+    // A knowledge object to specify independence and conditioning ranges. Empty by default.
+    private Knowledge knowledge = new Knowledge();
+    private List<Node> independenceNodes;
+    private List<Node> conditioningNodes;
+
     /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
      *
@@ -69,6 +75,8 @@ public class MarkovCheck {
         this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
         this.independenceTest = independenceTest;
         this.setType = setType;
+        this.independenceNodes = new ArrayList<>(independenceTest.getVariables());
+        this.conditioningNodes = new ArrayList<>(independenceTest.getVariables());
     }
 
     /**
@@ -78,8 +86,8 @@ public class MarkovCheck {
      * @return The set of independence facts used in the Markov check, for dsepation and dconnection separately.
      */
     @NotNull
-    public static AllSubsetsIndependenceFacts getAllSubsetsIndependenceFacts(Graph graph) {
-        List<Node> variables = new ArrayList<>(graph.getNodes());
+    public AllSubsetsIndependenceFacts getAllSubsetsIndependenceFacts(Graph graph) {
+        List<Node> variables = new ArrayList<>(getVariables(graph.getNodes(), independenceNodes, conditioningNodes));
 
         for (Node node : variables) {
             if (node == null) throw new NullPointerException("Null node in graph.");
@@ -119,6 +127,24 @@ public class MarkovCheck {
     }
 
     /**
+     * Returns the variables of the independence test.
+     *
+     * @return The variables of the independence test.
+     */
+    public List<Node> getVariables(List<Node> graphNodes, List<Node> independenceNodes, List<Node> conditioningNodes) {
+        List<Node> vars = new ArrayList<>(graphNodes);
+
+        conditioningNodes = new ArrayList<>(conditioningNodes);
+        independenceNodes = new ArrayList<>(independenceNodes);
+
+        List<Node> sublistedVariables = independenceNodes;
+        sublistedVariables.addAll(conditioningNodes);
+        vars.retainAll(sublistedVariables);
+
+        return vars;
+    }
+
+    /**
      * Generates all results, for both the local Markov and local Faithfulness checks, for each node in the graph given
      * the parents of that node. These results are stored in the resultsIndep and resultsDep lists. This should be
      * called before any of the results methods.
@@ -134,7 +160,7 @@ public class MarkovCheck {
             generateResultsAllSubsets(result.msep, result.mconn);
             generateResultsAllSubsets(result.msep, result.mconn);
         } else {
-            List<Node> variables = independenceTest.getVariables();
+            List<Node> variables = getVariables(graph.getNodes(), independenceNodes, conditioningNodes);
             List<Node> nodes = new ArrayList<>(variables);
 
             List<Node> order = null;
@@ -368,15 +394,6 @@ public class MarkovCheck {
     }
 
     /**
-     * Returns the variables of the independence test.
-     *
-     * @return The variables of the independence test.
-     */
-    public List<Node> getVariables() {
-        return new ArrayList<>(independenceTest.getVariables());
-    }
-
-    /**
      * Returns the variable with the given name.
      *
      * @param name The name of the variables.
@@ -399,7 +416,7 @@ public class MarkovCheck {
      * Sets the percentage of all samples to use when resampling for each conditional independence test.
      *
      * @param percentResample The percentage of all samples to use when resampling for each conditional independence
-     *                         test.
+     *                        test.
      */
     public void setPercentResample(double percentResample) {
         this.percentResample = percentResample;
@@ -714,6 +731,72 @@ public class MarkovCheck {
         } else {
             return this.resultsDep;
         }
+    }
+
+    public Knowledge getKnowledge() {
+        return knowledge;
+    }
+
+    /**
+     * Sets the knowledge object for the Markov checker. The knowledge object should contain the tier knowledge for the
+     * Markov checker. The last tier contains the possible X and Y for X _||_ Y | Z1,..,Zn, and the previous tiers
+     * contain the possible Z1,..,Zn for X _||_ Y | Z1,..,Zn.
+     *
+     * @param knowledge The knowledge object.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        if (!(knowledge.getListOfExplicitlyForbiddenEdges().isEmpty() && knowledge.getListOfRequiredEdges().isEmpty())) {
+            throw new IllegalArgumentException("Knowledge object for the Markov checker cannot contain required of " +
+                    "explicitly forbidden edges; only tier knowledge is used. The last tier contains the possible X " +
+                    "and Y for X _||_ Y | Z1,..,Zn, and the previous tiers contain the possible Z1,..,Zn for X _||_ Y " +
+                    "| Z1,..,Zn.");
+        }
+
+        List<String> independenceNames = knowledge.getTier(knowledge.getNumTiers() - 1);
+
+        List<String> conditioningNames = new ArrayList<>();
+        for (int i = 0; i < knowledge.getNumTiers() - 1; i++) {
+            conditioningNames.addAll(knowledge.getTier(i));
+        }
+
+        List<Node> independenceNodes = new ArrayList<>();
+        for (String name : independenceNames) {
+            Node variable = getVariable(name);
+            if (variable != null) {
+                independenceNodes.add(variable);
+            }
+        }
+
+        List<Node> conditioningNodes = new ArrayList<>();
+        for (String name : conditioningNames) {
+            Node variable = getVariable(name);
+            if (variable != null) {
+                conditioningNodes.add(variable);
+            }
+        }
+
+        this.independenceNodes = independenceNodes;
+        this.conditioningNodes = conditioningNodes;
+
+        this.knowledge = knowledge.copy();
+    }
+
+    /**
+     * Returns the nodes that are possible X and Y for X _||_ Y | Z1,..,Zn.
+     *
+     * @return The nodes that are possible X and Y for X _||_ Y | Z1,..,Zn.
+     */
+    public List<Node> getIndependenceNodes() {
+        return independenceNodes;
+    }
+
+    /**
+     * Returns the nodes that are possible Z1,..,Zn for X _||_ Y | Z1,..,Zn.
+     *
+     * @return The nodes that are possible Z1,..,Zn for X _||_ Y | Z1,..,Zn.
+     */
+    public List<Node> getConditioningNodes() {
+        return conditioningNodes;
     }
 
     /**

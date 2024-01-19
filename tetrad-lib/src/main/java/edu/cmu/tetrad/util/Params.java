@@ -248,6 +248,7 @@ public final class Params {
     public static final String REMOVE_EFFECT_NODES = "removeEffectNodes";
     public static final String SAMPLE_STYLE = "sampleStyle";
     public static final String NUM_THREADS = "numThreads";
+    public static final String USE_PSEUDOINVERSE = "usePseudoinverse";
     public static String MIN_COUNT_PER_CELL = "minCountPerCell";
     public static String PC_HEURISTIC = "pcHeuristic";
 

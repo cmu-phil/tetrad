@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -99,6 +100,10 @@ public class SemBicScore implements Score {
     // The rule type to use.
     private RuleType ruleType = RuleType.CHICKERING;
 
+    // True iff the pseudo-inverse should be used instead of the inverse to avoid exceptions.
+    private static boolean usePseudoInverse = false;
+
+
     /**
      * Constructs the score using a covariance matrix.
      */
@@ -160,7 +165,17 @@ public class SemBicScore implements Score {
         int[] pp = SemBicScore.indexedParents(parents);
         Matrix covxx = cov.getSelection(pp, pp);
         Matrix covxy = cov.getSelection(pp, new int[]{0});
-        Matrix b = (covxx.inverse().times(covxy));
+
+        Matrix b;
+
+        if (usePseudoInverse) {
+            b = b = new Matrix(MatrixUtils.pseudoInverse(covxx.toArray())).times(covxy);
+        } else {
+            b = covxx.inverse().times(covxy);
+        }
+
+
+//        Matrix b = (covxx.inverse().times(covxy));
         Matrix bStar = bStar(b);
         return (bStar.transpose().times(cov).times(bStar).get(0, 0));
     }
@@ -239,6 +254,10 @@ public class SemBicScore implements Score {
         }
 
         return rows;
+    }
+
+    public static void setUsePseudoInverse(boolean usePseudoInverse) {
+        SemBicScore.usePseudoInverse = usePseudoInverse;
     }
 
     @NotNull

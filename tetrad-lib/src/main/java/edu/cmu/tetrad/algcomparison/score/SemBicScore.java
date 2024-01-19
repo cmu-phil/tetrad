@@ -46,6 +46,7 @@ public class SemBicScore implements ScoreWrapper {
 
         semBicScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         semBicScore.setStructurePrior(parameters.getDouble(Params.SEM_BIC_STRUCTURE_PRIOR));
+        semBicScore.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
 
         switch (parameters.getInt(Params.SEM_BIC_RULE)) {
             case 1:
@@ -78,6 +79,7 @@ public class SemBicScore implements ScoreWrapper {
         parameters.add(Params.SEM_BIC_STRUCTURE_PRIOR);
         parameters.add(Params.SEM_BIC_RULE);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
+        parameters.add(Params.USE_PSEUDOINVERSE);
         return parameters;
     }
 

@@ -83,7 +83,7 @@ public class MarkovCheckEditor extends JPanel {
     private JLabel fractionDepLabelDep;
     private JLabel ksLabelDep;
     private JLabel ksLabelIndep;
-//    private JLabel masLabelDep;
+    //    private JLabel masLabelDep;
 //    private JLabel masLabelIndep;
     private JLabel binomialPLabelDep;
     private JLabel binomialPLabelIndep;
@@ -192,7 +192,7 @@ public class MarkovCheckEditor extends JPanel {
         setTest();
 
         Graph _graph = model.getGraph();
-        Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables());
+        Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables(model.getGraph().getNodes(), model.getMarkovCheck().getIndependenceNodes(), model.getMarkovCheck().getConditioningNodes()));
 
         JPanel indep = buildGuiIndep();
         JPanel dep = buildGuiDep();
@@ -201,7 +201,7 @@ public class MarkovCheckEditor extends JPanel {
         tableModelDep.fireTableDataChanged();
 
         Graph sourceGraph = model.getGraph();
-        List<Node> variables = model.getMarkovCheck().getVariables();
+        List<Node> variables = model.getMarkovCheck().getVariables(model.getGraph().getNodes(), model.getMarkovCheck().getIndependenceNodes(), model.getMarkovCheck().getConditioningNodes());
 
         List<Node> newVars = new ArrayList<>();
 
@@ -321,23 +321,6 @@ public class MarkovCheckEditor extends JPanel {
         add(box);
     }
 
-    private void refreshResult(MarkovCheckIndTestModel model, DoubleTextField percent) {
-        setTest();
-        model.getMarkovCheck().setPercentResample(percent.getValue());
-        model.getMarkovCheck().generateResults();
-        tableModelIndep.fireTableDataChanged();
-        tableModelDep.fireTableDataChanged();
-        histogramPanelDep.removeAll();
-        histogramPanelIndep.removeAll();
-        histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
-        histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
-        histogramPanelDep.validate();
-        histogramPanelIndep.validate();
-        histogramPanelDep.repaint();
-        histogramPanelIndep.repaint();
-        setLabelTexts();
-    }
-
     @NotNull
     private static String getHelpMessage() {
         return "This tool lets you plot statistics for independence tests of a pair of variables given some conditioning calculated for one of those variables, for a given graph and dataset. Two tables are made, one in which the independence facts predicted by the graph using these conditioning sets are tested in the data and the other in which the graph's predicted dependence facts are tested. The first of these sets is a check for \"Markov\" (a check for implied independence facts) for the chosen conditioning sets; the is a check of the \"Dependent Distribution.\" (a check of implied dependence facts)”\n" +
@@ -355,6 +338,23 @@ public class MarkovCheckEditor extends JPanel {
                 "Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let you analyze the data yourself.\n" +
                 "\n" +
                 "A note about Markov Blankets: The \"Markov Blanket\" conditioning set choice implements the Markov blanket calculation in a way that is correct for DAGs, CPDAGs, MAGs, and PAGs. For all of these graph types, the list of m-connecting facts in the Faithfulness tab should be empty, since the Markov blanket should screen off the target from any other variables in the dataset. It's possible that for some other graph types this list may not be empty (i.e., the Markov blanket calculation may not be correct).";
+    }
+
+    private void refreshResult(MarkovCheckIndTestModel model, DoubleTextField percent) {
+        setTest();
+        model.getMarkovCheck().setPercentResample(percent.getValue());
+        model.getMarkovCheck().generateResults();
+        tableModelIndep.fireTableDataChanged();
+        tableModelDep.fireTableDataChanged();
+        histogramPanelDep.removeAll();
+        histogramPanelIndep.removeAll();
+        histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
+        histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+        histogramPanelDep.validate();
+        histogramPanelIndep.validate();
+        histogramPanelDep.repaint();
+        histogramPanelIndep.repaint();
+        setLabelTexts();
     }
 
     //========================PUBLIC METHODS==========================//
