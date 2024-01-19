@@ -44,13 +44,13 @@ import java.util.Set;
 
 /**
  * Checks independence of X _||_ Y | Z for variables X and Y and list Z of variables. Partial correlations are
- * calculated using generalized inverses, so linearly dependent variables do not throw exceptions. Must supply a
+ * calculated using pseudoinverses, so linearly dependent variables do not throw exceptions. Must supply a
  * continuous data set; don't know how to do this with covariance or correlation matrices.
  *
  * @author josephramsey
  * @author Frank Wimberly adapted IndTestCramerT for Fisher's Z
  */
-public final class IndTestFisherZGeneralizedInverse implements IndependenceTest {
+public final class IndTestFisherZPseudoinverse implements IndependenceTest {
 
     /**
      * Formats as 0.0000.
@@ -88,7 +88,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
-    public IndTestFisherZGeneralizedInverse(DataSet dataSet, double alpha) {
+    public IndTestFisherZPseudoinverse(DataSet dataSet, double alpha) {
         if (!(alpha >= 0 && alpha <= 1)) {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
@@ -259,7 +259,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 
 
     public String toString() {
-        return "Fisher's Z - Generalized Inverse, alpha = " + IndTestFisherZGeneralizedInverse.nf.format(getAlpha());
+        return "Fisher's Z - Pseudoinverse, alpha = " + IndTestFisherZPseudoinverse.nf.format(getAlpha());
     }
 
     /**
@@ -360,7 +360,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             sb.append("}");
 
 //            sb.append(" p = ").append(nf.format(p));
-            sb.append(" SSE = ").append(IndTestFisherZGeneralizedInverse.nf.format(SSE));
+            sb.append(" SSE = ").append(IndTestFisherZPseudoinverse.nf.format(SSE));
 
             TetradLogger.getInstance().log("independencies", sb.toString());
             System.out.println(sb);

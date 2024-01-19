@@ -15,18 +15,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for linear, Gaussian SEM BIC score. This version of the SEM BIC score uses the generalized inverse of the
+ * Wrapper for linear, Gaussian SEM BIC score. This version of the SEM BIC score uses the pseudoinverse of the
  * covariance matrix, which is more numerically stable than the standard inverse.
  *
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Sem BIC Score Generalized Inverse",
-        command = "sem-bic-score-gen-inv",
+        name = "Sem BIC Score Pseudoinverse",
+        command = "sem-bic-score-pseudoinverse",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 @LinearGaussian
-public class SemBicScoreGeneralizedInverse implements ScoreWrapper {
+public class SemBicScorePseudoinverse implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -36,13 +36,13 @@ public class SemBicScoreGeneralizedInverse implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.SemBicScoreGeneralizedInverse semBicScore;
+        edu.cmu.tetrad.search.score.SemBicScorePseudoinverse semBicScore;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
         if (dataSet instanceof DataSet) {
-            semBicScore = new edu.cmu.tetrad.search.score.SemBicScoreGeneralizedInverse((DataSet) this.dataSet, precomputeCovariances);
+            semBicScore = new edu.cmu.tetrad.search.score.SemBicScorePseudoinverse((DataSet) this.dataSet, precomputeCovariances);
         } else if (dataSet instanceof ICovarianceMatrix) {
-            semBicScore = new edu.cmu.tetrad.search.score.SemBicScoreGeneralizedInverse((ICovarianceMatrix) this.dataSet);
+            semBicScore = new edu.cmu.tetrad.search.score.SemBicScorePseudoinverse((ICovarianceMatrix) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
@@ -52,10 +52,10 @@ public class SemBicScoreGeneralizedInverse implements ScoreWrapper {
 
         switch (parameters.getInt(Params.SEM_BIC_RULE)) {
             case 1:
-                semBicScore.setRuleType(edu.cmu.tetrad.search.score.SemBicScoreGeneralizedInverse.RuleType.CHICKERING);
+                semBicScore.setRuleType(edu.cmu.tetrad.search.score.SemBicScorePseudoinverse.RuleType.CHICKERING);
                 break;
             case 2:
-                semBicScore.setRuleType(edu.cmu.tetrad.search.score.SemBicScoreGeneralizedInverse.RuleType.NANDY);
+                semBicScore.setRuleType(edu.cmu.tetrad.search.score.SemBicScorePseudoinverse.RuleType.NANDY);
                 break;
             default:
                 throw new IllegalStateException("Expecting 1 or 2: " + parameters.getInt(Params.SEM_BIC_RULE));
@@ -66,7 +66,7 @@ public class SemBicScoreGeneralizedInverse implements ScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "Sem BIC Score Generalized Inverse";
+        return "Sem BIC Score Pseudoinverse";
     }
 
     @Override

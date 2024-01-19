@@ -47,7 +47,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * for the score is BIC = 2L - ck ln n, where c is the penalty discount and L is the linear, Gaussian log
  * likelihood--that is, the sum of the log likelihoods of the individual records, which are assumed to be i.i.d.
  * <p>
- * This version of the score uses the generalized inverse of the covariance matrix, which is more numerically stable
+ * This version of the score uses the pseudoinverse of the covariance matrix, which is more numerically stable
  * than the standard inverse.
  * </p>
  * <p>
@@ -74,7 +74,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * @see edu.cmu.tetrad.search.Grasp
  * @see edu.cmu.tetrad.search.Boss
  */
-public class SemBicScoreGeneralizedInverse implements Score {
+public class SemBicScorePseudoinverse implements Score {
 
     // The sample size of the covariance matrix.
     private final int sampleSize;
@@ -107,7 +107,7 @@ public class SemBicScoreGeneralizedInverse implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScoreGeneralizedInverse(ICovarianceMatrix covariances) {
+    public SemBicScorePseudoinverse(ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }
@@ -122,7 +122,7 @@ public class SemBicScoreGeneralizedInverse implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScoreGeneralizedInverse(DataSet dataSet, boolean precomputeCovariances) {
+    public SemBicScorePseudoinverse(DataSet dataSet, boolean precomputeCovariances) {
 
         if (dataSet == null) {
             throw new NullPointerException();
@@ -160,9 +160,9 @@ public class SemBicScoreGeneralizedInverse implements Score {
      */
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets)
             throws SingularMatrixException {
-        int[] all = SemBicScoreGeneralizedInverse.concat(i, parents);
-        Matrix cov = SemBicScoreGeneralizedInverse.getCov(SemBicScoreGeneralizedInverse.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
-        int[] pp = SemBicScoreGeneralizedInverse.indexedParents(parents);
+        int[] all = SemBicScorePseudoinverse.concat(i, parents);
+        Matrix cov = SemBicScorePseudoinverse.getCov(SemBicScorePseudoinverse.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
+        int[] pp = SemBicScorePseudoinverse.indexedParents(parents);
         Matrix covxx = cov.getSelection(pp, pp);
         Matrix covxy = cov.getSelection(pp, new int[]{0});
         Matrix b = new Matrix(MatrixUtils.pseudoInverse(covxx.toArray())).times(covxy);
@@ -296,7 +296,7 @@ public class SemBicScoreGeneralizedInverse implements Score {
         Arrays.sort(parents);
 
         try {
-            double varey = SemBicScoreGeneralizedInverse.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+            double varey = SemBicScorePseudoinverse.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
             lik = -(double) (this.sampleSize / 2.0) * log(varey);
         } catch (SingularMatrixException e) {
             System.out.println("Singularity encountered when scoring " +
@@ -617,13 +617,13 @@ public class SemBicScoreGeneralizedInverse implements Score {
         this.ruleType = ruleType;
     }
 
-    public SemBicScoreGeneralizedInverse subset(List<Node> pi2) {
+    public SemBicScorePseudoinverse subset(List<Node> pi2) {
         int[] cols = new int[pi2.size()];
         for (int i = 0; i < cols.length; i++) {
             cols[i] = variables.indexOf(pi2.get(i));
         }
         ICovarianceMatrix cov = getCovariances().getSubmatrix(cols);
-        return new SemBicScoreGeneralizedInverse(cov);
+        return new SemBicScorePseudoinverse(cov);
     }
 
     public String toString() {
