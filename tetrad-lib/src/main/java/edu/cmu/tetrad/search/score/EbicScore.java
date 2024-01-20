@@ -54,6 +54,7 @@ public class EbicScore implements Score {
     private Matrix data;
     private boolean calculateRowSubsets;
     private double gamma = 1;
+    private boolean usePseudoInverse = false;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -116,7 +117,8 @@ public class EbicScore implements Score {
         double varRy;
 
         try {
-            varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+            varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets,
+                    this.usePseudoInverse);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                     LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -211,6 +213,10 @@ public class EbicScore implements Score {
         int[] indices = new int[__adj.size()];
         for (int t = 0; t < __adj.size(); t++) indices[t] = this.variables.indexOf(__adj.get(t));
         return indices;
+    }
+
+    public void setUsePseudoInverse(boolean usePseudoInverse) {
+        this.usePseudoInverse = usePseudoInverse;
     }
 }
 

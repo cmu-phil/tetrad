@@ -81,7 +81,7 @@ public class ZsbScore implements Score {
     // The data, if it is set.
     private Matrix data;
 
-    private boolean changed = false;
+    private boolean usePseudoInverse;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -162,7 +162,7 @@ public class ZsbScore implements Score {
         double varRy;
 
         try {
-            varRy = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets);
+            varRy = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets, usePseudoInverse);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                     LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -310,6 +310,10 @@ public class ZsbScore implements Score {
         int[] indices = new int[__adj.size()];
         for (int t = 0; t < __adj.size(); t++) indices[t] = variables.indexOf(__adj.get(t));
         return indices;
+    }
+
+    public void setUsePseudoInverse(boolean usePseudoInverse) {
+        this.usePseudoInverse = usePseudoInverse;
     }
 }
 

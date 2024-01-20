@@ -19,7 +19,7 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Generalied Information Criterion Scores",
+        name = "Generalized Information Criterion Scores",
         command = "gic-scores",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
@@ -72,6 +72,7 @@ public class GicScores implements ScoreWrapper {
 
         score.setRuleType(ruleType);
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
 
         return score;
     }
@@ -92,6 +93,8 @@ public class GicScores implements ScoreWrapper {
         parameters.add(Params.SEM_GIC_RULE);
         parameters.add(Params.PENALTY_DISCOUNT_ZS);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
+        parameters.add(Params.USE_PSEUDOINVERSE);
+
         return parameters;
     }
 

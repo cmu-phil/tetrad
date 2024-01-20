@@ -68,6 +68,7 @@ public class GicScores implements Score {
     private boolean calculateRowSubsets = false;
     //    private boolean calculateSquareEuclideanNorms = false;
     private double penaltyDiscount = 1;
+    private boolean usePseudoInverse = false;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -128,7 +129,7 @@ public class GicScores implements Score {
         double varry;
 
         try {
-            varry = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets);
+            varry = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets, this.usePseudoInverse);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                     LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -320,6 +321,10 @@ public class GicScores implements Score {
 
     public String toString() {
         return "Generalized Information Criterion Score";
+    }
+
+    public void setUsePseudoInverse(boolean usePseudoInverse) {
+        this.usePseudoInverse = usePseudoInverse;
     }
 
 
