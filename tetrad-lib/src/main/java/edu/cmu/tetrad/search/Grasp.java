@@ -193,8 +193,8 @@ public class Grasp {
         if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
         Graph graph = this.scorer.getGraph(cpDag);
 
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        graph.addAttribute("score ", nf.format(this.scorer.score()));
+//        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+//        graph.addAttribute("score ", nf.format(this.scorer.score()));
         return graph;
     }
 

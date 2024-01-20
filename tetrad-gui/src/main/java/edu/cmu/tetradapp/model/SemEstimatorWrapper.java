@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.*;
 import javax.swing.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,8 +42,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class SemEstimatorWrapper implements SessionModel {
-    ;//}, Unmarshallable {
-
+    @Serial
     private static final long serialVersionUID = 23L;
     private final Parameters params;
     private final SemPm semPm;
@@ -65,8 +65,7 @@ public class SemEstimatorWrapper implements SessionModel {
         this.params = params;
         this.semPm = semPm;
 
-        if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
+        if (dataModel instanceof DataSet dataSet) {
             SemEstimator estimator = new SemEstimator(dataSet, semPm, getOptimizer());
             estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
             estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.Fgls));
@@ -135,7 +134,7 @@ public class SemEstimatorWrapper implements SessionModel {
     private boolean degreesOfFreedomCheck(SemPm semPm) {
         if (semPm.getDof() < 1) {
             int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                    "This model has nonpositive degrees of freedom (DOF = "
+                    "This model has non-positive degrees of freedom (DOF = "
                             + semPm.getDof() + "). "
                             + "\nEstimation will be uninformative. Are you sure you want to proceed?",
                     "Please confirm", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -193,9 +192,10 @@ public class SemEstimatorWrapper implements SessionModel {
      * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
      * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
-     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for). See J. Bloch, Effective Java, for
      * help.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
