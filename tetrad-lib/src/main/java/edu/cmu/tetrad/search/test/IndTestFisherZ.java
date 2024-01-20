@@ -512,7 +512,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      *
      * @return True, if so.
      */
-    public boolean determinesPseudoinverse(List<Node> zList, Node xVar) {
+    private boolean determinesPseudoinverse(List<Node> zList, Node xVar) {
         if (zList == null) {
             throw new NullPointerException();
         }
