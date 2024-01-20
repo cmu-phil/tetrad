@@ -10,6 +10,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import java.util.List;
 @LinearGaussian
 public class GicScores implements ScoreWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
@@ -45,30 +47,15 @@ public class GicScores implements ScoreWrapper {
         }
 
         int anInt = parameters.getInt((Params.SEM_GIC_RULE));
-        edu.cmu.tetrad.search.score.GicScores.RuleType ruleType;
-
-        switch (anInt) {
-            case 1:
-                ruleType = edu.cmu.tetrad.search.score.GicScores.RuleType.BIC;
-                break;
-            case 2:
-                ruleType = edu.cmu.tetrad.search.score.GicScores.RuleType.GIC2;
-                break;
-            case 3:
-                ruleType = edu.cmu.tetrad.search.score.GicScores.RuleType.RIC;
-                break;
-            case 4:
-                ruleType = edu.cmu.tetrad.search.score.GicScores.RuleType.RICc;
-                break;
-            case 5:
-                ruleType = edu.cmu.tetrad.search.score.GicScores.RuleType.GIC5;
-                break;
-            case 6:
-                ruleType = edu.cmu.tetrad.search.score.GicScores.RuleType.GIC6;
-                break;
-            default:
-                throw new IllegalArgumentException("Unrecognized rule type: " + anInt);
-        }
+        edu.cmu.tetrad.search.score.GicScores.RuleType ruleType = switch (anInt) {
+            case 1 -> edu.cmu.tetrad.search.score.GicScores.RuleType.BIC;
+            case 2 -> edu.cmu.tetrad.search.score.GicScores.RuleType.GIC2;
+            case 3 -> edu.cmu.tetrad.search.score.GicScores.RuleType.RIC;
+            case 4 -> edu.cmu.tetrad.search.score.GicScores.RuleType.RICc;
+            case 5 -> edu.cmu.tetrad.search.score.GicScores.RuleType.GIC5;
+            case 6 -> edu.cmu.tetrad.search.score.GicScores.RuleType.GIC6;
+            default -> throw new IllegalArgumentException("Unrecognized rule type: " + anInt);
+        };
 
         score.setRuleType(ruleType);
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));

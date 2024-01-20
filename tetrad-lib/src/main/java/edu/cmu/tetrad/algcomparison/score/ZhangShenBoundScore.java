@@ -11,6 +11,7 @@ import edu.cmu.tetrad.search.score.ZsbScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,7 @@ import java.util.List;
 @LinearGaussian
 public class ZhangShenBoundScore implements ScoreWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
