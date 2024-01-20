@@ -25,11 +25,10 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.MatrixUtils;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.Vector;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
@@ -58,9 +57,13 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     private List<Node> variables;
     private double alpha;
     private DataSet dataSet;
+
+    // Matrix from of the data.
+    private Matrix data;
     private boolean verbose = true;
     private double r = Double.NaN;
     private List<Integer> rows = null;
+    private boolean usePseudoinverse = false;
 
 
     /**
@@ -201,6 +204,10 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        if (usePseudoinverse) {
+            return checkIndependencePseudoinverse(x, y, z);
+        }
+
         double p;
 
         try {
@@ -221,10 +228,92 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         if (Double.isNaN(p)) {
             throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
         } else {
-            return new IndependenceResult(new IndependenceFact(x, y, z),
-                    independent, p, alpha - p);
+            return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
         }
     }
+
+    /**
+     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     *
+     * @param xVar the one variable being compared.
+     * @param yVar the second variable being compared.
+     * @param _z   the list of conditioning variables.
+     * @return True iff x _||_ y | z.
+     * @throws RuntimeException if a matrix singularity is encountered.
+     */
+    private IndependenceResult checkIndependencePseudoinverse(Node xVar, Node yVar, Set<Node> _z) {
+
+        if (this.data == null) this.data = dataSet.getDoubleData();
+
+        if (_z == null) {
+            throw new NullPointerException();
+        }
+
+        for (Node node : _z) {
+            if (node == null) {
+                throw new NullPointerException();
+            }
+        }
+
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+
+        int size = z.size();
+        int[] zCols = new int[size];
+
+        int xIndex = getVariables().indexOf(xVar);
+        int yIndex = getVariables().indexOf(yVar);
+
+        for (int i = 0; i < z.size(); i++) {
+            zCols[i] = getVariables().indexOf(z.get(i));
+        }
+
+        edu.cmu.tetrad.util.Vector x = this.data.getColumn(xIndex);
+        edu.cmu.tetrad.util.Vector y = this.data.getColumn(yIndex);
+
+        CovarianceMatrix cov = new CovarianceMatrix(dataSet);
+
+        SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
+                cov, true, true);
+        SemBicScore.CovAndCoefs covAndCoefsY = SemBicScore.getCovAndCoefs(yIndex, zCols, this.data,
+                cov, true, true);
+
+        int[] rows = new int[this.data.getNumRows()];
+        for (int i = 0; i < rows.length; i++) {
+            rows[i] = i;
+        }
+
+        Matrix selection = data.getSelection(rows, zCols);
+        edu.cmu.tetrad.util.Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
+        edu.cmu.tetrad.util.Vector yPred = selection.times(covAndCoefsY.b()).getColumn(0);
+
+        edu.cmu.tetrad.util.Vector xRes = xPred.minus(x);
+        Vector yRes = yPred.minus(y);
+
+        // Note that r will be NaN if either xRes or yRes is constant.
+        double r = StatUtils.correlation(xRes.toArray(), yRes.toArray());
+
+        double fisherZ = FastMath.sqrt(sampleSize() - z.size() - 3.0) *
+                0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
+
+        double p = 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
+
+        if (Double.isNaN(fisherZ)) {
+            throw new IllegalArgumentException("The Fisher's Z " +
+                    "score for independence fact " + xVar + " _||_ " + yVar +
+                    " | " + z + " is undefined.");
+        }
+
+
+        if (this.verbose) {
+            if (p > alpha) {
+                TetradLogger.getInstance().forceLogMessage(LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, p));
+            }
+        }
+
+        return new IndependenceResult(new IndependenceFact(xVar, yVar, _z), p > alpha, p, getAlpha() - p);
+    }
+
 
     /**
      * Returns the p-value for x _||_ y | z.
@@ -392,6 +481,10 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      * @param x The conditioned variable.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
+        if (usePseudoinverse) {
+            return determinesPseudoinverse(z, x);
+        }
+
         int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {
@@ -413,6 +506,85 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
         return false;
     }
+
+    /**
+     * Returns true just in case the varialbe in zList determine xVar.
+     *
+     * @return True, if so.
+     */
+    public boolean determinesPseudoinverse(List<Node> zList, Node xVar) {
+        if (zList == null) {
+            throw new NullPointerException();
+        }
+
+        if (zList.isEmpty()) {
+            return false;
+        }
+
+        for (Node node : zList) {
+            if (node == null) {
+                throw new NullPointerException();
+            }
+        }
+
+        int size = zList.size();
+        int[] zCols = new int[size];
+
+        int xIndex = getVariables().indexOf(xVar);
+        Vector x = this.data.getColumn(xIndex);
+
+        for (int i = 0; i < zList.size(); i++) {
+            zCols[i] = getVariables().indexOf(zList.get(i));
+        }
+
+        CovarianceMatrix cov = new CovarianceMatrix(dataSet);
+
+        SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
+                cov, true, true);
+
+        int[] rows = new int[this.data.getNumRows()];
+        for (int i = 0; i < rows.length; i++) {
+            rows[i] = i;
+        }
+
+        Matrix selection = data.getSelection(rows, zCols);
+        Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
+        Vector xRes = xPred.minus(x);
+
+        double SSE = 0;
+
+        for (int i = 0; i < xRes.size(); i++) {
+            SSE += xRes.get(i) * xRes.get(i);
+        }
+
+        double variance = SSE / (this.data.getNumRows() - (zList.size() + 1));
+
+        boolean determined = variance < getAlpha();
+
+        if (determined) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Determination found: ").append(xVar).append(
+                    " is determined by {");
+
+            for (int i = 0; i < zList.size(); i++) {
+                sb.append(zList.get(i));
+
+                if (i < zList.size() - 1) {
+                    sb.append(", ");
+                }
+            }
+
+            sb.append("}");
+
+            sb.append(" SSE = ").append(NumberFormatUtil.getInstance().getNumberFormat().format(SSE));
+
+            TetradLogger.getInstance().log("independencies", sb.toString());
+            System.out.println(sb);
+        }
+
+        return determined;
+    }
+
 
     private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows) throws SingularMatrixException {
         List<Node> z = new ArrayList<>(_z);
@@ -545,6 +717,10 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
         this.rows = rows;
         cor = null;
+    }
+
+    public void setUsePseudoinverse(boolean usePseudoinverse) {
+        this.usePseudoinverse = usePseudoinverse;
     }
 }
 

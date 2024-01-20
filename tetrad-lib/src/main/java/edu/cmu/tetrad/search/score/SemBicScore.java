@@ -174,24 +174,31 @@ public class SemBicScore implements Score {
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances,
                                   boolean calculateRowSubsets, boolean usePseudoInverse)
             throws SingularMatrixException {
+        CovAndCoefs covAndcoefs = getCovAndCoefs(i, parents, data, covariances, calculateRowSubsets, usePseudoInverse);
+        return (bStar(covAndcoefs.b()).transpose().times(covAndcoefs.cov()).times(bStar(covAndcoefs.b())).get(0, 0));
+    }
+
+    @NotNull
+    public static SemBicScore.CovAndCoefs getCovAndCoefs(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets, boolean usePseudoInverse) {
         int[] all = SemBicScore.concat(i, parents);
         Matrix cov = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
         int[] pp = SemBicScore.indexedParents(parents);
         Matrix covxx = cov.getSelection(pp, pp);
         Matrix covxy = cov.getSelection(pp, new int[]{0});
 
+        // The regression coefficient vector.
         Matrix b;
 
         if (usePseudoInverse) {
-            b = b = new Matrix(MatrixUtils.pseudoInverse(covxx.toArray())).times(covxy);
+            b = new Matrix(MatrixUtils.pseudoInverse(covxx.toArray())).times(covxy);
         } else {
             b = covxx.inverse().times(covxy);
         }
 
+        return new CovAndCoefs(cov, b);
+    }
 
-//        Matrix b = (covxx.inverse().times(covxy));
-        Matrix bStar = bStar(b);
-        return (bStar.transpose().times(cov).times(bStar).get(0, 0));
+    public record CovAndCoefs(Matrix cov, Matrix b) {
     }
 
     @NotNull

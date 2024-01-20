@@ -21,16 +21,12 @@
 
 package edu.cmu.tetrad.search.work_in_progress;
 
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import cern.jet.math.Functions;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.*;
@@ -44,38 +40,30 @@ import java.util.Set;
 
 /**
  * Checks independence of X _||_ Y | Z for variables X and Y and list Z of variables. Partial correlations are
- * calculated using pseudoinverses, so linearly dependent variables do not throw exceptions. Must supply a
- * continuous data set; don't know how to do this with covariance or correlation matrices.
+ * calculated using pseudoinverses, so linearly dependent variables do not throw exceptions. Must supply a continuous
+ * data set; don't know how to do this with covariance or correlation matrices.
  *
  * @author josephramsey
  * @author Frank Wimberly adapted IndTestCramerT for Fisher's Z
  */
 public final class IndTestFisherZPseudoinverse implements IndependenceTest {
 
-    /**
-     * Formats as 0.0000.
-     */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    /**
-     * The correlation matrix.
-     */
-    private final DoubleMatrix2D data;
-    /**
-     * The variables of the correlation matrix, in order. (Unmodifiable list.)
-     */
+
+    private final Matrix data;
+
+    // The variables of the correlation matrix, in order. (Unmodifiable list.)
     private final List<Node> variables;
+
     private final DataSet dataSet;
-    /**
-     * The significance level of the independence tests.
-     */
+
+    // The significance level of the independence tests.
     private double alpha;
-    /**
-     * The cutoff value for 'alpha' area in the two tails of the partial correlation distribution function.
-     */
+
+    // The cutoff value for 'alpha' area in the two tails of the partial correlation distribution function.
     private double thresh = Double.NaN;
-    /**
-     * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
-     */
+
+    //The value of the Fisher's Z statistic associated with the last calculated partial correlation.
     private double fishersZ;
     private boolean verbose;
 
@@ -95,7 +83,7 @@ public final class IndTestFisherZPseudoinverse implements IndependenceTest {
 
         this.dataSet = dataSet;
 
-        this.data = new DenseDoubleMatrix2D(DataTransforms.center(this.dataSet).getDoubleData().toArray());
+        this.data = dataSet.getDoubleData();
         this.variables = Collections.unmodifiableList(this.dataSet.getVariables());
         setAlpha(alpha);
     }
@@ -142,32 +130,27 @@ public final class IndTestFisherZPseudoinverse implements IndependenceTest {
             zCols[i] = getVariables().indexOf(z.get(i));
         }
 
-        int[] zRows = new int[this.data.rows()];
-        for (int i = 0; i < this.data.rows(); i++) {
-            zRows[i] = i;
+        Vector x = this.data.getColumn(xIndex);
+        Vector y = this.data.getColumn(yIndex);
+
+        CovarianceMatrix cov = new CovarianceMatrix(dataSet);
+
+        SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
+                cov, true, true);
+        SemBicScore.CovAndCoefs covAndCoefsY = SemBicScore.getCovAndCoefs(yIndex, zCols, this.data,
+                cov, true, true);
+
+        int[] rows = new int[this.data.getNumRows()];
+        for (int i = 0; i < rows.length; i++) {
+            rows[i] = i;
         }
 
-        DoubleMatrix2D Z = this.data.viewSelection(zRows, zCols);
-        DoubleMatrix1D x = this.data.viewColumn(xIndex);
-        DoubleMatrix1D y = this.data.viewColumn(yIndex);
-        DoubleMatrix2D Zt = new Algebra().transpose(Z);
-        DoubleMatrix2D ZtZ = new Algebra().mult(Zt, Z);
-        Matrix _ZtZ = new Matrix(ZtZ.toArray());
-        Matrix ginverse = _ZtZ.inverse();
-        DoubleMatrix2D G = new DenseDoubleMatrix2D(ginverse.toArray());
+        Matrix selection = data.getSelection(rows, zCols);
+        Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
+        Vector yPred = selection.times(covAndCoefsY.b()).getColumn(0);
 
-        DoubleMatrix2D Zt2 = Zt.like();
-        Zt2.assign(Zt);
-        DoubleMatrix2D GZt = new Algebra().mult(G, Zt2);
-
-        DoubleMatrix1D b_x = new Algebra().mult(GZt, x);
-        DoubleMatrix1D b_y = new Algebra().mult(GZt, y);
-
-        DoubleMatrix1D xPred = new Algebra().mult(Z, b_x);
-        DoubleMatrix1D yPred = new Algebra().mult(Z, b_y);
-
-        DoubleMatrix1D xRes = xPred.copy().assign(x, Functions.minus);
-        DoubleMatrix1D yRes = yPred.copy().assign(y, Functions.minus);
+        Vector xRes = xPred.minus(x);
+        Vector yRes = yPred.minus(y);
 
         // Note that r will be NaN if either xRes or yRes is constant.
         double r = StatUtils.correlation(xRes.toArray(), yRes.toArray());
@@ -196,10 +179,6 @@ public final class IndTestFisherZPseudoinverse implements IndependenceTest {
         }
 
         boolean indFisher = !(FastMath.abs(this.fishersZ) > this.thresh);
-
-        //System.out.println("thresh = " + thresh);
-        //if(FastMath.abs(fishersZ) > 1.96) indFisher = false; //Two sided with alpha = 0.05
-        //Two sided
 
         if (this.verbose) {
             TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, getPValue()));
@@ -252,11 +231,6 @@ public final class IndTestFisherZPseudoinverse implements IndependenceTest {
     public List<Node> getVariables() {
         return this.variables;
     }
-
-    /**
-     * @return the variable with the given name.
-     */
-
 
     public String toString() {
         return "Fisher's Z - Pseudoinverse, alpha = " + IndTestFisherZPseudoinverse.nf.format(getAlpha());
@@ -313,34 +287,33 @@ public final class IndTestFisherZPseudoinverse implements IndependenceTest {
         int[] zCols = new int[size];
 
         int xIndex = getVariables().indexOf(xVar);
+        Vector x = this.data.getColumn(xIndex);
 
         for (int i = 0; i < zList.size(); i++) {
             zCols[i] = getVariables().indexOf(zList.get(i));
         }
 
-        int[] zRows = new int[this.data.rows()];
-        for (int i = 0; i < this.data.rows(); i++) {
-            zRows[i] = i;
+        CovarianceMatrix cov = new CovarianceMatrix(dataSet);
+
+        SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
+                cov, true, true);
+
+        int[] rows = new int[this.data.getNumRows()];
+        for (int i = 0; i < rows.length; i++) {
+            rows[i] = i;
         }
 
-        DoubleMatrix2D Z = this.data.viewSelection(zRows, zCols);
-        DoubleMatrix1D x = this.data.viewColumn(xIndex);
-        DoubleMatrix2D Zt = new Algebra().transpose(Z);
-        DoubleMatrix2D ZtZ = new Algebra().mult(Zt, Z);
+        Matrix selection = data.getSelection(rows, zCols);
+        Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
+        Vector xRes = xPred.minus(x);
 
-        Matrix _ZtZ = new Matrix(ZtZ.toArray());
-        Matrix ginverse = _ZtZ.inverse();
-        DoubleMatrix2D G = new DenseDoubleMatrix2D(ginverse.toArray());
+        double SSE = 0;
 
-//        DoubleMatrix2D G = MatrixUtils.ginverse(ZtZ);
-        DoubleMatrix2D Zt2 = Zt.copy();
-        DoubleMatrix2D GZt = new Algebra().mult(G, Zt2);
-        DoubleMatrix1D b_x = new Algebra().mult(GZt, x);
-        DoubleMatrix1D xPred = new Algebra().mult(Z, b_x);
-        DoubleMatrix1D xRes = xPred.copy().assign(x, Functions.minus);
-        double SSE = xRes.aggregate(Functions.plus, Functions.square);
+        for (int i = 0; i < xRes.size(); i++) {
+            SSE += xRes.get(i) * xRes.get(i);
+        }
 
-        double variance = SSE / (this.data.rows() - (zList.size() + 1));
+        double variance = SSE / (this.data.getNumRows() - (zList.size() + 1));
 
         boolean determined = variance < getAlpha();
 
@@ -359,7 +332,6 @@ public final class IndTestFisherZPseudoinverse implements IndependenceTest {
 
             sb.append("}");
 
-//            sb.append(" p = ").append(nf.format(p));
             sb.append(" SSE = ").append(IndTestFisherZPseudoinverse.nf.format(SSE));
 
             TetradLogger.getInstance().log("independencies", sb.toString());
@@ -370,7 +342,7 @@ public final class IndTestFisherZPseudoinverse implements IndependenceTest {
     }
 
     /**
-     * Computes that value x such that P(abs(N(0,1) > x) < alpha.  Note that this is a two sided test of the null
+     * Computes that value x such that P(abs(N(0,1) > x) < alpha.  Note that this is a two-sided test of the null
      * hypothesis that the Fisher's Z value, which is distributed as N(0,1) is not equal to 0.0.
      */
     private double cutoffGaussian() {
@@ -400,7 +372,7 @@ public final class IndTestFisherZPseudoinverse implements IndependenceTest {
     }
 
     private int sampleSize() {
-        return this.data.rows();
+        return this.data.getNumRows();
     }
 }
 
