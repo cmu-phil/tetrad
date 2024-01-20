@@ -29,7 +29,6 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
-import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZPseudoinverse;
 import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZPercentIndependent;
 import edu.cmu.tetrad.search.work_in_progress.IndTestMultinomialLogisticRegression;
 import edu.cmu.tetrad.util.Parameters;
@@ -137,7 +136,9 @@ final class IndTestChooser {
             return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
         }
         if (IndTestType.FISHER_ZD == testType) {
-            return new IndTestFisherZPseudoinverse(dataSet, params.getDouble("alpha", 0.001));
+            IndTestFisherZ test = new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
+            test.setUsePseudoinverse(true);
+            return test;
         }
         if (IndTestType.SEM_BIC == testType) {
             return new ScoreIndTest(new SemBicScore(new CovarianceMatrix(dataSet)));

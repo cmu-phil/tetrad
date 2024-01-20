@@ -296,7 +296,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         double fisherZ = FastMath.sqrt(sampleSize() - z.size() - 3.0) *
                 0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
-        double p = 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
+        double p = 2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ)));
 
         if (Double.isNaN(fisherZ)) {
             throw new IllegalArgumentException("The Fisher's Z " +

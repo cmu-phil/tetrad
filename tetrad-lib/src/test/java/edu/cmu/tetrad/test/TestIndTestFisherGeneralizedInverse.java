@@ -23,9 +23,8 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZPseudoinverse;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -77,8 +76,11 @@ public class TestIndTestFisherGeneralizedInverse {
         DataSet data1 = im1.simulateData(500, false);
         DataSet data2 = im2.simulateData(500, false);
 
-        IndependenceTest test1 = new IndTestFisherZPseudoinverse(data1, 0.05);
-        IndependenceTest test2 = new IndTestFisherZPseudoinverse(data2, 0.05);
+        IndTestFisherZ test1 = new IndTestFisherZ(data1, 0.05);
+        IndTestFisherZ test2 = new IndTestFisherZ(data2, 0.05);
+
+        test1.setUsePseudoinverse(true);
+        test2.setUsePseudoinverse(true);
 
         IndependenceResult result1 = test1.checkIndependence(data1.getVariable(x.getName()), data1.getVariable(y.getName()));
         double p1 = result1.getPValue();
