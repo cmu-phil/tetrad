@@ -76,7 +76,8 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             PermutationSearch permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(this.knowledge);
             Graph graph = permutationSearch.search();
-            LogUtilsSearch.stampWithScores(graph, dataModel, score);
+            LogUtilsSearch.stampWithScore(graph, score);
+            LogUtilsSearch.stampWithBic(graph, dataModel);
             return graph;
         } else {
             Boss algorithm = new Boss(this.score);

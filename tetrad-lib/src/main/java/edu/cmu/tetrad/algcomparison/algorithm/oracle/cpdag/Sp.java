@@ -70,7 +70,8 @@ public class Sp implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBoo
             PermutationSearch permutationSearch = new PermutationSearch(new edu.cmu.tetrad.search.Sp(score));
             permutationSearch.setKnowledge(this.knowledge);
             Graph graph = permutationSearch.search();
-            LogUtilsSearch.stampWithScores(graph, dataModel, score);
+            LogUtilsSearch.stampWithScore(graph, score);
+            LogUtilsSearch.stampWithBic(graph, dataModel);
             return graph;
         } else {
             Sp algorithm = new Sp(this.score);

@@ -90,10 +90,10 @@ public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             grasp.setKnowledge(this.knowledge);
             grasp.bestOrder(score.getVariables());
             Graph graph = grasp.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG));
+            LogUtilsSearch.stampWithScore(graph, score);
+            LogUtilsSearch.stampWithBic(graph, dataModel);
 
-            if (!(score instanceof GraphScore)) {
-                LogUtilsSearch.stampWithScores(graph, dataModel, score);
-            }
+            LogUtilsSearch.stampWithBic(graph, dataModel);
 
             return graph;
         } else {

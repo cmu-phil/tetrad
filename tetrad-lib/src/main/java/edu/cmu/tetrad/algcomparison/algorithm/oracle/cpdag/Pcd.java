@@ -8,6 +8,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.work_in_progress.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -53,7 +54,9 @@ public class Pcd implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph search1 = search.search();
+            LogUtilsSearch.stampWithBic(search1, dataSet);
+            return search1;
         } else {
             Pcd algorithm = new Pcd();
 

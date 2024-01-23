@@ -104,7 +104,8 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
                 graph.addAttribute("BIC", new BicEst().getValue(null, graph, dataModel));
             }
 
-            LogUtilsSearch.stampWithScores(graph, dataModel, score);
+            LogUtilsSearch.stampWithScore(graph, score);
+            LogUtilsSearch.stampWithBic(graph, dataModel);
             return graph;
         } else {
             Fges fges = new Fges(this.score);
