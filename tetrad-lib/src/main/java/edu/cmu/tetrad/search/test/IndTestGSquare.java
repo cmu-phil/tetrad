@@ -54,6 +54,8 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     private final DataSet dataSet;
     // The significance level for the test.
     private final double alpha;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
     // The p value associated with the most recent call of isIndependent.
     private double pValue;
     // The lower bound of percentages of observation of some category in the data, given some particular combination of
@@ -67,8 +69,6 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     private double minCountPerCell = 1.0;
     // The rows to use for the test. If null, all rows are used.
     private List<Integer> rows = null;
-    // A cache of results for independence facts.
-    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -344,6 +344,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
     /**
      * Returns the rows used for the test. If null, all rows are used.
+     *
      * @return The rows used for the test. Can be null.
      */
     @Override
@@ -353,6 +354,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
     /**
      * Sets the rows to use for the test. If null, all rows are used.
+     *
      * @param rows The rows to use for the test. Can be null.
      */
     @Override

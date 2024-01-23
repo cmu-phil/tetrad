@@ -52,14 +52,14 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     private final List<Node> variables;
     // Stores a reference to the data set passed in through the constructor.
     private final DataSet dataSet;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
     // The significance level of the independence tests.
     private double alpha;
     // True if verbose output should be printed.
     private boolean verbose;
     // The score of the last test.
     private double score = Double.NaN;
-    // A cache of results for independence facts.
-    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
 
     /**
@@ -91,6 +91,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
      * given data set (must be continuous). The given significance level is used.
+     *
      * @throws UnsupportedOperationException This method is not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {

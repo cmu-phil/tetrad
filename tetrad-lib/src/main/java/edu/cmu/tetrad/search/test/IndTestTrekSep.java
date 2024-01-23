@@ -53,14 +53,14 @@ public final class IndTestTrekSep implements IndependenceTest {
     private final Map<Node, Integer> indexMap;
     // A hash of nodes to names.
     private final Map<String, Node> nameMap;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
     // True if verbose output should be printed.
     private boolean verbose;
     // The variables of the covariance matrix, in order. (Unmodifiable list.)
     private List<Node> variables;
     // The significance level of the independence tests.
     private double alpha;
-    // A cache of results for independence facts.
-    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
@@ -230,8 +230,7 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * If isDeterminismAllowed(), defers to IndTestFisherZD; otherwise throws
-     * UnsupportedOperationException.
+     * If isDeterminismAllowed(), defers to IndTestFisherZD; otherwise throws UnsupportedOperationException.
      *
      * @return True if so
      * @throws UnsupportedOperationException If the above condition is not met.

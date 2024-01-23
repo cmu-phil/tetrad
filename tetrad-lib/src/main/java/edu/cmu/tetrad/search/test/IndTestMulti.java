@@ -55,8 +55,9 @@ public final class IndTestMulti implements IndependenceTest {
 
     /**
      * Constructs a new pooled independence test for the given data sets.
+     *
      * @param independenceTests the independence tests to pool.
-     * @param method the method to use for pooling.
+     * @param method            the method to use for pooling.
      * @see ResolveSepsets.Method
      */
     public IndTestMulti(List<IndependenceTest> independenceTests, ResolveSepsets.Method method) {

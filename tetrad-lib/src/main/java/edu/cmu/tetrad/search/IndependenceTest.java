@@ -34,9 +34,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Gives an interface that can be implemented by classes that do conditional
- * independence testing. These classes are capable of serving as conditional independence "oracles" for constraint-based
- * searches. Many methods are given defaults so that such a test will be easy to implement in Python using JPype.</p>
+ * Gives an interface that can be implemented by classes that do conditional independence testing. These classes are
+ * capable of serving as conditional independence "oracles" for constraint-based searches. Many methods are given
+ * defaults so that such a test will be easy to implement in Python using JPype.
  *
  * @author josephramsey
  */

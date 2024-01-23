@@ -35,10 +35,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Checks independence facts for variables associated with the nodes in a given graph by
- * checking m-separation facts on the underlying nodes. We use the IndependenceTest interface here so that this
- * m-separation test can be used in place of a statistical conditional independence test in algorithms to provide oracle
- * information.
+ * Checks independence facts for variables associated with the nodes in a given graph by checking m-separation facts on
+ * the underlying nodes. We use the IndependenceTest interface here so that this m-separation test can be used in place
+ * of a statistical conditional independence test in algorithms to provide oracle information.
  *
  * @author josephramsey
  */

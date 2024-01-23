@@ -57,6 +57,8 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     private final NormalDistribution normal = new NormalDistribution(0, 1);
     // The variables of the covariance data, in order. (Unmodifiable list.)
     private final Map<Node, Integer> nodesHash;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
     // The correlation matrix.
     private ICovarianceMatrix cor = null;
     // The variables of the covariance data, in order. (Unmodifiable list.)
@@ -75,8 +77,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     private List<Integer> rows = null;
     // Use pseudoinverse instead of correlation matrix.
     private boolean usePseudoinverse = false;
-    // A cache of results for independence facts.
-    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
 
     /**

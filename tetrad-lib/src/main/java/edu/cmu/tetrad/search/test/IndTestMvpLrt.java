@@ -36,12 +36,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p>Performs a test of conditional independence X _||_ Y | Z1...Zn where all
- * variables are either continuous or discrete. This test is valid for both ordinal and non-ordinal discrete
- * searchVariables.</p>
- *
- * <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of
- * mixed variables. International journal of data science and analytics, 6, 3-18.</p>
+ * Performs a test of conditional independence X _||_ Y | Z1...Zn where all variables are either continuous or discrete.
+ * This test is valid for both ordinal and non-ordinal discrete searchVariables.
+ * <p>
+ * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables. International
+ * journal of data science and analytics, 6, 3-18.
  *
  * @author Bryan Andrews
  */
@@ -53,12 +52,12 @@ public class IndTestMvpLrt implements IndependenceTest {
     private final Map<Node, Integer> nodesHash;
     // Likelihood function
     private final MvpLikelihood likelihood;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
     // The significance level of the independence tests.
     private double alpha;
     // True if verbose output should be printed.
     private boolean verbose;
-    // A cache of results for independence facts.
-    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
     /**
      * Constructor.

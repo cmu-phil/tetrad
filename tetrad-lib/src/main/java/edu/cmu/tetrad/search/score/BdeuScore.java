@@ -32,14 +32,13 @@ import java.text.NumberFormat;
 import java.util.List;
 
 /**
- * <p>Calculates the BDeu score, which the BDe (Bayes Dirichlet Equivalent) score
- * with uniform priors. A good discussion of BD* scores can be found here:</p>
- *
- * <p>Heckerman, D., Geiger, D. &amp; Chickering, D.M. Learning Bayesian networks:
- * The combination of knowledge and statistical data. Mach Learn 20, 197–243 (1995).</p>
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * Calculates the BDeu score, which the BDe (Bayes Dirichlet Equivalent) score with uniform priors. A good discussion of
+ * BD* scores can be found here:
+ * <p>
+ * Heckerman, D., Geiger, D. &amp; Chickering, D.M. Learning Bayesian networks: The combination of knowledge and
+ * statistical data. Mach Learn 20, 197–243 (1995).
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
  * @see BdeScore

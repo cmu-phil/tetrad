@@ -44,8 +44,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * This all follows the original Daudin paper, which is this:
  * <p>
- * Daudin, J. J. (1980). Partial association measures and ann application to qualitative regression.
- * Biometrika, 67(3),
+ * Daudin, J. J. (1980). Partial association measures and ann application to qualitative regression. Biometrika, 67(3),
  * 581-590.
  * <p>
  * We use Nadaraya-Watson kernel regression, though we further restrict the sample size to nearby points.

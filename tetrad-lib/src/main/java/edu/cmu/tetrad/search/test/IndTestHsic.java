@@ -43,12 +43,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p>Checks the conditional independence X _||_ Y | S, where S is a set of continuous variable,
- * and X and Y are discrete variable not in S, using the Hilbert-Schmidth Independence Criterion (HSIC), a kernel based
- * nonparametric test for conditional independence.</p>
- *
- * <p>The Kpc algorithm by Tillman had run PC using this test; to run Kpc, simply select this test
- * for PC.</p>
+ * Checks the conditional independence X _||_ Y | S, where S is a set of continuous variable, and X and Y are discrete
+ * variable not in S, using the Hilbert-Schmidth Independence Criterion (HSIC), a kernel based nonparametric test for
+ * conditional independence.
+ * <p>
+ * The Kpc algorithm by Tillman had run PC using this test; to run Kpc, simply select this test for PC.
  *
  * @author Robert Tillman
  * @see edu.cmu.tetrad.search.work_in_progress.Kpc
@@ -56,49 +55,27 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class IndTestHsic implements IndependenceTest {
 
-    /**
-     * Formats as 0.0000.
-     */
+    // Number format for printing p-values.
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    /**
-     * The variables of the covariance matrix, in order. (Unmodifiable list.)
-     */
+    // The variables of the covariance matrix, in order. (Unmodifiable list.)
     private final List<Node> variables;
-    /**
-     * Stores a reference to the dataset being analyzed.
-     */
+    // Stores a reference to the dataset being analyzed.
     private final DataSet dataSet;
-    /**
-     * The significance level of the independence tests.
-     */
-    private double alpha;
-    /**
-     * The cutoff value for 'alpha'
-     */
-    private double thresh = Double.NaN;
-    /**
-     * A stored p value, if the deterministic test was used.
-     */
-    private double pValue = Double.NaN;
-
-    /**
-     * The regularizer
-     */
-    private double regularizer = 0.0001;
-
-    /**
-     * Number of permutations to approximate the null distribution
-     */
-    private int perms = 100;
-
-    /**
-     * Use incomplete Choleksy decomposition to calculate Gram matrices
-     */
-    private double useIncompleteCholesky = 1e-18;
-
     // A cache of results for independence facts.
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-
+    // The significance level of the independence tests.
+    private double alpha;
+    // The cutoff value for 'alpha'
+    private double thresh = Double.NaN;
+    // A stored p value, if the deterministic test was used.
+    private double pValue = Double.NaN;
+    // The regularizer
+    private double regularizer = 0.0001;
+    // Number of permutations to approximate the null distribution
+    private int perms = 100;
+    // Use incomplete Choleksy decomposition to calculate Gram matrices
+    private double useIncompleteCholesky = 1e-18;
+    // Whether to print verbose output.
     private boolean verbose;
 
 

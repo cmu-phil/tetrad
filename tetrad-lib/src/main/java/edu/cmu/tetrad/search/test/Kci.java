@@ -27,18 +27,18 @@ import static edu.cmu.tetrad.util.StatUtils.median;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /***
- * <p>Gives an implementation of the Kernal Independence Test (KCI) by Kun Zhang, which is a
- * general test of conditional independence. The reference is here:</p>
- *
- * <p>Zhang, K., Peters, J., Janzing, D., and Schölkopf, B. (2012). Kernel-based conditional independence
- * test and application in causal discovery. arXiv preprint arXiv:1202.3775.</p>
- *
- * <p>Please see that paper, especially Theorem 4 and Proposition 5.</p>
- *
- * <p>Using optimal kernel bandwidths suggested by Bowman and Azzalini (1997):</p>
- *
- * <p>Bowman, A. W., and Azzalini, A. (1997). Applied smoothing techniques for data analysis: the kernel
- * approach with S-Plus illustrations (Vol. 18). OUP Oxford.</p>
+ * Gives an implementation of the Kernal Independence Test (KCI) by Kun Zhang, which is a
+ * general test of conditional independence. The reference is here:
+ * <p>
+ * Zhang, K., Peters, J., Janzing, D., and Schölkopf, B. (2012). Kernel-based conditional independence
+ * test and application in causal discovery. arXiv preprint arXiv:1202.3775.
+ * <p>
+ * Please see that paper, especially Theorem 4 and Proposition 5.
+ * <p>
+ * Using optimal kernel bandwidths suggested by Bowman and Azzalini (1997):
+ * <p>
+ * Bowman, A. W., and Azzalini, A. (1997). Applied smoothing techniques for data analysis: the kernel
+ * approach with S-Plus illustrations (Vol. 18). OUP Oxford.
  *
  * @author kunzhang
  * @author Vineet Raghu on 7/3/2016

@@ -53,12 +53,12 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     private final List<Node> variables;
     // The regressions.
     private final ArrayList<Regression> regressions;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
     // The data sets.
     private List<DataSet> dataSets;
     // The significance level of the independence tests.
     private double alpha;
-    // A cache of results for independence facts.
-    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
     // True if verbose output should be printed.
     private boolean verbose;
 

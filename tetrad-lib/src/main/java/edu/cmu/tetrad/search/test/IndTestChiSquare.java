@@ -58,26 +58,21 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
      * The dataset of discrete variables.
      */
     private final DataSet dataSet;
-
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, ChiSquareTest.Result> facts = new ConcurrentHashMap<>();
     /**
      * The G Square value associated with a particular call of isIndependent. Set in that method and not in the
      * constructor.
      */
     private double xSquare;
-
     /**
      * The degrees of freedom associated with a particular call of isIndependent. Set in the method and not in the
      * constructor.
      */
     private int df;
-
     private double minCountPerCell = 1.0;
-
     private boolean verbose;
     private List<Integer> rows = null;
-
-    // A cache of results for independence facts.
-    private final Map<IndependenceFact, ChiSquareTest.Result> facts = new ConcurrentHashMap<>();
 
 
     /**
@@ -371,6 +366,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * Returns the rows used for the test. If null, all rows are used.
+     *
      * @return The rows used for the test. Can be null.
      */
     @Override
@@ -380,6 +376,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * Sets the rows to use for the test. If null, all rows are used.
+     *
      * @param rows The rows to use for the test. Can be null.
      */
     @Override

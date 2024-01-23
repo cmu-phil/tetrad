@@ -52,14 +52,14 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     private final Map<Node, Integer> nodesHash;
     // Likelihood function
     private final ConditionalGaussianLikelihood likelihood;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
     // The significance level of the independence tests.
     private double alpha;
     // True if verbose output should be printed.
     private boolean verbose;
     // The number of categories to discretize continuous variables into.
     private int numCategoriesToDiscretize = 3;
-    // A cache of results for independence facts.
-    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
     /**
      * Constructor.

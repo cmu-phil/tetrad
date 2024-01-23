@@ -110,8 +110,9 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     /**
      * Returns an independence result that states whether x _||_y | z and what the p-value of the test is.
-     * @param x The first variable.
-     * @param y The second variable.
+     *
+     * @param x  The first variable.
+     * @param y  The second variable.
      * @param _z The conditioning set.
      * @return an independence result (see)
      * @see IndependenceResult

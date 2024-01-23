@@ -40,14 +40,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Gives a way of interpreting a score as an independence test. The contract is that
- * the score returned will be negative for independence and positive for dependence; this simply reports these
- * differences.</p>
+ * Gives a way of interpreting a score as an independence test. The contract is that the score returned will be negative
+ * for independence and positive for dependence; this simply reports these differences.
  *
  * @author josephramsey
  */
 public class ScoreIndTest implements IndependenceTest {
-
     private final Score score;
     private final List<Node> variables;
     private final DataModel data;
@@ -93,9 +91,6 @@ public class ScoreIndTest implements IndependenceTest {
         this.bump = v;
 
         int N = score.getSampleSize();
-
-        // No.
-//        double p = 5 * exp(-2 * v - 2 * log(N)) / ((N) * log(N));
 
         boolean independent = v <= 0;
 

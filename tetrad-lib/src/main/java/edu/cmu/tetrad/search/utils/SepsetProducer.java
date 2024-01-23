@@ -27,8 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Provides a covenience interface for classes that can generate and keep
- * track of sepsets.</p>
+ * Provides a covenience interface for classes that can generate and keep track of sepsets.
  *
  * @author josephramsey
  * @see SepsetMap
