@@ -24,7 +24,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
 /**
- * <p>Checks whether a graph is locally Markov or locally Faithful given a data set. First a lists of m-separation
+ * Checks whether a graph is locally Markov or locally Faithful given a data set. First a lists of m-separation
  * predictions are made for each pair of variables in the graph given the parents of one of the variables, one list (for
  * local Markov) where the m-separation holds and another list (for local Faithfulness) where the m-separation does not
  * hold. Then the predictions are tested against the data set using the independence test. For the Markov test, since an
@@ -32,7 +32,11 @@ import java.util.concurrent.Future;
  * Uniformity using the Kolmogorov-Smirnov test. Also, a fraction of dependent judgments is returned, which should equal
  * the alpha level of the independence test if the test is Uniform under the null hypothesis. For the Faithfulness test,
  * the p-values are tested for Uniformity using the Kolmogorov-Smirnov test; these should be dependent. Also, a fraction
- * of dependent judgments is returned, which should be maximal./p>
+ * of dependent judgments is returned, which should be maximal.
+ * <p>
+ * Knowledge may be supplied to the Markov check. This knowledge is used to specify independence and conditioning
+ * ranges. For facts of the form X _||_ Y | Z, X and Y should be in the last tier of the knowledge, and Z should be in
+ * previous tiers. Additional forbidden or required edges are not allowed.
  *
  * @author josephramsey
  */
@@ -717,20 +721,6 @@ public class MarkovCheck {
     }
 
     /**
-     * Returns the chunk size for parallelization.
-     *
-     * @param n The number of items to chunk.
-     * @return The chunk size for parallelization.
-     */
-    private int getChunkSize(int n) {
-        if (true) return 1;
-        int numProcessors = Runtime.getRuntime().availableProcessors();
-        int chunk = (int) FastMath.ceil((n / ((double) numProcessors))) / 10;
-        if (chunk < 1) chunk = 1;
-        return chunk;
-    }
-
-    /**
      * Returns the list of results for the given condition.
      *
      * @param indep True if for implied independencies, false if for implied dependencies.
@@ -751,7 +741,7 @@ public class MarkovCheck {
     /**
      * Sets the knowledge object for the Markov checker. The knowledge object should contain the tier knowledge for the
      * Markov checker. The last tier contains the possible X and Y for X _||_ Y | Z1,..,Zn, and the previous tiers
-     * contain the possible Z1,..,Zn for X _||_ Y | Z1,..,Zn.
+     * contain the possible Z1,..,Zn for X _||_ Y | Z1,..,Zn. Additional forbidden or required edges are ignored.
      *
      * @param knowledge The knowledge object.
      */
