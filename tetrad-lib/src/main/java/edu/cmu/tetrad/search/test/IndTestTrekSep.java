@@ -41,16 +41,26 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Adam Brodie
  */
 public final class IndTestTrekSep implements IndependenceTest {
+    // The variables of the covariance matrix, in order. (Unmodifiable list.)
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    // The covariance matrix.
     private final ICovarianceMatrix covMatrix;
+    // The latents in order. (Unmodifiable list.)
     private final List<Node> latents;
+    // The variables clusterings.
     private final List<List<Node>> clustering;
+    // A hash of nodes to indices.
     private final Map<Node, Integer> indexMap;
+    // A hash of nodes to names.
     private final Map<String, Node> nameMap;
+    // True if verbose output should be printed.
     private boolean verbose;
+    // The variables of the covariance matrix, in order. (Unmodifiable list.)
     private List<Node> variables;
+    // The significance level of the independence tests.
     private double alpha;
-
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
@@ -112,29 +122,38 @@ public final class IndTestTrekSep implements IndependenceTest {
      * @throws org.apache.commons.math3.linear.SingularMatrixException if a matrix singularity is encountered.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        if (facts.containsKey(new IndependenceFact(x, y, z))) {
+            return facts.get(new IndependenceFact(x, y, z));
+        }
+
         int n = sampleSize();
         int xi = this.latents.indexOf(x);
         int yi = this.latents.indexOf(y);
         int nA = this.clustering.get(xi).size();
         int nB = this.clustering.get(yi).size();
+
         for (Node node : z) {
             int s = this.latents.indexOf(node);
             int m = this.clustering.get(s).size() / 2;
             nA += m;
             nB += m;
         }
+
         int[] A = new int[nA];
         int[] B = new int[nB];
         int a = 0;
         int b = 0;
+
         for (int i = 0; i < this.clustering.get(xi).size(); i++) {
             A[i] = this.variables.indexOf(this.clustering.get(xi).get(i));
             a++;
         }
+
         for (int i = 0; i < this.clustering.get(yi).size(); i++) {
             B[i] = this.variables.indexOf(this.clustering.get(yi).get(i));
             b++;
         }
+
         for (Node node : z) {
             int s = this.latents.indexOf(node);
             int m = this.clustering.get(s).size() / 2;
@@ -146,16 +165,13 @@ public final class IndTestTrekSep implements IndependenceTest {
             }
         }
 
-
         //With one indicator per latent per set.
-
         double[][] CovMatrix = this.covMatrix.getMatrix().toArray();
-
-        int rank = new EstimateRank().Estimate(A, B, CovMatrix, n, this.alpha);
-//        return rank <= z.size();
-
+        int rank = EstimateRank.estimate(A, B, CovMatrix, n, this.alpha);
         boolean independent = rank <= z.size();
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN, Double.NaN);
+        final IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN, Double.NaN);
+        facts.put(new IndependenceFact(x, y, z), result);
+        return result;
 
     }
 
@@ -214,7 +230,7 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * If <code>isDeterminismAllowed()</code>, defers to IndTestFisherZD; otherwise throws
+     * If isDeterminismAllowed(), defers to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      *
      * @return True if so

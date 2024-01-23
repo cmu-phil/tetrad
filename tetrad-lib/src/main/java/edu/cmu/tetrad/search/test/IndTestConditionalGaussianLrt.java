@@ -35,6 +35,7 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or
@@ -45,13 +46,20 @@ import java.util.*;
  * @author josephramsey
  */
 public class IndTestConditionalGaussianLrt implements IndependenceTest {
+    // The data set.
     private final DataSet data;
+    // A hash of nodes to indices.
     private final Map<Node, Integer> nodesHash;
     // Likelihood function
     private final ConditionalGaussianLikelihood likelihood;
+    // The significance level of the independence tests.
     private double alpha;
+    // True if verbose output should be printed.
     private boolean verbose;
+    // The number of categories to discretize continuous variables into.
     private int numCategoriesToDiscretize = 3;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
     /**
      * Constructor.
@@ -89,10 +97,15 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        if (this.facts.containsKey(new IndependenceFact(x, y, _z))) {
+            return facts.get(new IndependenceFact(x, y, _z));
+        }
+
         this.likelihood.setNumCategoriesToDiscretize(this.numCategoriesToDiscretize);
 
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
+
 
         List<Node> allVars = new ArrayList<>(z);
         allVars.add(x);
@@ -145,7 +158,10 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, getAlpha() - pValue);
+        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, _z), independent,
+                pValue, getAlpha() - pValue);
+        facts.put(new IndependenceFact(x, y, _z), result);
+        return result;
     }
 
     /**

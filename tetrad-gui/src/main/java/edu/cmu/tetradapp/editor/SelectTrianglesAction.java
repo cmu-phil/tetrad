@@ -22,23 +22,22 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetradapp.workbench.DisplayEdge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 
 /**
- * Highlights all undirected edges in the given display graph.
+ * Highlights all edges in triangle in the given display graph.
  *
  * @author josephramsey
  */
-public class SelectUndirectedAction extends AbstractAction implements ClipboardOwner {
+public class SelectTrianglesAction extends AbstractAction implements ClipboardOwner {
 
     /**
      * The desktop containing the target session editor.
@@ -46,12 +45,12 @@ public class SelectUndirectedAction extends AbstractAction implements ClipboardO
     private final GraphWorkbench workbench;
 
     /**
-     * Highlights all undirected edges in the given display graph.
+     * Highlights all edges in triangle in the given display graph.
      *
      * @param workbench the given workbench.
      */
-    public SelectUndirectedAction(GraphWorkbench workbench) {
-        super("Highlight Undirected Edges");
+    public SelectTrianglesAction(GraphWorkbench workbench) {
+        super("Highlight Triangles");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
@@ -61,17 +60,22 @@ public class SelectUndirectedAction extends AbstractAction implements ClipboardO
     }
 
     /**
-     * Selects all undirected edges in the given display graph.
+     * Selects all edges in triangle in the given display graph.
      *
      * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();
 
-        for (Component comp : this.workbench.getComponents()) {
-            if (comp instanceof DisplayEdge) {
-                Edge edge = ((DisplayEdge) comp).getModelEdge();
-                if (Edges.isUndirectedEdge(edge)) {
+        final Graph graph = this.workbench.getGraph();
+
+        for (Edge edge : graph.getEdges()) {
+            for (Node node : graph.getAdjacentNodes(edge.getNode1())) {
+                if (node == edge.getNode1() || node == edge.getNode2()) {
+                    continue;
+                }
+
+                if (graph.isAdjacentTo(node, edge.getNode1()) && graph.isAdjacentTo(node, edge.getNode2())) {
                     this.workbench.selectEdge(edge);
                 }
             }

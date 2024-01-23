@@ -34,7 +34,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 
 /**
- * Copies a selection of session nodes in the frontmost session editor, to the clipboard.
+ * Highlights all bidirected edges in the given display graph.
  *
  * @author josephramsey
  */
@@ -46,7 +46,9 @@ public class SelectBidirectedAction extends AbstractAction implements ClipboardO
     private final GraphWorkbench workbench;
 
     /**
-     * Creates a new copy subsession action for the given desktop and clipboard.
+     * Highlights all bidirected edges in the given display graph.
+     *
+     * @param workbench the given workbench.
      */
     public SelectBidirectedAction(GraphWorkbench workbench) {
         super("Highlight Bidirected Edges");
@@ -59,7 +61,9 @@ public class SelectBidirectedAction extends AbstractAction implements ClipboardO
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
+     * Highlights all bidirected edges in the given display graph.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();

@@ -9,13 +9,12 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Wrapper for KCI test.
- * <p>
- * Note that should work with Linear, Gaussian variables but is general.
  *
  * @author josephramsey
  */
@@ -27,9 +26,16 @@ import java.util.List;
 @General
 public class Kci implements IndependenceWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
-
+    /**
+     * Returns a KCI test.
+     *
+     * @param dataSet    The data set to test independence against.
+     * @param parameters The paramters of the test.
+     * @return A KCI test.
+     */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.test.Kci kci = new edu.cmu.tetrad.search.test.Kci(SimpleDataLoader.getContinuousDataSet(dataSet),
@@ -42,16 +48,32 @@ public class Kci implements IndependenceWrapper {
         return kci;
     }
 
+    /**
+     * Returns the name of the test.
+     *
+     * @return The name of the test.
+     */
     @Override
     public String getDescription() {
         return "KCI";
     }
 
+    /**
+     * Returns the data type of the test, which is continuous.
+     *
+     * @return The data type of the test, which is continuous.
+     * @see DataType
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * Returns the parameters of the test.
+     *
+     * @return The parameters of the test.
+     */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

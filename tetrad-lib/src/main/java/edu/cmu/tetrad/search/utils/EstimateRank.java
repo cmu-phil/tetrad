@@ -65,7 +65,7 @@ public class EstimateRank {
     /**
      * Estimate rank from data.
      */
-    public static int Estimate(double[][] A, double[][] B, double alpha) {
+    public static int estimate(double[][] A, double[][] B, double alpha) {
         double[] Cors = CanCor(A, B);
         int rank = 0;
         boolean reject = true;
@@ -90,7 +90,7 @@ public class EstimateRank {
     /**
      * Estimate rank from covariance matrix.
      */
-    public static int Estimate(int[] iA, int[] iB, double[][] cov, int N, double alpha) {
+    public static int estimate(int[] iA, int[] iB, double[][] cov, int N, double alpha) {
         double[] Cors = CanCor(iA, iB, cov);
         int rank = 0;
         boolean reject = true;

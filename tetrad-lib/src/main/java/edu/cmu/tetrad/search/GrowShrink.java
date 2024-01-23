@@ -92,39 +92,56 @@ public class GrowShrink implements IMbSearch {
     public Set<Node> findMb(Node target) {
         Set<Node> blanket = new HashSet<>();
 
-        boolean changed = true;
+        List<Node> nodes = independenceTest.getVariables();
 
-        while (changed) {
-            changed = false;
-
-            List<Node> remaining = new LinkedList<>(this.variables);
-            remaining.removeAll(blanket);
-            remaining.remove(target);
-
-            for (Node node : remaining) {
-                if (!this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
-                    blanket.add(node);
-                    changed = true;
-                }
-            }
-        }
-
-        changed = true;
-
-        while (changed) {
-            changed = false;
-
-            for (Node node : new LinkedList<>(blanket)) {
-                blanket.remove(node);
-
-                if (this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
-                    changed = true;
-                    continue;
-                }
-
+        for (Node node : nodes) {
+            if (node == target) continue;
+            if (!independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
                 blanket.add(node);
             }
         }
+
+        for (Node node : new LinkedList<>(blanket)) {
+            HashSet<Node> z = new HashSet<>(blanket);
+            blanket.remove(node);
+            if (!independenceTest.checkIndependence(node, target, z).isIndependent()) {
+                blanket.add(node);
+            }
+        }
+
+//        boolean changed = true;
+//
+//        while (changed) {
+//            changed = false;
+//
+//            List<Node> remaining = new LinkedList<>(this.variables);
+//            remaining.removeAll(blanket);
+//            remaining.remove(target);
+//
+//            for (Node node : remaining) {
+//                if (!this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
+//                    blanket.add(node);
+//                    changed = true;
+//                }
+//            }
+//        }
+//
+//        changed = true;
+//
+//        while (changed) {
+//            changed = false;
+//
+//            for (Node node : new LinkedList<>(blanket)) {
+//                blanket.remove(node);
+//
+//                if (this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
+//                    changed = true;
+//                    continue;
+//                }
+//
+//                blanket.add(node);
+//            }
+//        }
 
         return blanket;
     }

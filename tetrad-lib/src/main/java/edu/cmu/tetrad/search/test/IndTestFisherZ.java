@@ -49,21 +49,34 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author Frank Wimberly
  */
 public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
+    // A hash from variable names to indices.
     private final Map<String, Integer> indexMap;
+    // A hash from variable names to variables.
     private final Map<String, Node> nameMap;
+    // The standard normal distribution.
     private final NormalDistribution normal = new NormalDistribution(0, 1);
+    // The variables of the covariance data, in order. (Unmodifiable list.)
     private final Map<Node, Integer> nodesHash;
+    // The correlation matrix.
     private ICovarianceMatrix cor = null;
+    // The variables of the covariance data, in order. (Unmodifiable list.)
     private List<Node> variables;
+    // The significance level of the independence tests.
     private double alpha;
+    // Stores a reference to the data set passed in through the constructor.
     private DataSet dataSet;
-
     // Matrix from of the data.
     private Matrix data;
+    // True if verbose output should be printed.
     private boolean verbose = true;
+    // The correlation coefficient for the last test.
     private double r = Double.NaN;
+    // The rows used in the test.
     private List<Integer> rows = null;
+    // Use pseudoinverse instead of correlation matrix.
     private boolean usePseudoinverse = false;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
 
     /**
@@ -95,8 +108,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
             this.nodesHash = nodesHash;
         } else {
-//            this.cor = new CorrelationMatrix(dataSet);
-
             if (!(alpha >= 0 && alpha <= 1)) {
                 throw new IllegalArgumentException("Alpha mut be in [0, 1]");
             }
@@ -165,7 +176,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         this.nodesHash = nodesHash;
     }
 
-
     /**
      * Creates a new independence test instance for a subset of the variables.
      *
@@ -204,8 +214,14 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        if (facts.containsKey(new IndependenceFact(x, y, z))) {
+            return facts.get(new IndependenceFact(x, y, z));
+        }
+
         if (usePseudoinverse) {
-            return checkIndependencePseudoinverse(x, y, z);
+            IndependenceResult result = checkIndependencePseudoinverse(x, y, z);
+            facts.put(new IndependenceFact(x, y, z), result);
+            return result;
         }
 
         double p;
@@ -228,7 +244,9 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         if (Double.isNaN(p)) {
             throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
         } else {
-            return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
+            IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
+            facts.put(new IndependenceFact(x, y, z), result);
+            return result;
         }
     }
 

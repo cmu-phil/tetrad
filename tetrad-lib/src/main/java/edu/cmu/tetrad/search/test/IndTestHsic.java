@@ -39,10 +39,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>Checks the conditional independence X _||_ Y | S, where S is a set of continuous variable,
@@ -97,6 +95,10 @@ public final class IndTestHsic implements IndependenceTest {
      * Use incomplete Choleksy decomposition to calculate Gram matrices
      */
     private double useIncompleteCholesky = 1e-18;
+
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+
     private boolean verbose;
 
 
@@ -172,6 +174,10 @@ public final class IndTestHsic implements IndependenceTest {
      * @return True iff x _||_ y | z.
      */
     public IndependenceResult checkIndependence(Node y, Node x, Set<Node> _z) {
+        if (facts.containsKey(new IndependenceFact(x, y, _z))) {
+            return facts.get(new IndependenceFact(x, y, _z));
+        }
+
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
@@ -339,7 +345,9 @@ public final class IndTestHsic implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, this.pValue, alpha - pValue);
+        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, _z), independent, this.pValue, alpha - pValue);
+        facts.put(new IndependenceFact(x, y, _z), result);
+        return result;
     }
 
     /**

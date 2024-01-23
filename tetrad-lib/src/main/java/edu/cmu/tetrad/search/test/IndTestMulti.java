@@ -31,7 +31,9 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Pools together a set of independence tests using a specified method.
@@ -40,26 +42,23 @@ import java.util.Set;
  */
 public final class IndTestMulti implements IndependenceTest {
 
-
-    /**
-     * The variables of the covariance matrix, in order. (Unmodifiable list.)
-     */
+    // The variables of the covariance matrix, in order. (Unmodifiable list.)
     private final List<Node> variables;
-
-    /**
-     * The independence test associated with each data set.
-     */
+    // The independence test associated with each data set.
     private final List<IndependenceTest> independenceTests;
-
-    /**
-     * Pooling method
-     */
+    // Pooling method
     private final ResolveSepsets.Method method;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    // True if verbose output should be printed.
     private boolean verbose;
 
-//    private DataSet concatenatedData;
-
-
+    /**
+     * Constructs a new pooled independence test for the given data sets.
+     * @param independenceTests the independence tests to pool.
+     * @param method the method to use for pooling.
+     * @see ResolveSepsets.Method
+     */
     public IndTestMulti(List<IndependenceTest> independenceTests, ResolveSepsets.Method method) {
         Set<String> nodeNames = new HashSet<>();
         for (IndependenceTest independenceTest : independenceTests) {
@@ -73,7 +72,9 @@ public final class IndTestMulti implements IndependenceTest {
         this.method = method;
     }
 
-
+    /**
+     * @throws UnsupportedOperationException Method not implemented.
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
@@ -88,6 +89,10 @@ public final class IndTestMulti implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        if (facts.containsKey(new IndependenceFact(x, y, z))) {
+            return facts.get(new IndependenceFact(x, y, z));
+        }
+
         boolean independent = ResolveSepsets.isIndependentPooled(this.method, this.independenceTests, x, y, z);
 
         if (independent) {
@@ -96,7 +101,10 @@ public final class IndTestMulti implements IndependenceTest {
             TetradLogger.getInstance().log("dependencies", "In aggregate dependent: " + LogUtilsSearch.independenceFact(x, y, z));
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN, Double.NaN);
+        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent,
+                Double.NaN, Double.NaN);
+        facts.put(new IndependenceFact(x, y, z), result);
+        return result;
     }
 
     /**

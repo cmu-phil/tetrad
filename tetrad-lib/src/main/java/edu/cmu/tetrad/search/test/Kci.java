@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -45,7 +48,6 @@ public class Kci implements IndependenceTest {
 
     // The supplied data set, standardized
     private final DataSet data;
-
     // Variables in data
     private final List<Node> variables;
     private final double[] h;
@@ -68,9 +70,8 @@ public class Kci implements IndependenceTest {
     private double widthMultiplier = 1.0;
     // Epsilon for Propositio 5.
     private double epsilon = 0.001;
-
+    // True if verbose output should be printed.
     private boolean verbose;
-//    private IndependenceFact latestFact = null;
 
     /**
      * Constructor.
@@ -80,7 +81,6 @@ public class Kci implements IndependenceTest {
      */
     public Kci(DataSet data, double alpha) {
         this.data = DataTransforms.standardizeData(data);
-//        _data = data.getDoubleData().transpose().toArray();
 
         this.variables = data.getVariables();
         int n = this.data.getNumRows();
@@ -121,6 +121,10 @@ public class Kci implements IndependenceTest {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        if (facts.containsKey(new IndependenceFact(x, y, z))) {
+            return facts.get(new IndependenceFact(x, y, z));
+        }
+
         try {
 
             if (Thread.currentThread().isInterrupted()) {
@@ -134,7 +138,6 @@ public class Kci implements IndependenceTest {
             allVars.addAll(z);
 
             IndependenceFact fact = new IndependenceFact(x, y, z);
-//        this.latestFact = fact;
 
             if (facts.containsKey(fact)) {
                 IndependenceResult result = facts.get(fact);
@@ -199,7 +202,10 @@ public class Kci implements IndependenceTest {
                 IndependenceResult result = facts.get(fact);
 
                 if (this.facts.get(fact) != null) {
-                    return new IndependenceResult(fact, result.isIndependent(), result.getPValue(), getAlpha() - result.getPValue());
+                    IndependenceResult result1 = new IndependenceResult(fact, result.isIndependent(),
+                            result.getPValue(), getAlpha() - result.getPValue());
+                    facts.put(fact, result1);
+                    return result1;
                 } else {
                     if (z.isEmpty()) {
                         result = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
@@ -219,7 +225,10 @@ public class Kci implements IndependenceTest {
                     }
                 }
 
-                return new IndependenceResult(fact, result.isIndependent(), result.getPValue(), getAlpha() - result.getPValue());
+                IndependenceResult result1 = new IndependenceResult(fact, result.isIndependent(),
+                        result.getPValue(), getAlpha() - result.getPValue());
+                facts.put(fact, result1);
+                return result1;
             }
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when testing " +

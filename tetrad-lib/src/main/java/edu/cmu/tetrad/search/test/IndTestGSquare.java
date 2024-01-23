@@ -30,10 +30,8 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
@@ -46,38 +44,31 @@ import java.util.Set;
  */
 public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
-    /**
-     * The standard number formatter for Tetrad.
-     */
+    // The standard number formatter for Tetrad.
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    /**
-     * The G Square tester.
-     */
+    // The G Square tester.
     private final ChiSquareTest gSquareTest;
-    /**
-     * The variables in the discrete data sets or which conditional independence judgements are desired.
-     */
+    // The variables in the discrete data sets or which conditional independence judgements are desired.
     private final List<Node> variables;
-    /**
-     * The dataset of discrete variables.
-     */
+    // The dataset of discrete variables.
     private final DataSet dataSet;
-    /**
-     * The significance level for the test.
-     */
+    // The significance level for the test.
     private final double alpha;
-    /**
-     * The p value associated with the most recent call of isIndependent.
-     */
+    // The p value associated with the most recent call of isIndependent.
     private double pValue;
-    /**
-     * The lower bound of percentages of observation of some category in the data, given some particular combination of
-     * values of conditioning variables, that coefs as 'determining.'
-     */
+    // The lower bound of percentages of observation of some category in the data, given some particular combination of
+    // values of conditioning variables, that coefs as 'determining.'
     private double determinationP = 0.99;
+    // True if verbose output should be printed.
     private boolean verbose;
+    // The minimum expected number of counts per conditional table for chi-square for that table and its degrees of
+    // freedom to be included in the overall chi-square and degrees of freedom. Note that this should not be too small,
+    // or the chi-square distribution will not be a good approximation to the distribution of the test statistic.
     private double minCountPerCell = 1.0;
+    // The rows to use for the test. If null, all rows are used.
     private List<Integer> rows = null;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -150,16 +141,8 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
      * @return True iff x _||_ y | z.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
-        if (x == null) {
-            throw new NullPointerException();
-        }
-
-        if (y == null) {
-            throw new NullPointerException();
-        }
-
-        if (_z == null) {
-            throw new NullPointerException();
+        if (this.facts.containsKey(new IndependenceFact(x, y, _z))) {
+            return facts.get(new IndependenceFact(x, y, _z));
         }
 
         for (Node node : _z) {
@@ -167,6 +150,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
                 throw new NullPointerException();
             }
         }
+
 
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
@@ -200,8 +184,10 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z),
+        IndependenceResult result1 = new IndependenceResult(new IndependenceFact(x, y, _z),
                 result.isIndep(), result.getPValue(), alpha - result.getPValue());
+        facts.put(new IndependenceFact(x, y, _z), result1);
+        return result1;
     }
 
     /**

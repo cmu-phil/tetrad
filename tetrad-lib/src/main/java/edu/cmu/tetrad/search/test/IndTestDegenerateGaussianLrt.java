@@ -54,9 +54,13 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
     // A constant.
     private static final double L2PE = log(2.0 * PI * E);
+    // The data set.
     private final BoxDataSet ddata;
+    // The data set.
     private final double[][] _ddata;
+    // A hash of nodes to indices.
     private final Map<Node, Integer> nodeHash;
+    // The data set.
     private final DataSet dataSet;
     // The mixed variables of the original dataset.
     private final List<Node> variables;
@@ -66,7 +70,11 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     private double alpha = 0.001;
     // The p value.
     private double pValue = NaN;
+    // True if verbose output should be printed.
     private boolean verbose;
+
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
     /**
      * Constructs the score using a covariance matrix.
@@ -176,6 +184,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        if (facts.containsKey(new IndependenceFact(x, y, _z))) {
+            return facts.get(new IndependenceFact(x, y, _z));
+        }
 
         List<Node> allNodes = new ArrayList<>();
         allNodes.add(x);
@@ -238,8 +249,10 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z),
+        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, _z),
                 independent, pValue, alpha - pValue);
+        facts.put(new IndependenceFact(x, y, _z), result);
+        return result;
     }
 
     /**

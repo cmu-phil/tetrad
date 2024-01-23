@@ -32,7 +32,9 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Checks conditional independence of variable in a continuous data set using a conditional correlation test for the
@@ -42,31 +44,22 @@ import java.util.Set;
  */
 public final class IndTestConditionalCorrelation implements IndependenceTest {
 
-    /**
-     * Formats as 0.0000.
-     */
+    // Formats as 0.0000.
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    /**
-     * The instance of CCI that is wrapped.
-     */
+    // The instance of CCI that is wrapped.
     private final ConditionalCorrelationIndependence cci;
-    /**
-     * The variables of the covariance data, in order. (Unmodifiable list.)
-     */
+    //The variables of the covariance data, in order. (Unmodifiable list.)
     private final List<Node> variables;
-    /**
-     * Stores a reference to the data set passed in through the constructor.
-     */
+    // Stores a reference to the data set passed in through the constructor.
     private final DataSet dataSet;
-    /**
-     * The significance level of the independence tests.
-     */
+    // The significance level of the independence tests.
     private double alpha;
-    /**
-     * True if verbose output should be printed.
-     */
+    // True if verbose output should be printed.
     private boolean verbose;
+    // The score of the last test.
     private double score = Double.NaN;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
 
     /**
@@ -96,6 +89,8 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
 
     /**
+     * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
+     * given data set (must be continuous). The given significance level is used.
      * @throws UnsupportedOperationException This method is not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -109,6 +104,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        if (this.facts.containsKey(new IndependenceFact(x, y, z))) {
+            return facts.get(new IndependenceFact(x, y, z));
+        }
 
         double score = this.cci.isIndependent(x, y, z);
         this.score = score;
@@ -128,7 +126,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
+        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, score);
+        facts.put(new IndependenceFact(x, y, z), result);
+        return result;
     }
 
     /**

@@ -32,31 +32,31 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p>Checks independence facts for variables associated with the nodes in a given graph by
+ * Checks independence facts for variables associated with the nodes in a given graph by
  * checking m-separation facts on the underlying nodes. We use the IndependenceTest interface here so that this
  * m-separation test can be used in place of a statistical conditional independence test in algorithms to provide oracle
- * information.</p>
+ * information.
  *
  * @author josephramsey
  */
 public class MsepTest implements IndependenceTest {
 
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
     private Map<Node, Set<Node>> ancestorMap;
     private IndependenceFacts independenceFacts;
-
-    /**
-     * The graph for which this is a variable map.
-     */
+    // The graph for which this is a variable map.
     private Graph graph;
-
-    /**
-     * The list of observed variables (i.e. variables for observed nodes).
-     */
+    //The list of observed variables (i.e. variables for observed nodes).
     private List<Node> observedVars;
+    // The list of translated observed variables (i.e. variables for observed nodes).
     private List<Node> _observedVars;
+    // Whether verbose output should be printed.
     private boolean verbose = false;
+    // The "p-value" of the last test (this is 0 or 1).
     private double pvalue = 0;
 
     /**
@@ -73,7 +73,7 @@ public class MsepTest implements IndependenceTest {
      * Constructor.
      *
      * @param facts     Independence facts to be used for direct calculations of m-separation.
-     * @param variables The variables for the facts, if different from those that independenceFacts would return.
+     * @param variables The variables for the facts, if different from those that independence facts would return.
      * @see IndependenceFacts
      */
     public MsepTest(IndependenceFacts facts, List<Node> variables) {
@@ -205,6 +205,10 @@ public class MsepTest implements IndependenceTest {
             }
         }
 
+        if (facts.containsKey(new IndependenceFact(x, y, z))) {
+            return facts.get(new IndependenceFact(x, y, z));
+        }
+
         boolean mSeparated;
 
         if (graph != null) {
@@ -235,7 +239,9 @@ public class MsepTest implements IndependenceTest {
 
         this.pvalue = pValue;
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), mSeparated, pValue, pvalue == 1 ? -1 : 1);
+        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), mSeparated, pValue, pvalue == 1 ? -1 : 1);
+        facts.put(new IndependenceFact(x, y, z), result);
+        return result;
     }
 
     /**

@@ -30,10 +30,8 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
@@ -77,6 +75,10 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     private boolean verbose;
     private List<Integer> rows = null;
+
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, ChiSquareTest.Result> facts = new ConcurrentHashMap<>();
+
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -175,6 +177,12 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
+        if (this.facts.containsKey(new IndependenceFact(x, y, _z))) {
+            ChiSquareTest.Result result = this.facts.get(new IndependenceFact(x, y, _z));
+            return new IndependenceResult(new IndependenceFact(x, y, _z), result.isIndep(), result.getPValue(),
+                    getAlpha() - result.getPValue());
+        }
+
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
         int[] testIndices = new int[2 + z.size()];
@@ -195,6 +203,8 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
         }
 
         ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices);
+        this.facts.put(new IndependenceFact(x, y, _z), result);
+
         this.xSquare = result.getXSquare();
         this.df = result.getDf();
         double pValue = result.getPValue();
