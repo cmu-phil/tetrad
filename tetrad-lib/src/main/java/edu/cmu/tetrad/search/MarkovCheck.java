@@ -763,10 +763,20 @@ public class MarkovCheck {
                     "| Z1,..,Zn.");
         }
 
-        List<String> independenceNames = knowledge.getTier(knowledge.getNumTiers() - 1);
+        int lastTier = 0;
+
+        for (int t = 0; t < knowledge.getNumTiers(); t++) {
+            if (!knowledge.getTier(t).isEmpty()) {
+                lastTier = t;
+            }
+        }
+
+        List<String> independenceNames = knowledge.getTier(lastTier);
 
         List<String> conditioningNames = new ArrayList<>();
-        for (int i = 0; i < knowledge.getNumTiers() - 1; i++) {
+
+        // Assuming all named nodes go into thd conditioning set.
+        for (int i = 0; i <= lastTier; i++) {
             conditioningNames.addAll(knowledge.getTier(i));
         }
 
