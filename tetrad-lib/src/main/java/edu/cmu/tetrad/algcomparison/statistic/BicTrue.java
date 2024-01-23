@@ -8,7 +8,7 @@ import edu.cmu.tetrad.search.score.SemBicScorer;
 import static org.apache.commons.math3.util.FastMath.tanh;
 
 /**
- * True BIC score.
+ * True BIC score. The BIC is calculated as 2L - k ln N, so "higher is better."
  *
  * @author josephramsey
  */

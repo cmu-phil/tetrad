@@ -1033,15 +1033,12 @@ public final class SemIm implements Im, ISemIm {
      */
     public double getBicScore() {
         int dof = getSemPm().getDof();
-//        return getChiSquare() - dof * FastMath.log(sampleSize);
-
         return getChiSquare() - dof * FastMath.log(this.sampleSize);
 
     }
 
     @Override
     public double getRmsea() {
-
         double v = getChiSquare() - this.semPm.getDof();
         double v1 = this.semPm.getDof() * (getSampleSize() - 1);
         return sqrt(v) / sqrt(v1);

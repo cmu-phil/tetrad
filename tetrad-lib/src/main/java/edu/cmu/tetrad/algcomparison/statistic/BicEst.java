@@ -13,7 +13,7 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.tanh;
 
 /**
- * Estimated BIC score.
+ * Estimated BIC score. The BIC is calculated as 2L - k ln N, so "higher is better."
  *
  * @author josephramsey
  */
