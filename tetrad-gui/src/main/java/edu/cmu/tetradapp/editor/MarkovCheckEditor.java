@@ -314,7 +314,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     @NotNull
-    private static String getHelpMessage() {
+    public static String getHelpMessage() {
         return """
                  This tool lets you plot statistics for independence tests of a pair of variables given some conditioning calculated for one of those variables, for a given graph and dataset. Two tables are made, one in which the independence facts predicted by the graph using these conditioning sets are tested in the data and the other in which the graph's predicted dependence facts are tested. The first of these sets is a check for "Markov" (a check for implied independence facts) for the chosen conditioning sets; the is a check of the "Dependent Distribution." (a check of implied dependence facts)”
 
