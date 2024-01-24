@@ -474,7 +474,6 @@ public class MarkovCheck {
             private final int index;
             private final List<IndependenceFact> facts;
             private final MsepTest msepTest;
-            private boolean stopThread = false;
 
             IndCheckTask(int index, List<IndependenceFact> facts, MsepTest test) {
                 this.index = index;
@@ -500,14 +499,6 @@ public class MarkovCheck {
                 }
 
                 return new Pair<>(msep, mconn);
-            }
-
-            public boolean isStopThread() {
-                return stopThread;
-            }
-
-            public void setStopThread(boolean stopThread) {
-                this.stopThread = stopThread;
             }
         }
 
