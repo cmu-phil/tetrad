@@ -88,10 +88,10 @@ public abstract class WatchedProcess {
         dialog = new JDialog(frame, "Stop Process", Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setUndecorated(true);
-        dialog.setSize(100, 50);
+        dialog.setSize(200, 50);
         dialog.setResizable(false);
 
-        JButton stopButton = new JButton("Processing...");
+        JButton stopButton = new JButton("Processing (click to stop)...");
 
         stopButton.addActionListener(e -> {
             stopLongRunningThread();
