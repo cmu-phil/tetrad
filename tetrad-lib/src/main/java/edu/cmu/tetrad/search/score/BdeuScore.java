@@ -44,12 +44,20 @@ import java.util.List;
  * @see BdeScore
  */
 public class BdeuScore implements DiscreteScore {
+
+    // The discrete dataset.
     private final int[][] data;
+    // The sample size of the data.
     private final int sampleSize;
+    // The number of categories for each variable.
     private final int[] numCategories;
+    // The discrete dataset.
     private final DataSet dataSet;
+    // The variables of the dataset.
     private final List<Node> variables;
+    // The sample prior.
     private double samplePrior = 1d;
+    // The structure prior.
     private double structurePrior = 0d;
 
     /**

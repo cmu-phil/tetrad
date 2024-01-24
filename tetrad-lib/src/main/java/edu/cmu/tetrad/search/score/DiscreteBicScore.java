@@ -45,16 +45,23 @@ import static org.apache.commons.math3.util.FastMath.log;
  * @author josephramsey
  */
 public class DiscreteBicScore implements DiscreteScore {
+    // The discrete dataset.
     private final DataSet dataSet;
+    // The variables of the dataset.
     private final int[][] data;
+    // The sample size.
     private final int sampleSize;
+    // The number of categories for each variable.
     private final int[] numCategories;
+    // The variables of the dataset.
     private List<Node> variables;
+    // The penalty discount.
     private double penaltyDiscount = 1;
+    // The structure prior.
     private double structurePrior = 0;
 
     /**
-     * Constructor.
+     * Constructs the score using a dataset.
      *
      * @param dataSet The discrete dataset to analyze.
      */
@@ -206,6 +213,9 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * Returns the number of parameters for a node given its parents.
+     *
+     * @param node    The index of the node.
+     * @param parents The indices of the node's parents.
      */
     public int numParameters(int node, int[] parents) {
         if (!(this.variables.get(node) instanceof DiscreteVariable)) {

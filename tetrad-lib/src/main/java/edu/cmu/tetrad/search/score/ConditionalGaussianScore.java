@@ -35,33 +35,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>Implements a conditional Gaussian BIC score for FGS, which calculates a BIC
- * score for mixed discrete/Gaussian data using the conditional Gaussian likelihood function (see). The reference is
- * here:</p>
- *
- * <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
- * International journal of data science and analytics, 6, 3-18.</p>
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * Implements a conditional Gaussian BIC score for FGS, which calculates a BIC score for mixed discrete/Gaussian data
+ * using the conditional Gaussian likelihood function (see). The reference is here:
  * <p>
- * * @author josephramsey
+ * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables. International
+ * journal of data science and analytics, 6, 3-18.
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
+ * @author josephramsey
  * @see ConditionalGaussianLikelihood
  * @see DegenerateGaussianScore
  */
 public class ConditionalGaussianScore implements Score {
-
+    // The dataset.
     private final DataSet dataSet;
-
     // The variables of the dataset.
     private final List<Node> variables;
-
     // Likelihood function
     private final ConditionalGaussianLikelihood likelihood;
-
+    // The penalty discount.
     private double penaltyDiscount;
+    // The number of categories to discretize.
     private int numCategoriesToDiscretize = 3;
+    // The structure prior.
     private double structurePrior = 0;
 
     /**
@@ -72,7 +69,7 @@ public class ConditionalGaussianScore implements Score {
      * @param penaltyDiscount A multiplier on the penalty term in the BIC score.
      * @param discretize      When a discrete variable is a child of a continuous variable, one (expensive) way to solve
      *                        the problem is to do a numerical integration. A less expensive (and often more accurate)
-     *                        way to solve the problem is to discretize the child with a certian number of discrete
+     *                        way to solve the problem is to discretize the child with a certain number of discrete
      *                        categories. if this parameter is set to True, a separate copy of all variables is
      *                        maintained that is discretized in this way, and these are substituted for the discrete
      *                        children when this sort of problem needs to be solved. This information needs to be known
@@ -92,12 +89,11 @@ public class ConditionalGaussianScore implements Score {
         this.likelihood = new ConditionalGaussianLikelihood(dataSet);
 
         this.likelihood.setNumCategoriesToDiscretize(this.numCategoriesToDiscretize);
-        this.likelihood.setPenaltyDiscount(penaltyDiscount);
         this.likelihood.setDiscretize(discretize);
     }
 
     /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model.
+     * Calculates the sample likelihood and BIC score for index i given its parents in a simple SEM model.
      *
      * @param i       The index of the child.
      * @param parents The indices of the parents.
@@ -133,7 +129,7 @@ public class ConditionalGaussianScore implements Score {
     }
 
     /**
-     * Reurns the sample size of the data.
+     * Returns the sample size of the data.
      *
      * @return This size.
      */
@@ -176,7 +172,7 @@ public class ConditionalGaussianScore implements Score {
     }
 
     /**
-     * Returns the penalty discount for this score, which is a multiplier on the penatly term of the BIC score.
+     * Returns the penalty discount for this score, which is a multiplier on the penalty term of the BIC score.
      *
      * @return This penalty discount.
      */
@@ -247,8 +243,6 @@ public class ConditionalGaussianScore implements Score {
             return k * FastMath.log(p) + (n - k) * FastMath.log(1.0 - p);
         }
     }
-
-
 }
 
 

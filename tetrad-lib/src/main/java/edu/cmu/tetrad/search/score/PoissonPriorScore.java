@@ -33,16 +33,15 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p>Implements Poisson prior score, a novel (unpubished) score that replaces the
- * penalty term in BIC by the log of the Poisson distribution. The Poisson distribution has a lambda parameter, which is
- * made a parameter of this score and acts like a structure prior for the score.</p>
- *
- * <p>Here is the Wikipedia page for the Poisson distribution, for reference:</p>
- *
- * <p>https://en.wikipedia.org/wiki/Poisson_distribution</p>
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * Implements Poisson prior score, a novel (unpubished) score that replaces the penalty term in BIC by the log of the
+ * Poisson distribution. The Poisson distribution has a lambda parameter, which is made a parameter of this score and
+ * acts like a structure prior for the score.
+ * <p>
+ * Here is the Wikipedia page for the Poisson distribution, for reference:
+ * <p>
+ * https://en.wikipedia.org/wiki/Poisson_distribution
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author bryanandrews
  * @author josephramsey
@@ -56,23 +55,21 @@ public class PoissonPriorScore implements Score {
     private DataSet dataSet;
     // The covariance matrix.
     private ICovarianceMatrix covariances;
-    // True if verbose output should be sent to out.
-    private boolean verbose;
-
     // Sample size or equivalent sample size.
     private double N;
-
     // The data, if it is set.
     private Matrix data;
-
     // True if row subsets should be calculated.
     private boolean calculateRowSubsets;
-
+    // The lambda parameter.
     private double lambda = 3.;
+    // True if the pseudo-inverse should be used.
     private boolean usePseudoInverse = false;
 
     /**
      * Constructs the score using a covariance matrix.
+     *
+     * @param covariances The covariance matrix.
      */
     public PoissonPriorScore(ICovarianceMatrix covariances) {
         if (covariances == null) {
@@ -86,6 +83,9 @@ public class PoissonPriorScore implements Score {
 
     /**
      * Constructs the score using a covariance matrix.
+     *
+     * @param dataSet               The dataset.
+     * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly. True if
      */
     public PoissonPriorScore(DataSet dataSet, boolean precomputeCovariances) {
 
@@ -110,16 +110,22 @@ public class PoissonPriorScore implements Score {
 
     }
 
-    private static double getP(int pn, int m0, double lambda) {
-        return 2 - pow(1 + (exp(-(lambda - 1) / 2.)) * sqrt(lambda), (double) pn - m0);
-    }
-
+    /**
+     * Returns the score difference localScore(y | z, x) - localScore(y | z).
+     *
+     * @param x A node.
+     * @param y TAhe node.
+     * @param z A set of nodes.
+     * @return The score difference.
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
     /**
+     * Returns the score of the node at index i, given its parents.
+     *
      * @param i       The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
@@ -149,6 +155,11 @@ public class PoissonPriorScore implements Score {
         }
     }
 
+    /**
+     * Returns the covariance matrix.
+     *
+     * @return The covariance matrix.
+     */
     public ICovarianceMatrix getCovariances() {
         return this.covariances;
     }
@@ -180,29 +191,53 @@ public class PoissonPriorScore implements Score {
         this.N = covariances.getSampleSize();
     }
 
+    /**
+     * Returns the sample size.
+     *
+     * @return This size.
+     */
     public int getSampleSize() {
         return this.sampleSize;
     }
 
+    /**
+     * Returns true if the edge with the given bump is an effect edge.
+     *
+     * @param bump The bump.
+     * @return True if so.
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
+    /**
+     * Returns the variables.
+     *
+     * @return This list.
+     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * Returns the max degree.
+     *
+     * @return This maximum.
+     */
     @Override
     public int getMaxDegree() {
         return (int) ceil(log(this.sampleSize));
     }
 
+    /**
+     * Returns true if z determines y.
+     *
+     * @param z The set of nodes.
+     * @param y The node.
+     * @return True if z determines y.
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
         int i = this.variables.indexOf(y);
@@ -211,23 +246,38 @@ public class PoissonPriorScore implements Score {
         return Double.isNaN(v);
     }
 
+    /**
+     * Returns the data set.
+     *
+     * @return The data set.
+     */
     public DataModel getData() {
         return this.dataSet;
     }
 
+    /**
+     * Sets the lambda parameter.
+     *
+     * @param lambda The lambda parameter.
+     */
     public void setLambda(double lambda) {
         if (lambda < 1.0) throw new IllegalArgumentException("Poisso lambda can't be < 1: " + lambda);
         this.lambda = lambda;
+    }
+
+    /**
+     * Sets whether the pseudo-inverse should be used.
+     *
+     * @param usePseudoInverse True if the pseudo-inverse should be used.
+     */
+    public void setUsePseudoInverse(boolean usePseudoInverse) {
+        this.usePseudoInverse = usePseudoInverse;
     }
 
     private int[] indices(List<Node> __adj) {
         int[] indices = new int[__adj.size()];
         for (int t = 0; t < __adj.size(); t++) indices[t] = this.variables.indexOf(__adj.get(t));
         return indices;
-    }
-
-    public void setUsePseudoInverse(boolean usePseudoInverse) {
-        this.usePseudoInverse = usePseudoInverse;
     }
 }
 
