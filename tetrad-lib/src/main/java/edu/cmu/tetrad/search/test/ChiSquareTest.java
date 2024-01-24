@@ -46,16 +46,12 @@ public class ChiSquareTest {
 
     // The data set this test uses.
     private final DataSet dataSet;
-
     // The number of values for each variable in the data.
     private final int[] dims;
-
     // Stores the data in the form of a cell table.
     private final CellTable cellTable;
-
     // The type of test to perform.
     private final TestType testType;
-
     // The significance level of the test.
     private double alpha;
 
