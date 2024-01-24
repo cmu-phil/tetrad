@@ -18,6 +18,7 @@
  */
 package edu.cmu.tetrad.annotation;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 
@@ -27,37 +28,37 @@ import java.lang.annotation.Annotation;
  * @param <T> annotation
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public class AnnotatedClass<T extends Annotation> implements Serializable {
+public record AnnotatedClass<T extends Annotation>(Class clazz, T annotation) implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 5060798016477163171L;
-
-    private final Class clazz;
-
-    private final T annotation;
 
     /**
      * Creates an annotated class.
-     * @param clazz class
+     *
+     * @param clazz      class
      * @param annotation annotation
      */
-    public AnnotatedClass(Class clazz, T annotation) {
-        this.clazz = clazz;
-        this.annotation = annotation;
+    public AnnotatedClass {
     }
 
     /**
      * Gets the class.
+     *
      * @return class
      */
-    public Class getClazz() {
+    @Override
+    public Class clazz() {
         return this.clazz;
     }
 
     /**
      * Gets the annotation.
+     *
      * @return annotation
      */
-    public T getAnnotation() {
+    @Override
+    public T annotation() {
         return this.annotation;
     }
 

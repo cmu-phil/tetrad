@@ -77,11 +77,11 @@ public final class Tetrad implements PropertyChangeListener {
      * Launches Tetrad as an application. One way to launch Tetrad IV as an application is the following:&gt; 0
      * <pre>java -cp jarname.jar INSTANCE.Tetrad</pre>
      * <p>
-     * where "jarname.jar" is a jar containing all of the classes of Tetrad IV, properly compiled, along with all of the
-     * auxiliary jar contents and all of the images which Tetrad IV uses, all in their proper relative directories.&gt;
+     * where "jarname.jar" is a jar containing all the classes of Tetrad IV, properly compiled, along with all the
+     * auxiliary jar contents and all the images which Tetrad IV uses, all in their proper relative directories.&gt;
      * 0
      *
-     * @param argv --skip-latest argument will skip checking for latest version.
+     * @param argv --skip-latest argument will skip checking for the latest version.
      */
     public static void main(String[] argv) {
         if (argv != null && argv.length > 0) {
@@ -96,7 +96,7 @@ public final class Tetrad implements PropertyChangeListener {
         // This is needed to get numbers to be parsed and rendered uniformly, especially in the interface.
         Locale.setDefault(Locale.US);
 
-        // Check if we should skip checking for latest version
+        // Check if we should skip checking for the latest version
         SplashScreen.show("Loading Tetrad...", 1000);
         EventQueue.invokeLater(() -> new Tetrad().launchFrame());
 
@@ -108,12 +108,6 @@ public final class Tetrad implements PropertyChangeListener {
         try {
             String os = System.getProperties().getProperty("os.name");
             if (os.equals("Windows XP")) {
-                // The only system look and feel that seems to work well is the
-                // one for Windows XP. When running on Mac the mac look and
-                // feel is forced. The new look (synth or whatever it's called)
-                // and feel for linux on 1.5 looks
-                // pretty bad, so it shouldn't be used.
-                // By default, linux will use the metal look and feel.
                 UIManager.setLookAndFeel(
                         UIManager.getSystemLookAndFeelClassName());
             }
@@ -146,12 +140,14 @@ public final class Tetrad implements PropertyChangeListener {
         JOptionUtils.setCenteringComp(getDesktop());
         DesktopController.setReference(getDesktop());
 
-        // Set up the frame. Note the order in which the next few steps
-        // happen. First, the frame is given a preferred size, so that if
-        // someone unmaximizes it, it doesn't shrivel up to the top left
-        // corner. Next, the content pane is set. Next, it is packed. Finally,
-        // it is maximized. For some reason, most of the details of this
-        // order are important. jdramsey 12/14/02
+        /*
+         This sets up the frame. Note the order in which the next few steps
+         happen. First, the frame is given a preferred size, so that if
+         someone unmaximizes it, it doesn't shrivel up to the top left
+         corner. Next, the content pane is set. Next, it is packed. Finally,
+         it is maximized. For some reason, most of the details of this
+         order are important. Jdramsey 12/14/02
+        */
         this.frame = new JFrame(this.mainTitle) {
 
             @Serial
@@ -166,7 +162,7 @@ public final class Tetrad implements PropertyChangeListener {
 
         // Fixing a bug caused by switch to Oracle Java (at least for Mac), although I must say the following
         // code is what should have worked to begin with. Bug was that sessions would appear only in the lower
-        // left hand corner of the screen.
+        // left-hand corner of the screen.
         this.frame.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
 
         getFrame().setContentPane(getDesktop());

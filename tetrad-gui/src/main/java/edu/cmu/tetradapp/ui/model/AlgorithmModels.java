@@ -68,7 +68,7 @@ public final class AlgorithmModels {
         }
 
         // group by datatype
-        this.models.forEach(e -> map.get(e.getAlgorithm().getAnnotation().algoType()).add(e));
+        this.models.forEach(e -> map.get(e.getAlgorithm().annotation().algoType()).add(e));
 
         // make it unmodifiable
         map.forEach((k, v) -> map.put(k, Collections.unmodifiableList(v)));
@@ -81,9 +81,9 @@ public final class AlgorithmModels {
         return (dataType == DataType.All)
                 ? algorithmModels
                 : algorithmModels.stream()
-                .filter(e -> !multiDataSetAlgorithm || algoAnno.takesMultipleDataset(e.getAlgorithm().getClazz()))
+                .filter(e -> !multiDataSetAlgorithm || algoAnno.takesMultipleDataset(e.getAlgorithm().clazz()))
                 .filter(e -> {
-                    for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
+                    for (DataType dt : e.getAlgorithm().annotation().dataType()) {
                         if (dt == DataType.All || dt == dataType) {
                             return true;
                         }

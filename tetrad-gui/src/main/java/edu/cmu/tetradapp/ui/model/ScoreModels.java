@@ -71,7 +71,7 @@ public final class ScoreModels {
 
         // group by datatype
         this.models.forEach(e -> {
-            DataType[] types = e.getScore().getAnnotation().dataType();
+            DataType[] types = e.getScore().annotation().dataType();
             for (DataType dataType : types) {
                 this.modelMap.get(dataType).add(e);
             }
@@ -107,7 +107,7 @@ public final class ScoreModels {
                         this.defaultModelMap.put(dataType, list.get(0));
                     } else {
                         Optional<ScoreModel> result = list.stream()
-                                .filter(e -> e.getScore().getClazz().getName().equals(value))
+                                .filter(e -> e.getScore().clazz().getName().equals(value))
                                 .findFirst();
                         this.defaultModelMap.put(dataType, result.orElseGet(() -> list.get(0)));
                     }

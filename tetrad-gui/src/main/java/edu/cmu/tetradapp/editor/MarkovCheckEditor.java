@@ -377,7 +377,7 @@ public class MarkovCheckEditor extends JPanel {
     private void setTest() {
         IndependenceTestModel selectedItem = (IndependenceTestModel) indTestJComboBox.getSelectedItem();
         Class<IndependenceWrapper> clazz = (selectedItem == null) ? null
-                : selectedItem.getIndependenceTest().getClazz();
+                : selectedItem.getIndependenceTest().clazz();
         IndependenceTest independenceTest;
 
         if (clazz != null) {
@@ -1007,11 +1007,11 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
-        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+        ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
         return params.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        e -> createParameterComponent(e, parameters, paramDescs.get(e)),
+                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e)),
                         (u, v) -> {
                             throw new IllegalStateException(String.format("Duplicate key %s.", u));
                         },

@@ -64,7 +64,7 @@ public class AnnotatedClassUtils {
 
         if (annotatedClasses != null && !annotatedClasses.isEmpty()) {
             annotatedClasses.stream()
-                    .filter(e -> e.getClazz().isAnnotationPresent(annotation))
+                    .filter(e -> e.clazz().isAnnotationPresent(annotation))
                     .collect(Collectors.toCollection(() -> list));
         }
 

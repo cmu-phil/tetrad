@@ -78,7 +78,7 @@ public final class IndependenceTestDescriptions {
 
     private List<String> getShortNames() {
         return TestOfIndependenceAnnotations.getInstance().getAnnotatedClasses().stream()
-                .map(e -> e.getAnnotation().command())
+                .map(e -> e.annotation().command())
                 .collect(Collectors.toList());
     }
 
