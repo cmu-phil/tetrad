@@ -44,8 +44,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
-import java.awt.*;
 import java.awt.Point;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
@@ -60,7 +60,11 @@ import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 
 
 /**
- * Lists independence facts specified by user and allows the list to be sorted by independence fact or by p value.
+ * A model for the Markov check. The Markov check for a given graph and dataset checks whether the graph is Markov with
+ * respect to the dataset. The Markov check can be used to check whether a graph is Markov with respect to a dataset, or
+ * whether a graph is Markov with respect to a dataset and a set of variables. The Markov check can also be used to
+ * check whether a graph is Markov with respect to a dataset and a set of variables, given a set of knowledge. For facts
+ * of the form X _||_ Y | Z, X and Y should be in the last tier of the knowledge, and Z should be in previous tiers.
  *
  * @author josephramsey
  */
@@ -329,6 +333,27 @@ public class MarkovCheckEditor extends JPanel {
                 A note about Markov Blankets: The "Markov Blanket" conditioning set choice implements the Markov blanket calculation in a way that is correct for DAGs, CPDAGs, MAGs, and PAGs. For all of these graph types, the list of m-connecting facts in the Faithfulness tab should be empty, since the Markov blanket should screen off the target from any other variables in the dataset. It's possible that for some other graph types this list may not be empty (i.e., the Markov blanket calculation may not be correct).""";
     }
 
+    @NotNull
+    private static HistogramPanel getHistogramPanel(List<IndependenceResult> results) {
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(results.size(), 1),
+                Collections.singletonList(new ContinuousVariable("P-Value or Bump")));
+
+        for (int i = 0; i < results.size(); i++) {
+            dataSet.setDouble(i, 0, results.get(i).getPValue());
+        }
+
+        Histogram histogram = new Histogram(dataSet, "P-Value or Bump", false);
+        HistogramPanel view = new HistogramPanel(histogram, true);
+
+        Color fillColor = new Color(113, 165, 210);
+        view.setBarColor(fillColor);
+
+        view.setPreferredSize(new Dimension(350, 200));
+        return view;
+    }
+
+    //========================PUBLIC METHODS==========================//
+
     private void refreshResult(MarkovCheckIndTestModel model, DoubleTextField percent) {
         setTest();
         model.getMarkovCheck().setPercentResample(percent.getValue());
@@ -345,8 +370,6 @@ public class MarkovCheckEditor extends JPanel {
         histogramPanelIndep.repaint();
         setLabelTexts();
     }
-
-    //========================PUBLIC METHODS==========================//
 
     private void setTest() {
         IndependenceTestModel selectedItem = (IndependenceTestModel) indTestJComboBox.getSelectedItem();
@@ -875,7 +898,6 @@ public class MarkovCheckEditor extends JPanel {
         conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + conditioningSetTypeJComboBox.getSelectedItem() + ")");
     }
 
-
     private int getLastSortCol() {
         return this.lastSortCol;
     }
@@ -920,25 +942,6 @@ public class MarkovCheckEditor extends JPanel {
         vBox.add(Box.createVerticalGlue());
 
         return vBox;
-    }
-
-    @NotNull
-    private static HistogramPanel getHistogramPanel(List<IndependenceResult> results) {
-        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(results.size(), 1),
-                Collections.singletonList(new ContinuousVariable("P-Value or Bump")));
-
-        for (int i = 0; i < results.size(); i++) {
-            dataSet.setDouble(i, 0, results.get(i).getPValue());
-        }
-
-        Histogram histogram = new Histogram(dataSet, "P-Value or Bump", false);
-        HistogramPanel view = new HistogramPanel(histogram, true);
-
-        Color fillColor = new Color(113, 165, 210);
-        view.setBarColor(fillColor);
-
-        view.setPreferredSize(new Dimension(350, 200));
-        return view;
     }
 
     private DataType getDataType() {
