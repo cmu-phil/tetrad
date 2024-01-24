@@ -90,10 +90,10 @@ public final class SaveSessionAsAction extends AbstractAction {
         sessionWrapper.setName(file.getName());
         sessionEditor.setName(file.getName());
 
-        class MyWatchedProceess extends WatchedProcess {
+        class MyWatchedProcess extends WatchedProcess {
 
             @Override
-            public void watch() throws InterruptedException {
+            public void watch() {
                 try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
                     saved = false;
                     objOut.writeObject(metadata);
@@ -115,24 +115,6 @@ public final class SaveSessionAsAction extends AbstractAction {
             }
         }
 
-        new MyWatchedProceess();
-
-//        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
-//            objOut.writeObject(metadata);
-//            objOut.writeObject(sessionWrapper);
-//
-//            sessionWrapper.setSessionChanged(false);
-//            sessionWrapper.setNewSession(false);
-//            this.saved = true;
-//        } catch (IOException exception) {
-//            exception.printStackTrace(System.err);
-//
-//            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                    "An error occurred while attempting to save the session.");
-//            this.saved = false;
-//        }
-//
-//        DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
-//        sessionEditor.firePropertyChange("name", null, file.getName());
+        new MyWatchedProcess();
     }
 }

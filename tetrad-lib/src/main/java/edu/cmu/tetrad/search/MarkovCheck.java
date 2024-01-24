@@ -80,7 +80,7 @@ public class MarkovCheck {
     // The percentage of all samples to use when resampling for each conditional independence test.
     private double percentResample = 0.5;
     // The number of tests for the independent case.
-    private int numTestsindep = 0;
+    private int numTestsIndep = 0;
     // The number of tests for the dependent case.
     private int numTestsDep = 0;
     // A knowledge object to specify independence and conditioning ranges. Empty by default.
@@ -106,9 +106,9 @@ public class MarkovCheck {
     }
 
     /**
-     * Returns the set of independence facts used in the Markov check, for dsepation and dconnection separately.
+     * Returns the set of independence facts used in the Markov check, for dseparation and dconnection separately.
      *
-     * @return The set of independence facts used in the Markov check, for dsepation and dconnection separately.
+     * @return The set of independence facts used in the Markov check, for dseparation and dconnection separately.
      */
     @NotNull
     public AllSubsetsIndependenceFacts getAllSubsetsIndependenceFacts() {
@@ -264,7 +264,7 @@ public class MarkovCheck {
             generateResults(msep, true);
             generateResults(mconn, false);
 
-            this.numTestsindep = msep.size();
+            this.numTestsIndep = msep.size();
             this.numTestsDep = mconn.size();
         }
 
@@ -424,7 +424,7 @@ public class MarkovCheck {
      */
     public int getNumTests(boolean indep) {
         if (indep) {
-            return numTestsindep;
+            return numTestsIndep;
         } else {
             return numTestsDep;
         }
@@ -709,7 +709,7 @@ public class MarkovCheck {
     }
 
     /**
-     * Returns a Binonial p-value for the hypothesis that the distribution of p-values is not Uniform under the null
+     * Returns a Binomial p-value for the hypothesis that the distribution of p-values is not Uniform under the null
      * hypothesis. Values less than alpha imply non-uniform distributions.
      *
      * @param pValues The p-values.

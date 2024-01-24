@@ -91,7 +91,7 @@ public final class SaveSessionAction extends AbstractAction {
         class MyWatchedProceess extends WatchedProcess {
 
             @Override
-            public void watch() throws InterruptedException {
+            public void watch() {
                 try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile))) {
                     sessionWrapper.setNewSession(false);
                     objOut.writeObject(metadata);
