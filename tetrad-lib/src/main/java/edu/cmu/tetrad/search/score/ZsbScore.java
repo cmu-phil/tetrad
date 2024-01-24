@@ -40,8 +40,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Implements an unpublished score based on a risk bound due to Zhang and Shen. It adapts Theorem 1 in the following
  * reference:
  * <p>
- * Zhang, Y., &amp; Shen, X. (2010). Model selection procedure for high‐dimensional data. Statistical Analysis and Data
- * Mining: The ASA Data Science Journal, 3(5), 350-358
+ * Zhang, Y., &amp; Shen, X. (2010). Model selection procedure for high‐dimensional data. Statistical Analysis and Data
+ * Mining: The ASA Data Science Journal, 3(5), 350-358
  * <p>
  * The score uses Theorem 1 in the above to numerically search for a lambda value that is bounded by a given probability
  * risk, between 0 and 1, if outputting a local false positive parent for a variable. There is a parameter m0, which is

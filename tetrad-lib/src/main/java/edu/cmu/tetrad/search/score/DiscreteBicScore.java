@@ -38,9 +38,8 @@ import static org.apache.commons.math3.util.FastMath.log;
  * 1)) for all conditional probability tables in the model, where rows summing to zero are discounted, as their marginal
  * probabilities cannot be calcualted. Then the BIC score is calculated as 2L - ck ln N, where c is a multiplier on the
  * penalty ("penalty discount").
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
  */
