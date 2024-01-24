@@ -1,5 +1,7 @@
 package edu.cmu.tetradapp.util;
 
+import edu.cmu.tetrad.util.TetradLogger;
+
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
@@ -53,7 +55,7 @@ public abstract class WatchedProcess {
     private void startLongRunningThread() {
         longRunningThread = new Thread(() -> {
             if (Thread.interrupted()) {
-                // Thread was interrupted, so exit the loop and terminate
+                // The Thread was interrupted, so exit the loop and terminate
                 System.out.println("Thread was interrupted. Stopping...");
                 return;
             }
@@ -61,9 +63,7 @@ public abstract class WatchedProcess {
             try {
                 watch();
             } catch (InterruptedException e) {
-                e.printStackTrace();
-                // Thread was interrupted while sleeping, so exit the loop and terminate
-                System.out.println("Thread was interrupted while watching. Stopping...");
+                TetradLogger.getInstance().forceLogMessage("Thread was interrupted while watching. Stopping...");
                 return;
             }
 
