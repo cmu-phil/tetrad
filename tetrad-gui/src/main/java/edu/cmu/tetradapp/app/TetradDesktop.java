@@ -449,18 +449,18 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             action.actionPerformed(new ActionEvent(this,
                     ActionEvent.ACTION_PERFORMED, "Dummy close action"));
 
-            if (!action.isSaved()) {
-                int ret2 = JOptionPane
-                        .showConfirmDialog(
-                                JOptionUtils.centeringComp(),
-                                "This session was not saved. Close session and continue anyway?",
-                                "Advise needed...",
-                                JOptionPane.OK_CANCEL_OPTION);
-
-                if (ret2 == JOptionPane.CANCEL_OPTION) {
-                    return false;
-                }
-            }
+//            if (!SaveSessionAction.saved) {
+//                int ret2 = JOptionPane
+//                        .showConfirmDialog(
+//                                JOptionUtils.centeringComp(),
+//                                "This session was not saved. Close session and continue anyway?",
+//                                "Advise needed...",
+//                                JOptionPane.OK_CANCEL_OPTION);
+//
+//                if (ret2 == JOptionPane.CANCEL_OPTION) {
+//                    return false;
+//                }
+//            }
 
             closeFrontmostSession();
         }

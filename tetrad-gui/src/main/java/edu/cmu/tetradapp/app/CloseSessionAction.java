@@ -34,9 +34,7 @@ import java.awt.event.ActionEvent;
  *
  * @author josephramsey
  */
-final class CloseSessionAction extends AbstractAction {
-
-    private boolean saved;
+public final class CloseSessionAction extends AbstractAction {
 
     /**
      * Creates a new close session action for the given desktop.
@@ -70,7 +68,6 @@ final class CloseSessionAction extends AbstractAction {
             if (response == JOptionPane.YES_OPTION) {
                 SaveSessionAction saveSessionAction = new SaveSessionAction();
                 saveSessionAction.actionPerformed(e);
-                this.saved = saveSessionAction.isSaved();
             } else if (response == JOptionPane.CANCEL_OPTION) {
                 return;
             }
@@ -88,10 +85,6 @@ final class CloseSessionAction extends AbstractAction {
      */
     public String toString() {
         return "Close session action.";
-    }
-
-    public boolean isSaved() {
-        return this.saved;
     }
 }
 

@@ -33,6 +33,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.nio.file.Files;
 import java.util.prefs.Preferences;
 
@@ -41,11 +42,12 @@ import java.util.prefs.Preferences;
  *
  * @author josephramsey
  */
-final class SaveSessionAsAction extends AbstractAction {
+public final class SaveSessionAsAction extends AbstractAction {
 
+    @Serial
     private static final long serialVersionUID = 2798487128341621686L;
 
-    private boolean saved;
+    public static boolean saved = false;
 
     public SaveSessionAsAction() {
         super("Save Session As...");
@@ -71,14 +73,14 @@ final class SaveSessionAsAction extends AbstractAction {
                 JOptionUtils.centeringComp(), true, "Save Session As...", sessionSaveLocation);
 
         if (file == null) {
-            this.saved = false;
+            saved = false;
             return;
         }
 
         if ((DesktopController.getInstance().existsSessionByName(
                 file.getName())
                 && !(sessionWrapper.getName().equals(file.getName())))) {
-            this.saved = false;
+            saved = false;
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Another session by that name is currently open. Please "
                             + "\nclose that session first.");
@@ -93,20 +95,19 @@ final class SaveSessionAsAction extends AbstractAction {
             @Override
             public void watch() throws InterruptedException {
                 try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
+                    saved = false;
                     objOut.writeObject(metadata);
                     objOut.writeObject(sessionWrapper);
 
                     sessionWrapper.setSessionChanged(false);
                     sessionWrapper.setNewSession(false);
-                    setSaved(true);
-//                    this.saved = true;
+                    saved = true;
                 } catch (IOException exception) {
                     exception.printStackTrace(System.err);
 
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "An error occurred while attempting to save the session.");
-                    setSaved(false);
-//                    this.saved = false;
+                    saved = false;
                 }
 
                 DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
@@ -133,13 +134,5 @@ final class SaveSessionAsAction extends AbstractAction {
 //
 //        DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
 //        sessionEditor.firePropertyChange("name", null, file.getName());
-    }
-
-    public boolean isSaved() {
-        return this.saved;
-    }
-
-    public void setSaved(boolean saved) {
-        this.saved = saved;
     }
 }

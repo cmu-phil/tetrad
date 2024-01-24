@@ -23,6 +23,9 @@ package edu.cmu.tetradapp;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
+import edu.cmu.tetradapp.app.CloseSessionAction;
+import edu.cmu.tetradapp.app.SaveSessionAction;
+import edu.cmu.tetradapp.app.SaveSessionAsAction;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
@@ -197,6 +200,22 @@ public final class Tetrad implements PropertyChangeListener {
         });
 
         SplashScreen.hide();
+
+        if (Desktop.isDesktopSupported()) {
+            Desktop desktop = Desktop.getDesktop();
+            desktop.setQuitHandler((e2, response) -> {
+//                if (!SaveSessionAsAction.saved || !SaveSessionAction.saved) {
+                    int result = JOptionPane.showConfirmDialog(null,
+                            "Are you sure you want to quit? Any unsaved work will be lost.",
+                            "Confirm Quit", JOptionPane.YES_NO_OPTION);
+                    if (result == JOptionPane.YES_OPTION) {
+                        response.performQuit();
+                    } else {
+                        response.cancelQuit();
+                    }
+//                }
+            });
+        }
 
     }
 
