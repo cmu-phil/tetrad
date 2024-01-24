@@ -41,31 +41,53 @@ import java.util.concurrent.Future;
  * @author josephramsey
  */
 public class MarkovCheck {
+    // The graph.
     private final Graph graph;
+    // The independence test.
     private final IndependenceTest independenceTest;
+    // The results of the Markov check for the independent case.
     private final List<IndependenceResult> resultsIndep = new ArrayList<>();
+    // The results of the Markov check for the dependent case.
     private final List<IndependenceResult> resultsDep = new ArrayList<>();
+    // The type of conditioning sets to use in the Markov check.
     private ConditioningSetType setType;
+    // True if the checks should be parallelized. (Not always a good idea.)
     private boolean parallelized = false;
+    // The fraction of dependent judgments for the independent case.
     private double fractionDependentIndep = Double.NaN;
+    // The fraction of dependent judgments for the dependent case.
     private double fractionDependentDep = Double.NaN;
+    // The Kolmogorov-Smirnov p-value for the independent case.
     private double ksPValueIndep = Double.NaN;
+    // The Kolmogorov-Smirnov p-value for the dependent case.
     private double ksPValueDep = Double.NaN;
+    // The Anderson-Darling A^2 statistic for the independent case.
     private double aSquaredIndep = Double.NaN;
+    // The Anderson-Darling A^2 statistic for the dependent case.
     private double aSquaredDep = Double.NaN;
+    // The Anderson-Darling A^2* statistic for the independent case.
     private double aSquaredStarIndep = Double.NaN;
+    // The Anderson-Darling A^2* statistic for the dependent case.
     private double aSquaredStarDep = Double.NaN;
+    // The Anderson-Darling p-value for the independent case.
     private double andersonDarlingPIndep = Double.NaN;
+    // The Anderson-Darling p-value for the dependent case.
     private double andersonDarlingPDep = Double.NaN;
+    // The Binomial p-value for the independent case.
     private double binomialPIndep = Double.NaN;
+    // The Binomial p-value for the dependent case.
     private double binomialPDep = Double.NaN;
+    // The percentage of all samples to use when resampling for each conditional independence test.
     private double percentResample = 0.5;
+    // The number of tests for the independent case.
     private int numTestsindep = 0;
+    // The number of tests for the dependent case.
     private int numTestsDep = 0;
-
     // A knowledge object to specify independence and conditioning ranges. Empty by default.
     private Knowledge knowledge = new Knowledge();
+    // For X _||_ Y | Z, X and Y must come from this set if knowledge is used.
     private List<Node> independenceNodes;
+    // For X _||_ Y | Z, the nodes in Z must come from this set if knowledge is used.
     private List<Node> conditioningNodes;
 
     /**
