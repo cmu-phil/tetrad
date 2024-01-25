@@ -60,7 +60,7 @@ public final class Tetrad implements PropertyChangeListener {
     /**
      * The launch frame.
      */
-    private JFrame frame;
+    public static JFrame frame;
     /**
      * The desktop placed into the launch frame.
      */

@@ -1,10 +1,13 @@
 package edu.cmu.tetradapp.util;
 
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.Tetrad;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 /**
  * Runs a long process, watching it with a thread and popping up a Stop button that the user can click to stop the
@@ -31,7 +34,7 @@ import java.awt.*;
  * @author ChatGPT
  */
 public abstract class WatchedProcess {
-    private final JFrame frame;
+    private JFrame frame;
     private Thread longRunningThread;
     private JDialog dialog;
 
@@ -39,7 +42,19 @@ public abstract class WatchedProcess {
      * Constructor.
      */
     public WatchedProcess() {
-        frame = new JFrame("Hidden Frame");
+
+        // The frame is used to center the dialog on the screen. Use the Tetrad frame if it exists, otherwise create a
+        // hidden frame.
+        frame = Tetrad.frame;
+
+        if (frame == null) {
+            // Create a hidden frame
+            frame = new JFrame("Hidden Frame");
+            frame.setUndecorated(true);
+            frame.setSize(0, 0);
+            frame.setVisible(true);
+        }
+
         startLongRunningThread();
     }
 
@@ -106,5 +121,28 @@ public abstract class WatchedProcess {
 
         dialog.setLocationRelativeTo(frame);
         dialog.setVisible(true);
+
+        frame.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                moveDialogToSameScreen(frame, dialog);
+            }
+        });
+    }
+
+    private static void moveDialogToSameScreen(JFrame frame, JDialog dialog) {
+        Point frameLocation = frame.getLocation();
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] screens = ge.getScreenDevices();
+
+        for (GraphicsDevice screen : screens) {
+            Rectangle bounds = screen.getDefaultConfiguration().getBounds();
+            if (bounds.contains(frameLocation)) {
+                Point dialogLocation = dialog.getLocation();
+                dialogLocation.translate(bounds.x - frameLocation.x, bounds.y - frameLocation.y);
+                dialog.setLocation(dialogLocation);
+                break;
+            }
+        }
     }
 }
