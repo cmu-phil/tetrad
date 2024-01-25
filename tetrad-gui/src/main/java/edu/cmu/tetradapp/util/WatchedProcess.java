@@ -76,8 +76,6 @@ public abstract class WatchedProcess {
 
             try {
                 watch();
-
-
             } catch (InterruptedException e) {
                 TetradLogger.getInstance().forceLogMessage("Thread was interrupted while watching. Stopping...");
                 return;
