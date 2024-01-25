@@ -76,6 +76,8 @@ public abstract class WatchedProcess {
 
             try {
                 watch();
+
+
             } catch (InterruptedException e) {
                 TetradLogger.getInstance().forceLogMessage("Thread was interrupted while watching. Stopping...");
                 return;
@@ -88,7 +90,6 @@ public abstract class WatchedProcess {
         });
 
         longRunningThread.start();
-
         showStopDialog();
     }
 
@@ -104,6 +105,15 @@ public abstract class WatchedProcess {
         dialog.setUndecorated(true);
         dialog.setSize(200, 50);
         dialog.setResizable(false);
+
+        frame.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                if (dialog != null) {
+                    positionDialogAboveFrameCenter(frame, dialog);
+                }
+            }
+        });
 
         JButton stopButton = new JButton("Processing (click to stop)...");
 
@@ -121,28 +131,16 @@ public abstract class WatchedProcess {
 
         dialog.setLocationRelativeTo(frame);
         dialog.setVisible(true);
-
-        frame.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentMoved(ComponentEvent e) {
-                moveDialogToSameScreen(frame, dialog);
-            }
-        });
     }
 
-    private static void moveDialogToSameScreen(JFrame frame, JDialog dialog) {
-        Point frameLocation = frame.getLocation();
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice[] screens = ge.getScreenDevices();
+    private static void positionDialogAboveFrameCenter(JFrame frame, JDialog dialog) {
+        // Calculate the new position for the dialog
+        Point newDialogPosition = new Point(
+                frame.getX() + frame.getWidth() / 2 - dialog.getWidth() / 2, // Centered horizontally
+                frame.getY() + frame.getHeight() / 2 - dialog.getHeight() / 2 // Centered vertically
+        );
 
-        for (GraphicsDevice screen : screens) {
-            Rectangle bounds = screen.getDefaultConfiguration().getBounds();
-            if (bounds.contains(frameLocation)) {
-                Point dialogLocation = dialog.getLocation();
-                dialogLocation.translate(bounds.x - frameLocation.x, bounds.y - frameLocation.y);
-                dialog.setLocation(dialogLocation);
-                break;
-            }
-        }
+        // Set the dialog's new position
+        dialog.setLocation(newDialogPosition);
     }
 }
