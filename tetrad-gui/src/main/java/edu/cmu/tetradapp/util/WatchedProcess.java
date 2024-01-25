@@ -103,6 +103,7 @@ public abstract class WatchedProcess {
         dialog.setUndecorated(true);
         dialog.setSize(200, 50);
         dialog.setResizable(false);
+        dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
 
         frame.addComponentListener(new ComponentAdapter() {
             @Override
