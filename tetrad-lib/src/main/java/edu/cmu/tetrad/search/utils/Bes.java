@@ -20,16 +20,14 @@ import static org.apache.commons.math3.util.FastMath.min;
 
 
 /**
- * <p>Extracts the backward step of GES for use GES but also in other
- * algorithms. The GES algorithm consists of a forward phase (FES = Forward Equivalence Search) and a backward phase
- * (BES = Backward Equivalence Search). We find the BES step by itself is useful in a number of algorithms, so we
- * extract this step and give as a separate algorithm.</p>
- *
- * <p>The idea of the backward search is to start with a model that is
- * Markov and removed edges from it and do the corresponding reorientations, improving the score each time, until the
- * score can no longer be improved.</p>
- * <p>We use the optimized implementation used in the FGES implementation
- * of GES.</p>
+ * Extracts the backward step of GES for use GES but also in other algorithms. The GES algorithm consists of a forward
+ * phase (FES = Forward Equivalence Search) and a backward phase (BES = Backward Equivalence Search). We find the BES
+ * step by itself is useful in a number of algorithms, so we extract this step and give as a separate algorithm.
+ * <p>
+ * The idea of the backward search is to start with a model that is Markov and removed edges from it and do the
+ * corresponding reorientations, improving the score each time, until the score can no longer be improved.
+ * <p>
+ * We use the optimized implementation used in the FGES implementation of GES.
  *
  * @author bryanandrews
  * @author josephramsey
@@ -37,12 +35,23 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Boss
  */
 public class Bes {
+
+    // The variables being searched over.
     private final List<Node> variables;
+    // The score.
     private final Score score;
+    // The knowledge.
     private Knowledge knowledge = new Knowledge();
+    // True if verbose output should be printed.
     private boolean verbose = true;
+    // The depth of the search.
     private int depth = 4;
 
+    /**
+     * Constructs the search.
+     *
+     * @param score The score.
+     */
     public Bes(@NotNull Score score) {
         this.score = score;
         this.variables = score.getVariables();
@@ -139,10 +148,6 @@ public class Bes {
         }
     }
 
-    private Knowledge getKnowledge() {
-        return knowledge;
-    }
-
     /**
      * Sets the knowledge for the search.
      *
@@ -151,6 +156,10 @@ public class Bes {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
+    private Knowledge getKnowledge() {
+        return knowledge;
     }
 
     private void delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX, Graph graph) {

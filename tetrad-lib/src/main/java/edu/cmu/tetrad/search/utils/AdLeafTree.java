@@ -60,7 +60,6 @@ public class AdLeafTree {
             Node v = dataSet.getVariable(j);
             this.nodesHash.put(v, j);
         }
-
     }
 
     /**
