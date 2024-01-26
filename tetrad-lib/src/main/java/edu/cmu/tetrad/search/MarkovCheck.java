@@ -177,8 +177,8 @@ public class MarkovCheck {
     /**
      * Generates all results, for both the local Markov and local Faithfulness checks, for each node in the graph given
      * the parents of that node. These results are stored in the resultsIndep and resultsDep lists. This should be
-     * called before any of the result methods. Note that only results for X _||_ Y | Z1,..,Zn are generated, where X
-     * and Y are in the independenceNodes list and Z1,..,Zn are in the conditioningNodes list.
+     * called before any of the result methods. Note that only results for X _||_ Y | Z1,...,Zn are generated, where X
+     * and Y are in the independenceNodes list and Z1,...,Zn are in the conditioningNodes list.
      *
      * @see #getResults(boolean)
      */
@@ -744,8 +744,8 @@ public class MarkovCheck {
 
     /**
      * Sets the knowledge object for the Markov checker. The knowledge object should contain the tier knowledge for the
-     * Markov checker. The last tier contains the possible X and Y for X _||_ Y | Z1,..,Zn, and the previous tiers
-     * contain the possible Z1,..,Zn for X _||_ Y | Z1,..,Zn. Additional forbidden or required edges are ignored.
+     * Markov checker. The last tier contains the possible X and Y for X _||_ Y | Z1,...,Zn, and the previous tiers
+     * contain the possible Z1,...,Zn for X _||_ Y | Z1,...,Zn. Additional forbidden or required edges are ignored.
      *
      * @param knowledge The knowledge object.
      */
@@ -797,18 +797,18 @@ public class MarkovCheck {
     }
 
     /**
-     * Returns the nodes that are possible X and Y for X _||_ Y | Z1,..,Zn.
+     * Returns the nodes that are possible X and Y for X _||_ Y | Z1,...,Zn.
      *
-     * @return The nodes that are possible X and Y for X _||_ Y | Z1,..,Zn.
+     * @return The nodes that are possible X and Y for X _||_ Y | Z1,...,Zn.
      */
     public List<Node> getIndependenceNodes() {
         return independenceNodes;
     }
 
     /**
-     * Returns the nodes that are possible Z1,..,Zn for X _||_ Y | Z1,..,Zn.
+     * Returns the nodes that are possible Z1,...,Zn for X _||_ Y | Z1,...,Zn.
      *
-     * @return The nodes that are possible Z1,..,Zn for X _||_ Y | Z1,..,Zn.
+     * @return The nodes that are possible Z1,...,Zn for X _||_ Y | Z1,...,Zn.
      */
     public List<Node> getConditioningNodes() {
         return conditioningNodes;
