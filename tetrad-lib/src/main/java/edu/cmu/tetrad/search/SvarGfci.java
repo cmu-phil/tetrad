@@ -79,10 +79,9 @@ public final class SvarGfci implements IGraphSearch {
     private int maxPathLength = -1;
     // True iff verbose output should be printed.
     private boolean verbose;
-
     // The score.
     private Score score;
-
+    // The sepsets.
     private SepsetProducer sepsets;
 
 
