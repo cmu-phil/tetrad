@@ -135,10 +135,6 @@ public abstract class WatchedProcess {
         dialog.getContentPane().add(panel);
         positionDialogAboveFrameCenter(frame, dialog);
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                dialog.setVisible(true);
-            }
-        });
+        SwingUtilities.invokeLater(() -> dialog.setVisible(true));
     }
 }
