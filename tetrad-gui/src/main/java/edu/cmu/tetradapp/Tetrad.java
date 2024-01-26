@@ -148,7 +148,7 @@ public final class Tetrad implements PropertyChangeListener {
          it is maximized. For some reason, most of the details of this
          order are important. Jdramsey 12/14/02
         */
-        this.frame = new JFrame(this.mainTitle) {
+        frame = new JFrame(this.mainTitle) {
 
             @Serial
             private static final long serialVersionUID = -9077349253115802418L;
@@ -163,14 +163,13 @@ public final class Tetrad implements PropertyChangeListener {
         // Fixing a bug caused by switch to Oracle Java (at least for Mac), although I must say the following
         // code is what should have worked to begin with. Bug was that sessions would appear only in the lower
         // left-hand corner of the screen.
-        this.frame.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
+        frame.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
 
         getFrame().setContentPane(getDesktop());
         getFrame().pack();
         getFrame().setLocationRelativeTo(null);
 
         // This doesn't let the user resize the main window.
-//        getFrame().setExtendedState(Frame.MAXIMIZED_BOTH);
         Image image = ImageUtils.getImage(this, "tyler16.png");
         getFrame().setIconImage(image);
 
@@ -192,16 +191,21 @@ public final class Tetrad implements PropertyChangeListener {
 
         if (Desktop.isDesktopSupported()) {
             Desktop desktop = Desktop.getDesktop();
-            desktop.setQuitHandler((e2, response) -> {
-                int result = JOptionPane.showConfirmDialog(null,
-                        "Are you sure you want to quit? Any unsaved work will be lost.",
-                        "Confirm Quit", JOptionPane.YES_NO_OPTION);
-                if (result == JOptionPane.YES_OPTION) {
-                    response.performQuit();
-                } else {
-                    response.cancelQuit();
-                }
-            });
+
+            try {
+                desktop.setQuitHandler((e2, response) -> {
+                    int result = JOptionPane.showConfirmDialog(null,
+                            "Are you sure you want to quit? Any unsaved work will be lost.",
+                            "Confirm Quit", JOptionPane.YES_NO_OPTION);
+                    if (result == JOptionPane.YES_OPTION) {
+                        response.performQuit();
+                    } else {
+                        response.cancelQuit();
+                    }
+                });
+            } catch (Exception e) {
+                TetradLogger.getInstance().forceLogMessage("Could not set quit handler.");
+            }
         }
     }
 
@@ -227,7 +231,7 @@ public final class Tetrad implements PropertyChangeListener {
     }
 
     private JFrame getFrame() {
-        return this.frame;
+        return frame;
     }
 
     private TetradDesktop getDesktop() {
