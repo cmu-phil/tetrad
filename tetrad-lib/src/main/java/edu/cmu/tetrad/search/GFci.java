@@ -37,28 +37,25 @@ import java.util.List;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * <p>Implements a modification of FCI that started by running the FGES algorithm and
- * then fixes that result to be correct for latent variables models. First, colliders from the FGES results are copied
- * into the final circle-circle graph, and some independence reasoning is used to add the remaining colliders into the
- * graph. Then, the FCI final orientation rules are applied. The reference is here:</p>
- *
- * <p>Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal
- * search algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
- * PMLR.</p>
- *
- * <p>Because the method both runs FGES (a score-based algorithm) and does
- * additional checking of conditional independencies, both as part of its collider orientation step and also as part of
- * the the definite discriminating path step in the final FCI orientation rules, both a score and a test need to be used
- * to construct a GFCI algorithm.</p>
- *
- * <p>Note that various score-based algorithms could be used in place of FGES
- * for the initial step; in this repository we give three other options, GRaSP-FCI, BFCI (BOSS FCI), and SP-FCI
- * (see).</p>
- *
- * <p>For more information on the algorithm, see the reference above.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Implements a modification of FCI that started by running the FGES algorithm and then fixes that result to be correct
+ * for latent variables models. First, colliders from the FGES results are copied into the final circle-circle graph,
+ * and some independence reasoning is used to add the remaining colliders into the graph. Then, the FCI final
+ * orientation rules are applied. The reference is here:
+ * <p>
+ * Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal search algorithm for latent variable
+ * models. In Conference on probabilistic graphical models (pp. 368-379). PMLR.
+ * <p>
+ * Because the method both runs FGES (a score-based algorithm) and does additional checking of conditional
+ * independencies, both as part of its collider orientation step and also as part of the the definite discriminating
+ * path step in the final FCI orientation rules, both a score and a test need to be used to construct a GFCI algorithm.
+ * <p>
+ * Note that various score-based algorithms could be used in place of FGES for the initial step; in this repository we
+ * give three other options, GRaSP-FCI, BFCI (BOSS FCI), and SP-FCI (see).
+ * <p>
+ * For more information on the algorithm, see the reference above.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author Juan Miguel Ogarrio
  * @author peterspirtes

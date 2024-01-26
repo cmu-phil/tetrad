@@ -43,37 +43,34 @@ import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.min;
 
 /**
- * <p>Implements the Fast Greedy Equivalence Search (FGES) algorithm. This is
- * an implementation of the Greedy Equivalence Search algorithm, originally due to Chris Meek but developed
- * significantly by Max Chickering. FGES uses with some optimizations that allow it to scale accurately to thousands of
- * variables accurately for the sparse case. The reference for FGES is this:</p>
- *
- * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017).
- * A million variables and more: the fast greedy equivalence search algorithm for learning high-dimensional graphical
- * causal models, with an application to functional magnetic resonance images. International journal of data science and
- * analytics, 3, 121-129.</p>
- *
- * <p>The reference for Chickering's GES is this:</p>
- *
- * <p>Chickering (2002) "Optimal structure identification with greedy search"
- * Journal of Machine Learning Research.</p>
- *
- * <p>FGES works for the continuous case, the discrete case, and the mixed
- * continuous/discrete case, so long as a BIC score is available for the type of data in question.</p>
- *
- * <p>To speed things up, it has been assumed that variables X and Y with zero
- * correlation do not correspond to edges in the graph. This is a restricted form of the heuristic speedup assumption,
- * something GES does not assume. This heuristic speedup assumption needs to be explicitly turned on using
- * setHeuristicSpeedup(true).</p>
- *
- * <p>Also, edges to be added or remove from the graph in the forward or
- * backward phase, respectively are cached, together with the ancillary information needed to do the additions or
- * removals, to reduce rescoring.</p>
- *
- * <p>A number of other optimizations were also. See code for details.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Implements the Fast Greedy Equivalence Search (FGES) algorithm. This is an implementation of the Greedy Equivalence
+ * Search algorithm, originally due to Chris Meek but developed significantly by Max Chickering. FGES uses with some
+ * optimizations that allow it to scale accurately to thousands of variables accurately for the sparse case. The
+ * reference for FGES is this:
+ * <p>
+ * Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017). A million variables and more: the fast greedy
+ * equivalence search algorithm for learning high-dimensional graphical causal models, with an application to functional
+ * magnetic resonance images. International journal of data science and analytics, 3, 121-129.
+ * <p>
+ * The reference for Chickering's GES is this:
+ * <p>
+ * Chickering (2002) "Optimal structure identification with greedy search" Journal of Machine Learning Research.
+ * <p>
+ * FGES works for the continuous case, the discrete case, and the mixed continuous/discrete case, so long as a BIC score
+ * is available for the type of data in question.
+ * <p>
+ * To speed things up, it has been assumed that variables X and Y with zero correlation do not correspond to edges in
+ * the graph. This is a restricted form of the heuristic speedup assumption, something GES does not assume. This
+ * heuristic speedup assumption needs to be explicitly turned on using setHeuristicSpeedup(true).
+ * <p>
+ * Also, edges to be added or remove from the graph in the forward or backward phase, respectively are cached, together
+ * with the ancillary information needed to do the additions or removals, to reduce rescoring.
+ * <p>
+ * A number of other optimizations were also. See code for de
+ * tails.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author Ricardo Silva
  * @author josephramsey
@@ -195,8 +192,8 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Greedy equivalence search: Start from the empty graph, add edges till the model is significant.
-     * Then start deleting edges till a minimum is achieved.
+     * Greedy equivalence search: Start from the empty graph, add edges till the model is significant. Then start
+     * deleting edges till a minimum is achieved.
      *
      * @return the resulting Pattern.
      */

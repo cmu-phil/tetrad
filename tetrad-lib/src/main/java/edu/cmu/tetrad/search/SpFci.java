@@ -39,26 +39,25 @@ import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirecte
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * <p>Uses SP in place of FGES for the initial step in the GFCI algorithm.
- * This tends to produce a accurate PAG than GFCI as a result, for the latent variables case. This is a simple
- * substitution; the reference for GFCI is here:</p>
- *
- * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016. Here, SP has been substituted for FGES.</p>
- *
- * <p>The reference for the SP algorithm is here:</p>
- *
- * <p>Raskutti, G., &amp; Uhler, C. (2018). Learning directed acyclic graph models based
- * on sparsest permutations. Stat, 7(1), e183.</p>
- *
- * <p>For SP only a score is needed, but there are steps in GFCI that require
- * a test, so for this method, both a test and a score need to be given.</p>
- *
- * <p>Note that SP considers all permutations of the algorithm, which is
- * exponential in the number of variables. So SP is limited to about 10 variables.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Uses SP in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG than GFCI
+ * as a result, for the latent variables case. This is a simple substitution; the reference for GFCI is here:
+ * <p>
+ * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
+ * Here, SP has been substituted for FGES.
+ * <p>
+ * The reference for the SP algorithm is here:
+ * <p>
+ * Raskutti, G., &amp; Uhler, C. (2018). Learning directed acyclic graph models based on sparsest permutations. Stat,
+ * 7(1), e183.
+ * <p>
+ * For SP only a score is needed, but there are steps in GFCI that require a test, so for this method, both a test and a
+ * score need to be given.
+ * <p>
+ * Note that SP considers all permutations of the algorithm, which is exponential in the number of variables. So SP is
+ * limited to about 10 variables.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author josephramsey
  * @author bryan andrews
@@ -74,14 +73,14 @@ public final class SpFci implements IGraphSearch {
     private final TetradLogger logger = TetradLogger.getInstance();
     // The score.
     private final Score score;
+    // The conditional independence test.
+    private final IndependenceTest independenceTest;
     // The sample size.
     int sampleSize;
     // The PAG being constructed.
     private Graph graph;
     // The background knowledge.
     private Knowledge knowledge = new Knowledge();
-    // The conditional independence test.
-    private final IndependenceTest independenceTest;
     // Flag for complete rule set, true if you should use complete rule set, false otherwise.
     private boolean completeRuleSetUsed = true;
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.

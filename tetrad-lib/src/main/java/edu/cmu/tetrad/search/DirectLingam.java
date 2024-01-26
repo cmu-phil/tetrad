@@ -34,16 +34,16 @@ import static edu.cmu.tetrad.util.StatUtils.maxEntApprox;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p>Implements the Direct-LiNGAM algorithm. The reference is here:</p>
- *
- * <p>S. Shimizu, T. Inazumi, Y. Sogawa, A. Hyvärinen, Y. Kawahara, T. Washio, P. O. Hoyer and K. Bollen.
- * DirectLiNGAM: A direct method for learning a linear non-Gaussian structural equation model. Journal of Machine
- * Learning Research, 12(Apr): 1225–1248, 2011.</p>
- *
- * <p>A. Hyvärinen and S. M. Smith. Pairwise likelihood ratios for estimation of non-Gaussian
- * structural evaluation models. Journal of Machine Learning Research 14:111-152, 2013.</p>
- *
- * <p>NEEDS DOCUMENTATION</p>
+ * Implements the Direct-LiNGAM algorithm. The reference is here:
+ * <p>
+ * S. Shimizu, T. Inazumi, Y. Sogawa, A. Hyvärinen, Y. Kawahara, T. Washio, P. O. Hoyer and K. Bollen. DirectLiNGAM: A
+ * direct method for learning a linear non-Gaussian structural equation model. Journal of Machine Learning Research,
+ * 12(Apr): 1225–1248, 2011.
+ * <p>
+ * A. Hyvärinen and S. M. Smith. Pairwise likelihood ratios for estimation of non-Gaussian structural evaluation models.
+ * Journal of Machine Learning Research 14:111-152, 2013.
+ * <p>
+ * NEEDS DOCUMENTATION
  *
  * @author bryanandrews
  */

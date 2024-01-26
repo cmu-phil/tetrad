@@ -32,16 +32,15 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * <p>Searches for a CPDAG representing all the Markov blankets for a given target T consistent
- * with the given independence information. This CPDAG may be used to generate the actual list of DAG's that might be
- * Markov blankets. Note that this code has been converted to be consistent with the CPC algorithm. The reference is
- * here:</p>
- *
- * <p>Bai, X., Padman, R., Ramsey, J., &amp; Spirtes, P. (2008). Tabu search-enhanced graphical models
- * for classification in high dimensions. INFORMS Journal on Computing, 20(3), 423-437.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Searches for a CPDAG representing all the Markov blankets for a given target T consistent with the given independence
+ * information. This CPDAG may be used to generate the actual list of DAG's that might be Markov blankets. Note that
+ * this code has been converted to be consistent with the CPC algorithm. The reference is here:
+ * <p>
+ * Bai, X., Padman, R., Ramsey, J., &amp; Spirtes, P. (2008). Tabu search-enhanced graphical models for classification
+ * in high dimensions. INFORMS Journal on Computing, 20(3), 423-437.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author josephramsey
  * @see FgesMb
@@ -557,8 +556,8 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * Tries to remove the edge node---from using adjacent nodes of node 'from.' then tries to remove each other
-     * edge adjacent node 'from' using remaining edges adjacent node 'from.' If the edge 'node' is removed, the method
+     * Tries to remove the edge node---from using adjacent nodes of node 'from.' then tries to remove each other edge
+     * adjacent node 'from' using remaining edges adjacent node 'from.' If the edge 'node' is removed, the method
      * immediately returns.
      *
      * @param node  The node about which pruning it to take place.

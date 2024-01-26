@@ -16,33 +16,32 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * <p>Implements the CStaR algorithm (Stekhoven et al., 2012), which finds a CPDAG of that
- * data and then tries all orientations of the undirected edges about a variable in the CPDAG to estimate a minimum
- * bound on the effect for a given edge. Some references include the following:</p>
- *
- * <p>Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., and
- * Bühlmann, P. (2012). Causal stability ranking. Bioinformatics, 28(21), 2819-2823.</p>
- *
- * <p>Meinshausen, N., and Bühlmann, P. (2010). Stability selection. Journal of the Royal
- * Statistical Society: Series B (Statistical Methodology), 72(4), 417-473.</p>
- *
- * <p>Colombo, D., and Maathuis, M. H. (2014). Order-independent constraint-based causal
- * structure learning. The Journal of Machine Learning Research, 15(1), 3741-3782.</p>
- *
- * <p>This class is not configured to respect knowledge of forbidden and required
- * edges.</p>
+ * Implements the CStaR algorithm (Stekhoven et al., 2012), which finds a CPDAG of that data and then tries all
+ * orientations of the undirected edges about a variable in the CPDAG to estimate a minimum bound on the effect for a
+ * given edge. Some references include the following:
+ * <p>
+ * Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., and Bühlmann, P. (2012). Causal
+ * stability ranking. Bioinformatics, 28(21), 2819-2823.
+ * <p>
+ * Meinshausen, N., and Bühlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society: Series B
+ * (Statistical Methodology), 72(4), 417-473.
+ * <p>
+ * Colombo, D., and Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. The Journal of
+ * Machine Learning Research, 15(1), 3741-3782.
+ * <p>
+ * This class is not configured to respect knowledge of forbidden and required edges.
  *
  * @author josephramsey
  * @see Ida
  */
 public class Cstar {
+    private final IndependenceWrapper test;
+    private final ScoreWrapper score;
+    private final Parameters parameters;
     private boolean parallelized = false;
     private int numSubsamples = 30;
     private int topBracket = 5;
     private double selectionAlpha = 0.0;
-    private final IndependenceWrapper test;
-    private final ScoreWrapper score;
-    private final Parameters parameters;
     private CpdagAlgorithm cpdagAlgorithm = CpdagAlgorithm.PC_STABLE;
     private SampleStyle sampleStyle = SampleStyle.SUBSAMPLE;
     private boolean verbose;

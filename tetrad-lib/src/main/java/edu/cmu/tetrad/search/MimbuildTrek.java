@@ -43,9 +43,9 @@ import java.util.List;
 
 /**
  * Implements Mimbuild using the theory of treks and ranks.
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author adambrodie
  * @see Knowledge

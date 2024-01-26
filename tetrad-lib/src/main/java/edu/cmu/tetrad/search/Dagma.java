@@ -26,34 +26,24 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.MeekRules;
-import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
 
-import java.util.*;
+import java.util.List;
 
 import static org.apache.commons.math3.linear.MatrixUtils.*;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p>Implements the DAGMA algorithm. The reference is here:</p>
- *
- * <p>NEEDS DOCUMENTATION</p>
+ * Implements the DAGMA algorithm. The reference is here:
+ * <p>
+ * NEEDS DOCUMENTATION
  *
  * @author bryanandrews
  */
 public class Dagma {
 
-    private RealMatrix cov;
-    private List<Node> variables;
-    private RealMatrix I;
-    private int d;
-
-    private double lambda1;
-    private double wThreshold;
-    private boolean cpdag;
-
     private final double[] T;
-
     private final double muInit;
     private final double muFactor;
     private final int warmIter;
@@ -63,6 +53,13 @@ public class Dagma {
     private final double b1;
     private final double b2;
     private final double tol;
+    private final RealMatrix cov;
+    private final List<Node> variables;
+    private final RealMatrix I;
+    private final int d;
+    private double lambda1;
+    private double wThreshold;
+    private boolean cpdag;
 
 
     /**
@@ -80,7 +77,7 @@ public class Dagma {
         this.cpdag = true;
 
         // M-matrix s values
-        this.T = new double[] {1.0, .9, .8, .7};
+        this.T = new double[]{1.0, .9, .8, .7};
 
         // central path coefficient and decay factor
         this.muInit = 1.0;
@@ -91,8 +88,8 @@ public class Dagma {
         this.maxIter = 70000;
         this.lr = 3e-4;
         this.checkpoint = 1000;
-        this.b1=0.99;
-        this.b2=0.999;
+        this.b1 = 0.99;
+        this.b2 = 0.999;
         this.tol = 1e-6;
     }
 
@@ -266,10 +263,10 @@ public class Dagma {
         RealMatrix M = this.I.scalarMultiply(s);
 
         for (int i = 0; i < this.d; i++) {
-                for (int j = 0; j < this.d; j++) {
-                    M.addToEntry(i, j, -W.getEntry(i, j) * W.getEntry(i, j));
-                }
+            for (int j = 0; j < this.d; j++) {
+                M.addToEntry(i, j, -W.getEntry(i, j) * W.getEntry(i, j));
             }
+        }
 
         return M;
     }

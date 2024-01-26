@@ -7,12 +7,10 @@ import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
@@ -20,35 +18,32 @@ import static java.util.Collections.shuffle;
 
 
 /**
- * <p>Implements the GRaSP algorithms, which uses a certain procedure to search
- * in the space of permutations of variables for ones that imply CPDAGs that are especially close to the CPDAG of the
- * true model. The reference is here:</p>
- *
- * <p>Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations of
- * the sparsest permutation algorithm. In Uncertainty in Artificial Intelligence (pp. 1052-1062). PMLR.</p>
- *
- * <p>GRaSP can use either a score or an independence test; you can provide
- * both, though if you do you need to use the parameters to choose which one will be used. The score options is more
- * scalable and accurate, though the independence option is perhaps a little easier ot deal with theoretically and are
- * useful for generating unit test results.</p>
- *
- * <p>As shown the reference above, GRaSP generates results for the linear, Gaussian
- * case for N = 1000 with precisions for adjacencies and arrowheads near 1 and recalls of about 0.85, when the linear,
- * Gaussian BIC score is used with a penalty of 2. For N = 10,000 recalls also rise up to about 1, so it can be an
- * extraordinarily accurate search for the linear, Gaussian case. But in principle, it can be used with any sort of
- * data, so long as a BIC score is available for that data. So it can be used for the discrete case and for the mixed
- * continuous/discrete case as well.</p>
- *
- * <p>The version of GRaSP described in the above reference is limited to about 100
- * variables in execution time, after which it become impracticably slow. Recent optimizations allow it to scale further
- * than that; hopefully these will be written up soon and made available.</p>
- *
- * <p>Knowledge can be used with this search. If tiered knowledge is used, then
- * the procedure is carried out for each tier separately, given the variable preceding that tier, which allows the SP
- * algorithm to address tiered (e.g., time series) problems with larger numbers of variables.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Implements the GRaSP algorithms, which uses a certain procedure to search in the space of permutations of variables
+ * for ones that imply CPDAGs that are especially close to the CPDAG of the true model. The reference is here:
+ * <p>
+ * Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations of the sparsest permutation algorithm.
+ * In Uncertainty in Artificial Intelligence (pp. 1052-1062). PMLR.
+ * <p>
+ * GRaSP can use either a score or an independence test; you can provide both, though if you do you need to use the
+ * parameters to choose which one will be used. The score options is more scalable and accurate, though the independence
+ * option is perhaps a little easier ot deal with theoretically and are useful for generating unit test results.
+ * <p>
+ * As shown the reference above, GRaSP generates results for the linear, Gaussian case for N = 1000 with precisions for
+ * adjacencies and arrowheads near 1 and recalls of about 0.85, when the linear, Gaussian BIC score is used with a
+ * penalty of 2. For N = 10,000 recalls also rise up to about 1, so it can be an extraordinarily accurate search for the
+ * linear, Gaussian case. But in principle, it can be used with any sort of data, so long as a BIC score is available
+ * for that data. So it can be used for the discrete case and for the mixed continuous/discrete case as well.
+ * <p>
+ * The version of GRaSP described in the above reference is limited to about 100 variables in execution time, after
+ * which it become impracticably slow. Recent optimizations allow it to scale further than that; hopefully these will be
+ * written up soon and made available.
+ * <p>
+ * Knowledge can be used with this search. If tiered knowledge is used, then the procedure is carried out for each tier
+ * separately, given the variable preceding that tier, which allows the SP algorithm to address tiered (e.g., time
+ * series) problems with larger numbers of variables.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author bryanandrews
  * @author josephramsey
