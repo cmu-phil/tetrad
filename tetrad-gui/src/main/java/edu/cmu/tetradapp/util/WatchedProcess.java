@@ -13,9 +13,9 @@ import java.awt.event.ComponentEvent;
  * Runs a long process, watching it with a thread and popping up a Stop button that the user can click to stop the
  * process.
  * <p>
- * Replacement for the old WatchedProcess, which called the deprecated Thread.stop() method. This method is
- * deprecated because it can leave the program in an inconsistent state. This class uses Thread.interrupt() instead,
- * which is the recommended way to stop a thread.
+ * Replacement for the old WatchedProcess, which called the deprecated Thread.stop() method. This method is deprecated
+ * because it can leave the program in an inconsistent state. This class uses Thread.interrupt() instead, which is the
+ * recommended way to stop a thread.
  * <p>
  * Example usage:
  * <pre>
@@ -48,14 +48,24 @@ public abstract class WatchedProcess {
         frame = Tetrad.frame;
 
         if (frame == null) {
-            // Create a hidden frame
-            frame = new JFrame("Hidden Frame");
-            frame.setUndecorated(true);
-            frame.setSize(0, 0);
-            frame.setVisible(true);
+            throw new RuntimeException("Tetrad frame is null. Cannot create WatchedProcess.");
+//            frame = new JFrame("Hidden Frame");
+//            frame.setUndecorated(true);
+//            frame.setSize(0, 0);
         }
 
         startLongRunningThread();
+    }
+
+    private static void positionDialogAboveFrameCenter(JFrame frame, JDialog dialog) {
+        // Calculate the new position for the dialog
+        Point newDialogPosition = new Point(
+                frame.getX() + frame.getWidth() / 2 - dialog.getWidth() / 2, // Centered horizontally
+                frame.getY() + frame.getHeight() / 2 - dialog.getHeight() / 2 // Centered vertically
+        );
+
+        // Set the dialog's new position
+        dialog.setLocation(newDialogPosition);
     }
 
     /**
@@ -127,19 +137,8 @@ public abstract class WatchedProcess {
         panel.add(stopButton);
 
         dialog.getContentPane().add(panel);
-
-        dialog.setLocationRelativeTo(frame);
+//        dialog.setLocationRelativeTo(frame);
+        positionDialogAboveFrameCenter(frame, dialog);
         dialog.setVisible(true);
-    }
-
-    private static void positionDialogAboveFrameCenter(JFrame frame, JDialog dialog) {
-        // Calculate the new position for the dialog
-        Point newDialogPosition = new Point(
-                frame.getX() + frame.getWidth() / 2 - dialog.getWidth() / 2, // Centered horizontally
-                frame.getY() + frame.getHeight() / 2 - dialog.getHeight() / 2 // Centered vertically
-        );
-
-        // Set the dialog's new position
-        dialog.setLocation(newDialogPosition);
     }
 }
