@@ -724,7 +724,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      */
     public void setRows(List<Integer> rows) {
         if (dataSet == null) {
-            throw new IllegalStateException("Cannot set rows without a data set.");
+            return;
         }
 
         for (Integer row : rows) {

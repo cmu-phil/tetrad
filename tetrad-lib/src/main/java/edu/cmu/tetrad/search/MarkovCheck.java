@@ -212,8 +212,6 @@ public class MarkovCheck {
                     Node x = nodes.get(i);
                     Node y = nodes.get(j);
 
-                    if (graph.isAdjacentTo(x, y)) continue;
-
                     Set<Node> z;
 
                     switch (setType) {
@@ -242,21 +240,14 @@ public class MarkovCheck {
                             throw new IllegalArgumentException("Unknown separation set type: " + setType);
                     }
 
-                    List<Node> other = new ArrayList<>(graph.getNodes());
-                    Collections.sort(other);
-                    other.removeAll(z);
+                    if (x == y || z.contains(x) || z.contains(y)) continue;
 
-                    for (Node w : other) {
-                        if (w == x || w == y) continue;
-                        if (z.contains(x) || z.contains(y) || z.contains(w)) continue;
-
-                        if (!(getIndependenceNodes().contains(x) && getIndependenceNodes().contains(y)
-                                && new HashSet<>(getConditioningNodes()).containsAll(z))) {
-                            continue;
-                        }
-
-                        allIndependenceFacts.add(new IndependenceFact(x, y, z));
+                    if (!(getIndependenceNodes().contains(x) && getIndependenceNodes().contains(y)
+                            && new HashSet<>(getConditioningNodes()).containsAll(z))) {
+                        continue;
                     }
+
+                    allIndependenceFacts.add(new IndependenceFact(x, y, z));
                 }
             }
 
@@ -522,9 +513,9 @@ public class MarkovCheck {
 
             for (Future<Pair<Set<IndependenceFact>, Set<IndependenceFact>>> future : theseResults) {
                 try {
-                    Pair<Set<IndependenceFact>, Set<IndependenceFact>> setSetPair = future.get();
-                    msep.addAll(setSetPair.getFirst());
-                    mconn.addAll(setSetPair.getSecond());
+                    Pair<Set<IndependenceFact>, Set<IndependenceFact>> setPair = future.get();
+                    msep.addAll(setPair.getFirst());
+                    mconn.addAll(setPair.getSecond());
                 } catch (InterruptedException | ExecutionException e) {
                     throw new RuntimeException(e);
                 }
