@@ -204,7 +204,7 @@ public final class Tetrad implements PropertyChangeListener {
                     }
                 });
             } catch (Exception e) {
-                TetradLogger.getInstance().forceLogMessage("Could not set quit handler.");
+                TetradLogger.getInstance().forceLogMessage("Could not set quit handler on this platform..");
             }
         }
     }
