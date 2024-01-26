@@ -43,15 +43,11 @@ public abstract class WatchedProcess {
      */
     public WatchedProcess() {
 
-        // The frame is used to center the dialog on the screen. Use the Tetrad frame if it exists, otherwise create a
-        // hidden frame.
+        // Get the Tetrad frame.
         frame = Tetrad.frame;
 
         if (frame == null) {
             throw new RuntimeException("Tetrad frame is null. Cannot create WatchedProcess.");
-//            frame = new JFrame("Hidden Frame");
-//            frame.setUndecorated(true);
-//            frame.setSize(0, 0);
         }
 
         startLongRunningThread();

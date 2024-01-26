@@ -50,30 +50,29 @@ import java.util.prefs.Preferences;
  */
 public final class Tetrad implements PropertyChangeListener {
 
+    // The experimental option
     private static final String EXP_OPT = "--experimental";
+    // Whether to enable experimental features
     public static boolean enableExperimental;
-    /**
-     * The main application title.
-     */
+    // The main application title.
     private final String mainTitle
             = "Tetrad " + Version.currentViewableVersion();
-    /**
-     * The launch frame.
-     */
+    // The launch frame.
     public static JFrame frame;
-    /**
-     * The desktop placed into the launch frame.
-     */
+    // The desktop placed into the launch frame.
     private TetradDesktop desktop;
 
     //==============================CONSTRUCTORS===========================//
+
+    /**
+     * Constructs a new Tetrad instance.
+     */
     public Tetrad() {
     }
 
     //==============================PUBLIC METHODS=========================//
 
     /**
-     * <p>
      * Launches Tetrad as an application. One way to launch Tetrad IV as an application is the following:&gt; 0
      * <pre>java -cp jarname.jar INSTANCE.Tetrad</pre>
      * <p>
@@ -103,6 +102,18 @@ public final class Tetrad implements PropertyChangeListener {
         Tetrad.enableExperimental = Preferences.userRoot().getBoolean("enableExperimental", false);
     }
 
+    /**
+     * Responds to "exitProgram" property change events by disposing of the Tetrad IV frame and exiting if possible.
+     *
+     * @param e the property change event
+     */
+    @Override
+    public void propertyChange(PropertyChangeEvent e) {
+        if ("exitProgram".equals(e.getPropertyName())) {
+            exitApplication();
+        }
+    }
+
     //===============================PRIVATE METHODS=======================//
     private static void setLookAndFeel() {
         try {
@@ -116,17 +127,6 @@ public final class Tetrad implements PropertyChangeListener {
         }
     }
 
-    /**
-     * Responds to "exitProgram" property change events by disposing of the Tetrad IV frame and exiting if possible.
-     *
-     * @param e the property change event
-     */
-    @Override
-    public void propertyChange(PropertyChangeEvent e) {
-        if ("exitProgram".equals(e.getPropertyName())) {
-            exitApplication();
-        }
-    }
 
     /**
      * Launches the frame. (This is left as a separate method in case we ever want to launch it as an applet.)
@@ -209,9 +209,7 @@ public final class Tetrad implements PropertyChangeListener {
         }
     }
 
-    /**
-     * Exits the application gracefully.
-     */
+    // Exits the application gracefully.
     private void exitApplication() {
         boolean succeeded = getDesktop().closeAllSessions();
 
