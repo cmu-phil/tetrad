@@ -128,9 +128,7 @@ public final class Tetrad implements PropertyChangeListener {
     }
 
 
-    /**
-     * Launches the frame. (This is left as a separate method in case we ever want to launch it as an applet.)
-     */
+    // Launches the frame. (This is left as a separate method in case we ever want to launch it as an applet.)
     private void launchFrame() {
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 

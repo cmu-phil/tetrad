@@ -34,7 +34,7 @@ import java.awt.event.ComponentEvent;
  * @author ChatGPT
  */
 public abstract class WatchedProcess {
-    private JFrame frame;
+    private final JFrame frame;
     private Thread longRunningThread;
     private JDialog dialog;
 
