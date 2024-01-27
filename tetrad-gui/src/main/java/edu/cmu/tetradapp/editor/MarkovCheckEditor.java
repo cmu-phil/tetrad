@@ -77,6 +77,7 @@ public class MarkovCheckEditor extends JPanel {
     private final JLabel testLabel = new JLabel("(Unspecified Test)");
     private final JLabel conditioningLabelDep = new JLabel("(Unspecified)");
     private final JLabel conditioningLabelIndep = new JLabel("(Unspecified)");
+    private DoubleTextField percent = null;
     boolean updatingTestModels = true;
     private AbstractTableModel tableModelIndep;
     private AbstractTableModel tableModelDep;
@@ -235,22 +236,25 @@ public class MarkovCheckEditor extends JPanel {
         box1.add(indTestJComboBox);
         JButton params = new JButton("Params");
         box1.add(params);
-        JButton refresh = new JButton("Refresh");
-        box1.add(refresh);
-        DoubleTextField percent = new DoubleTextField(0.5, 4, new DecimalFormat("0.0"));
-        box1.add(new JLabel("% Sample:"));
-        box1.add(percent);
-        box1.add(Box.createHorizontalGlue());
+        JButton recalculate = new JButton("Recalculate");
+        box1.add(recalculate);
 
-        refresh.addActionListener(e -> refreshResult(model, percent));
+        if (!(model.getMarkovCheck().getIndependenceTest().getData() instanceof CovarianceMatrix)) {
+            this.percent = new DoubleTextField(0.5, 4, new DecimalFormat("0.0###"));
+            box1.add(new JLabel("% Sample:"));
+            box1.add(percent);
+            box1.add(Box.createHorizontalGlue());
 
-        percent.setFilter((value, oldValue) -> {
-            if (value < 0.0 || value > 1.0) {
-                return oldValue;
-            } else {
-                return value;
-            }
-        });
+            recalculate.addActionListener(e -> refreshResult(model, percent));
+
+            percent.setFilter((value, oldValue) -> {
+                if (value < 0.0 || value > 1.0) {
+                    return oldValue;
+                } else {
+                    return value;
+                }
+            });
+        }
 
         setLabelTexts();
 
@@ -316,24 +320,24 @@ public class MarkovCheckEditor extends JPanel {
     @NotNull
     public static String getHelpMessage() {
         return """
-                 This tool lets you plot statistics for independence tests of a pair of variables given some conditioning calculated for one of those variables, for a given graph and dataset. Two tables are made, one in which the independence facts predicted by the graph using these conditioning sets are tested in the data and the other in which the graph's predicted dependence facts are tested. The first of these sets is a check for "Markov" (a check for implied independence facts) for the chosen conditioning sets; the is a check of the "Dependent Distribution." (a check of implied dependence facts)”
+                This tool lets you plot statistics for independence tests of a pair of variables given some conditioning calculated for one of those variables, for a given graph and dataset. Two tables are made, one in which the independence facts predicted by the graph using these conditioning sets are tested in the data and the other in which the graph's predicted dependence facts are tested. The first of these sets is a check for "Markov" (a check for implied independence facts) for the chosen conditioning sets; the is a check of the "Dependent Distribution." (a check of implied dependence facts)”
 
-                 Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a score bump, where this bump is negative for independent judgments and positive for dependent judgments.
+                Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a score bump, where this bump is negative for independent judgments and positive for dependent judgments.
 
-                 If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we display the histogram of the p-values with equally sized bins; the bars in this histogram, for this case, should ideally all be of equal height.
+                If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we display the histogram of the p-values with equally sized bins; the bars in this histogram, for this case, should ideally all be of equal height.
 
-                 If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being judged as dependent. For checking the dependent distribution, one hopes that this list is non-empty, in which case this first bar will be especially high since high p-values are examples where the graph is unfaithful to the distribution. These are possibly for cases where paths in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all of the other bars.
+                If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being judged as dependent. For checking the dependent distribution, one hopes that this list is non-empty, in which case this first bar will be especially high since high p-values are examples where the graph is unfaithful to the distribution. These are possibly for cases where paths in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all of the other bars.
 
-                 To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the user’s preferred alpha level if the distribution of p-values is Uniform and less than this alpha level if the distribution of p-values is non-uniform.
+                To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the user’s preferred alpha level if the distribution of p-values is Uniform and less than this alpha level if the distribution of p-values is non-uniform.
 
-                 If the independence test yields a bump in the score, this score should be negative for independence judgments and positive for dependence judgments. The histogram will reflect this.
+                If the independence test yields a bump in the score, this score should be negative for independence judgments and positive for dependence judgments. The histogram will reflect this.
 
-                 Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let you analyze the data yourself.
+                Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let you analyze the data yourself.
 
-                 A note about Markov Blankets: The "Markov Blanket" conditioning set choice implements the Markov blanket calculation in a way that is correct for DAGs, CPDAGs, MAGs, and PAGs. For all of these graph types, the list of m-connecting facts in the Faithfulness tab should be empty, since the Markov blanket should screen off the target from any other variables in the dataset. It's possible that for some other graph types, this list may not be empty (i.e., the Markov blanket calculation may not be correct).
-                
-                 Knowledge may be supplied to the Markov Checker. This will be interpreted as follows. For X _||_ Y | Z checked, X and Y will be drawn from the last tier of the knowledge, and the variables in Z will be drawn from all variables in tiers. Additional forbidden or required edges are not allowed.
-                 """;
+                A note about Markov Blankets: The "Markov Blanket" conditioning set choice implements the Markov blanket calculation in a way that is correct for DAGs, CPDAGs, MAGs, and PAGs. For all of these graph types, the list of m-connecting facts in the Faithfulness tab should be empty, since the Markov blanket should screen off the target from any other variables in the dataset. It's possible that for some other graph types, this list may not be empty (i.e., the Markov blanket calculation may not be correct).
+                                
+                Knowledge may be supplied to the Markov Checker. This will be interpreted as follows. For X _||_ Y | Z checked, X and Y will be drawn from the last tier of the knowledge, and the variables in Z will be drawn from all variables in tiers. Additional forbidden or required edges are not allowed.
+                """;
     }
 
     @NotNull
@@ -359,11 +363,13 @@ public class MarkovCheckEditor extends JPanel {
 
     private void refreshResult(MarkovCheckIndTestModel model, DoubleTextField percent) {
         setTest();
-        model.getMarkovCheck().setPercentResample(percent.getValue());
+
+        if (percent != null) {
+            model.getMarkovCheck().setPercentResample(percent.getValue());
+        }
         model.getMarkovCheck().generateResults();
         tableModelIndep.fireTableDataChanged();
         tableModelDep.fireTableDataChanged();
-        histogramPanelDep.removeAll();
         histogramPanelIndep.removeAll();
         histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
         histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
