@@ -333,6 +333,8 @@ public class Boss implements SuborderSearch {
         int curr = 0;
 
         while (itr.hasNext()) {
+            if (Thread.currentThread().isInterrupted()) return false;
+
             Node z = itr.next();
 
             if (this.knowledge.isRequired(x.getName(), z.getName())) {

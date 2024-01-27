@@ -77,8 +77,8 @@ public class MarkovCheckEditor extends JPanel {
     private final JLabel testLabel = new JLabel("(Unspecified Test)");
     private final JLabel conditioningLabelDep = new JLabel("(Unspecified)");
     private final JLabel conditioningLabelIndep = new JLabel("(Unspecified)");
-    private DoubleTextField percent = null;
     boolean updatingTestModels = true;
+    private final DoubleTextField percent;
     private AbstractTableModel tableModelIndep;
     private AbstractTableModel tableModelDep;
     private JLabel fractionDepLabelIndep;
@@ -239,22 +239,26 @@ public class MarkovCheckEditor extends JPanel {
         JButton recalculate = new JButton("Recalculate");
         box1.add(recalculate);
 
-        if (!(model.getMarkovCheck().getIndependenceTest().getData() instanceof CovarianceMatrix)) {
-            this.percent = new DoubleTextField(0.5, 4, new DecimalFormat("0.0###"));
+        this.percent = new DoubleTextField(0.5, 4, new DecimalFormat("0.0###"));
+
+        if (model.getMarkovCheck().getIndependenceTest().getData() != null) {
             box1.add(new JLabel("% Sample:"));
             box1.add(percent);
-            box1.add(Box.createHorizontalGlue());
-
-            recalculate.addActionListener(e -> refreshResult(model, percent));
-
-            percent.setFilter((value, oldValue) -> {
-                if (value < 0.0 || value > 1.0) {
-                    return oldValue;
-                } else {
-                    return value;
-                }
-            });
+        } else {
+            box1.add(new JLabel("(Not tabular data)"));
         }
+
+        box1.add(Box.createHorizontalGlue());
+
+        recalculate.addActionListener(e -> refreshResult(model, percent));
+
+        percent.setFilter((value, oldValue) -> {
+            if (value < 0.0 || value > 1.0) {
+                return oldValue;
+            } else {
+                return value;
+            }
+        });
 
         setLabelTexts();
 
@@ -364,9 +368,7 @@ public class MarkovCheckEditor extends JPanel {
     private void refreshResult(MarkovCheckIndTestModel model, DoubleTextField percent) {
         setTest();
 
-        if (percent != null) {
-            model.getMarkovCheck().setPercentResample(percent.getValue());
-        }
+        model.getMarkovCheck().setPercentResample(percent.getValue());
         model.getMarkovCheck().generateResults();
         tableModelIndep.fireTableDataChanged();
         tableModelDep.fireTableDataChanged();

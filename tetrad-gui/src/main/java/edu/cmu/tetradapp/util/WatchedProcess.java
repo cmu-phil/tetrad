@@ -53,7 +53,7 @@ public abstract class WatchedProcess {
         startLongRunningThread();
     }
 
-    private static void positionDialogAboveFrameCenter(JFrame frame, JDialog dialog) {
+    private void positionDialogAboveFrameCenter(JFrame frame, JDialog dialog) {
         // Calculate the new position for the dialog
         Point newDialogPosition = new Point(
                 frame.getX() + frame.getWidth() / 2 - dialog.getWidth() / 2, // Centered horizontally
@@ -74,33 +74,21 @@ public abstract class WatchedProcess {
 
     private void startLongRunningThread() {
         longRunningThread = new Thread(() -> {
-            if (Thread.interrupted()) {
-                // The Thread was interrupted, so exit the loop and terminate
-                System.out.println("Thread was interrupted. Stopping...");
-                return;
-            }
-
             try {
                 watch();
             } catch (InterruptedException e) {
                 TetradLogger.getInstance().forceLogMessage("Thread was interrupted while watching. Stopping...");
-                return;
+            } catch (Exception e) {
+                TetradLogger.getInstance().forceLogMessage("Exception while watching: " + e.getMessage());
             }
 
             if (dialog != null) {
-                dialog.dispose();
-                dialog = null;
+                SwingUtilities.invokeLater(() -> dialog.dispose());
             }
         });
 
-        longRunningThread.start();
         showStopDialog();
-    }
-
-    private void stopLongRunningThread() {
-        if (longRunningThread != null && longRunningThread.isAlive()) {
-            longRunningThread.interrupt();
-        }
+        longRunningThread.start();
     }
 
     private void showStopDialog() {
@@ -123,8 +111,13 @@ public abstract class WatchedProcess {
         JButton stopButton = new JButton("Processing (click to stop)...");
 
         stopButton.addActionListener(e -> {
-            stopLongRunningThread();
-            dialog.dispose();
+            if (longRunningThread != null) {
+                SwingUtilities.invokeLater(() -> longRunningThread.interrupt());
+            }
+
+            if (dialog != null) {
+                SwingUtilities.invokeLater(() -> dialog.dispose());
+            }
         });
 
         JPanel panel = new JPanel();
