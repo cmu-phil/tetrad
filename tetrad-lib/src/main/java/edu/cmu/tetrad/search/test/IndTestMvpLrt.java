@@ -33,23 +33,30 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p>Performs a test of conditional independence X _||_ Y | Z1...Zn where all
- * variables are either continuous or discrete. This test is valid for both ordinal and non-ordinal discrete
- * searchVariables.</p>
- *
- * <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of
- * mixed variables. International journal of data science and analytics, 6, 3-18.</p>
+ * Performs a test of conditional independence X _||_ Y | Z1...Zn where all variables are either continuous or discrete.
+ * This test is valid for both ordinal and non-ordinal discrete searchVariables.
+ * <p>
+ * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables. International
+ * journal of data science and analytics, 6, 3-18.
  *
  * @author Bryan Andrews
  */
 public class IndTestMvpLrt implements IndependenceTest {
+
+    // The data set.
     private final DataSet data;
+    // A hash of nodes to indices.
     private final Map<Node, Integer> nodesHash;
     // Likelihood function
     private final MvpLikelihood likelihood;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    // The significance level of the independence tests.
     private double alpha;
+    // True if verbose output should be printed.
     private boolean verbose;
 
     /**
@@ -63,9 +70,7 @@ public class IndTestMvpLrt implements IndependenceTest {
     public IndTestMvpLrt(DataSet data, double alpha, int fDegree, boolean discretize) {
         this.data = data;
         this.likelihood = new MvpLikelihood(data, -1, fDegree, discretize);
-
         this.nodesHash = new HashedMap<>();
-
         List<Node> variables = data.getVariables();
 
         for (int i = 0; i < variables.size(); i++) {
@@ -92,6 +97,10 @@ public class IndTestMvpLrt implements IndependenceTest {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        if (facts.containsKey(new IndependenceFact(x, y, _z))) {
+            return facts.get(new IndependenceFact(x, y, _z));
+        }
+
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
@@ -132,12 +141,12 @@ public class IndTestMvpLrt implements IndependenceTest {
         try {
             p_0 = 1.0 - new ChiSquaredDistribution(dof_0).cumulativeProbability(2.0 * lik_0);
         } catch (Exception e) {
-            e.printStackTrace();
+            TetradLogger.getInstance().forceLogMessage(e.getMessage());
         }
         try {
             p_1 = 1.0 - new ChiSquaredDistribution(dof_1).cumulativeProbability(2.0 * lik_1);
         } catch (Exception e) {
-            e.printStackTrace();
+            TetradLogger.getInstance().forceLogMessage(e.getMessage());
         }
 
         double pValue = FastMath.min(p_0, p_1);
@@ -156,7 +165,10 @@ public class IndTestMvpLrt implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, alpha - pValue);
+        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue,
+                alpha - pValue);
+        facts.put(new IndependenceFact(x, y, _z), result);
+        return result;
     }
 
     /**

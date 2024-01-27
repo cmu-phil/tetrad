@@ -267,7 +267,7 @@ public class TestFges {
     public void testExplore5() {
         Graph graph = GraphUtils.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
-        fges.setFaithfulnessAssumed(false);
+        fges.setFaithfulnessAssumed(true);
         Graph CPDAG = fges.search();
         assertEquals(GraphTransforms.cpdagForDag(graph), CPDAG);
     }
@@ -716,7 +716,7 @@ public class TestFges {
     public void testFromGraph() {
         final int numNodes = 10;
         final int aveDegree = 4;
-        final int numIterations = 1;
+        final int numIterations = 10;
 
         for (int i = 0; i < numIterations; i++) {
             Graph dag = edu.cmu.tetrad.graph.RandomGraph.randomDag(numNodes, 0, aveDegree * numNodes / 2, 10, 10, 10, false);

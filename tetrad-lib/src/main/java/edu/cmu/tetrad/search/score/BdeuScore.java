@@ -32,26 +32,33 @@ import java.text.NumberFormat;
 import java.util.List;
 
 /**
- * <p>Calculates the BDeu score, which the BDe (Bayes Dirichlet Equivalent) score
- * with uniform priors. A good discussion of BD* scores can be found here:</p>
- *
- * <p>Heckerman, D., Geiger, D. &amp; Chickering, D.M. Learning Bayesian networks:
- * The combination of knowledge and statistical data. Mach Learn 20, 197–243 (1995).</p>
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * Calculates the BDeu score, which the BDe (Bayes Dirichlet Equivalent) score with uniform priors. A good discussion of
+ * BD* scores can be found here:
+ * <p>
+ * Heckerman, D., Geiger, D. &amp; Chickering, D.M. Learning Bayesian networks: The combination of knowledge and
+ * statistical data. Mach Learn 20, 197–243 (1995).
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
  * @see BdeScore
  */
 public class BdeuScore implements DiscreteScore {
+
+    // The discrete dataset.
     private final int[][] data;
+    // The sample size of the data.
     private final int sampleSize;
+    // The number of categories for each variable.
     private final int[] numCategories;
+    // The discrete dataset.
     private final DataSet dataSet;
-    private List<Node> variables;
-    private double samplePrior = 1;
-    private double structurePrior = 1;
+    // The variables of the dataset.
+    private final List<Node> variables;
+    // The sample prior.
+    private double samplePrior = 1d;
+    // The structure prior.
+    private double structurePrior = 0d;
 
     /**
      * Constructs a BDe score for the given dataset.
@@ -196,7 +203,7 @@ public class BdeuScore implements DiscreteScore {
      *
      * @param x The index of x.
      * @param y The index of y.
-     * @param z The indeces of the z variables.
+     * @param z The indices of the z variables.
      * @return The score difference.
      */
     @Override
@@ -212,23 +219,6 @@ public class BdeuScore implements DiscreteScore {
     @Override
     public List<Node> getVariables() {
         return this.variables;
-    }
-
-    /**
-     * Sets the variables to another of the same names, in the same order.
-     *
-     * @param variables The new varialbe list.
-     * @see edu.cmu.tetrad.algcomparison.algorithm.multi.Images
-     */
-    void setVariables(List<Node> variables) {
-        for (int i = 0; i < variables.size(); i++) {
-            if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
-                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
-                        "as the variable being substituted for it.");
-            }
-        }
-
-        this.variables = variables;
     }
 
     /**
@@ -280,7 +270,7 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * Returns the smaple prior.
+     * Returns the sample prior.
      *
      * @return This prior.
      */
@@ -306,7 +296,7 @@ public class BdeuScore implements DiscreteScore {
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
-        return "BDeu Score SampP " + nf.format(this.samplePrior) + " StuctP " + nf.format(this.structurePrior);
+        return "BDeu Score Sample prior = " + nf.format(this.samplePrior) + " Structure prior = " + nf.format(this.structurePrior);
     }
 
     /**
@@ -320,7 +310,7 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * This score does not implement a method to decide whehter a node is determined by its parents.
+     * This score does not implement a method to decide whether a node is determined by its parents.
      *
      * @param z The parents.
      * @param y The node.

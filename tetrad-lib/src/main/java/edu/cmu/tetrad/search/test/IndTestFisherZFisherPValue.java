@@ -21,7 +21,10 @@
 
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -33,29 +36,37 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p>Calculates independence from multiple datasets from using the Fisher method
- * of pooling independence results. See this paper for details:</p>
- *
- * <p>Tillman, R. E., &amp; Eberhardt, F. (2014). Learning causal structure from
- * multiple datasets with similar variable sets. Behaviormetrika, 41(1), 41-64.</p>
+ * Calculates independence from multiple datasets from using the Fisher method of pooling independence results. See this
+ * paper for details:
+ * <p>
+ * Tillman, R. E., &amp; Eberhardt, F. (2014). Learning causal structure from multiple datasets with similar variable
+ * sets. Behaviormetrika, 41(1), 41-64.
  *
  * @author robertillman
  * @author josephramsey
  */
 public final class IndTestFisherZFisherPValue implements IndependenceTest {
+    // The variables of the covariance data, in order. (Unmodifiable list.)
     private final List<Node> variables;
+    // The number of samples in each dataset.
     private final int sampleSize;
+    // The datasets.
     private final List<DataSet> dataSets;
+    // The covariance matrices of the datasets.
     private final List<ICovarianceMatrix> ncov;
-    private final Map<Node, Integer> variablesMap;
+    // A hash of nodes to indices.
+    private final Map<Node, Integer> nodesMap;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    // The significance level of the independence tests.
     private double alpha;
-    private double pValue = Double.NaN;
+    // True if verbose output should be printed.
     private boolean verbose;
-
 
     /**
      * Constructor.
@@ -74,9 +85,9 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         }
 
         this.variables = dataSets.get(0).getVariables();
-        this.variablesMap = new HashMap<>();
+        this.nodesMap = new HashMap<>();
         for (int i = 0; i < this.variables.size(); i++) {
-            this.variablesMap.put(this.variables.get(i), i);
+            this.nodesMap.put(this.variables.get(i), i);
         }
 
         for (DataSet dataSet : dataSets) {
@@ -103,15 +114,19 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        if (facts.containsKey(new IndependenceFact(x, y, _z))) {
+            return facts.get(new IndependenceFact(x, y, _z));
+        }
+
         try {
             List<Node> z = new ArrayList<>();
             Collections.sort(z);
 
             int[] all = new int[z.size() + 2];
-            all[0] = this.variablesMap.get(x);
-            all[1] = this.variablesMap.get(y);
+            all[0] = this.nodesMap.get(x);
+            all[1] = this.nodesMap.get(y);
             for (int i = 0; i < z.size(); i++) {
-                all[i + 2] = this.variablesMap.get(z.get(i));
+                all[i + 2] = this.nodesMap.get(z.get(i));
             }
 
             List<Double> pValues = new ArrayList<>();
@@ -152,19 +167,19 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
                 throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
             }
 
-            this.pValue = p;
-
             boolean independent = p > this.alpha;
 
             if (this.verbose) {
                 if (independent) {
                     TetradLogger.getInstance().forceLogMessage(
-                            LogUtilsSearch.independenceFactMsg(x, y, _z, this.pValue));
+                            LogUtilsSearch.independenceFactMsg(x, y, _z, p));
                 }
             }
 
 
-            return new IndependenceResult(new IndependenceFact(x, y, _z), independent, p, getAlpha() - p);
+            IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, _z), independent, p, getAlpha() - p);
+            facts.put(new IndependenceFact(x, y, _z), result);
+            return result;
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when testing " +
                     LogUtilsSearch.independenceFact(x, y, _z));

@@ -36,11 +36,10 @@ import java.util.LinkedList;
  */
 public class DagIterator {
 
-    /**
-     * The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether or not
-     * these edges have already been oriented left and/or right.
-     */
+    // The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether
+    //these edges have already been oriented left and/or right.
     private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
+    // The DAG that is returned by the next() method.
     private Graph storedDag;
 
     /**
@@ -135,6 +134,8 @@ public class DagIterator {
     }
 
     /**
+     * Returns true just in case there is still a DAG remaining in the enumeration of DAGs for this pattern.
+     *
      * @return true just in case there is still a DAG remaining in the enumeration of DAGs for this pattern.
      */
     public boolean hasNext() {
@@ -144,7 +145,6 @@ public class DagIterator {
 
         return this.storedDag != null;
     }
-
 
     private static class DecoratedGraph {
         private Graph graph;

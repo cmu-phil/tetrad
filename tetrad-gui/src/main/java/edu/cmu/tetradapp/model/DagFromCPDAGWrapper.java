@@ -47,7 +47,7 @@ public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldMode
     }
 
     private static Graph getGraph(Graph graph) {
-        return GraphTransforms.dagFromCPDAG(graph, null);
+        return GraphTransforms.dagFromCpdag(graph, null);
     }
 
 

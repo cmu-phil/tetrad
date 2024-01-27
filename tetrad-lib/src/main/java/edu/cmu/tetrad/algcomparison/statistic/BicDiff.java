@@ -8,7 +8,7 @@ import edu.cmu.tetrad.search.score.SemBicScorer;
 import static org.apache.commons.math3.util.FastMath.tanh;
 
 /**
- * Difference between the true and estiamted BIC scores.
+ * Difference between the true and estiamted BIC scores.  The BIC is calculated as 2L - k ln N, so "higher is better."
  *
  * @author josephramsey
  */
@@ -28,8 +28,8 @@ public class BicDiff implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double _true = SemBicScorer.scoreDag(GraphTransforms.dagFromCPDAG(trueGraph, null), dataModel, precomputeCovariances);
-        double est = SemBicScorer.scoreDag(GraphTransforms.dagFromCPDAG(estGraph, null), dataModel, precomputeCovariances);
+        double _true = SemBicScorer.scoreDag(GraphTransforms.dagFromCpdag(trueGraph, null), dataModel, precomputeCovariances);
+        double est = SemBicScorer.scoreDag(GraphTransforms.dagFromCpdag(estGraph, null), dataModel, precomputeCovariances);
         return (_true - est);
     }
 

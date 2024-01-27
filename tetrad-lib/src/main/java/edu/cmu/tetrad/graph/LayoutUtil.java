@@ -182,7 +182,10 @@ public class LayoutUtil {
             List<Node> thisTier = new LinkedList<>();
 
             for (Node node : notFound) {
-                if (found.containsAll(graph.getParents(node))) {
+                List<Node> nodesInTo = graph.getNodesInTo(node, Endpoint.ARROW);
+                nodesInTo.removeAll(graph.getNodesOutTo(node, Endpoint.ARROW));
+
+                if (found.containsAll(nodesInTo)) {
                     thisTier.add(node);
                 }
             }

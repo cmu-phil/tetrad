@@ -37,7 +37,7 @@ public class AlgorithmAnnotationsTest {
     @Test
     public void testAnnotatedNameAttributeForUniqueness() {
         List<AnnotatedClass<Algorithm>> algorithms = AlgorithmAnnotations.getInstance().getAnnotatedClasses();
-        List<String> values = algorithms.stream().map(e -> e.getAnnotation().name().toLowerCase()).collect(Collectors.toList());
+        List<String> values = algorithms.stream().map(e -> e.annotation().name().toLowerCase()).collect(Collectors.toList());
 
         long actual = values.size();
         long expected = values.stream().distinct().count();
@@ -47,7 +47,7 @@ public class AlgorithmAnnotationsTest {
     @Test
     public void testAnnotatedCommandAttributeForUniqueness() {
         List<AnnotatedClass<Algorithm>> algorithms = AlgorithmAnnotations.getInstance().getAnnotatedClasses();
-        List<String> values = algorithms.stream().map(e -> e.getAnnotation().command().toLowerCase()).collect(Collectors.toList());
+        List<String> values = algorithms.stream().map(e -> e.annotation().command().toLowerCase()).collect(Collectors.toList());
 
         long actual = values.size();
         long expected = values.stream().distinct().count();

@@ -36,10 +36,10 @@ public class ChiSquare implements Distribution {
     private static final long serialVersionUID = 23L;
 
     /**
-     * The stored degees of freedom. Needed because the wrapped distribution does not provide getters for its
+     * The stored degrees of freedom. Needed because the wrapped distribution does not provide getters for its
      * parameters.
      */
-    private double df = 5.0;
+    private double df;
 
     /**
      * Constructs a new Chi Square distribution.
@@ -104,7 +104,7 @@ public class ChiSquare implements Distribution {
      * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
+     * help.)
      *
      * @param s Ibid.
      * @throws java.io.IOException    If the stream cannot be read.

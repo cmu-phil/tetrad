@@ -70,8 +70,6 @@ public class LinearFisherModel implements Simulation, TakesData {
         System.out.println("degree = " + GraphUtils.getDegree(graph));
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
-            System.out.println("Simulating dataset #" + (i + 1));
-
             if (this.shocks != null && this.shocks.size() > 0) {
                 parameters.set(Params.NUM_MEASURES, this.shocks.get(0).getVariables().size());
             }

@@ -78,7 +78,7 @@ public final class ScoreDescriptions {
 
     private List<String> getShortNames() {
         return ScoreAnnotations.getInstance().getAnnotatedClasses().stream()
-                .map(e -> e.getAnnotation().command())
+                .map(e -> e.annotation().command())
                 .collect(Collectors.toList());
     }
 

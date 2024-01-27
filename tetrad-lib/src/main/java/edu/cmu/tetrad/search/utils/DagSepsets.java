@@ -35,6 +35,7 @@ import java.util.Set;
  * @author josephramsey
  */
 public class DagSepsets implements SepsetProducer {
+    // The DAG being analyzed.
     private final EdgeListGraph dag;
 
     /**
@@ -71,7 +72,6 @@ public class DagSepsets implements SepsetProducer {
         Set<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && !sepset.contains(j);
     }
-
 
     /**
      * Not implemented; required for an interface.

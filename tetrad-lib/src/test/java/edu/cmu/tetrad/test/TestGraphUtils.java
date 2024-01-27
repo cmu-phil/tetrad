@@ -23,6 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -271,6 +272,12 @@ public final class TestGraphUtils {
                 return;
             }
         }
+    }
+
+    @Test
+    public void test9() {
+        Graph graph = GraphUtils.convert("X1---X2,X2---X3, X3---X4, X4---X1");
+        assert(!GraphSearchUtils.isPdag(graph));
     }
 
     private Set<Node> set(Node... z) {

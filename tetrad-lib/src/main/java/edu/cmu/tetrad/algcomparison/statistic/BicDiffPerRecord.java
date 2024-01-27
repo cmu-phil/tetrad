@@ -31,8 +31,8 @@ public class BicDiffPerRecord implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double _true = SemBicScorer.scoreDag(GraphTransforms.dagFromCPDAG(trueGraph, null), dataModel, precomputeCovariances);
-        double est = SemBicScorer.scoreDag(GraphTransforms.dagFromCPDAG(estGraph, null), dataModel, precomputeCovariances);
+        double _true = SemBicScorer.scoreDag(GraphTransforms.dagFromCpdag(trueGraph, null), dataModel, precomputeCovariances);
+        double est = SemBicScorer.scoreDag(GraphTransforms.dagFromCpdag(estGraph, null), dataModel, precomputeCovariances);
         if (abs(_true) < 0.0001) _true = 0.0;
         if (abs(est) < 0.0001) est = 0.0;
         return (_true - est) / ((DataSet) dataModel).getNumRows();

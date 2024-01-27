@@ -70,7 +70,7 @@ public final class IndependenceTestModels {
 
         // group by datatype
         this.models.forEach(e -> {
-            DataType[] types = e.getIndependenceTest().getAnnotation().dataType();
+            DataType[] types = e.getIndependenceTest().annotation().dataType();
             for (DataType dataType : types) {
                 this.modelMap.get(dataType).add(e);
             }
@@ -106,7 +106,7 @@ public final class IndependenceTestModels {
                         this.defaultModelMap.put(dataType, list.get(0));
                     } else {
                         Optional<IndependenceTestModel> result = list.stream()
-                                .filter(e -> e.getIndependenceTest().getClazz().getName().equals(value))
+                                .filter(e -> e.getIndependenceTest().clazz().getName().equals(value))
                                 .findFirst();
                         this.defaultModelMap.put(dataType, result.orElseGet(() -> list.get(0)));
                     }

@@ -35,14 +35,12 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p>Implements scores motivated by the Generalized Information Criterion (GIC)
- * approach as given in Kim et al. (2012).</p>
- *
- * <p>Kim, Y., Kwon, S., &amp; Choi, H. (2012). Consistent model selection criteria on
- * high dimensions. The Journal of Machine Learning Research, 13(1), 1037-1057.</p>
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * Implements scores motivated by the Generalized Information Criterion (GIC) approach as given in Kim et al. (2012).
+ * <p>
+ * Kim, Y., Kwon, S., &amp; Choi, H. (2012). Consistent model selection criteria on high dimensions. The Journal of
+ * Machine Learning Research, 13(1), 1037-1057.
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
  */
@@ -68,11 +66,14 @@ public class GicScores implements Score {
     private boolean calculateRowSubsets = false;
     //    private boolean calculateSquareEuclideanNorms = false;
     private double penaltyDiscount = 1;
+    private boolean usePseudoInverse = false;
 
     /**
      * Constructs the score using a covariance matrix.
+     *
+     * @param covariances The covariance matrix.
      */
-    public GicScores(ICovarianceMatrix covariances/*, double correlationThreshold*/) {
+    public GicScores(ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }
@@ -85,6 +86,9 @@ public class GicScores implements Score {
 
     /**
      * Constructs the score using a covariance matrix.
+     *
+     * @param dataSet               The continuous dataset to analyze.
+     * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly. True if
      */
     public GicScores(DataSet dataSet, boolean precomputeCovariances) {
         if (dataSet == null) {
@@ -109,12 +113,26 @@ public class GicScores implements Score {
         calculateRowSubsets = true;
     }
 
+    /**
+     * Calculates the sample likelihood and BIC score for index i given its parents in a simple SEM model.
+     *
+     * @param x A node.
+     * @param y TAhe node.
+     * @param z A set of nodes.
+     * @return The score difference.
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-
+    /**
+     * Calculates the sample likelihood and BIC score for index i given its parents in a simple SEM model.
+     *
+     * @param i       The node.
+     * @param parents The parents.
+     * @return The score.
+     */
     public double localScore(int i, int... parents) {
         double sn = 12;
 
@@ -128,7 +146,7 @@ public class GicScores implements Score {
         double varry;
 
         try {
-            varry = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets);
+            varry = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets, this.usePseudoInverse);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                     LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -164,96 +182,96 @@ public class GicScores implements Score {
         } else if (ruleType == RuleType.GIC6) {
 
             // Following Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection criteria on high dimensions.
-            // The Journal of Machine Learning Resjearch, 13(1), 1037-1057.
+            // The Journal of Machine Learning Research, 13(1), 1037-1057.
             lambda = log(n) * log(pn);
         } else {
             throw new IllegalStateException("That lambda rule is not configured: " + ruleType);
         }
 
-//        double c = penaltyDiscount;
-
-        //    private double penaltyDiscount;
-        //    private double correlationThreshold = 1.0;
-        boolean takeLog = true;
-        if (takeLog) {
-            return -(n / 2.0) * log(varry) - lambda * getPenaltyDiscount() * k;
-        } else {
-            // The true error variance
-            double trueErrorVariance = 1.0;
-            return -(n / 2.0) * (varry) - lambda * getPenaltyDiscount() * k * trueErrorVariance;
-        }
-
+        return -(n / 2.0) * log(varry) - lambda * getPenaltyDiscount() * k;
     }
 
     /**
-     * Specialized scoring method for a single parent. Used to speed up the effect edges search.
+     * Returns the sample size.
+     *
+     * @return This size.
      */
-
-
-//    public double getTrueErrorVariance() {
-//        return trueErrorVariance;
-//    }
     public ICovarianceMatrix getCovariances() {
         return covariances;
     }
 
+    /**
+     * Sets the covariance matrix.
+     *
+     * @param covariances The covariance matrix.
+     */
     private void setCovariances(ICovarianceMatrix covariances) {
-//        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
         this.covariances = covariances;
-//        this.covariances = covariances;
-
-//        boolean exists = false;
-
-//        for (int i = 0; i < correlations.getSize(); i++) {
-//            for (int j = 0; j < correlations.getSize(); j++) {
-//                if (i == j) continue;
-//                double r = correlations.getValue(i, j);
-//                if (abs(r) > correlationThreshold) {
-//                    System.out.println("Absolute correlation too high: " + r);
-//                    exists = true;
-//                }
-//            }
-//        }
-
-//        if (exists) {
-//            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
-//                    + ") in absolute value.");
-//        }
-
-
         this.N = covariances.getSampleSize();
     }
 
+    /**
+     * Returns the sample size.
+     *
+     * @return This size.
+     */
     public int getSampleSize() {
         return sampleSize;
     }
 
+    /**
+     * Returns true if an edge with this bump is an effect edge.
+     *
+     * @param bump The bump.
+     * @return True if so.
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
-//    public void setTrueErrorVariance(double trueErrorVariance) {
-//        this.trueErrorVariance = trueErrorVariance;
-//    }
-
+    /**
+     * Returns the dataset.
+     *
+     * @return The dataset.
+     */
     public DataSet getDataSet() {
         return dataSet;
     }
 
+    /**
+     * Returns true if verbose output should be sent to out.
+     *
+     * @return True if verbose output should be sent to out.
+     */
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * Sets whether verbose output should be sent to out.
+     *
+     * @param verbose True if verbose output should be sent to out.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Returns the variables of the dataset.
+     *
+     * @return These variables as  list.
+     */
     @Override
     public List<Node> getVariables() {
         return variables;
     }
 
+    /**
+     * Sets the variables of the dataset.
+     *
+     * @param variables The variables of the dataset.
+     */
     public void setVariables(List<Node> variables) {
         if (covariances != null) {
             covariances.setVariables(variables);
@@ -262,11 +280,23 @@ public class GicScores implements Score {
         this.variables = variables;
     }
 
+    /**
+     * Returns the max degree of the graph for some algorithms.
+     *
+     * @return This max degree.
+     */
     @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(log(sampleSize));
     }
 
+    /**
+     * Returns a judgment of whether the variable in z determine y exactly.
+     *
+     * @param z The set of nodes.
+     * @param y The node.
+     * @return This judgment
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
         int i = variables.indexOf(y);
@@ -282,50 +312,64 @@ public class GicScores implements Score {
         return Double.isNaN(v);
     }
 
-//    public RuleType getRuleType() {
-//        return ruleType;
-//    }
-
+    /**
+     * Sets the rule type.
+     *
+     * @param ruleType The rule type.
+     * @see RuleType
+     */
     public void setRuleType(RuleType ruleType) {
         this.ruleType = ruleType;
     }
 
-//    public void setPenaltyDiscount(double penaltyDiscount) {
-//        this.penaltyDiscount = penaltyDiscount;
-//    }
-
-//    public void setCorrelationThreshold(double correlationThreshold) {
-//        this.correlationThreshold = correlationThreshold;
-//    }
-
-//    public void setTakeLog(boolean takeLog) {
-//        this.takeLog = takeLog;
-//    }
-
-//    public void setCalculateSquareEuclideanNorms(boolean calculateSquareEuclideanNorms) {
-//        this.calculateSquareEuclideanNorms = calculateSquareEuclideanNorms;
-//    }
-
+    /**
+     * Sets the lambda parameter.
+     *
+     * @param lambda The lambda parameter.
+     */
     public void setLambda(double lambda) {
         this.lambda = lambda;
     }
 
+    /**
+     * Returns the penalty discount.
+     *
+     * @return The penalty discount.
+     */
     public double getPenaltyDiscount() {
         return penaltyDiscount;
     }
 
+    /**
+     * Sets the penalty discount.
+     *
+     * @param penaltyDiscount The penalty discount.
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    /**
+     * Returns a string for this object.
+     *
+     * @return A string for this object.
+     */
     public String toString() {
         return "Generalized Information Criterion Score";
     }
 
+    /**
+     * Sets whether to use the pseudo-inverse when calculating the score.
+     *
+     * @param usePseudoInverse True if so.
+     */
+    public void setUsePseudoInverse(boolean usePseudoInverse) {
+        this.usePseudoInverse = usePseudoInverse;
+    }
 
     /**
      * Gives the options for the rules to use for calculating the scores. The "GIC" rules, and RICc, are the rules
-     * proposed in the Kim et al. paper for generalized information criteria.'
+     * proposed in the Kim et al. paper for generalized information criteria.
      *
      * @see GicScores
      */

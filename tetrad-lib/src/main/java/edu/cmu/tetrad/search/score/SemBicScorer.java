@@ -48,7 +48,7 @@ public class SemBicScorer {
         } else if (data instanceof DataSet) {
             score = new SemBicScore((DataSet) data, precomputeCovariances);
         } else {
-            throw new IllegalArgumentException("Expecting a covariance matrix of a dataset.");
+            throw new IllegalArgumentException("Expecting a covariance matrix or a dataset.");
         }
 
         score.setPenaltyDiscount(penaltyDiscount);

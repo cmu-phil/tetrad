@@ -868,7 +868,9 @@ public final class SvarFciOrient {
      * Orients according to background knowledge
      */
     private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
-        this.logger.log("info", "Starting BK Orientation.");
+        if (verbose) {
+            this.logger.log("info", "Starting BK Orientation.");
+        }
 
         for (Iterator<KnowledgeEdge> it =
              bk.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -916,7 +918,9 @@ public final class SvarFciOrient {
             this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        this.logger.log("info", "Finishing BK Orientation.");
+        if (verbose) {
+            this.logger.log("info", "Finishing BK Orientation.");
+        }
     }
 
 

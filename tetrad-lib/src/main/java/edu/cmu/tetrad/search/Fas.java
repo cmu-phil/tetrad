@@ -34,27 +34,25 @@ import java.io.PrintStream;
 import java.util.*;
 
 /**
- * <p>Implements the Fast Adjacency Search (FAS), which is the adjacency search of the PC algorithm (see). This is a
- * useful algorithm in many contexts, including as the first step of FCI (see).</p>
- *
- * <p>The idea of FAS is that at a given stage of the search, an edge X*-*Y is removed from the
- * graph if X _||_ Y | S, where S is a subset of size d either of adj(X) or of adj(Y), where d is the depth of the
- * search. The fast adjacency search performs this procedure for each pair of adjacent edges in the graph and for each
- * depth d = 0, 1, 2, ..., d1, where d1 is either the maximum depth or else the first such depth at which no edges can
- * be removed. The interpretation of this adjacency search is different for different algorithm, depending on the
- * assumptions of the algorithm. A mapping from {x, y} to S({x, y}) is returned for edges x *-* y that have been
- * removed.</p>
- *
- * <p>FAS may optionally use a heuristic from Causation, Prediction and Search, which (like PC-Stable)
- * renders the output invariant to the order of the input variables.</p>
- *
- * <p>This algorithm was described in the earlier edition of this book:</p>
- *
- * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT
- * press.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
- * tiers.</p>
+ * Implements the Fast Adjacency Search (FAS), which is the adjacency search of the PC algorithm (see). This is a useful
+ * algorithm in many contexts, including as the first step of FCI (see).
+ * <p>
+ * The idea of FAS is that at a given stage of the search, an edge X*-*Y is removed from the graph if X _||_ Y | S,
+ * where S is a subset of size d either of adj(X) or of adj(Y), where d is the depth of the search. The fast adjacency
+ * search performs this procedure for each pair of adjacent edges in the graph and for each depth d = 0, 1, 2, ..., d1,
+ * where d1 is either the maximum depth or else the first such depth at which no edges can be removed. The
+ * interpretation of this adjacency search is different for different algorithm, depending on the assumptions of the
+ * algorithm. A mapping from {x, y} to S({x, y}) is returned for edges x *-* y that have been removed.
+ * <p>
+ * FAS may optionally use a heuristic from Causation, Prediction and Search, which (like PC-Stable) renders the output
+ * invariant to the order of the input variables.
+ * <p>
+ * This algorithm was described in the earlier edition of this book:
+ * <p>
+ * Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT press.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author peterspirtes
  * @author clarkglymour
@@ -99,10 +97,10 @@ public class Fas implements IFas {
 
     /**
      * Discovers all adjacencies in data.  The procedure is to remove edges in the graph which connect pairs of
-     * variables which are independent, conditional on some other set of variables in the graph (the "sepset"). These are
-     * removed in tiers.  First, edges which are independent conditional on zero other variables are removed, then edges
-     * which are independent conditional on one other variable are removed, then two, then three, and so on, until no
-     * more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
+     * variables which are independent, conditional on some other set of variables in the graph (the "sepset"). These
+     * are removed in tiers.  First, edges which are independent conditional on zero other variables are removed, then
+     * edges which are independent conditional on one other variable are removed, then two, then three, and so on, until
+     * no more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
      * adjacencies in the data.
      *
      * @param nodes A list of nodes to search over.
@@ -175,7 +173,9 @@ public class Fas implements IFas {
         }
 
         for (int d = 0; d <= _depth; d++) {
-            System.out.println("Depth: " + d);
+            if (verbose) {
+                System.out.println("Depth: " + d);
+            }
 
             boolean more;
 
@@ -321,11 +321,11 @@ public class Fas implements IFas {
     }
 
     /**
-     * <p>Sets whether the stable adjacency search should be used. Default is false. Default is false. See the
-     * following reference for this:</p>
-     *
-     * <p>Colombo, D., &amp; Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J. Mach.
-     * Learn. Res., 15(1), 3741-3782.</p>
+     * Sets whether the stable adjacency search should be used. Default is false. Default is false. See the following
+     * reference for this:
+     * <p>
+     * Colombo, D., &amp; Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J. Mach.
+     * Learn. Res., 15(1), 3741-3782.
      *
      * @param stable True iff the case.
      */

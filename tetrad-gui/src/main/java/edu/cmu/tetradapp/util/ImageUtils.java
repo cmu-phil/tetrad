@@ -53,7 +53,7 @@ public final class ImageUtils {
             throw new NullPointerException("Path must not be null.");
         }
 
-        String fullPath = "/resources/images/" + path;
+        String fullPath = "/docs/images/" + path;
         URL url = anchor.getClass().getResource(fullPath);
 
         if (url == null) {

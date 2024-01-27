@@ -69,8 +69,6 @@ public final class GraphSearchUtils {
             // Orient to-->from
             graph.removeEdge(from, to);
             graph.addDirectedEdge(to, from);
-
-            TetradLogger.getInstance().log("knowledgeOrientations", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(to, from)));
         }
 
         for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
@@ -347,6 +345,96 @@ public final class GraphSearchUtils {
         }
     }
 
+    /**
+     * Returns true just in case the given graph is a CPDAG.
+     *
+     * @param graph the graph to check.
+     * @return true just in case the given graph is a CPDAG.
+     */
+    public static boolean isPdag(Graph graph) {
+
+        // Make sure all the edges are directed or undirected.
+        for (Edge edge : graph.getEdges()) {
+            if (!(Edges.isDirectedEdge(edge) || Edges.isUndirectedEdge(edge))) {
+                return false;
+            }
+        }
+
+        // Make sure there are no 2-cycles.
+        List<Node> nodes = graph.getNodes();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                if (graph.getEdges(nodes.get(i), nodes.get(j)).size() > 1) {
+                    return false;
+                }
+            }
+        }
+
+        // Make sure there are no underlinings.
+        if (!graph.getUnderLines().isEmpty()) {
+            return false;
+        }
+        if (!graph.getDottedUnderlines().isEmpty()) {
+            return false;
+        }
+
+        // Make sure there's no way to orient a directed cycle using the Meek rules.
+        MeekRules rules = new MeekRules();
+        rules.setRevertToUnshieldedColliders(true);
+        rules.orientImplied(graph);
+
+        if (graph.paths().existsDirectedCycle()) return false;
+
+        rules.setRevertToUnshieldedColliders(false);
+
+        NEXT:
+        while (true) {
+            for (Edge edge : graph.getEdges()) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+
+                if (Edges.isUndirectedEdge(edge)) {
+                    Graph _graph = new EdgeListGraph(graph);
+
+                    if (!_graph.paths().isAncestorOf(y, x)) {
+                        direct(x, y, graph);
+                    } else {
+                        direct(y, x, graph);
+                    }
+
+                    rules.orientImplied(_graph);
+                    if (_graph.paths().existsDirectedCycle()) return false;
+
+                    _graph = new EdgeListGraph(graph);
+
+                    if (!_graph.paths().isAncestorOf(y, x)) {
+                        direct(x, y, graph);
+                    } else {
+                        direct(y, x, graph);
+                    }
+
+                    rules.orientImplied(_graph);
+                    if (_graph.paths().existsDirectedCycle()) return false;
+
+                    graph = _graph;
+                    continue NEXT;
+                }
+            }
+
+            break;
+        }
+
+        return true;
+    }
+
+    private static void direct(Node a, Node c, Graph graph) {
+        Edge before = graph.getEdge(a, c);
+        Edge after = Edges.directedEdge(a, c);
+        graph.removeEdge(before);
+        graph.addEdge(after);
+    }
+
     public static LegalPagRet isLegalPag(Graph pag) {
 
         for (Node n : pag.getNodes()) {
@@ -390,7 +478,7 @@ public final class GraphSearchUtils {
                         "a MAG and PAG";
             }
 
-            if (!edgeMismatch.equals("")) {
+            if (!edgeMismatch.isEmpty()) {
                 reason = reason + ". " + edgeMismatch;
             }
 
@@ -516,7 +604,7 @@ public final class GraphSearchUtils {
         int x = 0;
         int y = 50 - ySpace;
 
-        if (notInTier.size() > 0) {
+        if (!notInTier.isEmpty()) {
             y += ySpace;
 
             for (String name : notInTier) {
@@ -640,7 +728,7 @@ public final class GraphSearchUtils {
 
         int pathLength = 1;
 
-        while (nextEdges.size() > 0) {
+        while (!nextEdges.isEmpty()) {
 //            System.out.println("Path length = " + pathLength);
             if (++pathLength > maxPathLength) {
                 return reachable;
@@ -837,20 +925,11 @@ public final class GraphSearchUtils {
                 if (!e1.equals(e2)) {
                     error++;
                 }
-            } else if (e2 == null) {
-                if (Edges.isUndirectedEdge(e1)) {
-                    error++;
-                } else {
-                    error++;
-                    error++;
-                }
+            } else if (Edges.isUndirectedEdge(Objects.requireNonNullElse(e2, e1))) {
+                error++;
             } else {
-                if (Edges.isUndirectedEdge(e2)) {
-                    error++;
-                } else {
-                    error++;
-                    error++;
-                }
+                error++;
+                error++;
             }
         }
 

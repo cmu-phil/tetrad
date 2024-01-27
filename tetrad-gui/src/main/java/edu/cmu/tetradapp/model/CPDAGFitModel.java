@@ -84,7 +84,7 @@ public final class CPDAGFitModel implements SessionModel {
 
             for (int i = 0; i < dataModels.size(); i++) {
                 DataSet dataSet = (DataSet) dataModels.get(0);
-                Graph dag = GraphTransforms.dagFromCPDAG(graphs.get(0), null);
+                Graph dag = GraphTransforms.dagFromCpdag(graphs.get(0), null);
                 BayesPm pm = new BayesPmWrapper(dag, new DataWrapper(dataSet)).getBayesPm();
                 this.bayesPms.add(pm);
                 this.bayesIms.add(estimate(dataSet, pm));
@@ -95,7 +95,7 @@ public final class CPDAGFitModel implements SessionModel {
 
             for (int i = 0; i < dataModels.size(); i++) {
                 DataSet dataSet = (DataSet) dataModels.get(0);
-                Graph dag = GraphTransforms.dagFromCPDAG(graphs.get(0), null);
+                Graph dag = GraphTransforms.dagFromCpdag(graphs.get(0), null);
 
                 try {
                     SemPm pm = new SemPm(dag);

@@ -43,6 +43,7 @@ import java.util.Map;
  */
 public class BayesImParser {
 
+    // Whether to use display names.
     private boolean useDisplayNames;
 
     /**
@@ -61,7 +62,7 @@ public class BayesImParser {
     }
 
     /**
-     * Takes an xml representation of a Bayes IM and reinstantiates the IM
+     * Takes an xml representation of a Bayes IM and reinstantiates the IM.
      *
      * @param element the xml of the IM
      * @return the BayesIM

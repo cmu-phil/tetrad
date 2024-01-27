@@ -14,11 +14,13 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +38,7 @@ import java.util.List;
 public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
@@ -61,24 +64,14 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
                 knowledge = timeSeries.getKnowledge();
             }
 
-//            PcCommon.PcHeuristicType pcHeuristicType;
-//
-//            switch (parameters.getInt(Params.PC_HEURISTIC)) {
-//                case 0:
-//                    pcHeuristicType = PcCommon.PcHeuristicType.NONE;
-//                    break;
-//                case 1:
-//                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
-//                    break;
-//                case 2:
-//                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_2;
-//                    break;
-//                case 3:
-//                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_3;
-//                    break;
-//                default:
-//                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-//            }
+            PcCommon.PcHeuristicType pcHeuristicType = switch (parameters.getInt(Params.PC_HEURISTIC)) {
+                case 0 -> PcCommon.PcHeuristicType.NONE;
+                case 1 -> PcCommon.PcHeuristicType.HEURISTIC_1;
+                case 2 -> PcCommon.PcHeuristicType.HEURISTIC_2;
+                case 3 -> PcCommon.PcHeuristicType.HEURISTIC_3;
+                default ->
+                        throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+            };
 
             edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(this.test.getTest(dataModel, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
@@ -87,7 +80,7 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
-//            search.setPcHeuristicType(pcHeuristicType);
+            search.setPcHeuristicType(pcHeuristicType);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();

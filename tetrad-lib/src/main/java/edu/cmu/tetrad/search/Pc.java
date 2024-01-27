@@ -30,32 +30,30 @@ import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Implements the Peter/Clark (PC) algorithm, which uses conditional independence testing as an oracle to first of
- * all remove extraneous edges from a complete graph, then to orient the unshielded colliders in the graph, and finally
- * to make any additional orientations that are capable of avoiding additional unshielded colliders in the graph. An
+ * Implements the Peter/Clark (PC) algorithm, which uses conditional independence testing as an oracle to first of all
+ * remove extraneous edges from a complete graph, then to orient the unshielded colliders in the graph, and finally to
+ * make any additional orientations that are capable of avoiding additional unshielded colliders in the graph. An
  * version of this algorithm was proposed earlier than this, but the standard reference for the algorithm is in Chapter
- * 6 of the following book:</p>
- *
- * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
- * prediction, and search. MIT press.</p>
- *
- * <p>A modified rule set capable of dealing effectively with knowledge of required
- * and forbidden edges is due to Chris Meek, with this reference:
- *
- * <p>Meek, C. (1995), "Causal inference and causal explanation with background
- * knowledge."</p>
- *
- * <p>See setter methods for "knobs" you can turn to control the output of PC and
- * their defaults.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * 6 of the following book:
+ * <p>
+ * Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT press.
+ * <p>
+ * A modified rule set capable of dealing effectively with knowledge of required and forbidden edges is due to Chris
+ * Meek, with this reference:
+ * <p>
+ * Meek, C. (1995), "Causal inference and causal explanation with background knowledge."
+ * <p>
+ * See setter methods for "knobs" you can turn to control the output of PC and their defaults.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author peterspirtes
  * @author chrismeek
@@ -145,8 +143,10 @@ public class Pc implements IGraphSearch {
      * @see IFas
      */
     public Graph search(IFas fas, Set<Node> nodes) {
-        this.logger.forceLogMessage("Starting PC algorithm");
-        this.logger.forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        if (verbose) {
+            this.logger.forceLogMessage("Starting PC algorithm");
+            this.logger.forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         long startTime = MillisecondTimes.timeMillis();
 
@@ -160,6 +160,26 @@ public class Pc implements IGraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
+        PcCommon search = getPcCommon();
+
+        this.graph = search.search();
+        this.sepsets = fas.getSepsets();
+
+        this.numIndependenceTests = fas.getNumIndependenceTests();
+
+        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
+
+        if (verbose) {
+            this.logger.forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            this.logger.forceLogMessage("Finishing PC Algorithm.");
+            this.logger.flush();
+        }
+
+        return this.graph;
+    }
+
+    @NotNull
+    private PcCommon getPcCommon() {
         PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
         search.setMeekPreventCycles(meekPreventCycles);
@@ -181,19 +201,7 @@ public class Pc implements IGraphSearch {
         search.setConflictRule(conflictRule);
         search.setPcHeuristicType(pcHeuristicType);
         search.setVerbose(verbose);
-
-        this.graph = search.search();
-        this.sepsets = fas.getSepsets();
-
-        this.numIndependenceTests = fas.getNumIndependenceTests();
-
-        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
-
-        this.logger.forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.forceLogMessage("Finishing PC Algorithm.");
-        this.logger.flush();
-
-        return this.graph;
+        return search;
     }
 
     /**
@@ -325,11 +333,11 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * <p>Sets whether the stable adjacency search should be used. Default is false. Default is false. See the
-     * following reference for this:</p>
-     *
-     * <p>Colombo, D., &amp; Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J. Mach.
-     * Learn. Res., 15(1), 3741-3782.</p>
+     * Sets whether the stable adjacency search should be used. Default is false. Default is false. See the following
+     * reference for this:
+     * <p>
+     * Colombo, D., &amp; Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J. Mach.
+     * Learn. Res., 15(1), 3741-3782.
      *
      * @param stable True iff the case.
      */
@@ -349,11 +357,11 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * <p>Sets whether the max-p heuristic should be used for collider discovery. Default is true. See the following
-     * reference for this:</p>
-     *
-     * <p>Ramsey, J. (2016). Improving accuracy and scalability of the pc algorithm by maximizing p-value. arXiv
-     * preprint arXiv:1610.00378.</p>
+     * Sets whether the max-p heuristic should be used for collider discovery. Default is true. See the following
+     * reference for this:
+     * <p>
+     * Ramsey, J. (2016). Improving accuracy and scalability of the pc algorithm by maximizing p-value. arXiv preprint
+     * arXiv:1610.00378.
      *
      * @param useMaxPHeuristic True, if so.
      */

@@ -8,7 +8,7 @@ import edu.cmu.tetrad.search.score.SemBicScorer;
 import static org.apache.commons.math3.util.FastMath.tanh;
 
 /**
- * True BIC score.
+ * True BIC score. The BIC is calculated as 2L - k ln N, so "higher is better."
  *
  * @author josephramsey
  */
@@ -29,7 +29,7 @@ public class BicTrue implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         //        double est = SemBicScorer.scoreDag(SearchGraphUtils.dagFromCPDAG(estGraph), dataModel);
-        return SemBicScorer.scoreDag(GraphTransforms.dagFromCPDAG(trueGraph, null), dataModel, precomputeCovariances);
+        return SemBicScorer.scoreDag(GraphTransforms.dagFromCpdag(trueGraph, null), dataModel, precomputeCovariances);
     }
 
     @Override

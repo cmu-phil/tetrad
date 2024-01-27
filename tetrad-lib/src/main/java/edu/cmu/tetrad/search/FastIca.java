@@ -31,21 +31,22 @@ import org.apache.commons.math3.util.FastMath;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p>Translates a version of the FastICA algorithm used in R from Fortran
- * into Java for use in Tetrad. This can be used in various algorithms that assume linearity and non-gaussianity, as for
- * example LiNGAM and LiNG-D. There is one difference from the R, in that in R FastICA can operate over complex numbers,
- * whereas here it is restricted to real numbers. A useful reference is this:</p>
- *
- * <p>Oja, E., &amp; Hyvarinen, A. (2000). Independent component analysis:
- * algorithms and applications. Neural networks, 13(4-5), 411-430.</p>
- *
- * <p>The documentation of the R version is as follows, all of which is true of this
- * translation (so far as I know) except for its being in R and its allowing complex values.
+ * Translates a version of the FastICA algorithm used in R from Fortran into Java for use in Tetrad. This can be used in
+ * various algorithms that assume linearity and non-gaussianity, as for example LiNGAM and LiNG-D. There is one
+ * difference from the R, in that in R FastICA can operate over complex numbers, whereas here it is restricted to real
+ * numbers. A useful reference is this:
+ * <p>
+ * Oja, E., &amp; Hyvarinen, A. (2000). Independent component analysis: algorithms and applications. Neural networks,
+ * 13(4-5), 411-430.
+ * <p>
+ * The documentation of the R version is as follows, all of which is true of this translation (so far as I know) except
+ * for its being in R and its allowing complex values.
  * <p>
  * Description:
  * <p>
  * This is an R and C code implementation of the FastICA algorithm of Aapo Hyvarinen et al. (URL:
- * <a href="http://www.cis.hut.fi/aapo/">http://www.cis.hut.fi/aapo/</a>) to perform Independent Component Analysis (ICA) and Projection Pursuit.
+ * <a href="http://www.cis.hut.fi/aapo/">http://www.cis.hut.fi/aapo/</a>) to perform Independent Component Analysis
+ * (ICA) and Projection Pursuit.
  * <p>
  * Usage:
  * <p>
@@ -98,8 +99,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * First, the data is centered by subtracting the mean of each column of the data matrix X.
  * <p>
  * The data matrix is then `whitened' by projecting the data onto it's principle component directions i.e. X -&gt; XK
- * where K is a pre-whitening matrix.
- * The user can specify the number of components.
+ * where K is a pre-whitening matrix. The user can specify the number of components.
  * <p>
  * The ICA algorithm then estimates a matrix W s.t XKW = S . W is chosen to maximize the neg-entropy approximation under
  * the constraints that W is an orthonormal matrix. This constraint ensures that the estimated components are
@@ -120,7 +120,6 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * A. Hyvarinen and E. Oja (2000) Independent Component Analysis: Algorithms and Applications, _Neural Networks_,
  * *13(4-5)*:411-430
- * </p>
  *
  * @author josephramsey
  */
@@ -157,8 +156,8 @@ public class FastIca {
     private int numComponents;
 
     /**
-     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default).
-     * if algorithmType == DEFLATION, the components are extracted one at a time.
+     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default). if algorithmType ==
+     * DEFLATION, the components are extracted one at a time.
      */
     private int algorithmType = FastIca.PARALLEL;
 
@@ -195,7 +194,8 @@ public class FastIca {
     private boolean verbose;
 
     /**
-     * Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default), then a matrix of normal r.v.'s is used.
+     * Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default), then a matrix of normal r.v.'s is
+     * used.
      */
     private Matrix wInit;
 
@@ -213,8 +213,8 @@ public class FastIca {
 
 
     /**
-     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default).
-     * if algorithmType == DEFLATION, the components are extracted one at a time.
+     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default). if algorithmType ==
+     * DEFLATION, the components are extracted one at a time.
      *
      * @param algorithmType This type.
      */
@@ -297,8 +297,8 @@ public class FastIca {
     }
 
     /**
-     * Sets the initial un-mixing matrix of dimension (n.comp,n.comp).
-     * If NULL (default), then a random matrix of normal r.v.'s is used.
+     * Sets the initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default), then a random matrix of normal
+     * r.v.'s is used.
      *
      * @param wInit This matrix.
      */

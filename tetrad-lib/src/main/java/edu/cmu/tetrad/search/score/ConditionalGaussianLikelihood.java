@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.util.FastMath;
+import org.jetbrains.annotations.Contract;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,15 +40,14 @@ import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * <p>Implements a conditional Gaussian likelihood. Please note that this likelihood will be
- * maximal only if the continuous variables are jointly Gaussian conditional on the discrete variables; in all other
- * cases, it will be less than maximal. The reference is here:</p>
- *
- * <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
- * International journal of data science and analytics, 6, 3-18.</p>
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * Implements a conditional Gaussian likelihood. Please note that this likelihood will be maximal only if the continuous
+ * variables are jointly Gaussian conditional on the discrete variables; in all other cases, it will be less than
+ * maximal. The reference is here:
+ * <p>
+ * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables. International
+ * journal of data science and analytics, 6, 3-18.
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author bryanandrews
  * @author josephramsey
@@ -62,16 +62,12 @@ public class ConditionalGaussianLikelihood {
     private final DataSet dataSet;
     // The mixedVariables of the mixed data set.
     private final List<Node> mixedVariables;
-
     // Indices of mixedVariables.
     private final Map<Node, Integer> nodesHash;
-
     // Continuous data only.
     private final double[][] continuousData;
     // Number of categories to use to discretize continuous mixedVariables.
     private int numCategoriesToDiscretize = 3;
-    // Multiplier on degrees of freedom for the continuous portion of those degrees.
-    private double penaltyDiscount = 1;
     // "Cell" consisting of all rows.
     private List<Integer> rows;
     // Discretize the parents
@@ -79,6 +75,8 @@ public class ConditionalGaussianLikelihood {
 
     /**
      * Constructs the score using a covariance matrix.
+     *
+     * @param dataSet The continuous dataset to analyze.
      */
     public ConditionalGaussianLikelihood(DataSet dataSet) {
         if (dataSet == null) {
@@ -117,6 +115,10 @@ public class ConditionalGaussianLikelihood {
         for (int i = 0; i < dataSet.getNumRows(); i++) this.rows.add(i);
     }
 
+    /**
+     * Sets the rows to use for the likelihood calculation. If not set, all rows will be used.
+     * @param rows The rows to use.
+     */
     public void setRows(List<Integer> rows) {
         this.rows = rows;
     }
@@ -161,15 +163,6 @@ public class ConditionalGaussianLikelihood {
     }
 
     /**
-     * Sets the penalty discount for this score, which is a multiplier on the panalty term of BIC.
-     *
-     * @param penaltyDiscount The penalty discount.
-     */
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    /**
      * Sets whether to discretize child variables to avoid integration. An optimization.
      *
      * @param discretize True, if so.
@@ -180,7 +173,7 @@ public class ConditionalGaussianLikelihood {
     }
 
     /**
-     * Sets the number of categories to use to discretize child variables to avoid integrationl
+     * Sets the number of categories to use to discretize child variables to avoid integration
      *
      * @param numCategoriesToDiscretize This number.
      * @see #setDiscretize(boolean)
@@ -264,11 +257,11 @@ public class ConditionalGaussianLikelihood {
 
             if (a == 0) continue;
 
-            if (A.size() > 0) {
+            if (!A.isEmpty()) {
                 c1 += a * multinomialLikelihood(a, rows.size());
             }
 
-            if (X.size() > 0) {
+            if (!X.isEmpty()) {
                 try {
 
                     // Determinant will be zero if data are linearly dependent.
@@ -358,13 +351,14 @@ public class ConditionalGaussianLikelihood {
     }
 
     /**
-     * Gives return value for a conditional Gaussain likelihood, returning a likelihood value and the degrees of freedom
+     * Gives return value for a conditional Gaussian likelihood, returning a likelihood value and the degrees of freedom
      * for it.
      */
-    public static class Ret {
+    public static final class Ret {
         private final double lik;
         private final int dof;
 
+        @Contract(pure = true)
         private Ret(double lik, int dof) {
             this.lik = lik;
             this.dof = dof;

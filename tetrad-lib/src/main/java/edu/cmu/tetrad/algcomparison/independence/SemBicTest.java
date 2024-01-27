@@ -12,6 +12,7 @@ import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import java.util.List;
 @LinearGaussian
 public class SemBicTest implements IndependenceWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     @Override
@@ -43,6 +45,7 @@ public class SemBicTest implements IndependenceWrapper {
         }
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
+        score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
 
         return new ScoreIndTest(score, dataSet);
     }
@@ -63,6 +66,7 @@ public class SemBicTest implements IndependenceWrapper {
         params.add(Params.PENALTY_DISCOUNT);
         params.add(Params.STRUCTURE_PRIOR);
         params.add(Params.PRECOMPUTE_COVARIANCES);
+        params.add(Params.USE_PSEUDOINVERSE);
         return params;
     }
 }

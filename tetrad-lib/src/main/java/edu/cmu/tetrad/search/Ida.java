@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -17,14 +20,13 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.min;
 
 /**
- * <p>Implements the IDA algorithm. The reference is here:</p>
- *
- * <p>Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
- * "Estimating high-dimensional intervention effects from observational data." The Annals of Statistics 37.6A (2009):
- * 3133-3164.</p>
- *
- * <p>The IDA algorithm seeks to give a list of possible parents
- * of a given variable Y and their corresponding lower-bounded effects on Y.</p>
+ * Implements the IDA algorithm. The reference is here:
+ * <p>
+ * Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann. "Estimating high-dimensional intervention effects from
+ * observational data." The Annals of Statistics 37.6A (2009): 3133-3164.
+ * <p>
+ * The IDA algorithm seeks to give a list of possible parents of a given variable Y and their corresponding
+ * lower-bounded effects on Y.
  *
  * @author josephramsey
  * @see Cstar

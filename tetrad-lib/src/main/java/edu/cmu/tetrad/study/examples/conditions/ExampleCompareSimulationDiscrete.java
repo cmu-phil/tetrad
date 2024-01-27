@@ -27,7 +27,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
-import edu.cmu.tetrad.algcomparison.independence.Gsquare;
+import edu.cmu.tetrad.algcomparison.independence.GSquare;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.DiscreteBicScore;
@@ -88,7 +88,7 @@ public class ExampleCompareSimulationDiscrete {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new ChiSquare()));
-        algorithms.add(new Pc(new Gsquare()));
+        algorithms.add(new Pc(new GSquare()));
 //
         algorithms.add(new Fges(new BdeuScore()));
         algorithms.add(new Fges(new DiscreteBicScore()));

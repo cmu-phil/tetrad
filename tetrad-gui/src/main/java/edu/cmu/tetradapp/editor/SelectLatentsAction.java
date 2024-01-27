@@ -36,7 +36,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 
 /**
- * Copies a selection of session nodes in the frontmost session editor, to the clipboard.
+ * Highlights all latent variables in the given display graph.
  *
  * @author josephramsey
  */
@@ -48,7 +48,9 @@ public class SelectLatentsAction extends AbstractAction implements ClipboardOwne
     private final GraphWorkbench workbench;
 
     /**
-     * Creates a new copy subsession action for the given desktop and clipboard.
+     * Highlights all latent variables in the given display graph.
+     *
+     * @param workbench the given workbench.
      */
     public SelectLatentsAction(GraphWorkbench workbench) {
         super("Highlight Latent Nodes");
@@ -61,7 +63,9 @@ public class SelectLatentsAction extends AbstractAction implements ClipboardOwne
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
+     * Highlights all latent variables in the given display graph.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();

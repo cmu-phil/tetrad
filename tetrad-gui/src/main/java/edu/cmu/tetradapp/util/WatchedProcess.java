@@ -1,19 +1,23 @@
 package edu.cmu.tetradapp.util;
 
+import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.Tetrad;
+
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 /**
- * <p>Runs a long process, watching it with a thread and popping up a Stop button that the user can click to stop the
- * process.</p>
- *
- * <p>Replacement for the old WatchedProcess, which called the deprecated Thread.stop() method. This method is
- * deprecated because it can leave the program in an inconsistent state. This class uses Thread.interrupt() instead,
- * which is the recommended way to stop a thread.</p>
- *
- * <p>Example usage:</p>
- *
+ * Runs a long process, watching it with a thread and popping up a Stop button that the user can click to stop the
+ * process.
+ * <p>
+ * Replacement for the old WatchedProcess, which called the deprecated Thread.stop() method. This method is deprecated
+ * because it can leave the program in an inconsistent state. This class uses Thread.interrupt() instead, which is the
+ * recommended way to stop a thread.
+ * <p>
+ * Example usage:
  * <pre>
  * class MyWatchedProcess extends WatchedProcess {
  *
@@ -38,8 +42,26 @@ public abstract class WatchedProcess {
      * Constructor.
      */
     public WatchedProcess() {
-        frame = new JFrame("Hidden Frame");
+
+        // Get the Tetrad frame.
+        frame = Tetrad.frame;
+
+        if (frame == null) {
+            throw new RuntimeException("Tetrad frame is null. Cannot create WatchedProcess.");
+        }
+
         startLongRunningThread();
+    }
+
+    private static void positionDialogAboveFrameCenter(JFrame frame, JDialog dialog) {
+        // Calculate the new position for the dialog
+        Point newDialogPosition = new Point(
+                frame.getX() + frame.getWidth() / 2 - dialog.getWidth() / 2, // Centered horizontally
+                frame.getY() + frame.getHeight() / 2 - dialog.getHeight() / 2 // Centered vertically
+        );
+
+        // Set the dialog's new position
+        dialog.setLocation(newDialogPosition);
     }
 
     /**
@@ -53,7 +75,7 @@ public abstract class WatchedProcess {
     private void startLongRunningThread() {
         longRunningThread = new Thread(() -> {
             if (Thread.interrupted()) {
-                // Thread was interrupted, so exit the loop and terminate
+                // The Thread was interrupted, so exit the loop and terminate
                 System.out.println("Thread was interrupted. Stopping...");
                 return;
             }
@@ -61,8 +83,7 @@ public abstract class WatchedProcess {
             try {
                 watch();
             } catch (InterruptedException e) {
-                // Thread was interrupted while sleeping, so exit the loop and terminate
-                System.out.println("Thread was interrupted while watching. Stopping...");
+                TetradLogger.getInstance().forceLogMessage("Thread was interrupted while watching. Stopping...");
                 return;
             }
 
@@ -73,7 +94,6 @@ public abstract class WatchedProcess {
         });
 
         longRunningThread.start();
-
         showStopDialog();
     }
 
@@ -87,10 +107,20 @@ public abstract class WatchedProcess {
         dialog = new JDialog(frame, "Stop Process", Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setUndecorated(true);
-        dialog.setSize(100, 50);
+        dialog.setSize(200, 50);
         dialog.setResizable(false);
+        dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
 
-        JButton stopButton = new JButton("Processing...");
+        frame.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                if (dialog != null) {
+                    positionDialogAboveFrameCenter(frame, dialog);
+                }
+            }
+        });
+
+        JButton stopButton = new JButton("Processing (click to stop)...");
 
         stopButton.addActionListener(e -> {
             stopLongRunningThread();
@@ -103,8 +133,8 @@ public abstract class WatchedProcess {
         panel.add(stopButton);
 
         dialog.getContentPane().add(panel);
+        positionDialogAboveFrameCenter(frame, dialog);
 
-        dialog.setLocationRelativeTo(frame);
-        dialog.setVisible(true);
+        SwingUtilities.invokeLater(() -> dialog.setVisible(true));
     }
 }

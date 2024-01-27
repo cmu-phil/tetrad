@@ -25,6 +25,8 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
  * Enumerates the algorithm types for BuildPureClusters, and Purify.
+ *
+ * @author josephramsey
  */
 public enum BpcAlgorithmType implements TetradSerializable {
     BUILD_PURE_CLUSTERS,
@@ -41,6 +43,11 @@ public enum BpcAlgorithmType implements TetradSerializable {
         return BpcAlgorithmType.BUILD_PURE_CLUSTERS;
     }
 
+    /**
+     * Returns the algorithm descriptions.
+     *
+     * @return The algorithm descriptions.
+     */
     public static BpcAlgorithmType[] getAlgorithmDescriptions() {
         return new BpcAlgorithmType[]{
                 BpcAlgorithmType.BUILD_PURE_CLUSTERS,

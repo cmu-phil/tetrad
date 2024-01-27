@@ -42,32 +42,26 @@ import java.util.*;
  */
 public class IndTestProbabilistic implements IndependenceTest {
 
-    /**
-     * The data set for which conditional  independence judgments are requested.
-     */
+    //The data set for which conditional  independence judgments are requested.
     private final DataSet data;
-    /**
-     * The nodes of the data set.
-     */
+    // The nodes of the data set.
     private final List<Node> nodes;
-    /**
-     * Indices of the nodes.
-     */
+    // Indices of the nodes.
     private final Map<Node, Integer> indices;
-    /**
-     * A map from independence facts to their probabilities of independence.
-     */
+    // A map from independence facts to their probabilities of independence.
     private final Map<IndependenceFact, Double> H;
+    // The BCInference object.
     private final BCInference bci;
-    /**
-     * Calculates probabilities of independence for conditional independence facts.
-     */
+    // True if verbose output should be printed.
     private boolean threshold;
+    // The posterior probability of the last independence test.
     private double posterior;
+    // True if verbose output should be printed.
     private boolean verbose;
+    // The cutoff for the independence test.
     private double cutoff = 0.5;
+    // The prior equivalent sample size.
     private double priorEquivalentSampleSize = 10;
-
 
     /**
      * Initializes the test using a discrete data sets.
@@ -106,35 +100,28 @@ public class IndTestProbabilistic implements IndependenceTest {
         this.bci = setup(_data);
     }
 
-    private BCInference setup(DataSet dataSet) {
-        int[] nodeDimensions = new int[dataSet.getNumColumns() + 2];
-
-        for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            DiscreteVariable variable = (DiscreteVariable) (dataSet.getVariable(j));
-            int numCategories = variable.getNumCategories();
-            nodeDimensions[j + 1] = numCategories;
-        }
-
-        int[][] cases = new int[dataSet.getNumRows() + 1][dataSet.getNumColumns() + 2];
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                cases[i + 1][j + 1] = dataSet.getInt(i, j) + 1;
-            }
-        }
-
-        BCInference bci = new BCInference(cases, nodeDimensions);
-        bci.setPriorEqivalentSampleSize(this.priorEquivalentSampleSize);
-        return bci;
-    }
-
+    /**
+     * @throws UnsupportedOperationException Method not implemented.
+     */
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Returns an independence result that states whether x _||_y | z and what the p-value of the test is.
+     *
+     * @param x  The first variable.
+     * @param y  The second variable.
+     * @param _z The conditioning set.
+     * @return an independence result (see)
+     * @see IndependenceResult
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+
+        // Notice that we do not cache the results of the independence tests here. This is because
+        // these results have a random component and so caching them would be inappropriate.
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
@@ -298,6 +285,28 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     public void setPriorEquivalentSampleSize(double priorEquivalentSampleSize) {
         this.priorEquivalentSampleSize = priorEquivalentSampleSize;
+    }
+
+    private BCInference setup(DataSet dataSet) {
+        int[] nodeDimensions = new int[dataSet.getNumColumns() + 2];
+
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+            DiscreteVariable variable = (DiscreteVariable) (dataSet.getVariable(j));
+            int numCategories = variable.getNumCategories();
+            nodeDimensions[j + 1] = numCategories;
+        }
+
+        int[][] cases = new int[dataSet.getNumRows() + 1][dataSet.getNumColumns() + 2];
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                cases[i + 1][j + 1] = dataSet.getInt(i, j) + 1;
+            }
+        }
+
+        BCInference bci = new BCInference(cases, nodeDimensions);
+        bci.setPriorEqivalentSampleSize(this.priorEquivalentSampleSize);
+        return bci;
     }
 
     private List<Integer> getRows(DataSet dataSet, List<Node> allVars, Map<Node, Integer> nodesHash) {

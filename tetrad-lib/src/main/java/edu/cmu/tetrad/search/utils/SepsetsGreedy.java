@@ -37,8 +37,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Provides a SepsetProcuder that selects the first sepset it comes to from
- * among the extra sepsets or the adjacents of i or k, or null if none is found.</p>
+ * Provides a SepsetProcuder that selects the first sepset it comes to from among the extra sepsets or the adjacents of
+ * i or k, or null if none is found.
  *
  * @author josephramsey
  * @see SepsetProducer
@@ -99,6 +99,7 @@ public class SepsetsGreedy implements SepsetProducer {
 
     @Override
     public void setVerbose(boolean verbose) {
+        independenceTest.setVerbose(verbose);
         this.verbose = verbose;
     }
 

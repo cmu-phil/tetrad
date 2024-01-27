@@ -7,8 +7,8 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
- * <p>Stores a single conditional independence result, e.g., whether
- * X _||_ Y | Z1,..,Zn holds or does not, and the p-value of the test.</p>
+ * Stores a single conditional independence result, e.g., whether X _||_ Y | Z1,..,Zn holds or does not, and the p-value
+ * of the test.
  *
  * @author josephramsey
  */
@@ -19,20 +19,40 @@ public final class IndependenceResult implements TetradSerializable {
     private final boolean indep;
     private final double pValue;
     private final double score;
+    private final boolean isValid;
 
     /**
-     * Constructor.
+     * Constructor. For this constructor, is it assumed that the test is valid.
      *
      * @param fact   The fact itself.
      * @param indep  The conditional independence result, true if the fact holds, false if not.
      * @param pValue The p-values of the independence result, under the null (independence) hypothesis.
+     * @param score  The score of the test, which is alpha - p if the test returns a p-value or else a bump if the test
+     *               is based on a score.
      * @see IndependenceFact
      */
     public IndependenceResult(IndependenceFact fact, boolean indep, double pValue, double score) {
+        this(fact, indep, pValue, score, true);
+    }
+
+    /**
+     * Constructor. For this constructor, the validity of the test is specified.
+     *
+     * @param fact    The fact itself.
+     * @param indep   The conditional independence result, true if the fact holds, false if not.
+     * @param pValue  The p-values of the independence result, under the null (independence) hypothesis.
+     * @param score   The score of the test, which is alpha - p if the test returns a p-value or else a bump if the test
+     *                is based on a score.
+     * @param isValid Whether the result is valid or not. A test is not valid if the test is not able to determine
+     *                whether the fact holds or not.
+     * @see IndependenceFact
+     */
+    public IndependenceResult(IndependenceFact fact, boolean indep, double pValue, double score, boolean isValid) {
         this.fact = fact;
         this.indep = indep;
         this.pValue = pValue;
         this.score = score;
+        this.isValid = isValid;
     }
 
     /**
@@ -89,7 +109,7 @@ public final class IndependenceResult implements TetradSerializable {
     }
 
     /**
-     * Returns a string represnetation of this independence fact.
+     * Returns a string representation of this independence fact.
      *
      * @return This string.
      */
@@ -98,7 +118,23 @@ public final class IndependenceResult implements TetradSerializable {
                 NumberFormatUtil.getInstance().getNumberFormat().format(getPValue());
     }
 
+    /**
+     * Returns the score of the test, which is alpha - p if the test returns a p-value or else a bump if the test is
+     * based on a score.
+     *
+     * @return The score of the test.
+     */
     public double getScore() {
         return score;
+    }
+
+    /**
+     * Returns whether the result is valid or not. A test is not valid if the test is not able to determine whether the
+     * fact holds or not.
+     *
+     * @return True if the result is valid, false if not.
+     */
+    public boolean isValid() {
+        return isValid;
     }
 }

@@ -39,10 +39,8 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Checks independence of X _||_ Y | Z for variables X and Y and list Z of variables by regressing X on {Y} U Z and
@@ -53,29 +51,21 @@ import java.util.Set;
  */
 public final class IndTestRegression implements IndependenceTest {
 
-    /**
-     * The standard number formatter for Tetrad.
-     */
+    // The standard number formatter for Tetrad.
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    /**
-     * The correlation matrix.
-     */
+    // The correlation matrix.
     private final DoubleMatrix2D data;
-    /**
-     * The variables of the correlation matrix, in order. (Unmodifiable list.)
-     */
+    // The variables of the correlation matrix, in order. (Unmodifiable list.)
     private final List<Node> variables;
+    // The data set.
     private final DataSet dataSet;
-    /**
-     * The significance level of the independence tests.
-     */
+    // The significance level of the independence tests.
     private double alpha;
-    /**
-     * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
-     */
-    private double fishersZ;
+    // The value of the Fisher's Z statistic associated with the las calculated partial correlation.
     private boolean verbose;
 
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation matrix implied by the
@@ -109,12 +99,12 @@ public final class IndTestRegression implements IndependenceTest {
      * @param xVar  the one variable being compared.
      * @param yVar  the second variable being compared.
      * @param zList the list of conditioning variables.
-     * @return true iff x _||_ y | z.
+     * @return The independence result.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public IndependenceResult checkIndependence(Node xVar, Node yVar, Set<Node> zList) {
-        if (zList == null) {
-            throw new NullPointerException();
+        if (facts.containsKey(new IndependenceFact(xVar, yVar, zList))) {
+            return facts.get(new IndependenceFact(xVar, yVar, zList));
         }
 
         for (Node node : zList) {
@@ -164,8 +154,10 @@ public final class IndTestRegression implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(xVar, yVar, zList),
+        IndependenceResult result1 = new IndependenceResult(new IndependenceFact(xVar, yVar, zList),
                 independent, p, getAlpha() - p);
+        facts.put(new IndependenceFact(xVar, yVar, zList), result1);
+        return result1;
     }
 
     /**
@@ -268,14 +260,24 @@ public final class IndTestRegression implements IndependenceTest {
         return determined;
     }
 
+    /**
+     * Returns the data used.
+     * @return the data used.
+     */
     public DataSet getData() {
         return this.dataSet;
     }
 
+    /**
+     * Returns true if the test prints verbose output.
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether the test prints verbose output.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

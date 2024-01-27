@@ -35,30 +35,32 @@ import java.util.Map;
 
 
 /**
- * <p>This implements the degenerate Gaussian BIC score for FGES. The degenerate Gaussian score
- * replaces each discrete variable in the data with a list of 0/1 continuous indicator columns for each of the
- * categories but one (the last one implied). This data, now all continuous, is given to the SEM BIC score and methods
- * used to help determine conditional independence for the mixed continuous/discrete case from this information. The
- * references is as follows:</p>
- *
- * <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2019, July). Learning high-dimensional
- * directed acyclic graphs with mixed data-types. In The 2019 ACM SIGKDD Workshop on Causal Discovery (pp. 4-21).
- * PMLR.</p>
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * =This implements the degenerate Gaussian BIC score for FGES. The degenerate Gaussian score replaces each discrete
+ * variable in the data with a list of 0/1 continuous indicator columns for each of the categories but one (the last one
+ * implied). This data, now all continuous, is given to the SEM BIC score and methods used to help determine conditional
+ * independence for the mixed continuous/discrete case from this information. The references is as follows:
+ * <p>
+ * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2019, July). Learning high-dimensional directed acyclic graphs with
+ * mixed data-types. In The 2019 ACM SIGKDD Workshop on Causal Discovery (pp. 4-21). PMLR.
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author Bryan Andrews
  */
 public class DegenerateGaussianScore implements Score {
     // The mixed variables of the original dataset.
     private final List<Node> variables;
-
     // The embedding map.
     private final Map<Integer, List<Integer>> embedding;
-
+    // The SEM BIC score.
     private final SemBicScore bic;
 
+    /**
+     * Constructs the score using a dataset.
+     *
+     * @param dataSet               The dataset.
+     * @param precomputeCovariances True if covariances should be precomputed.
+     */
     public DegenerateGaussianScore(DataSet dataSet, boolean precomputeCovariances) {
         if (dataSet == null) {
             throw new NullPointerException();
@@ -162,40 +164,84 @@ public class DegenerateGaussianScore implements Score {
         return score;
     }
 
+    /**
+     * Calculates localScore(y | z, x) - localScore(z).
+     *
+     * @param x A node.
+     * @param y TAhe node.
+     * @param z A set of nodes.
+     * @return The score difference.
+     */
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
+    /**
+     * Returns the list of variables.
+     *
+     * @return The list of variables.
+     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * True if an edge with the given bump is an effect edge.
+     *
+     * @param bump The bump.
+     * @return True if so.
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return this.bic.isEffectEdge(bump);
     }
 
+    /**
+     * Returns the sample sizE.
+     *
+     * @return The sample size.
+     */
     @Override
     public int getSampleSize() {
         return this.bic.getSampleSize();
     }
 
+    /**
+     * Returns the max degree.
+     *
+     * @return The max degree.
+     */
     @Override
     public int getMaxDegree() {
         return this.bic.getMaxDegree();
     }
 
+    /**
+     * Returns a string for this object.
+     *
+     * @return The string.
+     */
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
         return "Degenerate Gaussian Score Penalty " + nf.format(this.bic.getPenaltyDiscount());
     }
 
+    /**
+     * Returns the penalty discount.
+     *
+     * @return The penalty discount.
+     */
     public double getPenaltyDiscount() {
         return this.bic.getPenaltyDiscount();
     }
 
+    /**
+     * Sets the penalty discount.
+     *
+     * @param penaltyDiscount The penalty discount.
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.bic.setPenaltyDiscount(penaltyDiscount);
     }

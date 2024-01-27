@@ -83,7 +83,7 @@ public final class HbsmsBeam implements Hbsms {
     public Graph search() {
         EdgeListGraph _graph = new EdgeListGraph(this.externalGraph);
         addRequiredEdges(_graph);
-        Graph bestGraph = GraphTransforms.dagFromCPDAG(_graph, null);
+        Graph bestGraph = GraphTransforms.dagFromCpdag(_graph, null);
 
         if (getGraph().getNumEdges() == 0) {
             System.out.println("Found one!");

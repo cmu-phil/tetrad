@@ -47,10 +47,10 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
         }
 
         this.algorithm = algorithm;
-        this.name = algorithm.getAnnotation().name();
-        this.description = AlgorithmDescriptions.getInstance().get(algorithm.getAnnotation().command());
-        this.requiredScore = UsesScoreWrapper.class.isAssignableFrom(algorithm.getClazz());
-        this.requiredTest = TakesIndependenceWrapper.class.isAssignableFrom(algorithm.getClazz());
+        this.name = algorithm.annotation().name();
+        this.description = AlgorithmDescriptions.getInstance().get(algorithm.annotation().command());
+        this.requiredScore = UsesScoreWrapper.class.isAssignableFrom(algorithm.clazz());
+        this.requiredTest = TakesIndependenceWrapper.class.isAssignableFrom(algorithm.clazz());
     }
 
     @Override

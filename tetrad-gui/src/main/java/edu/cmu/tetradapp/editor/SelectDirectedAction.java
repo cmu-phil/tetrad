@@ -34,7 +34,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 
 /**
- * Copies a selection of session nodes in the frontmost session editor, to the clipboard.
+ * Selects all directed edges in the given display graph.
  *
  * @author josephramsey
  */
@@ -47,6 +47,8 @@ public class SelectDirectedAction extends AbstractAction implements ClipboardOwn
 
     /**
      * Creates a new copy subsession action for the given desktop and clipboard.
+     *
+     * @param workbench the given workbench.
      */
     public SelectDirectedAction(GraphWorkbench workbench) {
         super("Highlight Directed Edges");
@@ -59,7 +61,9 @@ public class SelectDirectedAction extends AbstractAction implements ClipboardOwn
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
+     * Selects all directed edges in the given display graph.
+     *
+     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();

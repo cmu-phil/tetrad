@@ -74,13 +74,10 @@ public final class Params {
     public static final String FASK_ADJACENCY_METHOD = "faskAdjacencyMethod";
     public static final String FASK_NONEMPIRICAL = "faskNonempirical";
     public static final String FAITHFULNESS_ASSUMED = "faithfulnessAssumed";
-    //    public static final String PC_HEURISTIC = "pcHeuristic";
     public static final String FAS_RULE = "fasRule";
     public static final String FAST_ICA_A = "fastIcaA";
     public static final String FAST_ICA_MAX_ITER = "fastIcaMaxIter";
     public static final String FAST_ICA_TOLERANCE = "fastIcaTolerance";
-    public static final String ICA_ALGORITHM = "icaAlgorithm";
-    public static final String ICA_FUNCTION = "icaFunction";
     public static final String THRESHOLD_B = "thresholdBHat";
     public static final String GUARANTEE_ACYCLIC = "guaranteeAcyclic";
     public static final String THRESHOLD_SPINE = "thresholdSpine";
@@ -106,7 +103,7 @@ public final class Params {
     public static final String KCI_CUTOFF = "kciCutoff";
     public static final String KCI_EPSILON = "kciEpsilon";
     public static final String KCI_NUM_BOOTSTRAPS = "kciNumBootstraps";
-    public static final String KCI_USE_APPROMATION = "kciUseAppromation";
+    public static final String KCI_USE_APPROXIMATION = "kciUseApproximation";
     public static final String KERNEL_MULTIPLIER = "kernelMultiplier";
     public static final String KERNEL_REGRESSION_SAMPLE_SIZE = "kernelRegressionSampleSize";
     public static final String KERNEL_TYPE = "kernelType";
@@ -204,9 +201,7 @@ public final class Params {
     public static final String USE_BES = "useBes";
     public static final String NUM_STARTS = "numStarts";
     public static final String CACHE_SCORES = "cacheScores";
-    public static final String OTHER_PERM_METHOD = "otherPermMethod";
     public static final String BOSS_ALG = "bossAlg";
-    public static final String BREAK_TIES = "breakTies";
     public static final String OUTPUT_CPDAG = "outputCpdag";
     public static final String ZS_RISK_BOUND = "zSRiskBound";
     public static final String NUM_ROUNDS = "numRounds";
@@ -250,10 +245,13 @@ public final class Params {
     public static final String NUMBER_OF_EXPANSIONS = "numberOfExpansions";
     public static final String CSTAR_CPDAG_ALGORITHM = "cstarCpdagAlgorithm";
     public static final String FILE_OUT_PATH = "fileOutPath";
-    public static final String PI_THR = "piThr";
     public static final String REMOVE_EFFECT_NODES = "removeEffectNodes";
     public static final String SAMPLE_STYLE = "sampleStyle";
     public static final String NUM_THREADS = "numThreads";
+    public static final String USE_PSEUDOINVERSE = "usePseudoinverse";
+    public static String MIN_COUNT_PER_CELL = "minCountPerCell";
+    public static String PC_HEURISTIC = "pcHeuristic";
+
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
@@ -270,7 +268,7 @@ public final class Params {
             Params.INCLUDE_NEGATIVE_SKEWS_FOR_BETA, Params.INCLUDE_POSITIVE_COEFS,
             Params.INCLUDE_POSITIVE_SKEWS_FOR_BETA, Params.INCLUDE_STRUCTURE_MODEL,
             Params.INTERVAL_BETWEEN_RECORDINGS, Params.INTERVAL_BETWEEN_SHOCKS, Params.IPEN, Params.IS, Params.ITR,
-            Params.KCI_ALPHA, Params.KCI_CUTOFF, Params.KCI_EPSILON, Params.KCI_NUM_BOOTSTRAPS, Params.KCI_USE_APPROMATION,
+            Params.KCI_ALPHA, Params.KCI_CUTOFF, Params.KCI_EPSILON, Params.KCI_NUM_BOOTSTRAPS, Params.KCI_USE_APPROXIMATION,
             Params.KERNEL_MULTIPLIER, Params.KERNEL_REGRESSION_SAMPLE_SIZE, Params.KERNEL_TYPE, Params.KERNEL_WIDTH,
             Params.LATENT_MEASURED_IMPURE_PARENTS, Params.LOWER_BOUND, Params.MAX_CATEGORIES, Params.MAX_DEGREE,
             Params.MAX_DISTINCT_VALUES_DISCRETE, Params.MAX_INDEGREE, Params.MAX_ITERATIONS, Params.MAX_OUTDEGREE,

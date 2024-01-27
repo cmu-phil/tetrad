@@ -31,15 +31,24 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Provides some general utilities for dealing with clustering input and output.</p>
- * <p>The method of this class are used only internally and so are not documented
- * for public use.</p>
+ * Provides some general utilities for dealing with clustering input and output.
+ * <p>
+ * The method of this class are used only internally and so are not documented for public use.
  *
  * @author josephramsey
  */
 public class ClusterUtils {
+
+    // The prefix for latent variables.
     public static final String LATENT_PREFIX = "_L";
 
+    /**
+     * Converts a list of indices into a list of Nodes representing a cluster.
+     *
+     * @param partition The indices of the variables.
+     * @param nodes     The variables.
+     * @return The extracted node list.
+     */
     public static List<int[]> convertListToInt(List<List<Node>> partition, List<Node> nodes) {
         List<int[]> _partition = new ArrayList<>();
 
@@ -60,6 +69,13 @@ public class ClusterUtils {
         return _partition;
     }
 
+    /**
+     * Converts a list of indices into a list of Nodes representing a cluster.
+     *
+     * @param partition The indices of the variables.
+     * @param nodes     The variables.
+     * @return The extracted node list.
+     */
     static List<List<Node>> convertIntToList(List<int[]> partition, List<Node> nodes) {
         List<List<Node>> _partition = new ArrayList<>();
 
@@ -76,6 +92,13 @@ public class ClusterUtils {
         return _partition;
     }
 
+    /**
+     * Converts a list of indices into a list of Nodes representing a cluster.
+     *
+     * @param clusters  The indices of the variables.
+     * @param variables The variables.
+     * @return The extracted node list.
+     */
     public static List<List<Node>> clustersToPartition(Clusters clusters, List<Node> variables) {
         List<List<Node>> inputPartition = new ArrayList<>();
 
@@ -96,6 +119,12 @@ public class ClusterUtils {
         return inputPartition;
     }
 
+    /**
+     * Converts a list of indices into a list of Nodes representing a cluster.
+     *
+     * @param partition The indices of the variables.
+     * @return The extracted node list.
+     */
     public static Clusters partitionToClusters(List<List<Node>> partition) {
         Clusters clusters = new Clusters();
 
@@ -110,6 +139,13 @@ public class ClusterUtils {
         return clusters;
     }
 
+    /**
+     * Converts a list of indices into a list of Nodes representing a cluster.
+     *
+     * @param clusters The indices of the variables.
+     * @param varNames The variables.
+     * @return The extracted node list.
+     */
     public static Graph convertSearchGraph(List<int[]> clusters, String[] varNames) {
         List<Node> nodes = new ArrayList<>();
 
@@ -153,6 +189,12 @@ public class ClusterUtils {
         return graph;
     }
 
+    /**
+     * Converts a list of indices into a list of Nodes representing a cluster.
+     *
+     * @param mim The graph to convert.
+     * @return The extracted node list.
+     */
     public static Clusters mimClusters(Graph mim) {
         List<Node> latents = new ArrayList<>();
 
@@ -180,6 +222,12 @@ public class ClusterUtils {
 
     }
 
+    /**
+     * Logs the clusters.
+     *
+     * @param clusters  The clusters.
+     * @param variables The variables.
+     */
     public static void logClusters(Set<Set<Integer>> clusters, List<Node> variables) {
         int num = 1;
         StringBuilder buf = new StringBuilder();
@@ -206,6 +254,12 @@ public class ClusterUtils {
         TetradLogger.getInstance().log("clusters", buf.toString());
     }
 
+    /**
+     * Generates a list of latent variable names.
+     *
+     * @param total The number of latent variables to generate.
+     * @return The list of latent variable names.
+     */
     public static List<String> generateLatentNames(int total) {
         List<String> output = new ArrayList<>();
         for (int i = 0; i < total; i++) {

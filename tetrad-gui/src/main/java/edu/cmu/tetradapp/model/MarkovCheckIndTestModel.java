@@ -23,7 +23,9 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
@@ -32,27 +34,65 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Stores a list of independence facts.
+ * A model for the Markov check. The Markov check for a given graph and dataset checks whether the graph is Markov with
+ * respect to the dataset. The Markov check can be used to check whether a graph is Markov with respect to a dataset, or
+ * whether a graph is Markov with respect to a dataset and a set of variables. The Markov check can also be used to
+ * check whether a graph is Markov with respect to a dataset and a set of variables, given a set of knowledge. For facts
+ * of the form X _||_ Y | Z, X and Y should be in the last tier of the knowledge, and Z should be in previous tiers.
  *
  * @author josephramsey
  */
-public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
+public class MarkovCheckIndTestModel implements SessionModel, GraphSource, KnowledgeBoxInput {
+    @Serial
     private static final long serialVersionUID = 23L;
+    // The data model to check.
     private final DataModel dataModel;
-    private final Parameters parameters;
+    // The graph to check.
     private final Graph graph;
+    // The parameters.
+    private final Parameters parameters;
+    // The name of this model.
     private String name = "";
+    // The variables to check.
     private List<String> vars = new LinkedList<>();
+    // The Markov check object.
     private transient MarkovCheck markovCheck = null;
+    // The knowledge to use. This will be passed to the underlying Markov check object. For facts odf the form
+    // X _||_ Y | Z, X and Y should be in the last tier, and Z should be in previous tiers.
+    private Knowledge knowledge;
 
+    /**
+     * Constructs a new Markov checer with the given data model, graph, and parameters.
+     *
+     * @param dataModel   the data model.
+     * @param graphSource the graph source.
+     * @param parameters  the parameters.
+     */
     public MarkovCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, Parameters parameters) {
+        this(dataModel, graphSource, null, parameters);
+    }
+
+    /**
+     * Constructs a new Markov checker with the given data model, graph, and parameters.
+     *
+     * @param dataModel   the data model.
+     * @param graphSource the graph source.
+     * @param parameters  the parameters.
+     */
+    public MarkovCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, KnowledgeBoxModel knowlegeBox,
+                                   Parameters parameters) {
         this.dataModel = dataModel.getSelectedDataModel();
         this.graph = graphSource.getGraph();
         this.parameters = parameters;
+
+        if (knowlegeBox != null) {
+            this.knowledge = knowlegeBox.getKnowledge();
+        }
     }
 
     /**
@@ -64,48 +104,166 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
         return new Knowledge();
     }
 
+    /**
+     * Sets the independence test and constructs the underlying MarkovCheck object.
+     *
+     * @param test the independence test.
+     */
     public void setIndependenceTest(IndependenceTest test) {
         this.markovCheck = new MarkovCheck(this.graph, test, this.markovCheck == null ? ConditioningSetType.LOCAL_MARKOV : this.markovCheck.getSetType());
 
+        if (this.knowledge != null) {
+            this.markovCheck.setKnowledge(this.knowledge);
+        }
     }
 
+    /**
+     * Returns the underlying MarkovCheck object.
+     *
+     * @return the underlying MarkovCheck object.
+     */
     public MarkovCheck getMarkovCheck() {
         return this.markovCheck;
     }
 
+    /**
+     * Returns the graph.
+     *
+     * @return the graph.
+     */
     @Override
     public Graph getGraph() {
         return this.graph;
     }
 
+    /**
+     * Returns the data model.
+     *
+     * @return the data model.
+     */
     public DataModel getDataModel() {
         return dataModel;
     }
 
+    /**
+     * Returns the parameters.
+     *
+     * @return the parameters.
+     */
     public Parameters getParameters() {
         return parameters;
     }
 
+    /**
+     * Returns the name of this model.
+     *
+     * @return the name of this model.
+     */
     @Override
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Sets the name of this model.
+     *
+     * @param name the name of this model.
+     */
     @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Returns the variables to check.
+     *
+     * @return the variables to check.
+     */
     public List<String> getVars() {
         return this.vars;
     }
 
+    /**
+     * Sets the variables to check.
+     *
+     * @param vars the variables to check.
+     */
     public void setVars(List<String> vars) {
         this.vars = vars;
     }
 
+    /**
+     * Returns the results of the Markov check.
+     *
+     * @param indep whether to return the results for the independence test or the dependence test.
+     * @return the results of the Markov check.
+     */
     public List<IndependenceResult> getResults(boolean indep) {
         return markovCheck.getResults(indep);
+    }
+
+    /**
+     * Returns the knowledge to use. This will be passed to the underlying Markov check object. For facts of the form X
+     * _||_ Y | Z, X and Y should be in the last tier, and Z should be in previous tiers.
+     *
+     * @return the knowledge to use.
+     */
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    /**
+     * Sets the knowledge to use. This will be passed to the underlying Markov check object. For facts of the form X
+     * _||_ Y | Z, X and Y should be in the last tier, and Z should be in previous tiers.
+     *
+     * @param knowledge a knowledge object.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge.copy();
+
+        if (this.markovCheck != null) {
+            this.markovCheck.setKnowledge(this.knowledge);
+        }
+    }
+
+    /**
+     * Returns the source graph.
+     *
+     * @return the source graph.
+     */
+    @Override
+    public Graph getSourceGraph() {
+        return null;
+    }
+
+    /**
+     * Returns the result graph.
+     *
+     * @return the result graph.
+     */
+    @Override
+    public Graph getResultGraph() {
+        return null;
+    }
+
+    /**
+     * Returns the variables.
+     *
+     * @return the variables.
+     */
+    @Override
+    public List<Node> getVariables() {
+        return null;
+    }
+
+    /**
+     * Returns the variable names.
+     *
+     * @return the variable names.
+     */
+    @Override
+    public List<String> getVariableNames() {
+        return null;
     }
 }
 

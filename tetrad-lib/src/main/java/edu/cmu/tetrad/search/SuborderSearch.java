@@ -15,9 +15,9 @@ import java.util.Set;
  * x1a,...,x1n as a prefix. This is used by PermutationSearch to form a complete permutation search algorithm, where
  * PermutationSearch handles an optimization for tiered knowledge where each tier can be searched separately in order.
  * (See the documentation for that class.)
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author bryanandrews
  * @see PermutationSearch

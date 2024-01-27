@@ -43,37 +43,33 @@ import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.min;
 
 /**
- * <p>Implements the Fast Greedy Equivalence Search (FGES) algorithm. This is
- * an implementation of the Greedy Equivalence Search algorithm, originally due to Chris Meek but developed
- * significantly by Max Chickering. FGES uses with some optimizations that allow it to scale accurately to thousands of
- * variables accurately for the sparse case. The reference for FGES is this:</p>
- *
- * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017).
- * A million variables and more: the fast greedy equivalence search algorithm for learning high-dimensional graphical
- * causal models, with an application to functional magnetic resonance images. International journal of data science and
- * analytics, 3, 121-129.</p>
- *
- * <p>The reference for Chickering's GES is this:</p>
- *
- * <p>Chickering (2002) "Optimal structure identification with greedy search"
- * Journal of Machine Learning Research.</p>
- *
- * <p>FGES works for the continuous case, the discrete case, and the mixed
- * continuous/discrete case, so long as a BIC score is available for the type of data in question.</p>
- *
- * <p>To speed things up, it has been assumed that variables X and Y with zero
- * correlation do not correspond to edges in the graph. This is a restricted form of the heuristic speedup assumption,
- * something GES does not assume. This heuristic speedup assumption needs to be explicitly turned on using
- * setHeuristicSpeedup(true).</p>
- *
- * <p>Also, edges to be added or remove from the graph in the forward or
- * backward phase, respectively are cached, together with the ancillary information needed to do the additions or
- * removals, to reduce rescoring.</p>
- *
- * <p>A number of other optimizations were also. See code for details.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Implements the Fast Greedy Equivalence Search (FGES) algorithm. This is an implementation of the Greedy Equivalence
+ * Search algorithm, originally due to Chris Meek but developed significantly by Max Chickering. FGES uses with some
+ * optimizations that allow it to scale accurately to thousands of variables accurately for the sparse case. The
+ * reference for FGES is this:
+ * <p>
+ * Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017). A million variables and more: the fast greedy
+ * equivalence search algorithm for learning high-dimensional graphical causal models, with an application to functional
+ * magnetic resonance images. International journal of data science and analytics, 3, 121-129.
+ * <p>
+ * The reference for Chickering's GES is this:
+ * <p>
+ * Chickering (2002) "Optimal structure identification with greedy search" Journal of Machine Learning Research.
+ * <p>
+ * FGES works for the continuous case, the discrete case, and the mixed continuous/discrete case, so long as a BIC score
+ * is available for the type of data in question.
+ * <p>
+ * To speed things up, it has been assumed that variables X and Y with zero correlation do not correspond to edges in
+ * the graph. This is a restricted form of the heuristic speedup assumption, something GES does not assume. This
+ * heuristic speedup assumption needs to be explicitly turned on using setHeuristicSpeedup(true).
+ * <p>
+ * Also, edges to be added or remove from the graph in the forward or backward phase, respectively are cached, together
+ * with the ancillary information needed to do the additions or removals, to reduce rescoring.
+ * <p>
+ * A number of other optimizations were also. See code for details.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author Ricardo Silva
  * @author josephramsey
@@ -83,28 +79,6 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Knowledge
  */
 public final class FgesMb implements DagScorer {
-    public enum TrimmingStyle {
-        NONE, ADJACENT_TO_TARGETS, MARKOV_BLANKET_GRAPH, SEMIDIRECTED_PATHS_TO_TARGETS
-    }
-
-    // The number of times the forward phase is iterated to expand to new adjacencies.
-    private int numExpansions = 2;
-
-    // The style of trimming to use.
-    private int trimmingStyle = 3; // default MB trimming.
-
-    // Bounds the degree of the graph.
-    private int maxDegree = -1;
-
-    // Whether one-edge faithfulness is assumed (less general but faster).
-    private boolean faithfulnessAssumed = false;
-
-    // The knowledge to use in the search.
-    private Knowledge knowledge = new Knowledge();
-
-    // True, if FGES should run in a single thread, no if parallelized.
-    private boolean parallelized = false;
-
     //===internal===//
     private final Set<Node> emptySet = new HashSet<>();
     private final int[] count = new int[1];
@@ -116,6 +90,18 @@ public final class FgesMb implements DagScorer {
     private final TetradLogger logger = TetradLogger.getInstance();
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
     List<Node> targets = new ArrayList<>();
+    // The number of times the forward phase is iterated to expand to new adjacencies.
+    private int numExpansions = 2;
+    // The style of trimming to use.
+    private int trimmingStyle = 3; // default MB trimming.
+    // Bounds the degree of the graph.
+    private int maxDegree = -1;
+    // Whether one-edge faithfulness is assumed (less general but faster).
+    private boolean faithfulnessAssumed = false;
+    // The knowledge to use in the search.
+    private Knowledge knowledge = new Knowledge();
+    // True, if FGES should run in a single thread, no if parallelized.
+    private boolean parallelized = false;
     private List<Node> variables;
     private Graph initialGraph;
     private Graph boundGraph = null;
@@ -138,12 +124,10 @@ public final class FgesMb implements DagScorer {
     private double modelScore;
     // Internal.
     private Mode mode = Mode.heuristicSpeedup;
-
     // True if the first step of adding an edge to an empty graph should be scored in both directions
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
     private ArrayList<Node> allTargets;
-
     /**
      * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
      * conditional dependence and a negative values in case of conditional independence. See Chickering (2002), locally
@@ -159,6 +143,21 @@ public final class FgesMb implements DagScorer {
 
         setScore(score);
         this.graph = new EdgeListGraph(getVariables());
+    }
+
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+
+        return null;
     }
 
     public void setTrimmingStyle(int trimmingStyle) {
@@ -230,7 +229,7 @@ public final class FgesMb implements DagScorer {
             this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-        this.modelScore = scoreDag(GraphTransforms.dagFromCPDAG(graph, null), true);
+        this.modelScore = scoreDag(GraphTransforms.dagFromCpdag(graph, null), true);
         graph = GraphUtils.trimGraph(targets, graph, trimmingStyle);
         return graph;
     }
@@ -394,21 +393,6 @@ public final class FgesMb implements DagScorer {
      */
     public double getModelScore() {
         return modelScore;
-    }
-
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-
-        return null;
     }
 
     //Sets the discrete scoring function to use.
@@ -1091,6 +1075,10 @@ public final class FgesMb implements DagScorer {
     public void setNumExpansions(int numExpansions) {
         if (numExpansions < 1) throw new IllegalArgumentException("Number of expansions must be at least 1.");
         this.numExpansions = numExpansions;
+    }
+
+    public enum TrimmingStyle {
+        NONE, ADJACENT_TO_TARGETS, MARKOV_BLANKET_GRAPH, SEMIDIRECTED_PATHS_TO_TARGETS
     }
 
     /**

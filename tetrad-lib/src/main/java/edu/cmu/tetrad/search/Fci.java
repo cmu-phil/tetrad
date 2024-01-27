@@ -38,28 +38,26 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Implements the Fast Causal Inference (FCI) algorithm due to Peter Spirtes, which addressed
- * the case where latent common causes cannot be assumed not to exist with respect to the data set being analyzed. That
- * is, it is assumed that there may be variables that are not included in the data that nonetheless may be causes of two
- * or more variables that are included in data.</p>
- *
- * <p>Two alternatives are provided for doing the final orientation step, one due to Peter Spirtes,
- * which is arrow complete, and another due to Jiji Zhang, which is arrow and tail complete.</p>
- *
- * <p>This algorithm, with the Spirtes final orientation rules, was given in an earlier version of
- * this book:</p>
- *
- * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
- * prediction, and search. MIT press.</p>
- *
- * <p>The algorithm with the Zhang final orientation rules was given in this reference:</p>
- *
- * <p>Zhang, J. (2008). On the completeness of orientation rules for causal discovery in the presence
- * of latent confounders and selection bias. Artificial Intelligence, 172(16-17), 1873-1896.</p>
- *
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Implements the Fast Causal Inference (FCI) algorithm due to Peter Spirtes, which addressed the case where latent
+ * common causes cannot be assumed not to exist with respect to the data set being analyzed. That is, it is assumed that
+ * there may be variables that are not included in the data that nonetheless may be causes of two or more variables that
+ * are included in data.
+ * <p>
+ * Two alternatives are provided for doing the final orientation step, one due to Peter Spirtes, which is arrow
+ * complete, and another due to Jiji Zhang, which is arrow and tail complete.
+ * <p>
+ * This algorithm, with the Spirtes final orientation rules, was given in an earlier version of this book:
+ * <p>
+ * Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT press.
+ * <p>
+ * The algorithm with the Zhang final orientation rules was given in this reference:
+ * <p>
+ * Zhang, J. (2008). On the completeness of orientation rules for causal discovery in the presence of latent confounders
+ * and selection bias. Artificial Intelligence, 172(16-17), 1873-1896.
+ * <p>
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author peterspirtes
  * @author clarkglymour
@@ -246,8 +244,8 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the Zhang complete rule set should be used; false if only R1-R4 (the rule set of the original
-     * FCI) should be used. False by default.
+     * Sets whether the Zhang complete rule set should be used; false if only R1-R4 (the rule set of the original FCI)
+     * should be used. False by default.
      *
      * @param completeRuleSetUsed True for the complete Zhang rule set.
      */

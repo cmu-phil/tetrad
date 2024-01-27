@@ -238,7 +238,7 @@ public class MbUtils {
      * @return An example DAG in this CPDAG.
      */
     public static Graph getOneMbDag(Graph mbCpdag) {
-        return GraphTransforms.dagFromCPDAG(mbCpdag, null);
+        return GraphTransforms.dagFromCpdag(mbCpdag, null);
     }
 
     /**

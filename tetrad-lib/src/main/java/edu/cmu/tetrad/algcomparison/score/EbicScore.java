@@ -10,6 +10,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import java.util.List;
 @LinearGaussian
 public class EbicScore implements ScoreWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
@@ -44,7 +46,7 @@ public class EbicScore implements ScoreWrapper {
         }
 
         score.setGamma(parameters.getDouble(Params.EBIC_GAMMA));
-//        score.setCorrelationThreshold(parameters.getDouble(Params.CORRELATION_THRESHOLD));
+        score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
         return score;
     }
 
@@ -62,8 +64,8 @@ public class EbicScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.EBIC_GAMMA);
-//        parameters.add(Params.CORRELATION_THRESHOLD);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
+        parameters.add(Params.USE_PSEUDOINVERSE);
         return parameters;
     }
 

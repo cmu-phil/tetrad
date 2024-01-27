@@ -25,11 +25,19 @@ import java.util.Set;
  * @author josephramsey
  */
 public class ClusterSignificance {
-
+    // The variables in the model.
     private final List<Node> variables;
+    // The data model.
     private final DataModel dataModel;
+    // The type of check to perform.
     private CheckType checkType = CheckType.Clique;
 
+    /**
+     * Constructs a new cluster significance object.
+     *
+     * @param variables The variables in the model.
+     * @param dataModel The data model.
+     */
     public ClusterSignificance(List<Node> variables, DataModel dataModel) {
         if (variables == null) throw new NullPointerException("Variable null.");
         if (dataModel == null) throw new NullPointerException("Data model null.");
@@ -37,6 +45,13 @@ public class ClusterSignificance {
         this.dataModel = dataModel;
     }
 
+    /**
+     * Converts a list of indices into a list of Nodes representing a cluster.
+     *
+     * @param cluster   The indices of the variables.
+     * @param variables The variables.
+     * @return The extracted node list.
+     */
     public static List<Node> variablesForIndices(List<Integer> cluster, List<Node> variables) {
         List<Node> _cluster = new ArrayList<>();
 
@@ -47,6 +62,13 @@ public class ClusterSignificance {
         return _cluster;
     }
 
+    /**
+     * Converts a list of indices into a list of Nodes representing a cluster.
+     *
+     * @param clusters   The indices of the variables.
+     * @param _variables The variables.
+     * @return The extracted node list.
+     */
     public static List<List<Node>> variablesForIndices2(Set<List<Integer>> clusters, List<Node> _variables) {
         List<List<Node>> variables = new ArrayList<>();
 
@@ -75,10 +97,15 @@ public class ClusterSignificance {
         return dof;
     }
 
-    public void printClusterPValues(Set<List<Integer>> out) {
+    /**
+     * Prints the p-values for the given clusters.
+     *
+     * @param clusters The clusters.
+     */
+    public void printClusterPValues(Set<List<Integer>> clusters) {
         NumberFormat nf = new DecimalFormat("0.000");
 
-        for (List<Integer> _out : out) {
+        for (List<Integer> _out : clusters) {
             ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
 
             try {
@@ -92,10 +119,23 @@ public class ClusterSignificance {
         }
     }
 
+    /**
+     * Sets the type of check to perform.
+     *
+     * @param checkType The type of check.
+     * @see CheckType
+     */
     public void setCheckType(CheckType checkType) {
         this.checkType = checkType;
     }
 
+    /**
+     * Returns the p-value for the given cluster.
+     *
+     * @param cluster The cluster.
+     * @param alpha   The alpha level.
+     * @return The p-value.
+     */
     public boolean significant(List<Integer> cluster, double alpha) {
         if (checkType == CheckType.None) {
             return true;
@@ -108,6 +148,12 @@ public class ClusterSignificance {
         }
     }
 
+    /**
+     * Returns the p-value for the given cluster.
+     *
+     * @param clusters The clusters.
+     * @return The p-value.
+     */
     public double getModelPValue(List<List<Integer>> clusters) {
         SemIm im = estimateModel(clusters);
         return im.getPValue();
@@ -250,6 +296,4 @@ public class ClusterSignificance {
      * or could check to see if the cluster is a clique, or could not do the check.
      */
     public enum CheckType {Significance, Clique, None}
-
-
 }

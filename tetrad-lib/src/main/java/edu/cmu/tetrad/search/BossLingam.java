@@ -39,24 +39,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>Implements the BOSS-LiNGAM algorithm which first finds a CPDAG for the variables
- * and then uses a non-Gaussian orientation method to orient the undirected edges. The reference is as follows:
- *
- * <p>>Hoyer et al., "Causal discovery of linear acyclic models with arbitrary
- * distributions," UAI 2008.</p>
- *
- * <p>The test for normality used for residuals is Anderson-Darling, following 'ad.test'
- * in the nortest package of R. The default alpha level is 0.05--that is, p values from AD below 0.05 are taken to
- * indicate nongaussianity.</p>
- *
- * <p>It is assumed that the CPDAG is the result of a CPDAG search such as PC or GES. In any
- * case, it is important that the residuals be independent for ICA to work.</p>
- *
- * <p>This may be replaced by a more general algorithm that allows alternatives for the
- * CPDAG search and for the the non-Gaussian orientation method.</p>
- *
- * <p>This class is not configured to respect knowledge of forbidden and required
- * edges.</p>
+ * Implements the BOSS-LiNGAM algorithm which first finds a CPDAG for the variables and then uses a non-Gaussian
+ * orientation method to orient the undirected edges. The reference is as follows:
+ * <p>
+ * Hoyer et al., "Causal discovery of linear acyclic models with arbitrary distributions," UAI 2008.
+ * <p>
+ * The test for normality used for residuals is Anderson-Darling, following 'ad.test' in the nortest package of R. The
+ * default alpha level is 0.05--that is, p values from AD below 0.05 are taken to indicate nongaussianity.
+ * <p>
+ * It is assumed that the CPDAG is the result of a CPDAG search such as PC or GES. In any case, it is important that the
+ * residuals be independent for ICA to work.
+ * <p>
+ * This may be replaced by a more general algorithm that allows alternatives for the CPDAG search and for the the
+ * non-Gaussian orientation method.
+ * <p>
+ * This class is not configured to respect knowledge of forbidden and required edges.
  *
  * @author peterspirtes
  * @author patrickhoyer
@@ -113,7 +110,7 @@ public class BossLingam {
                 int i = nodes.indexOf(X);
                 int j = nodes.indexOf(Y);
 
-                double lr = Fask.faskLeftRightV2(_data[i], _data[j], true,  0);
+                double lr = Fask.faskLeftRightV2(_data[i], _data[j], true, 0);
 
                 if (lr > 0.0) {
                     toOrient.removeEdge(edge);

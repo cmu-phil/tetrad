@@ -88,7 +88,7 @@ public class AlgorithmDescriptions {
     private List<String> getShortNames() {
         // get algorithm from annotations
         List<String> shortNames = AlgorithmAnnotations.getInstance().getAnnotatedClasses().stream()
-                .map(e -> e.getAnnotation().command())
+                .map(e -> e.annotation().command())
                 .collect(Collectors.toList());
 
         // add additional shortNames not annotated

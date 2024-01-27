@@ -56,7 +56,6 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
             edu.cmu.tetrad.search.DirectLingam search = new edu.cmu.tetrad.search.DirectLingam(data, score);
             Graph graph = search.search();
             TetradLogger.getInstance().forceLogMessage(graph.toString());
-
             LogUtilsSearch.stampWithBic(graph, dataSet);
             return graph;
         } else {

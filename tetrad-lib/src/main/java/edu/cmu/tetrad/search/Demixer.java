@@ -61,6 +61,22 @@ public class Demixer {
         }
     }
 
+    static double getVar(int i, int v, int v2, int numCases, double[][] gammaArray, double[][] dataArray, double[][] meansArray) {
+        double varNumerator;
+        double varDivisor;
+        double var;
+        varNumerator = 0;
+        varDivisor = 0;
+
+        for (int j = 0; j < numCases; j++) {
+            varNumerator += gammaArray[i][j] * (dataArray[j][v] - meansArray[i][v]) * (dataArray[j][v2] - meansArray[i][v2]);
+            varDivisor += gammaArray[i][j];
+        }
+
+        var = varNumerator / varDivisor;
+        return var;
+    }
+
     /*
      * Runs the E-M algorithm iteratively until the weights array converges. Returns a MixtureModel object containing
      * the final values of the means, covariance matrices, weights, and gammas arrays.
@@ -201,22 +217,6 @@ public class Demixer {
             variances[i] = new Matrix(variancesArray[i]);
         }
 
-    }
-
-    static double getVar(int i, int v, int v2, int numCases, double[][] gammaArray, double[][] dataArray, double[][] meansArray) {
-        double varNumerator;
-        double varDivisor;
-        double var;
-        varNumerator = 0;
-        varDivisor = 0;
-
-        for (int j = 0; j < numCases; j++) {
-            varNumerator += gammaArray[i][j] * (dataArray[j][v] - meansArray[i][v]) * (dataArray[j][v2] - meansArray[i][v2]);
-            varDivisor += gammaArray[i][j];
-        }
-
-        var = varNumerator / varDivisor;
-        return var;
     }
 
     /*

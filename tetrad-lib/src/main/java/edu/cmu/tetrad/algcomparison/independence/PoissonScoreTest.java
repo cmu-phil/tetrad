@@ -12,6 +12,7 @@ import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import java.util.List;
 @LinearGaussian
 public class PoissonScoreTest implements IndependenceWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     @Override
@@ -39,7 +41,9 @@ public class PoissonScoreTest implements IndependenceWrapper {
         } else {
             score = new PoissonPriorScore((DataSet) dataSet, true);
         }
+
         score.setLambda(parameters.getDouble(Params.POISSON_LAMBDA));
+        score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
 
         return new ScoreIndTest(score, dataSet);
     }
@@ -58,6 +62,7 @@ public class PoissonScoreTest implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.POISSON_LAMBDA);
+        params.add(Params.USE_PSEUDOINVERSE);
         return params;
     }
 }
