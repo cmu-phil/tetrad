@@ -66,6 +66,7 @@ public class GicScores implements Score {
     private boolean calculateRowSubsets = false;
     //    private boolean calculateSquareEuclideanNorms = false;
     private double penaltyDiscount = 1;
+    // True if the pseudo-inverse should be used.
     private boolean usePseudoInverse = false;
 
     /**

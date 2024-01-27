@@ -2,19 +2,17 @@
 
 Please visit our [Tetrad web page](https://sites.google.com/view/tetradcausal) for current links, a list of contributors, some history, documentation, descriptions, links for our various projects, Javadocs, and more.
 
-Note: Starting 1/14/2024, the Tetrad codebase will target language level 17, and all jars will be compiled using Corretto's JDK 17.
-
 ## Tetrad Application
 
 See out insructions for [Installing the Tetrad Application](https://github.com/cmu-phil/tetrad/blob/development/INSTALL_APPLICATION.md).
 
 ## Tetrad in Python
 
-We have a project, [py-tetrad](https://github.com/cmu-phil/py-tetrad), that allows you to incorporate arbitrary Tetrad code into a Python workflow. It's new, and the installation is still nonstandard, but it had a good response. This requires Python 3.5+. and Java JDK 17+.
+We have a project, [py-tetrad](https://github.com/cmu-phil/py-tetrad), that allows you to incorporate arbitrary Tetrad code into a Python workflow. It's new, and the installation is still nonstandard, but it had a good response. This requires Python 3.5+. and Java JDK 9+.
 
 ## Tetrad in R
 
-We also have a project, [rpy-tetrad](https://github.com/cmu-phil/py-tetrad/tree/main/pytetrad/R), that allows you to incorporate _some_ Tetrad functionality in R. It's also new, and the installation for it is also still nonstandard, but has gotten good feedback. This requires Python 3.5+ and Java JDK 17+.
+We also have a project, [rpy-tetrad](https://github.com/cmu-phil/py-tetrad/tree/main/pytetrad/R), that allows you to incorporate _some_ Tetrad functionality in R. It's also new, and the installation for it is also still nonstandard, but has gotten good feedback. This requires Python 3.5+ and Java JDK 9+.
 
 Please see our [description](https://sites.google.com/view/tetradcausal/tetrad-in-r?authuser=0).
 

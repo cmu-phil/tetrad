@@ -881,13 +881,13 @@ public class MarkovCheckEditor extends JPanel {
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
         binomialPLabelIndep.setText("P-value of Binomial Test = "
-                + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(true))
+                + ((Double.isNaN(model.getMarkovCheck().getBinomialP(true))
                 ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue(true)))));
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialP(true)))));
         binomialPLabelDep.setText("P-value of Binomial Test = "
-                + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue(false))
+                + ((Double.isNaN(model.getMarkovCheck().getBinomialP(false))
                 ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialPValue(false)))));
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialP(false)))));
         fractionDepLabelIndep.setText("% dependent = "
                 + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(true))
                 ? "-"
