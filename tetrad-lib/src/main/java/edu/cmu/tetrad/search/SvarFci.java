@@ -62,41 +62,24 @@ import java.util.Set;
  * @see Knowledge
  */
 public final class SvarFci implements IGraphSearch {
-
+    // The independence test to use.
     private final IndependenceTest independenceTest;
-    /**
-     * The logger to use.
-     */
+    // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
-    /**
-     * The PAG being constructed.
-     */
+    // The PAG being constructed.
     private Graph graph;
-    /**
-     * The SepsetMap being constructed.
-     */
+    // The SepsetMap being constructed.
     private SepsetMap sepsets;
-    /**
-     * The background knowledge.
-     */
+    // The background knowledge.
     private Knowledge knowledge = new Knowledge();
-    /**
-     * flag for the complete rule set, true if it should use the complete rule set, false otherwise.
-     */
+    // flag for the complete rule set, true if it should use the complete rule set, false otherwise.
     private boolean completeRuleSetUsed;
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
+    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
-    /**
-     * The depth for the fast adjacency search.
-     */
+    // The depth for the fast adjacency search.
     private int depth = -1;
-    /**
-     * True iff verbose output should be printed.
-     */
+    // True iff verbose output should be printed.
     private boolean verbose;
-
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.

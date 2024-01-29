@@ -193,18 +193,38 @@ public final class BFci implements IGraphSearch {
         return this.independenceTest;
     }
 
+    /**
+     * Returns the number of times to restart the search.
+     *
+     * @param numStarts The number of times to restart the search.
+     */
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
     }
 
+    /**
+     * Sets the depth of the search (for the constraint-based step).
+     *
+     * @param depth The depth of the search.
+     */
     public void setDepth(int depth) {
         this.depth = depth;
     }
 
+    /**
+     * Sets whether the discriminating path rule should be used.
+     *
+     * @param doDiscriminatingPathRule True if the discriminating path rule should be used, false otherwise.
+     */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
+    /**
+     * Sets whether the BES should be used.
+     *
+     * @param useBes True if the BES should be used, false otherwise.
+     */
     public void setBossUseBes(boolean useBes) {
         this.bossUseBes = useBes;
     }

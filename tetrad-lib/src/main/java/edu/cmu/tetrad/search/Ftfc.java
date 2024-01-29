@@ -63,7 +63,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @see Bpc
  */
 public class Ftfc {
-
+    // The correlation matrix.
     private final CorrelationMatrix corr;
     // The list of all variables.
     private final List<Node> variables;
@@ -73,9 +73,11 @@ public class Ftfc {
     private final DeltaSextadTest test;
     // The data.
     private final transient DataModel dataModel;
+    // The algorithm used.
     private final Algorithm algorithm;
+    // The clusters found.
     private List<List<Node>> clusters;
-
+    // Whether verbose output should be printed.
     private boolean verbose;
 
     /**

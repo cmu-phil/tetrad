@@ -33,10 +33,15 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see NodeEffects
  */
 public class Ida {
+    // The dataset being searched over.
     private final DataSet dataSet;
-    private final Graph pattern;
+    // The CPDAG (found, e.g., by running PC, or some other CPDAG producing algorithm.
+    private final Graph cpdag;
+    // The possible causes to be considered.
     private final List<Node> possibleCauses;
+    // A map from node names to indices in the covariance matrix.
     private final Map<String, Integer> nodeIndices;
+    // The covariance matrix for the dataset.
     private final ICovarianceMatrix allCovariances;
 
     /**
@@ -48,7 +53,7 @@ public class Ida {
      */
     public Ida(DataSet dataSet, Graph cpdag, List<Node> possibleCauses) {
         this.dataSet = DataTransforms.convertNumericalDiscreteToContinuous(dataSet);
-        this.pattern = cpdag;
+        this.cpdag = cpdag;
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
         this.possibleCauses = possibleCauses;
 
@@ -146,10 +151,10 @@ public class Ida {
      * @return a list of the possible effects of X on Y.
      */
     private LinkedList<Double> getEffects(Node x, Node y) {
-        List<Node> parents = this.pattern.getParents(x);
-        List<Node> children = this.pattern.getChildren(x);
+        List<Node> parents = this.cpdag.getParents(x);
+        List<Node> children = this.cpdag.getChildren(x);
 
-        List<Node> siblings = new ArrayList<>(this.pattern.getAdjacentNodes(x));
+        List<Node> siblings = new ArrayList<>(this.cpdag.getAdjacentNodes(x));
         siblings.removeAll(parents);
         siblings.removeAll(children);
 
@@ -169,14 +174,14 @@ public class Ida {
 
                     while ((choice2 = gen2.next()) != null) {
                         List<Node> adj = GraphUtils.asList(choice2, sibbled);
-                        if (!this.pattern.isAdjacentTo(adj.get(0), adj.get(1))) continue CHOICE;
+                        if (!this.cpdag.isAdjacentTo(adj.get(0), adj.get(1))) continue CHOICE;
                     }
                 }
 
                 if (!sibbled.isEmpty()) {
                     for (Node p : parents) {
                         for (Node s : sibbled) {
-                            if (!this.pattern.isAdjacentTo(p, s)) continue CHOICE;
+                            if (!this.cpdag.isAdjacentTo(p, s)) continue CHOICE;
                         }
                     }
                 }
@@ -211,7 +216,7 @@ public class Ida {
         SortedMap<Node, Double> minEffects = new TreeMap<>();
 
         for (Node x : this.possibleCauses) {
-            if (!(this.pattern.containsNode(x) && this.pattern.containsNode(y))) continue;
+            if (!(this.cpdag.containsNode(x) && this.cpdag.containsNode(y))) continue;
 
             LinkedList<Double> effects = getEffects(x, y);
             minEffects.put(x, effects.getFirst());
@@ -251,30 +256,63 @@ public class Ida {
      * @author josephramsey
      */
     public static class NodeEffects {
+        // The nodes.
         private List<Node> nodes;
+        // The effects.
         private LinkedList<Double> effects;
 
+        /**
+         * Constructor.
+         *
+         * @param nodes   The nodes.
+         * @param effects The effects.
+         */
         NodeEffects(List<Node> nodes, LinkedList<Double> effects) {
             this.setNodes(nodes);
             this.setEffects(effects);
         }
 
+        /**
+         * Returns the nodes.
+         *
+         * @return The nodes.
+         */
         public List<Node> getNodes() {
             return this.nodes;
         }
 
+        /**
+         * Sets the nodes.
+         *
+         * @param nodes The nodes.
+         */
         public void setNodes(List<Node> nodes) {
             this.nodes = nodes;
         }
 
+        /**
+         * Returns the effects.
+         *
+         * @return The effects.
+         */
         public LinkedList<Double> getEffects() {
             return this.effects;
         }
 
+        /**
+         * Sets the effects.
+         *
+         * @param effects The effects.
+         */
         public void setEffects(LinkedList<Double> effects) {
             this.effects = effects;
         }
 
+        /**
+         * Returns a string representation of this object.
+         *
+         * @return A string representation of this object.
+         */
         public String toString() {
             StringBuilder b = new StringBuilder();
 

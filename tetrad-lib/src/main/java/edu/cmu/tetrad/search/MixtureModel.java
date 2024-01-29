@@ -14,16 +14,36 @@ import edu.cmu.tetrad.util.Matrix;
  * @author Madelyn Glymour
  */
 public class MixtureModel {
+    // The mixed data set
     private final DataSet data;
+    // The individual data sets
     private final int[] cases;
+    // The number of cases in each individual data set
     private final int[] caseCounts;
-    private final double[][] dataArray;   // v-by-n data matrix
-    private final double[][] meansArray;  // k-by-v matrix representing means for each variable for each of k models
-    private final double[] weightsArray;  // array of length k representing weights for each model
-    private final double[][] gammaArray;  // k-by-n matrix representing gamma for each data case in each model
-    private final Matrix[] variancesArray; // k-by-v-by-v matrix representing covariance matrix for each of k models
-    private final int numModels;  // number of models in mixture
+    // The data set in array form
+    private final double[][] dataArray;
+    // The means matrix
+    private final double[][] meansArray;
+    // The weights array
+    private final double[] weightsArray;
+    // The gamma matrix
+    private final double[][] gammaArray;
+    // The variance matrix
+    private final Matrix[] variancesArray;
+    // The number of models in the mixture
+    private final int numModels;
 
+    /**
+     * Constructs a mixture model from a mixed data set, a means matrix, a weights array, a variance matrix, and a gamma
+     * matrix.
+     *
+     * @param data          the mixed data set
+     * @param dataArray     the mixed data set in array form
+     * @param meansArray    the means matrix
+     * @param weightsArray  the weights array
+     * @param variancesArray the variance matrix
+     * @param gammaArray    the gamma matrix
+     */
     public MixtureModel(DataSet data, double[][] dataArray, double[][] meansArray, double[] weightsArray, Matrix[] variancesArray, double[][] gammaArray) {
         this.data = data;
         this.dataArray = dataArray;

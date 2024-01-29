@@ -52,47 +52,30 @@ import java.util.List;
  * @see Mimbuild
  */
 public class MimbuildTrek {
-
-    /**
-     * The clustering from BPC or equivalent. Small clusters are removed.
-     */
+    // The clustering from BPC or equivalent. Small clusters are removed.
     private List<List<Node>> clustering;
-
-    /**
-     * The graph over the latents.
-     */
+    // The graph over the latents.
     private Graph structureGraph;
-
-    /**
-     * The alpha level used for CPC
-     */
+    // The alpha level used for CPC
     private double alpha = 0.001;
-
-    /**
-     * Background knowledge for CPC.
-     */
+    // Background knowledge for CPC.
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The estimated covariance matrix over the latents.
-     */
+    // The estimated covariance matrix over the latents.
     private ICovarianceMatrix latentsCov;
-
-    /**
-     * The minimum function (Fgsl) value achieved.
-     */
+    // The minimum function (Fgsl) value achieved.
     private double minimum;
-
-    /**
-     * The p value of the optimization.
-     */
+    // The p value of the optimization.
     private double pValue;
+    // The latents.
     private List<Node> latents;
+    // The minimum cluster size.
     private int minClusterSize = 3;
 
+    /**
+     * Empty constructor.
+     */
     public MimbuildTrek() {
     }
-
 
     /**
      * Does the search and returns the graph.

@@ -199,41 +199,6 @@ public final class Fask implements IGraphSearch {
         this.orientationAlpha = 0.01;
     }
 
-    private static double cu(double[] x, double[] y, double[] condition) {
-        double exy = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-    // Returns E(XY | Z > 0); Z is typically either X or Y.
-    private static double E(double[] x, double[] y, double[] z) {
-        double exy = 0.0;
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (z[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-
-    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
-    private static double correxp(double[] x, double[] y, double[] z) {
-        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
-    }
 
     public static double faskLeftRightV2(double[] x, double[] y, boolean empirical, double delta) {
         double sx = skewness(x);
@@ -705,6 +670,43 @@ public final class Fask implements IGraphSearch {
         }
 
         throw new IllegalStateException("Left right rule not configured: " + this.leftRight);
+    }
+
+
+    private static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    // Returns E(XY | Z > 0); Z is typically either X or Y.
+    private static double E(double[] x, double[] y, double[] z) {
+        double exy = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (z[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+
+    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
+    private static double correxp(double[] x, double[] y, double[] z) {
+        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
     }
 
     private double tanh(double[] x, double[] y, boolean empirical) {

@@ -57,15 +57,8 @@ import java.util.Set;
  */
 public class GrowShrink implements IMbSearch {
 
-    /**
-     * The independence test used to perform the search.
-     */
+    // The independence test used to perform the search.
     private final IndependenceTest independenceTest;
-
-    /**
-     * The list of variables being searched over. Must contain the target.
-     */
-    private final List<Node> variables;
 
     /**
      * Constructs a new search.
@@ -78,7 +71,8 @@ public class GrowShrink implements IMbSearch {
         }
 
         this.independenceTest = test;
-        this.variables = test.getVariables();
+        // The list of variables being searched over. Must contain the target.
+        List<Node> variables = test.getVariables();
     }
 
     /**
@@ -106,40 +100,6 @@ public class GrowShrink implements IMbSearch {
                 blanket.add(node);
             }
         }
-
-//        boolean changed = true;
-//
-//        while (changed) {
-//            changed = false;
-//
-//            List<Node> remaining = new LinkedList<>(this.variables);
-//            remaining.removeAll(blanket);
-//            remaining.remove(target);
-//
-//            for (Node node : remaining) {
-//                if (!this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
-//                    blanket.add(node);
-//                    changed = true;
-//                }
-//            }
-//        }
-//
-//        changed = true;
-//
-//        while (changed) {
-//            changed = false;
-//
-//            for (Node node : new LinkedList<>(blanket)) {
-//                blanket.remove(node);
-//
-//                if (this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
-//                    changed = true;
-//                    continue;
-//                }
-//
-//                blanket.add(node);
-//            }
-//        }
 
         return blanket;
     }

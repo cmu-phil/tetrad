@@ -93,7 +93,9 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * @see edu.cmu.tetrad.search.utils.HungarianAlgorithm
  */
 public class IcaLingam {
+    // The threshold to use for set small elements to zero in the B Hat matrices.
     private double bThreshold = 0.1;
+    // Whether the ICA-LiNGAM algorithm is guaranteed to produce an acyclic graph.
     private boolean acyclicityGuaranteed = true;
 
     /**

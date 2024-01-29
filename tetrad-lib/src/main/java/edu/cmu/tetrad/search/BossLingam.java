@@ -60,11 +60,12 @@ import java.util.List;
  * @author josephramsey
  */
 public class BossLingam {
+    // The CPDAG whose unoriented edges are to be oriented.
     private final Graph cpdag;
+    // The dataset to use.
     private final DataSet dataSet;
+    // The p-values of the search.
     private double[] pValues;
-    private double alpha = 0.05;
-
 
     /**
      * Constructor.
@@ -145,7 +146,7 @@ public class BossLingam {
             throw new IllegalArgumentException("Alpha is in range [0, 1]");
         }
 
-        this.alpha = alpha;
+        // The alpha level for the search.
     }
 
 

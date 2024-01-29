@@ -69,18 +69,29 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see Knowledge
  */
 public final class GFci implements IGraphSearch {
+    // The independence test used in search.
     private final IndependenceTest independenceTest;
+    // The logger.
     private final TetradLogger logger = TetradLogger.getInstance();
+    // The score used in search.
     private final Score score;
+    // The knowledge used in search.
     private Knowledge knowledge = new Knowledge();
+    // Whether Zhang's complete rules are used.
     private boolean completeRuleSetUsed = true;
+    // The maximum path length for the discriminating path rule.
     private int maxPathLength = -1;
+    // The maximum degree of the output graph.
     private int maxDegree = -1;
+    // Whether verbose output should be printed.
     private boolean verbose;
+    // The print stream used for output.
     private PrintStream out = System.out;
+    // Whether one-edge faithfulness is assumed.
     private boolean faithfulnessAssumed = true;
+    // Whether the discriminating path rule should be used.
     private boolean doDiscriminatingPathRule = true;
-    private boolean possibleMsepSearchDone = true;
+    // The depth of the search for the possible m-sep search.
     private int depth = -1;
 
 
@@ -252,7 +263,6 @@ public final class GFci implements IGraphSearch {
      * @param possibleMsepSearchDone True, if so.
      */
     public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
-        this.possibleMsepSearchDone = possibleMsepSearchDone;
     }
 
     /**

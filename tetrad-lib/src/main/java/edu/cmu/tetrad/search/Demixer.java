@@ -16,19 +16,34 @@ import java.util.Random;
  * @author Madelyn Glymour
  */
 public class Demixer {
-
+    // number of variables in the data set
     private final int numVars;
+    // number of cases in the data set
     private final int numCases;
-    private final int numClusters; // number of clusters
+    // number of clusters
+    private final int numClusters;
+    // the data set
     private final DataSet data;
-    private final double[][] dataArray; // v-by-n data matrix
+    // the data set as a double array
+    private final double[][] dataArray;
+    // the means of each variable for each model
     private final Matrix[] variances;
-    private final double[][] meansArray; // k-by-v matrix representing means for each variable for each of k models
-    private final Matrix[] variancesArray; // k-by-v-by-v matrix representing covariance matrix for each of k models
-    private final double[] weightsArray; // array of length k representing weights for each model
-    private final double[][] gammaArray; // k-by-n matrix representing gamma for each data case in each model
+    // the means of each variable for each model
+    private final double[][] meansArray;
+    // the variances of each variable for each model
+    private final Matrix[] variancesArray;
+    // the weights of each model
+    private final double[] weightsArray;
+    // the gamma values for each case in each model
+    private final double[][] gammaArray;
+    // whether the algorithm has been run
     private boolean demixed = false;
 
+    /**
+     * Constructor. Initializes the means, weights, and covariance matrices for each model.
+     * @param data the data set
+     * @param k the number of models
+     */
     public Demixer(DataSet data, int k) {
         this.numClusters = k;
         this.data = data;

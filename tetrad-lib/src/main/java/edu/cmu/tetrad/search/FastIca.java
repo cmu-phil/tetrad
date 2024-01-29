@@ -125,80 +125,51 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public class FastIca {
 
-    /**
-     * The algorithm type where all components are extracted simultaneously.
-     */
+    // The algorithm type where all components are extracted simultaneously.
     public static int PARALLEL;
 
-    /**
-     * The algorithm type where the components are extracted one at a time.
-     */
+    // The algorithm type where the components are extracted one at a time.
     public static int DEFLATION = 1;
 
-    /**
-     * One of the function types that can be used to approximate negative entropy.
-     */
+    // One of the function types that can be used to approximate negative entropy.
     public static int LOGCOSH = 2;
 
-    /**
-     * The other function type that can be used to approximate negative entropy.
-     */
+    // The other function type that can be used to approximate negative entropy.
     public static int EXP = 3;
 
-    /**
-     * A data matrix with n rows representing observations and p columns representing variables.
-     */
+    // A data matrix with n rows representing observations and p columns representing variables.
     private final Matrix X;
 
-    /**
-     * The number of independent components to be extracted.
-     */
+    // The number of independent components to be extracted.
     private int numComponents;
 
-    /**
-     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default). if algorithmType ==
-     * DEFLATION, the components are extracted one at a time.
-     */
+    // If algorithmType == PARALLEL, the components are extracted simultaneously (the default). if algorithmType ==
+    // DEFLATION, the components are extracted one at a time.
     private int algorithmType = FastIca.PARALLEL;
 
-    /**
-     * The function type to be used, either LOGCOSH or EXP.
-     */
+    // The function type to be used, either LOGCOSH or EXP.
     private int function = FastIca.LOGCOSH;
 
-    /**
-     * Constant in range [1, 2] used in approximation to neg-entropy when 'fun == "logcosh". Default = 1.0.
-     */
+    // Constant in range [1, 2] used in approximation to neg-entropy when 'fun == "logcosh". Default = 1.0.
     private double alpha = 1.1;
 
-    /**
-     * A logical value indicating whether rows of the data matrix 'X' should be standardized beforehand. Default =
-     * false.
-     */
+    // A logical value indicating whether rows of the data matrix 'X' should be standardized beforehand. Default =
+    // false.
     private boolean rowNorm;
 
-    /**
-     * Maximum number of iterations to perform. Default = 200.
-     */
+    // Maximum number of iterations to perform. Default = 200.
     private int maxIterations = 200;
 
-    /**
-     * A positive scalar giving the tolerance at which the un-mixing matrix is considered to have converged. Default =
-     * 1e-04.
-     */
+    // A positive scalar giving the tolerance at which the un-mixing matrix is considered to have converged. Default =
+    // 1e-04.
     private double tolerance = 1e-04;
 
-    /**
-     * A logical value indicating the level of output as the algorithm runs. Default = false.
-     */
+    // A logical value indicating the level of output as the algorithm runs. Default = false.
     private boolean verbose;
 
-    /**
-     * Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default), then a matrix of normal r.v.'s is
-     * used.
-     */
+    // Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default), then a matrix of normal r.v.'s is
+    // used.
     private Matrix wInit;
-
 
     /**
      * Constructs an instance of the Fast ICA algorithm, taking as arguments the two arguments that cannot be defaulted:
@@ -210,7 +181,6 @@ public class FastIca {
         this.X = X;
         this.numComponents = numComponents;
     }
-
 
     /**
      * If algorithmType == PARALLEL, the components are extracted simultaneously (the default). if algorithmType ==

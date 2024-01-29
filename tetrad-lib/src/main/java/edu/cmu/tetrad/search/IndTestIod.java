@@ -49,8 +49,11 @@ import java.util.*;
  * @author josephramsey
  */
 public class IndTestIod implements IndependenceTest {
+    // The list of nodes over which this independence checker is capable of determining independence relations.
     private final List<Node> nodeList;
+    // The list of independence tests.
     private final List<IndependenceTest> tests;
+    // Whether the test is verbose.
     private boolean verbose;
 
     /**

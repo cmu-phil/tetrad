@@ -62,18 +62,28 @@ import java.util.*;
  * @see Knowledge
  */
 public class Fas implements IFas {
+    // The test to be used for conditional independence tests.
     private final IndependenceTest test;
+    // The logger.
     private final TetradLogger logger = TetradLogger.getInstance();
+    // The knowledge.
     private Knowledge knowledge = new Knowledge();
+    // The number of independence tests that were done.
     private int numIndependenceTests;
+    // The sepsets that were discovered in the search.
     private SepsetMap sepset = new SepsetMap();
+    // The heuristic to use.
     private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
+    // The depth of the search.
     private int depth = 1000;
+    // Whether the stable adjacency search should be used.
     private boolean stable = true;
+    // The elapsed time of the search.
     private long elapsedTime = 0L;
+    // Whether verbose output should be printed.
     private PrintStream out = System.out;
+    // Whether verbose output should be printed.
     private boolean verbose = false;
-
 
     /**
      * Constructor.

@@ -59,22 +59,37 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @see Knowledge
  */
 public class Lofs {
-
+    // The graph to be oriented.
     private final Graph cpdag;
+    // The square root of 2 * pi.
     private final double SQRT = sqrt(2. * PI);
+    // The data to use to do the orientation.
     Matrix _data;
+    // The data to use to do the orientation.
     private List<DataSet> dataSets;
+    // The matrices to use to do the orientation.
     private List<Matrix> matrices;
+    // The alpha to use, where applicable.
     private double alpha = 1.1;
+    // The regressions to use to do the orientation.
     private List<Regression> regressions;
+    // The variables to use to do the orientation.
     private List<Node> variables;
+    // Whether orientation should be done in the stronger direction, where applicable.
     private boolean orientStrongerDirection;
+    // For R2, whether cycles should be oriented.
     private boolean r2Orient2Cycles = true;
+    // The (LoFS) score to use.
     private Lofs.Score score = Lofs.Score.andersonDarling;
+    // The self-loop strength, if applicable.
     private double epsilon = 1.0;
+    // The knowledge to use to do the orientation.
     private Knowledge knowledge = new Knowledge();
+    // The rule to use to do the orientation.
     private Rule rule = Rule.R1;
+    // The number of variables.
     private double selfLoopStrength;
+    // The number of variables.
     private double[] col;
 
     /**

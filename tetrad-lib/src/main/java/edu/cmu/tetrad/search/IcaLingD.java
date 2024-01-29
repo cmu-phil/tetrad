@@ -96,7 +96,9 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @see IcaLingam
  */
 public class IcaLingD {
+    // The threshold for the spine of the W matrix.
     private double spineThreshold = 0.5;
+    // The threshold to use for set small elements to zero in the B Hat matrices.
     private double bThreshold = 0.1;
 
     /**

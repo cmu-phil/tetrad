@@ -70,21 +70,34 @@ import java.util.Set;
  * @see Knowledge
  */
 public final class Fci implements IGraphSearch {
+    // The variables to search over.
     private final List<Node> variables = new ArrayList<>();
+    // The independence test to use.
     private final IndependenceTest independenceTest;
+    // The logger.
     private final TetradLogger logger = TetradLogger.getInstance();
+    // The sepsets from FAS.
     private SepsetMap sepsets;
+    // The background knowledge.
     private Knowledge knowledge = new Knowledge();
+    // Whether the Zhang complete rule set should be used.
     private boolean completeRuleSetUsed = true;
+    // Whether the possible msep step should be done.
     private boolean possibleMsepSearchDone = true;
+    // The maximum length of any discriminating path.
     private int maxPathLength = -1;
+    // The depth of search.
     private int depth = -1;
+    // The elapsed time of search.
     private long elapsedTime;
+    // Whether verbose output should be printed.
     private boolean verbose;
+    // The PC heuristic type to use.
     private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
+    // Whether the stable options should be used.
     private boolean stable = true;
+    // Whether the discriminating path rule should be used.
     private boolean doDiscriminatingPathRule = true;
-
 
     /**
      * Constructor.
@@ -134,7 +147,11 @@ public final class Fci implements IGraphSearch {
         this.variables.removeAll(remVars);
     }
 
-
+    /**
+     * Performs the search.
+     *
+     * @return The graph.
+     */
     public Graph search() {
         long start = MillisecondTimes.timeMillis();
 

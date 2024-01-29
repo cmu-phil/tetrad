@@ -42,19 +42,22 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * A. Hyvärinen and S. M. Smith. Pairwise likelihood ratios for estimation of non-Gaussian structural evaluation models.
  * Journal of Machine Learning Research 14:111-152, 2013.
- * <p>
- * NEEDS DOCUMENTATION
  *
  * @author bryanandrews
  */
 public class DirectLingam {
-
+    // the data set
     private final DataSet dataset;
+    // the variables
     private final List<Node> variables;
+    // the grow-shrink trees
     private final Map<Node, GrowShrinkTree> gsts;
 
     /**
      * Constructor.
+     *
+     * @param dataset the data set
+     * @param score   the score
      */
     public DirectLingam(DataSet dataset, Score score) {
         this.dataset = dataset;
@@ -70,7 +73,9 @@ public class DirectLingam {
     }
 
     /**
-     * NEEDS DOCUMENTATION
+     * Performs the search. Returns a graph.
+     *
+     * @return a graph
      */
     public Graph search() {
         List<Node> U = new ArrayList<>(this.variables);

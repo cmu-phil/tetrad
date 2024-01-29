@@ -48,55 +48,33 @@ import java.util.*;
  */
 public final class Cfci implements IGraphSearch {
 
-    /**
-     * The SepsetMap being constructed.
-     */
+    // The SepsetMap being constructed.
     private final SepsetMap sepsets = new SepsetMap();
-    /**
-     * The variables to search over (optional)
-     */
+    // The variables to search over (optional)
     private final List<Node> variables = new ArrayList<>();
-    /**
-     * The independence test.
-     */
+    // The independence test.
     private final IndependenceTest independenceTest;
-    /**
-     * The logger to use.
-     */
+    // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
-    /**
-     * The PAG being constructed.
-     */
+    // The PAG being constructed.
     private Graph graph;
-    /**
-     * The background knowledge.
-     */
+    // The background knowledge.
     private Knowledge knowledge = new Knowledge();
-    /**
-     * Flag for complete rule set, true if you should use complete rule set, false otherwise.
-     */
+    // Flag for complete rule set, true if you should use complete rule set, false otherwise.
     private boolean completeRuleSetUsed = true;
-    /**
-     * True iff the possible msep search is done.
-     */
+    // True iff the possible msep search is done.
     private boolean possibleMsepSearchDone = true;
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
+    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxReachablePathLength = -1;
-    /**
-     * Set of ambiguous unshielded triples.
-     */
+    // Set of ambiguous unshielded triples.
     private Set<Triple> ambiguousTriples;
-    /**
-     * The depth for the fast adjacency search.
-     */
+    // The depth for the fast adjacency search.
     private int depth = -1;
-    /**
-     * Elapsed time of last search.
-     */
+    // Elapsed time of last search.
     private long elapsedTime;
+    // Whether verbose output (about independencies) is output.
     private boolean verbose;
+    // Whether to do the discriminating path rule.
     private boolean doDiscriminatingPathRule;
 
 
