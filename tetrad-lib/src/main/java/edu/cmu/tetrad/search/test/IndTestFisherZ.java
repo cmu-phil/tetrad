@@ -320,7 +320,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         // Note that r will be NaN if either xRes or yRes is constant.
         double r = StatUtils.correlation(xRes.toArray(), yRes.toArray());
 
-        double fisherZ = FastMath.sqrt(sampleSize() - z.size() - 3.0) *
+        double fisherZ = FastMath.sqrt(rows.length - z.size() - 3.0) *
                 0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
         double p = 2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ)));
