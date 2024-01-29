@@ -31,6 +31,7 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.test.RowsSettable;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.MarkovCheckIndTestModel;
 import edu.cmu.tetradapp.ui.PaddingPanel;
@@ -244,6 +245,9 @@ public class MarkovCheckEditor extends JPanel {
 
         if (model.getMarkovCheck().getIndependenceTest().getData() != null) {
             box1.add(new JLabel("% Sample:"));
+            box1.add(percent);
+        }  else if (!(model.getMarkovCheck().getIndependenceTest() instanceof RowsSettable)) {
+            box1.add(new JLabel("(Test cannot be subsampled)"));
             box1.add(percent);
         } else {
             box1.add(new JLabel("(Not tabular data)"));
