@@ -22,15 +22,11 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.Histogram;
-import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -44,10 +40,9 @@ public class HistogramPanel extends JPanel {
             "septile", "octile", "nontile", "decile"};
     private static final Color LINE_COLOR = Color.GRAY.darker();
     private final Histogram histogram;
-    private final NumberFormat format = new DecimalFormat("0.#");// NumberFormatUtil.getInstance().getNumberFormat();
     private final Map<Rectangle, Integer> rectMap = new LinkedHashMap<>();
-    private boolean drawAxes = true;
-    private int paddingX;
+    private final boolean drawAxes;
+    private final int paddingX;
     private Color barColor = Color.RED.darker();
 
     /**
@@ -104,7 +99,7 @@ public class HistogramPanel extends JPanel {
      */
     public void paintComponent(Graphics graphics) {
         int paddingY = drawAxes ? 15 : 5;
-        int height = drawAxes ? getHeight() - 2 : getHeight() - 2;
+        int height = getHeight() - 2;
         int width = getWidth() - (drawAxes ? 4 : 2);
         int displayedHeight = (int) (height - paddingY);
         int space = drawAxes ? 2 : 1;
@@ -144,8 +139,6 @@ public class HistogramPanel extends JPanel {
         // draw the buttom line
         g2d.setColor(HistogramPanel.LINE_COLOR);
 
-        Node target = histogram.getTargetNode();
-
         // Draw axes.
         if (drawAxes) {
             // draw the side line
@@ -175,32 +168,11 @@ public class HistogramPanel extends JPanel {
         this.barColor = barColor;
     }
 
-    private Map<Integer, Double> pickGoodPointsAndValues(double minValue, double maxValue) {
-        double range = maxValue - minValue;
-        int powerOfTen = (int) FastMath.floor(FastMath.log(range) / FastMath.log(10));
-        Map<Integer, Double> points = new HashMap<>();
-
-        int low = (int) FastMath.floor(minValue / FastMath.pow(10, powerOfTen));
-        int high = (int) FastMath.ceil(maxValue / FastMath.pow(10, powerOfTen));
-
-        for (int i = low; i < high; i++) {
-            double realValue = i * FastMath.pow(10, powerOfTen);
-            Integer intValue = translateToInt(minValue, maxValue, realValue);
-
-            if (intValue == null) {
-                continue;
-            }
-
-            points.put(intValue, realValue);
-        }
-
-        return points;
-    }
-
     private Integer translateToInt(double minValue, double maxValue, double value) {
         if (minValue >= maxValue) {
             throw new IllegalArgumentException();
         }
+
         if (paddingX >= 332) {
             throw new IllegalArgumentException();
         }

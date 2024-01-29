@@ -156,6 +156,8 @@ public class Grasp {
             }
         }
 
+        if (bestPerm == null) return null;
+
         this.scorer.score(bestPerm);
 
         long stop = MillisecondTimes.timeMillis();
@@ -434,6 +436,7 @@ public class Grasp {
             }
 
             for (Node x : parents) {
+                if (Thread.currentThread().isInterrupted()) return;
 
                 boolean covered = scorer.coveredEdge(x, y);
                 boolean singular = true;

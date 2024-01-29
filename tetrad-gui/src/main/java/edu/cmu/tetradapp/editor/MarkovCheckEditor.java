@@ -77,8 +77,8 @@ public class MarkovCheckEditor extends JPanel {
     private final JLabel testLabel = new JLabel("(Unspecified Test)");
     private final JLabel conditioningLabelDep = new JLabel("(Unspecified)");
     private final JLabel conditioningLabelIndep = new JLabel("(Unspecified)");
-    boolean updatingTestModels = true;
     private final DoubleTextField percent;
+    boolean updatingTestModels = true;
     private AbstractTableModel tableModelIndep;
     private AbstractTableModel tableModelDep;
     private JLabel fractionDepLabelIndep;
@@ -234,6 +234,7 @@ public class MarkovCheckEditor extends JPanel {
         box1.add(Box.createHorizontalStrut(20));
         box1.add(new JLabel("Test:"));
         box1.add(indTestJComboBox);
+        box1.add(Box.createHorizontalGlue());
         JButton params = new JButton("Params");
         box1.add(params);
         JButton recalculate = new JButton("Recalculate");
@@ -359,7 +360,7 @@ public class MarkovCheckEditor extends JPanel {
         Color fillColor = new Color(113, 165, 210);
         view.setBarColor(fillColor);
 
-        view.setPreferredSize(new Dimension(350, 200));
+        view.setMaximumSize(new Dimension(300, 200));
         return view;
     }
 
@@ -407,29 +408,20 @@ public class MarkovCheckEditor extends JPanel {
 
     }
 
-    /**
-     * Performs the action of opening a session from a file.
-     */
-    private JPanel buildGuiDep() {
-
-        Box b1 = Box.createVerticalBox();
-        Box b2 = Box.createHorizontalBox();
+    private JPanel buildGuiIndep() {
+        Box a1 = Box.createVerticalBox();
+        Box a2 = Box.createHorizontalBox();
         String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
 
-        conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + setType + ")");
-        b2.add(conditioningLabelDep);
-        b2.add(Box.createHorizontalGlue());
-        b1.add(b2);
+        conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + setType + ")");
+        a2.add(conditioningLabelIndep);
+        a2.add(Box.createHorizontalGlue());
+        a1.add(a2);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
         testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
 
-        Box b2a = Box.createHorizontalBox();
-        b2a.add(Box.createHorizontalGlue());
-        b1.add(b2a);
-        b1.add(Box.createVerticalStrut(5));
-
-        this.tableModelDep = new AbstractTableModel() {
+        this.tableModelIndep = new AbstractTableModel() {
             public String getColumnName(int column) {
                 if (column == 0) {
                     return "Index";
@@ -438,34 +430,36 @@ public class MarkovCheckEditor extends JPanel {
                 } else if (column == 2) {
                     return "Test Result";
                 } else if (column == 3) {
-                    return "P-Value or Bump";
+                    return "P-value or Bump";
                 }
 
                 return null;
             }
 
             public int getColumnCount() {
-                return 4;//2 + MarkovFactsEditor.this.indTestProducers.size();
+                return 4;
             }
 
             public int getRowCount() {
-                return model.getResults(false).size();
+                List<IndependenceResult> results = model.getResults(true);
+                return results.size();
             }
 
             public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > model.getResults(false).size()) return null;
+                if (rowIndex > model.getResults(true).size()) return null;
 
                 if (columnIndex == 0) {
                     return rowIndex + 1;
                 }
+
+                IndependenceResult result = model.getResults(true).get(rowIndex);
+
                 if (columnIndex == 1) {
-                    IndependenceFact fact = model.getResults(false).get(rowIndex).getFact();
+                    IndependenceFact fact = model.getResults(true).get(rowIndex).getFact();
                     List<Node> Z = new ArrayList<>(fact.getZ());
                     String z = Z.stream().map(Node::getName).collect(Collectors.joining(", "));
-                    return "Dep(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
+                    return "Ind(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
                 }
-
-                IndependenceResult result = model.getResults(false).get(rowIndex);
 
                 if (columnIndex == 2) {
                     if (model.getMarkovCheck().getIndependenceTest() instanceof MsepTest) {
@@ -477,6 +471,190 @@ public class MarkovCheckEditor extends JPanel {
                     } else {
                         if (result.isIndependent()) {
                             return "INDEPENDENT";
+                        } else {
+                            return "dependent";
+                        }
+                    }
+                }
+
+                if (columnIndex == 3) {
+                    return nf.format(result.getPValue());
+                }
+
+                return null;
+            }
+
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 0) {
+                    return Number.class;
+                }
+                if (columnIndex == 1) {
+                    return String.class;
+                } else {
+                    return Number.class;
+                }
+            }
+        };
+
+        JTable table = new JTable(tableModelIndep);
+
+        tableModelIndep.addTableModelListener(e -> {
+            if (e.getColumn() == 2) {
+                table.revalidate();
+                table.repaint();
+            }
+        });
+
+        table.getColumnModel().getColumn(0).setMinWidth(40);
+        table.getColumnModel().getColumn(0).setMaxWidth(40);
+        table.getColumnModel().getColumn(1).setMinWidth(200);
+        table.getColumnModel().getColumn(1).setCellRenderer(new Renderer());
+        table.getColumnModel().getColumn(2).setMinWidth(100);
+        table.getColumnModel().getColumn(2).setMaxWidth(100);
+        table.getColumnModel().getColumn(3).setMinWidth(100);
+        table.getColumnModel().getColumn(3).setMaxWidth(100);
+
+        table.getColumnModel().getColumn(2).setCellRenderer(new Renderer());
+        table.getColumnModel().getColumn(3).setCellRenderer(new Renderer());
+
+        JTableHeader header = table.getTableHeader();
+
+        header.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTableHeader header = (JTableHeader) e.getSource();
+                Point point = e.getPoint();
+                int col = header.columnAtPoint(point);
+                int sortCol = header.getTable().convertColumnIndexToModel(col);
+
+                MarkovCheckEditor.this.sortByColumn(sortCol, true);
+            }
+        });
+
+        JScrollPane scroll = new JScrollPane(table);
+        a1.add(scroll);
+
+        Box a3 = Box.createHorizontalBox();
+        JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
+        a3.add(label);
+        a3.add(Box.createHorizontalGlue());
+        a1.add(a3);
+
+        setLabelTexts();
+
+        Box a4 = Box.createVerticalBox();
+        histogramPanelIndep = new JPanel();
+        histogramPanelIndep.setLayout(new BorderLayout());
+        histogramPanelIndep.setBorder(new EmptyBorder(10, 10, 10, 10));
+        histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+        a4.add(histogramPanelIndep);
+
+        Box a5 = Box.createHorizontalBox();
+        a5.add(Box.createHorizontalGlue());
+        a5.add(fractionDepLabelIndep);
+        a4.add(a5);
+
+        Box a6 = Box.createHorizontalBox();
+        a6.add(Box.createHorizontalGlue());
+        a6.add(ksLabelIndep);
+        a4.add(a6);
+
+        Box a7 = Box.createHorizontalBox();
+        a7.add(Box.createHorizontalGlue());
+        a7.add(binomialPLabelIndep);
+        a4.add(a7);
+
+        Box a8 = Box.createHorizontalBox();
+        a8.add(Box.createHorizontalGlue());
+        a8.add(andersonDarlingA2LabelIndep);
+        a4.add(a8);
+
+        Box a9 = Box.createHorizontalBox();
+        a9.add(Box.createHorizontalGlue());
+        a9.add(andersonDarlingPLabelIndep);
+        a4.add(a9);
+
+        Box a11 = Box.createHorizontalBox();
+        a11.add(a1);
+        a11.add(a4);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.add(a11, BorderLayout.CENTER);
+
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        return panel;
+    }
+
+
+    /**
+     * Performs the action of opening a session from a file.
+     */
+    private JPanel buildGuiDep() {
+        Box a1 = Box.createVerticalBox();
+        Box a2 = Box.createHorizontalBox();
+        String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
+
+        conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + setType + ")");
+
+        a2.add(conditioningLabelDep);
+        a2.add(Box.createHorizontalGlue());
+        a1.add(a2);
+
+        markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+        testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+
+//        a1.add(Box.createVerticalStrut(5));
+
+        this.tableModelDep = new AbstractTableModel() {
+            public String getColumnName(int column) {
+                if (column == 0) {
+                    return "Index";
+                } else if (column == 1) {
+                    return "Graphical Prediction";
+                } else if (column == 2) {
+                    return "Test Result";
+                } else if (column == 3) {
+                    return "P-value or Bump";
+                }
+
+                return null;
+            }
+
+            public int getColumnCount() {
+                return 4;
+            }
+
+            public int getRowCount() {
+                List<IndependenceResult> results = model.getResults(true);
+                return results.size();
+            }
+
+            public Object getValueAt(int rowIndex, int columnIndex) {
+                if (rowIndex > model.getResults(true).size()) return null;
+
+                if (columnIndex == 0) {
+                    return rowIndex + 1;
+                }
+
+                IndependenceResult result = model.getResults(true).get(rowIndex);
+
+                if (columnIndex == 1) {
+                    IndependenceFact fact = model.getResults(true).get(rowIndex).getFact();
+                    List<Node> Z = new ArrayList<>(fact.getZ());
+                    String z = Z.stream().map(Node::getName).collect(Collectors.joining(", "));
+                    return "Ind(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
+                }
+
+                if (columnIndex == 2) {
+                    if (model.getMarkovCheck().getIndependenceTest() instanceof MsepTest) {
+                        if (result.isDependent()) {
+                            return "M-SEPARATED";
+                        } else {
+                            return "m-connected";
+                        }
+                    } else {
+                        if (result.isDependent()) {
+                            return "DepENDENT";
                         } else {
                             return "dependent";
                         }
@@ -537,267 +715,55 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         JScrollPane scroll = new JScrollPane(table);
-        b1.add(scroll);
+        a1.add(scroll);
 
-        Box b1a = Box.createHorizontalBox();
+        Box a3 = Box.createHorizontalBox();
         JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
-        b1a.add(label);
-        b1a.add(Box.createHorizontalGlue());
-        b1.add(b1a);
-
-        Box b4 = Box.createHorizontalBox();
-        b4.add(Box.createGlue());
-        b4.add(Box.createHorizontalStrut(10));
-
-        b4.add(Box.createHorizontalGlue());
-
-        Box b5 = Box.createHorizontalBox();
-        b5.add(Box.createGlue());
+        a3.add(label);
+        a3.add(Box.createHorizontalGlue());
+        a1.add(a3);
 
         setLabelTexts();
 
-        Box b0 = Box.createHorizontalBox();
-        b0.add(b1);
-        b0.add(Box.createHorizontalStrut(10));
-
-        Box b0b1 = Box.createVerticalBox();
-        b0b1.add(Box.createVerticalGlue());
+        Box a4 = Box.createVerticalBox();
         histogramPanelDep = new JPanel();
         histogramPanelDep.setLayout(new BorderLayout());
         histogramPanelDep.setBorder(new EmptyBorder(10, 10, 10, 10));
-        histogramPanelIndep.add(createHistogramPanel(false), BorderLayout.CENTER);
+        histogramPanelDep.add(createHistogramPanel(true), BorderLayout.CENTER);
+        a4.add(histogramPanelDep);
 
-        b0b1.add(histogramPanelDep);
-        b5.add(fractionDepLabelDep);
-        b0b1.add(b5);
+        Box a5 = Box.createHorizontalBox();
+        a5.add(Box.createHorizontalGlue());
+        a5.add(fractionDepLabelDep);
+        a4.add(a5);
 
-        Box b6 = Box.createHorizontalBox();
-        b6.add(Box.createHorizontalGlue());
-        b6.add(ksLabelDep);
-        b0b1.add(b6);
+        Box a6 = Box.createHorizontalBox();
+        a6.add(Box.createHorizontalGlue());
+        a6.add(ksLabelDep);
+        a4.add(a6);
 
-        Box b6a = Box.createHorizontalBox();
-        b6a.add(Box.createHorizontalGlue());
-        b6a.add(binomialPLabelDep);
-        b0b1.add(b6a);
+        Box a7 = Box.createHorizontalBox();
+        a7.add(Box.createHorizontalGlue());
+        a7.add(binomialPLabelDep);
+        a4.add(a7);
 
-        Box b6b = Box.createHorizontalBox();
-        b6b.add(Box.createHorizontalGlue());
-        b6b.add(andersonDarlingA2LabelDep);
-        b0b1.add(b6b);
+        Box a8 = Box.createHorizontalBox();
+        a8.add(Box.createHorizontalGlue());
+        a8.add(andersonDarlingA2LabelDep);
+        a4.add(a8);
 
-        Box b6c = Box.createHorizontalBox();
-        b6c.add(Box.createHorizontalGlue());
-        b6c.add(andersonDarlingPLabelDep);
-        b0b1.add(b6c);
+        Box a9 = Box.createHorizontalBox();
+        a9.add(Box.createHorizontalGlue());
+        a9.add(andersonDarlingPLabelDep);
+        a4.add(a9);
 
-        b0b1.add(Box.createVerticalGlue());
-        b0.add(b0b1);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-        panel.add(b0, BorderLayout.CENTER);
-        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        return panel;
-    }
-
-    private JPanel buildGuiIndep() {
-
-        Box b1 = Box.createVerticalBox();
-
-        Box b2 = Box.createHorizontalBox();
-
-        String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
-
-        conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + setType + ")");
-        b2.add(conditioningLabelIndep);
-        b2.add(Box.createHorizontalGlue());
-        b1.add(b2);
-
-        markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-        testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-
-        Box b2a = Box.createHorizontalBox();
-        b2a.add(Box.createHorizontalGlue());
-        b1.add(b2a);
-
-        b1.add(Box.createVerticalStrut(5));
-
-        this.tableModelIndep = new AbstractTableModel() {
-            public String getColumnName(int column) {
-                if (column == 0) {
-                    return "Index";
-                } else if (column == 1) {
-                    return "Graphical Prediction";
-                } else if (column == 2) {
-                    return "Test Result";
-                } else if (column == 3) {
-                    return "P-value or Bump";
-                }
-
-                return null;
-            }
-
-            public int getColumnCount() {
-                return 4;//2 + MarkovFactsEditor.this.indTestProducers.size();
-            }
-
-            public int getRowCount() {
-                List<IndependenceResult> results = model.getResults(true);
-                return results.size();
-            }
-
-            public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > model.getResults(true).size()) return null;
-
-                if (columnIndex == 0) {
-                    return rowIndex + 1;
-                }
-
-                IndependenceResult result = model.getResults(true).get(rowIndex);
-
-                if (columnIndex == 1) {
-                    IndependenceFact fact = model.getResults(true).get(rowIndex).getFact();
-
-                    List<Node> Z = new ArrayList<>(fact.getZ());
-//                    Collections.sort(Z);
-
-                    String z = Z.stream().map(Node::getName).collect(Collectors.joining(", "));
-
-                    return "Ind(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
-                }
-
-                if (columnIndex == 2) {
-                    if (model.getMarkovCheck().getIndependenceTest() instanceof MsepTest) {
-                        if (result.isIndependent()) {
-                            return "M-SEPARATED";
-                        } else {
-                            return "m-connected";
-                        }
-                    } else {
-                        if (result.isIndependent()) {
-                            return "INDEPENDENT";
-                        } else {
-                            return "dependent";
-                        }
-                    }
-                }
-
-                if (columnIndex == 3) {
-                    return nf.format(result.getPValue());
-                }
-
-                return null;
-            }
-
-            public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 0) {
-                    return Number.class;
-                }
-                if (columnIndex == 1) {
-                    return String.class;
-                } else {
-                    return Number.class;
-                }
-            }
-        };
-
-        JTable table = new JTable(tableModelIndep);
-
-        tableModelIndep.addTableModelListener(e -> {
-            if (e.getColumn() == 2) {
-                table.revalidate();
-                table.repaint();
-            }
-        });
-
-        table.getColumnModel().getColumn(0).setMinWidth(40);
-        table.getColumnModel().getColumn(0).setMaxWidth(40);
-        table.getColumnModel().getColumn(1).setMinWidth(200);
-        table.getColumnModel().getColumn(1).setCellRenderer(new Renderer());
-        table.getColumnModel().getColumn(2).setMinWidth(100);
-        table.getColumnModel().getColumn(2).setMaxWidth(100);
-        table.getColumnModel().getColumn(3).setMinWidth(100);
-        table.getColumnModel().getColumn(3).setMaxWidth(100);
-
-        table.getColumnModel().getColumn(2).setCellRenderer(new Renderer());
-        table.getColumnModel().getColumn(3).setCellRenderer(new Renderer());
-
-
-        JTableHeader header = table.getTableHeader();
-
-        header.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                JTableHeader header = (JTableHeader) e.getSource();
-                Point point = e.getPoint();
-                int col = header.columnAtPoint(point);
-                int sortCol = header.getTable().convertColumnIndexToModel(col);
-
-                MarkovCheckEditor.this.sortByColumn(sortCol, true);
-            }
-        });
-
-        JScrollPane scroll = new JScrollPane(table);
-        b1.add(scroll);
-
-        Box b1a = Box.createHorizontalBox();
-        JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
-        b1a.add(label);
-        b1a.add(Box.createHorizontalGlue());
-        b1.add(b1a);
-
-        Box b4 = Box.createHorizontalBox();
-        b4.add(Box.createGlue());
-        b4.add(Box.createHorizontalStrut(10));
-
-        b4.add(Box.createHorizontalGlue());
-
-        Box b5 = Box.createHorizontalBox();
-        b5.add(Box.createGlue());
-
-        setLabelTexts();
-
-        Box b0 = Box.createHorizontalBox();
-        b0.add(b1);
-        b0.add(Box.createHorizontalStrut(10));
-
-        Box b0b1 = Box.createVerticalBox();
-        b0b1.add(Box.createVerticalGlue());
-        histogramPanelIndep = new JPanel();
-        histogramPanelIndep.setLayout(new BorderLayout());
-        histogramPanelIndep.setBorder(new EmptyBorder(10, 10, 10, 10));
-        histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
-        b0b1.add(histogramPanelIndep);
-        b0b1.add(Box.createVerticalGlue());
-
-        b5.add(fractionDepLabelIndep);
-        b0b1.add(b5);
-
-        Box b6 = Box.createHorizontalBox();
-        b6.add(Box.createHorizontalGlue());
-        b6.add(ksLabelIndep);
-        b0b1.add(b6);
-
-        Box b6a = Box.createHorizontalBox();
-        b6a.add(Box.createHorizontalGlue());
-        b6a.add(binomialPLabelIndep);
-        b0b1.add(b6a);
-
-        Box b6b = Box.createHorizontalBox();
-        b6b.add(Box.createHorizontalGlue());
-        b6b.add(andersonDarlingA2LabelIndep);
-        b0b1.add(b6b);
-
-        Box b6c = Box.createHorizontalBox();
-        b6c.add(Box.createHorizontalGlue());
-        b6c.add(andersonDarlingPLabelIndep);
-        b0b1.add(b6c);
-
-        b0.add(b0b1);
+        Box a11 = Box.createHorizontalBox();
+        a11.add(a1);
+        a11.add(a4);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        panel.add(b0, BorderLayout.CENTER);
+        panel.add(a11, BorderLayout.CENTER);
 
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         return panel;
@@ -941,31 +907,21 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         HistogramPanel view = getHistogramPanel(results);
-
-        Box box = Box.createHorizontalBox();
-        box.add(Box.createHorizontalGlue());
+        Box box = Box.createVerticalBox();
         box.add(view);
-        box.add(Box.createHorizontalGlue());
-
-        Box vBox = Box.createVerticalBox();
-        vBox.add(Box.createVerticalGlue());
-        vBox.add(box);
-        vBox.add(Box.createVerticalGlue());
-
-        return vBox;
+        return box;
     }
 
     private DataType getDataType() {
         DataModel dataSet = model.getDataModel();
 
         if (dataSet.isContinuous() && !(dataSet instanceof ICovarianceMatrix)) {
-            // covariance dataset is continuous at the same time - Zhou
             return DataType.Continuous;
         } else if (dataSet.isDiscrete()) {
             return DataType.Discrete;
         } else if (dataSet.isMixed()) {
             return DataType.Mixed;
-        } else if (dataSet instanceof ICovarianceMatrix) { // Better to add an isCovariance() - Zhou
+        } else if (dataSet instanceof ICovarianceMatrix) {
             return DataType.Covariance;
         } else {
             return null;
