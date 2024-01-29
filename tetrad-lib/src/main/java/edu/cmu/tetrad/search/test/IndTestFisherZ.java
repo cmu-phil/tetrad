@@ -222,31 +222,32 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
             IndependenceResult result = checkIndependencePseudoinverse(x, y, z);
             facts.put(new IndependenceFact(x, y, z), result);
             return result;
-        }
+        } else { // Use inverse.
 
-        double p;
+            double p;
 
-        try {
-            p = getPValue(x, y, z);
-        } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singular matrix encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
-        }
-
-        boolean independent = p > this.alpha;
-
-        if (this.verbose) {
-            if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, p));
+            try {
+                p = getPValue(x, y, z);
+            } catch (SingularMatrixException e) {
+                throw new RuntimeException("Singular matrix encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
             }
-        }
 
-        if (Double.isNaN(p)) {
-            throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
-        } else {
-            IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
-            facts.put(new IndependenceFact(x, y, z), result);
-            return result;
+            boolean independent = p > this.alpha;
+
+            if (this.verbose) {
+                if (independent) {
+                    TetradLogger.getInstance().forceLogMessage(
+                            LogUtilsSearch.independenceFactMsg(x, y, z, p));
+                }
+            }
+
+            if (Double.isNaN(p)) {
+                throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
+            } else {
+                IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
+                facts.put(new IndependenceFact(x, y, z), result);
+                return result;
+            }
         }
     }
 
@@ -509,28 +510,29 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         if (usePseudoinverse) {
             return determinesPseudoinverse(z, x);
-        }
+        } else {
 
-        int[] parents = new int[z.size()];
+            int[] parents = new int[z.size()];
 
-        for (int j = 0; j < parents.length; j++) {
-            parents[j] = indexMap.get(z.get(j).getName());
-        }
-
-        if (parents.length > 0) {
-
-            // Regress z onto i, yielding regression coefficients b.
-            Matrix Czz = this.cor.getSelection(parents, parents);
-
-            try {
-                Czz.inverse();
-            } catch (SingularMatrixException e) {
-                System.out.println(LogUtilsSearch.determinismDetected(new HashSet<>(z), x));
-                return true;
+            for (int j = 0; j < parents.length; j++) {
+                parents[j] = indexMap.get(z.get(j).getName());
             }
-        }
 
-        return false;
+            if (parents.length > 0) {
+
+                // Regress z onto i, yielding regression coefficients b.
+                Matrix Czz = this.cor.getSelection(parents, parents);
+
+                try {
+                    Czz.inverse();
+                } catch (SingularMatrixException e) {
+                    System.out.println(LogUtilsSearch.determinismDetected(new HashSet<>(z), x));
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     /**
