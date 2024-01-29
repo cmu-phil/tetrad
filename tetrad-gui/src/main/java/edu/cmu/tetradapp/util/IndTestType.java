@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.ObjectStreamException;
+import java.io.Serial;
 
 /**
  * A typesafe enumeration of the types of independence tests that are used for basic search algorithm in this package.
@@ -60,10 +61,11 @@ public final class IndTestType implements TetradSerializable {
             new IndTestType("Fisher Z Pooled Residuals", DataType.Continuous);
     public static final IndTestType FISHER = new IndTestType("Fisher (Fisher Z)", DataType.Continuous);
     public static final IndTestType TIPPETT = new IndTestType("Tippett (Fisher Z)", DataType.Continuous);
+    @Serial
     private static final long serialVersionUID = 23L;
     private static final IndTestType[] TYPES = {IndTestType.DEFAULT, IndTestType.CORRELATION_T, IndTestType.FISHER_Z,
             IndTestType.LINEAR_REGRESSION, IndTestType.CONDITIONAL_CORRELATION, IndTestType.SEM_BIC, IndTestType.LOGISTIC_REGRESSION,
-            IndTestType.MIXED_MLR, IndTestType.FISHER_ZD,
+            IndTestType.MIXED_MLR, //IndTestType.FISHER_ZD,
             IndTestType.G_SQUARE, IndTestType.CHI_SQUARE,
             IndTestType.M_SEPARATION, IndTestType.TIME_SERIES,
 

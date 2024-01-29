@@ -2,6 +2,11 @@ package edu.cmu.tetrad.search.test;
 
 import java.util.List;
 
+/**
+ * Interface for tests that can have their rows set on the fly.
+ *
+ * @author josephramsey
+ */
 public interface RowsSettable {
 
     /**

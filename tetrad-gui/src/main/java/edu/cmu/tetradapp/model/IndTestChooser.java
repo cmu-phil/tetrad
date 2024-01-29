@@ -135,11 +135,11 @@ final class IndTestChooser {
         if (IndTestType.FISHER_Z == testType) {
             return new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
         }
-        if (IndTestType.FISHER_ZD == testType) {
-            IndTestFisherZ test = new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
-            test.setUsePseudoinverse(true);
-            return test;
-        }
+//        if (IndTestType.FISHER_ZD == testType) {
+//            IndTestFisherZ test = new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001));
+////            test.setUsePseudoinverse(true);
+//            return test;
+//        }
         if (IndTestType.SEM_BIC == testType) {
             return new ScoreIndTest(new SemBicScore(new CovarianceMatrix(dataSet)));
         }

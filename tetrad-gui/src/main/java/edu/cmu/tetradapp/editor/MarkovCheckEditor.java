@@ -647,14 +647,14 @@ public class MarkovCheckEditor extends JPanel {
 
                 if (columnIndex == 2) {
                     if (model.getMarkovCheck().getIndependenceTest() instanceof MsepTest) {
-                        if (result.isDependent()) {
+                        if (result.isIndependent()) {
                             return "M-SEPARATED";
                         } else {
                             return "m-connected";
                         }
                     } else {
-                        if (result.isDependent()) {
-                            return "DepENDENT";
+                        if (result.isIndependent()) {
+                            return "INDEPENDENT";
                         } else {
                             return "dependent";
                         }

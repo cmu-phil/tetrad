@@ -286,26 +286,35 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
             zCols[i] = getVariables().indexOf(z.get(i));
         }
 
-        edu.cmu.tetrad.util.Vector x = this.data.getColumn(xIndex);
-        edu.cmu.tetrad.util.Vector y = this.data.getColumn(yIndex);
+        int[] rows;
+
+        if (this.rows == null) {
+            rows = new int[this.data.getNumRows()];
+            for (int i = 0; i < rows.length; i++) {
+                rows[i] = i;
+            }
+        } else {
+            rows = new int[this.rows.size()];
+            for (int i = 0; i < rows.length; i++) {
+                rows[i] = this.rows.get(i);
+            }
+        }
+
+        Vector x = this.data.getSelection(rows, new int[]{xIndex}).getColumn(0);
+        Vector y = this.data.getSelection(rows, new int[]{yIndex}).getColumn(0);
 
         CovarianceMatrix cov = new CovarianceMatrix(dataSet);
 
         SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
-                cov, true, true);
+                cov, true, this.rows);
         SemBicScore.CovAndCoefs covAndCoefsY = SemBicScore.getCovAndCoefs(yIndex, zCols, this.data,
-                cov, true, true);
-
-        int[] rows = new int[this.data.getNumRows()];
-        for (int i = 0; i < rows.length; i++) {
-            rows[i] = i;
-        }
+                cov, true, this.rows);
 
         Matrix selection = data.getSelection(rows, zCols);
         edu.cmu.tetrad.util.Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
         edu.cmu.tetrad.util.Vector yPred = selection.times(covAndCoefsY.b()).getColumn(0);
 
-        edu.cmu.tetrad.util.Vector xRes = xPred.minus(x);
+        Vector xRes = xPred.minus(x);
         Vector yRes = yPred.minus(y);
 
         // Note that r will be NaN if either xRes or yRes is constant.
@@ -331,7 +340,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
         return new IndependenceResult(new IndependenceFact(xVar, yVar, _z), p > alpha, p, getAlpha() - p);
     }
-
 
     /**
      * Returns the p-value for x _||_ y | z.
@@ -557,13 +565,22 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
         CovarianceMatrix cov = new CovarianceMatrix(dataSet);
 
-        SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
-                cov, true, true);
+        int[] rows;
 
-        int[] rows = new int[this.data.getNumRows()];
-        for (int i = 0; i < rows.length; i++) {
-            rows[i] = i;
+        if (this.rows == null) {
+            rows = new int[this.data.getNumRows()];
+            for (int i = 0; i < rows.length; i++) {
+                rows[i] = i;
+            }
+        } else {
+            rows = new int[this.rows.size()];
+            for (int i = 0; i < rows.length; i++) {
+                rows[i] = this.rows.get(i);
+            }
         }
+
+        SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
+                cov, true, this.rows);
 
         Matrix selection = data.getSelection(rows, zCols);
         Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
