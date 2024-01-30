@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class IndTestProbabilistic implements IndependenceTest {
 
-    // A cache of results for independence facts.
+    // A cache of results for independence facts, used only if threshold is false.
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
     //The data set for which conditional  independence judgments are requested.
     private final DataSet data;
