@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.DiscreteBicScore;
 import edu.cmu.tetrad.search.score.SemBicScorer;
 
+import java.io.Serial;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.tanh;
@@ -18,23 +19,45 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  * @author josephramsey
  */
 public class BicEst implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     private boolean precomputeCovariances = true;
 
+    /**
+     * No-arg constructor. Used for reflection; do not delete.
+     */
     public BicEst() {
     }
 
+    /**
+     * Returns the name of the statistic.
+     *
+     * @return the name of the statistic.
+     */
     @Override
     public String getAbbreviation() {
         return "BicEst";
     }
 
+    /**
+     * Returns the description of the statistic.
+     *
+     * @return the description of the statistic.
+     */
     @Override
     public String getDescription() {
         return "BIC of the estimated CPDAG (depends only on the estimated DAG and the data)";
     }
 
+    /**
+     * Returns the value of the statistic.
+     *
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph (same type).
+     * @param dataModel The data model.
+     * @return The value of the statistic.
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         if (dataModel.isDiscrete()) {
@@ -66,11 +89,22 @@ public class BicEst implements Statistic {
         }
     }
 
+    /**
+     * Returns the normalized value of the statistic.
+     *
+     * @param value The value of the statistic.
+     * @return The normalized value of the statistic.
+     */
     @Override
     public double getNormValue(double value) {
         return tanh(value / 1e6);
     }
 
+    /**
+     * Returns the precompute covariances flag.
+     *
+     * @param precomputeCovariances The precompute covariances flag.
+     */
     public void setPrecomputeCovariances(boolean precomputeCovariances) {
         this.precomputeCovariances = precomputeCovariances;
     }

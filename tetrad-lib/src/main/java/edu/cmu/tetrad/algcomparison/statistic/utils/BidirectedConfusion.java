@@ -18,6 +18,12 @@ public class BidirectedConfusion {
     private int fp;
     private int fn;
 
+    /**
+     * Constructs a new confusion matrix for bidirected edges.
+     *
+     * @param truth The true graph.
+     * @param est   The estimated graph.
+     */
     public BidirectedConfusion(Graph truth, Graph est) {
         this.tp = 0;
         this.fp = 0;
@@ -56,18 +62,38 @@ public class BidirectedConfusion {
         this.tn = all - this.fn - this.fp - this.fn;
     }
 
+    /**
+     * Returns the number of true positives.
+     *
+     * @return The number of true positives.
+     */
     public int getTp() {
         return this.tp;
     }
 
+    /**
+     * Returns the number of false positives.
+     *
+     * @return The number of false positives.
+     */
     public int getFp() {
         return this.fp;
     }
 
+    /**
+     * Returns the number of false negatives.
+     *
+     * @return The number of false negatives.
+     */
     public int getFn() {
         return this.fn;
     }
 
+    /**
+     * Returns the number of true negatives.
+     *
+     * @return The number of true negatives.
+     */
     public int getTn() {
         return this.tn;
     }

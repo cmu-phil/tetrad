@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Stores a boolean function from a set of boolean-valued parents to a single boolean-valued column.
@@ -33,21 +34,14 @@ import java.io.ObjectInputStream;
  * @author josephramsey
  */
 public class BooleanFunction implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
-    /**
-     * The array of parents for the stored boolean function.
-     *
-     * @serial
-     */
+    // The array of parents for the stored boolean function.
     private final IndexedParent[] parents;
 
-    /**
-     * The stored boolean function.  The order of the rows (for the given parents array, for two parents) is 00, 01, 10,
-     * 11, and so on for higher numbers of parents.
-     *
-     * @serial
-     */
+    // The stored boolean function.  The order of the rows (for the given parents array, for two parents) is 00, 01, 10,
+    // 11, and so on for higher numbers of parents.
     private final boolean[] lookupTable;
 
     //==============================CONSTRUCTORS=========================//
@@ -81,6 +75,7 @@ public class BooleanFunction implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     * @return a simple exemplar of this class to test serialization.
      */
     public static BooleanFunction serializableInstance() {
         IndexedParent[] parents = new IndexedParent[2];
@@ -105,6 +100,8 @@ public class BooleanFunction implements TetradSerializable {
      * values, use the method
      * <code>getRow</code>
      *
+     * @param row the row of the table.
+     * @return the value in the table.
      * @see #getRow
      */
     public boolean getValue(int row) {
@@ -116,6 +113,8 @@ public class BooleanFunction implements TetradSerializable {
      * values, use the method
      * <code>getRow</code>
      *
+     * @param row   the row of the table.
+     * @param value the value to set.
      * @see #getRow
      */
     public void setValue(int row, boolean value) {
@@ -133,6 +132,7 @@ public class BooleanFunction implements TetradSerializable {
      *
      * @param parentValues an array of parent values. Should be in the same order as the parents, as returned by
      *                     <code>getParents</code>.
+     * @return the row of the table.
      * @see #getParents
      */
     public int getRow(boolean[] parentValues) {
@@ -148,14 +148,15 @@ public class BooleanFunction implements TetradSerializable {
     }
 
     /**
-     * Returns the number of rows in the table.
+     * @return the number of rows in the table.
      */
     public int getNumRows() {
         return this.lookupTable.length;
     }
 
     /**
-     * Returns the combination of parent values represented by a given row in the table.
+     * @param row the row of the table.
+     * @return  the combination of parent values represented by a given row in the table.
      */
     public boolean[] getParentValues(int row) {
 
@@ -188,6 +189,8 @@ public class BooleanFunction implements TetradSerializable {
      * "I define as a canalyzing Boolean function any Boolean function having the property that it has at least one
      * input having at least one value (1 or 0) which suffices to guarantee that the regulated element assumes a
      * specific value (1 or 0)" (page 203-4).
+     *
+     * @return true if the getModel function is canalyzing, false if not.
      */
     public boolean isCanalyzing() {
 
@@ -210,23 +213,19 @@ public class BooleanFunction implements TetradSerializable {
                 int value = this.lookupTable[row] ? 1 : 0;
                 int parentValue = (row / jump) % 2 == 0 ? 1 : 0;
 
-                if (-2 == lastValues[parentValue]) {
+                if (-2 != lastValues[parentValue]) {
+                    if (value != lastValues[parentValue]) {
+                        if (-1 == lastValues[parentValue]) {
 
-                    // The pattern's already been broken for this
-                    // value.
-                } else if (value == lastValues[parentValue]) {
+                            // We're encountering this parent value for the
+                            // first time.
+                            lastValues[parentValue] = value;
+                        } else {
 
-                    // We're in the middle of a pattern for this
-                    // value; keep going.
-                } else if (-1 == lastValues[parentValue]) {
-
-                    // We're encountering this parent value for the
-                    // first time.
-                    lastValues[parentValue] = value;
-                } else {
-
-                    // The pattern has just been broken.
-                    lastValues[parentValue] = -2;
+                            // The pattern has just been broken.
+                            lastValues[parentValue] = -2;
+                        }
+                    }
                 }
             }
 
@@ -301,19 +300,12 @@ public class BooleanFunction implements TetradSerializable {
      * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
+     * help.)
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (this.parents == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.lookupTable == null) {
-            throw new NullPointerException();
-        }
     }
 }
 

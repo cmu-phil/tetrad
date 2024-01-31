@@ -239,10 +239,9 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * If the true graph is set, asterisks will be printed in log output for the true edges.
+     * Sets the true graph, which will result in some edges in output graphs being marked with asterisks.
      *
      * @param trueGraph the true graph.
-     * @return the true graph.
      */
     public void setTrueGraph(Graph trueGraph) {
         this.trueGraph = trueGraph;

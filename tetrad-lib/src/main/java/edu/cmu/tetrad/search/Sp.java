@@ -142,9 +142,7 @@ public class Sp implements SuborderSearch {
     }
 
     /**
-     * Returns the knowledge being used.
-     *
-     * @return The knowledge being used.
+     * Set the knowledge to used.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {

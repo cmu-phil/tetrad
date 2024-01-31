@@ -51,7 +51,7 @@ public class Digraph extends BasicGraph {
     /**
      * Creates a OldDigraph with <code>gName</code> name, and <code>n</code> nodes.
      *
-     * @param gName the name of the graph
+     * @param gName  the name of the graph
      * @param nNodes the number of nodes
      */
     public Digraph(String gName, int nNodes) {
@@ -69,6 +69,8 @@ public class Digraph extends BasicGraph {
 
     /**
      * Copy constructor.
+     *
+     * @param digraph the graph to copy.
      */
     public Digraph(Digraph digraph) {
         this("Clone_of_[" + digraph + "]", digraph.nNodes);
@@ -82,6 +84,7 @@ public class Digraph extends BasicGraph {
 
     /**
      * Returns a clone of this graph
+     * @return a clone of this graph
      */
     public Object clone() {
         Digraph g2 =
@@ -105,8 +108,9 @@ public class Digraph extends BasicGraph {
 
     /**
      * Sets a value of edge between nodes i and j
-     * @param i the first node
-     * @param j the second node
+     *
+     * @param i     the first node
+     * @param j     the second node
      * @param value the value of the edge
      */
     public void setEdge(int i, int j, double value) {
@@ -125,8 +129,10 @@ public class Digraph extends BasicGraph {
 
     /**
      * Returns the value of edge between nodes i and j
+     *
      * @param i the first node
      * @param j the second node
+     * @return the value of edge between nodes i and j
      */
     public double getEdge(int i, int j) {
         return this.getEdges().getDoubleValue(i, j);
@@ -134,6 +140,7 @@ public class Digraph extends BasicGraph {
 
     /**
      * Returns a string representation of the set of edges in this graph
+     *
      * @return a string representation of the set of edges in this graph.
      */
     public String EdgesToString() {
@@ -154,6 +161,7 @@ public class Digraph extends BasicGraph {
 
     /**
      * Returns the number of parents of node i.
+     *
      * @param i the node
      * @return the number of parents of node i.
      */
@@ -167,7 +175,9 @@ public class Digraph extends BasicGraph {
     /**
      * Returns an array with the indexes of the parents of node i. If node i has no parents it returns an array of size
      * 0 (e.g. not null)
+     *
      * @param j the index of the node
+     * @return
      */
     public int[] getParents(int j) {
         if ((j < 0) || (j >= this.nNodes)) {
@@ -186,6 +196,7 @@ public class Digraph extends BasicGraph {
 
     /**
      * Returns the edge matrix.
+     *
      * @return the edge matrix.
      */
     public MatrixF getEdges() {

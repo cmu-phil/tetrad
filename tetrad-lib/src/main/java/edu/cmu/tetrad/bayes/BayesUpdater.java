@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * evidence), where evidence takes the form of a Proposition over the variables in the Bayes net, possibly with
  * additional information about which variables in the Bayes net have been manipulated. Some updaters may be able to
  * calculate joint marginals as well--that is, P(AND_i{Xi = xi'} | evidence). Also, not all updaters can take
- * manipulation information into account. See implementations for details.
+ * manipulation information into account. See implementations for details.)
  *
  * @author josephramsey
  * @see Evidence
