@@ -46,12 +46,17 @@ public interface DataBox extends TetradSerializable {
      * Sets the value at the given row and column to the given Number. This number may be interpreted differently
      * depending on how values are stored. A value of null is interpreted as a missing value.
      *
+     * @param row   the row index.
+     * @param col   the column index.
+     * @param value the value to store.
      * @throws IllegalArgumentException if the given value cannot be stored (because it's out of range or cannot be
      *                                  converted or whatever).
      */
     void set(int row, int col, Number value) throws IllegalArgumentException;
 
     /**
+     * @param row the row index.
+     * @param col the column index.
      * @return the value at the given row and column as a Number. If the value is missing, null is uniformly returned.
      */
     Number get(int row, int col);
@@ -62,10 +67,17 @@ public interface DataBox extends TetradSerializable {
     DataBox copy();
 
     /**
+     * @param rows the row indices.
+     * @param cols the column indices.
      * @return this data box, restricted to the given rows and columns.
      */
     DataBox viewSelection(int[] rows, int[] cols);
 
+    /**
+     * Returns a data box of the same dimensions as this one, without setting any values.
+     *
+     * @return a new data box.
+     */
     DataBox like();
 }
 
