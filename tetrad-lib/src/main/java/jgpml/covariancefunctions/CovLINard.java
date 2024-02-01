@@ -58,6 +58,11 @@ public class CovLINard implements CovarianceFunction {
         this.D = inputDimension;
     }
 
+    /**
+     * Main method for testing this class
+     *
+     * @param args ignored
+     */
     public static void main(String[] args) {
 
         CovLINard cf = new CovLINard(6);

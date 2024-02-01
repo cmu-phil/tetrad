@@ -34,21 +34,40 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
     private final Map<String, Integer> values;
     private List<String> categories;
 
+    /**
+     * Constructor.
+     *
+     * @param dataColumn The data column.
+     */
     public DiscreteTabularDataColumn(DataColumn dataColumn) {
         this.dataColumn = dataColumn;
         this.values = new TreeMap<>();
     }
 
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return a string representation of the object.
+     */
     @Override
     public String toString() {
         return "DiscreteTabularDataColumn{" + "dataColumn=" + this.dataColumn + ", values=" + this.values + ", categories=" + this.categories + '}';
     }
 
+    /**
+     * Gets the encode value of the given value.
+     *
+     * @param value The value.
+     * @return the encode value of the given value.
+     */
     @Override
     public Integer getEncodeValue(String value) {
         return this.values.get(value);
     }
 
+    /**
+     * Does a recategorization of the data column.
+     */
     @Override
     public void recategorize() {
         Set<String> keyset = this.values.keySet();
@@ -60,20 +79,40 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
         }
     }
 
+    /**
+     * Gets the value of the given encode value.
+     *
+     * @param value The encode value.
+     */
     @Override
     public void setValue(String value) {
         this.values.put(value, null);
     }
 
+    /**
+     * Gets the data column.
+     *
+     * @return the data column.
+     */
     @Override
     public DataColumn getDataColumn() {
         return this.dataColumn;
     }
 
+    /**
+     * Gets the values as a map
+     *
+     * @return the values.
+     */
     public Map<String, Integer> getValues() {
         return this.values;
     }
 
+    /**
+     * Gets the categories.
+     *
+     * @return the categories.
+     */
     @Override
     public List<String> getCategories() {
         return (this.categories == null)
@@ -81,6 +120,11 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
                 : this.categories;
     }
 
+    /**
+     * Sets the categories.
+     *
+     * @param categories the categories.
+     */
     public void setCategories(List<String> categories) {
         this.categories = categories;
     }

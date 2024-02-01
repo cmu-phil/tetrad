@@ -106,6 +106,12 @@ public final class BayesXmlParser {
         return bayesIm;
     }
 
+    /**
+     * Returns the BayesIm object represented by the given element.
+     *
+     * @param element the element
+     * @return the BayesIm object
+     */
     public BayesIm getBayesIm(Element element) {
         if (!"bayesNet".equals(element.getQualifiedName())) {
             throw new IllegalArgumentException("Expecting 'bayesNet' element.");

@@ -59,6 +59,12 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
         // Used for reflection; do not delete.
     }
 
+    /**
+     * Constructs a new BFCI algorithm using the given test and score.
+     *
+     * @param test  the independence test to use
+     * @param score the score to use
+     */
     public Bfci(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;

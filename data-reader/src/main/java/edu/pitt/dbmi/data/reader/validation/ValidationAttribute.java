@@ -25,21 +25,84 @@ package edu.pitt.dbmi.data.reader.validation;
  */
 public enum ValidationAttribute {
 
+    /**
+     * The number of continuous variables.
+     */
     CONTINUOUS_VAR_COUNT,
+
+    /**
+     * The number of discrete variables.
+     */
     DISCRETE_VAR_COUNT,
+
+    /**
+     * The line number.
+     */
     LINE_NUMBER,
+
+    /**
+     * The column number.
+     */
     COLUMN_NUMBER,
+
+    /**
+     * The row number.
+     */
     ROW_NUMBER,
+
+    /**
+     * The expected count.
+     */
     EXPECTED_COUNT,
+
+    /**
+     * The actual count.
+     */
     ACTUAL_COUNT,
+
+    /**
+     * The line count.
+     */
     LINE_COUNT,
+
+    /**
+     * The column count.
+     */
     COLUMN_COUNT,
+
+    /**
+     * The row count.
+     */
     ROW_COUNT,
+
+    /**
+     * The assumed missing count.
+     */
     ASSUMED_MISSING_COUNT,
+
+    /**
+     * The labeled missing count.
+     */
     LABELED_MISSING_COUNT,
+
+    /**
+     * The number of rows with missing values.
+     */
     ROW_WITH_MISSING_VALUE_COUNT,
+
+    /**
+     * The number of columns with missing values.
+     */
     COLUMN_WITH_MISSING_VALUE_COUNT,
+
+    /**
+     * The file name.
+     */
     FILE_NAME,
+
+    /**
+     * The value.
+     */
     VALUE
 
 }

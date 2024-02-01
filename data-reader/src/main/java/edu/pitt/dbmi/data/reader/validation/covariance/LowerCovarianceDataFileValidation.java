@@ -37,10 +37,21 @@ import java.util.List;
  */
 public class LowerCovarianceDataFileValidation extends AbstractDataFileValidation implements CovarianceValidation {
 
+    /**
+     * Constructor.
+     *
+     * @param dataFile  the data file.
+     * @param delimiter the delimiter.
+     */
     public LowerCovarianceDataFileValidation(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
     }
 
+    /**
+     * Validate the covariance.
+     *
+     * @return the validation results.
+     */
     @Override
     public List<ValidationResult> validate() {
         List<ValidationResult> validationResults = new LinkedList<>();

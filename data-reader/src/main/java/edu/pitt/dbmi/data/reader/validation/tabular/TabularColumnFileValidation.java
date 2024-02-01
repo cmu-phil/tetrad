@@ -43,16 +43,33 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
 
     private int maxNumOfMsg;
 
+    /**
+     * Constructor.
+     *
+     * @param dataFile  The data file.
+     * @param delimiter The delimiter.
+     */
     public TabularColumnFileValidation(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
         this.maxNumOfMsg = Integer.MAX_VALUE;
     }
 
+    /**
+     * Constructor.
+     *
+     * @return The maximum number of messages.
+     */
     @Override
     public List<ValidationResult> validate() {
         return validate(Collections.EMPTY_SET);
     }
 
+    /**
+     * Validate the data file.
+     *
+     * @param excludedColumns the columns to exclude.
+     * @return the validation results.
+     */
     @Override
     public List<ValidationResult> validate(int[] excludedColumns) {
         List<ValidationResult> results = new LinkedList<>();
@@ -75,6 +92,12 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
         return results;
     }
 
+    /**
+     * Validate the data file.
+     *
+     * @param excludedColumns the columns to exclude.
+     * @return the validation results.
+     */
     @Override
     public List<ValidationResult> validate(Set<String> excludedColumns) {
         List<ValidationResult> results = new LinkedList<>();
@@ -86,14 +109,14 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
                 Set<String> modifiedExcludedCols = new HashSet<>();
                 if (Character.isDefined(this.quoteCharacter)) {
                     excludedColumns.stream()
-                            .map(e -> e.trim())
+                            .map(String::trim)
                             .filter(e -> !e.isEmpty())
                             .forEach(e -> modifiedExcludedCols.add(stripCharacter(e, this.quoteCharacter)));
                 } else {
                     excludedColumns.stream()
-                            .map(e -> e.trim())
+                            .map(String::trim)
                             .filter(e -> !e.isEmpty())
-                            .forEach(e -> modifiedExcludedCols.add(e));
+                            .forEach(modifiedExcludedCols::add);
                 }
 
                 int[] excludedCols = toColumnNumbers(modifiedExcludedCols);
@@ -267,6 +290,11 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
         results.add(result);
     }
 
+    /**
+     * Set the maximum number of messages.
+     *
+     * @param maxNumOfMsg the maximum number of messages.
+     */
     @Override
     public void setMaximumNumberOfMessages(int maxNumOfMsg) {
         this.maxNumOfMsg = maxNumOfMsg;

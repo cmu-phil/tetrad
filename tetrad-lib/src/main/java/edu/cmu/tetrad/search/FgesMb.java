@@ -102,12 +102,19 @@ public final class FgesMb implements DagScorer {
     private Knowledge knowledge = new Knowledge();
     // True, if FGES should run in a single thread, no if parallelized.
     private boolean parallelized = false;
+    // The variables to use in the search.
     private List<Node> variables;
+    // The initial graph.
     private Graph initialGraph;
+    // The graph to which the search is bound.
     private Graph boundGraph = null;
+    // The elapsed time of the search.
     private long elapsedTime;
+    // The score of the graph.
     private Score score;
+    // Whether verbose output should be produced.
     private boolean verbose = false;
+    // Whether verbose output should be produced for the Meek rules.
     private boolean meekVerbose = false;
     // Map from variables to their column indices in the data set.
     private ConcurrentMap<Node, Integer> hashIndices;
@@ -127,7 +134,9 @@ public final class FgesMb implements DagScorer {
     // True if the first step of adding an edge to an empty graph should be scored in both directions
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
+    // The list of all targets.
     private ArrayList<Node> allTargets;
+
     /**
      * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
      * conditional dependence and a negative values in case of conditional independence. See Chickering (2002), locally
@@ -143,21 +152,6 @@ public final class FgesMb implements DagScorer {
 
         setScore(score);
         this.graph = new EdgeListGraph(getVariables());
-    }
-
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-
-        return null;
     }
 
     public void setTrimmingStyle(int trimmingStyle) {
@@ -385,7 +379,6 @@ public final class FgesMb implements DagScorer {
         this.symmetricFirstStep = symmetricFirstStep;
     }
 
-
     /**
      * Returns the score of the final search model.
      *
@@ -393,6 +386,21 @@ public final class FgesMb implements DagScorer {
      */
     public double getModelScore() {
         return modelScore;
+    }
+
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+
+        return null;
     }
 
     //Sets the discrete scoring function to use.

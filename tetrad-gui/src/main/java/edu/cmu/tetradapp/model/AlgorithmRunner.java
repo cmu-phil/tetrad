@@ -82,6 +82,9 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
      */
     void setExternalGraph(Graph graph);
 
+    /**
+     * @return the name of the algorithm.
+     */
     String getAlgorithmName();
 }
 

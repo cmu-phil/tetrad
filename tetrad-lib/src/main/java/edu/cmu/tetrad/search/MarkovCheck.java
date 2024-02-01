@@ -399,7 +399,7 @@ public class MarkovCheck {
      * @param indep True if for implied independencies, false if for implied dependencies.
      * @return The Binomial p-value for the given list of results.
      */
-    public double getBinomialPValue(boolean indep) {
+    public double getBinomialP(boolean indep) {
         if (indep) {
             return binomialPIndep;
         } else {

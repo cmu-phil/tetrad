@@ -222,31 +222,32 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
             IndependenceResult result = checkIndependencePseudoinverse(x, y, z);
             facts.put(new IndependenceFact(x, y, z), result);
             return result;
-        }
+        } else { // Use inverse.
 
-        double p;
+            double p;
 
-        try {
-            p = getPValue(x, y, z);
-        } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singular matrix encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
-        }
-
-        boolean independent = p > this.alpha;
-
-        if (this.verbose) {
-            if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, p));
+            try {
+                p = getPValue(x, y, z);
+            } catch (SingularMatrixException e) {
+                throw new RuntimeException("Singular matrix encountered for test: " + LogUtilsSearch.independenceFact(x, y, z));
             }
-        }
 
-        if (Double.isNaN(p)) {
-            throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
-        } else {
-            IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
-            facts.put(new IndependenceFact(x, y, z), result);
-            return result;
+            boolean independent = p > this.alpha;
+
+            if (this.verbose) {
+                if (independent) {
+                    TetradLogger.getInstance().forceLogMessage(
+                            LogUtilsSearch.independenceFactMsg(x, y, z, p));
+                }
+            }
+
+            if (Double.isNaN(p)) {
+                throw new RuntimeException("Undefined p-value encountered in for test: " + LogUtilsSearch.independenceFact(x, y, z));
+            } else {
+                IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
+                facts.put(new IndependenceFact(x, y, z), result);
+                return result;
+            }
         }
     }
 
@@ -286,32 +287,41 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
             zCols[i] = getVariables().indexOf(z.get(i));
         }
 
-        edu.cmu.tetrad.util.Vector x = this.data.getColumn(xIndex);
-        edu.cmu.tetrad.util.Vector y = this.data.getColumn(yIndex);
+        int[] rows;
+
+        if (this.rows == null) {
+            rows = new int[this.data.getNumRows()];
+            for (int i = 0; i < rows.length; i++) {
+                rows[i] = i;
+            }
+        } else {
+            rows = new int[this.rows.size()];
+            for (int i = 0; i < rows.length; i++) {
+                rows[i] = this.rows.get(i);
+            }
+        }
+
+        Vector x = this.data.getSelection(rows, new int[]{xIndex}).getColumn(0);
+        Vector y = this.data.getSelection(rows, new int[]{yIndex}).getColumn(0);
 
         CovarianceMatrix cov = new CovarianceMatrix(dataSet);
 
         SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
-                cov, true, true);
+                cov, true, this.rows);
         SemBicScore.CovAndCoefs covAndCoefsY = SemBicScore.getCovAndCoefs(yIndex, zCols, this.data,
-                cov, true, true);
-
-        int[] rows = new int[this.data.getNumRows()];
-        for (int i = 0; i < rows.length; i++) {
-            rows[i] = i;
-        }
+                cov, true, this.rows);
 
         Matrix selection = data.getSelection(rows, zCols);
         edu.cmu.tetrad.util.Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);
         edu.cmu.tetrad.util.Vector yPred = selection.times(covAndCoefsY.b()).getColumn(0);
 
-        edu.cmu.tetrad.util.Vector xRes = xPred.minus(x);
+        Vector xRes = xPred.minus(x);
         Vector yRes = yPred.minus(y);
 
         // Note that r will be NaN if either xRes or yRes is constant.
         double r = StatUtils.correlation(xRes.toArray(), yRes.toArray());
 
-        double fisherZ = FastMath.sqrt(sampleSize() - z.size() - 3.0) *
+        double fisherZ = FastMath.sqrt(rows.length - z.size() - 3.0) *
                 0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
         double p = 2 * (1.0 - this.normal.cumulativeProbability(abs(fisherZ)));
@@ -331,7 +341,6 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
         return new IndependenceResult(new IndependenceFact(xVar, yVar, _z), p > alpha, p, getAlpha() - p);
     }
-
 
     /**
      * Returns the p-value for x _||_ y | z.
@@ -501,28 +510,29 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         if (usePseudoinverse) {
             return determinesPseudoinverse(z, x);
-        }
+        } else {
 
-        int[] parents = new int[z.size()];
+            int[] parents = new int[z.size()];
 
-        for (int j = 0; j < parents.length; j++) {
-            parents[j] = indexMap.get(z.get(j).getName());
-        }
-
-        if (parents.length > 0) {
-
-            // Regress z onto i, yielding regression coefficients b.
-            Matrix Czz = this.cor.getSelection(parents, parents);
-
-            try {
-                Czz.inverse();
-            } catch (SingularMatrixException e) {
-                System.out.println(LogUtilsSearch.determinismDetected(new HashSet<>(z), x));
-                return true;
+            for (int j = 0; j < parents.length; j++) {
+                parents[j] = indexMap.get(z.get(j).getName());
             }
-        }
 
-        return false;
+            if (parents.length > 0) {
+
+                // Regress z onto i, yielding regression coefficients b.
+                Matrix Czz = this.cor.getSelection(parents, parents);
+
+                try {
+                    Czz.inverse();
+                } catch (SingularMatrixException e) {
+                    System.out.println(LogUtilsSearch.determinismDetected(new HashSet<>(z), x));
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     /**
@@ -557,13 +567,22 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
         CovarianceMatrix cov = new CovarianceMatrix(dataSet);
 
-        SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
-                cov, true, true);
+        int[] rows;
 
-        int[] rows = new int[this.data.getNumRows()];
-        for (int i = 0; i < rows.length; i++) {
-            rows[i] = i;
+        if (this.rows == null) {
+            rows = new int[this.data.getNumRows()];
+            for (int i = 0; i < rows.length; i++) {
+                rows[i] = i;
+            }
+        } else {
+            rows = new int[this.rows.size()];
+            for (int i = 0; i < rows.length; i++) {
+                rows[i] = this.rows.get(i);
+            }
         }
+
+        SemBicScore.CovAndCoefs covAndCoefsX = SemBicScore.getCovAndCoefs(xIndex, zCols, this.data,
+                cov, true, this.rows);
 
         Matrix selection = data.getSelection(rows, zCols);
         Vector xPred = selection.times(covAndCoefsX.b()).getColumn(0);

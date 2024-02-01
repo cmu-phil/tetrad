@@ -53,21 +53,37 @@ import static java.util.Collections.shuffle;
  * @see Knowledge
  */
 public class Grasp {
+    // The variables to be permuted.
     private final List<Node> variables;
+    // The score or test to be used.
     private Score score;
+    // The test to be used.
     private IndependenceTest test;
+    // The knowledge to be used.
     private Knowledge knowledge = new Knowledge();
+    // The scorer to be used.
     private TeyssierScorer scorer;
+    // The time at which the algorithm started.
     private long start;
+    // Whether to use the score or the test.
     private boolean useScore = true;
+    // Whether to use the Raskutti-Uhler method or the Verma-Pearl method.
     private boolean useRaskuttiUhler;
+    // Whether to impose an ordering on the three GRaSP algorithms.
     private boolean ordered = false;
+    // Whether to use verbose output.
     private boolean verbose;
+    // The maximum depth of the depth-first search for tucks.
     private int uncoveredDepth = 1;
+    // The maximum depth of the depth-first search for uncovered tucks.
     private int nonSingularDepth = 1;
+    // Whether to use the data order or a random order for the initial permutation.
     private boolean useDataOrder = true;
+    // The maximum depth of the depth-first search for singular tucks.
     private int depth = 3;
+    // The number of times to run the algorithm with different starting permutations.
     private int numStarts = 1;
+    // Whether to allow internal randomness in the algorithm.
     private boolean allowInternalRandomness = false;
 
     /**
@@ -156,6 +172,8 @@ public class Grasp {
             }
         }
 
+        if (bestPerm == null) return null;
+
         this.scorer.score(bestPerm);
 
         long stop = MillisecondTimes.timeMillis();
@@ -186,11 +204,7 @@ public class Grasp {
     @NotNull
     public Graph getGraph(boolean cpDag) {
         if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-        Graph graph = this.scorer.getGraph(cpDag);
-
-//        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-//        graph.addAttribute("score ", nf.format(this.scorer.score()));
-        return graph;
+        return this.scorer.getGraph(cpDag);
     }
 
     /**
@@ -434,6 +448,7 @@ public class Grasp {
             }
 
             for (Node x : parents) {
+                if (Thread.currentThread().isInterrupted()) return;
 
                 boolean covered = scorer.coveredEdge(x, y);
                 boolean singular = true;

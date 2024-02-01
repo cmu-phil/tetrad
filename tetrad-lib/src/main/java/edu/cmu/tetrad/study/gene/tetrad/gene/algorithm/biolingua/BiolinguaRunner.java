@@ -81,6 +81,11 @@ public class BiolinguaRunner {
         System.exit(exitCode);
     }
 
+    /**
+     * Main method, runs the Biolingua algorithm
+     *
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
         if ((args.length > 0) && (args[0].equals("/?"))) {
             // Help invoked, or no arguments -> show usage info

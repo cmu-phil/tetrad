@@ -31,16 +31,52 @@ import java.nio.file.StandardOpenOption;
  */
 public abstract class DataFileReader implements DataReader {
 
+    /**
+     * The buffer size for reading data file.
+     */
     protected static final int BUFFER_SIZE = 1024 * 1024;
 
+    /**
+     * The newline character.
+     */
     protected static final byte LINE_FEED = '\n';
+
+    /**
+     * The carriage return character.
+     */
     protected static final byte CARRIAGE_RETURN = '\r';
+
+    /**
+     * The space character.
+     */
     protected static final byte SPACE_CHAR = Delimiter.SPACE.getByteValue();
+
+    /**
+     * The data file.
+     */
     protected final Path dataFile;
+
+    /**
+     * The delimiter.
+     */
     protected final Delimiter delimiter;
+
+    /**
+     * The quote character.
+     */
     protected byte quoteCharacter;
+
+    /**
+     * The comment marker.
+     */
     protected String commentMarker;
 
+    /**
+     * Constructor.
+     *
+     * @param dataFile  the data file
+     * @param delimiter the delimiter
+     */
     public DataFileReader(Path dataFile, Delimiter delimiter) {
         this.dataFile = dataFile;
         this.delimiter = delimiter;
@@ -52,7 +88,7 @@ public abstract class DataFileReader implements DataReader {
      * Counts number of column from the first non-blank line.
      *
      * @return the number of column from the first non-blank line
-     * @throws IOException
+     * @throws IOException if an I/O error occurs
      */
     protected int countNumberOfColumns() throws IOException {
         int count = 0;
@@ -148,7 +184,7 @@ public abstract class DataFileReader implements DataReader {
      * Counts number of non-blank lines.
      *
      * @return the number of non-blank and non-commented lines
-     * @throws IOException
+     * @throws IOException if an I/O error occurs
      */
     protected int countNumberOfLines() throws IOException {
         int count = 0;
@@ -214,6 +250,11 @@ public abstract class DataFileReader implements DataReader {
         return count;
     }
 
+    /**
+     * Sets the quote character.
+     *
+     * @param quoteCharacter the quote character
+     */
     @Override
     public void setQuoteCharacter(char quoteCharacter) {
         this.quoteCharacter = Character.isDefined(quoteCharacter)
@@ -221,6 +262,11 @@ public abstract class DataFileReader implements DataReader {
                 : (byte) -1;
     }
 
+    /**
+     * Sets the comment marker.
+     *
+     * @param commentMarker the comment marker
+     */
     @Override
     public void setCommentMarker(String commentMarker) {
         this.commentMarker = (commentMarker == null)

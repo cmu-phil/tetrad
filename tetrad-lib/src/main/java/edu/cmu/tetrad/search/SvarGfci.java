@@ -62,7 +62,6 @@ import java.util.Set;
  * @see SvarFci
  */
 public final class SvarGfci implements IGraphSearch {
-
     // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
     // The conditional independence test.
@@ -87,6 +86,9 @@ public final class SvarGfci implements IGraphSearch {
 
     /**
      * Constructs a new GFCI search for the given independence test and background knowledge.
+     *
+     * @param test  The independence test.
+     * @param score The score.
      */
     public SvarGfci(IndependenceTest test, Score score) {
         if (score == null) {

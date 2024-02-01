@@ -173,6 +173,17 @@ public class Fofc {
         this.checkType = checkType;
     }
 
+    /**
+     * The clusters that are output by the algorithm from the last call to search().
+     */
+    public List<List<Node>> getClusters() {
+        return this.clusters;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
     // renjiey
     private int findFrequentestIndex(Integer[] outliers) {
         Map<Integer, Integer> map = new HashMap<>();
@@ -942,17 +953,6 @@ public class Fofc {
         }
 
         return count >= 1;
-    }
-
-    /**
-     * The clusters that are output by the algorithm from the last call to search().
-     */
-    public List<List<Node>> getClusters() {
-        return this.clusters;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     private boolean vanishes(int x, int y, int z, int w) {

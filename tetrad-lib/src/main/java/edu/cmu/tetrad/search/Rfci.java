@@ -53,45 +53,26 @@ import java.util.*;
  * @see Knowledge
  */
 public final class Rfci implements IGraphSearch {
-
-    /**
-     * The variables to search over (optional)
-     */
+    // The variables to search over (optional)
     private final List<Node> variables = new ArrayList<>();
+    // The independence test to use.
     private final IndependenceTest independenceTest;
-    /**
-     * The logger to use.
-     */
+    // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
-    /**
-     * The RFCI-PAG being constructed.
-     */
+    // The RFCI-PAG being constructed.
     private Graph graph;
-    /**
-     * The SepsetMap being constructed.
-     */
+    // The SepsetMap being constructed.
     private SepsetMap sepsets;
-    /**
-     * The background knowledge.
-     */
+    // The background knowledge.
     private Knowledge knowledge = new Knowledge();
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
+    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
-    /**
-     * The depth for the fast adjacency search.
-     */
+    // The depth for the fast adjacency search.
     private int depth = -1;
-    /**
-     * Elapsed time of last search.
-     */
+    // Elapsed time of last search.
     private long elapsedTime;
-    /**
-     * True iff verbose output should be printed.
-     */
+    // True iff verbose output should be printed.
     private boolean verbose;
-
 
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.

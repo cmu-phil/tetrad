@@ -34,32 +34,36 @@ import java.util.Set;
 /**
  * <p>Provides a method for computing the score of a model, called the BDe
  * metric (Bayesian Dirchlet likelihood equivalence), given a dataset (assumes no missing values) and a Bayes
- * parameterized network (assumes no latent variables).&gt; 0 <p>This version has a method that computes the score for a
- * given factor of a model, where a factor is determined by a node and its parents.  It stores scores in a map whose
- * argument is an ordered pair consisting of 1) a node and 2) set of parents.  The score for the entire model is the
- * product of the scores of its factors.  Since the log of the gamma function is used here the sum of the logs is
- * computed as the score. Compare this with the score method in the BdeMetric class which computes the score for the
- * entire model in one pass.  The advantage of the approach in this class is that it is more efficient in the context of
- * a search algorithm where different models are scored but where many of them will have the same factors. This class
- * stores the score (relative to the dataset) for any [node, set of parents] pair and thus avoids the expensive log
- * gamma function calls. Instead it looks in the map scores to see if it has already computed the score and, if so,
- * returns the previously computed value.&gt; 0 <p>See "Learning Bayesian Networks:  The Combination of Knowledge and
- * Statistical Data" by David Heckerman, Dan Geiger, and David M. Chickering. Microsoft Technical Report
- * MSR-TR-94-09.&gt; 0
+ * parameterized network (assumes no latent variables).&gt; 0
+ * <p>
+ * This version has a method that computes the score for a given factor of a model, where a factor is determined by a
+ * node and its parents.  It stores scores in a map whose argument is an ordered pair consisting of 1) a node and 2) set
+ * of parents.  The score for the entire model is the product of the scores of its factors.  Since the log of the gamma
+ * function is used here the sum of the logs is computed as the score. Compare this with the score method in the
+ * BdeMetric class which computes the score for the entire model in one pass.  The advantage of the approach in this
+ * class is that it is more efficient in the context of a search algorithm where different models are scored but where
+ * many of them will have the same factors. This class stores the score (relative to the dataset) for any [node, set of
+ * parents] pair and thus avoids the expensive log gamma function calls. Instead, it looks in the map scores to see if
+ * it has already computed the score and, if so, returns the previously computed value.&gt; 0 <p>See "Learning Bayesian
+ * Networks:  The Combination of Knowledge and Statistical Data" by David Heckerman, Dan Geiger, and David M.
+ * Chickering. Microsoft Technical Report MSR-TR-94-09.&gt; 0
  *
  * @author Frank Wimberly
  */
 public final class BdeMetricCache {
     private final DataSet dataSet;
     private final List<Node> variables;
-
     private final BayesPm bayesPm;  //Determines the list of variables (nodes)
-
     private final Map<NodeParentsPair, Double> scores;
     private final Map<NodeParentsPair, Integer> scoreCounts;
-
     private double[][] observedCounts;
 
+    /**
+     * Constructs a BdeMetricCache object for a given dataset and BayesPm.
+     *
+     * @param dataSet The dataset for which the BDe metric is to be computed.
+     * @param bayesPm The BayesPm that determines the list of variables (nodes) and the structure of the graph.
+     */
     public BdeMetricCache(DataSet dataSet, BayesPm bayesPm) {
         this.bayesPm = bayesPm;
         this.dataSet = dataSet;
@@ -71,6 +75,12 @@ public final class BdeMetricCache {
     /**
      * Computes the BDe score, using the logarithm of the gamma function, relative to the data, of the factor determined
      * by a node and its parents.
+     *
+     * @param node       The node of the factor.
+     * @param parents    The parents of the node.
+     * @param bayesPmMod The BayesPm that determines the list of variables (nodes) and the structure of the graph.
+     * @param bayesIm    The BayesIm that determines the observed counts.
+     * @return The score of the factor.
      */
     public double scoreLnGam(Node node, Set<Node> parents, BayesPm bayesPmMod,
                              BayesIm bayesIm) {
@@ -441,6 +451,11 @@ public final class BdeMetricCache {
 
     /**
      * This method is used in testing and debugging and not in the BDe metric calculations.
+     *
+     * @param node    The node for which the observed counts are to be returned.
+     * @param bayesPm The BayesPm that determines the list of variables (nodes) and the structure of the graph.
+     * @param bayesIm The BayesIm that determines the observed counts.
+     * @return The observed counts for the given node.
      */
     public double[][] getObservedCounts(Node node, BayesPm bayesPm,
                                         BayesIm bayesIm) {
@@ -461,6 +476,10 @@ public final class BdeMetricCache {
 
     /**
      * This is just for testing the operation of the inner class and the map from nodes and parent sets to scores.
+     *
+     * @param node    The node of the factor.
+     * @param parents The parents of the node.
+     * @return The score of the factor.
      */
     public int getScoreCount(Node node, Set<Node> parents) {
         NodeParentsPair nodeParents = new NodeParentsPair(node, parents);
@@ -488,16 +507,29 @@ public final class BdeMetricCache {
         private final Node node;
         private final Set<Node> parents;
 
+
+        /**
+         * Constructs a NodeParentsPair object for a given node and set of parents.
+         *
+         * @param node    The node of the pair.
+         * @param parents The parents of the node.
+         */
         public NodeParentsPair(Node node, Set<Node> parents) {
             this.node = node;
             this.parents = parents;
 
         }
 
+        /**
+         * @return The number of elements in the set of parents plus 1.
+         */
         public int calcCount() {
             return this.parents.size() + 1;
         }
 
+        /**
+         * @return The node of the pair.
+         */
         public int hashCode() {
             int hash = 91;
             hash = 43 * hash + this.node.hashCode();
@@ -506,6 +538,12 @@ public final class BdeMetricCache {
             return hash;
         }
 
+        /**
+         * Equals method for NodeParentsPair.
+         *
+         * @param other The other object to compare to.
+         * @return True if the other object is a NodeParentsPair and has the same node and parents as this one.
+         */
         public boolean equals(Object other) {
             if (other == this) {
                 return true;

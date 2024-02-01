@@ -36,42 +36,91 @@ public class ValidationResult {
 
     private String message;
 
+    /**
+     * Default constructor.
+     *
+     * @param code        the validation code.
+     * @param messageType the message type.
+     */
     public ValidationResult(ValidationCode code, MessageType messageType) {
         this.code = code;
         this.messageType = messageType;
         this.attributes = new EnumMap<>(ValidationAttribute.class);
     }
 
+    /**
+     * Constructor with message.
+     *
+     * @param code        the validation code.
+     * @param messageType the message type.
+     * @param message     the message.
+     */
     public ValidationResult(ValidationCode code, MessageType messageType, String message) {
         this(code, messageType);
         this.message = message;
     }
 
+    /**
+     * Return the string representation of this object.
+     *
+     * @return the string representation of this object.
+     */
     @Override
     public String toString() {
         return "ValidationResult{" + "code=" + this.code + ", messageType=" + this.messageType + ", attributes=" + this.attributes + ", message=" + this.message + '}';
     }
 
+    /**
+     * Return the hash code of this object.
+     *
+     * @return the hash code of this object.
+     */
     public ValidationCode getCode() {
         return this.code;
     }
 
+    /**
+     * Return the message type.
+     *
+     * @return the message type.
+     */
     public MessageType getMessageType() {
         return this.messageType;
     }
 
+    /**
+     * Return the attributes.
+     *
+     * @return the attributes.
+     */
     public Map<ValidationAttribute, Object> getAttributes() {
         return this.attributes;
     }
 
+    /**
+     * Sets the attribute value.
+     *
+     * @param attribute the attribute.
+     * @param value     the value.
+     */
     public void setAttribute(ValidationAttribute attribute, Object value) {
         this.attributes.put(attribute, value);
     }
 
+    /**
+     * Return the message.
+     *
+     * @return the message.
+     */
     public String getMessage() {
         return this.message;
     }
 
+    /**
+     * Sets the message.
+     *
+     * @param message the message.
+     */
     public void setMessage(String message) {
         this.message = message;
     }

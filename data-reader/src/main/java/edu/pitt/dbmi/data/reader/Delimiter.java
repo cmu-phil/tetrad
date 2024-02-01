@@ -25,32 +25,80 @@ package edu.pitt.dbmi.data.reader;
  */
 public enum Delimiter {
 
+    /**
+     * The tab delimiter.
+     */
     TAB("tab", '\t'),
+
+    /**
+     * The space delimiter.
+     */
     SPACE("space", ' '),
+
+    /**
+     * The whitespace delimiter.
+     */
     WHITESPACE("whitespace", ' '),
+
+    /**
+     * The comma delimiter.
+     */
     COMMA("comma", ','),
+
+    /**
+     * The colon delimiter.
+     */
     COLON("colon", ':'),
+
+    /**
+     * The semicolon delimiter.
+     */
     SEMICOLON("semicolon", ';'),
+
+    /**
+     * The pipe delimiter.
+     */
     PIPE("pipe", '|');
 
     private final String name;
     private final char value;
     private final byte byteValue;
 
+    /**
+     * Constructor.
+     *
+     * @param name  the name of the delimiter.
+     * @param value the value of the delimiter.
+     */
     Delimiter(String name, char value) {
         this.name = name;
         this.value = value;
         this.byteValue = (byte) value;
     }
 
+    /**
+     * Get the name of the delimiter.
+     *
+     * @return the name of the delimiter.
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Get the value of the delimiter.
+     *
+     * @return the value of the delimiter.
+     */
     public char getValue() {
         return this.value;
     }
 
+    /**
+     * Get the byte value of the delimiter.
+     *
+     * @return the byte value of the delimiter.
+     */
     public byte getByteValue() {
         return this.byteValue;
     }

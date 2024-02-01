@@ -38,10 +38,15 @@ import java.util.*;
  * @see Knowledge
  */
 public class Sp implements SuborderSearch {
+    // The score to use.
     private final Score score;
+    // The variables to search over.
     private final List<Node> variables;
+    // The parents of each variable.
     private final Map<Node, Set<Node>> parents;
+    // The GrowShrinkTree for each variable.
     private Map<Node, GrowShrinkTree> gsts;
+    // The knowledge.
     private Knowledge knowledge = new Knowledge();
 
     /**
@@ -106,6 +111,44 @@ public class Sp implements SuborderSearch {
         update(prefix, suborder);
     }
 
+    /**
+     * Returns the variables being searched over.
+     *
+     * @return The variables being searched over.
+     */
+    @Override
+    public List<Node> getVariables() {
+        return variables;
+    }
+
+    /**
+     * Returns the parents of each variable.
+     *
+     * @return The parents of each variable.
+     */
+    @Override
+    public Map<Node, Set<Node>> getParents() {
+        return parents;
+    }
+
+    /**
+     * Returns the score being used.
+     *
+     * @return The score being used.
+     */
+    @Override
+    public Score getScore() {
+        return score;
+    }
+
+    /**
+     * Set the knowledge to used.
+     */
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (!this.knowledge.isEmpty()) {
             order.sort((a, b) -> {
@@ -131,10 +174,6 @@ public class Sp implements SuborderSearch {
         return false;
     }
 
-    @Override
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
-    }
 
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
@@ -150,21 +189,6 @@ public class Sp implements SuborderSearch {
             Z.add(x);
         }
 
-        return score;
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return variables;
-    }
-
-    @Override
-    public Map<Node, Set<Node>> getParents() {
-        return parents;
-    }
-
-    @Override
-    public Score getScore() {
         return score;
     }
 

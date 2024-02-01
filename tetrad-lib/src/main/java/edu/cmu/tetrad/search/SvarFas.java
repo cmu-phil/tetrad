@@ -59,51 +59,35 @@ import java.util.*;
  */
 public class SvarFas implements IFas {
 
-    /**
-     * The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node x.
-     * It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
-     */
+    // The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node x.
+    // It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
     private final Graph graph;
-
-    /**
-     * The independence test. This should be appropriate to the types
-     */
+    //The independence test. This should be appropriate to the types
     private final IndependenceTest test;
-    /**
-     * The logger, by default the empty logger.
-     */
+    // The logger, by default the empty logger.
     private final TetradLogger logger = TetradLogger.getInstance();
+    // The number formatter.
     private final NumberFormat nf = new DecimalFormat("0.00E0");
-    /**
-     * Specification of which edges are forbidden or required.
-     */
+    // Specification of which edges are forbidden or required.
     private Knowledge knowledge = new Knowledge();
-    /**
-     * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
-     * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
-     */
+    // The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
+    // be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
     private int depth = 1000;
-    /**
-     * The number of independence tests.
-     */
+    // The number of independence tests.
     private int numIndependenceTests;
-    /**
-     * The sepsets found during the search.
-     */
+    // The sepsets found during the search.
     private SepsetMap sepset = new SepsetMap();
-    /**
-     * The depth 0 graph, specified initially.
-     */
+    // The depth 0 graph, specified initially.
     private Graph externalGraph;
-    /**
-     * True iff verbose output should be printed.
-     */
+    // True iff verbose output should be printed.
     private boolean verbose;
-
+    // The output stream for printing.
     private PrintStream out = System.out;
 
     /**
      * Constructs a new FastAdjacencySearch.
+     *
+     * @param test The independence test.
      */
     public SvarFas(IndependenceTest test) {
         this.graph = new EdgeListGraph(test.getVariables());

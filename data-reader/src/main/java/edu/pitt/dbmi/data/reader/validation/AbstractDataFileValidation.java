@@ -30,13 +30,27 @@ import java.nio.file.Path;
  */
 public abstract class AbstractDataFileValidation extends DataFileReader implements Validation {
 
+    /**
+     * The maximum number of messages to validate.
+     */
     protected int maxNumOfMsg;
 
+    /**
+     * Constructor.
+     *
+     * @param dataFile  the data file
+     * @param delimiter the delimiter
+     */
     public AbstractDataFileValidation(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
         this.maxNumOfMsg = Integer.MAX_VALUE;
     }
 
+    /**
+     * Set the maximum number of messages to validate.
+     *
+     * @param maxNumOfMsg the maximum number of messages
+     */
     @Override
     public void setMaximumNumberOfMessages(int maxNumOfMsg) {
         this.maxNumOfMsg = maxNumOfMsg;

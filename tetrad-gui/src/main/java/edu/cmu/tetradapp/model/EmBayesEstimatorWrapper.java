@@ -33,6 +33,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
@@ -41,18 +42,13 @@ import java.io.ObjectInputStream;
  * @author Frank Wimberly adapted for EM Bayes estimator and structural EM Bayes estimator
  */
 public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * @serial Can be null.
      */
     private String name;
-
-    /**
-     * @serial
-     * @deprecated
-     */
-    private BayesPm bayesPm;
 
     /**
      * @serial Cannot be null.

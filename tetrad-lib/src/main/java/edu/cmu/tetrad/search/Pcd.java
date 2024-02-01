@@ -53,57 +53,32 @@ import java.util.Set;
  */
 public class Pcd implements IGraphSearch {
 
-    /**
-     * The independence test used for the PC search.
-     */
+    // The independence test used for the PC search.
     private final IndependenceTest independenceTest;
-    /**
-     * The logger for this class. The config needs to be set.
-     */
+    // The logger for this class. The config needs to be set.
     private final TetradLogger logger = TetradLogger.getInstance();
-    /**
-     * Forbidden and required edges for the search.
-     */
+    // Forbidden and required edges for the search.
     private Knowledge knowledge = new Knowledge();
-    /**
-     * Sepset information accumulated in the search.
-     */
+    // Sepset information accumulated in the search.
     private SepsetMap sepsets;
-    /**
-     * The maximum number of nodes conditioned on in the search. The default it 1000.
-     */
+    // The maximum number of nodes conditioned on in the search. The default it 1000.
     private int depth = 1000;
-    /**
-     * The graph that's constructed during the search.
-     */
+    // The graph that's constructed during the search.
     private Graph graph;
-    /**
-     * Elapsed time of the most recent search.
-     */
+    // Elapsed time of the most recent search.
     private long elapsedTime;
-    /**
-     * True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
-     */
+    // True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
     private boolean meekPreventCycles;
-    /**
-     * In an enumeration of triple types, these are the collider triples.
-     */
+    // In an enumeration of triple types, these are the collider triples.
     private Set<Triple> unshieldedColliders;
-
-    /**
-     * In an enumeration of triple types, these are the noncollider triples.
-     */
+    // In an enumeration of triple types, these are the noncollider triples.
     private Set<Triple> unshieldedNoncolliders;
-
-    /**
-     * The number of independence tests in the last search.
-     */
+    // The number of independence tests in the last search.
     private int numIndependenceTests;
-
+    // True iff the algorithm should be run with verbose output.
     private boolean verbose;
-
+    // True iff the algorithm should be run with False Discovery Rate tests.
     private boolean fdr;
-
 
     /**
      * Constructs a new PC search using the given independence test as oracle.
@@ -290,8 +265,62 @@ public class Pcd implements IGraphSearch {
         return this.unshieldedNoncolliders;
     }
 
+    /**
+     * @return the graph returned by <code>search()</code>. Non-null after <code>search</code> is called.
+     */
     public Set<Edge> getAdjacencies() {
         return new HashSet<>(this.graph.getEdges());
+    }
+
+    /**
+     * @return the number of independence tests performed in the last search.
+     */
+    public int getNumIndependenceTests() {
+        return this.numIndependenceTests;
+    }
+
+    /**
+     * @return the list of nodes in the graph returned by <code>search()</code>. Non-null after <code>search</code> is
+     * called.
+     */
+    public List<Node> getNodes() {
+        return this.graph.getNodes();
+    }
+
+    /**
+     * True iff the algorithm should be run with verbose output.
+     *
+     * @return True, if so.
+     */
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    /**
+     * Sets whether this test will print verbose output.
+     *
+     * @param verbose True, if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * True iff the algorithm should be run with False Discovery Rate tests.
+     *
+     * @return True, if so.
+     */
+    public boolean isFdr() {
+        return this.fdr;
+    }
+
+    /**
+     * Sets whether this test will run with False Discovery Rate tests.
+     *
+     * @param fdr True, if so.
+     */
+    public void setFdr(boolean fdr) {
+        this.fdr = fdr;
     }
 
     private void enumerateTriples() {
@@ -327,33 +356,6 @@ public class Pcd implements IGraphSearch {
                 }
             }
         }
-    }
-
-    public int getNumIndependenceTests() {
-        return this.numIndependenceTests;
-    }
-
-    public List<Node> getNodes() {
-        return this.graph.getNodes();
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * True iff the algorithm should be run with False Discovery Rate tests.
-     */
-    public boolean isFdr() {
-        return this.fdr;
-    }
-
-    public void setFdr(boolean fdr) {
-        this.fdr = fdr;
     }
 }
 

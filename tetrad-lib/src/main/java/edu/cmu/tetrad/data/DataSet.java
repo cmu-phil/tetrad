@@ -40,12 +40,16 @@ public interface DataSet extends DataModel {
     /**
      * Adds the given variable to the data set.
      *
+     * @param variable The variable to add.
      * @throws IllegalArgumentException if the variable is neither continuous nor discrete.
      */
     void addVariable(Node variable);
 
     /**
      * Adds the given variable at the given index.
+     *
+     * @param index    The index at which to add the variable.
+     * @param variable The variable to add.
      */
     void addVariable(int index, Node variable);
 
@@ -53,6 +57,8 @@ public interface DataSet extends DataModel {
      * Changes the variable for the given column from <code>from</code> to
      * <code>to</code>. Supported currently only for discrete variables.
      *
+     * @param from The variable to change.
+     * @param to   The variable to change to.
      * @throws IllegalArgumentException if the given change is not supported.
      */
     void changeVariable(Node from, Node to);
@@ -64,22 +70,28 @@ public interface DataSet extends DataModel {
 
     /**
      * Ensures that the dataset has at least <code>columns</code> columns. Used for pasting data into the dataset. When
-     * creating new columns, names in the <code>excludedVarialbeNames</code> list may not be used. The purpose of this
+     * creating new columns, names in the <code>excludedVariableNames</code> list may not be used. The purpose of this
      * is to allow these names to be set later by the calling class, without incurring conflicts.
+     *
+     * @param columns               The number of columns to ensure.
+     * @param excludedVariableNames The names of variables that should not be used for new columns.
      */
     void ensureColumns(int columns, List<String> excludedVariableNames);
 
     /**
-     * Returns true if and only if this data set contains at least one missing value.
+     * @return true if and only if this data set contains at least one missing value.
      */
     boolean existsMissingValue();
 
     /**
      * Ensures that the dataset has at least <code>rows</code> rows. Used for pasting data into the dataset.
+     *
+     * @param rows The number of rows to ensure.
      */
     void ensureRows(int rows);
 
     /**
+     * @param variable The variable to check.
      * @return the column index of the given variable.
      */
     int getColumn(Node variable);
@@ -99,6 +111,8 @@ public interface DataSet extends DataModel {
     Matrix getCovarianceMatrix();
 
     /**
+     * @param row    The index of the case.
+     * @param column The index of the variable.
      * @return the value at the given row and column as a double. For discrete data, returns the integer value cast to a
      * double.
      */
@@ -147,11 +161,13 @@ public interface DataSet extends DataModel {
     int[] getSelectedIndices();
 
     /**
+     * @param column The index of the variable.
      * @return the variable at the given column.
      */
     Node getVariable(int column);
 
     /**
+     * @param name The name of the variable.
      * @return the variable with the given name.
      */
     Node getVariable(String name);
@@ -167,45 +183,54 @@ public interface DataSet extends DataModel {
     List<Node> getVariables();
 
     /**
-     * @return true if this is a continuous data set--that is, if it contains at least one column and all of the columns
+     * @return true if this is a continuous data set--that is, if it contains at least one column and all the columns
      * are continuous.
      */
     boolean isContinuous();
 
     /**
-     * @return true if this is a discrete data set--that is, if it contains at least one column and all of the columns
-     * are discrete.
+     * @return true if this is a discrete data set--that is, if it contains at least one column and all the columns are
+     * discrete.
      */
     boolean isDiscrete();
 
     /**
      * @return true if this is a continuous data set--that is, if it contains at least one continuous column and one
-     * discrete columnn.
+     * discrete column.
      */
     boolean isMixed();
 
     /**
+     * @param variable The variable to check.
      * @return true iff the given column has been marked as selected.
      */
     boolean isSelected(Node variable);
 
     /**
      * Removes the variable (and data) at the given index.
+     *
+     * @param index The index of the variable to remove.
      */
     void removeColumn(int index);
 
     /**
      * Removes the given variable, along with all of its data.
+     *
+     * @param variable The variable to remove.
      */
     void removeColumn(Node variable);
 
     /**
      * Removes the given columns from the data set.
+     *
+     * @param selectedCols The indices of the columns to remove.
      */
     void removeCols(int[] selectedCols);
 
     /**
      * Removes the given rows from the data set.
+     *
+     * @param selectedRows The indices of the rows to remove.
      */
     void removeRows(int[] selectedRows);
 
@@ -215,6 +240,7 @@ public interface DataSet extends DataModel {
      *
      * @param row    The index of the case.
      * @param column The index of the variable.
+     * @param value  The value to set.
      */
     void setDouble(int row, int column, double value);
 
@@ -222,8 +248,9 @@ public interface DataSet extends DataModel {
      * Sets the value at the given (row, column) to the given int value, assuming the variable for the column is
      * discrete.
      *
-     * @param row The index of the case.
-     * @param col The index of the variable.
+     * @param row   The index of the case.
+     * @param col   The index of the variable.
+     * @param value The value to set.
      */
     void setInt(int row, int col, int value);
 
@@ -246,17 +273,21 @@ public interface DataSet extends DataModel {
      * Creates and returns a dataset consisting of those variables in the list vars.  Vars must be a subset of the
      * variables of this DataSet. The ordering of the elements of vars will be the same as in the list of variables in
      * this DataSet.
+     *
+     * @return a new data set consisting of the variables in the list vars.
      */
     DataSet subsetColumns(List<Node> vars);
 
     /**
-     * @return a new data set in which the the column at indices[i] is placed at index i, for i = 0 to indices.length -
-     * 1. (View instead?)
+     * @param columns The indices of the columns to include in the new data set.
+     * @return a new data set in which the column at indices[i] is placed at index i, for i = 0 to indices.length - 1.
+     * (View instead?)
      */
     DataSet subsetColumns(int[] columns);
 
     /**
-     * @return a new data set in which the the row at indices[i] is placed at index i, for i = 0 to indices.length - 1.
+     * @param rows The indices of the rows to include in the new data set.
+     * @return a new data set in which the row at indices[i] is placed at index i, for i = 0 to indices.length - 1.
      * (View instead?)
      */
     DataSet subsetRows(int[] rows);
@@ -268,16 +299,22 @@ public interface DataSet extends DataModel {
 
     /**
      * The number format of the dataset.
+     *
+     * @return The number format of the dataset.
      */
     NumberFormat getNumberFormat();
 
     /**
      * The number formatter used to print out continuous values.
+     *
+     * @param nf The number formatter used to print out continuous values.
      */
     void setNumberFormat(NumberFormat nf);
 
     /**
-     * The character used a delimiter when the dataset is output.
+     * The character used a delimiter when the dataset is output
+     *
+     * @param character The character used as a delimiter when the dataset is output
      */
     void setOutputDelimiter(Character character);
 
@@ -286,12 +323,33 @@ public interface DataSet extends DataModel {
      */
     void permuteRows();
 
+    /**
+     * Returns the map of column names to tooltips.
+     *
+     * @return The map of column names to tooltips.
+     */
     Map<String, String> getColumnToTooltip();
 
+    /**
+     * Checks if the given object is equal to this dataset.
+     *
+     * @param o The object to check.
+     * @return True if the given object is equal to this dataset.
+     */
     boolean equals(Object o);
 
+    /**
+     * Returns a copy of this dataset.
+     *
+     * @return A copy of this dataset.
+     */
     DataSet copy();
 
+    /**
+     * Returns a dataset with the same dimensions as this dataset, but with no data.
+     *
+     * @return a dataset with the same dimensions as this dataset, but with no data.
+     */
     DataSet like();
 }
 

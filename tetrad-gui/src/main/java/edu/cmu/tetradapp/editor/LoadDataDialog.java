@@ -36,6 +36,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -53,6 +54,7 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
  */
 public final class LoadDataDialog extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 2299304318793152418L;
 
     private final List<File> loadedFiles;

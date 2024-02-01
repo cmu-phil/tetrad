@@ -27,53 +27,113 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class ColumnMetadata {
 
+    /**
+     * The name of the column.
+     */
     private String name;
 
+    /**
+     * Indicates whether the column is discrete.
+     */
     private boolean discrete;
 
+    /**
+     * The column number.
+     */
     @JsonIgnore
     private int columnNumber;
 
+    /**
+     * Default constructor.
+     */
     public ColumnMetadata() {
         this.discrete = true;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param name     the name of the column.
+     * @param discrete indicates whether the column is discrete.
+     */
     public ColumnMetadata(String name, boolean discrete) {
         this.name = name;
         this.discrete = discrete;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param name         the name of the column.
+     * @param columnNumber the column number.
+     * @param discrete     indicates whether the column is discrete.
+     */
     public ColumnMetadata(String name, int columnNumber, boolean discrete) {
         this.name = name;
         this.columnNumber = columnNumber;
         this.discrete = discrete;
     }
 
+    /**
+     * Return a string representation of the column metadata.
+     *
+     * @return a string representation of the column metadata.
+     */
     @Override
     public String toString() {
         return "ColumnMetadata{" + "name=" + this.name + ", discrete=" + this.discrete + ", columnNumber=" + this.columnNumber + '}';
     }
 
+    /**
+     * Return the name of the column.
+     *
+     * @return the name of the column.
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Set the name of the column.
+     *
+     * @param name the name of the column.
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Return whether the column is discrete.
+     *
+     * @return whether the column is discrete.
+     */
     public boolean isDiscrete() {
         return this.discrete;
     }
 
+    /**
+     * Set whether the column is discrete.
+     *
+     * @param discrete whether the column is discrete.
+     */
     public void setDiscrete(boolean discrete) {
         this.discrete = discrete;
     }
 
+    /**
+     * Return the column number.
+     *
+     * @return the column number.
+     */
     public int getColumnNumber() {
         return this.columnNumber;
     }
 
+    /**
+     * Set the column number.
+     *
+     * @param columnNumber the column number.
+     */
     public void setColumnNumber(int columnNumber) {
         this.columnNumber = columnNumber;
     }

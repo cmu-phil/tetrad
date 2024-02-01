@@ -25,8 +25,18 @@ package edu.pitt.dbmi.data.reader;
  */
 public interface ContinuousData extends Data {
 
+    /**
+     * Get the data columns.
+     *
+     * @return the data columns.
+     */
     DataColumn[] getDataColumns();
 
+    /**
+     * Get the data.
+     *
+     * @return the data.
+     */
     double[][] getData();
 
 }

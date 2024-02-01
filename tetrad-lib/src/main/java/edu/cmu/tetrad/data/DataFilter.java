@@ -32,6 +32,9 @@ public interface DataFilter {
 
     /**
      * Interpolates the given data set, producing a data set with no missing values.
+     *
+     * @param dataSet the data set to interpolate.
+     * @return the interpolated data set.
      */
     DataSet filter(DataSet dataSet);
 }

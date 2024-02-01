@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -105,9 +106,13 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     /**
      * Copy constructor.
+     *
+     * @param wrapper    the data wrapper to copy.
+     * @param parameters the parameters to use.
      */
     public DataWrapper(DataWrapper wrapper, Parameters parameters) {
         this.name = wrapper.name;
+        this.parameters = new Parameters(parameters);
         DataModelList dataModelList = new DataModelList();
         int selected = -1;
 
@@ -144,15 +149,25 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     /**
      * Constructs a data wrapper using a new DataSet as data model.
+     *
+     * @param dataSet the data set to use.
      */
     public DataWrapper(DataSet dataSet) {
         setDataModel(dataSet);
     }
 
+    /**
+     * Constructs a data wrapper using a new DataSet as data model.
+     *
+     * @param graph      the graph to use.
+     * @param parameters the parameters to use.
+     */
     public DataWrapper(Graph graph, Parameters parameters) {
         if (graph == null) {
             throw new NullPointerException();
         }
+
+        this.parameters = new Parameters(parameters);
 
         List<Node> nodes = graph.getNodes();
         List<Node> variables = new LinkedList<>();
@@ -173,28 +188,69 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         this.dataModelList = dataModelList;
     }
 
+    /**
+     * Constructs a data wrapper using a new DataSet as data model.
+     *
+     * @param dagWrapper the DAG to use.
+     * @param parameters the parameters to use.
+     */
     public DataWrapper(DagWrapper dagWrapper, Parameters parameters) {
         this(dagWrapper.getDag(), parameters);
     }
 
+    /**
+     * Constructs a data wrapper using a new DataSet as data model.
+     *
+     * @param wrapper    the SEM graph to use.
+     * @param parameters the parameters to use.
+     */
     public DataWrapper(SemGraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), parameters);
     }
 
+    /**
+     * Constructs a data wrapper using a new DataSet as data model.
+     *
+     * @param wrapper    the SEM graph to use.
+     * @param parameters the parameters to use.
+     */
     public DataWrapper(GraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), parameters);
     }
 
+    /**
+     * Constructs a data wrapper using a new DataSet as data model.
+     *
+     * @param regression the regression to use.
+     * @param wrapper    the data model to use.
+     * @param parameters the parameters to use.
+     */
     public DataWrapper(RegressionRunner regression, DataWrapper wrapper, Parameters parameters) {
-        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel(), parameters);
+        this(regression.getResult(), (DataSet) Objects.requireNonNull(wrapper.getDataModelList().getSelectedModel()),
+                parameters);
     }
 
+    /**
+     * Constructs a data wrapper using a new DataSet as data model.
+     *
+     * @param regression the regression to use.
+     * @param wrapper    the data model to use.
+     * @param parameters the parameters to use.
+     */
     public DataWrapper(RegressionRunner regression, Simulation wrapper, Parameters parameters) {
-        this(regression.getResult(), (DataSet) wrapper.getDataModelList().getSelectedModel(), parameters);
+        this(regression.getResult(), (DataSet) Objects.requireNonNull(wrapper.getDataModelList().getSelectedModel()),
+                parameters);
     }
 
-    // Computes regression predictions.
+    /**
+     * Constructs a data wrapper using a new DataSet as data model.
+     *
+     * @param result     the regression result to use.
+     * @param data       the data to use.
+     * @param parameters the parameters to use.
+     */
     public DataWrapper(RegressionResult result, DataSet data, Parameters parameters) {
+        this.parameters = new Parameters(parameters);
 
         DataSet data2 = data.copy();
         String predictedVariable = nextVariableName("Pred", data);
@@ -229,7 +285,15 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         this.dataModelList = dataModelList;
     }
 
+    /**
+     * Constructs a data wrapper using a new DataSet as data model.
+     *
+     * @param mimBuild   the mim build to use.
+     * @param parameters the parameters to use.
+     */
     public DataWrapper(MimBuildRunner mimBuild, Parameters parameters) {
+        this.parameters = new Parameters(parameters);
+
         ICovarianceMatrix cov = mimBuild.getCovMatrix();
 
         DataModelList dataModelList = new DataModelList();
@@ -279,8 +343,6 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         return name;
     }
 
-    //==============================PUBLIC METHODS========================//
-
     /**
      * Stores a reference to the data model being wrapped.
      *
@@ -290,6 +352,11 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         return this.dataModelList;
     }
 
+    /**
+     * Set the data model list.
+     *
+     * @param dataModelList the data model list to set.
+     */
     public void setDataModelList(DataModelList dataModelList) {
         if (dataModelList == null) {
             throw new NullPointerException("Data model list not provided.");
@@ -297,12 +364,15 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         this.dataModelList = dataModelList;
     }
 
+    /**
+     * @return the data model for this wrapper.
+     */
     public List<DataModel> getDataModels() {
         return new ArrayList<>(this.dataModelList);
     }
 
     /**
-     * @return the data model for this wrapper.
+     * @return the selected data model for this wrapper.
      */
     public DataModel getSelectedDataModel() {
         DataModelList modelList = getDataModelList();
@@ -311,6 +381,8 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     /**
      * Sets the data model.
+     *
+     * @param dataModel the data model to set.
      */
     public void setDataModel(DataModel dataModel) {
         if (dataModel == null) {
@@ -326,20 +398,31 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         }
     }
 
+    /**
+     * @return the knowledge for this wrapper.
+     */
     public Knowledge getKnowledge() {
-        return getSelectedDataModel().getKnowledge();
+        return getSelectedDataModel().getKnowledge().copy();
     }
 
+    /**
+     * Sets knowledge to a copy of the given object.
+     *
+     * @param knowledge the knowledge to set.
+     */
     public void setKnowledge(Knowledge knowledge) {
-        getSelectedDataModel().setKnowledge(knowledge);
+        getSelectedDataModel().setKnowledge(knowledge.copy());
     }
 
+    /**
+     * @return the variable names of the selected data model.
+     */
     public List<String> getVarNames() {
         return getSelectedDataModel().getVariableNames();
     }
 
     /**
-     * @return the source workbench, if there is one.
+     * @return the source graph.
      */
     public Graph getSourceGraph() {
         return this.sourceGraph;
@@ -347,27 +430,25 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     /**
      * Sets the source graph.
+     *
+     * @param sourceGraph the source graph to set.
      */
     protected void setSourceGraph(Graph sourceGraph) {
         this.sourceGraph = sourceGraph;
     }
 
+    /**
+     * @return the result graph.
+     */
     public Graph getResultGraph() {
         return getSourceGraph();
     }
 
     /**
-     * @return the variable names, in order.
+     * @return the variables, in order.
      */
     public List<Node> getVariables() {
         return this.getSelectedDataModel().getVariables();
-    }
-
-    /**
-     * //     * Sets the source graph. //
-     */
-    public Map getDiscretizationSpecs() {
-        return this.discretizationSpecs;
     }
 
     /**
@@ -378,32 +459,51 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
+    /**
+     * @return the name of the data wrapper.
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Sets the name of the data wrapper.
+     *
+     * @param name the name to set.
+     */
     public void setName(String name) {
         this.name = name;
     }
 
     /**
-     * This method is overridden by classes that can identify parameters.
+     * Returns the parameters being edited.
      *
-     * @return null
+     * @return the parameters being edited.
      */
     public Parameters getParams() {
         return this.parameters;
     }
 
+    /**
+     * Sets the parameters being edited.
+     *
+     * @param parameters the parameters to set.
+     */
     public void setParameters(Parameters parameters) {
         this.parameters = parameters;
     }
 
+    /**
+     * Returns the variable names.
+     *
+     * @return the variable names.
+     */
     public List<String> getVariableNames() {
         List<String> variableNames = new ArrayList<>();
         for (Node n : getVariables()) {
@@ -412,6 +512,11 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         return variableNames;
     }
 
+    /**
+     * Returns the parameter setting map.
+     *
+     * @return the parameter setting map.
+     */
     @Override
     public Map<String, String> getParamSettings() {
         Map<String, String> paramSettings = new HashMap<>();
@@ -426,14 +531,10 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
             DataModel dataModel = this.dataModelList.get(0);
 
             if (dataModel instanceof CovarianceMatrix) {
-                if (!paramSettings.containsKey("# Nodes")) {
-                    paramSettings.put("# Vars", Integer.toString(((CovarianceMatrix) dataModel).getDimension()));
-                }
+                paramSettings.put("# Vars", Integer.toString(((CovarianceMatrix) dataModel).getDimension()));
                 paramSettings.put("N", Integer.toString(((CovarianceMatrix) dataModel).getSampleSize()));
             } else {
-                if (!paramSettings.containsKey("# Nodes")) {
-                    paramSettings.put("# Vars", Integer.toString(((DataSet) dataModel).getNumColumns()));
-                }
+                paramSettings.put("# Vars", Integer.toString(((DataSet) dataModel).getNumColumns()));
                 paramSettings.put("N", Integer.toString(((DataSet) dataModel).getNumRows()));
             }
         }
@@ -441,11 +542,21 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         return paramSettings;
     }
 
+    /**
+     * Returns the parameter setting map.
+     *
+     * @return the parameter setting map.
+     */
     @Override
     public Map<String, String> getAllParamSettings() {
         return this.allParamSettings;
     }
 
+    /**
+     * Sets the parameter setting map.
+     *
+     * @param paramSettings the parameter setting map to set.
+     */
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamSettings = paramSettings;

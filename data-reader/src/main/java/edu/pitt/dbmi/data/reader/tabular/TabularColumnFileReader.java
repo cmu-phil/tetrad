@@ -40,17 +40,36 @@ import java.util.*;
  */
 public final class TabularColumnFileReader extends AbstractTabularColumnFileReader implements TabularColumnReader {
 
-//    private static final Logger LOGGER = LoggerFactory.getLogger(TabularColumnFileReader.class);
-
+    /**
+     * Constructor.
+     *
+     * @param dataFile  The data file.
+     * @param delimiter The delimiter.
+     */
     public TabularColumnFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
     }
 
+    /**
+     * Reads in the data columns.
+     *
+     * @param isDiscrete Whether the data is discrete.
+     * @return The data columns.
+     * @throws IOException If an I/O error occurs.
+     */
     @Override
     public DataColumn[] readInDataColumns(boolean isDiscrete) throws IOException {
         return readInDataColumns(Collections.EMPTY_SET, isDiscrete);
     }
 
+    /**
+     * Reads in the data columns.
+     *
+     * @param namesOfColumnsToExclude the names of columns to exclude
+     * @param isDiscrete              Whether the data is discrete.
+     * @return The data columns.
+     * @throws IOException If an I/O error occurs.
+     */
     @Override
     public DataColumn[] readInDataColumns(Set<String> namesOfColumnsToExclude, boolean isDiscrete) throws IOException {
         if (namesOfColumnsToExclude == null || namesOfColumnsToExclude.isEmpty()) {
@@ -78,6 +97,14 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
         }
     }
 
+    /**
+     * Reads in the data columns.
+     *
+     * @param columnsToExclude the columns to exclude
+     * @param isDiscrete       Whether the data is discrete.
+     * @return The data columns.
+     * @throws IOException If an I/O error occurs.
+     */
     @Override
     public DataColumn[] readInDataColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException {
         int numOfCols = countNumberOfColumns();
@@ -87,6 +114,14 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
         return getColumns(validColsToExclude, isDiscrete);
     }
 
+    /**
+     * Generates the data columns.
+     *
+     * @param columnsToExclude the columns to exclude
+     * @param isDiscrete       Whether the data is discrete.
+     * @return The data columns.
+     * @throws IOException If an I/O error occurs.
+     */
     @Override
     public DataColumn[] generateColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException {
         List<DataColumn> columns = new LinkedList<>();

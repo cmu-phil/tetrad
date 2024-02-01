@@ -33,31 +33,65 @@ public class InterventionalColumn {
     @JsonProperty("status")
     private ColumnMetadata statusColumn;
 
+    /**
+     * Default constructor.
+     */
     public InterventionalColumn() {
     }
 
+    /**
+     * Constructor.
+     *
+     * @param valueColumn  The value column.
+     * @param statusColumn The status column.
+     */
     public InterventionalColumn(ColumnMetadata valueColumn, ColumnMetadata statusColumn) {
         this.valueColumn = valueColumn;
         this.statusColumn = statusColumn;
     }
 
+    /**
+     * Returns a string representation of this object.
+     *
+     * @return a string representation of this object.
+     */
     @Override
     public String toString() {
         return "InterventionalColumn{" + "valueColumn=" + this.valueColumn + ", statusColumn=" + this.statusColumn + '}';
     }
 
+    /**
+     * Returns the value column.
+     *
+     * @return the value column.
+     */
     public ColumnMetadata getValueColumn() {
         return this.valueColumn;
     }
 
+    /**
+     * Sets the value column.
+     *
+     * @param valueColumn the value column.
+     */
     public void setValueColumn(ColumnMetadata valueColumn) {
         this.valueColumn = valueColumn;
     }
 
+    /**
+     * Returns the status column.
+     *
+     * @return the status column.
+     */
     public ColumnMetadata getStatusColumn() {
         return this.statusColumn;
     }
 
+    /**
+     * Sets the status column.
+     *
+     * @param statusColumn the status column.
+     */
     public void setStatusColumn(ColumnMetadata statusColumn) {
         this.statusColumn = statusColumn;
     }

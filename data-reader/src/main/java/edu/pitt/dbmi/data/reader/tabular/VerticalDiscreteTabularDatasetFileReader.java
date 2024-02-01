@@ -38,17 +38,36 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
     private boolean hasHeader;
     private char quoteChar;
 
+    /**
+     * Constructor.
+     *
+     * @param dataFile  The data file.
+     * @param delimiter The delimiter.
+     */
     public VerticalDiscreteTabularDatasetFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
         this.hasHeader = this.hasHeader = true;
         this.quoteChar = '"';
     }
 
+    /**
+     * Reads in the data.
+     *
+     * @return The data.
+     * @throws IOException If an I/O error occurs.
+     */
     @Override
     public Data readInData() throws IOException {
         return readInData(Collections.EMPTY_SET);
     }
 
+    /**
+     * Reads in the data.
+     *
+     * @param namesOfColumnsToExclude the names of columns to exclude.
+     * @return The data.
+     * @throws IOException If an I/O error occurs.
+     */
     @Override
     public Data readInData(Set<String> namesOfColumnsToExclude) throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
@@ -68,6 +87,13 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
         return dataReader.read(dataColumns, this.hasHeader);
     }
 
+    /**
+     * Reads in the data.
+     *
+     * @param columnsToExclude the columns to exclude.
+     * @return The data.
+     * @throws IOException If an I/O error occurs.
+     */
     @Override
     public Data readInData(int[] columnsToExclude) throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
@@ -87,11 +113,21 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
         return dataReader.read(dataColumns, this.hasHeader);
     }
 
+    /**
+     * Set whether the data has a header.
+     *
+     * @param hasHeader whether the data has a header.
+     */
     @Override
     public void setHasHeader(boolean hasHeader) {
         this.hasHeader = hasHeader;
     }
 
+    /**
+     * Set the quote character.
+     *
+     * @param quoteCharacter the quote character
+     */
     @Override
     public void setQuoteCharacter(char quoteCharacter) {
         this.quoteChar = quoteCharacter;

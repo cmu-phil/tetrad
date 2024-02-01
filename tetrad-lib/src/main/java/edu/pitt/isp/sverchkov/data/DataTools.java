@@ -32,11 +32,17 @@ import java.util.Scanner;
  * @author YUS24
  */
 public class DataTools {
-
     public static final String NEWLINE = System.getProperty("line.separator");
     public static final String DELIMITER_REGEX = " *, *";
     public static final String DELIMITER = ", ";
 
+    /**
+     * Reads a data table from a file.
+     *
+     * @param file The file to read from
+     * @return The data table
+     * @throws FileNotFoundException if the file is not found
+     */
     public static DataTable<String, String> dataTableFromFile(File file) throws FileNotFoundException {
         DataTable<String, String> data = null;
         try (Scanner in = new Scanner(file)) {
@@ -47,6 +53,14 @@ public class DataTools {
         return data;
     }
 
+    /**
+     * Saves a data table to a file.
+     *
+     * @param data    The data table to save
+     * @param dest    The file to save to
+     * @param headers Whether to include headers
+     * @throws IOException if something goes wrong
+     */
     public static <Attribute, Value> void saveCSV(DataTable<Attribute, Value> data, File dest, boolean headers) throws IOException {
         try (BufferedWriter out = new BufferedWriter(new FileWriter(dest))) {
 

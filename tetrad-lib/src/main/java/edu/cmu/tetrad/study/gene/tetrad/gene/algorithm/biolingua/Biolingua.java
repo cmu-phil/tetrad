@@ -36,22 +36,12 @@ import org.apache.commons.math3.util.FastMath;
 
 public class Biolingua {
     private static final float ALMOST_ZERO = (float) 0.00001;
-    //    private static final double LOG_2 = FastMath.log(2);
-
-    // TODO: consider making the signif level another parameter of the algorithm
     private static final float SIGNIF_LEVEL = (float) 0.05;
-
-    // TODO: these values are part of what is rather ad hoc and
-    // questionable in the paper, I will report on different
-    // behaviors of the algorithm having different values here.
     private static float bitsAnnotat = (float) .1;
     private static float bitsErrors = (float) 3;
     private static float bitsLinks = (float) 4;
     private static float bitsPredic = (float) 3;
-
-    // TODO: add comments describing each of these static vars
     private static int nvars;
-    //    private static BiolinguaDigraph origG;
     private static BiolinguaDigraph g;
     private static SymMatrixF cm;
     private static SymMatrixF sm;
@@ -59,15 +49,12 @@ public class Biolingua {
     private static boolean[] visited;
     private static boolean cycle;
     private static int targetParent;
-
     private static float emtempG;
     private static float emCurrentModel;
     private static float em1StepBest;
-
     private static int bestEnode1;
     private static int bestEnode2;
     private static int bestChange;
-
     private static int pos;
     private static int neg;
 
@@ -78,8 +65,11 @@ public class Biolingua {
     /**
      * Runs the biolingua algorithm using the given correlation matrix (all values are assumed significant) and the
      * initial graph, and uses some default values for the coefficients in the evaluation metric for annotations,
-     * errors, links, and predictions. Returns the graph found after the search stopped improving the evaluation metric.
-     * TODO: include Javadoc explanations of k*
+     * errors, links, and predictions. Returns the graph found after the search stopped improving the evaluation
+     * metric.
+     *
+     * @param correlMatrix the correlation matrix
+     * @param initGraph    the initial graph
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
             SymMatrixF correlMatrix, BiolinguaDigraph initGraph) {
@@ -97,6 +87,12 @@ public class Biolingua {
      * Runs the biolingua algorithm using the given correlation matrix (all values are assumed significant), an initial
      * graph, and the coefficients in the evaluation metric for annotations, errors, links, and predictions. Returns the
      * graph found after the search stopped improving the evaluation metric.
+     * @param correlMatrix the correlation matrix
+     * @param initGraph the initial graph
+     * @param vBitsAnnotat the coefficient for annotations in the evaluation metric
+     * @param vBitsErrors the coefficient for errors in the evaluation metric
+     * @param vbitsLinks the coefficient for links in the evaluation metric
+     * @param vBitsPredic the coefficient for predictions in the evaluation metric
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
             SymMatrixF correlMatrix, BiolinguaDigraph initGraph,
@@ -110,6 +106,13 @@ public class Biolingua {
      * Runs the biolingua algorithm using the given correlation matrix, significance matrix, the initial graph, and the
      * coefficients in the evaluation metric for annotations, errors, links, and predictions. Returns the graph found
      * after the search stopped improving the evaluation metric.
+     * @param correlMatrix the correlation matrix
+     * @param signifMatrix the significance matrix
+     * @param initGraph the initial graph
+     * @param vBitsAnnotat the coefficient for annotations in the evaluation metric
+     * @param vBitsErrors the coefficient for errors in the evaluation metric
+     * @param vbitsLinks the coefficient for links in the evaluation metric
+     * @param vBitsPredic the coefficient for predictions in the evaluation metric
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
             SymMatrixF correlMatrix, SymMatrixF signifMatrix,
@@ -118,7 +121,6 @@ public class Biolingua {
         return Biolingua.doBiolinguaAlgorithm(correlMatrix, signifMatrix, initGraph,
                 vbitsLinks, vBitsPredic, vBitsAnnotat, vBitsErrors);
     }
-
     private static BiolinguaDigraph doBiolinguaAlgorithm(
             SymMatrixF correlMatrix, SymMatrixF signifMatrix,
             BiolinguaDigraph initGraph, float vBitsAnnotat, float vBitsErrors,
@@ -245,6 +247,7 @@ public class Biolingua {
      * accordingly.<p> Count the # of predictions that agree with the input correlation matrix given to Biolingua, as
      * well as the # of errors (erroneous predictions) After checking all undirectedPaths, compute the evaluation
      * metric
+     * @return the evaluation metric for the current model
      */
     private static float evalCurrentModel() {
         int annotations = 0;
@@ -287,7 +290,7 @@ public class Biolingua {
                     // Determine the predicted sign according to all undirectedPaths
                     // between these variables
                     int predictedSign =
-                            ((Biolingua.pos == Biolingua.neg) ? 0 : (Biolingua.pos > Biolingua.neg ? 1 : -1));
+                            (Integer.compare(Biolingua.pos, Biolingua.neg));
 
                     // Value of edge between vi and vj in the correlation matrix
                     float correlValue = Biolingua.cm.getValue(vi, vj);

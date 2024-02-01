@@ -31,6 +31,9 @@ import java.util.Arrays;
  */
 public class BCCausalInference {
 
+    /**
+     * The value of the PESS constant.
+     */
     private static final double PESS_VALUE = 1.0;
     private final int numberOfNodes;
     private final int numberOfCases;
@@ -44,6 +47,13 @@ public class BCCausalInference {
     private final int[] nodeDimension;
     private final int[][] cases;
 
+    /**
+     * Constructor
+     *
+     * @param nodeDimension nodeDimension[0] is the number of nodes, nodeDimension[1] is the number of cases, and the
+     *                      rest are the dimensions of the nodes.
+     * @param cases         cases[0] is the number of cases, and the rest are the cases.
+     */
     public BCCausalInference(int[] nodeDimension, int[][] cases) {
         this.nodeDimension = nodeDimension;
         this.cases = cases;
@@ -74,9 +84,7 @@ public class BCCausalInference {
 
         double lnYminusLnX = lnY - lnX;
 
-        return (lnYminusLnX < Double.MIN_EXPONENT)
-                ? lnX
-                : FastMath.log1p(FastMath.exp(lnYminusLnX)) + lnX;
+        return (lnYminusLnX < Double.MIN_EXPONENT) ? lnX : FastMath.log1p(FastMath.exp(lnYminusLnX)) + lnX;
     }
 
     /**
@@ -206,10 +214,12 @@ public class BCCausalInference {
     }
 
     /**
-     * @param node
-     * @param instancePtr
+     * This function scores a node using the first scoring function.
+     *
+     * @param node        is the node being scored.
+     * @param instancePtr is the pointer to the first instance of the node.
      * @param q           is the number of possible joint instantiation of the parents of the parents of the node.
-     * @return
+     * @return the score of the node.
      */
     private double scoringFn1(int node, int instancePtr, double q, CountsTracker countsTracker) {
         int[] counts = countsTracker.counts;
@@ -232,9 +242,9 @@ public class BCCausalInference {
     /**
      * Computes the K2 score.
      *
-     * @param node
-     * @param instancePtr
-     * @return
+     * @param node        is the node being scored.
+     * @param instancePtr is the pointer to the first instance of the node.
+     * @return the score of the node.
      */
     private double scoringFn2(int node, int instancePtr, CountsTracker countsTracker) {
         int[] counts = countsTracker.counts;
@@ -252,6 +262,13 @@ public class BCCausalInference {
         return scoreNI;
     }
 
+    /**
+     * This function files a case for a node.
+     *
+     * @param node          is the node being filed.
+     * @param casei         is the case being filed.
+     * @param countsTracker is the tracker for the counts.
+     */
     private void fileCase(int node, int casei, CountsTracker countsTracker) {
         int nodeDim = (node > this.numberOfNodes) ? countsTracker.xyDim : this.nodeDimension[node];
 
@@ -338,6 +355,12 @@ public class BCCausalInference {
         counts[cPtr + nodeValue - 1]++;
     }
 
+    /**
+     * This function creates a tracker for the counts.
+     *
+     * @param z is the set of nodes.
+     * @return the tracker for the counts.
+     */
     private CountsTracker createCountsTracker(int[] z) {
         CountsTracker tracker = new CountsTracker();
         tracker.numOfNodes = this.numberOfNodes;
@@ -367,15 +390,22 @@ public class BCCausalInference {
      * prior of 0.5. It can be revised to return an informative prior. The code that calls priorIndependent() currently
      * assumes that it returns a value in (0, 1), and thus, does not return 0 or 1.
      *
-     * @param x
-     * @param y
-     * @param z
-     * @return
+     * @param x is the node x
+     * @param y is the node y
+     * @param z is the set of nodes
+     * @return the prior probability that X independent Y given Z
      */
     private double priorIndependent(int x, int y, int[] z) {
         return 0.5;  // currently assumes uniform priors
     }
 
+    /**
+     * This function computes the log of the factorial of the numbers from 1 to maxCases + maxValues.
+     *
+     * @param maxCases  is the maximum number of cases
+     * @param maxValues is the maximum number of values
+     * @return the log of the factorial of the numbers from 1 to maxCases + maxValues
+     */
     private double[] computeLogFactorial(int maxCases, int maxValues) {
         int size = (2 * maxCases) + maxValues;
         double[] logFact = new double[size + 1];
@@ -386,6 +416,12 @@ public class BCCausalInference {
         return logFact;
     }
 
+    /**
+     * This function computes the log of the gamma function.
+     *
+     * @param xx is the value for which the log of the gamma function is computed.
+     * @return the log of the gamma function.
+     */
     private double gammln(double xx) {
         if (xx == 1) {
             return 0;  // this is a correction to a bug that used to be here
@@ -399,20 +435,18 @@ public class BCCausalInference {
         }
     }
 
+    /**
+     * This function computes the log of the gamma function for values greater than 1.
+     *
+     * @param xx is the value for which the log of the gamma function is computed.
+     * @return the log of the gamma function.
+     */
     private double gammlnCore(double xx) {
         final double stp = 2.50662827465;
         final double half = 0.5;
         final double one = 1.0;
         final double fpf = 5.5;
-        double[] cof = {
-                0,
-                76.18009173,
-                -86.50532033,
-                24.01409822,
-                -1.231739516,
-                0.120858003E-2,
-                -0.536382E-5
-        };
+        double[] cof = {0, 76.18009173, -86.50532033, 24.01409822, -1.231739516, 0.120858003E-2, -0.536382E-5};
 
         double x = xx - one;
         double tmp = x + fpf;
@@ -426,11 +460,25 @@ public class BCCausalInference {
         return tmp + FastMath.log(stp * ser);
     }
 
+    /**
+     * An enum for the type of operation.
+     */
     public enum OP {
+
+        /**
+         * The operation is dependent.
+         */
         DEPENDENT,
+
+        /**
+         * The operation is independent.
+         */
         INDEPENDENT
     }
 
+    /**
+     * This class is a tracker for the counts.
+     */
     private static class CountsTracker {
 
         int numOfNodes;

@@ -32,10 +32,27 @@ import java.util.Set;
  */
 public interface TabularColumnValidation extends Validation, DataReader {
 
+    /**
+     * Validate the columns.
+     *
+     * @return the validation results.
+     */
     List<ValidationResult> validate();
 
+    /**
+     * Validate the columns.
+     *
+     * @param excludedColumns the columns to exclude.
+     * @return the validation results.
+     */
     List<ValidationResult> validate(int[] excludedColumns);
 
+    /**
+     * Validate the columns.
+     *
+     * @param excludedColumns the columns to exclude.
+     * @return the validation results.
+     */
     List<ValidationResult> validate(Set<String> excludedColumns);
 
 }

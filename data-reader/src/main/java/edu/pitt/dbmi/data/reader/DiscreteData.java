@@ -25,8 +25,18 @@ package edu.pitt.dbmi.data.reader;
  */
 public interface DiscreteData extends Data {
 
+    /**
+     * Get the discrete data columns.
+     *
+     * @return the discrete data columns.
+     */
     DiscreteDataColumn[] getDataColumns();
 
+    /**
+     * Get the discrete data.
+     *
+     * @return the discrete data.
+     */
     int[][] getData();
 
 }

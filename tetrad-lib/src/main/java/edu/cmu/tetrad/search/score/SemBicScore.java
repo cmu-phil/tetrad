@@ -182,8 +182,25 @@ public class SemBicScore implements Score {
      */
     @NotNull
     public static SemBicScore.CovAndCoefs getCovAndCoefs(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets, boolean usePseudoInverse) {
+        List<Integer> rows = SemBicScore.getRows(i, parents, data, calculateRowSubsets);
+        return getCovAndCoefs(i, parents, data, covariances, usePseudoInverse, rows);
+    }
+
+    /**
+     * Returns the covariance matrix of the regression of the ith variable on its parents and the regression
+     *
+     * @param i                The index of the variable.
+     * @param parents          The indices of the parents.
+     * @param data             The data matrix.
+     * @param covariances      The covariance matrix.
+     * @param usePseudoInverse True if the pseudo-inverse should be used instead of the inverse to avoid exceptions.
+     * @param rows             The rows to use.
+     * @return The covariance matrix of the regression of the ith variable on its parents and the regression
+     */
+    @NotNull
+    public static CovAndCoefs getCovAndCoefs(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean usePseudoInverse, List<Integer> rows) {
         int[] all = SemBicScore.concat(i, parents);
-        Matrix cov = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
+        Matrix cov = SemBicScore.getCov(rows, all, all, data, covariances);
         int[] pp = SemBicScore.indexedParents(parents);
         Matrix covxx = cov.getSelection(pp, pp);
         Matrix covxy = cov.getSelection(pp, new int[]{0});

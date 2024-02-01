@@ -29,6 +29,12 @@ import java.io.IOException;
  */
 public interface CovarianceDataReader extends DataReader {
 
+    /**
+     * Reads in the covariance data.
+     *
+     * @return the covariance data.
+     * @throws IOException if an I/O error occurs.
+     */
     CovarianceData readInData() throws IOException;
 
 }

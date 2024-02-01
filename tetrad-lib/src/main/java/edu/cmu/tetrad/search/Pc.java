@@ -63,21 +63,34 @@ import java.util.Set;
  * @see Knowledge
  */
 public class Pc implements IGraphSearch {
+    // The oracle for conditional independence facts.
     private final IndependenceTest independenceTest;
+    // The logger.
     private final TetradLogger logger = TetradLogger.getInstance();
+    // The knowledge specification.
     private Knowledge knowledge = new Knowledge();
+    // The sepset map from the most recent search.
     private SepsetMap sepsets;
+    // The depth of the search.
     private int depth = 1000;
+    // The graph from the most recent search.
     private Graph graph;
+    // The elapsed time of the most recent search.
     private long elapsedTime;
+    // The number of independence tests performed in the most recent search.
     private int numIndependenceTests;
+    // Whether the search is verbose.
     private boolean verbose = false;
+    // The rule to use for resolving collider orientation conflicts.
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+    // Whether the stable adjacency search should be used.
     private boolean stable = true;
+    // Whether cycles should be checked in the Meek rules.
     private boolean meekPreventCycles = true;
+    // Whether the max-p heuristic should be used for collider discovery.
     private boolean useMaxPHeuristic = false;
+    // The PC heuristic type.
     private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
-
 
     /**
      * Constructs a new PC search using the given independence test as oracle.

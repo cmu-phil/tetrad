@@ -71,21 +71,40 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * @see Knowledge
  */
 public class Boss implements SuborderSearch {
+    // The score.
     private final Score score;
+    // The variables.
     private final List<Node> variables;
+    // The parents.
     private final Map<Node, Set<Node>> parents;
+    // The grow-shrink trees.
     private Map<Node, GrowShrinkTree> gsts;
+    // The set of all variables.
     private Set<Node> all;
+    // The pool for parallelism.
     private ForkJoinPool pool;
+    // The knowledge.
     private Knowledge knowledge = new Knowledge();
+    // The BES algorithm.
     private BesPermutation bes = null;
+    // The number of random starts to use.
     private int numStarts = 1;
+    // True if the order of the variables in the data should be used for an initial best-order search, false if a random
+    // permutation should be used. (Subsequence automatic best order runs will use random permutations.) This is
+    // included so that the algorithm will be capable of outputting the same results with the same data without any
+    // randomness.
     private boolean useDataOrder = true;
+    // True if the grow-shrink trees should be reset after each best-mutation step.
     private boolean resetAfterBM = false;
+    // True if the grow-shrink trees should be reset after each restart.
     private boolean resetAfterRS = true;
+    // The number of threads to use.
     private int numThreads = 1;
+    // True if verbose output should be printed.
     private List<Double> bics;
+    // The BIC scores.
     private List<Double> times;
+    // True if verbose output should be printed.
     private boolean verbose = false;
 
 
@@ -103,6 +122,15 @@ public class Boss implements SuborderSearch {
         }
     }
 
+    /**
+     * Searches a suborder of the variables. The prefix is the set of variables that must precede the suborder. The
+     * suborder is the set of variables to be ordered. The gsts is a map from variables to GrowShrinkTrees, which are
+     * used to cache scores for the variables. The searchSuborder method will update the suborder to be the best
+     * ordering found.
+     * @param prefix   The prefix of the suborder.
+     * @param suborder The suborder.
+     * @param gsts     The GrowShrinkTree being used to do caching of scores.
+     */
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
         assert this.numStarts > 0;
@@ -196,6 +224,10 @@ public class Boss implements SuborderSearch {
         }
     }
 
+    /**
+     * Sets the knowledge to be used for the search.
+     * @param knowledge This knowledge. If null, no knowledge will be used.
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
@@ -214,10 +246,18 @@ public class Boss implements SuborderSearch {
         this.numStarts = numStarts;
     }
 
+    /**
+     * Sets whether the grow-shrink trees should be reset after each best-mutation step.
+     * @param reset True if so.
+     */
     public void setResetAfterBM(boolean reset) {
         this.resetAfterBM = reset;
     }
 
+    /**
+     * Sets whether the grow-shrink trees should be reset after each restart.
+     * @param reset True if so.
+     */
     public void setResetAfterRS(boolean reset) {
         this.resetAfterRS = reset;
     }
@@ -333,6 +373,8 @@ public class Boss implements SuborderSearch {
         int curr = 0;
 
         while (itr.hasNext()) {
+            if (Thread.currentThread().isInterrupted()) return false;
+
             Node z = itr.next();
 
             if (this.knowledge.isRequired(x.getName(), z.getName())) {

@@ -32,12 +32,26 @@ import java.nio.file.Path;
  */
 public class MetadataFileReader implements MetadataReader {
 
+    /**
+     * The metadata file.
+     */
     protected final Path metadataFile;
 
+    /**
+     * Constructor.
+     *
+     * @param metadataFile The metadata file.
+     */
     public MetadataFileReader(Path metadataFile) {
         this.metadataFile = metadataFile;
     }
 
+    /**
+     * Reads in the metadata.
+     *
+     * @return the metadata.
+     * @throws IOException if an I/O error occurs.
+     */
     @Override
     public Metadata read() throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(this.metadataFile)) {

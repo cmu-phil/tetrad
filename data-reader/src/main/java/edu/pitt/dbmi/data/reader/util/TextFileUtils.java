@@ -32,9 +32,19 @@ import java.nio.channels.FileChannel;
  */
 public class TextFileUtils {
 
+    /**
+     * The line feed delimiter for text data files.
+     */
     protected static final byte LINE_FEED = '\n';
+
+    /**
+     * The carriage return delimiter for text data files.
+     */
     protected static final byte CARRIAGE_RETURN = '\r';
 
+    /**
+     * The space character for text data files.
+     */
     protected static final byte SPACE_CHAR = ' ';
 
     private TextFileUtils() {
@@ -53,8 +63,8 @@ public class TextFileUtils {
      * @param comment        a comment symbol to ignore lines in files
      * @param quoteCharacter used for grouping characters
      * @param delims         the set of delimiters to test for
-     * @return
-     * @throws IOException
+     * @return the inferred delimiter
+     * @throws IOException if an I/O error occurs
      */
     public static char inferDelimiter(File file, int n, int skip, String comment, char quoteCharacter, char[] delims) throws IOException {
         if (file == null) {

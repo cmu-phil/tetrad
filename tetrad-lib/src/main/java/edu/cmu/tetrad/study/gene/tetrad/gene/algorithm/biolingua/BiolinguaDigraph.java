@@ -92,6 +92,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
      *
      * @param p the parent node
      * @param c the child node
+     * @return true if node p is parent of node c.
      */
     public boolean isParent(int p, int c) {
         return (this.getEdges().getDoubleValue(p, c) != 0.0);
@@ -100,6 +101,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     /**
      * Returns a string with the indexes of all parents of node i separated by spaces (useful for printouts)
      * @param i the node whose parents are requested
+     * @return a string with the indexes of all parents of node i separated by spaces
      */
     public String strOfParents(int i) {
         int[] ap = this.getParents(i);

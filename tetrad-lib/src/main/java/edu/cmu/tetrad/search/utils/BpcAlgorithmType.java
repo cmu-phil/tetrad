@@ -29,12 +29,40 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @author josephramsey
  */
 public enum BpcAlgorithmType implements TetradSerializable {
+
+    /**
+     * This one will work and does a good job for medium-sized models.
+     */
     BUILD_PURE_CLUSTERS,
+
+    /**
+     * This will work and does a good job for small models, no more than 4 latents.
+     */
     SIMPLIFIED_BPC_DEPTH_0,
+
+    /**
+     * This is very slow.
+     */
     SIMPLIFIED_BPC_DEPTH_1,
+
+    /**
+     * Even slower.
+     */
     SIMPLIFIED_BPC,
+
+    /**
+     * This option doesn't do any purify.
+     */
     TETRAD_PURIFY_WASHDOWN,
+
+    /**
+     * FOFC algorithm
+     */
     FIND_ONE_FACTOR_CLUSTERS,
+
+    /**
+     * FTFC algorithm.
+     */
     FIND_TWO_FACTOR_CLUSTERS;
 
     private static final long serialVersionUID = 23L;

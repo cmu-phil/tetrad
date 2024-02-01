@@ -29,35 +29,50 @@ import java.util.List;
 /**
  * Data table implementation.
  *
- * @author YUS24
  * @param <N> Type of variable names
  * @param <V> Type of variable values
+ * @author YUS24
  */
 public class DataTableImpl<N, V> implements DataTable<N, V> {
 
     private final List<N> variables;
     private final List<List<V>> rows;
 
+    /**
+     * @param vars The names of the variables in the table
+     */
     public DataTableImpl(List<? extends N> vars) {
         this.variables = Collections.unmodifiableList(new ArrayList<>(vars));
         this.rows = new ArrayList<>();
     }
 
+    /**
+     * @return The variables in the table
+     */
     @Override
     public List<N> variables() {
         return this.variables;
     }
 
+    /**
+     * @return The number of columns in the table
+     */
     @Override
     public int columnCount() {
         return this.variables.size();
     }
 
+    /**
+     * @return The number of rows in the table
+     */
     @Override
     public int rowCount() {
         return this.rows.size();
     }
 
+    /**
+     * @param row The index of the row to retrieve
+     */
     @Override
     public void addRow(List<? extends V> row) {
         int

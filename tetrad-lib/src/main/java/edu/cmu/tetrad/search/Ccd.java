@@ -49,8 +49,11 @@ import java.util.*;
  * @author josephramsey
  */
 public final class Ccd implements IGraphSearch {
+    // The independence test to be used.
     private final IndependenceTest independenceTest;
+    // The nodes in the graph.
     private final List<Node> nodes;
+    // Whether the R1 rule should be applied.
     private boolean applyR1;
 
     /**

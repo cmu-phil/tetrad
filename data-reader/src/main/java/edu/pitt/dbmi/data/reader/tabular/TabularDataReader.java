@@ -37,15 +37,32 @@ public interface TabularDataReader extends DatasetReader {
      * number of categories of a column is equal to or less than the given number of categories, it will be considered
      * to have discrete data. Else, it is considered to have continuous data.
      *
-     * @param dataColumns
+     * @param dataColumns        the data columns
      * @param numberOfCategories maximum number of categories to be considered discrete
-     * @param hasHeader
-     * @throws IOException
+     * @param hasHeader          whether the data has a header
+     * @throws IOException if an I/O error occurs
      */
     void determineDiscreteDataColumns(DataColumn[] dataColumns, int numberOfCategories, boolean hasHeader) throws IOException;
 
+    /**
+     * Read the data.
+     *
+     * @param dataColumns the data columns
+     * @param hasHeader   whether the data has a header
+     * @return the data
+     * @throws IOException if an I/O error occurs
+     */
     Data read(DataColumn[] dataColumns, boolean hasHeader) throws IOException;
 
+    /**
+     * Read the data.
+     *
+     * @param dataColumns the data columns
+     * @param hasHeader   whether the data has a header
+     * @param metadata    the metadata
+     * @return the data
+     * @throws IOException if an I/O error occurs
+     */
     Data read(DataColumn[] dataColumns, boolean hasHeader, Metadata metadata) throws IOException;
 
 }

@@ -227,6 +227,11 @@ public class BesPermutation {
         return score.localScoreDiff(xIndex, yIndex, parentIndices);
     }
 
+    /**
+     * Returns the knowledge that BES will use.
+     *
+     * @return This knowledge.
+     */
     public Knowledge getKnowledge() {
         return knowledge;
     }

@@ -25,11 +25,34 @@ package edu.pitt.dbmi.data.reader.validation;
  */
 public enum MessageType {
 
+    /**
+     * Error in file input/output operation.
+     */
     FILE_IO_ERROR,
+
+    /**
+     * Missing value in file.
+     */
     FILE_MISSING_VALUE,
+
+    /**
+     * Invalid number in file.
+     */
     FILE_INVALID_NUMBER,
+
+    /**
+     * Excess or insufficient data in file.
+     */
     FILE_EXCESS_DATA,
+
+    /**
+     * Excess or insufficient data in file.
+     */
     FILE_INSUFFICIENT_DATA,
+
+    /**
+     * File summary.
+     */
     FILE_SUMMARY
 
 }

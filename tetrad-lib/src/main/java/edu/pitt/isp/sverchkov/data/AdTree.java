@@ -49,6 +49,7 @@ public class AdTree<A, V> extends AdTreeHelper {
 
     /**
      * Constructs an AD tree for the given data set.
+     *
      * @param data The data set.
      */
     public AdTree(DataTable<A, V> data) {
@@ -108,6 +109,7 @@ public class AdTree<A, V> extends AdTreeHelper {
 
     /**
      * Returns the number of rows in the data set.
+     *
      * @param attribute The attribute to count.
      * @return The number of rows in the data set.
      */
@@ -119,6 +121,7 @@ public class AdTree<A, V> extends AdTreeHelper {
 
     /**
      * Returns the number of rows in the data set.
+     *
      * @param assignment The assignment to count.
      * @return The number of rows in the data set.
      */
@@ -135,7 +138,8 @@ public class AdTree<A, V> extends AdTreeHelper {
 
     /**
      * Returns the number of rows in the data set.
-     * @param attribute The attribute to count.
+     *
+     * @param attribute  The attribute to count.
      * @param assignment The assignment to count.
      * @return The number of rows in the data set.
      */
@@ -154,6 +158,7 @@ public class AdTree<A, V> extends AdTreeHelper {
 
     /**
      * Converts to XML.
+     *
      * @return The XML document.
      * @throws ParserConfigurationException if something goes wrong
      */
@@ -163,6 +168,7 @@ public class AdTree<A, V> extends AdTreeHelper {
 
     /**
      * Converts to XML.
+     *
      * @param builder The builder.
      * @return The XML document.
      */

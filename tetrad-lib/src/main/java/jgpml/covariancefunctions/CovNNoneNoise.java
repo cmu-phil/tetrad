@@ -50,9 +50,17 @@ public class CovNNoneNoise implements CovarianceFunction {
     double[][] k;
     double[][] q;
 
+    /**
+     * Creates a new <code>CovNNoneNoise CovarianceFunction</code>
+     */
     public CovNNoneNoise() {
     }
 
+    /**
+     * Main method for testing purposes
+     *
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
 
         CovarianceFunction cf = new CovNNoneNoise();

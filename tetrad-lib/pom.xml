@@ -50,25 +50,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-<!--            <plugin>-->
-<!--                <artifactId>maven-antrun-plugin</artifactId>-->
-<!--                <version>3.1.0</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <phase>compile</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>run</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <target>-->
-<!--                                <copy file="../docs/manual/index.html"-->
-<!--                                      tofile="${project.build.outputDirectory}/manual/index.html"/>-->
-<!--                            </target>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
         </plugins>
         <extensions>
             <extension>
@@ -121,34 +102,22 @@
             <version>1.0.3</version>
             <scope>compile</scope>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.reflections</groupId>-->
-        <!--            <artifactId>reflections</artifactId>-->
-        <!--            <version>0.10.2</version>-->
-        <!--        </dependency>-->
-
-        <!-- https://mvnrepository.com/artifact/javax.help/javahelp -->
         <dependency>
             <groupId>javax.help</groupId>
             <artifactId>javahelp</artifactId>
             <version>2.0.05</version>
         </dependency>
-
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.json/json -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20231013</version>
             <scope>compile</scope>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
@@ -156,14 +125,11 @@
         </dependency>
 
         <!-- For parsing Tetrad single-page HTML manual to get algorithm descriptions -->
-        <!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.15.4</version>
         </dependency>
-
-
         <dependency>
             <groupId>io.github.cmu-phil</groupId>
             <artifactId>data-reader</artifactId>
@@ -177,10 +143,7 @@
         </dependency>
     </dependencies>
 
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-
 </project>

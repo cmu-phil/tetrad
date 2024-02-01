@@ -72,7 +72,7 @@ class IndTestMenuItems {
     static void addContinuousTestMenuItems(JMenu test, IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
         if (testType != IndTestType.FISHER_Z &&
-                testType != IndTestType.FISHER_ZD &&
+//                testType != IndTestType.FISHER_ZD &&
                 testType != IndTestType.SEM_BIC &&
                 testType != IndTestType.CONDITIONAL_CORRELATION &&
                 testType != IndTestType.LINEAR_REGRESSION &&
