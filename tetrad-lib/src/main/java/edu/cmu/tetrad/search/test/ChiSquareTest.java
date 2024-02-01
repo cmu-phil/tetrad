@@ -185,11 +185,7 @@ public class ChiSquareTest {
                         double expected = (sumRows[i] * sumCols[j]) / total;
 
                         if (testType == TestType.CHI_SQUARE) {
-                            if (expected == 0) {
-                                throw new IllegalArgumentException("Total is zero.");
-                            }
-
-                            if (expected > 0.0) {
+                            if (expected > 0) {
                                 double d = observed - expected;
                                 _xSquare += (d * d) / expected;
                             }
