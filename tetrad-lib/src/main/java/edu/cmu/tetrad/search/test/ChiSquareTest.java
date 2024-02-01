@@ -185,6 +185,8 @@ public class ChiSquareTest {
                         double expected = (sumRows[i] * sumCols[j]) / total;
 
                         if (testType == TestType.CHI_SQUARE) {
+
+                            // Note here expected > 0, so we can divide by it.
                             double d = observed - expected;
                             _xSquare += (d * d) / expected;
                         } else if (testType == TestType.G_SQUARE) {
@@ -195,7 +197,7 @@ public class ChiSquareTest {
                             if (observed > 0) {
                                 _xSquare += 2.0 * observed * log(observed / expected);
                             } else {
-                                _xSquare += 0.0;
+                                _xSquare += 0;
                             }
                         } else {
                             throw new IllegalArgumentException("Unknown test type: " + testType);
