@@ -185,10 +185,8 @@ public class ChiSquareTest {
                         double expected = (sumRows[i] * sumCols[j]) / total;
 
                         if (testType == TestType.CHI_SQUARE) {
-                            if (expected > 0) {
-                                double d = observed - expected;
-                                _xSquare += (d * d) / expected;
-                            }
+                            double d = observed - expected;
+                            _xSquare += (d * d) / expected;
                         } else if (testType == TestType.G_SQUARE) {
 
                             // The G-square test is a likelihood ratio test, so we need to take the log of the
