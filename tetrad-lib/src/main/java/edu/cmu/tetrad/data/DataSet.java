@@ -346,7 +346,7 @@ public interface DataSet extends DataModel {
     DataSet copy();
 
     /**
-     * Returns a dataset with the same dimuensions as this dataset, but with no data.
+     * Returns a dataset with the same dimensions as this dataset, but with no data.
      *
      * @return a dataset with the same dimensions as this dataset, but with no data.
      */
