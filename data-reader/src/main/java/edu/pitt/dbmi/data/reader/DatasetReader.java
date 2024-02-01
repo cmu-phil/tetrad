@@ -25,8 +25,14 @@ package edu.pitt.dbmi.data.reader;
  */
 public interface DatasetReader extends DataReader {
 
+    /**
+     * The missing data marker for continuous data.
+     */
     double CONTINUOUS_MISSING_VALUE = Double.NaN;
 
+    /**
+     * The missing data marker for discrete data.
+     */
     int DISCRETE_MISSING_VALUE = -99;
 
     /**

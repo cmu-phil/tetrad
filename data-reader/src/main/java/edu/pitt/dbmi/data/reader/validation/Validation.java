@@ -27,6 +27,8 @@ public interface Validation {
 
     /**
      * Sets the maximum number of messages.
+     *
+     * @param maxNumOfMsg the maximum number of messages.
      */
     void setMaximumNumberOfMessages(int maxNumOfMsg);
 

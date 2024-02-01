@@ -30,6 +30,10 @@ import java.util.Arrays;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class BCCausalInference {
+
+    /**
+     * The value of the PESS constant.
+     */
     private static final double PESS_VALUE = 1.0;
     private final int numberOfNodes;
     private final int numberOfCases;
@@ -460,7 +464,16 @@ public class BCCausalInference {
      * An enum for the type of operation.
      */
     public enum OP {
-        DEPENDENT, INDEPENDENT
+
+        /**
+         * The operation is dependent.
+         */
+        DEPENDENT,
+
+        /**
+         * The operation is independent.
+         */
+        INDEPENDENT
     }
 
     /**

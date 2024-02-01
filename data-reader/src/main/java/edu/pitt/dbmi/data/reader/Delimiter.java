@@ -25,12 +25,39 @@ package edu.pitt.dbmi.data.reader;
  */
 public enum Delimiter {
 
+    /**
+     * The tab delimiter.
+     */
     TAB("tab", '\t'),
+
+    /**
+     * The space delimiter.
+     */
     SPACE("space", ' '),
+
+    /**
+     * The whitespace delimiter.
+     */
     WHITESPACE("whitespace", ' '),
+
+    /**
+     * The comma delimiter.
+     */
     COMMA("comma", ','),
+
+    /**
+     * The colon delimiter.
+     */
     COLON("colon", ':'),
+
+    /**
+     * The semicolon delimiter.
+     */
     SEMICOLON("semicolon", ';'),
+
+    /**
+     * The pipe delimiter.
+     */
     PIPE("pipe", '|');
 
     private final String name;

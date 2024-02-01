@@ -120,6 +120,11 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
                 : this.categories;
     }
 
+    /**
+     * Sets the categories.
+     *
+     * @param categories the categories.
+     */
     public void setCategories(List<String> categories) {
         this.categories = categories;
     }

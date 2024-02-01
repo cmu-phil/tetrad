@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -79,11 +80,11 @@ public class JunctionTreeAlgorithmTest {
         System.out.printf("P(v1=0|v2=0)P(v2=0)P(v3=0|v2=0) = %f%n", v1GivenV2 * v2Parent * v3Givenv2);
     }
 
-    @Ignore
+//    @Ignore
     @Test
     public void testJointProbGivenParents() throws IOException {
-        String graphFile = this.getClass().getResource("/jta/graph2.txt").getFile();
-        String dataFile = this.getClass().getResource("/jta/data2.txt").getFile();
+        String graphFile = Objects.requireNonNull(this.getClass().getResource("/jta/graph2.txt")).getFile();
+        String dataFile = Objects.requireNonNull(this.getClass().getResource("/jta/data2.txt")).getFile();
 
         Graph graph = readInGraph(Paths.get(graphFile));
         DataModel dataModel = readInDiscreteData(Paths.get(dataFile));
@@ -106,7 +107,7 @@ public class JunctionTreeAlgorithmTest {
         double probXYGivenZW = jta.getConditionalProbabilities(nodes, values, parents, parentValues);  // 0.24614443432733896
     }
 
-    @Ignore
+//    @Ignore
     @Test
     public void testJointProbability() {
         String graphFile = this.getClass().getResource("/jta/graph.txt").getFile();
@@ -123,11 +124,11 @@ public class JunctionTreeAlgorithmTest {
         }
     }
 
-    @Ignore
+//    @Ignore
     @Test
     public void testJunctionTree() {
-        String graphFile = this.getClass().getResource("/jta/graph.txt").getFile();
-        String dataFile = this.getClass().getResource("/jta/data.txt").getFile();
+        String graphFile = Objects.requireNonNull(this.getClass().getResource("/jta/graph.txt")).getFile();
+        String dataFile = Objects.requireNonNull(this.getClass().getResource("/jta/data.txt")).getFile();
         try {
             JunctionTreeAlgorithm jta = getJunctionTreeAlgorithm(graphFile, dataFile);
 
@@ -146,8 +147,6 @@ public class JunctionTreeAlgorithmTest {
             Assert.assertEquals(expected, actual);
 
             // P(v1=0|v2=1)
-            iNode = 0;
-            value = 0;
             parents[0] = 1;
             parentValues[0] = 1;
             conProb = jta.getConditionalProbability(iNode, value, parents, parentValues);
@@ -156,7 +155,6 @@ public class JunctionTreeAlgorithmTest {
             Assert.assertEquals(expected, actual);
 
             // P(v1=1|v2=0)
-            iNode = 0;
             value = 1;
             parents[0] = 1;
             parentValues[0] = 0;
@@ -166,8 +164,6 @@ public class JunctionTreeAlgorithmTest {
             Assert.assertEquals(expected, actual);
 
             // P(v1=1|v2=1)
-            iNode = 0;
-            value = 1;
             parents[0] = 1;
             parentValues[0] = 1;
             conProb = jta.getConditionalProbability(iNode, value, parents, parentValues);

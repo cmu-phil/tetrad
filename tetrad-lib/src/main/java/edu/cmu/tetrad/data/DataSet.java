@@ -189,8 +189,8 @@ public interface DataSet extends DataModel {
     boolean isContinuous();
 
     /**
-     * @return true if this is a discrete data set--that is, if it contains at least one column and all the columns
-     * are discrete.
+     * @return true if this is a discrete data set--that is, if it contains at least one column and all the columns are
+     * discrete.
      */
     boolean isDiscrete();
 
@@ -273,16 +273,20 @@ public interface DataSet extends DataModel {
      * Creates and returns a dataset consisting of those variables in the list vars.  Vars must be a subset of the
      * variables of this DataSet. The ordering of the elements of vars will be the same as in the list of variables in
      * this DataSet.
+     *
+     * @return a new data set consisting of the variables in the list vars.
      */
     DataSet subsetColumns(List<Node> vars);
 
     /**
-     * @return a new data set in which the column at indices[i] is placed at index i, for i = 0 to indices.length -
-     * 1. (View instead?)
+     * @param columns The indices of the columns to include in the new data set.
+     * @return a new data set in which the column at indices[i] is placed at index i, for i = 0 to indices.length - 1.
+     * (View instead?)
      */
     DataSet subsetColumns(int[] columns);
 
     /**
+     * @param rows The indices of the rows to include in the new data set.
      * @return a new data set in which the row at indices[i] is placed at index i, for i = 0 to indices.length - 1.
      * (View instead?)
      */
@@ -295,16 +299,22 @@ public interface DataSet extends DataModel {
 
     /**
      * The number format of the dataset.
+     *
+     * @return The number format of the dataset.
      */
     NumberFormat getNumberFormat();
 
     /**
      * The number formatter used to print out continuous values.
+     *
+     * @param nf The number formatter used to print out continuous values.
      */
     void setNumberFormat(NumberFormat nf);
 
     /**
-     * The character used a delimiter when the dataset is output.
+     * The character used a delimiter when the dataset is output
+     *
+     * @param character The character used as a delimiter when the dataset is output
      */
     void setOutputDelimiter(Character character);
 
@@ -313,12 +323,33 @@ public interface DataSet extends DataModel {
      */
     void permuteRows();
 
+    /**
+     * Returns the map of column names to tooltips.
+     *
+     * @return The map of column names to tooltips.
+     */
     Map<String, String> getColumnToTooltip();
 
+    /**
+     * Checks if the given object is equal to this dataset.
+     *
+     * @param o The object to check.
+     * @return True if the given object is equal to this dataset.
+     */
     boolean equals(Object o);
 
+    /**
+     * Returns a copy of this dataset.
+     *
+     * @return A copy of this dataset.
+     */
     DataSet copy();
 
+    /**
+     * Returns a dataset with the same dimuensions as this dataset, but with no data.
+     *
+     * @return a dataset with the same dimensions as this dataset, but with no data.
+     */
     DataSet like();
 }
 

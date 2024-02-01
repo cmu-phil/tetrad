@@ -63,7 +63,8 @@ public interface TabularColumnReader extends DataReader {
     /**
      * Generate the data columns.
      *
-     * @param isDiscrete whether the data is discrete.
+     * @param isDiscrete       whether the data is discrete.
+     * @param columnsToExclude the columns to exclude.
      * @return the data columns.
      * @throws IOException if an I/O error occurs.
      */

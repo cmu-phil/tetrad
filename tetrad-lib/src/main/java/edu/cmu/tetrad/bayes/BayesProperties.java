@@ -316,10 +316,16 @@ public final class BayesProperties {
         return r * c;
     }
 
+    /**
+     * Returns the number of categories for the given variable.
+     */
     public int getSampleSize() {
         return this.sampleSize;
     }
 
+    /**
+     * Returns the variable with the given name (assumed the target).
+     */
     public Node getVariable(String targetName) {
         for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
@@ -338,19 +344,35 @@ public final class BayesProperties {
         }
     }
 
+    /**
+     * Returns the likelihood ratio test statistic for the given graph and its degrees of freedom.
+     */
     private static class Ret {
         private final double lik;
         private final int dof;
 
+        /**
+         * Constructs a new Ret object.
+         * @param lik The likelihood.
+         * @param dof The degrees of freedom.
+         */
         public Ret(double lik, int dof) {
             this.lik = lik;
             this.dof = dof;
         }
 
+        /**
+         * Returns the likelihood.
+         * @return The likelihood.
+         */
         public double getLik() {
             return this.lik;
         }
 
+        /**
+         * Returns the degrees of freedom.
+         * @return  The degrees of freedom.
+         */
         public int getDof() {
             return this.dof;
         }
@@ -360,9 +382,25 @@ public final class BayesProperties {
      * Returns the number of categories for the given variable.
      */
     public static class LikelihoodRet {
+
+        /**
+         * The p-value.
+         */
         public double p;
+
+        /**
+         * The BIC.
+         */
         public double bic;
+
+        /**
+         * The chi-squared statistic.
+         */
         public double chiSq;
+
+        /**
+         * The degrees of freedom.
+         */
         public double dof;
     }
 }

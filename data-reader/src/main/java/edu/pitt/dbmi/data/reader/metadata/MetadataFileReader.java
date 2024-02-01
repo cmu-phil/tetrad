@@ -32,6 +32,9 @@ import java.nio.file.Path;
  */
 public class MetadataFileReader implements MetadataReader {
 
+    /**
+     * The metadata file.
+     */
     protected final Path metadataFile;
 
     /**

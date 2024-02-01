@@ -27,11 +27,24 @@ import java.nio.file.Path;
  */
 public abstract class AbstractDataPreviewer {
 
+    /**
+     * The line feed character.
+     */
     protected static final byte LINE_FEED = '\n';
+
+    /**
+     * The carriage return character.
+     */
     protected static final byte CARRIAGE_RETURN = '\r';
 
+    /**
+     * The ellipsis character.
+     */
     protected static final String ELLIPSIS = "...";
 
+    /**
+     * The data file.
+     */
     protected final Path dataFile;
 
     /**
@@ -43,12 +56,23 @@ public abstract class AbstractDataPreviewer {
         this.dataFile = dataFile;
     }
 
+    /**
+     * Check the number of characters parameter.
+     *
+     * @param numOfCharacters The number of characters.
+     */
     protected void checkCharacterNumberParameter(int numOfCharacters) {
         if (numOfCharacters < 0) {
             throw new IllegalArgumentException("Parameter numOfCharacters must be positive integer.");
         }
     }
 
+    /**
+     * Check the line number parameters.
+     *
+     * @param fromLine The starting line number.
+     * @param toLine   The ending line number.
+     */
     protected void checkLineNumberParameter(int fromLine, int toLine) {
         if (fromLine < 0) {
             throw new IllegalArgumentException("Parameter fromLine must be positive integer.");

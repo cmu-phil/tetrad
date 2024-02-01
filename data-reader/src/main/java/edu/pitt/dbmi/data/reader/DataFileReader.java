@@ -31,14 +31,44 @@ import java.nio.file.StandardOpenOption;
  */
 public abstract class DataFileReader implements DataReader {
 
+    /**
+     * The buffer size for reading data file.
+     */
     protected static final int BUFFER_SIZE = 1024 * 1024;
 
+    /**
+     * The newline character.
+     */
     protected static final byte LINE_FEED = '\n';
+
+    /**
+     * The carriage return character.
+     */
     protected static final byte CARRIAGE_RETURN = '\r';
+
+    /**
+     * The space character.
+     */
     protected static final byte SPACE_CHAR = Delimiter.SPACE.getByteValue();
+
+    /**
+     * The data file.
+     */
     protected final Path dataFile;
+
+    /**
+     * The delimiter.
+     */
     protected final Delimiter delimiter;
+
+    /**
+     * The quote character.
+     */
     protected byte quoteCharacter;
+
+    /**
+     * The comment marker.
+     */
     protected String commentMarker;
 
     /**

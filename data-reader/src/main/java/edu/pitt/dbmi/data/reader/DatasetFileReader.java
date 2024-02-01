@@ -27,6 +27,9 @@ import java.nio.file.Path;
  */
 public abstract class DatasetFileReader extends DataFileReader implements DatasetReader {
 
+    /**
+     * The missing data marker.
+     */
     protected String missingDataMarker;
 
     /**

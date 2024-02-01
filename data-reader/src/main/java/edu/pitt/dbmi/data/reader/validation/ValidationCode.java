@@ -25,8 +25,19 @@ package edu.pitt.dbmi.data.reader.validation;
  */
 public enum ValidationCode {
 
+    /**
+     * Information message.
+     */
     INFO,
+
+    /**
+     * Warning message.
+     */
     WARNING,
+
+    /**
+     * Error message.
+     */
     ERROR
 
 }

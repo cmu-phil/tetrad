@@ -293,7 +293,7 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
     /**
      * Set the maximum number of messages.
      *
-     * @param maxNumOfMsg
+     * @param maxNumOfMsg the maximum number of messages.
      */
     @Override
     public void setMaximumNumberOfMessages(int maxNumOfMsg) {

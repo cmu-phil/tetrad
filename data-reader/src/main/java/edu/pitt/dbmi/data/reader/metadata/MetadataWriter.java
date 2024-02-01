@@ -39,6 +39,13 @@ public interface MetadataWriter {
      */
     String writeAsString(Metadata metadata) throws JsonProcessingException;
 
+    /**
+     * Writes the metadata to the output file.
+     *
+     * @param metadata   The metadata.
+     * @param outputFile The output file.
+     * @throws IOException if an error occurs while writing the metadata.
+     */
     void write(Metadata metadata, Path outputFile) throws IOException;
 
 }

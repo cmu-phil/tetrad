@@ -523,7 +523,15 @@ public class BCInference {
      * Enum for the type of constraint.
      */
     public enum OP {
-        independent, dependent
+        /**
+         * The operation is independent.
+         */
+        independent,
+
+        /**
+         * The operation is dependent.
+         */
+        dependent
     }
 }
 

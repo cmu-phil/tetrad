@@ -36,6 +36,9 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @see Manipulation
  */
 public interface BayesUpdater extends TetradSerializable {
+    /**
+     * Serial version ID for serialization.
+     */
     long serialVersionUID = 23L;
 
     /**

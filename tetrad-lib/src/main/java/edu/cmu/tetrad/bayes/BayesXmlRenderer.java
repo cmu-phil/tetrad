@@ -36,6 +36,12 @@ import nu.xom.Text;
  */
 public final class BayesXmlRenderer {
 
+    /**
+     * Private constructor to prevent instantiation.
+     *
+     * @param bayesIm the Bayes net
+     * @return the XML element
+     */
     public static Element getElement(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
