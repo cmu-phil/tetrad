@@ -37,10 +37,20 @@ public class PagSamplingRfci implements IGraphSearch {
      */
     private Knowledge knowledge;
 
+    /**
+     * Constructor.
+     *
+     * @param dataSet the data set.
+     */
     public PagSamplingRfci(DataSet dataSet) {
         this.dataSet = dataSet;
     }
 
+    /**
+     * Search for a PAG.
+     *
+     * @return a PAG.
+     */
     @Override
     public Graph search() {
         List<Graph> graphs = runSearches();
@@ -48,6 +58,12 @@ public class PagSamplingRfci implements IGraphSearch {
         return GraphSampling.createGraphWithHighProbabilityEdges(graphs);
     }
 
+    /**
+     * Create tasks for parallel execution.
+     *
+     * @param numOfTasks the number of tasks.
+     * @return a list of callable tasks.
+     */
     List<Callable<Graph>> createTasks(int numOfTasks) {
         List<Callable<Graph>> callableTasks = new LinkedList<>();
 
@@ -105,34 +121,74 @@ public class PagSamplingRfci implements IGraphSearch {
         }
     }
 
+    /**
+     * Set the number of randomized search models.
+     *
+     * @param numRandomizedSearchModels the number of randomized search models.
+     */
     public void setNumRandomizedSearchModels(int numRandomizedSearchModels) {
         this.numRandomizedSearchModels = numRandomizedSearchModels;
     }
 
+    /**
+     * Set the verbose flag.
+     *
+     * @param verbose the verbose flag.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Set the depth.
+     *
+     * @param depth the depth.
+     */
     public void setDepth(int depth) {
         this.depth = depth;
     }
 
+    /**
+     * Set the maximum path length.
+     *
+     * @param maxPathLength the maximum path length.
+     */
     public void setMaxPathLength(int maxPathLength) {
         this.maxPathLength = maxPathLength;
     }
 
+    /**
+     * Set the threshold.
+     *
+     * @param threshold the threshold.
+     */
     public void setThreshold(boolean threshold) {
         this.threshold = threshold;
     }
 
+    /**
+     * Set the cutoff.
+     *
+     * @param cutoff the cutoff.
+     */
     public void setCutoff(double cutoff) {
         this.cutoff = cutoff;
     }
 
+    /**
+     * Set the prior equivalent sample size.
+     *
+     * @param priorEquivalentSampleSize the prior equivalent sample size.
+     */
     public void setPriorEquivalentSampleSize(double priorEquivalentSampleSize) {
         this.priorEquivalentSampleSize = priorEquivalentSampleSize;
     }
 
+    /**
+     * Set the knowledge.
+     *
+     * @param knowledge the knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }

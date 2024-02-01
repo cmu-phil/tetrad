@@ -38,6 +38,8 @@ import org.apache.commons.math3.util.FastMath;
 /**
  * Main class of the package, contains the objects that constitutes a Gaussian Process as well as the algorithm to train
  * the Hyperparameters and to do predictions.
+ *
+ * @author jdramsey
  */
 public class GaussianProcess {
 
@@ -167,7 +169,7 @@ public class GaussianProcess {
     /**
      * A simple test
      *
-     * @param args
+     * @param args ignored
      */
     public static void main(String[] args) {
 
@@ -188,17 +190,8 @@ public class GaussianProcess {
 
         gp.train(X, Y, params0, -20);
 
-
-//        int size = 100;
-//        Matrix Xtrain = new Matrix(size, 1);
-//        Matrix Ytrain = new Matrix(size, 1);
-//
-//        Matrix Xtest = new Matrix(size, 1);
-//        Matrix Ytest = new Matrix(size, 1);
-
         // half of the sinusoid uses points very close to each other and the other half uses
         // more sparse data
-
         Matrix[] datastar = CsvtoMatrix.load("../armdatastar.csv", 6, 1);
         Matrix Xstar = datastar[0];
         Matrix Ystar = datastar[1];
@@ -260,15 +253,6 @@ public class GaussianProcess {
             // alpha = L'\(L\y);
             this.alpha = GaussianProcess.bSubstitutionWithTranspose(this.L, GaussianProcess.fSubstitution(this.L, y));
 
-//            double[][] yarr = y.getArray();
-//            double[][] alphaarr = alpha.getArray();
-//            double lml =0;
-//            for(int i=0; i<n; i++){
-//                lml+= yarr[i][0]*alphaarr[i][0];
-//            }
-//            lml*=0.5;
-//
-
             // compute the negative log marginal likelihood
             double lml = (y.transpose().times(this.alpha).times(0.5)).get(0, 0);
 
@@ -326,7 +310,6 @@ public class GaussianProcess {
      * @param xstar test dataset
      * @return [ystar Sstar] predicted mean and covariance
      */
-
     public Matrix predictMean(Matrix xstar) {
 
         if (this.alpha == null || this.L == null) {
@@ -559,8 +542,6 @@ public class GaussianProcess {
     // initial point in the linesearch). Constants must satisfy 0 < RHO < SIG < 1.
     // Tuning of SIG (depending on the nature of the function to be optimized) may
     // speed up the minimization; it is probably not worth playing much with RHO.
-
-
 
 
 }

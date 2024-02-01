@@ -47,6 +47,9 @@ import static jgpml.covariancefunctions.MatrixOperations.exp;
 
 public class CovSEiso implements CovarianceFunction {
 
+    /**
+     * Creates a new <code>CovSEiso CovarianceFunction</code>
+     */
     public CovSEiso() {
     }
 
@@ -74,6 +77,10 @@ public class CovSEiso implements CovarianceFunction {
         return C;
     }
 
+    /**
+     * Main method for testing purposes
+     * @param args ignored
+     */
     public static void main(String[] args) {
 
         CovSEiso cf = new CovSEiso();
@@ -168,25 +175,3 @@ public class CovSEiso implements CovarianceFunction {
         return A;
     }
 }
-
-//    private static Matrix squareDist(Matrix a, Matrix b, Matrix Q){
-//
-//        if(a.getColumnDimension()!=Q.getRowDimension() || b.getColumnDimension()!=Q.getColumnDimension())
-//            throw new IllegalArgumentException("Wrong size of for Q "+Q.getRowDimension()+"x"+Q.getColumnDimension()+" instead of "+a.getColumnDimension()+"x"+b.getColumnDimension());
-//
-//        Matrix C = new Matrix(D,1);
-//
-//        for (int i=0; i<b.getColumnDimension(); i++) {
-//            for (int j=0; j<a.getColumnDimension(); j++) {
-//                double t = Q.get(i,j);
-//                for (int k=0; k<D; k++) {
-//                    double z = a.get(i,k) - b.get(j,k);
-//                    C.set(k,0,C.get(k,0)+ t*z*z);
-//                }
-//            }
-//        }
-//
-//        return C;
-//    }
-    
-

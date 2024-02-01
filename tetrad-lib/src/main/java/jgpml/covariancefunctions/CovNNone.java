@@ -47,26 +47,24 @@ public class CovNNone implements CovarianceFunction {
     double[][] k;
     double[][] q;
 
+    /**
+     * Creates a new <code>CovNNone CovarianceFunction</code>
+     */
     public CovNNone() {
     }
 
+    /**
+     * Main method for testing purposes
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
 
         CovNNone cf = new CovNNone();
 
         Matrix X = Matrix.identity(6, 6);
         Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}});
-
-        Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
-
-//            System.out.println("")
-//
-//        long start =  edu.cmu.tetrad.util.Timer.currentThreadCpuTimeMilliseconds()
-
         Matrix d = cf.computeDerivatives(logtheta, X, 1);
-
         d.print(d.getColumnDimension(), 8);
-
     }
 
     /**

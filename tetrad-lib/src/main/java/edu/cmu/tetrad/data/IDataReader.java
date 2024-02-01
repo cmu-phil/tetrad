@@ -14,13 +14,6 @@ public interface IDataReader {
     void setDelimiter(DelimiterType delimiterType);
 
     /**
-     * True if case IDs are provided in the first column of the data.
-     *
-     * @deprecated
-     */
-    void setIdsSupplied(boolean caseIdsPresent);
-
-    /**
      * The String identifier of the case ID column.
      *
      * @deprecated

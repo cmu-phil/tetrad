@@ -3,7 +3,10 @@ package edu.pitt.dbmi.algo.resampling;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -58,48 +61,100 @@ public class GeneralResamplingSearch {
     private int numNograph = 0;
     private ScoreWrapper scoreWrapper;
 
+    /**
+     * Constructor.
+     *
+     * @param data             the data set.
+     * @param numberResampling the number of resampling.
+     */
     public GeneralResamplingSearch(DataSet data, int numberResampling) {
         this.data = data;
         this.pool = ForkJoinPool.commonPool();
         this.numberResampling = numberResampling;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param dataSets         the data sets.
+     * @param numberResampling the number of resampling.
+     */
     public GeneralResamplingSearch(List<DataSet> dataSets, int numberResampling) {
         this.dataSets = dataSets;
         this.pool = ForkJoinPool.commonPool();
         this.numberResampling = numberResampling;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param algorithm the algorithm.
+     */
     public void setAlgorithm(Algorithm algorithm) {
         this.algorithm = algorithm;
         this.multiDataSetAlgorithm = null;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param multiDataSetAlgorithm the multi data set algorithm.
+     */
     public void setMultiDataSetAlgorithm(MultiDataSetAlgorithm multiDataSetAlgorithm) {
         this.multiDataSetAlgorithm = multiDataSetAlgorithm;
         this.algorithm = null;
     }
 
+    /**
+     * Sets the number of resampling.
+     *
+     * @param percentResampleSize the resampling size.
+     */
     public void setPercentResampleSize(double percentResampleSize) {
         this.percentResampleSize = percentResampleSize;
     }
 
+    /**
+     * Sets the resampling with replacement.
+     *
+     * @param resamplingWithReplacement the resampling with replacement.
+     */
     public void setResamplingWithReplacement(boolean resamplingWithReplacement) {
         this.resamplingWithReplacement = resamplingWithReplacement;
     }
 
+    /**
+     * Sets whether to run in parallel.
+     *
+     * @param runParallel whether to run in parallel.
+     */
     public void setRunParallel(boolean runParallel) {
         this.runParallel = runParallel;
     }
 
+    /**
+     * Sets whether to add the original dataset.
+     *
+     * @param addOriginalDataset whether to add the original dataset.
+     */
     public void setAddOriginalDataset(boolean addOriginalDataset) {
         this.addOriginalDataset = addOriginalDataset;
     }
 
+    /**
+     * Sets whether to be verbose.
+     *
+     * @param verbose whether to be verbose.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the data set.
+     *
+     * @param data the data set.
+     */
     public void setData(DataSet data) {
         this.data = data;
     }
@@ -113,6 +168,11 @@ public class GeneralResamplingSearch {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /**
+     * Sets the external graph.
+     *
+     * @param externalGraph the external graph.
+     */
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
@@ -126,15 +186,26 @@ public class GeneralResamplingSearch {
 
     /**
      * Sets the output stream that output (except for log output) should be sent to. By default System.out.
+     * @param out the output stream.
      */
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
+    /**
+     * Sets the parameters.
+     *
+     * @param parameters the parameters.
+     */
     public void setParameters(Parameters parameters) {
         this.parameters = parameters;
     }
 
+    /**
+     * Performs the search.
+     *
+     * @return the list of graphs.
+     */
     public List<Graph> search() {
 
         this.graphs.clear();
@@ -259,10 +330,18 @@ public class GeneralResamplingSearch {
         return this.graphs;
     }
 
+    /**
+     * Returns the number of no graph.
+     *
+     * @return the number of no graph.
+     */
     public int getNumNograph() {
         return numNograph;
     }
 
+    /**
+     * Returns the score wrapper.
+     */
     public void setScoreWrapper(ScoreWrapper scoreWrapper) {
         this.scoreWrapper = scoreWrapper;
     }

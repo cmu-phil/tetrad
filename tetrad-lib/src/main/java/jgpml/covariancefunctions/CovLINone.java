@@ -45,9 +45,15 @@ import static jgpml.covariancefunctions.MatrixOperations.sumRows;
 
 public class CovLINone implements CovarianceFunction {
 
+    /**
+     * Creates a new <code>CovLINone CovarianceFunction</code>
+     */
     public CovLINone() {
     }
 
+    /**
+     * Main method for testing purposes
+     */
     public static void main(String[] args) {
         CovLINone cf = new CovLINone();
 

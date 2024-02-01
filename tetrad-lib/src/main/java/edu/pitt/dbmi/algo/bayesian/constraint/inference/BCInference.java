@@ -324,6 +324,7 @@ public class BCInference {
     /**
      * @param q    is the number of possible joint instantiation of the parents of the parents of the node.
      * @param pess is the prior equivalent sample size
+     * @return the score of the node
      */
     private double scoringFn1(int node, int instancePtr, double q, double pess) {
         int Nij = 0;
@@ -509,14 +510,20 @@ public class BCInference {
         return maxValue;
     }
 
+    /**
+     * Sets the prior equivalent sample size.
+     *
+     * @param priorEquivalentSampleSize the prior equivalent sample size
+     */
     public void setPriorEqivalentSampleSize(double priorEquivalentSampleSize) {
         this.priorEquivalentSampleSize = priorEquivalentSampleSize;
     }
 
+    /**
+     * Enum for the type of constraint.
+     */
     public enum OP {
-
         independent, dependent
-
     }
 }
 

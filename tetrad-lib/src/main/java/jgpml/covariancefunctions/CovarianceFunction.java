@@ -30,6 +30,9 @@ package jgpml.covariancefunctions;
 import Jama.Matrix;
 
 
+/**
+ * Interface for covariance functions
+ */
 public interface CovarianceFunction {
 
     /**

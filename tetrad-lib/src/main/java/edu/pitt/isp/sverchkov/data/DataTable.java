@@ -31,12 +31,25 @@ import java.util.List;
  * @author YUS24
  */
 public interface DataTable<N, V> extends Iterable<List<V>> {
+
+    /**
+     * @return The names of the variables in the table
+     */
     List<N> variables();
 
+    /**
+     * @return The number of columns in the table
+     */
     int columnCount();
 
+    /**
+     * @return The number of rows in the table
+     */
     int rowCount();
 
+    /**
+     * @param row The index of the row to retrieve
+     */
     void addRow(List<? extends V> row);
 }
 

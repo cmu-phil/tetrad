@@ -39,6 +39,17 @@ public class GeneralResamplingTest {
      */
     private Graph externalGraph;
 
+    /**
+     * Constructor.
+     *
+     * @param data                      the data set.
+     * @param algorithm                 the algorithm.
+     * @param numberResampling          the number of resampling.
+     * @param percentResamplingSize     the percent resampling size.
+     * @param resamplingWithReplacement whether resampling with replacement.
+     * @param edgeEnsemble              the edge ensemble.
+     * @param addOriginalDataset        whether to add the original dataset.
+     */
     public GeneralResamplingTest(
             DataSet data,
             Algorithm algorithm,
@@ -69,6 +80,17 @@ public class GeneralResamplingTest {
         }
     }
 
+    /**
+     * Constructor.
+     *
+     * @param dataSets                  the data sets.
+     * @param multiDataSetAlgorithm     the multi data set algorithm.
+     * @param numberResampling          the number of resampling.
+     * @param percentResamplingSize     the percent resampling size.
+     * @param resamplingWithReplacement whether resampling with replacement.
+     * @param edgeEnsemble              the edge ensemble.
+     * @param addOriginalDataset        whether to add the original dataset.
+     */
     public GeneralResamplingTest(
             List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm,
             int numberResampling,
@@ -99,6 +121,12 @@ public class GeneralResamplingTest {
         }
     }
 
+    /**
+     * Constructor.
+     *
+     * @param truth    the true graph.
+     * @param estimate the estimated graph.
+     */
     public static int[][] getAdjConfusionMatrix(Graph truth, Graph estimate) {
         Graph complete = new EdgeListGraph(estimate.getNodes());
         complete.fullyConnect(Endpoint.TAIL);
@@ -134,6 +162,12 @@ public class GeneralResamplingTest {
         }
     }
 
+    /**
+     * Constructor.
+     *
+     * @param truth    the true graph.
+     * @param estimate the estimated graph.
+     */
     public static int[][] getEdgeTypeConfusionMatrix(Graph truth, Graph estimate) {
         Graph complete = new EdgeListGraph(estimate.getNodes());
         complete.fullyConnect(Endpoint.TAIL);
@@ -227,6 +261,8 @@ public class GeneralResamplingTest {
 
     /**
      * Sets whether verbose output should be produced.
+     *
+     * @param verbose whether verbose output should be produced.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -241,11 +277,18 @@ public class GeneralResamplingTest {
 
     /**
      * Sets the output stream that output (except for log output) should be sent to. By default System.out.
+     *
+     * @param out the output stream that output (except for log output) should be sent to.
      */
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
+    /**
+     * Sets the parameters.
+     *
+     * @param parameters the parameters.
+     */
     public void setParameters(Parameters parameters) {
         this.parameters = parameters;
         Object obj = parameters.get(Params.PRINT_STREAM);
@@ -270,6 +313,11 @@ public class GeneralResamplingTest {
         this.externalGraph = externalGraph;
     }
 
+    /**
+     * Runs the resampling test.
+     *
+     * @return the graph.
+     */
     public Graph search() {
         long start, stop;
 
@@ -329,10 +377,19 @@ public class GeneralResamplingTest {
         return graph;
     }
 
+    /**
+     * Sets the score wrapper.
+     *
+     * @param scoreWrapper the score wrapper.
+     */
     public void setScoreWrapper(ScoreWrapper scoreWrapper) {
         this.scoreWrapper = scoreWrapper;
     }
 
+    /**
+     * Sets the independence wrapper.
+     * @param independenceWrapper the independence wrapper.
+     */
     public void setIndTestWrapper(IndependenceWrapper independenceWrapper) {
         this.independenceWrapper = independenceWrapper;
     }
