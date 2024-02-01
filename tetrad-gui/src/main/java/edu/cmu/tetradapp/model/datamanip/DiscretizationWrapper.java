@@ -30,6 +30,7 @@ import edu.cmu.tetradapp.model.PcRunner;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,17 +42,8 @@ import java.util.prefs.Preferences;
  * @author Tyler
  */
 public class DiscretizationWrapper extends DataWrapper {
+    @Serial
     private static final long serialVersionUID = 23L;
-
-
-    /**
-     * The discretized data set.
-     *
-     * @serial Not null.
-     * @deprecated
-     */
-    private final List<DataSet> discretizedDataSets = null;
-
 
     /**
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
