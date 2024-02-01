@@ -70,7 +70,7 @@ public interface DataSet extends DataModel {
 
     /**
      * Ensures that the dataset has at least <code>columns</code> columns. Used for pasting data into the dataset. When
-     * creating new columns, names in the <code>excludedVarialbeNames</code> list may not be used. The purpose of this
+     * creating new columns, names in the <code>excludedVariableNames</code> list may not be used. The purpose of this
      * is to allow these names to be set later by the calling class, without incurring conflicts.
      *
      * @param columns               The number of columns to ensure.
@@ -183,20 +183,20 @@ public interface DataSet extends DataModel {
     List<Node> getVariables();
 
     /**
-     * @return true if this is a continuous data set--that is, if it contains at least one column and all of the columns
+     * @return true if this is a continuous data set--that is, if it contains at least one column and all the columns
      * are continuous.
      */
     boolean isContinuous();
 
     /**
-     * @return true if this is a discrete data set--that is, if it contains at least one column and all of the columns
+     * @return true if this is a discrete data set--that is, if it contains at least one column and all the columns
      * are discrete.
      */
     boolean isDiscrete();
 
     /**
      * @return true if this is a continuous data set--that is, if it contains at least one continuous column and one
-     * discrete columnn.
+     * discrete column.
      */
     boolean isMixed();
 
@@ -277,13 +277,13 @@ public interface DataSet extends DataModel {
     DataSet subsetColumns(List<Node> vars);
 
     /**
-     * @return a new data set in which the the column at indices[i] is placed at index i, for i = 0 to indices.length -
+     * @return a new data set in which the column at indices[i] is placed at index i, for i = 0 to indices.length -
      * 1. (View instead?)
      */
     DataSet subsetColumns(int[] columns);
 
     /**
-     * @return a new data set in which the the row at indices[i] is placed at index i, for i = 0 to indices.length - 1.
+     * @return a new data set in which the row at indices[i] is placed at index i, for i = 0 to indices.length - 1.
      * (View instead?)
      */
     DataSet subsetRows(int[] rows);
