@@ -44,11 +44,24 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
     private int maxNumOfMsg;
 
+    /**
+     * Constructor.
+     *
+     * @param dataFile  the data file.
+     * @param delimiter the delimiter.
+     */
     public TabularDataFileValidation(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
         this.maxNumOfMsg = Integer.MAX_VALUE;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param dataColumns the data columns.
+     * @param hasHeader   the data has header.
+     * @return the validation results.
+     */
     @Override
     public List<ValidationResult> validate(DataColumn[] dataColumns, boolean hasHeader) {
         List<ValidationResult> results = new LinkedList<>();

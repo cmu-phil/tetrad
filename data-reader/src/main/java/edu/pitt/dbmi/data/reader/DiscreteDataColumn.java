@@ -27,14 +27,38 @@ import java.util.List;
  */
 public interface DiscreteDataColumn {
 
+    /**
+     * Get the encode value.
+     *
+     * @param value the value.
+     * @return the encode value.
+     */
     Integer getEncodeValue(String value);
 
+    /**
+     * Recategorize the data.
+     */
     void recategorize();
 
+    /**
+     * Get the categories.
+     *
+     * @return the categories.
+     */
     List<String> getCategories();
 
+    /**
+     * Get the data column.
+     *
+     * @return the data column.
+     */
     DataColumn getDataColumn();
 
+    /**
+     * Set the value.
+     *
+     * @param value the value.
+     */
     void setValue(String value);
 
 }

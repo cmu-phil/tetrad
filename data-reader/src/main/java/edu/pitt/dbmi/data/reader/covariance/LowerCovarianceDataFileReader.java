@@ -37,12 +37,22 @@ import java.util.List;
  */
 public class LowerCovarianceDataFileReader extends DataFileReader implements CovarianceDataReader {
 
-//    private static final Logger LOGGER = LoggerFactory.getLogger(LowerCovarianceDataFileReader.class);
-
+    /**
+     * Constructs a lower triangular covariance data file reader.
+     *
+     * @param dataFile  the data file.
+     * @param delimiter the delimiter.
+     */
     public LowerCovarianceDataFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
     }
 
+    /**
+     * Reads in the covariance data.
+     *
+     * @return the covariance data.
+     * @throws IOException if an I/O error occurs.
+     */
     @Override
     public CovarianceData readInData() throws IOException {
         int numOfCases = getNumberOfCases();
@@ -513,21 +523,28 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
             this.data = data;
         }
 
+        /**
+         * @return the number of cases in the data.
+         */
         @Override
         public int getNumberOfCases() {
             return this.numberOfCases;
         }
 
+        /**
+         * @return the number of variables in the data.
+         */
         @Override
         public List<String> getVariables() {
             return this.variables;
         }
 
+        /**
+         * @return the data in a 2D array.
+         */
         @Override
         public double[][] getData() {
             return this.data;
         }
-
     }
-
 }

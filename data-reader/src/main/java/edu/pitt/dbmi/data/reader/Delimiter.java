@@ -37,20 +37,41 @@ public enum Delimiter {
     private final char value;
     private final byte byteValue;
 
+    /**
+     * Constructor.
+     *
+     * @param name  the name of the delimiter.
+     * @param value the value of the delimiter.
+     */
     Delimiter(String name, char value) {
         this.name = name;
         this.value = value;
         this.byteValue = (byte) value;
     }
 
+    /**
+     * Get the name of the delimiter.
+     *
+     * @return the name of the delimiter.
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Get the value of the delimiter.
+     *
+     * @return the value of the delimiter.
+     */
     public char getValue() {
         return this.value;
     }
 
+    /**
+     * Get the byte value of the delimiter.
+     *
+     * @return the byte value of the delimiter.
+     */
     public byte getByteValue() {
         return this.byteValue;
     }

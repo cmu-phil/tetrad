@@ -32,7 +32,7 @@ public interface DatasetReader extends DataReader {
     /**
      * Set the value to indicate missing data.
      *
-     * @param missingDataMarker
+     * @param missingDataMarker the missing data marker.
      */
     void setMissingDataMarker(String missingDataMarker);
 

@@ -34,6 +34,11 @@ public abstract class AbstractDataPreviewer {
 
     protected final Path dataFile;
 
+    /**
+     * Constructor.
+     *
+     * @param dataFile The data file.
+     */
     public AbstractDataPreviewer(Path dataFile) {
         this.dataFile = dataFile;
     }

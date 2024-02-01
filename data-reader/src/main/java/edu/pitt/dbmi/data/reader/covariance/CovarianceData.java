@@ -29,10 +29,19 @@ import java.util.List;
  */
 public interface CovarianceData extends Data {
 
+    /**
+     * @return the number of cases in the data.
+     */
     int getNumberOfCases();
 
+    /**
+     * @return the number of variables in the data.
+     */
     List<String> getVariables();
 
+    /**
+     * @return the data in a 2D array.
+     */
     double[][] getData();
 
 }

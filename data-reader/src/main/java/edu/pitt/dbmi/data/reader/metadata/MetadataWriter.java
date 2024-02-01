@@ -30,6 +30,13 @@ import java.nio.file.Path;
  */
 public interface MetadataWriter {
 
+    /**
+     * Writes the metadata as a string.
+     *
+     * @param metadata The metadata.
+     * @return the metadata as a string.
+     * @throws JsonProcessingException if an error occurs while processing the JSON.
+     */
     String writeAsString(Metadata metadata) throws JsonProcessingException;
 
     void write(Metadata metadata, Path outputFile) throws IOException;

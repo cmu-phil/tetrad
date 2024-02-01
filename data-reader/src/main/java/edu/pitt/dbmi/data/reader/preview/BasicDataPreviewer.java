@@ -38,14 +38,26 @@ import java.util.List;
  */
 public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPreviewer {
 
-//    private static final Logger LOGGER = LoggerFactory.getLogger(BasicDataPreviewer.class);
-
+    /**
+     * Constructor.
+     *
+     * @param dataFile The data file.
+     */
     public BasicDataPreviewer(Path dataFile) {
         super(dataFile);
     }
 
+    /**
+     * Get the previews of the data file.
+     *
+     * @param fromLine        The starting line number.
+     * @param toLine          The ending line number.
+     * @param numOfCharacters The number of characters to preview.
+     * @return the previews.
+     * @throws IOException if an I/O error occurs.
+     */
     @Override
-    public List<String> getPreviews(int fromLine, int toLine, int numOfCharacters) throws IOException {
+    public List getPreviews(int fromLine, int toLine, int numOfCharacters) throws IOException {
         // parameter validations
         checkLineNumberParameter(fromLine, toLine);
         checkCharacterNumberParameter(numOfCharacters);

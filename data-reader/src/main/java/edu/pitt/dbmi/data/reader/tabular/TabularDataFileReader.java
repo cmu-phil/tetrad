@@ -38,12 +38,24 @@ import java.util.Set;
  */
 public final class TabularDataFileReader extends DatasetFileReader implements TabularDataReader {
 
-//    private static final Logger LOGGER = LoggerFactory.getLogger(TabularDataFileReader.class);
-
+    /**
+     * Constructor.
+     *
+     * @param dataFile  The data file.
+     * @param delimiter The delimiter.
+     */
     public TabularDataFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
     }
 
+    /**
+     * Reads in the data.
+     *
+     * @param dataColumns        the data columns.
+     * @param numberOfCategories maximum number of categories to be considered discrete
+     * @param hasHeader          whether the data file has a header
+     * @throws IOException if an I/O error occurs.
+     */
     @Override
     public void determineDiscreteDataColumns(DataColumn[] dataColumns, int numberOfCategories, boolean hasHeader) throws IOException {
         int numOfColsInDataFile = 0;
@@ -318,8 +330,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         Data data = read(dataColumns, hasHeader);
 
         if (metadata != null) {
-            if (data instanceof ContinuousData) {
-                ContinuousData continuousData = (ContinuousData) data;
+            if (data instanceof ContinuousData continuousData) {
                 double[][] contData = continuousData.getData();
                 metadata.getInterventionalColumns().forEach(column -> {
                     ColumnMetadata valCol = column.getValueColumn();
@@ -337,8 +348,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                         }
                     }
                 });
-            } else if (data instanceof DiscreteData) {
-                DiscreteData verticalDiscreteData = (DiscreteData) data;
+            } else if (data instanceof DiscreteData verticalDiscreteData) {
                 int[][] discreteData = verticalDiscreteData.getData();
                 metadata.getInterventionalColumns().forEach(column -> {
                     ColumnMetadata valCol = column.getValueColumn();
@@ -356,8 +366,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                         }
                     }
                 });
-            } else if (data instanceof MixedTabularData) {
-                MixedTabularData mixedTabularData = (MixedTabularData) data;
+            } else if (data instanceof MixedTabularData mixedTabularData) {
                 double[][] continuousData = mixedTabularData.getContinuousData();
                 int[][] discreteData = mixedTabularData.getDiscreteData();
                 metadata.getInterventionalColumns().forEach(column -> {
@@ -570,7 +579,6 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             // ensure we have enough data
                             if (columnIndex < numOfColsInDataFile) {
                                 String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
-//                                TabularDataFileReader.LOGGER.error(errMsg);
                                 throw new DataReaderException(errMsg);
                             }
 
@@ -707,7 +715,6 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 // ensure we have enough data
                 if (columnIndex < numOfColsInDataFile) {
                     String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
-//                    TabularDataFileReader.LOGGER.error(errMsg);
                     throw new DataReaderException(errMsg);
                 }
             }
@@ -1298,7 +1305,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             if (dataColumn.getColumnNumber() == colNum) {
                                 if (dataColumn.isDiscrete()) {
                                     String value = dataBuilder.toString().trim();
-                                    if (value.length() > 0 && !value.equals(this.missingDataMarker)) {
+                                    if (!value.isEmpty() && !value.equals(this.missingDataMarker)) {
                                         discreteDataColumn.setValue(value);
                                     }
                                 }
@@ -1309,7 +1316,6 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             // ensure we have enough data
                             if (columnIndex < numOfColsInDataFile) {
                                 String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
-//                                TabularDataFileReader.LOGGER.error(errMsg);
                                 throw new DataReaderException(errMsg);
                             }
                         }
@@ -1371,7 +1377,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                     if (dataColumn.getColumnNumber() == colNum) {
                                         if (dataColumn.isDiscrete()) {
                                             String value = dataBuilder.toString().trim();
-                                            if (value.length() > 0 && !value.equals(this.missingDataMarker)) {
+                                            if (!value.isEmpty() && !value.equals(this.missingDataMarker)) {
                                                 discreteDataColumn.setValue(value);
                                             }
                                         }
@@ -1403,7 +1409,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 if (dataColumn.getColumnNumber() == colNum) {
                     if (dataColumn.isDiscrete()) {
                         String value = dataBuilder.toString().trim();
-                        if (value.length() > 0 && !value.equals(this.missingDataMarker)) {
+                        if (!value.isEmpty() && !value.equals(this.missingDataMarker)) {
                             discreteDataColumn.setValue(value);
                         }
                     }

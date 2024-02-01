@@ -41,6 +41,12 @@ public abstract class DataFileReader implements DataReader {
     protected byte quoteCharacter;
     protected String commentMarker;
 
+    /**
+     * Constructor.
+     *
+     * @param dataFile  the data file
+     * @param delimiter the delimiter
+     */
     public DataFileReader(Path dataFile, Delimiter delimiter) {
         this.dataFile = dataFile;
         this.delimiter = delimiter;
@@ -52,7 +58,7 @@ public abstract class DataFileReader implements DataReader {
      * Counts number of column from the first non-blank line.
      *
      * @return the number of column from the first non-blank line
-     * @throws IOException
+     * @throws IOException if an I/O error occurs
      */
     protected int countNumberOfColumns() throws IOException {
         int count = 0;
@@ -148,7 +154,7 @@ public abstract class DataFileReader implements DataReader {
      * Counts number of non-blank lines.
      *
      * @return the number of non-blank and non-commented lines
-     * @throws IOException
+     * @throws IOException if an I/O error occurs
      */
     protected int countNumberOfLines() throws IOException {
         int count = 0;
@@ -214,6 +220,11 @@ public abstract class DataFileReader implements DataReader {
         return count;
     }
 
+    /**
+     * Sets the quote character.
+     *
+     * @param quoteCharacter the quote character
+     */
     @Override
     public void setQuoteCharacter(char quoteCharacter) {
         this.quoteCharacter = Character.isDefined(quoteCharacter)
@@ -221,6 +232,11 @@ public abstract class DataFileReader implements DataReader {
                 : (byte) -1;
     }
 
+    /**
+     * Sets the comment marker.
+     *
+     * @param commentMarker the comment marker
+     */
     @Override
     public void setCommentMarker(String commentMarker) {
         this.commentMarker = (commentMarker == null)

@@ -32,6 +32,13 @@ import java.util.List;
  */
 public interface TabularDataValidation extends Validation, DatasetReader {
 
+    /**
+     * Validate the data columns.
+     *
+     * @param dataColumns the data columns.
+     * @param hasHeader   the flag indicating if the data has a header.
+     * @return the validation results.
+     */
     List<ValidationResult> validate(DataColumn[] dataColumns, boolean hasHeader);
 
 }

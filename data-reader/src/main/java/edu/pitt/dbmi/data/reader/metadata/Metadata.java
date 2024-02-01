@@ -36,9 +36,18 @@ public class Metadata {
     @JsonProperty("interventions")
     private List<InterventionalColumn> interventionalColumns = new LinkedList<>();
 
+    /**
+     * Default constructor.
+     */
     public Metadata() {
     }
 
+    /**
+     * Constructor.
+     *
+     * @param domainColumnns        The domain columns.
+     * @param interventionalColumns The interventional columns.
+     */
     public Metadata(List<ColumnMetadata> domainColumnns, List<InterventionalColumn> interventionalColumns) {
         if (domainColumnns != null) {
             this.domainColumnns.addAll(domainColumnns);
@@ -48,25 +57,49 @@ public class Metadata {
         }
     }
 
+    /**
+     * Returns a string representation of this object.
+     *
+     * @return a string representation of this object.
+     */
     @Override
     public String toString() {
         return "Metadata{" + "domainColumnns=" + this.domainColumnns + ", interventionalColumns=" + this.interventionalColumns + '}';
     }
 
+    /**
+     * Returns the domain columns.
+     *
+     * @return the domain columns.
+     */
     public List<ColumnMetadata> getDomainColumnns() {
         return this.domainColumnns;
     }
 
+    /**
+     * Sets the domain columns.
+     *
+     * @param domainColumnns the domain columns.
+     */
     public void setDomainColumnns(List<ColumnMetadata> domainColumnns) {
         this.domainColumnns = domainColumnns;
     }
 
+    /**
+     * Returns the interventional columns.
+     *
+     * @return the interventional columns.
+     */
     public List<InterventionalColumn> getInterventionalColumns() {
         return this.interventionalColumns;
     }
 
+    /**
+     * Sets the interventional columns.
+     *
+     * @param interventionalColumns the interventional columns.
+     */
     public void setInterventionalColumns(List<InterventionalColumn> interventionalColumns) {
         this.interventionalColumns = interventionalColumns;
     }
-
 }

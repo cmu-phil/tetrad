@@ -37,6 +37,12 @@ import java.util.Set;
  */
 public abstract class AbstractTabularColumnFileReader extends DataFileReader {
 
+    /**
+     * Constructor.
+     *
+     * @param dataFile   The data file.
+     * @param delimiter  The delimiter.
+     */
     public AbstractTabularColumnFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
     }

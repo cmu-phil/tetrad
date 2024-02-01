@@ -30,6 +30,12 @@ public final class Columns {
     private Columns() {
     }
 
+    /**
+     * Sort the columns in ascending order.
+     *
+     * @param columns the columns to sort.
+     * @return the sorted columns.
+     */
     public static int[] sortNew(int[] columns) {
         int size = (columns == null) ? 0 : columns.length;
         if (size > 0) {
@@ -46,9 +52,9 @@ public final class Columns {
     /**
      * Keep all the columns that are between 1 and numOfCols, inclusive.
      *
-     * @param numberOfColumns
-     * @param columns
-     * @return
+     * @param numberOfColumns the number of columns.
+     * @param columns         the columns to keep.
+     * @return the valid columns.
      */
     public static int[] extractValidColumnNumbers(int numberOfColumns, int[] columns) {
         return (columns == null || columns.length == 0)

@@ -38,6 +38,13 @@ public final class DataColumns {
     private DataColumns() {
     }
 
+    /**
+     * Update data columns with metadata.
+     *
+     * @param dataColumns data columns
+     * @param metadata    metadata
+     * @return updated data columns
+     */
     public static DataColumn[] update(DataColumn[] dataColumns, Metadata metadata) {
         Map<String, ColumnMetadata> columnMetadataMap = DataColumns.getColumnMetadataMap(metadata);
 

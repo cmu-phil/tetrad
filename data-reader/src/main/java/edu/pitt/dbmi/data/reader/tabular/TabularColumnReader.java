@@ -31,12 +31,42 @@ import java.util.Set;
  */
 public interface TabularColumnReader extends DataReader {
 
+    /**
+     * Read in the data columns.
+     *
+     * @param isDiscrete whether the data is discrete.
+     * @return the data columns.
+     * @throws IOException if an I/O error occurs.
+     */
     DataColumn[] readInDataColumns(boolean isDiscrete) throws IOException;
 
+    /**
+     * Read in the data columns.
+     *
+     * @param namesOfColumnsToExclude the names of columns to exclude.
+     * @param isDiscrete              whether the data is discrete.
+     * @return the data columns.
+     * @throws IOException if an I/O error occurs.
+     */
     DataColumn[] readInDataColumns(Set<String> namesOfColumnsToExclude, boolean isDiscrete) throws IOException;
 
+    /**
+     * Read in the data columns.
+     *
+     * @param columnsToExclude the columns to exclude.
+     * @param isDiscrete       whether the data is discrete.
+     * @return the data columns.
+     * @throws IOException if an I/O error occurs.
+     */
     DataColumn[] readInDataColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException;
 
+    /**
+     * Generate the data columns.
+     *
+     * @param isDiscrete whether the data is discrete.
+     * @return the data columns.
+     * @throws IOException if an I/O error occurs.
+     */
     DataColumn[] generateColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException;
 
 }

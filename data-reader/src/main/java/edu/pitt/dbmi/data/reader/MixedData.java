@@ -25,12 +25,32 @@ package edu.pitt.dbmi.data.reader;
  */
 public interface MixedData extends Data {
 
+    /**
+     * Get the number of rows.
+     *
+     * @return the number of rows.
+     */
     int getNumOfRows();
 
+    /**
+     * Get the data columns.
+     *
+     * @return the data columns.
+     */
     DiscreteDataColumn[] getDataColumns();
 
+    /**
+     * Get the continuous data.
+     *
+     * @return the continuous data.
+     */
     double[][] getContinuousData();
 
+    /**
+     * Get the discrete data.
+     *
+     * @return the discrete data.
+     */
     int[][] getDiscreteData();
 
 }
