@@ -174,6 +174,7 @@ public final class Fask implements IGraphSearch {
     private LeftRight leftRight = LeftRight.RSKEW;
     // The graph resulting from search.
     private Graph graph;
+    private long seed = -1;
 
     /**
      * Constructor.
@@ -313,10 +314,12 @@ public final class Fask implements IGraphSearch {
 
         if (this.adjacencyMethod == AdjacencyMethod.BOSS) {
             PermutationSearch fas = new PermutationSearch(new Boss(this.score));
+            fas.setSeed(seed);
             fas.setKnowledge(this.knowledge);
             G = fas.search();
         } else if (this.adjacencyMethod == AdjacencyMethod.GRASP) {
             Grasp fas = new Grasp(this.score);
+            fas.setSeed(seed);
             fas.setDepth(5);
             fas.setNonSingularDepth(1);
             fas.setUncoveredDepth(1);
@@ -851,6 +854,10 @@ public final class Fask implements IGraphSearch {
                 + "\t" + nf.format(lr)
                 + "\t" + X + "<=>" + Y
         );
+    }
+
+    public void setSeed(long seed) {
+        this.seed = seed;
     }
 
     /**

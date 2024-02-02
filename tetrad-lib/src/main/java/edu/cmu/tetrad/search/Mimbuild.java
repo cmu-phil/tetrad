@@ -86,6 +86,7 @@ public class Mimbuild {
     private double penaltyDiscount = 1;
     // jf Clusters smaller than this size will be tossed out.
     private int minClusterSize = 3;
+    private long seed = -1;
 
     /**
      * Constructs a new Mimbuild search.
@@ -151,6 +152,7 @@ public class Mimbuild {
         SemBicScore score = new SemBicScore(latentscov);
         score.setPenaltyDiscount(this.penaltyDiscount);
         Grasp search = new Grasp(score);
+        search.setSeed(seed);
         search.setKnowledge(this.knowledge);
         search.bestOrder(latentscov.getVariables());
         graph = search.getGraph(true);
@@ -509,6 +511,10 @@ public class Mimbuild {
         }
 
         return sum;
+    }
+
+    public void setSeed(long seed) {
+        this.seed = seed;
     }
 
     private class Function1 implements org.apache.commons.math3.analysis.MultivariateFunction {

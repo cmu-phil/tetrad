@@ -85,6 +85,7 @@ public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, UsesScor
 
             if (meta == 1) {
                 PermutationSearch search = new PermutationSearch(new Boss(score));
+                search.setSeed(parameters.getLong(Params.SEED));
 //                edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
                 search.setKnowledge(this.knowledge);
 //                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -184,7 +185,7 @@ public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, UsesScor
         parameters.add(Params.RANDOM_SELECTION_SIZE);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.IMAGES_META_ALG);
-
+        parameters.add(Params.SEED);
         parameters.add(Params.VERBOSE);
 
         return parameters;

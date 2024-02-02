@@ -599,6 +599,7 @@ public class Cstar {
     private Graph getPatternBoss(DataSet sample) {
         Score score = this.score.getScore(sample, parameters);
         PermutationSearch boss = new PermutationSearch(new Boss(score));
+        boss.setSeed(parameters.getLong(Params.SEED));
         return boss.search();
     }
 

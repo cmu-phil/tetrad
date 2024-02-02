@@ -42,7 +42,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
-
+    private long seed = 01;
 
     public Boss() {
         // Used in reflection; do not delete.
@@ -54,6 +54,8 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
+        this.seed = parameters.getLong(Params.SEED);
+
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (parameters.getInt(Params.TIME_LAG) > 0) {
                 DataSet dataSet = (DataSet) dataModel;
@@ -68,6 +70,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             Score score = this.score.getScore(dataModel, parameters);
 
             edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
+
             boss.setUseBes(parameters.getBoolean(Params.USE_BES));
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             boss.setNumThreads(parameters.getInt(Params.NUM_THREADS));
@@ -75,6 +78,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
             PermutationSearch permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(this.knowledge);
+            permutationSearch.setSeed(seed);
             Graph graph = permutationSearch.search();
             LogUtilsSearch.stampWithScore(graph, score);
             LogUtilsSearch.stampWithBic(graph, dataModel);
@@ -118,6 +122,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         params.add(Params.TIME_LAG);
         params.add(Params.NUM_THREADS);
         params.add(Params.USE_DATA_ORDER);
+        params.add(Params.SEED);
         params.add(Params.VERBOSE);
 
         return params;

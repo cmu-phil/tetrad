@@ -85,6 +85,7 @@ public class Grasp {
     private int numStarts = 1;
     // Whether to allow internal randomness in the algorithm.
     private boolean allowInternalRandomness = false;
+    private long seed = -1;
 
     /**
      * Constructor for a score.
@@ -128,6 +129,10 @@ public class Grasp {
      * @return The discovered permutation at the end of the procedure.
      */
     public List<Node> bestOrder(@NotNull List<Node> order) {
+        if (seed != -1) {
+            RandomUtil.getInstance().setSeed(seed);
+        }
+
         long start = MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
@@ -520,5 +525,9 @@ public class Grasp {
                 scorer.goToBookmark(currentDepth);
             }
         }
+    }
+
+    public void setSeed(long seed) {
+        this.seed = seed;
     }
 }

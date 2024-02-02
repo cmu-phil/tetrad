@@ -94,6 +94,7 @@ public final class GraspFci implements IGraphSearch {
     private int uncoveredDepth = 1;
     // The depth for non-singular variables.
     private int nonSingularDepth = 1;
+    private long seed = -1;
 
     /**
      * Constructs a new GraspFci object.
@@ -128,6 +129,7 @@ public final class GraspFci implements IGraphSearch {
         // The PAG being constructed.
         // Run GRaSP to get a CPDAG (like GFCI with FGES)...
         Grasp alg = new Grasp(independenceTest, score);
+        alg.setSeed(seed);
         alg.setOrdered(ordered);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -290,5 +292,9 @@ public final class GraspFci implements IGraphSearch {
      */
     public void setOrdered(boolean ordered) {
         this.ordered = ordered;
+    }
+
+    public void setSeed(long seed) {
+        this.seed = seed;
     }
 }

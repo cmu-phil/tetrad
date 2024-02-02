@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.search.utils.SepsetsGreedy;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.List;
@@ -81,6 +82,7 @@ public final class BFci implements IGraphSearch {
     private int depth = -1;
     private boolean doDiscriminatingPathRule = true;
     private boolean bossUseBes = false;
+    private long seed = -1;
 
 
     /**
@@ -107,6 +109,10 @@ public final class BFci implements IGraphSearch {
      * @return The discovered graph.
      */
     public Graph search() {
+        if (seed != -1) {
+            RandomUtil.getInstance().setSeed(seed);
+        }
+
         List<Node> nodes = getIndependenceTest().getVariables();
 
         this.logger.log("info", "Starting FCI algorithm.");
@@ -229,4 +235,7 @@ public final class BFci implements IGraphSearch {
         this.bossUseBes = useBes;
     }
 
+    public void setSeed(long seed) {
+        this.seed = seed;
+    }
 }
