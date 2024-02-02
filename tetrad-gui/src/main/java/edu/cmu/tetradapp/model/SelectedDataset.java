@@ -28,11 +28,11 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.io.Serial;
 
 /**
- * Applies a logarithmic transform.
+ * Extracts a single dataset from a data box containing multiple datasets.
  *
- * @author Jeremy Espino
+ * @author josephramsey
  */
-public class LogData extends DataWrapper {
+public class SelectedDataset extends DataWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -44,27 +44,14 @@ public class LogData extends DataWrapper {
      * @param wrapper The data to transform.
      * @param params  The parameters for the transformation.
      */
-    public LogData(DataWrapper wrapper, Parameters params) {
+    public SelectedDataset(DataWrapper wrapper, Parameters params) {
         DataModelList inList = wrapper.getDataModelList();
         DataModelList outList = new DataModelList();
-
-        for (DataModel model : inList) {
-            if (!(model instanceof DataSet dataSet)) {
-                throw new IllegalArgumentException("Not a data set: " + model.getName());
-            }
-
-            double a = params.getDouble("a");
-            boolean isUnlog = params.getBoolean("unlog");
-            int base = params.getInt("base");
-
-            DataSet dataSet2 = DataTransforms.logData(dataSet, a, isUnlog, base);
-            outList.add(dataSet2);
-        }
-
+        DataModel selected = inList.getSelectedModel();
+        outList.add(selected);
         setDataModel(outList);
         setSourceGraph(wrapper.getSourceGraph());
-
-        LogDataUtils.logDataModelList("Logarithmic conversion of data.", getDataModelList());
+        LogDataUtils.logDataModelList("Extracted Data Model", getDataModelList());
 
     }
 
