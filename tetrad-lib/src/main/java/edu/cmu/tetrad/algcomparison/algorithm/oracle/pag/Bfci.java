@@ -22,6 +22,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +47,7 @@ import java.util.List;
 public class Bfci implements Algorithm, UsesScoreWrapper,
         TakesIndependenceWrapper, HasKnowledge, ReturnsBootstrapGraphs {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
@@ -85,6 +87,7 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
 
             BFci search = new BFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
+            search.setSeed(parameters.getLong(Params.SEED));
             search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
@@ -136,6 +139,7 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
+        params.add(Params.SEED);
         params.add(Params.VERBOSE);
 
         // Parameters

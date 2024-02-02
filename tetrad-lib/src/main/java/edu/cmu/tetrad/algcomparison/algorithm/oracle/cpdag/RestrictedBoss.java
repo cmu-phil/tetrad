@@ -97,6 +97,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
             boss.setUseBes(parameters.getBoolean(Params.USE_BES));
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             PermutationSearch permutationSearch = new PermutationSearch(boss);
+            permutationSearch.setSeed(parameters.getLong(Params.SEED));
             permutationSearch.setKnowledge(knowledge);
             permutationSearch.search();
 
@@ -169,6 +170,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
         params.add(Params.NUM_STARTS);
         params.add(Params.TARGETS);
         params.add(Params.TRIMMING_STYLE);
+        params.add(Params.SEED);
 
         return params;
     }
