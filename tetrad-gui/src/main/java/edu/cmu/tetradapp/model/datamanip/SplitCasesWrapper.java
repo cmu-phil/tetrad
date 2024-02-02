@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +38,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public class SplitCasesWrapper extends DataWrapper {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -82,7 +84,7 @@ public class SplitCasesWrapper extends DataWrapper {
         }
 
         SplitCasesSpec spec = (SplitCasesSpec) params.get("splitCasesSpec", null);
-        int numSplits = params.getInt("numSplits", 3);
+        int numSplits = params.getInt("numSplits", 2);
         int sampleSize = spec.getSampleSize();
         int[] breakpoints = spec.getBreakpoints();
         List<String> splitNames = spec.getSplitNames();

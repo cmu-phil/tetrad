@@ -133,7 +133,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
         splitEditorPanel = new JPanel();
         splitEditorPanel.setLayout(new BorderLayout());
-        this.setNumSplits(params.getInt("numSplits", 3));
+        this.setNumSplits(params.getInt("numSplits", 2));
 
         JRadioButton shuffleButton = new JRadioButton("Shuffled order");
         JRadioButton noShuffleButton = new JRadioButton("Original order");
