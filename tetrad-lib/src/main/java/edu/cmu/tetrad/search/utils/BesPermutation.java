@@ -37,11 +37,14 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Boss
  */
 public class BesPermutation {
+    // The variables.
     private final List<Node> variables;
+    // The score.
     private final Score score;
+    // The knowledge.
     private Knowledge knowledge = new Knowledge();
+    // Whether verbose output should be printed.
     private boolean verbose = true;
-    private int depth = -1;
 
     /**
      * Constructor.
@@ -81,15 +84,11 @@ public class BesPermutation {
         }
     }
 
-//    public void setDepth(int depth) {
-//        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
-//        this.depth = depth;
-//    }
-
     /**
      * Runs BES.
-     * @param graph The graph.
-     * @param order The order.
+     *
+     * @param graph    The graph.
+     * @param order    The order.
      * @param suborder The suborder.
      */
     public void bes(Graph graph, List<Node> order, List<Node> suborder) {
@@ -228,6 +227,11 @@ public class BesPermutation {
         return score.localScoreDiff(xIndex, yIndex, parentIndices);
     }
 
+    /**
+     * Returns the knowledge that BES will use.
+     *
+     * @return This knowledge.
+     */
     public Knowledge getKnowledge() {
         return knowledge;
     }
@@ -238,7 +242,7 @@ public class BesPermutation {
      * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     private Set<Node> revertToCPDAG(Graph graph) {
@@ -442,6 +446,8 @@ public class BesPermutation {
         if (storedConfig != null && storedConfig.equals(config)) return;
         arrowsMapBackward.put(directedEdge(a, b), new ArrowConfigBackward(naYX, parents));
 
+        // The depth.
+        int depth = -1;
         int _depth = min(depth, _naYX.size());
 
         final SublistGenerator gen = new SublistGenerator(_naYX.size(), _depth);//_naYX.size());

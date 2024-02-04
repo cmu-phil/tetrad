@@ -11,6 +11,7 @@ import edu.cmu.tetrad.search.score.ZsbScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,7 @@ import java.util.List;
 @LinearGaussian
 public class ZhangShenBoundScore implements ScoreWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
@@ -47,6 +49,7 @@ public class ZhangShenBoundScore implements ScoreWrapper {
         }
 
         score.setRiskBound(parameters.getDouble(Params.ZS_RISK_BOUND));
+        score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
 
         return score;
     }
@@ -66,6 +69,7 @@ public class ZhangShenBoundScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ZS_RISK_BOUND);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
+        parameters.add(Params.USE_PSEUDOINVERSE);
         return parameters;
     }
 

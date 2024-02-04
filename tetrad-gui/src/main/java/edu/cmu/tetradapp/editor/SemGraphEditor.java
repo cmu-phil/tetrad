@@ -266,7 +266,7 @@ public final class SemGraphEditor extends JPanel
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Initialize helpSet
-                final String helpHS = "/resources/javahelp/TetradHelp.hs";
+                final String helpHS = "/docs/javahelp/TetradHelp.hs";
 
                 try {
                     URL url = this.getClass().getResource(helpHS);
@@ -504,7 +504,9 @@ public final class SemGraphEditor extends JPanel
 
         graph.add(new JMenuItem(new SelectDirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
-        graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
+        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
+        graph.add(new JMenuItem(new SelectTrianglesAction(getWorkbench())));
+        graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
         graph.add(new PagColorer(getWorkbench()));
 

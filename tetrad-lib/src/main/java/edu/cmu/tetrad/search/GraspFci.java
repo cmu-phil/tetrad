@@ -36,23 +36,21 @@ import java.util.List;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * <p>Uses GRaSP in place of FGES for the initial step in the GFCI algorithm.
- * This tends to produce a accurate PAG than GFCI as a result, for the latent variables case. This is a simple
- * substitution; the reference for GFCI is here:</p>
- * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for FGES.</p>
- *
- * <p>For the first step, the GRaSP algorithm is used, with the same
- * modifications as in the GFCI algorithm.</p>
- *
- * <p>For the second step, the FCI final orientation algorithm is used, with the same
- * modifications as in the GFCI algorithm.</p>
- *
- * <p>For GRaSP only a score is needed, but there are steps in GFCI that require
- * a test, so for this method, both a test and a score need to be given.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Uses GRaSP in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG than
+ * GFCI as a result, for the latent variables case. This is a simple substitution; the reference for GFCI is here: J.M.
+ * Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016. Here,
+ * BOSS has been substituted for FGES.
+ * <p>
+ * For the first step, the GRaSP algorithm is used, with the same modifications as in the GFCI algorithm.
+ * <p>
+ * For the second step, the FCI final orientation algorithm is used, with the same modifications as in the GFCI
+ * algorithm.
+ * <p>
+ * For GRaSP only a score is needed, but there are steps in GFCI that require a test, so for this method, both a test
+ * and a score need to be given.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author josephramsey
  * @author bryanandrews
@@ -77,16 +75,33 @@ public final class GraspFci implements IGraphSearch {
     private int maxPathLength = -1;
     // True iff verbose output should be printed.
     private boolean verbose;
+    // The number of starts for GRaSP.
     private int numStarts = 1;
-    private int depth = -1;
-    private boolean useRaskuttiUhler = false;
-    private boolean useDataOrder = true;
-    private boolean useScore = true;
-    private boolean doDiscriminatingPathRule = true;
-    private boolean ordered = false;
-    private int uncoveredDepth = 1;
-    private int nonSingularDepth = 1;
 
+    // Whether to use Raskutti and Uhler's modification of GRaSP.
+    private boolean useRaskuttiUhler = false;
+    // Whether to use data order.
+    private boolean useDataOrder = true;
+    // Whether to use score.
+    private boolean useScore = true;
+    // Whether to use the discriminating path rule.
+    private boolean doDiscriminatingPathRule = true;
+    // Whether to use the ordered version of GRaSP.
+    private boolean ordered = false;
+    // The depth for GRaSP.
+    private int depth = -1;
+    // The depth for singular variables.
+    private int uncoveredDepth = 1;
+    // The depth for non-singular variables.
+    private int nonSingularDepth = 1;
+    private long seed = -1;
+
+    /**
+     * Constructs a new GraspFci object.
+     *
+     * @param test  The independence test.
+     * @param score
+     */
     public GraspFci(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
@@ -114,6 +129,7 @@ public final class GraspFci implements IGraphSearch {
         // The PAG being constructed.
         // Run GRaSP to get a CPDAG (like GFCI with FGES)...
         Grasp alg = new Grasp(independenceTest, score);
+        alg.setSeed(seed);
         alg.setOrdered(ordered);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -195,41 +211,90 @@ public final class GraspFci implements IGraphSearch {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the number of starts for GRaSP.
+     *
+     * @param numStarts The number of starts.
+     */
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
     }
 
+    /**
+     * Sets the depth for GRaSP.
+     *
+     * @param depth The depth.
+     */
     public void setDepth(int depth) {
         this.depth = depth;
     }
 
+    /**
+     * Sets whether to use Raskutti and Uhler's modification of GRaSP.
+     *
+     * @param useRaskuttiUhler True, if so.
+     */
     public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
         this.useRaskuttiUhler = useRaskuttiUhler;
     }
 
+    /**
+     * Sets whether to use data order for GRaSP (as opposed to random order) for the first step of GRaSP
+     *
+     * @param useDataOrder True, if so.
+     */
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
     }
 
+    /**
+     * Sets whether to use score for GRaSP (as opposed to independence test) for GRaSP.
+     *
+     * @param useScore True, if so.
+     */
     public void setUseScore(boolean useScore) {
         this.useScore = useScore;
     }
 
+    /**
+     * Sets whether to use the discriminating path rule for GRaSP.
+     *
+     * @param doDiscriminatingPathRule True, if so.
+     */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
+    /**
+     * Sets depth for singular tucks.
+     *
+     * @param uncoveredDepth The depth for singular tucks.
+     */
     public void setSingularDepth(int uncoveredDepth) {
         if (uncoveredDepth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
         this.uncoveredDepth = uncoveredDepth;
     }
 
+    /**
+     * Sets depth for non-singular tucks.
+     *
+     * @param nonSingularDepth The depth for non-singular tucks.
+     */
     public void setNonSingularDepth(int nonSingularDepth) {
         if (nonSingularDepth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
         this.nonSingularDepth = nonSingularDepth;
     }
 
+    /**
+     * Sets whether to use the ordered version of GRaSP.
+     *
+     * @param ordered True, if so.
+     */
     public void setOrdered(boolean ordered) {
         this.ordered = ordered;
+    }
+
+    public void setSeed(long seed) {
+        this.seed = seed;
     }
 }

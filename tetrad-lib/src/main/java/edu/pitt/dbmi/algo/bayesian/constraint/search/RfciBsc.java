@@ -220,6 +220,11 @@ public class RfciBsc implements IGraphSearch {
         return lnQ;
     }
 
+    /**
+     * Performs the search.
+     *
+     * @return the graph that was learned.
+     */
     @Override
     public Graph search() {
         long stop = 0;
@@ -246,6 +251,9 @@ public class RfciBsc implements IGraphSearch {
             private final IndTestProbabilistic test;
             private final Rfci rfci;
 
+            /**
+             * Constructor.
+             */
             public SearchPagTask() {
                 this.test = new IndTestProbabilistic(dataSet);
                 this.test.setThreshold(RfciBsc.this.thresholdNoRandomDataSearch);
@@ -256,6 +264,11 @@ public class RfciBsc implements IGraphSearch {
                 this.rfci = new Rfci(this.test);
             }
 
+            /**
+             * Performs the search.
+             * @return true if the search was successful.
+             * @throws Exception if an error occurred.
+             */
             @Override
             public Boolean call() throws Exception {
 
@@ -338,6 +351,9 @@ public class RfciBsc implements IGraphSearch {
 
             private final IndTestProbabilistic bsTest;
 
+            /**
+             * Constructor.
+             */
             public BootstrapDepDataTask(int row_index, int rows) {
                 this.row_index = row_index;
 
@@ -349,6 +365,12 @@ public class RfciBsc implements IGraphSearch {
                 }
             }
 
+            /**
+             * Performs the search.
+             *
+             * @return true if the search was successful.
+             * @throws Exception  if an error occurred.
+             */
             @Override
             public Boolean call() throws Exception {
                 for (IndependenceFact f : hCopy.keySet()) {
@@ -399,7 +421,7 @@ public class RfciBsc implements IGraphSearch {
 
         Graph depPattern = fges.search();
         depPattern = GraphUtils.replaceNodes(depPattern, depData.getVariables());
-        Graph estDepBN = GraphTransforms.dagFromCPDAG(depPattern, null);
+        Graph estDepBN = GraphTransforms.dagFromCpdag(depPattern, null);
 
         if (this.verbose) {
             this.out.println("estDepBN:");
@@ -651,38 +673,74 @@ public class RfciBsc implements IGraphSearch {
         return edgeTypeProbabilities;
     }
 
+    /**
+     * Sets the number of randomized search models.
+     * @param numRandomizedSearchModels the number of randomized search models.
+     */
     public void setNumRandomizedSearchModels(int numRandomizedSearchModels) {
         this.numRandomizedSearchModels = numRandomizedSearchModels;
     }
 
+    /**
+     * Sets the number of bootstrap samples.
+     * @param numBscBootstrapSamples the number of bootstrap samples.
+     */
     public void setNumBscBootstrapSamples(int numBscBootstrapSamples) {
         this.numBscBootstrapSamples = numBscBootstrapSamples;
     }
 
+    /**
+     * Sets the lower bound.
+     * @param lowerBound the lower bound.
+     */
     public void setLowerBound(double lowerBound) {
         this.lowerBound = lowerBound;
     }
 
+    /**
+     * Sets the upper bound.
+     * @param upperBound the upper bound.
+     */
     public void setUpperBound(double upperBound) {
         this.upperBound = upperBound;
     }
 
+    /**
+     * Sets whether the output should be RBD.
+     * @param outputRBD true if the output should be RBD.
+     */
     public void setOutputRBD(boolean outputRBD) {
         this.outputRBD = outputRBD;
     }
 
+    /**
+     * Returns the graph that was learned using the BSC-D method.
+     * @return
+     */
     public Graph getGraphRBD() {
         return this.graphRBD;
     }
 
+    /**
+     * Returns the graph that was learned using the BSC-I method.
+     * @return the graph that was learned using the BSC-I method.
+     */
     public Graph getGraphRBI() {
         return this.graphRBI;
     }
 
+    /**
+     * Returns the BSC-D score.
+     * @return  the BSC-D score.
+     */
     public double getBscD() {
         return this.bscD;
     }
 
+    /**
+     * Returns the BSC-I score.
+     * @return the BSC-I score.
+     */
     public double getBscI() {
         return this.bscI;
     }
@@ -708,6 +766,7 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * Sets whether verbose output should be produced.
+     * @param  verbose true if verbose output should be produced.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -722,23 +781,36 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
+     * @param out the output stream that output (except for log output) should be sent to.
      */
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
+    /**
+     * @param thresholdNoRandomDataSearch the thresholdNoRandomDataSearch to set
+     */
     public void setThresholdNoRandomDataSearch(boolean thresholdNoRandomDataSearch) {
         this.thresholdNoRandomDataSearch = thresholdNoRandomDataSearch;
     }
 
+    /**
+     * @param cutoffDataSearch the cutoffDataSearch to set
+     */
     public void setCutoffDataSearch(double cutoffDataSearch) {
         this.cutoffDataSearch = cutoffDataSearch;
     }
 
+    /**
+     * @param thresholdNoRandomConstrainSearch the thresholdNoRandomConstrainSearch to set
+     */
     public void setThresholdNoRandomConstrainSearch(boolean thresholdNoRandomConstrainSearch) {
         this.thresholdNoRandomConstrainSearch = thresholdNoRandomConstrainSearch;
     }
 
+    /**
+     * @param cutoffConstrainSearch the cutoffConstrainSearch to set
+     */
     public void setCutoffConstrainSearch(double cutoffConstrainSearch) {
         this.cutoffConstrainSearch = cutoffConstrainSearch;
     }

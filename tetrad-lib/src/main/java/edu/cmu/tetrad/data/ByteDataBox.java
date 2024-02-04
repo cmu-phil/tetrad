@@ -23,6 +23,7 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import java.util.List;
  * Stores a 2D array of byte data. Note that the missing value marker for this box is -99.
  */
 public class ByteDataBox implements DataBox {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -50,6 +52,9 @@ public class ByteDataBox implements DataBox {
 
     /**
      * Constructs an 2D byte array consisting entirely of missing values (-99).
+     *
+     * @param rows the number of rows.
+     * @param cols the number of columns.
      */
     public ByteDataBox(int rows, int cols) {
         this.data = new byte[rows][cols];
@@ -66,6 +71,8 @@ public class ByteDataBox implements DataBox {
 
     /**
      * Constructs a new data box using the given 2D byte data array as data.
+     *
+     * @param data the data to use.
      */
     public ByteDataBox(byte[][] data) {
         int length = data[0].length;
@@ -84,6 +91,8 @@ public class ByteDataBox implements DataBox {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a simple exemplar of this class to test serialization.
      */
     public static BoxDataSet serializableInstance() {
         List<Node> vars = new ArrayList<>();
@@ -106,7 +115,12 @@ public class ByteDataBox implements DataBox {
     }
 
     /**
-     * Sets the value at the given row/column to the given Number value. The value used is number.byteValue().
+     * Sets the value at the given row/column to the given Number value. The value used is number.byteValue(). If the
+     * value is null, the missing value marker (-99) is used.
+     *
+     * @param row   the row index.
+     * @param col   the column index.
+     * @param value the value to store.
      */
     public void set(int row, int col, Number value) {
         if (value == null) {

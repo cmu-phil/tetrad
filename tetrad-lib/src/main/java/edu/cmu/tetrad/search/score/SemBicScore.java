@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -42,29 +43,26 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * <p>Implements the linear, Gaussian BIC score, with a 'penalty discount' multiplier
- * on the BIC penalty. The formula used for the score is BIC = 2L - ck ln n, where c is the penalty discount and L is
- * the linear, Gaussian log likelihood--that is, the sum of the log likelihoods of the individual records, which are
- * assumed to be i.i.d.</p>
- *
- * <p>For FGES, Chickering uses the standard linear, Gaussian BIC score, so we will
- * for lack of a better reference give his paper:</p>
- *
- * <p>Chickering (2002) "Optimal structure identification with greedy search"
- * Journal of Machine Learning Research.</p>
- *
- * <p>The version of the score due to Nandy et al. is given in this reference:</p>
- *
- * <p>Nandy, P., Hauser, A., &amp; Maathuis, M. H. (2018). High-dimensional consistency
- * in score-based and hybrid structure learning. The Annals of Statistics, 46(6A), 3151-3183.</p>
- *
- * <p>This score may be used anywhere though where a linear, Gaussian score is needed.
- * Anectodally, the score is fairly robust to non-Gaussianity, though with some additional unfaithfulness over and above
- * waht the score would give for Guassian data, a detriment that can be overcome to an extent by use a permutation
- * algorithm such as SP, GRaSP, or BOSS</p>
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * Implements the linear, Gaussian BIC score, with a 'penalty discount' multiplier on the BIC penalty. The formula used
+ * for the score is BIC = 2L - ck ln n, where c is the penalty discount and L is the linear, Gaussian log
+ * likelihood--that is, the sum of the log likelihoods of the individual records, which are assumed to be i.i.d.
+ * <p>
+ * For FGES, Chickering uses the standard linear, Gaussian BIC score, so we will for lack of a better reference give his
+ * paper:
+ * <p>
+ * Chickering (2002) "Optimal structure identification with greedy search" Journal of Machine Learning Research.
+ * <p>
+ * The version of the score due to Nandy et al. is given in this reference:
+ * <p>
+ * Nandy, P., Hauser, A., &amp; Maathuis, M. H. (2018). High-dimensional consistency in score-based and hybrid structure
+ * learning. The Annals of Statistics, 46(6A), 3151-3183.
+ * <p>
+ * This score may be used anywhere though where a linear, Gaussian score is needed. Anecdotally, the score is fairly
+ * robust to non-Gaussianity, though with some additional unfaithfulness over and above what the score would give for
+ * Gaussian data, a detriment that can be overcome to an extent by use a permutation algorithm such as SP, GRaSP, or
+ * BOSS.
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
  * @see edu.cmu.tetrad.search.Fges
@@ -78,7 +76,9 @@ public class SemBicScore implements Score {
     private final int sampleSize;
     // A  map from variable names to their indices.
     private final Map<Node, Integer> indexMap;
+    // The log of the sample size.
     private final double logN;
+    // True if row subsets should be calculated.
     private boolean calculateRowSubsets;
     // The dataset.
     private DataModel dataModel;
@@ -92,18 +92,19 @@ public class SemBicScore implements Score {
     private boolean verbose;
     // The penalty penaltyDiscount, 1 for standard BIC.
     private double penaltyDiscount = 1.0;
-
     // The structure prior, 0 for standard BIC.
     private double structurePrior;
-
-    // Equivalent sample size
+    // The covariance matrix.
     private Matrix matrix;
-
     // The rule type to use.
     private RuleType ruleType = RuleType.CHICKERING;
+    // True iff the pseudo-inverse should be used instead of the inverse to avoid exceptions.
+    private boolean usePseudoInverse = false;
 
     /**
      * Constructs the score using a covariance matrix.
+     *
+     * @param covariances The covariance matrix.
      */
     public SemBicScore(ICovarianceMatrix covariances) {
         if (covariances == null) {
@@ -119,6 +120,9 @@ public class SemBicScore implements Score {
 
     /**
      * Constructs the score using a covariance matrix.
+     *
+     * @param dataSet               The dataset.
+     * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly. True if
      */
     public SemBicScore(DataSet dataSet, boolean precomputeCovariances) {
 
@@ -147,20 +151,74 @@ public class SemBicScore implements Score {
         this.logN = log(sampleSize);
     }
 
-    public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets)
+    /**
+     * Returns the variance of the residual of the regression of the ith variable on its parents.
+     *
+     * @param i                   The index of the variable.
+     * @param parents             The indices of the parents.
+     * @param covariances         The covariance matrix.
+     * @param calculateRowSubsets True if row subsets should be calculated.
+     * @return The variance of the residual of the regression of the ith variable on its parents.
+     */
+    public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances,
+                                  boolean calculateRowSubsets, boolean usePseudoInverse)
             throws SingularMatrixException {
+        CovAndCoefs covAndcoefs = getCovAndCoefs(i, parents, data, covariances, calculateRowSubsets, usePseudoInverse);
+        return (bStar(covAndcoefs.b()).transpose().times(covAndcoefs.cov()).times(bStar(covAndcoefs.b())).get(0, 0));
+    }
+
+    /**
+     * Returns the covariance matrix of the regression of the ith variable on its parents and the regression
+     * coefficients.
+     *
+     * @param i                   The index of the variable.
+     * @param parents             The indices of the parents.
+     * @param data                The data matrix.
+     * @param covariances         The covariance matrix.
+     * @param calculateRowSubsets True if row subsets should be calculated.
+     * @param usePseudoInverse    True if the pseudo-inverse should be used instead of the inverse to avoid exceptions.
+     * @return The covariance matrix of the regression of the ith variable on its parents and the regression
+     * coefficients.
+     */
+    @NotNull
+    public static SemBicScore.CovAndCoefs getCovAndCoefs(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets, boolean usePseudoInverse) {
+        List<Integer> rows = SemBicScore.getRows(i, parents, data, calculateRowSubsets);
+        return getCovAndCoefs(i, parents, data, covariances, usePseudoInverse, rows);
+    }
+
+    /**
+     * Returns the covariance matrix of the regression of the ith variable on its parents and the regression
+     *
+     * @param i                The index of the variable.
+     * @param parents          The indices of the parents.
+     * @param data             The data matrix.
+     * @param covariances      The covariance matrix.
+     * @param usePseudoInverse True if the pseudo-inverse should be used instead of the inverse to avoid exceptions.
+     * @param rows             The rows to use.
+     * @return The covariance matrix of the regression of the ith variable on its parents and the regression
+     */
+    @NotNull
+    public static CovAndCoefs getCovAndCoefs(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean usePseudoInverse, List<Integer> rows) {
         int[] all = SemBicScore.concat(i, parents);
-        Matrix cov = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
+        Matrix cov = SemBicScore.getCov(rows, all, all, data, covariances);
         int[] pp = SemBicScore.indexedParents(parents);
         Matrix covxx = cov.getSelection(pp, pp);
         Matrix covxy = cov.getSelection(pp, new int[]{0});
-        Matrix b = (covxx.inverse().times(covxy));
-        Matrix bStar = bStar(b);
-        return (bStar.transpose().times(cov).times(bStar).get(0, 0));
+
+        // The regression coefficient vector.
+        Matrix b;
+
+        if (usePseudoInverse) {
+            b = new Matrix(MatrixUtils.pseudoInverse(covxx.toArray())).times(covxy);
+        } else {
+            b = covxx.inverse().times(covxy);
+        }
+
+        return new CovAndCoefs(cov, b);
     }
 
     @NotNull
-    public static Matrix bStar(Matrix b) {
+    private static Matrix bStar(Matrix b) {
         Matrix byx = new Matrix(b.getNumRows() + 1, 1);
         byx.set(0, 0, 1);
         for (int j = 0; j < b.getNumRows(); j++) byx.set(j + 1, 0, -b.get(j, 0));
@@ -235,9 +293,14 @@ public class SemBicScore implements Score {
         return rows;
     }
 
-    @NotNull
-    private ICovarianceMatrix getCovarianceMatrix(DataSet dataSet, boolean precomputeCovariances) {
-        return SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances);
+    /**
+     * Returns the covariance matrix of the regression of the ith variable on its parents and the regression
+     * coefficients.
+     *
+     * @param usePseudoInverse True if the pseudo-inverse should be used instead of the inverse to avoid exceptions.
+     */
+    public void setUsePseudoInverse(boolean usePseudoInverse) {
+        this.usePseudoInverse = usePseudoInverse;
     }
 
     @Override
@@ -272,6 +335,8 @@ public class SemBicScore implements Score {
     }
 
     /**
+     * Returns the score for the given node and its parents.
+     *
      * @param i       The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
@@ -283,7 +348,8 @@ public class SemBicScore implements Score {
         Arrays.sort(parents);
 
         try {
-            double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+            double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets,
+                    usePseudoInverse);
             lik = -(double) (this.sampleSize / 2.0) * log(varey);
         } catch (SingularMatrixException e) {
             System.out.println("Singularity encountered when scoring " +
@@ -309,30 +375,47 @@ public class SemBicScore implements Score {
         }
     }
 
-
-//    private final Map<List<Integer>, Double> cache = new ConcurrentHashMap<>();
-
     /**
-     * Specialized scoring method for a single parent. Used to speed up the effect edges search.
+     * Returns the multiplier on the penalty term for this score.
+     *
+     * @return The multiplier on the penalty term for this score.
      */
-
-
     public double getPenaltyDiscount() {
         return this.penaltyDiscount;
     }
 
+    /**
+     * Sets the multiplier on the penalty term for this score.
+     *
+     * @param penaltyDiscount The multiplier on the penalty term for this score.
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    /**
+     * Returns the structure prior for this score.
+     *
+     * @return The structure prior for this score.
+     */
     public double getStructurePrior() {
         return this.structurePrior;
     }
 
+    /**
+     * Sets the structure prior for this score.
+     *
+     * @param structurePrior The structure prior for this score.
+     */
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
     }
 
+    /**
+     * Returns the covariance matrix.
+     *
+     * @return The covariance matrix.
+     */
     public ICovarianceMatrix getCovariances() {
         return this.covariances;
     }
@@ -345,32 +428,68 @@ public class SemBicScore implements Score {
 
     }
 
+    /**
+     * Returns the sample size.
+     *
+     * @return The sample size.
+     */
     public int getSampleSize() {
         return this.sampleSize;
     }
 
+    /**
+     * Returns true if the given bump is an effect edge.
+     *
+     * @param bump The bump.
+     * @return True if the given bump is an effect edge.
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
+    /**
+     * Returns the data model.
+     *
+     * @return The data model.
+     */
     public DataModel getDataModel() {
         return this.dataModel;
     }
 
+    /**
+     * Returns true if verbose output should be sent to out.
+     *
+     * @return True if verbose output should be sent to out.
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output should be sent to out.
+     *
+     * @param verbose True if verbose output should be sent to out.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Returns the variables of the covariance matrix.
+     *
+     * @return The variables of the covariance matrix.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);
     }
 
+    /**
+     * Sets the variables of the covariance matrix.
+     *
+     * @param variables The variables of the covariance matrix.
+     */
     public void setVariables(List<Node> variables) {
         if (this.covariances != null) {
             this.covariances.setVariables(variables);
@@ -379,11 +498,23 @@ public class SemBicScore implements Score {
         this.variables = variables;
     }
 
+    /**
+     * Returns the maximum degree of the score.
+     *
+     * @return The maximum degree of the score.
+     */
     @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(log(this.sampleSize));
     }
 
+    /**
+     * Returns true is the variables in z determine the variable y.
+     *
+     * @param z The set of nodes.
+     * @param y The node.
+     * @return True is the variables in z determine the variable y.
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
         int i = this.variables.indexOf(y);
@@ -404,9 +535,47 @@ public class SemBicScore implements Score {
         return false;
     }
 
-    //    @Override
+    /**
+     * Returns the data model.
+     *
+     * @return The data model.
+     */
     public DataModel getData() {
         return this.dataModel;
+    }
+
+    /**
+     * Sets the rule type to use.
+     *
+     * @param ruleType The rule type to use.
+     * @see RuleType
+     */
+    public void setRuleType(RuleType ruleType) {
+        this.ruleType = ruleType;
+    }
+
+    /**
+     * Returns a SEM BIC score for the given subset of variables.
+     *
+     * @param subset The subset of variables.
+     * @return A SEM BIC score for the given subset of variables.
+     */
+    public SemBicScore subset(List<Node> subset) {
+        int[] cols = new int[subset.size()];
+        for (int i = 0; i < cols.length; i++) {
+            cols[i] = variables.indexOf(subset.get(i));
+        }
+        ICovarianceMatrix cov = getCovariances().getSubmatrix(cols);
+        return new SemBicScore(cov);
+    }
+
+    /**
+     * Returns a string representation of this score.
+     *
+     * @return A string representation of this score.
+     */
+    public String toString() {
+        return "SEM BIC Score";
     }
 
     private double getStructurePrior(int parents) {
@@ -531,27 +700,17 @@ public class SemBicScore implements Score {
         return cov;
     }
 
-    public void setRuleType(RuleType ruleType) {
-        this.ruleType = ruleType;
-    }
-
-    public SemBicScore subset(List<Node> pi2) {
-        int[] cols = new int[pi2.size()];
-        for (int i = 0; i < cols.length; i++) {
-            cols[i] = variables.indexOf(pi2.get(i));
-        }
-        ICovarianceMatrix cov = getCovariances().getSubmatrix(cols);
-        return new SemBicScore(cov);
-    }
-
-    public String toString() {
-        return "SEM BIC Score";
+    private ICovarianceMatrix getCovarianceMatrix(DataSet dataSet, boolean precomputeCovariances) {
+        return SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances);
     }
 
     /**
      * Gives two options for calculating the BIC score, one describe by Chickering and the other due to Nandy et al.
      */
     public enum RuleType {CHICKERING, NANDY}
+
+    public record CovAndCoefs(Matrix cov, Matrix b) {
+    }
 }
 
 

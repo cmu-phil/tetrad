@@ -33,6 +33,7 @@ import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -43,45 +44,16 @@ import java.util.*;
  */
 public abstract class AbstractAlgorithmRunner
         implements AlgorithmRunner, ParamsResettable, Unmarshallable {
+    @Serial
     private static final long serialVersionUID = 23L;
     final Map<String, String> paramSettings = new LinkedHashMap<>();
     private DataWrapper dataWrapper;
-    /**
-     * @serial Can be null.
-     */
     private String name;
-    /**
-     * The parameters guiding this search (when executed).
-     *
-     * @serial Cannot be null.
-     */
     private Parameters params;
-    /**
-     * Keeps a reference to the dataModel source that has been provided (hopefully either a dataModel model or a
-     * graph).
-     *
-     * @serial Can be null.
-     */
     private transient DataModel dataModel;
-    /**
-     * Keeps a reference to the source graph, if there is one.
-     *
-     * @serial Can be null.
-     */
     private Graph sourceGraph;
-    /**
-     * Keeps a reference to the result graph for the algorithm.
-     *
-     * @serial Can be null.
-     */
     private Graph resultGraph = new EdgeListGraph();
-    /**
-     * The initial graph for the algorithm, if feasible.
-     */
     private Graph externalGraph;
-    /**
-     * A series of graphs that the search algorithm might search over, if it's that kind of algorithm.
-     */
     private List<Graph> graphs;
     private Map<String, String> allParamSettings;
 
@@ -90,6 +62,10 @@ public abstract class AbstractAlgorithmRunner
     /**
      * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
      * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
+     *
+     * @param dataWrapper       the data wrapper
+     * @param params            the parameters
+     * @param knowledgeBoxModel the knowledge box model
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
                                    Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -120,6 +96,11 @@ public abstract class AbstractAlgorithmRunner
     /**
      * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
      * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
+     *
+     * @param dataWrapper       the data wrapper
+     * @param params            the parameters
+     * @param knowledgeBoxModel the knowledge box model
+     * @param facts             the independence facts model
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
                                    Parameters params, KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
@@ -149,6 +130,13 @@ public abstract class AbstractAlgorithmRunner
         transferVarNamesToParams(names);
     }
 
+    /**
+     * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
+     * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
+     *
+     * @param dataWrapper the data wrapper
+     * @param params      the parameters
+     */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException();
@@ -170,6 +158,9 @@ public abstract class AbstractAlgorithmRunner
 
     /**
      * Constructs a wrapper for the given graph.
+     *
+     * @param sourceGraph the source graph
+     * @param params      the parameters
      */
     public AbstractAlgorithmRunner(Graph sourceGraph, Parameters params) {
         if (sourceGraph == null) {
@@ -185,6 +176,13 @@ public abstract class AbstractAlgorithmRunner
         this.sourceGraph = sourceGraph;
     }
 
+    /**
+     * Constructs a wrapper for the given graph.
+     *
+     * @param graph             the graph
+     * @param params            the parameters
+     * @param knowledgeBoxModel the knowledge box model
+     */
     public AbstractAlgorithmRunner(Graph graph, Parameters params,
                                    KnowledgeBoxModel knowledgeBoxModel) {
         this(graph, params);
@@ -193,11 +191,24 @@ public abstract class AbstractAlgorithmRunner
         }
     }
 
+    /**
+     * Constructs a wrapper for the given graph.
+     *
+     * @param params the parameters
+     * @param graphs the graphs
+     */
     public AbstractAlgorithmRunner(Parameters params, Graph... graphs) {
         this.graphs = Arrays.asList(graphs);
         this.params = params;
     }
 
+    /**
+     * Constructs a wrapper for the given graph.
+     *
+     * @param params            the parameters
+     * @param knowledgeBoxModel the knowledge box model
+     * @param graphs            the graphs
+     */
     public AbstractAlgorithmRunner(Parameters params, KnowledgeBoxModel knowledgeBoxModel, Graph... graphs) {
         this.graphs = Arrays.asList(graphs);
         this.params = params;
@@ -206,6 +217,13 @@ public abstract class AbstractAlgorithmRunner
         }
     }
 
+    /**
+     * Constructs a wrapper for the given graph.
+     *
+     * @param model             the model
+     * @param params            the parameters
+     * @param knowledgeBoxModel the knowledge box model
+     */
     public AbstractAlgorithmRunner(IndependenceFactsModel model,
                                    Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         if (model == null) {
@@ -228,6 +246,14 @@ public abstract class AbstractAlgorithmRunner
         this.dataModel = dataSource;
     }
 
+    /**
+     * Constructs a wrapper for the given graph.
+     *
+     * @param graph             the graph
+     * @param params            the parameters
+     * @param knowledgeBoxModel the knowledge box model
+     * @param facts             the independence facts model
+     */
     public AbstractAlgorithmRunner(Graph graph, Parameters params,
                                    KnowledgeBoxModel knowledgeBoxModel, IndependenceFacts facts) {
         this(graph, params);
@@ -242,40 +268,78 @@ public abstract class AbstractAlgorithmRunner
 
     //============================PUBLIC METHODS==========================//
 
+    /**
+     * Returns the graph that was the result of the algorithm's execution.
+     */
     public final Graph getResultGraph() {
         return this.resultGraph;
     }
 
+    /**
+     * Sets the graph that was the result of the algorithm's execution.
+     */
     public final void setResultGraph(Graph resultGraph) {
         this.resultGraph = resultGraph;
     }
 
     /**
      * By default, algorithm do not support knowledge. Those that do will speak up.
+     *
+     * @return true if the algorithm supports knowledge.
      */
     public boolean supportsKnowledge() {
         return false;
     }
 
+    /**
+     * By default, algorithm do not support Meek rules. Those that do will speak up.
+     *
+     * @return null
+     */
     public MeekRules getMeekRules() {
         return null;
     }
 
+    /**
+     * By default, algorithm do not support independence facts. Those that do will speak up.
+     *
+     * @return the external graph
+     */
     public Graph getExternalGraph() {
         return this.externalGraph;
     }
 
+    /**
+     * Sets the external graph for the algorithm.
+     *
+     * @param graph the graph
+     */
     public void setExternalGraph(Graph graph) {
         this.externalGraph = graph;
     }
 
+    /**
+     * Returns the algorithm's name.
+     *
+     * @return
+     */
     @Override
     public abstract String getAlgorithmName();
 
+    /**
+     * Returns the source graph.
+     *
+     * @return the source graph
+     */
     public final Graph getSourceGraph() {
         return this.sourceGraph;
     }
 
+    /**
+     * Returns the data model.
+     *
+     * @return the data model
+     */
     public final DataModel getDataModel() {
         if (this.dataWrapper != null) {
             DataModelList dataModelList = this.dataWrapper.getDataModelList();
@@ -294,19 +358,39 @@ public abstract class AbstractAlgorithmRunner
         }
     }
 
+    /**
+     * Returns the data model list.
+     *
+     * @return the data model list
+     */
     final DataModelList getDataModelList() {
         if (this.dataWrapper == null) return null;
         return this.dataWrapper.getDataModelList();
     }
 
+    /**
+     * Returns the search parameters.
+     *
+     * @return the search parameters
+     */
     public final Parameters getParams() {
         return this.params;
     }
 
+    /**
+     * Returns the pameters.
+     *
+     * @return the parameters
+     */
     public Object getResettableParams() {
         return this.getParams();
     }
 
+    /**
+     * Resets the parameters.
+     *
+     * @param params the parameters
+     */
     public void resetParams(Object params) {
         this.params = (Parameters) params;
     }
@@ -325,9 +409,7 @@ public abstract class AbstractAlgorithmRunner
 
         DataModel dataModel = dataWrapper.getSelectedDataModel();
 
-        if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
-
+        if (dataModel instanceof DataSet dataSet) {
             if (dataSet.isDiscrete()) {
                 return dataSet;
             } else if (dataSet.isContinuous()) {
@@ -378,29 +460,59 @@ public abstract class AbstractAlgorithmRunner
 
     }
 
+    /**
+     * Returns the name of the algorithm.
+     *
+     * @return the name
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Sets the name of the algorithm.
+     *
+     * @param name the name
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Returns the list of graphs.
+     *
+     * @return the graphs
+     */
     public List<Graph> getGraphs() {
         return this.graphs;
     }
 
 
+    /**
+     * Returns the param settings.
+     *
+     * @return the param settings
+     */
     @Override
     public Map<String, String> getParamSettings() {
         this.paramSettings.put("Algorithm", getAlgorithmName());
         return this.paramSettings;
     }
 
+    /**
+     * Returns all param settings.
+     *
+     * @return all param settings
+     */
     public Map<String, String> getAllParamSettings() {
         return this.allParamSettings;
     }
 
+    /**
+     * Sets all param settings.
+     *
+     * @param allParamSettings the all param settings map.
+     */
     public void setAllParamSettings(Map<String, String> allParamSettings) {
         this.allParamSettings = allParamSettings;
     }

@@ -27,6 +27,12 @@ import java.io.IOException;
  */
 public interface MetadataReader {
 
+    /**
+     * Reads in the metadata.
+     *
+     * @return the metadata.
+     * @throws IOException if an I/O error occurs.
+     */
     Metadata read() throws IOException;
 
 }

@@ -67,6 +67,7 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
             boss.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
             boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
             PermutationSearch permutationSearch = new PermutationSearch(boss);
+            permutationSearch.setSeed(parameters.getLong(Params.SEED));
             permutationSearch.setKnowledge(this.knowledge);
 
             Graph cpdag = permutationSearch.search();
@@ -114,6 +115,7 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.NUM_THREADS);
         parameters.add(Params.USE_DATA_ORDER);
+        parameters.add(Params.SEED);
         parameters.add(Params.VERBOSE);
         return parameters;
     }

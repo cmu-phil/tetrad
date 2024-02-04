@@ -25,26 +25,33 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
+
 /**
- * Applies a logarithmic transform
+ * Applies a logarithmic transform.
  *
  * @author Jeremy Espino
  */
 public class LogData extends DataWrapper {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
 
+    /**
+     * Applies a logarithmic transform to the data.
+     *
+     * @param wrapper The data to transform.
+     * @param params  The parameters for the transformation.
+     */
     public LogData(DataWrapper wrapper, Parameters params) {
         DataModelList inList = wrapper.getDataModelList();
         DataModelList outList = new DataModelList();
 
         for (DataModel model : inList) {
-            if (!(model instanceof DataSet)) {
+            if (!(model instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
-
-            DataSet dataSet = (DataSet) model;
 
             double a = params.getDouble("a");
             boolean isUnlog = params.getBoolean("unlog");

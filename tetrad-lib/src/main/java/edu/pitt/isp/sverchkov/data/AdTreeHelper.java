@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author user
+ * @author jdramsey
  */
 class AdTreeHelper implements Serializable {
 
@@ -132,7 +132,7 @@ class AdTreeHelper implements Serializable {
             for (int i = 0; i < airity; i++)
                 if (i != this.mcv) {
                     List<Integer> indexes = childArrayIndexes.get(i);
-                    if (indexes.size() > 0) {
+                    if (!indexes.isEmpty()) {
                         int[][] childArray = new int[indexes.size()][];
                         int j = 0;
                         for (int index : indexes)

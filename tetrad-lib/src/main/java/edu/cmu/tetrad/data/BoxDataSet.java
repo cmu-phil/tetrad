@@ -124,6 +124,12 @@ public final class BoxDataSet implements DataSet {
      */
     private char outputDelimiter = '\t';
 
+    /**
+     * Constructs a new data set with the given number of rows and columns, with all values set to missing.
+     *
+     * @param dataBox   The data box.
+     * @param variables The variables.
+     */
     public BoxDataSet(DataBox dataBox, List<Node> variables) {
         this.dataBox = dataBox;
         this.variables = new ArrayList<>(variables);
@@ -135,6 +141,8 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * Makes of copy of the given data set.
+     *
+     * @param dataSet The data set to copy.
      */
     public BoxDataSet(BoxDataSet dataSet) {
         this.name = dataSet.name;
@@ -147,6 +155,8 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return A simple exemplar of this class.
      */
     public static BoxDataSet serializableInstance() {
         List<Node> vars = new ArrayList<>();
@@ -1333,6 +1343,11 @@ public final class BoxDataSet implements DataSet {
         return this.nf;
     }
 
+    /**
+     * Sets the number format to be used when printing out the data set. The default is the one at
+     *
+     * @param nf The number format to be used when printing out the data set. The default is the one at
+     */
     public void setNumberFormat(NumberFormat nf) {
         if (nf == null) {
             throw new NullPointerException();

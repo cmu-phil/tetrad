@@ -30,19 +30,20 @@ import org.apache.commons.math3.special.Gamma;
 import java.util.List;
 
 /**
- * <p>Calculates the BDe score (Bayes Dirichlet Equivalent) score for analyzing
- * discrete multinomial data. A good discussion of BD* scores can be found here:</p>
- *
- * <p>Heckerman, D., Geiger, D. &amp; Chickering, D.M. Learning Bayesian networks:
- * The combination of knowledge and statistical data. Mach Learn 20, 197–243 (1995).</p>
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * Calculates the BDe score (Bayes Dirichlet Equivalent) score for analyzing discrete multinomial data. A good
+ * discussion of BD* scores can be found here:
+ * <p>
+ * Heckerman, D., Geiger, D. &amp; Chickering, D.M. Learning Bayesian networks: The combination of knowledge and
+ * statistical data. Mach Learn 20, 197–243 (1995).
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
  * @see BdeuScore
  */
 public class BdeScore implements DiscreteScore {
+
+    // The discrete dataset.
     private final DataSet dataSet;
 
     /**
@@ -72,7 +73,7 @@ public class BdeScore implements DiscreteScore {
      */
     public double localScore(int i, int[] parents) {
 
-        // Number of categories for i.
+        // Number of categories for index i.
         int r = numCategories(i);
 
         // Numbers of categories of parents.
@@ -115,10 +116,7 @@ public class BdeScore implements DiscreteScore {
             }
 
             int rowIndex = getRowIndex(dims, values);
-
-//            for (int m = 0; m < dataSet().getMultiplier(n); m++) {
             n_ijk[rowIndex][childValue]++;
-//            }
         }
 
         // Row sums.
@@ -152,12 +150,12 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * Returns the different between localScore(y | z, x) and localScore(y | z)
+     * Returns the difference between localScore(y | z, x) and localScore(y | z)
      *
      * @param x The index of the x variable
      * @param y The index of the y variable.
      * @param z The indices of the z variables
-     * @return The differnece in scores.
+     * @return The difference in scores.
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -185,9 +183,6 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * BDe does not use a structure prior.
-     *
-     * @param structurePrior The structure prior (not used).
      * @throws UnsupportedOperationException Since this method is not implemented for this score.
      */
     public void setStructurePrior(double structurePrior) {
@@ -195,9 +190,6 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * BDe does not use a sample prior.
-     *
-     * @param samplePrior The structure prior (not used).
      * @throws UnsupportedOperationException Since this method is not implemented for this score.
      */
     public void setSamplePrior(double samplePrior) {

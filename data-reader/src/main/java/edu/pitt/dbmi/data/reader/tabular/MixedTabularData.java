@@ -33,6 +33,14 @@ public class MixedTabularData implements MixedData {
     private final double[][] continuousData;
     private final int[][] discreteData;
 
+    /**
+     * Constructor.
+     *
+     * @param numOfRows      the number of rows.
+     * @param dataColumns    the data columns.
+     * @param continuousData the continuous data.
+     * @param discreteData   the discrete data.
+     */
     public MixedTabularData(int numOfRows, DiscreteDataColumn[] dataColumns, double[][] continuousData, int[][] discreteData) {
         this.numOfRows = numOfRows;
         this.dataColumns = dataColumns;
@@ -40,21 +48,41 @@ public class MixedTabularData implements MixedData {
         this.discreteData = discreteData;
     }
 
+    /**
+     * Get the number of rows.
+     *
+     * @return the number of rows.
+     */
     @Override
     public int getNumOfRows() {
         return this.numOfRows;
     }
 
+    /**
+     * Get the data columns.
+     *
+     * @return the data columns.
+     */
     @Override
     public DiscreteDataColumn[] getDataColumns() {
         return this.dataColumns;
     }
 
+    /**
+     * Get the continuous data.
+     *
+     * @return the continuous data.
+     */
     @Override
     public double[][] getContinuousData() {
         return this.continuousData;
     }
 
+    /**
+     * Get the discrete data.
+     *
+     * @return the discrete data.
+     */
     @Override
     public int[][] getDiscreteData() {
         return this.discreteData;

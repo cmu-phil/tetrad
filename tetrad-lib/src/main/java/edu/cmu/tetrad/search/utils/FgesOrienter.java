@@ -1436,7 +1436,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
             covxxInv = covxx.inverse();
         } catch (Exception e) {
             printMinimalLinearlyDependentSet(parents, cov);
-            this.out.println("Using generalized inverse.");
+            this.out.println("Using pseudoinverse.");
             covxxInv = covxx.ginverse();
         }
         Vector covxy = getSelection2(cov, parents, i);

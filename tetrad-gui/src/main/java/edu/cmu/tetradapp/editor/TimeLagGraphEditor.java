@@ -241,7 +241,7 @@ public final class TimeLagGraphEditor extends JPanel
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Initialize helpSet
-                final String helpHS = "/resources/javahelp/TetradHelp.hs";
+                final String helpHS = "/docs/javahelp/TetradHelp.hs";
 
                 try {
                     URL url = this.getClass().getResource(helpHS);

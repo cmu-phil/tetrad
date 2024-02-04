@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.search.score;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -37,24 +35,22 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Implements a pscudo-"score" that implmenets implements Chickering and Meek's
- * (2002) locally consistent score criterion. This is not a true score; rather, a -1 is returned in case mseparation
- * holds and a 1 in case mseparation does not hold. This is only meant to be used in the context of FGES, and allows the
- * search to follow its path prescribed by the locally consistent scoring criterion. For a reference to the latter,
- * pleasee this article:</p>
- *
- * <p>Chickering (2002) "Optimal structure identification with greedy search"
- * Journal of Machine Learning Research.</p>
- *
- * <p>For further discussion of using m-separation in the GES search, see:</p>
- *
- * <p>Nandy, P., Hauser, A., &amp; Maathuis, M. H. (2018). High-dimensional consistency
- * in score-based and hybrid structure learning. The Annals of Statistics, 46(6A), 3151-3183.</p>
- *
- * <p>For more discussion please see:</p>
- *
- * <p>Shen, X., Zhu, S., Zhang, J., Hu, S., &amp; Chen, Z. (2022, August). Reframed GES
- * with a neural conditional dependence measure. In Uncertainty in Artificial Intelligence (pp. 1782-1791). PMLR.</p>
+ * Implements a pscudo-"score" that implmenets implements Chickering and Meek's (2002) locally consistent score
+ * criterion. This is not a true score; rather, a -1 is returned in case mseparation holds and a 1 in case mseparation
+ * does not hold. This is only meant to be used in the context of FGES, and allows the search to follow its path
+ * prescribed by the locally consistent scoring criterion. For a reference to the latter, pleasee this article:
+ * <p>
+ * Chickering (2002) "Optimal structure identification with greedy search" Journal of Machine Learning Research.
+ * <p>
+ * For further discussion of using m-separation in the GES search, see:
+ * <p>
+ * Nandy, P., Hauser, A., &amp; Maathuis, M. H. (2018). High-dimensional consistency in score-based and hybrid structure
+ * learning. The Annals of Statistics, 46(6A), 3151-3183.
+ * <p>
+ * For more discussion please see:
+ * <p>
+ * Shen, X., Zhu, S., Zhang, J., Hu, S., &amp; Chen, Z. (2022, August). Reframed GES with a neural conditional
+ * dependence measure. In Uncertainty in Artificial Intelligence (pp. 1782-1791). PMLR.
  *
  * @author josephramsey
  * @see Fges
@@ -63,15 +59,13 @@ public class GraphScore implements Score {
 
     // The variables of the covariance matrix.
     private final List<Node> variables;
+    // The DAG, if supplied.
     private Graph dag;
+    // The independence facts, if supplied.
     private IndependenceFacts facts;
-    // True if verbose output should be sent to out.
-    private boolean verbose = false;
-    private Node n = null;
-    private List<Node> prefix = null;
 
     /**
-     * Constructor
+     * Constructs a GraphScore from a DAG.
      *
      * @param dag A directed acyclic graph.
      */
@@ -82,7 +76,7 @@ public class GraphScore implements Score {
     }
 
     /**
-     * Constructor.
+     * Constructs a GraphScore from a list of independence facts.
      *
      * @param facts A list known independence facts; a lookup will be donw from these facts.
      * @see IndependenceFacts
@@ -99,27 +93,12 @@ public class GraphScore implements Score {
      * @return this score.
      */
     public double localScore(int y, int[] z) {
-        return getPearlParentsTest().size();
+        throw new UnsupportedOperationException();
     }
-
-    private Set<Node> getPearlParentsTest() {
-        Set<Node> mb = new HashSet<>();
-
-        for (Node z0 : prefix) {
-            Set<Node> cond = new HashSet<>(prefix);
-            cond.remove(z0);
-
-            if (dag.paths().isMConnectedTo(n, z0, cond)) {
-                mb.add(z0);
-            }
-        }
-
-        return mb;
-    }
-
 
     /**
-     * Returns a "score difference", which amounts to a conditional local scoring criterion results
+     * Returns a "score difference", which amounts to a conditional local scoring criterion results. Only difference
+     * methods is implemented, since the other methods don't make sense here.
      *
      * @return The "difference".
      */
@@ -129,9 +108,9 @@ public class GraphScore implements Score {
     }
 
     /**
-     * The "unconditional difference."
+     * The "unconditional difference." Only difference methods is implemented, since the other methods don't make sense here.
      *
-     * @return This.
+     * @return The "difference".
      */
     @Override
     public double localScoreDiff(int x, int y) {
@@ -153,7 +132,7 @@ public class GraphScore implements Score {
     }
 
     /**
-     * Returns a judgment for FGES as to whether a score with the bump is for an effect edge.
+     * Returns a judgment for FGES whether a score with the bump is for an effect edge.
      *
      * @param bump The bump
      * @return True, if so.
@@ -162,13 +141,6 @@ public class GraphScore implements Score {
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
-    }
-
-    /**
-     * @throws UnsupportedOperationException Since the method doesn't make sense here.
-     */
-    public DataSet getDataSet() {
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -192,14 +164,7 @@ public class GraphScore implements Score {
     }
 
     /**
-     * @throws UnsupportedOperationException Since this "score" does not use data.
-     */
-    public DataModel getData() {
-        throw new UnsupportedOperationException("This score does not use data.");
-    }
-
-    /**
-     * @throws UnsupportedOperationException Since this score does not use data.
+     * @throws UnsupportedOperationException Since the method doesn't make sense here.
      */
     public int getSampleSize() {
         throw new UnsupportedOperationException("This score does not use data, so no sample size is available.");
@@ -240,18 +205,6 @@ public class GraphScore implements Score {
         }
 
         throw new IllegalArgumentException("Expecting either a DAG or an IndependenceFacts object.");
-    }
-
-    private boolean isMConnectedTo(Node x, Node y, Set<Node> z) {
-        return !isMSeparatedFrom(x, y, z);
-    }
-
-    private List<Node> getVariableList(int[] indices) {
-        List<Node> variables = new ArrayList<>();
-        for (int i : indices) {
-            variables.add(this.variables.get(i));
-        }
-        return variables;
     }
 
     private Set<Node> getVariableSet(int[] indices) {

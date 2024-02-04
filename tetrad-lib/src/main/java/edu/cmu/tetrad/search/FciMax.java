@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,25 +39,24 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveTask;
 
 /**
- * <p>Modifies FCI to do orientation of unshielded colliders (X*-*Y*-*Z with X and Z
- * not adjacent) using the max-P rule (see the PC-Max algorithm). This reference is relevant:</p>
- *
- * <p>Raghu, V. K., Zhao, W., Pu, J., Leader, J. K., Wang, R., Herman, J., ... &amp;
- * Wilson, D. O. (2019). Feasibility of lung cancer prediction from low-dose CT scan and smoking factors using causal
- * models. Thorax, 74(7), 643-649.</p>
- *
- * <p>Max-P triple orientation is a method for orienting unshielded triples
- * X*=-*Y*-*Z as one of the following: (a) Collider, X-&gt;Y&lt;-Z, or (b) Noncollider, X--&gt;Y--&gt;Z, or X&lt;-Y&lt;-Z, or X&lt;-Y-&gt;Z. One
- * does this by conditioning on subsets of adj(X) or adj(Z). One first checks conditional independence of X and Z
- * conditional on each of these subsets, and lists the p-values for each test. Then, one chooses the conditioning set
- * out of all of these that maximizes the p-value. If this conditioning set contains Y, then the triple is judged to be
- * a noncollider; otherwise, it is judged to be a collider.</p>
- *
- * <p>All unshielded triples in the graph given by FAS are judged as colliders
- * or non-colliders and the colliders oriented. Then the final FCI orientation rules are applied, as in FCI.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Modifies FCI to do orientation of unshielded colliders (X*-*Y*-*Z with X and Z not adjacent) using the max-P rule
+ * (see the PC-Max algorithm). This reference is relevant:
+ * <p>
+ * Raghu, V. K., Zhao, W., Pu, J., Leader, J. K., Wang, R., Herman, J., ... &amp; Wilson, D. O. (2019). Feasibility of
+ * lung cancer prediction from low-dose CT scan and smoking factors using causal models. Thorax, 74(7), 643-649.
+ * <p>
+ * Max-P triple orientation is a method for orienting unshielded triples X*=-*Y*-*Z as one of the following: (a)
+ * Collider, X-&gt;Y&lt;-Z, or (b) Noncollider, X--&gt;Y--&gt;Z, or X&lt;-Y&lt;-Z, or X&lt;-Y-&gt;Z. One does this by
+ * conditioning on subsets of adj(X) or adj(Z). One first checks conditional independence of X and Z conditional on each
+ * of these subsets, and lists the p-values for each test. Then, one chooses the conditioning set out of all of these
+ * that maximizes the p-value. If this conditioning set contains Y, then the triple is judged to be a noncollider;
+ * otherwise, it is judged to be a collider.
+ * <p>
+ * All unshielded triples in the graph given by FAS are judged as colliders or non-colliders and the colliders oriented.
+ * Then the final FCI orientation rules are applied, as in FCI.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author josephramsey
  * @see Fci
@@ -65,20 +65,32 @@ import java.util.concurrent.RecursiveTask;
  * @see Knowledge
  */
 public final class FciMax implements IGraphSearch {
+    // The independence test.
     private final IndependenceTest independenceTest;
+    // The logger.
     private final TetradLogger logger = TetradLogger.getInstance();
+    // The sepsets from the FAS search.
     private SepsetMap sepsets;
+    // The background knowledge.
     private Knowledge knowledge = new Knowledge();
+    // The elapsed time of search.
     private long elapsedTime;
+    // The PC heuristic from PC used in search.
     private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+    // Whether the stable option will be used for search.
     private boolean stable = false;
+    // Whether the discriminating path rule will be used in search.
     private boolean completeRuleSetUsed = true;
+    // Whether the discriminating path rule will be used in search.
     private boolean doDiscriminatingPathRule = false;
+    // Whether the discriminating path rule will be used in search.
     private boolean possibleMsepSearchDone = true;
+    // The maximum length of any discriminating path, or -1 if unlimited.
     private int maxPathLength = -1;
+    // The maximum number of variables conditioned in any test.
     private int depth = -1;
+    // Whether verbose output should be printed.
     private boolean verbose = false;
-
 
     /**
      * Constructor.
@@ -90,7 +102,6 @@ public final class FciMax implements IGraphSearch {
 
         this.independenceTest = independenceTest;
     }
-
 
     /**
      * Performs the search and returns the PAG.
@@ -129,14 +140,7 @@ public final class FciMax implements IGraphSearch {
 
         // Step CI C (Zhang's step F3.)
 
-        FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
-
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(this.knowledge);
+        FciOrient fciOrient = getFciOrient();
 
         fciOrient.fciOrientbk(this.knowledge, graph, graph.getNodes());
         addColliders(graph);
@@ -279,6 +283,19 @@ public final class FciMax implements IGraphSearch {
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    @NotNull
+    private FciOrient getFciOrient() {
+        FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
+
+        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setVerbose(this.verbose);
+        fciOrient.setKnowledge(this.knowledge);
+        return fciOrient;
     }
 
     private void addColliders(Graph graph) {

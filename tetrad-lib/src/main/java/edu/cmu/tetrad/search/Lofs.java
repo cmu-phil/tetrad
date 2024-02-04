@@ -41,18 +41,17 @@ import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p>Implements a number of methods which take a fixed graph as input and use linear,
- * non-Gaussian methods to orient the edges in the graph. where the acronym stands for linear, non-Gaussian Orientation
- * with a Fixed graph Structure (LOFS). The options for different types of scores are given in the enum Lofs.Score. The
- * options for rules to use to do the orientations are given in the enum, Lofs.Rule. Most of these are taken from the
- * literature and can be googled, though we should certainly give this reference for several of them, to which we are
- * indebted:</p>
- *
- * <p>Hyvärinen, A., &amp; Smith, S. M. (2013). Pairwise likelihood ratios for estimation
- * of non-Gaussian structural equation models. The Journal of Machine Learning Research, 14(1), 111-152.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Implements a number of methods which take a fixed graph as input and use linear, non-Gaussian methods to orient the
+ * edges in the graph. where the acronym stands for linear, non-Gaussian Orientation with a Fixed graph Structure
+ * (LOFS). The options for different types of scores are given in the enum Lofs.Score. The options for rules to use to
+ * do the orientations are given in the enum, Lofs.Rule. Most of these are taken from the literature and can be googled,
+ * though we should certainly give this reference for several of them, to which we are indebted:
+ * <p>
+ * Hyvärinen, A., &amp; Smith, S. M. (2013). Pairwise likelihood ratios for estimation of non-Gaussian structural
+ * equation models. The Journal of Machine Learning Research, 14(1), 111-152.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author josephramsey
  * @see Score
@@ -60,22 +59,37 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @see Knowledge
  */
 public class Lofs {
-
+    // The graph to be oriented.
     private final Graph cpdag;
+    // The square root of 2 * pi.
     private final double SQRT = sqrt(2. * PI);
+    // The data to use to do the orientation.
     Matrix _data;
+    // The data to use to do the orientation.
     private List<DataSet> dataSets;
+    // The matrices to use to do the orientation.
     private List<Matrix> matrices;
+    // The alpha to use, where applicable.
     private double alpha = 1.1;
+    // The regressions to use to do the orientation.
     private List<Regression> regressions;
+    // The variables to use to do the orientation.
     private List<Node> variables;
+    // Whether orientation should be done in the stronger direction, where applicable.
     private boolean orientStrongerDirection;
+    // For R2, whether cycles should be oriented.
     private boolean r2Orient2Cycles = true;
+    // The (LoFS) score to use.
     private Lofs.Score score = Lofs.Score.andersonDarling;
+    // The self-loop strength, if applicable.
     private double epsilon = 1.0;
+    // The knowledge to use to do the orientation.
     private Knowledge knowledge = new Knowledge();
+    // The rule to use to do the orientation.
     private Rule rule = Rule.R1;
+    // The number of variables.
     private double selfLoopStrength;
+    // The number of variables.
     private double[] col;
 
     /**

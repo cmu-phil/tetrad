@@ -43,7 +43,7 @@ public interface MarkovBlanketSearchRunner extends Executable {
 
 
     /**
-     * Return the source for the search.
+     * @return  the source for the search.
      */
     DataSet getSource();
 
@@ -68,6 +68,7 @@ public interface MarkovBlanketSearchRunner extends Executable {
 
     /**
      * Sets the search name.
+     * @param n the name of the search.
      */
     void setSearchName(String n);
 

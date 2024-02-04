@@ -18,6 +18,8 @@
  */
 package edu.pitt.dbmi.data.reader;
 
+import java.io.Serial;
+
 /**
  * Nov 6, 2018 2:26:59 PM
  *
@@ -25,6 +27,7 @@ package edu.pitt.dbmi.data.reader;
  */
 public class DataReaderException extends RuntimeException {
 
+    @Serial
     private static final long serialVersionUID = 1123054334542973950L;
 
     /**

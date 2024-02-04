@@ -51,8 +51,6 @@ public class SpecialDataClark implements Simulation {
         this.graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
-            System.out.println("Simulating dataset #" + (i + 1));
-
             if (parameters.getBoolean("differentGraphs") && i > 0) {
                 graph = this.randomGraph.createGraph(parameters);
             }

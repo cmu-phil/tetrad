@@ -193,7 +193,5 @@ public class MatrixOperations {
             return M;
         }
     }
-
-
 }
 

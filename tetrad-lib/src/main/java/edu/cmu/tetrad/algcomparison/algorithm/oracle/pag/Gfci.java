@@ -22,6 +22,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.PrintStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +41,7 @@ import java.util.List;
 public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
@@ -138,7 +140,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     @Override

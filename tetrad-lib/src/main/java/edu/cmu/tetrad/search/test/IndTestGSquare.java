@@ -30,10 +30,8 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
@@ -42,40 +40,35 @@ import java.util.Set;
  * equivalent to the formulation on page 142 of Fienberg.
  *
  * @author josephramsey
- * @see GSquareTest
+ * @see ChiSquareTest
  */
-public final class IndTestGSquare implements IndependenceTest {
+public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
-    /**
-     * The standard number formatter for Tetrad.
-     */
+    // The standard number formatter for Tetrad.
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    /**
-     * The G Square tester.
-     */
-    private final GSquareTest gSquareTest;
-    /**
-     * The variables in the discrete data sets or which conditional independence judgements are desired.
-     */
+    // The G Square tester.
+    private final ChiSquareTest gSquareTest;
+    // The variables in the discrete data sets or which conditional independence judgements are desired.
     private final List<Node> variables;
-    /**
-     * The dataset of discrete variables.
-     */
+    // The dataset of discrete variables.
     private final DataSet dataSet;
-    /**
-     * The significance level for the test.
-     */
+    // The significance level for the test.
     private final double alpha;
-    /**
-     * The p value associated with the most recent call of isIndependent.
-     */
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    // The p value associated with the most recent call of isIndependent.
     private double pValue;
-    /**
-     * The lower bound of percentages of observation of some category in the data, given some particular combination of
-     * values of conditioning variables, that coefs as 'determining."
-     */
+    // The lower bound of percentages of observation of some category in the data, given some particular combination of
+    // values of conditioning variables, that coefs as 'determining.'
     private double determinationP = 0.99;
+    // True if verbose output should be printed.
     private boolean verbose;
+    // The minimum expected number of counts per conditional table for chi-square for that table and its degrees of
+    // freedom to be included in the overall chi-square and degrees of freedom. Note that this should not be too small,
+    // or the chi-square distribution will not be a good approximation to the distribution of the test statistic.
+    private double minCountPerCell = 1.0;
+    // The rows to use for the test. If null, all rows are used.
+    private List<Integer> rows = null;
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -101,7 +94,8 @@ public final class IndTestGSquare implements IndependenceTest {
         this.alpha = alpha;
 
         this.variables = new ArrayList<>(dataSet.getVariables());
-        this.gSquareTest = new GSquareTest(dataSet, alpha);
+        this.gSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.G_SQUARE);
+        this.gSquareTest.setMinCountPerCell(minCountPerCell);
     }
 
     /**
@@ -147,16 +141,8 @@ public final class IndTestGSquare implements IndependenceTest {
      * @return True iff x _||_ y | z.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
-        if (x == null) {
-            throw new NullPointerException();
-        }
-
-        if (y == null) {
-            throw new NullPointerException();
-        }
-
-        if (_z == null) {
-            throw new NullPointerException();
+        if (this.facts.containsKey(new IndependenceFact(x, y, _z))) {
+            return facts.get(new IndependenceFact(x, y, _z));
         }
 
         for (Node node : _z) {
@@ -164,6 +150,7 @@ public final class IndTestGSquare implements IndependenceTest {
                 throw new NullPointerException();
             }
         }
+
 
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
@@ -187,15 +174,8 @@ public final class IndTestGSquare implements IndependenceTest {
             }
         }
 
-        //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
-
-        GSquareTest.Result result = this.gSquareTest.calcGSquare(testIndices);
+        ChiSquareTest.Result result = this.gSquareTest.calcChiSquare(testIndices);
         this.pValue = result.getPValue();
-
-        if (Double.isNaN(this.pValue)) {
-            throw new RuntimeException("Undefined p-value encountered when testing " +
-                    LogUtilsSearch.independenceFact(x, y, _z));
-        }
 
         if (this.verbose) {
             if (result.isIndep()) {
@@ -204,8 +184,10 @@ public final class IndTestGSquare implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z),
+        IndependenceResult result1 = new IndependenceResult(new IndependenceFact(x, y, _z),
                 result.isIndep(), result.getPValue(), alpha - result.getPValue());
+        facts.put(new IndependenceFact(x, y, _z), result1);
+        return result1;
     }
 
     /**
@@ -228,7 +210,7 @@ public final class IndTestGSquare implements IndependenceTest {
     }
 
     /**
-     * Return the list of variables over which this independence checker is capable of determinine independence
+     * Return the list of variables over which this independence checker is capable of determining independence
      * relations-- that is, all the variables in the given graph or the given data set.
      *
      * @return This list.
@@ -311,7 +293,7 @@ public final class IndTestGSquare implements IndependenceTest {
     }
 
     /**
-     * Sets the threshold for making judgments of detemrination.
+     * Sets the threshold for making judgments of determination.
      *
      * @param determinationP This threshold.
      */
@@ -346,6 +328,50 @@ public final class IndTestGSquare implements IndependenceTest {
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
+     * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
+     * chi-square distribution will not be a good approximation to the distribution of the test statistic.
+     *
+     * @param minCountPerCell The minimum number of counts per conditional table. The default is 1; this must be >= 0.
+     */
+    public void setMinCountPerCell(double minCountPerCell) {
+        this.minCountPerCell = minCountPerCell;
+        this.gSquareTest.setMinCountPerCell(minCountPerCell);
+    }
+
+    /**
+     * Returns the rows used for the test. If null, all rows are used.
+     *
+     * @return The rows used for the test. Can be null.
+     */
+    @Override
+    public List<Integer> getRows() {
+        return new ArrayList<>(rows);
+    }
+
+    /**
+     * Sets the rows to use for the test. If null, all rows are used.
+     *
+     * @param rows The rows to use for the test. Can be null.
+     */
+    @Override
+    public void setRows(List<Integer> rows) {
+        if (rows == null) {
+            this.rows = null;
+            gSquareTest.setRows(null);
+        } else {
+            for (int i : rows) {
+                if (i < 0 || i >= dataSet.getNumRows()) {
+                    throw new IllegalArgumentException("Row " + i + " is out of bounds.");
+                }
+            }
+
+            this.rows = new ArrayList<>(rows);
+            gSquareTest.setRows(this.rows);
+        }
     }
 }
 

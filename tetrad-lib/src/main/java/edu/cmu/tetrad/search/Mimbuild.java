@@ -42,23 +42,21 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * <p>Provides an implementation of Mimbuild, an algorithm that takes a clustering
- * of variables, each of which is explained by a single latent, then forms the implied covariance matrix over the latent
- * variables, then runs a CPDAG search to in the structure over the latent themselves.</p>
- *
- * <p>Specifically, the search will first infer the covariance matrix over the
- * latents and then will use the GRaSP algorithm (see) to infer the structure graph over the latents, using the SEM Bic
- * score with the given penalty discount (default 2).</p>
- *
- * <p>One may wish to obtain the implied correlation matrix over the latents and
- * run one's own choice of CPDAG algorithm on it with one's own test or score; a method is available to return this
- * covariance matrix.</p>
- *
- * <p>A suitable clustering for Mimbuild may be obtained using the BPC or FOFC
- * algorithm (see).</p>
- *
- * <p>This class is configured to respect the knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Provides an implementation of Mimbuild, an algorithm that takes a clustering of variables, each of which is explained
+ * by a single latent, then forms the implied covariance matrix over the latent variables, then runs a CPDAG search to
+ * in the structure over the latent themselves.
+ * <p>
+ * Specifically, the search will first infer the covariance matrix over the latents and then will use the GRaSP
+ * algorithm (see) to infer the structure graph over the latents, using the SEM Bic score with the given penalty
+ * discount (default 2).
+ * <p>
+ * One may wish to obtain the implied correlation matrix over the latents and run one's own choice of CPDAG algorithm on
+ * it with one's own test or score; a method is available to return this covariance matrix.
+ * <p>
+ * A suitable clustering for Mimbuild may be obtained using the BPC or FOFC algorithm (see).
+ * <p>
+ * This class is configured to respect the knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author josephramsey
  * @see Bpc
@@ -68,37 +66,29 @@ import java.util.List;
  * @see Knowledge
  */
 public class Mimbuild {
-
-    /**
-     * The clustering from BPC or equivalent. Small clusters are removed.
-     */
+    // The clustering from BPC or equivalent. Small clusters are removed.
     private List<List<Node>> clustering;
-
-    /**
-     * The graph over the latents.
-     */
+    // The graph over the latents.
     private Graph structureGraph;
-
-    /**
-     * Background knowledge for CPC.
-     */
+    // Background knowledge for CPC.
     private Knowledge knowledge = new Knowledge();
-
+    // The covariance matrix over the latent variables.
     private ICovarianceMatrix latentsCov;
-
-    /**
-     * The minimum function (Fgsl) value achieved.
-     */
+    // The minimum function (Fgsl) value achieved.
     private double minimum;
+    // The p value of the optimization.
+    private double pValue;
+    // The latents.
+    private List<Node> latents;
+    // The penalty discount of the score used to infer the structure graph.
+    private double penaltyDiscount = 1;
+    // jf Clusters smaller than this size will be tossed out.
+    private int minClusterSize = 3;
+    private long seed = -1;
 
     /**
-     * The p value of the optimization.
+     * Constructs a new Mimbuild search.
      */
-    private double pValue;
-    private List<Node> latents;
-    private double penaltyDiscount = 1;
-    private int minClusterSize = 3;
-
     public Mimbuild() {
     }
 
@@ -160,6 +150,7 @@ public class Mimbuild {
         SemBicScore score = new SemBicScore(latentscov);
         score.setPenaltyDiscount(this.penaltyDiscount);
         Grasp search = new Grasp(score);
+        search.setSeed(seed);
         search.setKnowledge(this.knowledge);
         search.bestOrder(latentscov.getVariables());
         graph = search.getGraph(true);
@@ -518,6 +509,10 @@ public class Mimbuild {
         }
 
         return sum;
+    }
+
+    public void setSeed(long seed) {
+        this.seed = seed;
     }
 
     private class Function1 implements org.apache.commons.math3.analysis.MultivariateFunction {

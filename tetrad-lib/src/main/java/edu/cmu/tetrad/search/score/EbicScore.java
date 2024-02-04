@@ -21,7 +21,10 @@
 
 package edu.cmu.tetrad.search.score;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -36,27 +39,37 @@ import static org.apache.commons.math3.util.FastMath.ceil;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * <p>Implements the extended BIC (EBIC) score. The reference is here:</p>
- *
- * <p>Chen, J., &amp; Chen, Z. (2008). Extended Bayesian information criteria for
- * model selection with large model spaces. Biometrika, 95(3), 759-771.</p>
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * Implements the extended BIC (EBIC) score. The reference is here:
+ * <p>
+ * Chen, J., &amp; Chen, Z. (2008). Extended Bayesian information criteria for model selection with large model spaces.
+ * Biometrika, 95(3), 759-771.
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
  */
 public class EbicScore implements Score {
+    // The variables of the covariance matrix.
     private final List<Node> variables;
+    // The sample size of the covariance matrix.
     private final int sampleSize;
+    // The covariance matrix.
     private ICovarianceMatrix covariances;
+    // The number of variables.
     private double N;
+    // The dataset.
     private Matrix data;
+    // True if verbose output should be sent to out.
     private boolean calculateRowSubsets;
+    // The gamma parameter.
     private double gamma = 1;
+    // True if the pseudo-inverse should be used.
+    private boolean usePseudoInverse = false;
 
     /**
      * Constructs the score using a covariance matrix.
+     *
+     * @param covariances The covariance matrix.
      */
     public EbicScore(ICovarianceMatrix covariances) {
         if (covariances == null) {
@@ -97,6 +110,8 @@ public class EbicScore implements Score {
     }
 
     /**
+     * Returns the score of the node at index y, given its parents.
+     *
      * @return localScore(y | z, x) - localScore(y | z).
      */
     @Override
@@ -105,7 +120,7 @@ public class EbicScore implements Score {
     }
 
     /**
-     * Returns the score of the node i given its parents.
+     * Returns the score of the node at index i, given its parents.
      *
      * @param i       The index of the node.
      * @param parents The indices of the node's parents.
@@ -116,7 +131,8 @@ public class EbicScore implements Score {
         double varRy;
 
         try {
-            varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+            varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets,
+                    this.usePseudoInverse);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when scoring " +
                     LogUtilsSearch.getScoreFact(i, parents, variables));
@@ -158,7 +174,7 @@ public class EbicScore implements Score {
     /**
      * Returns the variables for this score.
      *
-     * @return Thsi list.
+     * @return This list.
      */
     @Override
     public List<Node> getVariables() {
@@ -200,6 +216,15 @@ public class EbicScore implements Score {
      */
     public void setGamma(double gamma) {
         this.gamma = gamma;
+    }
+
+    /**
+     * Returns the gamma parameter for EBIC.
+     *
+     * @param usePseudoInverse True if the pseudo-inverse should be used.
+     */
+    public void setUsePseudoInverse(boolean usePseudoInverse) {
+        this.usePseudoInverse = usePseudoInverse;
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {

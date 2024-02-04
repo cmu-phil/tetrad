@@ -32,16 +32,15 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * <p>Searches for a CPDAG representing all the Markov blankets for a given target T consistent
- * with the given independence information. This CPDAG may be used to generate the actual list of DAG's that might be
- * Markov blankets. Note that this code has been converted to be consistent with the CPC algorithm. The reference is
- * here:</p>
- *
- * <p>Bai, X., Padman, R., Ramsey, J., &amp; Spirtes, P. (2008). Tabu search-enhanced graphical models
- * for classification in high dimensions. INFORMS Journal on Computing, 20(3), 423-437.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Searches for a CPDAG representing all the Markov blankets for a given target T consistent with the given independence
+ * information. This CPDAG may be used to generate the actual list of DAG's that might be Markov blankets. Note that
+ * this code has been converted to be consistent with the CPC algorithm. The reference is here:
+ * <p>
+ * Bai, X., Padman, R., Ramsey, J., &amp; Spirtes, P. (2008). Tabu search-enhanced graphical models for classification
+ * in high dimensions. INFORMS Journal on Computing, 20(3), 423-437.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author josephramsey
  * @see FgesMb
@@ -49,62 +48,36 @@ import java.util.*;
  */
 public final class PcMb implements IMbSearch, IGraphSearch {
 
-    /**
-     * The independence test used to perform the search.
-     */
+    // The independence test used to perform the search.
     private final IndependenceTest test;
-    /**
-     * The logger for this class. The config needs to be set.
-     */
+    // The logger for this class. The config needs to be set.
     private final TetradLogger logger = TetradLogger.getInstance();
-    /**
-     * The list of variables being searched over. Must contain the target.
-     */
+    // The list of variables being searched over. Must contain the target.
     private List<Node> variables;
-    /**
-     * The target variable.
-     */
+    // The target variable.
     private List<Node> targets;
-    /**
-     * The depth to which independence tests should be performed--i.e., the maximum number of conditioning variables for
-     * any independence test.
-     */
+    // The depth to which independence tests should be performed--i.e., the maximum number of conditioning variables for
+    // any independence test.
     private int depth;
-    /**
-     * The CPDAG output by the most recent search. This is saved in case the user wants to generate the list of MB
-     * DAGs.
-     */
+    // The CPDAG output by the most recent search. This is saved in case the user wants to generate the list of MB
+    // DAGs.
     private Graph resultGraph;
-    /**
-     * A count of the number of independence tests performed in the course of the most recent search.
-     */
+    // A count of the number of independence tests performed in the course of the most recent search.
     private int numIndependenceTests;
-    /**
-     * Information to help understand what part of the search is taking the most time.
-     */
+    // Information to help understand what part of the search is taking the most time.
     private int[] maxRemainingAtDepth;
-    /**
-     * The set of nodes that edges should not be drawn to in the addDepthZeroAssociates method.
-     */
+    // The set of nodes that edges should not be drawn to in the addDepthZeroAssociates method.
     private Set<Node> a;
-    /**
-     * Elapsed time for the last run of the algorithm.
-     */
+    // Elapsed time for the last run of the algorithm.
     private long elapsedTime;
-    /**
-     * Knowledge.
-     */
+    // Knowledge.
     private Knowledge knowledge = new Knowledge();
-    /**
-     * Set of ambiguous unshielded triples.
-     */
+    // Set of ambiguous unshielded triples.
     private Set<Triple> ambiguousTriples;
-    /**
-     * True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
-     */
+    // True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
     private boolean meekPreventCycles;
+    // True if the search should return the MB, not the MB CPDAG.
     private boolean findMb = false;
-
 
     /**
      * Constructs a new search.
@@ -128,17 +101,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.test = test;
         this.depth = depth;
         this.variables = test.getVariables();
-    }
-
-
-    private static boolean isArrowheadAllowed1(Node from, Node to,
-                                               Knowledge knowledge) {
-        if (knowledge == null) {
-            return true;
-        }
-
-        return !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     /**
@@ -349,8 +311,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.maxRemainingAtDepth = new int[20];
         Arrays.fill(this.maxRemainingAtDepth, -1);
 
-//        logger.info("target = " + getTarget());
-
         Graph graph = new EdgeListGraph();
 
         // Each time the addDepthZeroAssociates method is called for a node
@@ -511,6 +471,17 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.knowledge = new Knowledge(knowledge);
     }
 
+    private static boolean isArrowheadAllowed1(Node from, Node to,
+                                               Knowledge knowledge) {
+        if (knowledge == null) {
+            return true;
+        }
+
+        return !knowledge.isRequired(to.toString(), from.toString()) &&
+                !knowledge.isForbidden(from.toString(), to.toString());
+    }
+
+
     private Set<Node> getA() {
         return this.a;
     }
@@ -557,8 +528,8 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * Tries to remove the edge node---from using adjacent nodes of node 'from.' then tries to remove each other
-     * edge adjacent node 'from' using remaining edges adjacent node 'from.' If the edge 'node' is removed, the method
+     * Tries to remove the edge node---from using adjacent nodes of node 'from.' then tries to remove each other edge
+     * adjacent node 'from' using remaining edges adjacent node 'from.' If the edge 'node' is removed, the method
      * immediately returns.
      *
      * @param node  The node about which pruning it to take place.

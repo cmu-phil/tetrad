@@ -27,20 +27,20 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * <p>Adjusts FAS (see) for the deterministic case by refusing to removed edges
- * based on conditional independence tests that are judged to be deterministic. That is, if X _||_ Y | Z, but Z
- * determines X or Y, then the edge X---Y is not removed.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Adjusts FAS (see) for the deterministic case by refusing to removed edges based on conditional independence tests
+ * that are judged to be deterministic. That is, if X _||_ Y | Z, but Z determines X or Y, then the edge X---Y is not
+ * removed.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author peterspirtes
  * @author josephramsey.
@@ -49,48 +49,30 @@ import java.util.*;
  */
 public class Fasd implements IFas {
 
-    /**
-     * The independence test. This should be appropriate to the types
-     */
+    // The independence test. This should be appropriate to the types
     private final IndependenceTest test;
-    /**
-     * The logger, by default the empty logger.
-     */
+    // The logger, by default the empty logger.
     private final TetradLogger logger = TetradLogger.getInstance();
-    private final NumberFormat nf = new DecimalFormat("0.00E0");
-    /**
-     * The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node
-     * x. It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
-     */
+    // The number formatter.
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    // The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node x.
+    // It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
     private final Graph graph;
-    /**
-     * Specification of which edges are forbidden or required.
-     */
+    // Specification of which edges are forbidden or required.
     private Knowledge knowledge = new Knowledge();
-    /**
-     * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
-     * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
-     */
+    // The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
+    // be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
     private int depth = 1000;
-    /**
-     * The number of independence tests.
-     */
+    // The number of independence tests.
     private int numIndependenceTests;
-    /**
-     * The sepsets found during the search.
-     */
+    // The sepsets found during the search.
     private SepsetMap sepset = new SepsetMap();
-    /**
-     * The depth 0 graph, specified initially.
-     */
+    // The depth 0 graph, specified initially.
     private Graph externalGraph;
-    /**
-     * True iff verbose output should be printed.
-     */
+    // True iff verbose output should be printed.
     private boolean verbose;
-
+    // The output stream.
     private PrintStream out = System.out;
-
 
     /**
      * Constructs a new FastAdjacencySearch.
@@ -104,10 +86,10 @@ public class Fasd implements IFas {
 
     /**
      * Discovers all adjacencies in data.  The procedure is to remove edges in the graph which connect pairs of
-     * variables which are independent, conditional on some other set of variables in the graph (the "sepset"). These are
-     * removed in tiers.  First, edges which are independent conditional on zero other variables are removed, then edges
-     * which are independent conditional on one other variable are removed, then two, then three, and so on, until no
-     * more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
+     * variables which are independent, conditional on some other set of variables in the graph (the "sepset"). These
+     * are removed in tiers.  First, edges which are independent conditional on zero other variables are removed, then
+     * edges which are independent conditional on one other variable are removed, then two, then three, and so on, until
+     * no more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
      * adjacencies in the data.
      *
      * @return a graph which indicates which variables are independent conditional on which other variables
@@ -299,7 +281,6 @@ public class Fasd implements IFas {
                     this.numIndependenceTests++;
                     result = test.checkIndependence(x, y, empty);
                 } catch (Exception e) {
-                    e.printStackTrace();
                     result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN, Double.NaN);
                 }
 

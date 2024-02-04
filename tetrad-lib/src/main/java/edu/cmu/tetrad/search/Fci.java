@@ -38,28 +38,25 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Implements the Fast Causal Inference (FCI) algorithm due to Peter Spirtes, which addressed
- * the case where latent common causes cannot be assumed not to exist with respect to the data set being analyzed. That
- * is, it is assumed that there may be variables that are not included in the data that nonetheless may be causes of two
- * or more variables that are included in data.</p>
- *
- * <p>Two alternatives are provided for doing the final orientation step, one due to Peter Spirtes,
- * which is arrow complete, and another due to Jiji Zhang, which is arrow and tail complete.</p>
- *
- * <p>This algorithm, with the Spirtes final orientation rules, was given in an earlier version of
- * this book:</p>
- *
- * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
- * prediction, and search. MIT press.</p>
- *
- * <p>The algorithm with the Zhang final orientation rules was given in this reference:</p>
- *
- * <p>Zhang, J. (2008). On the completeness of orientation rules for causal discovery in the presence
- * of latent confounders and selection bias. Artificial Intelligence, 172(16-17), 1873-1896.</p>
- *
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Implements the Fast Causal Inference (FCI) algorithm due to Peter Spirtes, which addressed the case where latent
+ * common causes cannot be assumed not to exist with respect to the data set being analyzed. That is, it is assumed that
+ * there may be variables that are not included in the data that nonetheless may be causes of two or more variables that
+ * are included in data.
+ * <p>
+ * Two alternatives are provided for doing the final orientation step, one due to Peter Spirtes, which is arrow
+ * complete, and another due to Jiji Zhang, which is arrow and tail complete.
+ * <p>
+ * This algorithm, with the Spirtes final orientation rules, was given in an earlier version of this book:
+ * <p>
+ * Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT press.
+ * <p>
+ * The algorithm with the Zhang final orientation rules was given in this reference:
+ * <p>
+ * Zhang, J. (2008). On the completeness of orientation rules for causal discovery in the presence of latent confounders
+ * and selection bias. Artificial Intelligence, 172(16-17), 1873-1896.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author peterspirtes
  * @author clarkglymour
@@ -72,21 +69,34 @@ import java.util.Set;
  * @see Knowledge
  */
 public final class Fci implements IGraphSearch {
+    // The variables to search over.
     private final List<Node> variables = new ArrayList<>();
+    // The independence test to use.
     private final IndependenceTest independenceTest;
+    // The logger.
     private final TetradLogger logger = TetradLogger.getInstance();
+    // The sepsets from FAS.
     private SepsetMap sepsets;
+    // The background knowledge.
     private Knowledge knowledge = new Knowledge();
+    // Whether the Zhang complete rule set should be used.
     private boolean completeRuleSetUsed = true;
+    // Whether the possible msep step should be done.
     private boolean possibleMsepSearchDone = true;
+    // The maximum length of any discriminating path.
     private int maxPathLength = -1;
+    // The depth of search.
     private int depth = -1;
+    // The elapsed time of search.
     private long elapsedTime;
+    // Whether verbose output should be printed.
     private boolean verbose;
+    // The PC heuristic type to use.
     private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
+    // Whether the stable options should be used.
     private boolean stable = true;
+    // Whether the discriminating path rule should be used.
     private boolean doDiscriminatingPathRule = true;
-
 
     /**
      * Constructor.
@@ -136,7 +146,11 @@ public final class Fci implements IGraphSearch {
         this.variables.removeAll(remVars);
     }
 
-
+    /**
+     * Performs the search.
+     *
+     * @return The graph.
+     */
     public Graph search() {
         long start = MillisecondTimes.timeMillis();
 
@@ -246,8 +260,8 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the Zhang complete rule set should be used; false if only R1-R4 (the rule set of the original
-     * FCI) should be used. False by default.
+     * Sets whether the Zhang complete rule set should be used; false if only R1-R4 (the rule set of the original FCI)
+     * should be used. False by default.
      *
      * @param completeRuleSetUsed True for the complete Zhang rule set.
      */

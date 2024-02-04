@@ -31,16 +31,32 @@ public class VerticalDiscreteTabularData implements DiscreteData {
     private final DiscreteDataColumn[] dataColumns;
     private final int[][] data;
 
+    /**
+     * Constructor.
+     *
+     * @param dataColumns the data columns.
+     * @param data        the data.
+     */
     public VerticalDiscreteTabularData(DiscreteDataColumn[] dataColumns, int[][] data) {
         this.dataColumns = dataColumns;
         this.data = data;
     }
 
+    /**
+     * Gets the data columns.
+     *
+     * @return the data columns.
+     */
     @Override
     public DiscreteDataColumn[] getDataColumns() {
         return this.dataColumns;
     }
 
+    /**
+     * Gets the data.
+     *
+     * @return the data.
+     */
     @Override
     public int[][] getData() {
         return this.data;

@@ -376,9 +376,9 @@ public class AlgorithmCard extends JPanel {
      * @return Algorithm
      */
     public Algorithm getAlgorithmFromInterface(AlgorithmModel algoModel, IndependenceTestModel indTestModel, ScoreModel scoreModel) {
-        Class algoClass = algoModel.getAlgorithm().getClazz();
-        Class indTestClass = (indTestModel == null) ? null : indTestModel.getIndependenceTest().getClazz();
-        Class scoreClass = (scoreModel == null) ? null : scoreModel.getScore().getClazz();
+        Class algoClass = algoModel.getAlgorithm().clazz();
+        Class indTestClass = (indTestModel == null) ? null : indTestModel.getIndependenceTest().clazz();
+        Class scoreClass = (scoreModel == null) ? null : scoreModel.getScore().clazz();
 
         Algorithm algorithm = null;
 
@@ -406,19 +406,19 @@ public class AlgorithmCard extends JPanel {
         boolean missingScore = algoModel.isRequiredScore() && (scoreModel == null);
         if (missingTest && missingScore) {
             String msg = String.format("%s requires both test and score.",
-                    algoModel.getAlgorithm().getAnnotation().name());
+                    algoModel.getAlgorithm().annotation().name());
             JOptionPane.showMessageDialog(this.desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
 
             return false;
         } else if (missingTest) {
             String msg = String.format("%s requires independence test.",
-                    algoModel.getAlgorithm().getAnnotation().name());
+                    algoModel.getAlgorithm().annotation().name());
             JOptionPane.showMessageDialog(this.desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
 
             return false;
         } else if (missingScore) {
             String msg = String.format("%s requires score.",
-                    algoModel.getAlgorithm().getAnnotation().name());
+                    algoModel.getAlgorithm().annotation().name());
             JOptionPane.showMessageDialog(this.desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
 
             return false;
@@ -433,7 +433,7 @@ public class AlgorithmCard extends JPanel {
         firePropertyChange("algoFwdBtn", null, true);
 
         AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
-        Class algoClass = algoModel.getAlgorithm().getClazz();
+        Class algoClass = algoModel.getAlgorithm().clazz();
 
         if (algoClass.isAnnotationPresent(Nonexecutable.class)) {
             String msg;
@@ -476,7 +476,7 @@ public class AlgorithmCard extends JPanel {
             }
 
             // SVAR (SvarFci, SvarGfci) algorithms need lagged data
-            String cmd = algoModel.getAlgorithm().getAnnotation().command();
+            String cmd = algoModel.getAlgorithm().annotation().command();
             if (cmd.equalsIgnoreCase("ts-fci")
                     || cmd.equalsIgnoreCase("ts-gfci")
                     || cmd.equalsIgnoreCase("ts-imgs")) {
@@ -502,7 +502,7 @@ public class AlgorithmCard extends JPanel {
             if ("all".equals(algoType)) {
                 if (this.knowledgeChkBox.isSelected()) {
                     algorithmModels.getModels(this.dataType, this.multiDataAlgo).stream()
-                            .filter(e -> HasKnowledge.class.isAssignableFrom(e.getAlgorithm().getClazz()))
+                            .filter(e -> HasKnowledge.class.isAssignableFrom(e.getAlgorithm().clazz()))
                             .forEach(e -> this.algoModels.addElement(e));
                 } else {
                     algorithmModels.getModels(this.dataType, this.multiDataAlgo).stream()
@@ -511,7 +511,7 @@ public class AlgorithmCard extends JPanel {
             } else {
                 if (this.knowledgeChkBox.isSelected()) {
                     algorithmModels.getModels(AlgType.valueOf(algoType), this.dataType, this.multiDataAlgo).stream()
-                            .filter(e -> HasKnowledge.class.isAssignableFrom(e.getAlgorithm().getClazz()))
+                            .filter(e -> HasKnowledge.class.isAssignableFrom(e.getAlgorithm().clazz()))
                             .forEach(e -> this.algoModels.addElement(e));
                 } else {
                     algorithmModels.getModels(AlgType.valueOf(algoType), this.dataType, this.multiDataAlgo).stream()
@@ -539,15 +539,15 @@ public class AlgorithmCard extends JPanel {
             List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(this.dataType);
             if (this.linearGaussianRadBtn.isSelected()) {
                 models.stream()
-                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(LinearGaussian.class))
+                        .filter(e -> e.getIndependenceTest().clazz().isAnnotationPresent(LinearGaussian.class))
                         .forEach(e -> this.indTestComboBox.addItem(e));
             } else if (this.mixedRadBtn.isSelected()) {
                 models.stream()
-                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(Mixed.class))
+                        .filter(e -> e.getIndependenceTest().clazz().isAnnotationPresent(Mixed.class))
                         .forEach(e -> this.indTestComboBox.addItem(e));
             } else if (this.generalRadBtn.isSelected()) {
                 models.stream()
-                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(General.class))
+                        .filter(e -> e.getIndependenceTest().clazz().isAnnotationPresent(General.class))
                         .forEach(e -> this.indTestComboBox.addItem(e));
             } else if (this.allRadBtn.isSelected()) {
                 models.stream()
@@ -590,15 +590,15 @@ public class AlgorithmCard extends JPanel {
             List<ScoreModel> models = ScoreModels.getInstance().getModels(this.dataType);
             if (this.linearGaussianRadBtn.isSelected()) {
                 models.stream()
-                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(LinearGaussian.class))
+                        .filter(e -> e.getScore().clazz().isAnnotationPresent(LinearGaussian.class))
                         .forEach(e -> this.scoreComboBox.addItem(e));
             } else if (this.mixedRadBtn.isSelected()) {
                 models.stream()
-                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(Mixed.class))
+                        .filter(e -> e.getScore().clazz().isAnnotationPresent(Mixed.class))
                         .forEach(e -> this.scoreComboBox.addItem(e));
             } else if (this.generalRadBtn.isSelected()) {
                 models.stream()
-                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(General.class))
+                        .filter(e -> e.getScore().clazz().isAnnotationPresent(General.class))
                         .forEach(e -> this.scoreComboBox.addItem(e));
             } else if (this.allRadBtn.isSelected()) {
                 models.stream()

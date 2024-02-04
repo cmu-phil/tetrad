@@ -12,6 +12,7 @@ import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import java.util.List;
 @LinearGaussian
 public class GICScoreTests implements IndependenceWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     @Override
@@ -71,7 +73,7 @@ public class GICScoreTests implements IndependenceWrapper {
 
         score.setRuleType(ruleType);
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-
+        score.setUsePseudoInverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
 
         return new ScoreIndTest(score, dataSet);
     }
@@ -92,6 +94,7 @@ public class GICScoreTests implements IndependenceWrapper {
         params.add(Params.SEM_GIC_RULE);
         params.add(Params.PENALTY_DISCOUNT_ZS);
         params.add(Params.PRECOMPUTE_COVARIANCES);
+        params.add(Params.USE_PSEUDOINVERSE);
         return params;
     }
 }

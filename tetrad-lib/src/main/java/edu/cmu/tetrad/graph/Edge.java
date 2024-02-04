@@ -317,7 +317,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     public final int hashCode() {
-        return 1;
+        return node1.hashCode() + node2.hashCode();
     }
 
     /**

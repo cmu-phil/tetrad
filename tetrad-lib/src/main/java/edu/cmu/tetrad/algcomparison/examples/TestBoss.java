@@ -31,8 +31,12 @@ import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 
 /**
  * Test the degenerate Gaussian score.
@@ -41,6 +45,11 @@ import edu.cmu.tetrad.util.Params;
  */
 public class TestBoss {
     public static void main(String... args) {
+        if (true) {
+            testGigaflops();
+            return;
+        }
+
         Parameters parameters = new Parameters();
         parameters.set(Params.NUM_RUNS, 1);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
@@ -93,6 +102,32 @@ public class TestBoss {
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
+    }
+
+    public static void testGigaflops() {
+
+        final long start = MillisecondTimes.timeMillis();// System.currentTimeMillis();
+
+        for (int i = 0; i < 200; i++) {
+            int N = 1024;
+            RealMatrix A = new BlockRealMatrix(N, N);
+            RealMatrix B = new BlockRealMatrix(N, N);
+
+            MillisecondTimes.type = MillisecondTimes.Type.CPU;
+
+            RealMatrix C = A.multiply(B);
+            final long end = MillisecondTimes.timeMillis();// System.currentTimeMillis();
+
+            double gflop = N * N * N * 2e-9;
+            double sec = (end - start) * 1e-3;
+
+            System.out.println(gflop / sec);
+        }
+
+        final long end = MillisecondTimes.timeMillis();// System.currentTimeMillis();
+
+        System.out.println((end - start) * 1e-3);
+
     }
 }
 

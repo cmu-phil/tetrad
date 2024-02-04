@@ -8,27 +8,27 @@ import edu.cmu.tetrad.search.utils.GrowShrinkTree;
 import java.util.*;
 
 /**
- * <p>Implements the SP (Sparsest Permutation) algorithm. This procedure goes through every
- * permutation of the variables (so can be slow for more than 11 variables with no knowledge) looking for a permutation
- * such that when a DAG is built it has the fewest number of edges (i.e., is a most 'frugal' or a 'sparsest' DAG). The
- * procedure can in principle return all such sparsest permutations and their corresponding DAGs, but in this version it
- * return one of them, and converts the result into a CPDAG.</p>
- *
- * <p>Note that SP considers all permutations of the algorithm, which is exponential in the
- * number of variables. So SP without knowledge is limited to about 10 variables per knowledge tier.</p>
- *
- * <p>However, notably, tiered Knowledge can be used with this search. If tiered knowledge
- * is used, then the procedure is carried out for each tier separately, given the variable preceding that tier, which
- * allows the SP algorithm to address tiered (e.g., time series) problems with more than 11 variables.</p>
- *
- * <p>This class is meant to be used in the context of the PermutationSearch class (see).
- * the proper use is PermutationSearch search = new PermutationSearch(new Sp(score));</p>
- *
- * <p>Raskutti, G., &amp; Uhler, C. (2018). Learning directed acyclic graph models based on
- * sparsest permutations. Stat, 7(1), e183.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Implements the SP (Sparsest Permutation) algorithm. This procedure goes through every permutation of the variables
+ * (so can be slow for more than 11 variables with no knowledge) looking for a permutation such that when a DAG is built
+ * it has the fewest number of edges (i.e., is a most 'frugal' or a 'sparsest' DAG). The procedure can in principle
+ * return all such sparsest permutations and their corresponding DAGs, but in this version it return one of them, and
+ * converts the result into a CPDAG.
+ * <p>
+ * Note that SP considers all permutations of the algorithm, which is exponential in the number of variables. So SP
+ * without knowledge is limited to about 10 variables per knowledge tier.
+ * <p>
+ * However, notably, tiered Knowledge can be used with this search. If tiered knowledge is used, then the procedure is
+ * carried out for each tier separately, given the variable preceding that tier, which allows the SP algorithm to
+ * address tiered (e.g., time series) problems with more than 11 variables.
+ * <p>
+ * This class is meant to be used in the context of the PermutationSearch class (see). the proper use is
+ * PermutationSearch search = new PermutationSearch(new Sp(score));
+ * <p>
+ * Raskutti, G., &amp; Uhler, C. (2018). Learning directed acyclic graph models based on sparsest permutations. Stat,
+ * 7(1), e183.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author bryanandrews
  * @author josephramsey
@@ -38,10 +38,15 @@ import java.util.*;
  * @see Knowledge
  */
 public class Sp implements SuborderSearch {
+    // The score to use.
     private final Score score;
+    // The variables to search over.
     private final List<Node> variables;
+    // The parents of each variable.
     private final Map<Node, Set<Node>> parents;
+    // The GrowShrinkTree for each variable.
     private Map<Node, GrowShrinkTree> gsts;
+    // The knowledge.
     private Knowledge knowledge = new Knowledge();
 
     /**
@@ -106,6 +111,44 @@ public class Sp implements SuborderSearch {
         update(prefix, suborder);
     }
 
+    /**
+     * Returns the variables being searched over.
+     *
+     * @return The variables being searched over.
+     */
+    @Override
+    public List<Node> getVariables() {
+        return variables;
+    }
+
+    /**
+     * Returns the parents of each variable.
+     *
+     * @return The parents of each variable.
+     */
+    @Override
+    public Map<Node, Set<Node>> getParents() {
+        return parents;
+    }
+
+    /**
+     * Returns the score being used.
+     *
+     * @return The score being used.
+     */
+    @Override
+    public Score getScore() {
+        return score;
+    }
+
+    /**
+     * Set the knowledge to used.
+     */
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (!this.knowledge.isEmpty()) {
             order.sort((a, b) -> {
@@ -131,10 +174,6 @@ public class Sp implements SuborderSearch {
         return false;
     }
 
-    @Override
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
-    }
 
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
@@ -150,21 +189,6 @@ public class Sp implements SuborderSearch {
             Z.add(x);
         }
 
-        return score;
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return variables;
-    }
-
-    @Override
-    public Map<Node, Set<Node>> getParents() {
-        return parents;
-    }
-
-    @Override
-    public Score getScore() {
         return score;
     }
 

@@ -28,35 +28,35 @@ public interface DataColumn {
     /**
      * Get the column's name.
      *
-     * @return
+     * @return the column's name.
      */
     String getName();
 
     /**
      * Get the column's number.
      *
-     * @return
+     * @return the column's number.
      */
     int getColumnNumber();
 
     /**
      * True if this column was not read in from source such as file.
      *
-     * @return
+     * @return true if this column was not read in from source such as file.
      */
     boolean isGenerated();
 
     /**
      * True if the datatype is discrete.
      *
-     * @return
+     * @return true if the datatype is discrete.
      */
     boolean isDiscrete();
 
     /**
      * Set true for discrete datatype.
      *
-     * @param discrete
+     * @param discrete true for discrete datatype.
      */
     void setDiscrete(boolean discrete);
 

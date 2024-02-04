@@ -31,12 +31,37 @@ import java.util.Set;
  */
 public interface TabularDatasetReader extends DatasetReader {
 
+    /**
+     * Read in the data.
+     *
+     * @return The data.
+     * @throws IOException If an I/O error occurs.
+     */
     Data readInData() throws IOException;
 
+    /**
+     * Read in the data.
+     *
+     * @param namesOfColumnsToExclude the names of columns to exclude.
+     * @return The data.
+     * @throws IOException If an I/O error occurs.
+     */
     Data readInData(Set<String> namesOfColumnsToExclude) throws IOException;
 
+    /**
+     * Read in the data.
+     *
+     * @param columnsToExclude the columns to exclude.
+     * @return The data.
+     * @throws IOException If an I/O error occurs.
+     */
     Data readInData(int[] columnsToExclude) throws IOException;
 
+    /**
+     * Set whether the data has a header.
+     *
+     * @param hasHeader whether the data has a header.
+     */
     void setHasHeader(boolean hasHeader);
 
 }

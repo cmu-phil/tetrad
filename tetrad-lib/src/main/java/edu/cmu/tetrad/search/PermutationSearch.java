@@ -7,20 +7,21 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
 import edu.cmu.tetrad.search.utils.MeekRules;
+import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.*;
 
 /**
- * <p>Implements common elements of a permutation search. The specific parts
- * for each permutation search are implemented as a SuborderSearch.</p>
- *
- * <p>This class specifically handles an optimization for tiered knowledge, whereby
- * tiers in the knowledge can be searched one at a time in order from the lowest to highest, taking all variables from
- * previous tiers as a fixed for a later tier. This allows these permutation searches to search over many more
- * variables than otherwise, so long as tiered knowledge is available to organize the search.</p>
- *
- * <p>This class is configured to respect the knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Implements common elements of a permutation search. The specific parts for each permutation search are implemented as
+ * a SuborderSearch.
+ * <p>
+ * This class specifically handles an optimization for tiered knowledge, whereby tiers in the knowledge can be searched
+ * one at a time in order from the lowest to highest, taking all variables from previous tiers as a fixed for a later
+ * tier. This allows these permutation searches to search over many more variables than otherwise, so long as tiered
+ * knowledge is available to organize the search.
+ * <p>
+ * This class is configured to respect the knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author bryanandrews
  * @see SuborderSearch
@@ -34,6 +35,7 @@ public class PermutationSearch {
     private final List<Node> order;
     private final Map<Node, GrowShrinkTree> gsts;
     private Knowledge knowledge = new Knowledge();
+    private long seed = -1;
 
     /**
      * Constructs a new PermutationSearch using the given SuborderSearch.
@@ -107,6 +109,10 @@ public class PermutationSearch {
      * @return The CPDAG.
      */
     public Graph search() {
+        if (this.seed != -1) {
+            RandomUtil.getInstance().setSeed(this.seed);
+        }
+
         List<Node> prefix;
         if (!this.knowledge.isEmpty() && this.knowledge.getVariablesNotInTiers().isEmpty()) {
             List<Node> order = new ArrayList<>(this.order);
@@ -123,7 +129,8 @@ public class PermutationSearch {
                     this.order.add(node);
                     if (!this.knowledge.isTierForbiddenWithin(i)) continue;
                     suborder = this.order.subList(start++, this.order.size());
-                    this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);;
+                    this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
+                    ;
                 }
 
                 if (this.knowledge.isTierForbiddenWithin(i)) continue;
@@ -181,5 +188,9 @@ public class PermutationSearch {
             if (required.isEmpty() && forbidden.isEmpty()) continue;
             this.gsts.get(node).setKnowledge(required, forbidden);
         }
+    }
+
+    public void setSeed(long seed) {
+        this.seed = seed;
     }
 }

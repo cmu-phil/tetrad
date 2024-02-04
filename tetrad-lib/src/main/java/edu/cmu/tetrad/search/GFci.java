@@ -37,28 +37,25 @@ import java.util.List;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * <p>Implements a modification of FCI that started by running the FGES algorithm and
- * then fixes that result to be correct for latent variables models. First, colliders from the FGES results are copied
- * into the final circle-circle graph, and some independence reasoning is used to add the remaining colliders into the
- * graph. Then, the FCI final orientation rules are applied. The reference is here:</p>
- *
- * <p>Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal
- * search algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
- * PMLR.</p>
- *
- * <p>Because the method both runs FGES (a score-based algorithm) and does
- * additional checking of conditional independencies, both as part of its collider orientation step and also as part of
- * the the definite discriminating path step in the final FCI orientation rules, both a score and a test need to be used
- * to construct a GFCI algorithm.</p>
- *
- * <p>Note that various score-based algorithms could be used in place of FGES
- * for the initial step; in this repository we give three other options, GRaSP-FCI, BFCI (BOSS FCI), and SP-FCI
- * (see).</p>
- *
- * <p>For more information on the algorithm, see the reference above.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Implements a modification of FCI that started by running the FGES algorithm and then fixes that result to be correct
+ * for latent variables models. First, colliders from the FGES results are copied into the final circle-circle graph,
+ * and some independence reasoning is used to add the remaining colliders into the graph. Then, the FCI final
+ * orientation rules are applied. The reference is here:
+ * <p>
+ * Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal search algorithm for latent variable
+ * models. In Conference on probabilistic graphical models (pp. 368-379). PMLR.
+ * <p>
+ * Because the method both runs FGES (a score-based algorithm) and does additional checking of conditional
+ * independencies, both as part of its collider orientation step and also as part of the the definite discriminating
+ * path step in the final FCI orientation rules, both a score and a test need to be used to construct a GFCI algorithm.
+ * <p>
+ * Note that various score-based algorithms could be used in place of FGES for the initial step; in this repository we
+ * give three other options, GRaSP-FCI, BFCI (BOSS FCI), and SP-FCI (see).
+ * <p>
+ * For more information on the algorithm, see the reference above.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author Juan Miguel Ogarrio
  * @author peterspirtes
@@ -72,18 +69,29 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see Knowledge
  */
 public final class GFci implements IGraphSearch {
+    // The independence test used in search.
     private final IndependenceTest independenceTest;
+    // The logger.
     private final TetradLogger logger = TetradLogger.getInstance();
+    // The score used in search.
     private final Score score;
+    // The knowledge used in search.
     private Knowledge knowledge = new Knowledge();
+    // Whether Zhang's complete rules are used.
     private boolean completeRuleSetUsed = true;
+    // The maximum path length for the discriminating path rule.
     private int maxPathLength = -1;
+    // The maximum degree of the output graph.
     private int maxDegree = -1;
+    // Whether verbose output should be printed.
     private boolean verbose;
+    // The print stream used for output.
     private PrintStream out = System.out;
+    // Whether one-edge faithfulness is assumed.
     private boolean faithfulnessAssumed = true;
+    // Whether the discriminating path rule should be used.
     private boolean doDiscriminatingPathRule = true;
-    private boolean possibleMsepSearchDone = true;
+    // The depth of the search for the possible m-sep search.
     private int depth = -1;
 
 
@@ -255,7 +263,6 @@ public final class GFci implements IGraphSearch {
      * @param possibleMsepSearchDone True, if so.
      */
     public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
-        this.possibleMsepSearchDone = possibleMsepSearchDone;
     }
 
     /**

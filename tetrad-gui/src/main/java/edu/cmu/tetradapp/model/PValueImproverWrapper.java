@@ -35,6 +35,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,27 +46,18 @@ import java.util.List;
  * @author Ricardo Silva
  */
 public class PValueImproverWrapper extends AbstractAlgorithmRunner {
+    @Serial
     private static final long serialVersionUID = 23L;
     private final DataWrapper dataWrapper;
     private final Parameters params = new Parameters();
-    /**
-     * @deprecated
-     */
-    private final double alpha = 0.05;
     private AlgorithmType algorithmType = AlgorithmType.BEAM;
     private String name;
     private Graph externalGraph;
     private Graph graph;
     private transient List<PropertyChangeListener> listeners;
     private Parameters params2;
-    private SemIm estSem;
-    private Graph trueDag;
     private SemIm originalSemIm;
     private SemIm newSemIm;
-    /**
-     * @deprecated
-     */
-    private SemIm semIm;
 
     public PValueImproverWrapper(DataWrapper dataWrapper,
                                  Parameters params, KnowledgeBoxModel knowledgeBoxModel) {

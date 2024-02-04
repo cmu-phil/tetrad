@@ -31,6 +31,7 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -76,8 +77,10 @@ public final class MlBayesIm implements BayesIm {
      * Indicates that new rows in this BayesIm should be initialized randomly.
      */
     public static final int RANDOM = 1;
+    @Serial
     private static final long serialVersionUID = 23L;
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-3;
+    static private final Random random = new Random();
 
     /**
      * The associated Bayes PM model.
@@ -212,66 +215,19 @@ public final class MlBayesIm implements BayesIm {
         return new ArrayList<>();
     }
 
-    private static double[] getRandomWeights2(int size, double[] biases) {
-        assert size >= 0;
-
-        double[] row = new double[size];
-        double sum = 0.0;
-
-        for (int i = 0; i < size; i++) {
-//            row[i] = RandomUtil.getInstance().nextDouble() + biases[i];
-            double v = RandomUtil.getInstance().nextUniform(0, biases[i]);
-            row[i] = v > 0.5 ? 2 * v : v;
-            sum += row[i];
-        }
-
-        for (int i = 0; i < size; i++) {
-            row[i] /= sum;
-        }
-
-        return row;
-    }
-
-    private static double[] getRandomWeights3(int size) {
-        assert size >= 0;
-
-        double[] row = new double[size];
-        double sum = 0.0;
-
-        for (int i = 0; i < size; i++) {
-            row[i] = RandomUtil.getInstance().nextBeta(size / 4d, size);
-            sum += row[i];
-        }
-
-        for (int i = 0; i < size; i++) {
-            row[i] /= sum;
-        }
-
-        return row;
-    }
-
-    /**
-     * This method chooses random probabilities for a row which add up to 1.0. Random doubles are drawn from a random
-     * distribution, and the final row is then normalized.
-     *
-     * @param size the length of the row.
-     * @return an array with randomly distributed probabilities of this length.
-     * @see #randomizeRow
-     */
     private static double[] getRandomWeights(int size) {
-        assert size >= 0;
+        assert size > 0;
 
         double[] row = new double[size];
         double sum = 0.0;
 
-        // Renders rows more deterministic.
-        final double bias = 0;
+        int strong = (int) Math.floor(random.nextDouble() * size);
 
         for (int i = 0; i < size; i++) {
-            row[i] = RandomUtil.getInstance().nextDouble();
-
-            if (row[i] > 0.5) {
-                row[i] += bias;
+            if (i == strong) {
+                row[i] = 1.0;
+            } else {
+                row[i] = RandomUtil.getInstance().nextDouble() * 0.1;
             }
 
             sum += row[i];
@@ -598,12 +554,7 @@ public final class MlBayesIm implements BayesIm {
      */
     public void randomizeRow(int nodeIndex, int rowIndex) {
         int size = getNumColumns(nodeIndex);
-        this.probs[nodeIndex][rowIndex] = MlBayesIm.getRandomWeights3(size);
-    }
-
-    private void randomizeRow2(int nodeIndex, int rowIndex, double[] biases) {
-        int size = getNumColumns(nodeIndex);
-        this.probs[nodeIndex][rowIndex] = MlBayesIm.getRandomWeights2(size, biases);
+        this.probs[nodeIndex][rowIndex] = MlBayesIm.getRandomWeights(size);
     }
 
     /**
@@ -627,39 +578,6 @@ public final class MlBayesIm implements BayesIm {
     public void randomizeTable(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
             randomizeRow(nodeIndex, rowIndex);
-        }
-//        randomizeTable4(nodeIndex);
-    }
-
-    private void randomizeTable4(int nodeIndex) {
-        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-            randomizeRow(nodeIndex, rowIndex);
-        }
-
-        double[][] saved = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
-
-        double max = Double.NEGATIVE_INFINITY;
-
-        for (int i = 0; i < 10; i++) {
-            for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-//                randomizeRow(nodeIndex, rowIndex);
-                randomizeRow2(nodeIndex, rowIndex, this.probs[nodeIndex][rowIndex]);
-            }
-
-            int score = score(nodeIndex);
-
-            if (score > max) {
-                max = score;
-                copy(this.probs[nodeIndex], saved);
-            }
-
-            if (score == getNumParents(nodeIndex)) {
-                break;
-            }
-        }
-
-        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-            copy(saved, this.probs[nodeIndex]);
         }
     }
 
@@ -1103,11 +1021,9 @@ public final class MlBayesIm implements BayesIm {
             return true;
         }
 
-        if (!(o instanceof BayesIm)) {
+        if (!(o instanceof BayesIm otherIm)) {
             return false;
         }
-
-        BayesIm otherIm = (BayesIm) o;
 
         if (getNumNodes() != otherIm.getNumNodes()) {
             return false;
@@ -1445,6 +1361,7 @@ public final class MlBayesIm implements BayesIm {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

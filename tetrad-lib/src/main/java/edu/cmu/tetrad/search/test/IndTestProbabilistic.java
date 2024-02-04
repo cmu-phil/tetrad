@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Uses BCInference by Cooper and Bui to calculate probabilistic conditional independence judgments.
@@ -42,32 +43,28 @@ import java.util.*;
  */
 public class IndTestProbabilistic implements IndependenceTest {
 
-    /**
-     * The data set for which conditional  independence judgments are requested.
-     */
+    // A cache of results for independence facts, used only if threshold is false.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    //The data set for which conditional  independence judgments are requested.
     private final DataSet data;
-    /**
-     * The nodes of the data set.
-     */
+    // The nodes of the data set.
     private final List<Node> nodes;
-    /**
-     * Indices of the nodes.
-     */
+    // Indices of the nodes.
     private final Map<Node, Integer> indices;
-    /**
-     * A map from independence facts to their probabilities of independence.
-     */
+    // A map from independence facts to their probabilities of independence.
     private final Map<IndependenceFact, Double> H;
+    // The BCInference object.
     private final BCInference bci;
-    /**
-     * Calculates probabilities of independence for conditional independence facts.
-     */
+    // True if the independence test should be thresholded, false if it should be randomized.
     private boolean threshold;
+    // The posterior probability of the last independence test.
     private double posterior;
+    // True if verbose output should be printed.
     private boolean verbose;
+    // The cutoff for the independence test.
     private double cutoff = 0.5;
+    // The prior equivalent sample size.
     private double priorEquivalentSampleSize = 10;
-
 
     /**
      * Initializes the test using a discrete data sets.
@@ -106,43 +103,50 @@ public class IndTestProbabilistic implements IndependenceTest {
         this.bci = setup(_data);
     }
 
-    private BCInference setup(DataSet dataSet) {
-        int[] nodeDimensions = new int[dataSet.getNumColumns() + 2];
-
-        for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            DiscreteVariable variable = (DiscreteVariable) (dataSet.getVariable(j));
-            int numCategories = variable.getNumCategories();
-            nodeDimensions[j + 1] = numCategories;
-        }
-
-        int[][] cases = new int[dataSet.getNumRows() + 1][dataSet.getNumColumns() + 2];
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                cases[i + 1][j + 1] = dataSet.getInt(i, j) + 1;
-            }
-        }
-
-        BCInference bci = new BCInference(cases, nodeDimensions);
-        bci.setPriorEqivalentSampleSize(this.priorEquivalentSampleSize);
-        return bci;
-    }
-
+    /**
+     * @throws UnsupportedOperationException Method not implemented.
+     */
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Returns an independence result that states whether x _||_y | z and what the p-value of the test is.
+     *
+     * @param x  The first variable.
+     * @param y  The second variable.
+     * @param _z The conditioning set.
+     * @return an independence result (see)
+     * @see IndependenceResult
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        if (!threshold && facts.containsKey(new IndependenceFact(x, y, _z))) {
+            return facts.get(new IndependenceFact(x, y, _z));
+        }
+
+        // Notice that we do not cache the results of the independence tests here. This is because
+        // these results have a random component and so caching them would be inappropriate.
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
         Node[] nodes = new Node[z.size()];
         for (int i = 0; i < z.size(); i++) nodes[i] = z.get(i);
-        return checkIndependence(x, y, nodes);
+        IndependenceResult independenceResult = checkIndependence(x, y, nodes);
+        if (!threshold) facts.put(new IndependenceFact(x, y, _z), independenceResult);
+        return independenceResult;
     }
 
+    /**
+     * Returns an independence result that states whether x _||_y | z and what the p-value of the test is.
+     *
+     * @param x The first variable.
+     * @param y The second variable.
+     * @param z The conditioning set.
+     * @return an independence result (see)
+     * @see IndependenceResult
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Node... z) {
         IndependenceFact key = new IndependenceFact(x, y, z);
@@ -222,6 +226,17 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
 
+    /**
+     * Returns the probability of the constraint x op y | z.
+     *
+     * @param bci     The BCInference object.
+     * @param op      The operator.
+     * @param x       The first variable.
+     * @param y       The second variable.
+     * @param z       The conditioning set.
+     * @param indices A map from nodes to their indices.
+     * @return The probability.
+     */
     public double probConstraint(BCInference bci, BCInference.OP op, Node x, Node y, Node[] z, Map<Node, Integer> indices) {
 
         int _x = indices.get(x) + 1;
@@ -236,11 +251,18 @@ public class IndTestProbabilistic implements IndependenceTest {
         return bci.probConstraint(op, _x, _y, _z);
     }
 
+    /**
+     * Returns the variables of the data set.
+     * @return The variables.
+     */
     @Override
     public List<Node> getVariables() {
         return this.nodes;
     }
 
+    /**
+     * Returns the variable with the given name.
+     */
     @Override
     public Node getVariable(String name) {
         for (Node node : this.nodes) {
@@ -250,54 +272,113 @@ public class IndTestProbabilistic implements IndependenceTest {
         return null;
     }
 
+    /**
+     * @throws UnsupportedOperationException Method not implemented.
+     */
     @Override
     public boolean determines(Set<Node> z, Node y) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @throws UnsupportedOperationException Method not implemented.
+     */
     @Override
     public double getAlpha() {
         throw new UnsupportedOperationException("The Probabiistic Test doesn't use an alpha parameter");
     }
 
+    /**
+     * @throws UnsupportedOperationException Method not implemented.
+     */
     @Override
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Returns the data set for which conditional independence judgments are requested.
+     * @return The data set.
+     */
     @Override
     public DataModel getData() {
         return this.data;
     }
 
+    /**
+     * Returns a map from independence facts to their probabilities of independence.
+     * @return The map.
+     */
     public Map<IndependenceFact, Double> getH() {
         return new HashMap<>(this.H);
     }
 
+    /**
+     * Returns the posterior probability of the last independence test.
+     * @return The posterior probability.
+     */
     public double getPosterior() {
         return this.posterior;
     }
 
+    /**
+     * Returns true if verbose output should be printed.
+     * @return True, if so.
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True, if so.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public void setThreshold(boolean noRandomizedGeneratingConstraints) {
-        this.threshold = noRandomizedGeneratingConstraints;
+    /**
+     * Sets whether the independence test should be thresholded (true) or randomized (false).
+     * @param threshold true if the independence test should be thresholded, false if it should be randomized.
+     */
+    public void setThreshold(boolean threshold) {
+        this.threshold = threshold;
     }
 
+    /**
+     * Sets the cutoff for the independence test.
+     * @param cutoff the cutoff for the independence test.
+     */
     public void setCutoff(double cutoff) {
         this.cutoff = cutoff;
     }
 
     public void setPriorEquivalentSampleSize(double priorEquivalentSampleSize) {
         this.priorEquivalentSampleSize = priorEquivalentSampleSize;
+    }
+
+    private BCInference setup(DataSet dataSet) {
+        int[] nodeDimensions = new int[dataSet.getNumColumns() + 2];
+
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+            DiscreteVariable variable = (DiscreteVariable) (dataSet.getVariable(j));
+            int numCategories = variable.getNumCategories();
+            nodeDimensions[j + 1] = numCategories;
+        }
+
+        int[][] cases = new int[dataSet.getNumRows() + 1][dataSet.getNumColumns() + 2];
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                cases[i + 1][j + 1] = dataSet.getInt(i, j) + 1;
+            }
+        }
+
+        BCInference bci = new BCInference(cases, nodeDimensions);
+        bci.setPriorEqivalentSampleSize(this.priorEquivalentSampleSize);
+        return bci;
     }
 
     private List<Integer> getRows(DataSet dataSet, List<Node> allVars, Map<Node, Integer> nodesHash) {

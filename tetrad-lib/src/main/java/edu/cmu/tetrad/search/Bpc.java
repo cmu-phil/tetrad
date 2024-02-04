@@ -34,39 +34,37 @@ import java.util.*;
 
 
 /**
- * <p>Implements the Build Pure Clusters (BPC) algorithm, which allows one to identify
- * clusters of measured variables in a dataset that are explained by a single latent. The algorithm outputs these
- * clusters, which can then be used for further analysis, such as inferring structure over the latents. For the latter,
- * see for instance the MimBuild algorithm.</p>
- *
- * <p>The reference for BPC is this:</p>
- *
- * <p>Silva, R., Scheines, R., Glymour, C., Spirtes, P., &amp; Chickering, D. M. (2006).
- * Learning the Structure of Linear Latent Variable Models. Journal of Machine Learning Research, 7(2).</p>
- *
- * <p>For a more detailed description of the algorithm, see the paper above. The
- * algorithm is based on the idea of finding cliques in the graph of the covariance matrix. The algorithm is initialized
- * by finding all maximal cliques in the graph of the covariance matrix. Then, the algorithm iterates over the cliques,
- * and for each clique, it tests whether the clique is explained by a single latent. If so, the clique is added to the
- * set of clusters. If not, the clique is partitioned into smaller cliques, and the process is repeated for each of the
- * smaller cliques. The algorithm stops when all cliques have been tested.</p>
- *
- * <p>Some more References:</p>
- *
- * <p>Silva, R.; Scheines, R.; Spirtes, P.; Glymour, C. (2003). "Learning measurement models".
- * Technical report CMU-CALD-03-100, Center for Automated Learning and Discovery, Carnegie Mellon University.</p>
- *
- * <p>Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads."
- * Sociological Methods and Research 19, 80-92.</p>
- *
- * <p>Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of
- * Psychology 19, 180-187. </p>
- *
- * <p>Bron, C. and Kerbosch, J. (1973) "Algorithm 457: Finding all cliques of an undirected graph".
- * Communications of ACM 16, 575-577.</p>
- *
- * <p>This class is not configured to respect knowledge of forbidden and required
- * edges.</p>
+ * Implements the Build Pure Clusters (BPC) algorithm, which allows one to identify clusters of measured variables in a
+ * dataset that are explained by a single latent. The algorithm outputs these clusters, which can then be used for
+ * further analysis, such as inferring structure over the latents. For the latter, see for instance the MimBuild
+ * algorithm.
+ * <p>
+ * The reference for BPC is this:
+ * <p>
+ * Silva, R., Scheines, R., Glymour, C., Spirtes, P., &amp; Chickering, D. M. (2006). Learning the Structure of Linear
+ * Latent Variable Models. Journal of Machine Learning Research, 7(2).
+ * <p>
+ * For a more detailed description of the algorithm, see the paper above. The algorithm is based on the idea of finding
+ * cliques in the graph of the covariance matrix. The algorithm is initialized by finding all maximal cliques in the
+ * graph of the covariance matrix. Then, the algorithm iterates over the cliques, and for each clique, it tests whether
+ * the clique is explained by a single latent. If so, the clique is added to the set of clusters. If not, the clique is
+ * partitioned into smaller cliques, and the process is repeated for each of the smaller cliques. The algorithm stops
+ * when all cliques have been tested.
+ * <p>
+ * Some more References:
+ * <p>
+ * Silva, R.; Scheines, R.; Spirtes, P.; Glymour, C. (2003). "Learning measurement models". Technical report
+ * CMU-CALD-03-100, Center for Automated Learning and Discovery, Carnegie Mellon University.
+ * <p>
+ * Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads." Sociological Methods and
+ * Research 19, 80-92.
+ * <p>
+ * Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of Psychology 19, 180-187.
+ * <p>
+ * Bron, C. and Kerbosch, J. (1973) "Algorithm 457: Finding all cliques of an undirected graph". Communications of ACM
+ * 16, 575-577.
+ * <p>
+ * This class is not configured to respect knowledge of forbidden and required edges.
  *
  * @author Ricardo Silva
  * @see Fofc

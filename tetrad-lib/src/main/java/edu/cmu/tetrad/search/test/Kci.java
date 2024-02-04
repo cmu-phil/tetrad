@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.search.test;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -24,18 +27,18 @@ import static edu.cmu.tetrad.util.StatUtils.median;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /***
- * <p>Gives an implementation of the Kernal Independence Test (KCI) by Kun Zhang, which is a
- * general test of conditional independence. The reference is here:</p>
- *
- * <p>Zhang, K., Peters, J., Janzing, D., and Schölkopf, B. (2012). Kernel-based conditional independence
- * test and application in causal discovery. arXiv preprint arXiv:1202.3775.</p>
- *
- * <p>Please see that paper, especially Theorem 4 and Proposition 5.</p>
- *
- * <p>Using optimal kernel bandwidths suggested by Bowman and Azzalini (1997):</p>
- *
- * <p>Bowman, A. W., and Azzalini, A. (1997). Applied smoothing techniques for data analysis: the kernel
- * approach with S-Plus illustrations (Vol. 18). OUP Oxford.</p>
+ * Gives an implementation of the Kernal Independence Test (KCI) by Kun Zhang, which is a
+ * general test of conditional independence. The reference is here:
+ * <p>
+ * Zhang, K., Peters, J., Janzing, D., and Schölkopf, B. (2012). Kernel-based conditional independence
+ * test and application in causal discovery. arXiv preprint arXiv:1202.3775.
+ * <p>
+ * Please see that paper, especially Theorem 4 and Proposition 5.
+ * <p>
+ * Using optimal kernel bandwidths suggested by Bowman and Azzalini (1997):
+ * <p>
+ * Bowman, A. W., and Azzalini, A. (1997). Applied smoothing techniques for data analysis: the kernel
+ * approach with S-Plus illustrations (Vol. 18). OUP Oxford.
  *
  * @author kunzhang
  * @author Vineet Raghu on 7/3/2016
@@ -45,7 +48,6 @@ public class Kci implements IndependenceTest {
 
     // The supplied data set, standardized
     private final DataSet data;
-
     // Variables in data
     private final List<Node> variables;
     private final double[] h;
@@ -68,9 +70,8 @@ public class Kci implements IndependenceTest {
     private double widthMultiplier = 1.0;
     // Epsilon for Propositio 5.
     private double epsilon = 0.001;
-
+    // True if verbose output should be printed.
     private boolean verbose;
-//    private IndependenceFact latestFact = null;
 
     /**
      * Constructor.
@@ -80,7 +81,6 @@ public class Kci implements IndependenceTest {
      */
     public Kci(DataSet data, double alpha) {
         this.data = DataTransforms.standardizeData(data);
-//        _data = data.getDoubleData().transpose().toArray();
 
         this.variables = data.getVariables();
         int n = this.data.getNumRows();
@@ -121,6 +121,10 @@ public class Kci implements IndependenceTest {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+        if (facts.containsKey(new IndependenceFact(x, y, z))) {
+            return facts.get(new IndependenceFact(x, y, z));
+        }
+
         try {
 
             if (Thread.currentThread().isInterrupted()) {
@@ -134,7 +138,6 @@ public class Kci implements IndependenceTest {
             allVars.addAll(z);
 
             IndependenceFact fact = new IndependenceFact(x, y, z);
-//        this.latestFact = fact;
 
             if (facts.containsKey(fact)) {
                 IndependenceResult result = facts.get(fact);
@@ -199,7 +202,10 @@ public class Kci implements IndependenceTest {
                 IndependenceResult result = facts.get(fact);
 
                 if (this.facts.get(fact) != null) {
-                    return new IndependenceResult(fact, result.isIndependent(), result.getPValue(), getAlpha() - result.getPValue());
+                    IndependenceResult result1 = new IndependenceResult(fact, result.isIndependent(),
+                            result.getPValue(), getAlpha() - result.getPValue());
+                    facts.put(fact, result1);
+                    return result1;
                 } else {
                     if (z.isEmpty()) {
                         result = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
@@ -219,7 +225,10 @@ public class Kci implements IndependenceTest {
                     }
                 }
 
-                return new IndependenceResult(fact, result.isIndependent(), result.getPValue(), getAlpha() - result.getPValue());
+                IndependenceResult result1 = new IndependenceResult(fact, result.isIndependent(),
+                        result.getPValue(), getAlpha() - result.getPValue());
+                facts.put(fact, result1);
+                return result1;
             }
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when testing " +

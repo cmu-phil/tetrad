@@ -31,21 +31,22 @@ import org.apache.commons.math3.util.FastMath;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p>Translates a version of the FastICA algorithm used in R from Fortran
- * into Java for use in Tetrad. This can be used in various algorithms that assume linearity and non-gaussianity, as for
- * example LiNGAM and LiNG-D. There is one difference from the R, in that in R FastICA can operate over complex numbers,
- * whereas here it is restricted to real numbers. A useful reference is this:</p>
- *
- * <p>Oja, E., &amp; Hyvarinen, A. (2000). Independent component analysis:
- * algorithms and applications. Neural networks, 13(4-5), 411-430.</p>
- *
- * <p>The documentation of the R version is as follows, all of which is true of this
- * translation (so far as I know) except for its being in R and its allowing complex values.
+ * Translates a version of the FastICA algorithm used in R from Fortran into Java for use in Tetrad. This can be used in
+ * various algorithms that assume linearity and non-gaussianity, as for example LiNGAM and LiNG-D. There is one
+ * difference from the R, in that in R FastICA can operate over complex numbers, whereas here it is restricted to real
+ * numbers. A useful reference is this:
+ * <p>
+ * Oja, E., &amp; Hyvarinen, A. (2000). Independent component analysis: algorithms and applications. Neural networks,
+ * 13(4-5), 411-430.
+ * <p>
+ * The documentation of the R version is as follows, all of which is true of this translation (so far as I know) except
+ * for its being in R and its allowing complex values.
  * <p>
  * Description:
  * <p>
  * This is an R and C code implementation of the FastICA algorithm of Aapo Hyvarinen et al. (URL:
- * <a href="http://www.cis.hut.fi/aapo/">http://www.cis.hut.fi/aapo/</a>) to perform Independent Component Analysis (ICA) and Projection Pursuit.
+ * <a href="http://www.cis.hut.fi/aapo/">http://www.cis.hut.fi/aapo/</a>) to perform Independent Component Analysis
+ * (ICA) and Projection Pursuit.
  * <p>
  * Usage:
  * <p>
@@ -98,8 +99,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * First, the data is centered by subtracting the mean of each column of the data matrix X.
  * <p>
  * The data matrix is then `whitened' by projecting the data onto it's principle component directions i.e. X -&gt; XK
- * where K is a pre-whitening matrix.
- * The user can specify the number of components.
+ * where K is a pre-whitening matrix. The user can specify the number of components.
  * <p>
  * The ICA algorithm then estimates a matrix W s.t XKW = S . W is chosen to maximize the neg-entropy approximation under
  * the constraints that W is an orthonormal matrix. This constraint ensures that the estimated components are
@@ -120,85 +120,56 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * A. Hyvarinen and E. Oja (2000) Independent Component Analysis: Algorithms and Applications, _Neural Networks_,
  * *13(4-5)*:411-430
- * </p>
  *
  * @author josephramsey
  */
 public class FastIca {
 
-    /**
-     * The algorithm type where all components are extracted simultaneously.
-     */
+    // The algorithm type where all components are extracted simultaneously.
     public static int PARALLEL;
 
-    /**
-     * The algorithm type where the components are extracted one at a time.
-     */
+    // The algorithm type where the components are extracted one at a time.
     public static int DEFLATION = 1;
 
-    /**
-     * One of the function types that can be used to approximate negative entropy.
-     */
+    // One of the function types that can be used to approximate negative entropy.
     public static int LOGCOSH = 2;
 
-    /**
-     * The other function type that can be used to approximate negative entropy.
-     */
+    // The other function type that can be used to approximate negative entropy.
     public static int EXP = 3;
 
-    /**
-     * A data matrix with n rows representing observations and p columns representing variables.
-     */
+    // A data matrix with n rows representing observations and p columns representing variables.
     private final Matrix X;
 
-    /**
-     * The number of independent components to be extracted.
-     */
+    // The number of independent components to be extracted.
     private int numComponents;
 
-    /**
-     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default).
-     * if algorithmType == DEFLATION, the components are extracted one at a time.
-     */
+    // If algorithmType == PARALLEL, the components are extracted simultaneously (the default). if algorithmType ==
+    // DEFLATION, the components are extracted one at a time.
     private int algorithmType = FastIca.PARALLEL;
 
-    /**
-     * The function type to be used, either LOGCOSH or EXP.
-     */
+    // The function type to be used, either LOGCOSH or EXP.
     private int function = FastIca.LOGCOSH;
 
-    /**
-     * Constant in range [1, 2] used in approximation to neg-entropy when 'fun == "logcosh". Default = 1.0.
-     */
+    // Constant in range [1, 2] used in approximation to neg-entropy when 'fun == "logcosh". Default = 1.0.
     private double alpha = 1.1;
 
-    /**
-     * A logical value indicating whether rows of the data matrix 'X' should be standardized beforehand. Default =
-     * false.
-     */
+    // A logical value indicating whether rows of the data matrix 'X' should be standardized beforehand. Default =
+    // false.
     private boolean rowNorm;
 
-    /**
-     * Maximum number of iterations to perform. Default = 200.
-     */
+    // Maximum number of iterations to perform. Default = 200.
     private int maxIterations = 200;
 
-    /**
-     * A positive scalar giving the tolerance at which the un-mixing matrix is considered to have converged. Default =
-     * 1e-04.
-     */
+    // A positive scalar giving the tolerance at which the un-mixing matrix is considered to have converged. Default =
+    // 1e-04.
     private double tolerance = 1e-04;
 
-    /**
-     * A logical value indicating the level of output as the algorithm runs. Default = false.
-     */
+    // A logical value indicating the level of output as the algorithm runs. Default = false.
     private boolean verbose;
 
-    /**
-     * Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default), then a matrix of normal r.v.'s is used.
-     */
+    // Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default), then a matrix of normal r.v.'s is
+    // used.
     private Matrix wInit;
-
 
     /**
      * Constructs an instance of the Fast ICA algorithm, taking as arguments the two arguments that cannot be defaulted:
@@ -211,10 +182,9 @@ public class FastIca {
         this.numComponents = numComponents;
     }
 
-
     /**
-     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default).
-     * if algorithmType == DEFLATION, the components are extracted one at a time.
+     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default). if algorithmType ==
+     * DEFLATION, the components are extracted one at a time.
      *
      * @param algorithmType This type.
      */
@@ -297,8 +267,8 @@ public class FastIca {
     }
 
     /**
-     * Sets the initial un-mixing matrix of dimension (n.comp,n.comp).
-     * If NULL (default), then a random matrix of normal r.v.'s is used.
+     * Sets the initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default), then a random matrix of normal
+     * r.v.'s is used.
      *
      * @param wInit This matrix.
      */

@@ -15,6 +15,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,8 +30,8 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-//@Experimental
 public class Ccd implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs {
+    @Serial
     private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private List<Graph> bootstrapGraphs = new ArrayList<>();

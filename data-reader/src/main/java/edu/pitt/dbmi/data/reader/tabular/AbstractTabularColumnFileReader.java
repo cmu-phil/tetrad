@@ -37,10 +37,23 @@ import java.util.Set;
  */
 public abstract class AbstractTabularColumnFileReader extends DataFileReader {
 
+    /**
+     * Constructor.
+     *
+     * @param dataFile  The data file.
+     * @param delimiter The delimiter.
+     */
     public AbstractTabularColumnFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
     }
 
+    /**
+     * Get the column numbers for the specified column names.
+     *
+     * @param columnNames the column names
+     * @return the column numbers
+     * @throws IOException if an I/O error occurs
+     */
     protected int[] toColumnNumbers(Set<String> columnNames) throws IOException {
         List<Integer> colNums = new LinkedList<>();
 
@@ -157,6 +170,13 @@ public abstract class AbstractTabularColumnFileReader extends DataFileReader {
         return colNums.stream().mapToInt(e -> e).toArray();
     }
 
+    /**
+     * Strip the specified character from the word.
+     *
+     * @param word      the word
+     * @param character the character to strip
+     * @return the word with the specified character stripped
+     */
     protected String stripCharacter(String word, byte character) {
         StringBuilder dataBuilder = new StringBuilder();
         for (byte currChar : word.getBytes()) {

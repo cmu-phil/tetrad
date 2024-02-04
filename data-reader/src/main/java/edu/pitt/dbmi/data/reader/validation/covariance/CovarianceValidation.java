@@ -31,6 +31,11 @@ import java.util.List;
  */
 public interface CovarianceValidation extends Validation, DataReader {
 
+    /**
+     * Validate the covariance.
+     *
+     * @return the validation results.
+     */
     List<ValidationResult> validate();
 
 }

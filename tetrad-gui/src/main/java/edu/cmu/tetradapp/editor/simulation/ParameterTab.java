@@ -55,8 +55,8 @@ public class ParameterTab extends JPanel {
     private static final String[] SOURCE_GRAPH_ITEMS = {
             SimulationTypes.BAYS_NET,
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
-            SimulationTypes.NON_LINEAR_STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LINEAR_FISHER_MODEL,
+            SimulationTypes.NON_LINEAR_STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
             SimulationTypes.TIME_SERIES

@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.search.utils.SepsetsGreedy;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.List;
@@ -36,21 +37,19 @@ import java.util.List;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * <p>Uses BOSS in place of FGES for the initial step in the GFCI algorithm.
- * This tends to produce a accurate PAG than GFCI as a result, for the latent variables case. This is a simple
- * substitution; the reference for GFCI is here:</p>
- *
- * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for FGES.</p>
- *
- * <p>BOSS is a an algorithm that is currently being written up for publication,
- * so we don't yet have a reference for it.</p>
- *
- * <p>For BOSS only a score is needed, but there are steps in GFCI that require
- * a test, so for this method, both a test and a score need to be given.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Uses BOSS in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG than GFCI
+ * as a result, for the latent variables case. This is a simple substitution; the reference for GFCI is here:
+ * <p>
+ * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
+ * Here, BOSS has been substituted for FGES.
+ * <p>
+ * BOSS is a an algorithm that is currently being written up for publication, so we don't yet have a reference for it.
+ * <p>
+ * For BOSS only a score is needed, but there are steps in GFCI that require a test, so for this method, both a test and
+ * a score need to be given.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author josephramsey
  * @author bryan andrews
@@ -83,6 +82,7 @@ public final class BFci implements IGraphSearch {
     private int depth = -1;
     private boolean doDiscriminatingPathRule = true;
     private boolean bossUseBes = false;
+    private long seed = -1;
 
 
     /**
@@ -109,6 +109,10 @@ public final class BFci implements IGraphSearch {
      * @return The discovered graph.
      */
     public Graph search() {
+        if (seed != -1) {
+            RandomUtil.getInstance().setSeed(seed);
+        }
+
         List<Node> nodes = getIndependenceTest().getVariables();
 
         this.logger.log("info", "Starting FCI algorithm.");
@@ -195,20 +199,43 @@ public final class BFci implements IGraphSearch {
         return this.independenceTest;
     }
 
+    /**
+     * Returns the number of times to restart the search.
+     *
+     * @param numStarts The number of times to restart the search.
+     */
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
     }
 
+    /**
+     * Sets the depth of the search (for the constraint-based step).
+     *
+     * @param depth The depth of the search.
+     */
     public void setDepth(int depth) {
         this.depth = depth;
     }
 
+    /**
+     * Sets whether the discriminating path rule should be used.
+     *
+     * @param doDiscriminatingPathRule True if the discriminating path rule should be used, false otherwise.
+     */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
+    /**
+     * Sets whether the BES should be used.
+     *
+     * @param useBes True if the BES should be used, false otherwise.
+     */
     public void setBossUseBes(boolean useBes) {
         this.bossUseBes = useBes;
     }
 
+    public void setSeed(long seed) {
+        this.seed = seed;
+    }
 }

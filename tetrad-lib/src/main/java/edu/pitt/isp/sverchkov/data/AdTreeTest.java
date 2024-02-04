@@ -36,8 +36,9 @@ import java.util.List;
 import java.util.TreeMap;
 
 /**
- * <p>A test of the AD tree implementation.</p>
- * Author : Jeremy Espino MD Created  6/24/15 3:32 PM
+ * A test of the AD tree implementation.
+ *
+ * @author Jeremy Espino MD Created  6/24/15 3:32 PM
  */
 public class AdTreeTest {
 

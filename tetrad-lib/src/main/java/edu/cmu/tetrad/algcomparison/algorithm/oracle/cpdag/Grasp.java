@@ -16,6 +16,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.TsUtils;
@@ -75,6 +76,7 @@ public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
             edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test, score);
 
+            grasp.setSeed(parameters.getLong(Params.SEED));
             grasp.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             grasp.setUncoveredDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
             grasp.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
@@ -89,7 +91,11 @@ public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             grasp.setKnowledge(this.knowledge);
             grasp.bestOrder(score.getVariables());
             Graph graph = grasp.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG));
-            LogUtilsSearch.stampWithScores(graph, dataModel, score);
+            LogUtilsSearch.stampWithScore(graph, score);
+            LogUtilsSearch.stampWithBic(graph, dataModel);
+
+            LogUtilsSearch.stampWithBic(graph, dataModel);
+
             return graph;
         } else {
             Grasp algorithm = new Grasp(this.test, this.score);
@@ -136,6 +142,7 @@ public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
         params.add(Params.TIME_LAG);
+        params.add(Params.SEED);
         params.add(Params.VERBOSE);
 
         // Parameters

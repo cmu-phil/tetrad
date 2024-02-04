@@ -33,25 +33,27 @@ import java.util.*;
 
 
 /**
- * <p>Checks independence result by listing all tests with those variables, testing each one, and returning the
- * resolution of these test results. The reference is here:</p>
- *
- * <p>Tillman, R., &amp; Spirtes, P. (2011, June). Learning equivalence classes of acyclic models with latent and selection
+ * Checks independence result by listing all tests with those variables, testing each one, and returning the resolution
+ * of these test results. The reference is here:
+ * <p>
+ * Tillman, R., &amp; Spirtes, P. (2011, June). Learning equivalence classes of acyclic models with latent and selection
  * variables from multiple datasets with overlapping variables. In Proceedings of the Fourteenth International
- * Conference on Artificial Intelligence and Statistics (pp. 3-15). JMLR Workshop and Conference Proceedings.</p>
- *
- * <p>The idea of this implementation is that one initializes this test with multiple independence tests (for multiple
+ * Conference on Artificial Intelligence and Statistics (pp. 3-15). JMLR Workshop and Conference Proceedings.
+ * <p>
+ * The idea of this implementation is that one initializes this test with multiple independence tests (for multiple
  * datasets), then a call to the independence check method for X _||_ Y | Z list the independence tests from among
- * these, calls each and gets a p-value, then uses a resolution method (such as Fisher's) to resolve these
- * p-values.</p>
- *
- * <p>Based on work by Rob Tillman, Peter Spirtes, and referencing earlier work by David Danks.</p>
+ * these, calls each and gets a p-value, then uses a resolution method (such as Fisher's) to resolve these p-values.
+ * <p>
+ * Based on work by Rob Tillman, Peter Spirtes, and referencing earlier work by David Danks.
  *
  * @author josephramsey
  */
 public class IndTestIod implements IndependenceTest {
+    // The list of nodes over which this independence checker is capable of determining independence relations.
     private final List<Node> nodeList;
+    // The list of independence tests.
     private final List<IndependenceTest> tests;
+    // Whether the test is verbose.
     private boolean verbose;
 
     /**

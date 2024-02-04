@@ -75,7 +75,7 @@ public abstract class AbstractAnnotations<T extends Annotation> {
         }
 
         List<AnnotatedClass<T>> list = annoClasses.stream()
-                .filter(e -> e.getClazz().isAnnotationPresent(type))
+                .filter(e -> e.clazz().isAnnotationPresent(type))
                 .collect(Collectors.toList());
 
         return Collections.unmodifiableList(list);
@@ -93,7 +93,7 @@ public abstract class AbstractAnnotations<T extends Annotation> {
         }
 
         List<AnnotatedClass<T>> list = annoClasses.stream()
-                .filter(e -> !e.getClazz().isAnnotationPresent(type))
+                .filter(e -> !e.clazz().isAnnotationPresent(type))
                 .collect(Collectors.toList());
 
         return Collections.unmodifiableList(list);

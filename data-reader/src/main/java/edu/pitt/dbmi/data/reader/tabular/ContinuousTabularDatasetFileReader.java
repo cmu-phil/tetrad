@@ -38,6 +38,12 @@ public class ContinuousTabularDatasetFileReader extends DatasetFileReader implem
     private boolean hasHeader;
     private char quoteChar;
 
+    /**
+     * Constructor.
+     *
+     * @param dataFile  The data file.
+     * @param delimiter The delimiter.
+     */
     public ContinuousTabularDatasetFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
         this.hasHeader = this.hasHeader = true;

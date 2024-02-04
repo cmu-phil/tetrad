@@ -33,27 +33,34 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * Calculates the discrete BIC score. The likelihood for this score is calculated as SUM(ln(P(X | Z) P(Z)) across all
+ * Calculates the discrete BIC score. The likelihood for this score is calculated as SUM(ln(P(X | Z) P(Z))) across all
  * cells in all conditional probability tables for the discrete model. The parameters are counted as SUM(rows * (cols -
- * 1)) for all conditional probability tables in the model. Then the BIC score is calculated as 2L - ck ln N, where c is
- * a multiplier on the penalty ("penalty discount").
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * 1)) for all conditional probability tables in the model, where rows summing to zero are discounted, as their marginal
+ * probabilities cannot be calcualted. Then the BIC score is calculated as 2L - ck ln N, where c is a multiplier on the
+ * penalty ("penalty discount").
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
  */
 public class DiscreteBicScore implements DiscreteScore {
+    // The discrete dataset.
     private final DataSet dataSet;
+    // The variables of the dataset.
     private final int[][] data;
+    // The sample size.
     private final int sampleSize;
+    // The number of categories for each variable.
     private final int[] numCategories;
+    // The variables of the dataset.
     private List<Node> variables;
+    // The penalty discount.
     private double penaltyDiscount = 1;
-    private double structurePrior = 1;
+    // The structure prior.
+    private double structurePrior = 0;
 
     /**
-     * Constructor.
+     * Constructs the score using a dataset.
      *
      * @param dataSet The discrete dataset to analyze.
      */
@@ -152,8 +159,6 @@ public class DiscreteBicScore implements DiscreteScore {
 
         int[] myChild = this.data[node];
 
-        int N = 0;
-
         ROW:
         for (int i = 0; i < this.sampleSize; i++) {
             for (int p = 0; p < parents.length; p++) {
@@ -171,7 +176,6 @@ public class DiscreteBicScore implements DiscreteScore {
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;
-            N++;
         }
 
         //Finally, compute the score
@@ -182,20 +186,99 @@ public class DiscreteBicScore implements DiscreteScore {
                 int cellCount = n_jk[rowIndex][childValue];
                 int rowCount = n_j[rowIndex];
 
-                if (cellCount == 0) continue;
+                if (cellCount == 0 || rowCount == 0) continue;
                 lik += cellCount * FastMath.log(cellCount / (double) rowCount);
             }
         }
 
-        int params = r * (c - 1);
+        int attestedRows = 0;
 
-        double score = 2 * lik - this.penaltyDiscount * params * FastMath.log(N) + 2 * getPriorForStructure(parents.length);
+        for (int rowIndex = 0; rowIndex < r; rowIndex++) {
+            if (n_j[rowIndex] > 0) {
+                attestedRows++;
+            }
+        }
+
+        int params = attestedRows * (c - 1);
+
+        double score = 2 * lik - this.penaltyDiscount * params * FastMath.log(sampleSize) + 2 * getPriorForStructure(parents.length);
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;
         } else {
             return score;
         }
+    }
+
+    /**
+     * Returns the number of parameters for a node given its parents.
+     *
+     * @param node    The index of the node.
+     * @param parents The indices of the node's parents.
+     */
+    public int numParameters(int node, int[] parents) {
+        if (!(this.variables.get(node) instanceof DiscreteVariable)) {
+            throw new IllegalArgumentException("Not discrete: " + this.variables.get(node));
+        }
+
+        for (int t : parents) {
+            if (!(this.variables.get(t) instanceof DiscreteVariable)) {
+                throw new IllegalArgumentException("Not discrete: " + this.variables.get(t));
+            }
+        }
+
+        // Numbers of categories of parents.
+        int[] dims = new int[parents.length];
+
+        for (int p = 0; p < parents.length; p++) {
+            dims[p] = this.numCategories[parents[p]];
+        }
+
+        // Number of parent states.
+        int r = 1;
+
+        for (int p = 0; p < parents.length; p++) {
+            r *= dims[p];
+        }
+
+        // Conditional cell coefs of data for node given parents(node).
+        int[] n_j = new int[r];
+
+        int[] parentValues = new int[parents.length];
+
+        int[][] myParents = new int[parents.length][];
+        for (int i = 0; i < parents.length; i++) {
+            myParents[i] = this.data[parents[i]];
+        }
+
+        int[] myChild = this.data[node];
+
+        ROW:
+        for (int i = 0; i < this.sampleSize; i++) {
+            for (int p = 0; p < parents.length; p++) {
+                if (myParents[p][i] == -99) continue ROW;
+                parentValues[p] = myParents[p][i];
+            }
+
+            int childValue = myChild[i];
+
+            if (childValue == -99) {
+                continue;
+            }
+
+            int rowIndex = DiscreteBicScore.getRowIndex(dims, parentValues);
+            n_j[rowIndex]++;
+        }
+
+        int attestedRows = 0;
+
+        for (int rowIndex = 0; rowIndex < r; rowIndex++) {
+            if (n_j[rowIndex] > 0) {
+                attestedRows++;
+            }
+        }
+
+        return attestedRows * (this.numCategories[node] - 1);
     }
 
     /**

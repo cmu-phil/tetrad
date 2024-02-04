@@ -43,37 +43,33 @@ import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.min;
 
 /**
- * <p>Implements the Fast Greedy Equivalence Search (FGES) algorithm. This is
- * an implementation of the Greedy Equivalence Search algorithm, originally due to Chris Meek but developed
- * significantly by Max Chickering. FGES uses with some optimizations that allow it to scale accurately to thousands of
- * variables accurately for the sparse case. The reference for FGES is this:</p>
- *
- * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017).
- * A million variables and more: the fast greedy equivalence search algorithm for learning high-dimensional graphical
- * causal models, with an application to functional magnetic resonance images. International journal of data science and
- * analytics, 3, 121-129.</p>
- *
- * <p>The reference for Chickering's GES is this:</p>
- *
- * <p>Chickering (2002) "Optimal structure identification with greedy search"
- * Journal of Machine Learning Research.</p>
- *
- * <p>FGES works for the continuous case, the discrete case, and the mixed
- * continuous/discrete case, so long as a BIC score is available for the type of data in question.</p>
- *
- * <p>To speed things up, it has been assumed that variables X and Y with zero
- * correlation do not correspond to edges in the graph. This is a restricted form of the heuristic speedup assumption,
- * something GES does not assume. This heuristic speedup assumption needs to be explicitly turned on using
- * setHeuristicSpeedup(true).</p>
- *
- * <p>Also, edges to be added or remove from the graph in the forward or
- * backward phase, respectively are cached, together with the ancillary information needed to do the additions or
- * removals, to reduce rescoring.</p>
- *
- * <p>A number of other optimizations were also. See code for details.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Implements the Fast Greedy Equivalence Search (FGES) algorithm. This is an implementation of the Greedy Equivalence
+ * Search algorithm, originally due to Chris Meek but developed significantly by Max Chickering. FGES uses with some
+ * optimizations that allow it to scale accurately to thousands of variables accurately for the sparse case. The
+ * reference for FGES is this:
+ * <p>
+ * Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017). A million variables and more: the fast greedy
+ * equivalence search algorithm for learning high-dimensional graphical causal models, with an application to functional
+ * magnetic resonance images. International journal of data science and analytics, 3, 121-129.
+ * <p>
+ * The reference for Chickering's GES is this:
+ * <p>
+ * Chickering (2002) "Optimal structure identification with greedy search" Journal of Machine Learning Research.
+ * <p>
+ * FGES works for the continuous case, the discrete case, and the mixed continuous/discrete case, so long as a BIC score
+ * is available for the type of data in question.
+ * <p>
+ * To speed things up, it has been assumed that variables X and Y with zero correlation do not correspond to edges in
+ * the graph. This is a restricted form of the heuristic speedup assumption, something GES does not assume. This
+ * heuristic speedup assumption needs to be explicitly turned on using setHeuristicSpeedup(true).
+ * <p>
+ * Also, edges to be added or remove from the graph in the forward or backward phase, respectively are cached, together
+ * with the ancillary information needed to do the additions or removals, to reduce rescoring.
+ * <p>
+ * A number of other optimizations were also. See code for de tails.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author Ricardo Silva
  * @author josephramsey
@@ -83,17 +79,16 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Knowledge
  */
 public final class Fges implements IGraphSearch, DagScorer {
+    // Used to find semidirected paths for cycle checking.
     private final Set<Node> emptySet = new HashSet<>();
+    // Used to find semidirected paths for cycle checking.
     private final int[] count = new int[1];
+    // Used to find semidirected paths for cycle checking.
     private final int depth = 10000;
 
-    /**
-     * The logger for this class. The config needs to be set.
-     */
+    // The logger for this class. The config needs to be set.
     private final TetradLogger logger = TetradLogger.getInstance();
-    /**
-     * The top n graphs found by the algorithm, where n is numPatternsToStore.
-     */
+    // The top n graphs found by the algorithm, where n is numPatternsToStore.
     private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
     // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
     private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
@@ -101,63 +96,41 @@ public final class Fges implements IGraphSearch, DagScorer {
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
     //    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
     private boolean faithfulnessAssumed = false;
-    /**
-     * Specification of forbidden and required edges.
-     */
+    // Specification of forbidden and required edges.
     private Knowledge knowledge = new Knowledge();
-    /**
-     * List of variables in the data set, in order.
-     */
+    // List of variables in the data set, in order.
     private List<Node> variables;
-    /**
-     * An initial graph to start from.
-     */
+    // An initial graph to start from.
     private Graph initialGraph;
-    /**
-     * If non-null, edges not adjacent in this graph will not be added.
-     */
+    // If non-null, edges not adjacent in this graph will not be added.
     private Graph boundGraph = null;
-    /**
-     * Elapsed time of the most recent search.
-     */
+    // Elapsed time of the most recent search.
     private long elapsedTime;
-    /**
-     * The totalScore for discrete searches.
-     */
+    // The totalScore for discrete searches.
     private Score score;
-    /**
-     * True if verbose output should be printed.
-     */
+    // True if verbose output should be printed.
     private boolean verbose = false;
     private boolean meekVerbose = false;
     // Map from variables to their column indices in the data set.
     private ConcurrentMap<Node, Integer> hashIndices;
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
-
     // Where printed output is sent.
     private PrintStream out = System.out;
-
     // The graph being constructed.
     private Graph graph;
-
     // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
     // The ordering doesn't matter; it just has to be transitive.
     private int arrowIndex = 0;
-
     // The score of the model.
     private double modelScore;
-
     // Internal.
     private Mode mode = Mode.heuristicSpeedup;
-
     // Bounds the degree of the graph.
     private int maxDegree = -1;
-
     // True if the first step of adding an edge to an empty graph should be scored in both directions
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
-
     // True, if FGES should run in a single thread, no if parallelized.
     private boolean parallelized = false;
 
@@ -195,8 +168,8 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Greedy equivalence search: Start from the empty graph, add edges till the model is significant.
-     * Then start deleting edges till a minimum is achieved.
+     * Greedy equivalence search: Start from the empty graph, add edges till the model is significant. Then start
+     * deleting edges till a minimum is achieved.
      *
      * @return the resulting Pattern.
      */
@@ -240,7 +213,7 @@ public final class Fges implements IGraphSearch, DagScorer {
             this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-        this.modelScore = scoreDag(GraphTransforms.dagFromCPDAG(graph, null), true);
+        this.modelScore = scoreDag(GraphTransforms.dagFromCpdag(graph, null), true);
 
         return graph;
     }

@@ -29,18 +29,16 @@ import edu.cmu.tetrad.search.Grasp;
 import java.util.List;
 
 /**
- * <p>Implements a score to average results over multiple scores. This is
- * used for the IMaGES algorithm. The idea is that one pick and algorithm that takes (only) a score as input, such as
- * FGES or GRaSP or BOSS, and then constructs an ImagesScore (which class) with a list of datasets as input, using same
- * object-identical variables, and feeds this Images score to this algorithm through the contructor. One then runs the
- * algorithm to get an estimate of the structure.</p>
- *
- * <p>Importantly, only the variables from the first score will be returned
- * from the getVariables method, so it is up to the user to ensure that all of the scores share the same
- * (object-identical) variables.</p>
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and
- * negative scores indicate independence.</p>
+ * Implements a score to average results over multiple scores. This is used for the IMaGES algorithm. The idea is that
+ * one pick and algorithm that takes (only) a score as input, such as FGES or GRaSP or BOSS, and then constructs an
+ * ImagesScore (which class) with a list of datasets as input, using same object-identical variables, and feeds this
+ * Images score to this algorithm through the constructor. One then runs the algorithm to get an estimate of the
+ * structure.
+ * <p>
+ * Importantly, only the variables from the first score will be returned from the getVariables method, so it is up to
+ * the user to ensure that all the scores share the same (object-identical) variables.
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
  * @see Fges
@@ -51,7 +49,6 @@ public class ImagesScore implements Score {
 
     // The covariance matrix.
     private final List<Score> scores;
-
     // The variables of the covariance matrix.
     private final List<Node> variables;
 
@@ -124,6 +121,16 @@ public class ImagesScore implements Score {
         }
     }
 
+    /**
+     * Returns the (aggregate) local score for a variable given its parents, which is obtained by averaging the local
+     * such scores obtained from each individual score provided in the constructor, excluding scores that are returned
+     * as undefined (which are left out of the average).
+     *
+     * @param i       The variable whose score is needed.
+     * @param parents The indices of the parents.
+     * @param index   The index of the score to use.
+     * @return This score.
+     */
     public double localScore(int i, int[] parents, int index) {
         return localScoreOneDataSet(i, parents, index);
     }
@@ -176,6 +183,12 @@ public class ImagesScore implements Score {
         return sum / count;
     }
 
+    /**
+     * Returns a judgment for FGES whether a score with the bump is for an effect edge.
+     *
+     * @param bump The bump.
+     * @return True if so.
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return scores.get(0).isEffectEdge(bump);
@@ -214,6 +227,8 @@ public class ImagesScore implements Score {
     /**
      * Returns the 'determines' judgment from the first score.
      *
+     * @param z The set of variables.
+     * @param y The variable.
      * @return This judgment, true if the 'determine' relations holds.
      */
     @Override

@@ -9,6 +9,7 @@ import edu.cmu.tetrad.search.test.IndTestGSquare;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,13 +23,16 @@ import java.util.List;
         command = "g-square-test",
         dataType = DataType.Discrete
 )
-public class Gsquare implements IndependenceWrapper {
+public class GSquare implements IndependenceWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        return new IndTestGSquare(SimpleDataLoader.getDiscreteDataSet(dataSet), parameters.getDouble("alpha"));
+        IndTestGSquare test = new IndTestGSquare(SimpleDataLoader.getDiscreteDataSet(dataSet), parameters.getDouble("test"));
+        test.setMinCountPerCell(parameters.getDouble(Params.MIN_COUNT_PER_CELL));
+        return test;
     }
 
     @Override
@@ -45,6 +49,7 @@ public class Gsquare implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
+        params.add(Params.MIN_COUNT_PER_CELL);
         return params;
     }
 }

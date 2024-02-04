@@ -41,7 +41,6 @@ import java.util.List;
 public final class BayesProperties {
     private final DataSet dataSet;
     private final List<Node> variables;
-    private final int[][] data;
     private final int sampleSize;
     private final int[] numCategories;
     private double chisq;
@@ -49,6 +48,10 @@ public final class BayesProperties {
     private double bic;
     private double likelihood;
 
+    /**
+     * Constructs a new BayesProperties object for the given data set.
+     * @param dataSet The data set.
+     */
     public BayesProperties(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
@@ -56,6 +59,7 @@ public final class BayesProperties {
 
         this.dataSet = dataSet;
 
+        int[][] data;
         if (dataSet instanceof BoxDataSet) {
             DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
 
@@ -63,19 +67,18 @@ public final class BayesProperties {
 
             VerticalIntDataBox box = new VerticalIntDataBox(dataBox);
 
-            this.data = box.getVariableVectors();
+            box.getVariableVectors();
         } else {
-            this.data = new int[dataSet.getNumColumns()][];
+            data = new int[dataSet.getNumColumns()][];
             this.variables = dataSet.getVariables();
 
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                this.data[j] = new int[dataSet.getNumRows()];
+                data[j] = new int[dataSet.getNumRows()];
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    this.data[j][i] = dataSet.getInt(i, j);
+                    data[j][i] = dataSet.getInt(i, j);
                 }
             }
-
         }
         this.sampleSize = dataSet.getNumRows();
 
@@ -103,6 +106,7 @@ public final class BayesProperties {
      * Calculates the p-value of the graph with respect to the given data.
      *
      * @param graph The graph.
+     * @return The p-value.
      */
     public LikelihoodRet getLikelihoodRatioP(Graph graph) {
 
@@ -282,89 +286,10 @@ public final class BayesProperties {
     }
 
     private Ret getLikelihoodNode(int node, int[] parents) {
-
         DiscreteBicScore bic = new DiscreteBicScore(dataSet);
         double lik = bic.localScore(node, parents);
 
         int dof = (numCategories[node] - 1) * parents.length;
-
-//        int d = ;
-//
-//        for (int childValue = 0; childValue < c; childValue++) {
-//            d++;
-//        }
-
-
-//        // Number of categories for node.
-//        int c = this.numCategories[node];
-//
-//        // Numbers of categories of parents.
-//        int[] dims = new int[parents.length];
-//
-//        for (int p = 0; p < parents.length; p++) {
-//            dims[p] = this.numCategories[parents[p]];
-//        }
-//
-//        // Number of parent states.
-//        int r = 1;
-//
-//        for (int p = 0; p < parents.length; p++) {
-//            r *= dims[p];
-//        }
-//
-//        // Conditional cell coefs of data for node given parents(node).
-//        int[][] n_jk = new int[r][c];
-//        int[] n_j = new int[r];
-//
-//        int[] parentValues = new int[parents.length];
-//
-//        int[][] myParents = new int[parents.length][];
-//        for (int i = 0; i < parents.length; i++) {
-//            myParents[i] = this.data[parents[i]];
-//        }
-//
-//        int[] myChild = this.data[node];
-//
-//        for (int i = 0; i < this.sampleSize; i++) {
-//            for (int p = 0; p < parents.length; p++) {
-//                parentValues[p] = myParents[p][i];
-//            }
-//
-//            int childValue = myChild[i];
-//
-//            if (childValue == -99) {
-//                throw new IllegalStateException("Please remove or impute missing " +
-//                        "values (record " + i + " column " + i + ")");
-//            }
-//
-//            int rowIndex = BayesProperties.getRowIndex(dims, parentValues);
-//
-//            n_jk[rowIndex][childValue]++;
-//            n_j[rowIndex]++;
-//        }
-
-//        //Finally, compute the score
-//        double lik = 0.0;
-//        int dof = 0;
-//
-//        for (int rowIndex = 0; rowIndex < r; rowIndex++) {
-//            if (rowIndex == 0) continue;
-//
-//            if (Thread.interrupted()) break;
-//
-//            int d = 0;
-//
-//            for (int childValue = 0; childValue < c; childValue++) {
-//                int cellCount = n_jk[rowIndex][childValue];
-//                int rowCount = n_j[rowIndex];
-//
-//                if (cellCount == 0) continue;
-//                lik += cellCount * FastMath.log(cellCount / (double) rowCount);
-//                d++;
-//            }
-//
-//            if (d > 0) dof += c - 1;
-//        }
 
         return new Ret(lik, dof);
     }
@@ -391,10 +316,16 @@ public final class BayesProperties {
         return r * c;
     }
 
+    /**
+     * Returns the number of categories for the given variable.
+     */
     public int getSampleSize() {
         return this.sampleSize;
     }
 
+    /**
+     * Returns the variable with the given name (assumed the target).
+     */
     public Node getVariable(String targetName) {
         for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
@@ -413,28 +344,63 @@ public final class BayesProperties {
         }
     }
 
+    /**
+     * Returns the likelihood ratio test statistic for the given graph and its degrees of freedom.
+     */
     private static class Ret {
         private final double lik;
         private final int dof;
 
+        /**
+         * Constructs a new Ret object.
+         * @param lik The likelihood.
+         * @param dof The degrees of freedom.
+         */
         public Ret(double lik, int dof) {
             this.lik = lik;
             this.dof = dof;
         }
 
+        /**
+         * Returns the likelihood.
+         * @return The likelihood.
+         */
         public double getLik() {
             return this.lik;
         }
 
+        /**
+         * Returns the degrees of freedom.
+         * @return  The degrees of freedom.
+         */
         public int getDof() {
             return this.dof;
         }
     }
 
-    public class LikelihoodRet {
+    /**
+     * Returns the number of categories for the given variable.
+     */
+    public static class LikelihoodRet {
+
+        /**
+         * The p-value.
+         */
         public double p;
+
+        /**
+         * The BIC.
+         */
         public double bic;
+
+        /**
+         * The chi-squared statistic.
+         */
         public double chiSq;
+
+        /**
+         * The degrees of freedom.
+         */
         public double dof;
     }
 }

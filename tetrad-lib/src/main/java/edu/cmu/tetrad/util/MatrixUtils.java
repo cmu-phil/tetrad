@@ -243,8 +243,11 @@ public final class MatrixUtils {
     }
 
     public static double[][] pseudoInverse(double[][] x) {
-        SingularValueDecomposition svd
-                = new SingularValueDecomposition(new BlockRealMatrix(x));
+        if (x.length == 0) {
+            return new Matrix(x).toArray();
+        }
+
+        SingularValueDecomposition svd = new SingularValueDecomposition(new BlockRealMatrix(x));
 
         RealMatrix U = svd.getU();
         RealMatrix V = svd.getV();

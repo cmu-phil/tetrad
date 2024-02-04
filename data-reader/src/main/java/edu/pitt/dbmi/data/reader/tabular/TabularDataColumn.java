@@ -32,12 +32,27 @@ public class TabularDataColumn implements DataColumn {
     private final boolean generated;
     private boolean discrete;
 
+    /**
+     * Constructor.
+     *
+     * @param name         the name of the column.
+     * @param columnNumber the column number.
+     * @param generated    whether the column is generated.
+     */
     public TabularDataColumn(String name, int columnNumber, boolean generated) {
         this.name = name;
         this.columnNumber = columnNumber;
         this.generated = generated;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param name         the name of the column.
+     * @param columnNumber the column number.
+     * @param generated    whether the column is generated.
+     * @param discrete     whether the column is discrete.
+     */
     public TabularDataColumn(String name, int columnNumber, boolean generated, boolean discrete) {
         this.name = name;
         this.columnNumber = columnNumber;
@@ -45,31 +60,61 @@ public class TabularDataColumn implements DataColumn {
         this.discrete = discrete;
     }
 
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return a string representation of the object.
+     */
     @Override
     public String toString() {
         return "TabularDataColumn{" + "name=" + this.name + ", columnNumber=" + this.columnNumber + ", generated=" + this.generated + ", discrete=" + this.discrete + '}';
     }
 
+    /**
+     * Get the name of the column.
+     *
+     * @return the name of the column.
+     */
     @Override
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Get the column number.
+     *
+     * @return the column number.
+     */
     @Override
     public int getColumnNumber() {
         return this.columnNumber;
     }
 
+    /**
+     * Is the column generated?
+     *
+     * @return true if the column is generated, false otherwise.
+     */
     @Override
     public boolean isGenerated() {
         return this.generated;
     }
 
+    /**
+     * Is the column discrete?
+     *
+     * @return true if the column is discrete, false otherwise.
+     */
     @Override
     public boolean isDiscrete() {
         return this.discrete;
     }
 
+    /**
+     * Set the discrete status of the column.
+     *
+     * @param discrete true if the column is discrete, false otherwise.
+     */
     @Override
     public void setDiscrete(boolean discrete) {
         this.discrete = discrete;

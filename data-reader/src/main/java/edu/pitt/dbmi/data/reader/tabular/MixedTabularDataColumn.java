@@ -36,16 +36,32 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
     private final Map<String, Integer> values;
     private List<String> categories;
 
+    /**
+     * Constructor.
+     *
+     * @param dataColumn The data column.
+     */
     public MixedTabularDataColumn(DataColumn dataColumn) {
         this.dataColumn = dataColumn;
         this.values = dataColumn.isDiscrete() ? new TreeMap<>() : null;
     }
 
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return a string representation of the object.
+     */
     @Override
     public String toString() {
         return "MixedTabularDataColumn{" + "dataColumn=" + this.dataColumn + ", values=" + this.values + ", categories=" + this.categories + '}';
     }
 
+    /**
+     * Gets the encode value of the given value.
+     *
+     * @param value The value.
+     * @return the encode value of the given value.
+     */
     @Override
     public Integer getEncodeValue(String value) {
         return (this.values == null)
@@ -53,6 +69,9 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
                 : this.values.get(value);
     }
 
+    /**
+     * Does a recategorization of the data column.
+     */
     @Override
     public void recategorize() {
         if (this.values != null) {
@@ -66,6 +85,11 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
         }
     }
 
+    /**
+     * Sets the value.
+     *
+     * @param value The value.
+     */
     @Override
     public void setValue(String value) {
         if (this.values != null) {
@@ -73,15 +97,30 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
         }
     }
 
+    /**
+     * Gets the data column.
+     *
+     * @return the data column.
+     */
     @Override
     public DataColumn getDataColumn() {
         return this.dataColumn;
     }
 
+    /**
+     * Gets the values as a map.
+     *
+     * @return the values.
+     */
     public Map<String, Integer> getValues() {
         return this.values;
     }
 
+    /**
+     * Gets the categories.
+     *
+     * @return the categories.
+     */
     @Override
     public List<String> getCategories() {
         return (this.categories == null) ? Collections.EMPTY_LIST : this.categories;

@@ -32,26 +32,23 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * <p>Performs the final orientation steps of the FCI algorithms, which
- * is a useful tool to use in a variety of FCI-like algorithms.</p>
- *
- * <p>There are two versions of these final orientation steps, one due to
- * Peter Spirtes (the original, in Causation, Prediction and Search), which is arrow complete, and the other which Jiji
- * Zhang worked out in his Ph.D. dissertation, which is both arrow and tail complete. The references for these are as
- * follows.</p>
- *
- * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000).
- * Causation, prediction, and search. MIT press.</p>
- *
- * <p>Zhang, J. (2008). On the completeness of orientation rules for causal
- * discovery in the presence of latent confounders and selection bias. Artificial Intelligence, 172(16-17),
- * 1873-1896.</p>
- *
- * <p>These final rules are used in all algorithms in Tetrad that
- * follow and refine the FCI algorithm--for example, the GFCI and RFCI algorihtms.</p>
- *
- * <p>We've made the methods for each of the separate rules publicly
- * accessible in case someone wants to use the individual rules in the context of their own algorithms.</p>
+ * Performs the final orientation steps of the FCI algorithms, which is a useful tool to use in a variety of FCI-like
+ * algorithms.
+ * <p>
+ * There are two versions of these final orientation steps, one due to Peter Spirtes (the original, in Causation,
+ * Prediction and Search), which is arrow complete, and the other which Jiji Zhang worked out in his Ph.D. dissertation,
+ * which is both arrow and tail complete. The references for these are as follows.
+ * <p>
+ * Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT press.
+ * <p>
+ * Zhang, J. (2008). On the completeness of orientation rules for causal discovery in the presence of latent confounders
+ * and selection bias. Artificial Intelligence, 172(16-17), 1873-1896.
+ * <p>
+ * These final rules are used in all algorithms in Tetrad that follow and refine the FCI algorithm--for example, the
+ * GFCI and RFCI algorihtms.
+ * <p>
+ * We've made the methods for each of the separate rules publicly accessible in case someone wants to use the individual
+ * rules in the context of their own algorithms.
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
@@ -501,8 +498,8 @@ public final class FciOrient {
     }
 
     /**
-     * Implements the double-triangle orientation rule, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-oDo-*C, and !adj(a,
-     * c), D*-oB, then D*->B.
+     * Implements the double-triangle orientation rule, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-oDo-*C, and
+     * !adj(a, c), D*-oB, then D*->B.
      * <p>
      * This is Zhang's rule R3.
      */
@@ -1021,7 +1018,9 @@ public final class FciOrient {
      * Orients according to background knowledge
      */
     public void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
-        this.logger.forceLogMessage("Starting BK Orientation.");
+        if (verbose) {
+            this.logger.forceLogMessage("Starting BK Orientation.");
+        }
 
         for (Iterator<KnowledgeEdge> it
              = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -1083,7 +1082,9 @@ public final class FciOrient {
             this.logger.forceLogMessage(LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        this.logger.forceLogMessage("Finishing BK Orientation.");
+        if (verbose) {
+            this.logger.forceLogMessage("Finishing BK Orientation.");
+        }
     }
 
     /**
@@ -1170,8 +1171,8 @@ public final class FciOrient {
      * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
      * <p>
-     * R10: If Ao-&gt;C, B--&gt;C&lt;--D, there is an uncovered p.d. path u1=&lt;A,M,...,B&gt; and an uncovered p.d. path u2=
-     * &lt;A,N,...,D&gt; with M != N and M,N nonadjacent then A--&gt;C.
+     * R10: If Ao-&gt;C, B--&gt;C&lt;--D, there is an uncovered p.d. path u1=&lt;A,M,...,B&gt; and an uncovered p.d.
+     * path u2= &lt;A,N,...,D&gt; with M != N and M,N nonadjacent then A--&gt;C.
      *
      * @param a The node A.
      * @param c The node C.

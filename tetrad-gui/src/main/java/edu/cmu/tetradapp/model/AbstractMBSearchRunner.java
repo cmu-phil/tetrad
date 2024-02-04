@@ -31,7 +31,6 @@ import edu.cmu.tetrad.search.test.IndTestChiSquare;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndTestGSquare;
 import edu.cmu.tetrad.search.test.IndTestRegression;
-import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZGeneralizedInverse;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IndTestType;
 
@@ -184,9 +183,11 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
             if (IndTestType.FISHER_Z == type) {
                 return new IndTestFisherZ(this.source, this.params.getDouble("alpha", 0.001));
             }
-            if (IndTestType.FISHER_ZD == type) {
-                return new IndTestFisherZGeneralizedInverse(this.source, this.params.getDouble("alpha", 0.001));
-            }
+//            if (IndTestType.FISHER_ZD == type) {
+//                IndTestFisherZ test = new IndTestFisherZ(this.source, this.params.getDouble("alpha", 0.001));
+////                test.setUsePseudoinverse(true);
+//                return test;
+//            }
             if (IndTestType.LINEAR_REGRESSION == type) {
                 return new IndTestRegression(this.source, this.params.getDouble("alpha", 0.001));
             } else {

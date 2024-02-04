@@ -11,6 +11,7 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,19 +28,25 @@ import java.util.List;
 @LinearGaussian
 public class FisherZ implements IndependenceWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     @Override
-    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
         double alpha = parameters.getDouble(Params.ALPHA);
 
-        if (dataSet instanceof ICovarianceMatrix) {
-            return new IndTestFisherZ((ICovarianceMatrix) dataSet, alpha);
-        } else if (dataSet instanceof DataSet) {
-            return new IndTestFisherZ((DataSet) dataSet, alpha);
+        IndTestFisherZ test;
+
+        if (dataModel instanceof ICovarianceMatrix) {
+            test = new IndTestFisherZ((ICovarianceMatrix) dataModel, alpha);
+        } else if (dataModel instanceof DataSet) {
+            test = new IndTestFisherZ((DataSet) dataModel, alpha);
+        } else {
+            throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
 
-        throw new IllegalArgumentException("Expecting eithet a data set or a covariance matrix.");
+        test.setUsePseudoinverse(parameters.getBoolean(Params.USE_PSEUDOINVERSE));
+        return test;
     }
 
     @Override
@@ -56,6 +63,7 @@ public class FisherZ implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
+        params.add(Params.USE_PSEUDOINVERSE);
         return params;
     }
 }

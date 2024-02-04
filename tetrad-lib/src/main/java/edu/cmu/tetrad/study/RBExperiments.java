@@ -187,7 +187,7 @@ public class RBExperiments {
 
         // learn structure of constraints using empirical data
         Graph depCPDAG = runFGS(depData);
-        Graph estDepBN = GraphTransforms.dagFromCPDAG(depCPDAG, null);
+        Graph estDepBN = GraphTransforms.dagFromCpdag(depCPDAG, null);
         System.out.println("estDepBN: " + estDepBN.getEdges());
         out.println("DepGraph(nodes,edges):" + estDepBN.getNumNodes() + "," + estDepBN.getNumEdges());
         System.out.println("Dependency graph done!");

@@ -28,14 +28,14 @@ public interface DataReader {
     /**
      * Set the character that is used to group multiple words as one.
      *
-     * @param quoteCharacter
+     * @param quoteCharacter the quote character.
      */
     void setQuoteCharacter(char quoteCharacter);
 
     /**
      * Set the value to indicate a line is a comment to be ignored.
      *
-     * @param commentMarker
+     * @param commentMarker the comment marker.
      */
     void setCommentMarker(String commentMarker);
 

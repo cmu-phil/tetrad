@@ -31,6 +31,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,11 +43,12 @@ import java.util.prefs.Preferences;
  * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-final class SaveSessionAction extends AbstractAction {
+public final class SaveSessionAction extends AbstractAction {
 
+    @Serial
     private static final long serialVersionUID = -1812370698394158108L;
 
-    private boolean saved;
+    public static boolean saved = false;
 
     public SaveSessionAction() {
         super("Save Session");
@@ -69,7 +71,7 @@ final class SaveSessionAction extends AbstractAction {
         if (Files.notExists(outputFile) || sessionWrapper.isNewSession()) {
             SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction();
             saveSessionAsAction.actionPerformed(e);
-            this.saved = saveSessionAsAction.isSaved();
+            saved = SaveSessionAsAction.saved;
 
             return;
         }
@@ -80,7 +82,7 @@ final class SaveSessionAction extends AbstractAction {
             if (ret == JOptionPane.NO_OPTION) {
                 SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction();
                 saveSessionAsAction.actionPerformed(e);
-                this.saved = saveSessionAsAction.isSaved();
+                saved = SaveSessionAsAction.saved;
 
                 return;
             }
@@ -89,7 +91,7 @@ final class SaveSessionAction extends AbstractAction {
         class MyWatchedProceess extends WatchedProcess {
 
             @Override
-            public void watch() throws InterruptedException {
+            public void watch() {
                 try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile))) {
                     sessionWrapper.setNewSession(false);
                     objOut.writeObject(metadata);
@@ -110,9 +112,4 @@ final class SaveSessionAction extends AbstractAction {
 
         new MyWatchedProceess();
     }
-
-    public boolean isSaved() {
-        return this.saved;
-    }
-
 }

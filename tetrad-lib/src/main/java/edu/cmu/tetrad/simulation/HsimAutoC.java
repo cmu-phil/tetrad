@@ -71,7 +71,7 @@ public class HsimAutoC {
         Graph estGraph = fges.search();
         //if (verbose) System.out.println(estGraph);
 
-        Graph estGraphDAG = GraphTransforms.dagFromCPDAG(estGraph, null);
+        Graph estGraphDAG = GraphTransforms.dagFromCpdag(estGraph, null);
         Dag estDAG = new Dag(estGraphDAG);
         //Dag estDAG = new Dag(estGraph);
 

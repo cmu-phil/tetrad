@@ -37,7 +37,9 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Calculates independence from pooled residuals using the Fisher Z method.
@@ -47,26 +49,17 @@ import java.util.Set;
  */
 public final class IndTestFisherZConcatenateResiduals implements IndependenceTest {
 
-
-    /**
-     * The variables of the covariance matrix, in order. (Unmodifiable list.)
-     */
+    // The variables of the covariance matrix, in order. (Unmodifiable list.)
     private final List<Node> variables;
-
+    // The regressions.
     private final ArrayList<Regression> regressions;
-
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
+    // The data sets.
     private List<DataSet> dataSets;
-
-    /**
-     * The significance level of the independence tests.
-     */
+    // The significance level of the independence tests.
     private double alpha;
-    /**
-     * The value of the Fisher's Z statistic associated with the last calculated partial correlation.
-     */
-//    private double fisherZ;
-
-    private double pValue = Double.NaN;
+    // True if verbose output should be printed.
     private boolean verbose;
 
     /**
@@ -117,6 +110,9 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        if (facts.containsKey(new IndependenceFact(x, y, _z))) {
+            return facts.get(new IndependenceFact(x, y, _z));
+        }
 
         x = getVariable(this.variables, x.getName());
         List<Node> z = GraphUtils.replaceNodes(new ArrayList<>(_z), new ArrayList<>(this.variables));
@@ -169,18 +165,18 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
             throw new RuntimeException("Undefined p-value encountered for test: " + LogUtilsSearch.independenceFact(x, y, _z));
         }
 
-        this.pValue = pValue;
         boolean independent = pValue > this.alpha;
 
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, _z, this.pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, pValue - getAlpha());
-
+        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, pValue - getAlpha());
+        facts.put(new IndependenceFact(x, y, _z), result);
+        return result;
     }
 
     /**

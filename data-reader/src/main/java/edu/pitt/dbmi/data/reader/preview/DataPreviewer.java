@@ -28,6 +28,15 @@ import java.util.List;
  */
 public interface DataPreviewer {
 
+    /**
+     * Get the previews of the data file.
+     *
+     * @param fromLine        The starting line number.
+     * @param toLine          The ending line number.
+     * @param numOfCharacters The number of characters to preview.
+     * @return the previews.
+     * @throws IOException if an I/O error occurs.
+     */
     List<String> getPreviews(int fromLine, int toLine, int numOfCharacters) throws IOException;
 
 }

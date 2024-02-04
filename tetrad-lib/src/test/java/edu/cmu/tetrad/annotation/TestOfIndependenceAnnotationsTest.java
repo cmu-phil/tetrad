@@ -37,7 +37,7 @@ public class TestOfIndependenceAnnotationsTest {
     @Test
     public void testAnnotatedNameAttributeForUniqueness() {
         List<AnnotatedClass<TestOfIndependence>> indTests = TestOfIndependenceAnnotations.getInstance().getAnnotatedClasses();
-        List<String> values = indTests.stream().map(e -> e.getAnnotation().name().toLowerCase()).collect(Collectors.toList());
+        List<String> values = indTests.stream().map(e -> e.annotation().name().toLowerCase()).collect(Collectors.toList());
 
         long actual = values.size();
         long expected = values.stream().distinct().count();
@@ -47,7 +47,7 @@ public class TestOfIndependenceAnnotationsTest {
     @Test
     public void testAnnotatedCommandAttributeForUniqueness() {
         List<AnnotatedClass<TestOfIndependence>> indTests = TestOfIndependenceAnnotations.getInstance().getAnnotatedClasses();
-        List<String> values = indTests.stream().map(e -> e.getAnnotation().name().toLowerCase()).collect(Collectors.toList());
+        List<String> values = indTests.stream().map(e -> e.annotation().name().toLowerCase()).collect(Collectors.toList());
 
         long actual = values.size();
         long expected = values.stream().distinct().count();

@@ -36,8 +36,8 @@ import Jama.Matrix;
 
 public class CovSum implements CovarianceFunction {
 
-    CovarianceFunction[] f;
-    int[] idx;
+    private CovarianceFunction[] f;
+    private int[] idx;
 
     /**
      * Create a new <code>CovarianceFunction</code> as sum of the
@@ -126,6 +126,4 @@ public class CovSum implements CovarianceFunction {
         index -= this.idx[whichf];
         return this.f[whichf].computeDerivatives(loghyperi, X, index);
     }
-
-
 }

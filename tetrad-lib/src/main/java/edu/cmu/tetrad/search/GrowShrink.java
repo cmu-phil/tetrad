@@ -29,29 +29,27 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Implements the Grow-Shrink algorithm of Margaritis and Thrun, a simple yet
- * correct and useful Markov blanket search.</p>
+ * Implements the Grow-Shrink algorithm of Margaritis and Thrun, a simple yet correct and useful Markov blanket search.
+ * <p>
+ * Margaritis, D., &amp; Thrun, S. (1999). Bayesian network induction via local neighborhoods. Advances in neural
+ * information processing systems, 12.
+ * <p>
+ * Grow-Shrink learns the Markov blanket of a node, given a conditional independence test over a list of possible nodes.
+ * The Markov blanket is a set of nodes (or, in this case a list of distinct nodes), conditional on which every other
+ * node in the set is independent of X. In this case, a minimal Markov blanket is learned, which is to say, a Markov
+ * boundary of X.
+ * <p>
+ * Graphically, in a DAG, the Markov blanket of X is the set of parents, children, and parents of children of X;
+ * GrowShrink will, for a faithful test, learn this set for X. However, a graph over the nodes together with X is not
+ * learned; other algorithms are available to do that (see, e.g., FgesMb, PcMb).
+ * <p>
+ * We include GrowShrink in our algorithm suite mainly because it is a CMU algorithm (see the above reference). Markov
+ * blanket search has been explored in some detail in the literature and several algorithms are available. See for
+ * instance the BNLEARN package in R:
  *
- * <p>Margaritis, D., &amp; Thrun, S. (1999). Bayesian network induction via local
- * neighborhoods. Advances in neural information processing systems, 12.</p>
- *
- * <p>Grow-Shrink learns the Markov blanket of a node, given a conditional independence
- * test over a list of possible nodes. The Markov blanket is a set of nodes (or, in this case a list of distinct nodes),
- * conditional on which every other node in the set is independent of X. In this case, a minimal Markov blanket is
- * learned, which is to say, a Markov boundary of X.</p>
- *
- * <p>Graphically, in a DAG, the Markov blanket of X is the set of parents, children, and
- * parents of children of X; GrowShrink will, for a faithful test, learn this set for X. However, a graph over the nodes
- * together with X is not learned; other algorithms are available to do that (see, e.g., FgesMb, PcMb).</p>
- *
- * <p>We include GrowShrink in our algorithm suite mainly because it is a CMU algorithm
- * (see the above reference). Markov blanket search has been explored in some detail in the literature and several
- * algorithms are available. See for instance the BNLEARN package in R:</p>
- *
- * <p><a href="https://www.bnlearn.com/">https://www.bnlearn.com</a></p>
- *
- * <p>This class is not configured to respect knowledge of forbidden and required
- * edges.</p>
+ * <a href="https://www.bnlearn.com/">https://www.bnlearn.com</a>
+ * <p>
+ * This class is not configured to respect knowledge of forbidden and required edges.
  *
  * @author josephramsey
  * @see FgesMb
@@ -59,15 +57,8 @@ import java.util.Set;
  */
 public class GrowShrink implements IMbSearch {
 
-    /**
-     * The independence test used to perform the search.
-     */
+    // The independence test used to perform the search.
     private final IndependenceTest independenceTest;
-
-    /**
-     * The list of variables being searched over. Must contain the target.
-     */
-    private final List<Node> variables;
 
     /**
      * Constructs a new search.
@@ -80,7 +71,8 @@ public class GrowShrink implements IMbSearch {
         }
 
         this.independenceTest = test;
-        this.variables = test.getVariables();
+        // The list of variables being searched over. Must contain the target.
+        List<Node> variables = test.getVariables();
     }
 
     /**
@@ -92,36 +84,19 @@ public class GrowShrink implements IMbSearch {
     public Set<Node> findMb(Node target) {
         Set<Node> blanket = new HashSet<>();
 
-        boolean changed = true;
+        List<Node> nodes = independenceTest.getVariables();
 
-        while (changed) {
-            changed = false;
-
-            List<Node> remaining = new LinkedList<>(this.variables);
-            remaining.removeAll(blanket);
-            remaining.remove(target);
-
-            for (Node node : remaining) {
-                if (!this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
-                    blanket.add(node);
-                    changed = true;
-                }
+        for (Node node : nodes) {
+            if (node == target) continue;
+            if (!independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
+                blanket.add(node);
             }
         }
 
-        changed = true;
-
-        while (changed) {
-            changed = false;
-
-            for (Node node : new LinkedList<>(blanket)) {
-                blanket.remove(node);
-
-                if (this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
-                    changed = true;
-                    continue;
-                }
-
+        for (Node node : new LinkedList<>(blanket)) {
+            HashSet<Node> z = new HashSet<>(blanket);
+            blanket.remove(node);
+            if (!independenceTest.checkIndependence(node, target, z).isIndependent()) {
                 blanket.add(node);
             }
         }

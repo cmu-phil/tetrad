@@ -28,31 +28,85 @@ import edu.cmu.tetrad.util.TetradSerializable;
  */
 public enum BpcTestType implements TetradSerializable {
 
-    // This one will work and does a good job for medium sized models.
+    /**
+     * This one will work and does a good job for medium sized models.
+     */
     GAUSSIAN_PVALUE,
 
-    // This will work and does a good job for small models, no more than 4 latents.
+    /**
+     * This will work and does a good job for small models, no more than 4 latents.
+     */
     GAUSSIAN_SCORE_MARKS,
 
-    // This is very slow.
+    /**
+     * This is very slow.
+     */
     GAUSSIAN_SCORE,
 
-    // Even slower.
+    /**
+     * Even slower.
+     */
     GAUSSIAN_SCORE_ITERATE,
 
-    // This option doesn't do any purify.
+    /**
+     * This option doesn't do any purify.
+     */
     NONE,
 
-    DISCRETE_LRT, DISCRETE_VARIATIONAL,
+    /**
+     * Discrete LRT.
+     */
+    DISCRETE_LRT,
 
+    /**
+     * Discrete Variational.
+     */
+    DISCRETE_VARIATIONAL,
 
-    // TETRAD_DELTA is kept for purpospes of serialization.
-    GAUSSIAN_FACTOR, DISCRETE, TETRAD_BOLLEN, TETRAD_DELTA, TETRAD_WISHART,
-    TETRAD_BASED, POPULATION,
+    /**
+     * Gaussian Factor.
+     */
+    GAUSSIAN_FACTOR,
 
-    // For FTFC
-    SAG, GAP;
+    /**
+     * Discrete.
+     */
+    DISCRETE,
 
+    /**
+     * Bollen Tetrad test.
+     */
+    TETRAD_BOLLEN,
+
+    /**
+     * Delta Tetrad test.
+     */
+    TETRAD_DELTA,
+
+    /**
+     * Wishart Tetrad test.
+     */
+    TETRAD_WISHART,
+
+    /**
+     * Tetrad-based test.
+     */
+    TETRAD_BASED,
+
+    /**
+     * Population test.
+     */
+    POPULATION,
+
+    /**
+     * SAG test, for FTFC.
+     */
+    SAG,
+
+    /**
+     * GAP test, for FTFC.
+     */
+    GAP;
 
     private static final long serialVersionUID = 23L;
 
@@ -60,7 +114,11 @@ public enum BpcTestType implements TetradSerializable {
         return BpcTestType.GAUSSIAN_PVALUE;
     }
 
-
+    /**
+     * Returns the test type descriptions for the Purify algorithm.
+     *
+     * @return the test type descriptions for the Purify algorithm.
+     */
     public static BpcTestType[] getPurifyTestDescriptions() {
 
         return new BpcTestType[]{
@@ -73,6 +131,11 @@ public enum BpcTestType implements TetradSerializable {
         };
     }
 
+    /**
+     * Returns the test type descriptions for the BuildPureClusters algorithm.
+     *
+     * @return the test type descriptions for the BuildPureClusters algorithm.
+     */
     public static BpcTestType[] getTestDescriptions() {
         return new BpcTestType[]{
                 BpcTestType.TETRAD_WISHART,

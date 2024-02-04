@@ -38,17 +38,17 @@ import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
 
 
 /**
- * <p>Calculates Mixed Variables Polynomial likelihood. The reference is here:</p>
- *
- * <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of
- * mixed variables. International journal of data science and analytics, 6, 3-18.</p>
+ * Calculates Mixed Variables Polynomial likelihood. The reference is here:
+ * <p>
+ * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables. International
+ * journal of data science and analytics, 6, 3-18.
  *
  * @author Bryan Andrews
  */
 public class MvpLikelihood {
 
+    // The dataset.
     private final DataSet dataSet;
-
     // The variables of the dataset.
     private final List<Node> variables;
     // Indices of variables.
@@ -68,6 +68,21 @@ public class MvpLikelihood {
     // The variables of the discrete dataset.
     private List<Node> discreteVariables;
 
+    /**
+     * Constructs the score using a data set.
+     *
+     * @param dataSet        A dataset with a mixture of continuous and discrete variables. It may be all continuous or
+     * @param structurePrior The structure prior.
+     * @param fDegree        F-degree
+     * @param discretize     When a discrete variable is a child of a continuous variable, one (expensive) way to solve
+     *                       the problem is to do a numerical integration. A less expensive (and often more accurate)
+     *                       way to solve the problem is to discretize the child with a certain number of discrete
+     *                       categories. if this parameter is set to True, a separate copy of all variables is
+     *                       maintained that is discretized in this way, and these are substituted for the discrete
+     *                       children when this sort of problem needs to be solved. This information needs to be known
+     *                       in the constructor since one needs to know right away whether ot create this separate
+     *                       discretized version of the continuous columns.
+     */
     public MvpLikelihood(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 
         if (dataSet == null) {
@@ -123,8 +138,14 @@ public class MvpLikelihood {
 
     }
 
+    /**
+     * Returns the score of the node at index i, given its parents.
+     *
+     * @param child_index The index of the child.
+     * @param parents     The indices of the parents.
+     * @return The score.
+     */
     public double getLik(int child_index, int[] parents) {
-
         double lik = 0;
         Node c = this.variables.get(child_index);
         List<ContinuousVariable> continuous_parents = new ArrayList<>();
@@ -154,11 +175,9 @@ public class MvpLikelihood {
         for (int j = 0; j < p; j++) continuousCols[j] = this.nodesHash.get(continuous_parents.get(j));
 
         for (List<Integer> cell : cells) {
-//            for (int[] cell : cells) {
             int r = cell.size();
-//                int r = cell.length;
-            if (r > 1) {
 
+            if (r > 1) {
                 double[] mean = new double[p];
                 double[] var = new double[p];
                 for (int i = 0; i < p; i++) {
@@ -194,7 +213,6 @@ public class MvpLikelihood {
                     Vector target = new Vector(r);
                     for (int i = 0; i < r; i++) {
                         target.set(i, this.continuousData[child_index][cell.get(i)]);
-//                        target.set(i, continuousData[child_index][cell[i]]);
                     }
                     lik += multipleRegression(target, subset);
                 } else {
@@ -211,6 +229,86 @@ public class MvpLikelihood {
         return lik;
     }
 
+    /**
+     * Returns the score of the node at index i, given its parents.
+     *
+     * @param child_index The index of the child.
+     * @param parents     The indices of the parents.
+     * @return The score.
+     */
+    public double getDoF(int child_index, int[] parents) {
+
+        double dof = 0;
+        Node c = this.variables.get(child_index);
+        List<ContinuousVariable> continuous_parents = new ArrayList<>();
+        List<DiscreteVariable> discrete_parents = new ArrayList<>();
+
+        if (c instanceof DiscreteVariable && this.discretize) {
+            for (int p : parents) {
+                Node parent = this.discreteVariables.get(p);
+                discrete_parents.add((DiscreteVariable) parent);
+            }
+        } else {
+            for (int p : parents) {
+                Node parent = this.variables.get(p);
+                if (parent instanceof ContinuousVariable) {
+                    continuous_parents.add((ContinuousVariable) parent);
+                } else {
+                    discrete_parents.add((DiscreteVariable) parent);
+                }
+            }
+        }
+
+        List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
+
+        for (List<Integer> cell : cells) {
+            int r = cell.size();
+            if (r > 0) {
+
+                int degree = this.fDegree;
+                if (this.fDegree < 1) {
+                    degree = (int) FastMath.floor(FastMath.log(r));
+                }
+                if (c instanceof ContinuousVariable) {
+                    dof += degree * continuous_parents.size() + 1;
+                } else {
+                    assert c instanceof DiscreteVariable;
+                    dof += ((degree * continuous_parents.size()) + 1) * (((DiscreteVariable) c).getNumCategories() - 1);
+                }
+            }
+        }
+
+        return dof;
+    }
+
+    /**
+     * Returns the structure prior.
+     *
+     * @param k The number of edges.
+     * @return The structure prior.
+     */
+    public double getStructurePrior(int k) {
+        if (this.structurePrior < 0) {
+            return getEBICprior();
+        }
+
+        double n = this.dataSet.getNumColumns() - 1;
+        double p = this.structurePrior / n;
+
+        if (this.structurePrior == 0) {
+            return 0;
+        }
+        return k * FastMath.log(p) + (n - k) * FastMath.log(1 - p);
+
+    }
+
+    public double getEBICprior() {
+
+        double n = this.dataSet.getNumColumns();
+        double gamma = -this.structurePrior;
+        return gamma * FastMath.log(n);
+
+    }
 
     private double multipleRegression(Vector Y, Matrix X) {
 
@@ -253,6 +351,49 @@ public class MvpLikelihood {
         }
 
         return lik;
+    }
+
+
+    private DataSet useErsatzVariables() {
+        List<Node> nodes = new ArrayList<>();
+        // Number of categories to use to discretize continuous mixedVariables.
+        int numCategories = 3;
+
+        for (Node x : this.variables) {
+            if (x instanceof ContinuousVariable) {
+                nodes.add(new DiscreteVariable(x.getName(), numCategories));
+            } else {
+                nodes.add(x);
+            }
+        }
+
+        DataSet replaced = new BoxDataSet(new VerticalIntDataBox(this.dataSet.getNumRows(), this.dataSet.getNumColumns()), nodes);
+
+        for (int j = 0; j < this.variables.size(); j++) {
+            if (this.variables.get(j) instanceof DiscreteVariable) {
+                for (int i = 0; i < this.dataSet.getNumRows(); i++) {
+                    replaced.setInt(i, j, this.dataSet.getInt(i, j));
+                }
+            } else {
+                double[] column = this.continuousData[j];
+
+                double[] breakpoints = getEqualFrequencyBreakPoints(column, numCategories);
+
+                List<String> categoryNames = new ArrayList<>();
+
+                for (int i = 0; i < numCategories; i++) {
+                    categoryNames.add("" + i);
+                }
+
+                Discretizer.Discretization d = discretize(column, breakpoints, this.variables.get(j).getName(), categoryNames);
+
+                for (int i = 0; i < this.dataSet.getNumRows(); i++) {
+                    replaced.setInt(i, j, d.getData()[i]);
+                }
+            }
+        }
+
+        return replaced;
     }
 
     private double approxMultinomialRegression(Matrix Y, Matrix X) {
@@ -304,117 +445,4 @@ public class MvpLikelihood {
 
         return lik;
     }
-
-
-    public double getDoF(int child_index, int[] parents) {
-
-        double dof = 0;
-        Node c = this.variables.get(child_index);
-        List<ContinuousVariable> continuous_parents = new ArrayList<>();
-        List<DiscreteVariable> discrete_parents = new ArrayList<>();
-
-        if (c instanceof DiscreteVariable && this.discretize) {
-            for (int p : parents) {
-                Node parent = this.discreteVariables.get(p);
-                discrete_parents.add((DiscreteVariable) parent);
-            }
-        } else {
-            for (int p : parents) {
-                Node parent = this.variables.get(p);
-                if (parent instanceof ContinuousVariable) {
-                    continuous_parents.add((ContinuousVariable) parent);
-                } else {
-                    discrete_parents.add((DiscreteVariable) parent);
-                }
-            }
-        }
-
-        List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
-
-        for (List<Integer> cell : cells) {
-            int r = cell.size();
-            if (r > 0) {
-
-                int degree = this.fDegree;
-                if (this.fDegree < 1) {
-                    degree = (int) FastMath.floor(FastMath.log(r));
-                }
-                if (c instanceof ContinuousVariable) {
-                    dof += degree * continuous_parents.size() + 1;
-                } else {
-                    assert c instanceof DiscreteVariable;
-                    dof += ((degree * continuous_parents.size()) + 1) * (((DiscreteVariable) c).getNumCategories() - 1);
-                }
-            }
-        }
-
-        return dof;
-    }
-
-    public double getStructurePrior(int k) {
-
-        if (this.structurePrior < 0) {
-            return getEBICprior();
-        }
-
-        double n = this.dataSet.getNumColumns() - 1;
-        double p = this.structurePrior / n;
-
-        if (this.structurePrior == 0) {
-            return 0;
-        }
-        return k * FastMath.log(p) + (n - k) * FastMath.log(1 - p);
-
-    }
-
-    public double getEBICprior() {
-
-        double n = this.dataSet.getNumColumns();
-        double gamma = -this.structurePrior;
-        return gamma * FastMath.log(n);
-
-    }
-
-    private DataSet useErsatzVariables() {
-        List<Node> nodes = new ArrayList<>();
-        // Number of categories to use to discretize continuous mixedVariables.
-        int numCategories = 3;
-
-        for (Node x : this.variables) {
-            if (x instanceof ContinuousVariable) {
-                nodes.add(new DiscreteVariable(x.getName(), numCategories));
-            } else {
-                nodes.add(x);
-            }
-        }
-
-        DataSet replaced = new BoxDataSet(new VerticalIntDataBox(this.dataSet.getNumRows(), this.dataSet.getNumColumns()), nodes);
-
-        for (int j = 0; j < this.variables.size(); j++) {
-            if (this.variables.get(j) instanceof DiscreteVariable) {
-                for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-                    replaced.setInt(i, j, this.dataSet.getInt(i, j));
-                }
-            } else {
-                double[] column = this.continuousData[j];
-
-                double[] breakpoints = getEqualFrequencyBreakPoints(column, numCategories);
-
-                List<String> categoryNames = new ArrayList<>();
-
-                for (int i = 0; i < numCategories; i++) {
-                    categoryNames.add("" + i);
-                }
-
-                Discretizer.Discretization d = discretize(column, breakpoints, this.variables.get(j).getName(), categoryNames);
-
-                for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-                    replaced.setInt(i, j, d.getData()[i]);
-                }
-            }
-        }
-
-        return replaced;
-    }
-
 }

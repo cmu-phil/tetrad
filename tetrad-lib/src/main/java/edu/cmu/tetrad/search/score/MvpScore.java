@@ -28,23 +28,20 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.List;
 
 /**
- * <p>Implements a mixed variable polynomial BIC score. The reference is here:</p>
- *
- * <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of
- * mixed variables. International journal of data science and analytics, 6, 3-18.</p>
+ * Implements a mixed variable polynomial BIC score. The reference is here:
+ * <p>
+ * Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables. International
+ * journal of data science and analytics, 6, 3-18.
  *
  * @author Bryan Andrews
  */
 public class MvpScore implements Score {
-
+    // The mixed variables of the original dataset.
     private final DataSet dataSet;
-
     // The variables of the continuousData set.
     private final List<Node> variables;
-
     // Likelihood function
     private final MvpLikelihood likelihood;
-
     // Log number of instances
     private final double logn;
 
@@ -69,6 +66,10 @@ public class MvpScore implements Score {
 
     /**
      * The local score of the child given its parents.
+     *
+     * @param i       The child.
+     * @param parents The parents.
+     * @return The local score.
      */
     public double localScore(int i, int... parents) {
 
@@ -90,7 +91,12 @@ public class MvpScore implements Score {
     }
 
     /**
-     * localScore(y | z, x) - localScore(y | z).
+     * Returns localScore(y | z, x) - localScore(y | z).
+     *
+     * @param x A node.
+     * @param y The node.
+     * @param z A set of nodes.
+     * @return The score difference.
      */
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
@@ -117,21 +123,36 @@ public class MvpScore implements Score {
         return bump > 0;
     }
 
+    /**
+     * Returns the list of variables.
+     *
+     * @return This list.
+     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * Returns an estimate of the maximum degree of the graph for some algorithms.
+     *
+     * @return This maximum.
+     */
     @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(FastMath.log(this.dataSet.getNumRows()));
     }
 
+    /**
+     * Returns a judgment of whether the variable in z determine y exactly.
+     * @param z The set of nodes.
+     * @param y The node.
+     * @return This judgment.
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
         return false;
     }
-
 }
 
 

@@ -34,17 +34,16 @@ import java.util.*;
 
 
 /**
- * <p>Implements the Really Fast Causal Inference (RFCI) algorithm, which aims to
- * do a correct inference of inferrable causal structure under the assumption that unmeasured common causes of variables
- * in the data may exist. The graph returned is slightly different from the partial ancestral graph (PAG) returned by
- * the FCI algorithm. The goal of of the algorithm is to avoid certain expensive steps in the FCI procedure in a correct
- * way. This was introduced here:</p>
- *
- * <p>Colombo, D., Maathuis, M. H., Kalisch, M., &amp; Richardson, T. S. (2012). Learning
- * high-dimensional directed acyclic graphs with latent and selection variables. The Annals of Statistics, 294-321.</p>
- *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * Implements the Really Fast Causal Inference (RFCI) algorithm, which aims to do a correct inference of inferrable
+ * causal structure under the assumption that unmeasured common causes of variables in the data may exist. The graph
+ * returned is slightly different from the partial ancestral graph (PAG) returned by the FCI algorithm. The goal of of
+ * the algorithm is to avoid certain expensive steps in the FCI procedure in a correct way. This was introduced here:
+ * <p>
+ * Colombo, D., Maathuis, M. H., Kalisch, M., &amp; Richardson, T. S. (2012). Learning high-dimensional directed acyclic
+ * graphs with latent and selection variables. The Annals of Statistics, 294-321.
+ * <p>
+ * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
@@ -54,45 +53,26 @@ import java.util.*;
  * @see Knowledge
  */
 public final class Rfci implements IGraphSearch {
-
-    /**
-     * The variables to search over (optional)
-     */
+    // The variables to search over (optional)
     private final List<Node> variables = new ArrayList<>();
+    // The independence test to use.
     private final IndependenceTest independenceTest;
-    /**
-     * The logger to use.
-     */
+    // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
-    /**
-     * The RFCI-PAG being constructed.
-     */
+    // The RFCI-PAG being constructed.
     private Graph graph;
-    /**
-     * The SepsetMap being constructed.
-     */
+    // The SepsetMap being constructed.
     private SepsetMap sepsets;
-    /**
-     * The background knowledge.
-     */
+    // The background knowledge.
     private Knowledge knowledge = new Knowledge();
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
+    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
-    /**
-     * The depth for the fast adjacency search.
-     */
+    // The depth for the fast adjacency search.
     private int depth = -1;
-    /**
-     * Elapsed time of last search.
-     */
+    // Elapsed time of last search.
     private long elapsedTime;
-    /**
-     * True iff verbose output should be printed.
-     */
+    // True iff verbose output should be printed.
     private boolean verbose;
-
 
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.

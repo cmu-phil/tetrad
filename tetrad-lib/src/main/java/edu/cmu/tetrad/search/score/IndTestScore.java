@@ -35,25 +35,24 @@ import java.util.List;
  * Gives a method of interpreting a test as a score. Various independence tests will calculate p-values; they simply
  * report alpha - p as a score, which will be higher for greater dependence. This class wraps such an independence test
  * and returns the score reported by that test.
- *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * <p>
+ * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
  * @see IndependenceTest
  */
 public class IndTestScore implements Score {
-
+    // The independence test.
     private final IndependenceTest test;
-
     // The variables of the covariance matrix.
     private final List<Node> variables;
-
     // True if verbose output should be sent to out.
     private boolean verbose;
 
     /**
      * Constructs the score using a covariance matrix.
+     *
+     * @param test The independence test.
      */
     public IndTestScore(IndependenceTest test) {
         this.variables = new ArrayList<>();
@@ -69,9 +68,115 @@ public class IndTestScore implements Score {
 
     /**
      * Calculates the sample likelihood and BIC score for i, given its parents in a simple SEM model
+     *
+     * @param i       The index of the variable.
+     * @param parents The indices of the parents of i.
      */
     public double localScore(int i, int[] parents) {
         throw new UnsupportedOperationException();
+    }
+
+
+    /**
+     * Returns a "score difference", which amounts to a conditional local scoring criterion results. Only difference
+     * methods is implemented, since the other methods don't make sense here.
+     *
+     * @param x A node.
+     * @param y TAhe node.
+     * @param z A set of nodes.
+     * @return The "difference".
+     */
+    @Override
+    public double localScoreDiff(int x, int y, int[] z) {
+        IndependenceResult result = this.test.checkIndependence(this.variables.get(x), this.variables.get(y), new HashSet<>(getVariableList(z)));
+        return result.getScore();
+    }
+
+    /**
+     * @throws UnsupportedOperationException if called.
+     */
+    public double localScore(int i, int parent) {
+        throw new UnsupportedOperationException();
+    }
+
+
+    /**
+     * @throws UnsupportedOperationException if called.
+     */
+    public double localScore(int i) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Returns true if the edge with the given bump is an effect edge.
+     *
+     * @param bump The bump.
+     * @return True if so.
+     */
+    @Override
+    public boolean isEffectEdge(double bump) {
+        return true;
+    }
+
+    /**
+     * Returns the data set.
+     * @return The data set.
+     */
+    public DataSet getDataSet() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Returns true if verbose output should be sent to out.
+     * @return True if verbose output should be sent to out.
+     */
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    /**
+     * Sets whether verbose output should be sent to out.
+     * @param verbose True if verbose output should be sent to out.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Returns the list of variables.
+     * @return The list of variables.
+     */
+    @Override
+    public List<Node> getVariables() {
+        return this.variables;
+    }
+
+    /**
+     * Returns the sample size.
+     * @return The sample size.
+     */
+    public int getSampleSize() {
+        return 0;
+    }
+
+    /**
+     * Returns the maximum degree, which is set to 1000.
+     * @return 1000.
+     */
+    @Override
+    public int getMaxDegree() {
+        return 1000;
+    }
+
+    /**
+     * Returns the 'determines' judgment from the first score.
+     * @param z The set of nodes.
+     * @param y The node.
+     * @return This judgment, true if the 'determine' relations holds.
+     */
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
     }
 
     private List<Node> getVariableList(int[] indices) {
@@ -81,62 +186,6 @@ public class IndTestScore implements Score {
         }
         return variables;
     }
-
-
-    @Override
-    public double localScoreDiff(int x, int y, int[] z) {
-        IndependenceResult result = this.test.checkIndependence(this.variables.get(x), this.variables.get(y), new HashSet<>(getVariableList(z)));
-        return result.getScore();
-    }
-
-    /**
-     * Specialized scoring method for a single parent. Used to speed up the effect edges search.
-     */
-    public double localScore(int i, int parent) {
-        throw new UnsupportedOperationException();
-    }
-
-
-    public double localScore(int i) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isEffectEdge(double bump) {
-        return true;
-    }
-
-    public DataSet getDataSet() {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return this.variables;
-    }
-
-    public int getSampleSize() {
-        return 0;
-    }
-
-    @Override
-    public int getMaxDegree() {
-        return 1000;
-    }
-
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        return false;
-    }
-
 }
 
 

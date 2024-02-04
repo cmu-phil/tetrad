@@ -23,7 +23,9 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.util.MultiDimIntTable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -35,17 +37,12 @@ import java.util.Arrays;
  */
 public final class CellTable {
 
-
-//    /**
-//     * Stores a copy of coordinates for temporary use. (Reused.)
-//     */
-//    private int[] coordCopy;
-
     private final MultiDimIntTable table;
     /**
      * The value used in the data for missing values.
      */
     private int missingValue = -99;
+    private List<Integer> rows;
 
     /**
      * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
@@ -57,11 +54,22 @@ public final class CellTable {
     }
 
     public void addToTable(DataSet dataSet, int[] indices) {
+        if (rows == null) {
+            rows = new ArrayList<>();
+            for (int i = 0; i < dataSet.getNumRows(); i++) {
+                rows.add(i);
+            }
+        } else {
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i) >= dataSet.getNumRows())
+                    throw new IllegalArgumentException("Row " + i + " is too large.");
+            }
+        }
+
         int[] dims = new int[indices.length];
 
         for (int i = 0; i < indices.length; i++) {
-            DiscreteVariable variable =
-                    (DiscreteVariable) dataSet.getVariable(indices[i]);
+            DiscreteVariable variable = (DiscreteVariable) dataSet.getVariable(indices[i]);
             dims[i] = variable.getNumCategories();
         }
 
@@ -70,12 +78,11 @@ public final class CellTable {
         int[] coords = new int[indices.length];
 
         points:
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
+        for (int i : rows) {
             for (int j = 0; j < indices.length; j++) {
                 try {
                     coords[j] = dataSet.getInt(i, indices[j]);
                 } catch (Exception e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     coords[j] = dataSet.getInt(i, j);
                 }
 
@@ -108,7 +115,7 @@ public final class CellTable {
     public long calcMargin(int[] coords) {
         int[] coordCopy = internalCoordCopy(coords);
 
-        int sum = 0;
+        long sum = 0;
         int i = -1;
 
         while (++i < coordCopy.length) {
@@ -129,8 +136,8 @@ public final class CellTable {
     /**
      * An alternative way to specify a marginal calculation. In this case, coords specifies a particular cell in the
      * table, and varIndices is an array containing the indices of the variables over which the margin sum should be
-     * calculated. The sum is over the cell specified by 'coord' and all of the cells which differ from that cell in any
-     * of the specified coordinates.
+     * calculated. The sum is over the cell specified by 'coord' and all the cells which differ from that cell in any of
+     * the specified coordinates.
      *
      * @param coords     an <code>int[]</code> value
      * @param marginVars an <code>int[]</code> value
@@ -150,16 +157,7 @@ public final class CellTable {
      * Makes a copy of the coordinate array so that the original is not messed up.
      */
     private int[] internalCoordCopy(int[] coords) {
-        int[] coordCopy = Arrays.copyOf(coords, coords.length);
-
-//        if ((this.coordCopy == null) ||
-//                (this.coordCopy.length != coords.length)) {
-//            this.coordCopy = new int[coords.length];
-//        }
-//
-//        System.arraycopy(coords, 0, this.coordCopy, 0, coords.length);
-
-        return coordCopy;
+        return Arrays.copyOf(coords, coords.length);
     }
 
     private int getMissingValue() {
@@ -172,6 +170,19 @@ public final class CellTable {
 
     public long getValue(int[] testCell) {
         return this.table.getValue(testCell);
+    }
+
+    public void setRows(List<Integer> rows) {
+        if (rows == null) {
+            this.rows = null;
+        } else {
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
+                if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
+            }
+
+            this.rows = rows;
+        }
     }
 }
 

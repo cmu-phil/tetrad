@@ -29,8 +29,15 @@ import edu.cmu.tetrad.graph.Graph;
  * @author josephramsey
  */
 public interface GraphSource {
+
+    /**
+     * @return the graph produced by this source.
+     */
     Graph getGraph();
 
+    /**
+     * @return the name of the graph produced by this source.
+     */
     String getName();
 }
 

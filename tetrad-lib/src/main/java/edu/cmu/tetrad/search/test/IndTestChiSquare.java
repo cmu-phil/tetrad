@@ -30,21 +30,19 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
  * variable not in S, by applying a conditional Chi Square test. A description of such a test is given in Fienberg, "The
- * Analysis of Cross-Classified Categorical Data," 2nd edition.
- * The formulas for the degrees of freedom used in this test are equivalent to the formulation on page 142 of Fienberg.
+ * Analysis of Cross-Classified Categorical Data," 2nd edition. The formulas for the degrees of freedom used in this
+ * test are equivalent to the formulation on page 142 of Fienberg.
  *
  * @author josephramsey
  * @see ChiSquareTest
  */
-public final class IndTestChiSquare implements IndependenceTest {
+public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * The Chi Square tester.
@@ -60,20 +58,22 @@ public final class IndTestChiSquare implements IndependenceTest {
      * The dataset of discrete variables.
      */
     private final DataSet dataSet;
-
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, ChiSquareTest.Result> facts = new ConcurrentHashMap<>();
     /**
      * The G Square value associated with a particular call of isIndependent. Set in that method and not in the
      * constructor.
      */
     private double xSquare;
-
     /**
      * The degrees of freedom associated with a particular call of isIndependent. Set in the method and not in the
      * constructor.
      */
     private int df;
-
+    private double minCountPerCell = 1.0;
     private boolean verbose;
+    private List<Integer> rows = null;
+
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -98,7 +98,8 @@ public final class IndTestChiSquare implements IndependenceTest {
         this.dataSet = dataSet;
 
         this.variables = new ArrayList<>(dataSet.getVariables());
-        this.chiSquareTest = new ChiSquareTest(dataSet, alpha);
+        this.chiSquareTest = new ChiSquareTest(dataSet, alpha, ChiSquareTest.TestType.CHI_SQUARE);
+        this.chiSquareTest.setMinCountPerCell(minCountPerCell);
     }
 
     /**
@@ -171,6 +172,12 @@ public final class IndTestChiSquare implements IndependenceTest {
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
+        if (this.facts.containsKey(new IndependenceFact(x, y, _z))) {
+            ChiSquareTest.Result result = this.facts.get(new IndependenceFact(x, y, _z));
+            return new IndependenceResult(new IndependenceFact(x, y, _z), result.isIndep(), result.getPValue(),
+                    getAlpha() - result.getPValue());
+        }
+
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
         int[] testIndices = new int[2 + z.size()];
@@ -191,6 +198,8 @@ public final class IndTestChiSquare implements IndependenceTest {
         }
 
         ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices);
+        this.facts.put(new IndependenceFact(x, y, _z), result);
+
         this.xSquare = result.getXSquare();
         this.df = result.getDf();
         double pValue = result.getPValue();
@@ -341,6 +350,50 @@ public final class IndTestChiSquare implements IndependenceTest {
          * values of conditioning variables, that coefs as 'determining.'
          */
         return 0.99;
+    }
+
+    /**
+     * The minimum number of counts per conditional table for chi-square for that table and its degrees of freedom to be
+     * included in the overall chi-square and degrees of freedom. Note that this should not be too small, or the
+     * chi-square distribution will not be a good approximation to the distribution of the test statistic.
+     *
+     * @param minCountPerCell The minimum number of counts per conditional table. The default is 1; this must be >= 0.
+     */
+    public void setMinCountPerCell(double minCountPerCell) {
+        this.minCountPerCell = minCountPerCell;
+        this.chiSquareTest.setMinCountPerCell(minCountPerCell);
+    }
+
+    /**
+     * Returns the rows used for the test. If null, all rows are used.
+     *
+     * @return The rows used for the test. Can be null.
+     */
+    @Override
+    public List<Integer> getRows() {
+        return new ArrayList<>(rows);
+    }
+
+    /**
+     * Sets the rows to use for the test. If null, all rows are used.
+     *
+     * @param rows The rows to use for the test. Can be null.
+     */
+    @Override
+    public void setRows(List<Integer> rows) {
+        if (rows == null) {
+            this.rows = null;
+            chiSquareTest.setRows(null);
+        } else {
+            for (int i : rows) {
+                if (i < 0 || i >= dataSet.getNumRows()) {
+                    throw new IllegalArgumentException("Row " + i + " is out of bounds.");
+                }
+            }
+
+            this.rows = new ArrayList<>(rows);
+            chiSquareTest.setRows(this.rows);
+        }
     }
 }
 

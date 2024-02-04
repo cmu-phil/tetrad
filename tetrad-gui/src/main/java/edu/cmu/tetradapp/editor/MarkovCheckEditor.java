@@ -18,7 +18,6 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -31,51 +30,55 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.ParamDescription;
-import edu.cmu.tetrad.util.ParamDescriptions;
-import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.search.test.RowsSettable;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.MarkovCheckIndTestModel;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
 import edu.cmu.tetradapp.util.*;
-import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
+import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 import java.awt.*;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
-
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * Lists independence facts specified by user and allows the list to be sorted by independence fact or by p value.
+ * A model for the Markov check. The Markov check for a given graph and dataset
+ * checks whether the graph is Markov with respect to the dataset. The Markov
+ * check can be used to check whether a graph is Markov with respect to a
+ * dataset, or whether a graph is Markov with respect to a dataset and a set of
+ * variables. The Markov check can also be used to check whether a graph is
+ * Markov with respect to a dataset and a set of variables, given a set of
+ * knowledge. For facts of the form X _||_ Y | Z, X and Y should be in the last
+ * tier of the knowledge, and Z should be in previous tiers.
  *
  * @author josephramsey
  */
 public class MarkovCheckEditor extends JPanel {
+
     private final MarkovCheckIndTestModel model;
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final JLabel markovTestLabel = new JLabel("(Unspecified Test)");
-    //    private final JTextArea testDescTextArea = new JTextArea();
     private final JComboBox<IndependenceTestModel> indTestJComboBox = new JComboBox<>();
     private final JComboBox<String> conditioningSetTypeJComboBox = new JComboBox<>();
     private final JLabel testLabel = new JLabel("(Unspecified Test)");
     private final JLabel conditioningLabelDep = new JLabel("(Unspecified)");
     private final JLabel conditioningLabelIndep = new JLabel("(Unspecified)");
+    private final DoubleTextField percent;
     boolean updatingTestModels = true;
     private AbstractTableModel tableModelIndep;
     private AbstractTableModel tableModelDep;
@@ -83,8 +86,12 @@ public class MarkovCheckEditor extends JPanel {
     private JLabel fractionDepLabelDep;
     private JLabel ksLabelDep;
     private JLabel ksLabelIndep;
-    private JLabel masLabelDep;
-    private JLabel masLabelIndep;
+    private JLabel binomialPLabelDep;
+    private JLabel binomialPLabelIndep;
+    private JLabel andersonDarlingA2LabelDep;
+    private JLabel andersonDarlingA2LabelIndep;
+    private JLabel andersonDarlingPLabelDep;
+    private JLabel andersonDarlingPLabelIndep;
     private int sortDir;
     private int lastSortCol;
     private IndependenceWrapper independenceWrapper;
@@ -119,16 +126,17 @@ public class MarkovCheckEditor extends JPanel {
                     model.getMarkovCheck().setSetType(ConditioningSetType.GLOBAL_MARKOV);
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknown conditioning set type: " +
-                            conditioningSetTypeJComboBox.getSelectedItem());
+                    throw new IllegalArgumentException("Unknown conditioning set type: "
+                            + conditioningSetTypeJComboBox.getSelectedItem());
             }
 
             class MyWatchedProcess extends WatchedProcess {
+
                 public void watch() {
                     if (model.getMarkovCheck().getSetType() == ConditioningSetType.GLOBAL_MARKOV && model.getVars().size() > 12) {
                         int ret = JOptionPane.showOptionDialog(MarkovCheckEditor.this,
-                                "The all subsets option is exponential and can become extremely slow beyond 12" +
-                                        "\nvariables. You may possibly be required to force quit Tetrad. Continue?", "Warning",
+                                "The all subsets option is exponential and can become extremely slow beyond 12"
+                                + "\nvariables. You may possibly be required to force quit Tetrad. Continue?", "Warning",
                                 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null
                         );
 
@@ -162,6 +170,7 @@ public class MarkovCheckEditor extends JPanel {
 
         indTestJComboBox.addActionListener(e -> {
             class MyWatchedProcess extends WatchedProcess {
+
                 public void watch() {
                     setTest();
                     model.getMarkovCheck().generateResults();
@@ -186,7 +195,7 @@ public class MarkovCheckEditor extends JPanel {
         setTest();
 
         Graph _graph = model.getGraph();
-        Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables());
+        Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables(model.getGraph().getNodes(), model.getMarkovCheck().getIndependenceNodes(), model.getMarkovCheck().getConditioningNodes()));
 
         JPanel indep = buildGuiIndep();
         JPanel dep = buildGuiDep();
@@ -195,7 +204,7 @@ public class MarkovCheckEditor extends JPanel {
         tableModelDep.fireTableDataChanged();
 
         Graph sourceGraph = model.getGraph();
-        List<Node> variables = model.getMarkovCheck().getVariables();
+        List<Node> variables = model.getMarkovCheck().getVariables(model.getGraph().getNodes(), model.getMarkovCheck().getIndependenceNodes(), model.getMarkovCheck().getConditioningNodes());
 
         List<Node> newVars = new ArrayList<>();
 
@@ -212,25 +221,42 @@ public class MarkovCheckEditor extends JPanel {
         for (Node w : sourceGraph.getNodes()) {
             if (model.getMarkovCheck().getVariable(w.getName()) == null) {
                 missingVars.add(w);
-                if (missingVars.size() >= 5) break;
+                if (missingVars.size() >= 5) {
+                    break;
+                }
             }
         }
 
         if (!missingVars.isEmpty()) {
-            throw new IllegalArgumentException("At least these variables in the DAG are missing from the data:" +
-                    "\n    " + missingVars);
+            throw new IllegalArgumentException("At least these variables in the DAG are missing from the data:"
+                    + "\n    " + missingVars);
         }
 
         model.setVars(graph.getNodeNames());
 
-        Box box = Box.createVerticalBox();
-        Box box1 = Box.createHorizontalBox();
-        box1.add(Box.createHorizontalStrut(20));
-        box1.add(new JLabel("Test:"));
-        box1.add(indTestJComboBox);
         JButton params = new JButton("Params");
-        box1.add(params);
-        box1.add(Box.createHorizontalGlue());
+        JButton recalculate = new JButton("Recalculate");
+
+        this.percent = new DoubleTextField(0.5, 4, new DecimalFormat("0.0###"));
+
+        JLabel percentSampleLabel;
+        if (model.getMarkovCheck().getIndependenceTest().getData() != null) {
+            percentSampleLabel = new JLabel("% Sample:");
+        } else if (!(model.getMarkovCheck().getIndependenceTest() instanceof RowsSettable)) {
+            percentSampleLabel = new JLabel("(Test cannot be subsampled)");
+        } else {
+            percentSampleLabel = new JLabel("(Not tabular data)");
+        }
+
+        recalculate.addActionListener(e -> refreshResult(model, percent));
+
+        percent.setFilter((value, oldValue) -> {
+            if (value < 0.0 || value > 1.0) {
+                return oldValue;
+            } else {
+                return value;
+            }
+        });
 
         setLabelTexts();
 
@@ -242,34 +268,14 @@ public class MarkovCheckEditor extends JPanel {
 
                 @Override
                 public void watch() {
-                    setTest();
-                    model.getMarkovCheck().generateResults();
-                    tableModelIndep.fireTableDataChanged();
-                    tableModelDep.fireTableDataChanged();
-                    histogramPanelDep.removeAll();
-                    histogramPanelIndep.removeAll();
-                    histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
-                    histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
-                    histogramPanelDep.validate();
-                    histogramPanelIndep.validate();
-                    histogramPanelDep.repaint();
-                    histogramPanelIndep.repaint();
-                    setLabelTexts();
+                    refreshResult(model, percent);
                 }
             }
 
             new MyWatchedProcess2();
         });
 
-        box.add(box1);
-
-        Box box2 = Box.createHorizontalBox();
-        box2.add(Box.createHorizontalStrut(20));
-        box2.add(new JLabel("Conditioning Sets:"));
-        box2.add(conditioningSetTypeJComboBox);
-        box2.add(Box.createHorizontalGlue());
-
-        box.add(box2);
+        JLabel conditioningSetsLabel = new JLabel("Conditioning Sets:");
 
         JTextArea testDescTextArea = new JTextArea(getHelpMessage());
         testDescTextArea.setEditable(true);
@@ -278,16 +284,13 @@ public class MarkovCheckEditor extends JPanel {
         JScrollPane scroll = new JScrollPane(testDescTextArea);
         scroll.setPreferredSize(new Dimension(600, 400));
 
-
         JTabbedPane pane = new JTabbedPane();
         pane.addTab("Check Markov", indep);
         pane.addTab("Check Dependent Distribution", dep);
-        pane.addTab("Help", scroll);
-        box.add(pane);
-
-//        setPreferredSize(new Dimension(750, 550));
+        pane.addTab("Help", new PaddingPanel(scroll));
 
         class MyWatchedProcess extends WatchedProcess {
+
             public void watch() {
                 setTest();
                 model.getMarkovCheck().generateResults();
@@ -306,37 +309,123 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         new MyWatchedProcess();
+        //        add(box);
+        initComponents(params, recalculate, pane, conditioningSetsLabel, percentSampleLabel);
+    }
 
-//        box.setPreferredSize(new Dimension(750, 550));
-
-        add(box);
+    private void initComponents(JButton params, JButton recalculate, JTabbedPane pane, JLabel conditioningSetsLabel, JLabel percentSampleLabel) {
+        GroupLayout layout = new GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addComponent(pane)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addGroup(layout.createSequentialGroup()
+                                                        .addComponent(conditioningSetsLabel)
+                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                                .addGroup(layout.createSequentialGroup()
+                                                        .addComponent(testLabel)
+                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(indTestJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(params)
+                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(recalculate)
+                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(percentSampleLabel)
+                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(percent, GroupLayout.PREFERRED_SIZE, 46, GroupLayout.PREFERRED_SIZE)))
+                                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addContainerGap())
+        );
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(testLabel)
+                                .addComponent(indTestJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(params)
+                                .addComponent(recalculate)
+                                .addComponent(percentSampleLabel)
+                                .addComponent(percent, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(conditioningSetsLabel))
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(pane, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+                        .addContainerGap())
+        );
     }
 
     @NotNull
-    private static String getHelpMessage() {
-        return "This tool lets you plot statistics for independence tests of a pair of variables given some conditioning calculated for one of those variables, for a given graph and dataset. Two tables are made, one in which the independence facts predicted by the graph using these conditioning sets are tested in the data and the other in which the graph's predicted dependence facts are tested. The first of these sets is a check for \"Markov\" (a check for implied independence facts) for the chosen conditioning sets; the is a check of the \"Dependent Distribution.\" (a check of implied dependence facts)”\n" +
-                "\n" +
-                "Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a score bump, where this bump is negative for independent judgments and positive for dependent judgments.\n" +
-                "\n" +
-                "If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we display the histogram of the p-values with equally sized bins; the bars in this histogram, for this case, should ideally all be of equal height.\n" +
-                "\n" +
-                "If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being judged as dependent. For checking the dependent distribution, one hopes that this list is non-empty, in which case this first bar will be especially high, since high p-values are for examples where the graph is unfaithful to the distribution. These are likely for for cases where paths in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all of the other bars.\n" +
-                "\n" +
-                "To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the user’s preferred alpha level if the distribution of p-values is Uniform and less then this alpha level if the distribution of p-values is non-Uniform.\n" +
-                "\n" +
-                "If the independence test yields a bump in the score, this score should be negative for independence judgments and positive for dependence judgments. The histogram will reflect this.\n" +
-                "\n" +
-                "Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let you analyze the data yourself.\n" +
-                "\n" +
-                "A note about Markov Blankets: The \"Markov Blanket\" conditioning set choice implements the Markov blanket calculation in a way that is correct for DAGs, CPDAGs, MAGs, and PAGs. For all of these graph types, the list of m-connecting facts in the Faithfulness tab should be empty, since the Markov blanket should screen off the target from any other variables in the dataset. It's possible that for some other graph types this list may not be empty (i.e., the Markov blanket calculation may not be correct).";
+    public static String getHelpMessage() {
+        return """
+                This tool lets you plot statistics for independence tests of a pair of variables given some conditioning calculated for one of those variables, for a given graph and dataset. Two tables are made, one in which the independence facts predicted by the graph using these conditioning sets are tested in the data and the other in which the graph's predicted dependence facts are tested. The first of these sets is a check for "Markov" (a check for implied independence facts) for the chosen conditioning sets; the is a check of the "Dependent Distribution." (a check of implied dependence facts)”
+
+                Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a score bump, where this bump is negative for independent judgments and positive for dependent judgments.
+
+                If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we display the histogram of the p-values with equally sized bins; the bars in this histogram, for this case, should ideally all be of equal height.
+
+                If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being judged as dependent. For checking the dependent distribution, one hopes that this list is non-empty, in which case this first bar will be especially high since high p-values are examples where the graph is unfaithful to the distribution. These are possibly for cases where paths in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all of the other bars.
+
+                To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the user’s preferred alpha level if the distribution of p-values is Uniform and less than this alpha level if the distribution of p-values is non-uniform.
+
+                If the independence test yields a bump in the score, this score should be negative for independence judgments and positive for dependence judgments. The histogram will reflect this.
+
+                Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let you analyze the data yourself.
+
+                A note about Markov Blankets: The "Markov Blanket" conditioning set choice implements the Markov blanket calculation in a way that is correct for DAGs, CPDAGs, MAGs, and PAGs. For all of these graph types, the list of m-connecting facts in the Faithfulness tab should be empty, since the Markov blanket should screen off the target from any other variables in the dataset. It's possible that for some other graph types, this list may not be empty (i.e., the Markov blanket calculation may not be correct).
+
+                Knowledge may be supplied to the Markov Checker. This will be interpreted as follows. For X _||_ Y | Z checked, X and Y will be drawn from the last tier of the knowledge, and the variables in Z will be drawn from all variables in tiers. Additional forbidden or required edges are not allowed.
+                """;
+    }
+
+    @NotNull
+    private static HistogramPanel getHistogramPanel(List<IndependenceResult> results) {
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(results.size(), 1),
+                Collections.singletonList(new ContinuousVariable("P-Value or Bump")));
+
+        for (int i = 0; i < results.size(); i++) {
+            dataSet.setDouble(i, 0, results.get(i).getPValue());
+        }
+
+        Histogram histogram = new Histogram(dataSet, "P-Value or Bump", false);
+        HistogramPanel view = new HistogramPanel(histogram, true);
+
+        Color fillColor = new Color(113, 165, 210);
+        view.setBarColor(fillColor);
+
+        view.setMaximumSize(new Dimension(300, 200));
+        return view;
     }
 
     //========================PUBLIC METHODS==========================//
+    private void refreshResult(MarkovCheckIndTestModel model, DoubleTextField percent) {
+        setTest();
+
+        model.getMarkovCheck().setPercentResample(percent.getValue());
+        model.getMarkovCheck().generateResults();
+        tableModelIndep.fireTableDataChanged();
+        tableModelDep.fireTableDataChanged();
+        histogramPanelIndep.removeAll();
+        histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
+        histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+        histogramPanelDep.validate();
+        histogramPanelIndep.validate();
+        histogramPanelDep.repaint();
+        histogramPanelIndep.repaint();
+        setLabelTexts();
+    }
 
     private void setTest() {
         IndependenceTestModel selectedItem = (IndependenceTestModel) indTestJComboBox.getSelectedItem();
         Class<IndependenceWrapper> clazz = (selectedItem == null) ? null
-                : selectedItem.getIndependenceTest().getClazz();
+                : selectedItem.getIndependenceTest().clazz();
         IndependenceTest independenceTest;
 
         if (clazz != null) {
@@ -348,227 +437,25 @@ public class MarkovCheckEditor extends JPanel {
                 testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
                 invalidate();
                 repaint();
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                     NoSuchMethodException e1) {
-                e1.printStackTrace();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                    | NoSuchMethodException e1) {
+                TetradLogger.getInstance().forceLogMessage("Error: " + e1.getMessage());
                 throw new RuntimeException(e1);
             }
         }
 
-
-    }
-
-    /**
-     * Performs the action of opening a session from a file.
-     */
-    private JPanel buildGuiDep() {
-
-        Box b1 = Box.createVerticalBox();
-        Box b2 = Box.createHorizontalBox();
-        String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
-
-        conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + setType + ")");
-        b2.add(conditioningLabelDep);
-        b2.add(Box.createHorizontalGlue());
-        b1.add(b2);
-
-        markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-        testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-
-        Box b2a = Box.createHorizontalBox();
-        b2a.add(Box.createHorizontalGlue());
-        b1.add(b2a);
-        b1.add(Box.createVerticalStrut(5));
-
-        this.tableModelDep = new AbstractTableModel() {
-            public String getColumnName(int column) {
-                if (column == 0) {
-                    return "Index";
-                } else if (column == 1) {
-                    return "Graphical Prediction";
-                } else if (column == 2) {
-                    return "Test Result";
-                } else if (column == 3) {
-                    return "P-Value or Bump";
-                }
-
-                return null;
-            }
-
-            public int getColumnCount() {
-                return 4;//2 + MarkovFactsEditor.this.indTestProducers.size();
-            }
-
-            public int getRowCount() {
-                return model.getResults(false).size();
-            }
-
-            public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > model.getResults(false).size()) return null;
-
-                if (columnIndex == 0) {
-                    return rowIndex + 1;
-                }
-                if (columnIndex == 1) {
-                    IndependenceFact fact = model.getResults(false).get(rowIndex).getFact();
-
-                    List<Node> Z = new ArrayList<>(fact.getZ());
-                    Collections.sort(Z);
-
-                    String z = Z.stream().map(Node::getName).collect(Collectors.joining(", "));
-
-                    return "Dep(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
-                }
-
-                IndependenceResult result = model.getResults(false).get(rowIndex);
-
-                if (columnIndex == 2) {
-                    if (model.getMarkovCheck().getIndependenceTest() instanceof MsepTest) {
-                        if (result.isIndependent()) {
-                            return "M-SEPARATED";
-                        } else {
-                            return "m-connected";
-                        }
-                    } else {
-                        if (result.isIndependent()) {
-                            return "INDEPENDENT";
-                        } else {
-                            return "dependent";
-                        }
-                    }
-                }
-
-                if (columnIndex == 3) {
-                    return nf.format(result.getPValue());
-                }
-
-                return null;
-            }
-
-            public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 0) {
-                    return Number.class;
-                }
-                if (columnIndex == 1) {
-                    return String.class;
-                } else {
-                    return Number.class;
-                }
-            }
-        };
-
-        JTable table = new JTable(tableModelDep);
-
-        tableModelDep.addTableModelListener(e -> {
-            if (e.getColumn() == 2) {
-                table.revalidate();
-                table.repaint();
-            }
-        });
-
-        table.getColumnModel().getColumn(0).setMinWidth(40);
-        table.getColumnModel().getColumn(0).setMaxWidth(40);
-        table.getColumnModel().getColumn(1).setMinWidth(200);
-        table.getColumnModel().getColumn(1).setCellRenderer(new Renderer());
-        table.getColumnModel().getColumn(2).setMinWidth(100);
-        table.getColumnModel().getColumn(2).setMaxWidth(100);
-        table.getColumnModel().getColumn(3).setMinWidth(100);
-        table.getColumnModel().getColumn(3).setMaxWidth(100);
-
-        table.getColumnModel().getColumn(2).setCellRenderer(new Renderer());
-        table.getColumnModel().getColumn(3).setCellRenderer(new Renderer());
-
-
-        JTableHeader header = table.getTableHeader();
-
-        header.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                JTableHeader header = (JTableHeader) e.getSource();
-                Point point = e.getPoint();
-                int col = header.columnAtPoint(point);
-                int sortCol = header.getTable().convertColumnIndexToModel(col);
-
-                MarkovCheckEditor.this.sortByColumn(sortCol, false);
-            }
-        });
-
-        JScrollPane scroll = new JScrollPane(table);
-//        scroll.setPreferredSize(new Dimension(400, 400));
-        b1.add(scroll);
-
-        Box b1a = Box.createHorizontalBox();
-        JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
-        b1a.add(label);
-        b1a.add(Box.createHorizontalGlue());
-        b1.add(b1a);
-
-        Box b4 = Box.createHorizontalBox();
-        b4.add(Box.createGlue());
-        b4.add(Box.createHorizontalStrut(10));
-
-        b4.add(Box.createHorizontalGlue());
-
-        Box b5 = Box.createHorizontalBox();
-        b5.add(Box.createGlue());
-
-        setLabelTexts();
-
-        Box b0 = Box.createHorizontalBox();
-        b0.add(b1);
-        b0.add(Box.createHorizontalStrut(10));
-
-        Box b0b1 = Box.createVerticalBox();
-        b0b1.add(Box.createVerticalGlue());
-        histogramPanelDep = new JPanel();
-        histogramPanelDep.setLayout(new BorderLayout());
-        histogramPanelDep.setBorder(new EmptyBorder(10, 10, 10, 10));
-        histogramPanelIndep.add(createHistogramPanel(false), BorderLayout.CENTER);
-
-        b0b1.add(histogramPanelDep);
-        b5.add(fractionDepLabelDep);
-        b0b1.add(b5);
-
-        Box b6 = Box.createHorizontalBox();
-        b6.add(Box.createHorizontalGlue());
-        b6.add(ksLabelDep);
-        b0b1.add(b6);
-
-        Box b7 = Box.createHorizontalBox();
-        b7.add(Box.createHorizontalGlue());
-        b7.add(masLabelDep);
-        b0b1.add(b7);
-
-        b0b1.add(Box.createVerticalGlue());
-        b0.add(b0b1);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-        panel.add(b0, BorderLayout.CENTER);
-        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        return panel;
     }
 
     private JPanel buildGuiIndep() {
-
-        Box b1 = Box.createVerticalBox();
-
-        Box b2 = Box.createHorizontalBox();
+        JPanel tablelPanel = new JPanel(new BorderLayout());
 
         String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
 
         conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + setType + ")");
-        b2.add(conditioningLabelIndep);
-        b2.add(Box.createHorizontalGlue());
-        b1.add(b2);
+        tablelPanel.add(conditioningLabelIndep, BorderLayout.NORTH);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
         testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-
-        Box b2a = Box.createHorizontalBox();
-        b2a.add(Box.createHorizontalGlue());
-        b1.add(b2a);
-
-        b1.add(Box.createVerticalStrut(5));
 
         this.tableModelIndep = new AbstractTableModel() {
             public String getColumnName(int column) {
@@ -586,7 +473,7 @@ public class MarkovCheckEditor extends JPanel {
             }
 
             public int getColumnCount() {
-                return 4;//2 + MarkovFactsEditor.this.indTestProducers.size();
+                return 4;
             }
 
             public int getRowCount() {
@@ -595,7 +482,9 @@ public class MarkovCheckEditor extends JPanel {
             }
 
             public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > model.getResults(true).size()) return null;
+                if (rowIndex > model.getResults(true).size()) {
+                    return null;
+                }
 
                 if (columnIndex == 0) {
                     return rowIndex + 1;
@@ -605,12 +494,8 @@ public class MarkovCheckEditor extends JPanel {
 
                 if (columnIndex == 1) {
                     IndependenceFact fact = model.getResults(true).get(rowIndex).getFact();
-
                     List<Node> Z = new ArrayList<>(fact.getZ());
-                    Collections.sort(Z);
-
                     String z = Z.stream().map(Node::getName).collect(Collectors.joining(", "));
-
                     return "Ind(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
                 }
 
@@ -670,7 +555,6 @@ public class MarkovCheckEditor extends JPanel {
         table.getColumnModel().getColumn(2).setCellRenderer(new Renderer());
         table.getColumnModel().getColumn(3).setCellRenderer(new Renderer());
 
-
         JTableHeader header = table.getTableHeader();
 
         header.addMouseListener(new MouseAdapter() {
@@ -685,60 +569,229 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         JScrollPane scroll = new JScrollPane(table);
-//        scroll.setPreferredSize(new Dimension(400, 400));
-        b1.add(scroll);
+        tablelPanel.add(scroll, BorderLayout.CENTER);
 
-        Box b1a = Box.createHorizontalBox();
         JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
-        b1a.add(label);
-        b1a.add(Box.createHorizontalGlue());
-        b1.add(b1a);
-
-        Box b4 = Box.createHorizontalBox();
-        b4.add(Box.createGlue());
-        b4.add(Box.createHorizontalStrut(10));
-
-        b4.add(Box.createHorizontalGlue());
-
-        Box b5 = Box.createHorizontalBox();
-        b5.add(Box.createGlue());
+        tablelPanel.add(label, BorderLayout.SOUTH);
 
         setLabelTexts();
 
-        Box b0 = Box.createHorizontalBox();
-        b0.add(b1);
-        b0.add(Box.createHorizontalStrut(10));
-
-        Box b0b1 = Box.createVerticalBox();
-        b0b1.add(Box.createVerticalGlue());
+        Box a4 = Box.createVerticalBox();
         histogramPanelIndep = new JPanel();
         histogramPanelIndep.setLayout(new BorderLayout());
         histogramPanelIndep.setBorder(new EmptyBorder(10, 10, 10, 10));
         histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
-        b0b1.add(histogramPanelIndep);
-        b0b1.add(Box.createVerticalGlue());
+        a4.add(histogramPanelIndep);
 
-        b5.add(fractionDepLabelIndep);
-        b0b1.add(b5);
+        Box a5 = Box.createHorizontalBox();
+        a5.add(Box.createHorizontalGlue());
+        a5.add(fractionDepLabelIndep);
+        a4.add(a5);
 
-        Box b6 = Box.createHorizontalBox();
-        b6.add(Box.createHorizontalGlue());
-        b6.add(ksLabelIndep);
-        b0b1.add(b6);
+        Box a6 = Box.createHorizontalBox();
+        a6.add(Box.createHorizontalGlue());
+        a6.add(ksLabelIndep);
+        a4.add(a6);
 
-        Box b7 = Box.createHorizontalBox();
-        b7.add(Box.createHorizontalGlue());
-        b7.add(masLabelIndep);
-        b0b1.add(b7);
+        Box a7 = Box.createHorizontalBox();
+        a7.add(Box.createHorizontalGlue());
+        a7.add(binomialPLabelIndep);
+        a4.add(a7);
 
-        b0.add(b0b1);
+        Box a8 = Box.createHorizontalBox();
+        a8.add(Box.createHorizontalGlue());
+        a8.add(andersonDarlingA2LabelIndep);
+        a4.add(a8);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-        panel.add(b0, BorderLayout.CENTER);
+        Box a9 = Box.createHorizontalBox();
+        a9.add(Box.createHorizontalGlue());
+        a9.add(andersonDarlingPLabelIndep);
+        a4.add(a9);
 
-        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        return panel;
+        JPanel checkMarkovPanel = new JPanel(new BorderLayout());
+        checkMarkovPanel.add(new PaddingPanel(tablelPanel), BorderLayout.CENTER);
+        checkMarkovPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
+
+        return checkMarkovPanel;
+    }
+
+    /**
+     * Performs the action of opening a session from a file.
+     */
+    private JPanel buildGuiDep() {
+        JPanel tablelPanel = new JPanel(new BorderLayout());
+
+        String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
+
+        conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + setType + ")");
+        tablelPanel.add(conditioningLabelDep, BorderLayout.NORTH);
+
+        markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+        testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+
+//        a1.add(Box.createVerticalStrut(5));
+        this.tableModelDep = new AbstractTableModel() {
+            public String getColumnName(int column) {
+                if (column == 0) {
+                    return "Index";
+                } else if (column == 1) {
+                    return "Graphical Prediction";
+                } else if (column == 2) {
+                    return "Test Result";
+                } else if (column == 3) {
+                    return "P-value or Bump";
+                }
+
+                return null;
+            }
+
+            public int getColumnCount() {
+                return 4;
+            }
+
+            public int getRowCount() {
+                List<IndependenceResult> results = model.getResults(true);
+                return results.size();
+            }
+
+            public Object getValueAt(int rowIndex, int columnIndex) {
+                if (rowIndex > model.getResults(true).size()) {
+                    return null;
+                }
+
+                if (columnIndex == 0) {
+                    return rowIndex + 1;
+                }
+
+                IndependenceResult result = model.getResults(true).get(rowIndex);
+
+                if (columnIndex == 1) {
+                    IndependenceFact fact = model.getResults(true).get(rowIndex).getFact();
+                    List<Node> Z = new ArrayList<>(fact.getZ());
+                    String z = Z.stream().map(Node::getName).collect(Collectors.joining(", "));
+                    return "Ind(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
+                }
+
+                if (columnIndex == 2) {
+                    if (model.getMarkovCheck().getIndependenceTest() instanceof MsepTest) {
+                        if (result.isIndependent()) {
+                            return "M-SEPARATED";
+                        } else {
+                            return "m-connected";
+                        }
+                    } else {
+                        if (result.isIndependent()) {
+                            return "INDEPENDENT";
+                        } else {
+                            return "dependent";
+                        }
+                    }
+                }
+
+                if (columnIndex == 3) {
+                    return nf.format(result.getPValue());
+                }
+
+                return null;
+            }
+
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 0) {
+                    return Number.class;
+                }
+                if (columnIndex == 1) {
+                    return String.class;
+                } else {
+                    return Number.class;
+                }
+            }
+        };
+
+        JTable table = new JTable(tableModelDep);
+
+        tableModelDep.addTableModelListener(e -> {
+            if (e.getColumn() == 2) {
+                table.revalidate();
+                table.repaint();
+            }
+        });
+
+        table.getColumnModel().getColumn(0).setMinWidth(40);
+        table.getColumnModel().getColumn(0).setMaxWidth(40);
+        table.getColumnModel().getColumn(1).setMinWidth(200);
+        table.getColumnModel().getColumn(1).setCellRenderer(new Renderer());
+        table.getColumnModel().getColumn(2).setMinWidth(100);
+        table.getColumnModel().getColumn(2).setMaxWidth(100);
+        table.getColumnModel().getColumn(3).setMinWidth(100);
+        table.getColumnModel().getColumn(3).setMaxWidth(100);
+
+        table.getColumnModel().getColumn(2).setCellRenderer(new Renderer());
+        table.getColumnModel().getColumn(3).setCellRenderer(new Renderer());
+
+        JTableHeader header = table.getTableHeader();
+
+        header.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTableHeader header = (JTableHeader) e.getSource();
+                Point point = e.getPoint();
+                int col = header.columnAtPoint(point);
+                int sortCol = header.getTable().convertColumnIndexToModel(col);
+
+                MarkovCheckEditor.this.sortByColumn(sortCol, false);
+            }
+        });
+
+        JScrollPane scroll = new JScrollPane(table);
+        tablelPanel.add(scroll, BorderLayout.CENTER);
+
+        Box a3 = Box.createHorizontalBox();
+        JLabel label = new JLabel("Table contents can be selected and copied in to, e.g., Excel.");
+        a3.add(label);
+        a3.add(Box.createHorizontalGlue());
+        tablelPanel.add(label, BorderLayout.SOUTH);
+
+        setLabelTexts();
+
+        Box a4 = Box.createVerticalBox();
+        histogramPanelDep = new JPanel();
+        histogramPanelDep.setLayout(new BorderLayout());
+        histogramPanelDep.setBorder(new EmptyBorder(10, 10, 10, 10));
+        histogramPanelDep.add(createHistogramPanel(true), BorderLayout.CENTER);
+        a4.add(histogramPanelDep);
+
+        Box a5 = Box.createHorizontalBox();
+        a5.add(Box.createHorizontalGlue());
+        a5.add(fractionDepLabelDep);
+        a4.add(a5);
+
+        Box a6 = Box.createHorizontalBox();
+        a6.add(Box.createHorizontalGlue());
+        a6.add(ksLabelDep);
+        a4.add(a6);
+
+        Box a7 = Box.createHorizontalBox();
+        a7.add(Box.createHorizontalGlue());
+        a7.add(binomialPLabelDep);
+        a4.add(a7);
+
+        Box a8 = Box.createHorizontalBox();
+        a8.add(Box.createHorizontalGlue());
+        a8.add(andersonDarlingA2LabelDep);
+        a4.add(a8);
+
+        Box a9 = Box.createHorizontalBox();
+        a9.add(Box.createHorizontalGlue());
+        a9.add(andersonDarlingPLabelDep);
+        a4.add(a9);
+
+        Box a11 = Box.createHorizontalBox();
+        a11.add(a4);
+
+        JPanel checkDependDistributionPanel = new JPanel(new BorderLayout());
+        checkDependDistributionPanel.add(new PaddingPanel(tablelPanel), BorderLayout.CENTER);
+        checkDependDistributionPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
+
+        return checkDependDistributionPanel;
     }
 
     private void sortByColumn(int sortCol, boolean indep) {
@@ -768,6 +821,30 @@ public class MarkovCheckEditor extends JPanel {
             ksLabelDep = new JLabel();
         }
 
+        if (binomialPLabelIndep == null) {
+            binomialPLabelIndep = new JLabel();
+        }
+
+        if (binomialPLabelDep == null) {
+            binomialPLabelDep = new JLabel();
+        }
+
+        if (andersonDarlingA2LabelIndep == null) {
+            andersonDarlingA2LabelIndep = new JLabel();
+        }
+
+        if (andersonDarlingA2LabelDep == null) {
+            andersonDarlingA2LabelDep = new JLabel();
+        }
+
+        if (andersonDarlingPLabelIndep == null) {
+            andersonDarlingPLabelIndep = new JLabel();
+        }
+
+        if (andersonDarlingPLabelDep == null) {
+            andersonDarlingPLabelDep = new JLabel();
+        }
+
         if (fractionDepLabelIndep == null) {
             fractionDepLabelIndep = new JLabel();
         }
@@ -776,22 +853,40 @@ public class MarkovCheckEditor extends JPanel {
             fractionDepLabelDep = new JLabel();
         }
 
-        if (masLabelIndep == null) {
-            masLabelIndep = new JLabel();
-        }
-
-        if (masLabelDep == null) {
-            masLabelDep = new JLabel();
-        }
-
-        ksLabelIndep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
+        ksLabelIndep.setText("P-value of KS Uniformity Test = "
                 + ((Double.isNaN(model.getMarkovCheck().getKsPValue(true))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getKsPValue(true)))));
-        ksLabelDep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
+        ksLabelDep.setText("P-value of KS Uniformity Test = "
                 + ((Double.isNaN(model.getMarkovCheck().getKsPValue(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getKsPValue(false)))));
+
+        andersonDarlingA2LabelIndep.setText("A^2 = "
+                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingA2Star(true))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingA2Star(true)))));
+        andersonDarlingA2LabelDep.setText("A^2* = "
+                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingA2Star(false))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingA2Star(false)))));
+
+        andersonDarlingPLabelIndep.setText("P-value of the Anderson-Darling test = "
+                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(true))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(true)))));
+        andersonDarlingPLabelDep.setText("P-value of the Anderson-Darling test = "
+                + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(false))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
+        binomialPLabelIndep.setText("P-value of Binomial Test = "
+                + ((Double.isNaN(model.getMarkovCheck().getBinomialP(true))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialP(true)))));
+        binomialPLabelDep.setText("P-value of Binomial Test = "
+                + ((Double.isNaN(model.getMarkovCheck().getBinomialP(false))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getBinomialP(false)))));
         fractionDepLabelIndep.setText("% dependent = "
                 + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(true))
                 ? "-"
@@ -800,20 +895,10 @@ public class MarkovCheckEditor extends JPanel {
                 + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(false)))));
-        masLabelIndep.setText("Markov Adequacy Score = "
-                + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
-                ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
-        masLabelDep.setText("Markov Adequacy Score = "
-                + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
-                ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
-
 
         conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + conditioningSetTypeJComboBox.getSelectedItem() + ")");
         conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + conditioningSetTypeJComboBox.getSelectedItem() + ")");
     }
-
 
     private int getLastSortCol() {
         return this.lastSortCol;
@@ -846,47 +931,22 @@ public class MarkovCheckEditor extends JPanel {
             return Box.createVerticalBox();
         }
 
-
-        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(results.size(), 1),
-                Collections.singletonList(new ContinuousVariable("P-Value or Bump")));
-
-        for (int i = 0; i < results.size(); i++) {
-            dataSet.setDouble(i, 0, results.get(i).getPValue());
-        }
-
-        Histogram histogram = new Histogram(dataSet, "P-Value or Bump", false);
-//        histogram.setTarget("P-Value or Bump");
-        HistogramPanel view = new HistogramPanel(histogram, true);
-
-        Color fillColor = new Color(113, 165, 210);
-        view.setBarColor(fillColor);
-
-        view.setPreferredSize(new Dimension(350, 200));
-
-        Box box = Box.createHorizontalBox();
-        box.add(Box.createHorizontalGlue());
+        HistogramPanel view = getHistogramPanel(results);
+        Box box = Box.createVerticalBox();
         box.add(view);
-        box.add(Box.createHorizontalGlue());
-
-        Box vBox = Box.createVerticalBox();
-        vBox.add(Box.createVerticalGlue());
-        vBox.add(box);
-        vBox.add(Box.createVerticalGlue());
-
-        return vBox;
+        return box;
     }
 
     private DataType getDataType() {
         DataModel dataSet = model.getDataModel();
 
         if (dataSet.isContinuous() && !(dataSet instanceof ICovarianceMatrix)) {
-            // covariance dataset is continuous at the same time - Zhou
             return DataType.Continuous;
         } else if (dataSet.isDiscrete()) {
             return DataType.Discrete;
         } else if (dataSet.isMixed()) {
             return DataType.Mixed;
-        } else if (dataSet instanceof ICovarianceMatrix) { // Better to add an isCovariance() - Zhou
+        } else if (dataSet instanceof ICovarianceMatrix) {
             return DataType.Covariance;
         } else {
             return null;
@@ -936,11 +996,11 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
-        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+        ParamDescriptions paramDescriptions = ParamDescriptions.getInstance();
         return params.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        e -> createParameterComponent(e, parameters, paramDescs.get(e)),
+                        e -> createParameterComponent(e, parameters, paramDescriptions.get(e)),
                         (u, v) -> {
                             throw new IllegalStateException(String.format("Duplicate key %s.", u));
                         },
@@ -985,7 +1045,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private DoubleTextField getDoubleField(String parameter, Parameters parameters,
-                                           double defaultValue, double lowerBound, double upperBound) {
+            double defaultValue, double lowerBound, double upperBound) {
         DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
@@ -1015,7 +1075,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private IntTextField getIntTextField(String parameter, Parameters parameters,
-                                         int defaultValue, double lowerBound, double upperBound) {
+            int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {
@@ -1044,7 +1104,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private LongTextField getLongTextField(String parameter, Parameters parameters,
-                                           long defaultValue, long lowerBound, long upperBound) {
+            long defaultValue, long lowerBound, long upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {
@@ -1137,6 +1197,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     static class Renderer extends DefaultTableCellRenderer {
+
         private JTable table;
         private boolean selected;
 
@@ -1163,9 +1224,4 @@ public class MarkovCheckEditor extends JPanel {
         }
     }
 }
-
-
-
-
-
 

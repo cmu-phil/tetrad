@@ -27,14 +27,28 @@ import java.nio.file.Path;
  */
 public abstract class DatasetFileReader extends DataFileReader implements DatasetReader {
 
+    /**
+     * The missing data marker.
+     */
     protected String missingDataMarker;
 
+    /**
+     * Constructor.
+     *
+     * @param dataFile  the data file
+     * @param delimiter the delimiter
+     */
     public DatasetFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
 
         this.missingDataMarker = "";
     }
 
+    /**
+     * Get the missing data marker.
+     *
+     * @param missingDataMarker the missing data marker
+     */
     @Override
     public void setMissingDataMarker(String missingDataMarker) {
         this.missingDataMarker = (missingDataMarker == null)

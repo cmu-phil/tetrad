@@ -31,19 +31,21 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Holds a tetrad dag with all of the constructors necessary for it to serve as a model for the tetrad application.
+ * Holds a tetrad dag with all the constructors necessary for it to serve as a model for the tetrad application.
  *
  * @author josephramsey
  */
 public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProducer,
         SimulationParamsSource, MultipleGraphSource {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     private int numModels = 1;
     private int modelIndex;
@@ -60,7 +62,6 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
     private List<Dag> dags;
     private Map<String, String> allParamSettings;
     private Parameters parameters;
-    private Dag graph;
 
     //=============================CONSTRUCTORS==========================//
     public DagWrapper(Dag graph) {
@@ -85,8 +86,9 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
     }
 
     public DagWrapper(GraphSource graphSource, Parameters parameters) {
-        if (graphSource instanceof Simulation) {
-            Simulation simulation = (Simulation) graphSource;
+        this.parameters = new Parameters(parameters);
+
+        if (graphSource instanceof Simulation simulation) {
             List<Graph> graphs = simulation.getGraphs();
 
             this.dags = new ArrayList<>();
@@ -110,9 +112,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
     }
 
     public DagWrapper(DataWrapper wrapper) {
-        if (wrapper instanceof Simulation) {
-            Simulation simulation = (Simulation) wrapper;
-
+        if (wrapper instanceof Simulation simulation) {
             List<Graph> graphs = simulation.getGraphs();
 
             this.dags = new ArrayList<>();
@@ -196,10 +196,10 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
      * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
+     * help.)
      */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
+    @Serial
+    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 

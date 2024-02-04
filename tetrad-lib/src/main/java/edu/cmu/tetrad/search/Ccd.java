@@ -32,29 +32,28 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * <p>Implemented the Cyclic Causal Discovery (CCD) algorithm by Thomas Richardson.
- * A reference for this is here:</p>
- *
- * <p>Richardson, T. S. (2013). A discovery algorithm for directed cyclic graphs. arXiv
- * preprint arXiv:1302.3599.</p>
- *
- * <p>See also Chapter 7 of:</p>
- *
- * <p>Glymour, C. N., &amp; Cooper, G. F. (Eds.). (1999). Computation, causation, and
- * discovery. Aaai Press.</p>
- *
- * <p>The graph takes continuous data from a cyclic model as input and returns a cyclic
- * PAG graphs, with various types of underlining, that represents a Markov equivalence of the true DAG.</p>
- *
- * <p>This class is not configured to respect knowledge of forbidden and required
- * edges.</p>
+ * Implemented the Cyclic Causal Discovery (CCD) algorithm by Thomas Richardson. A reference for this is here:
+ * <p>
+ * Richardson, T. S. (2013). A discovery algorithm for directed cyclic graphs. arXiv preprint arXiv:1302.3599.
+ * <p>
+ * See also Chapter 7 of:
+ * <p>
+ * Glymour, C. N., &amp; Cooper, G. F. (Eds.). (1999). Computation, causation, and discovery. Aaai Press.
+ * <p>
+ * The graph takes continuous data from a cyclic model as input and returns a cyclic PAG graphs, with various types of
+ * underlining, that represents a Markov equivalence of the true DAG.
+ * <p>
+ * This class is not configured to respect knowledge of forbidden and required edges.
  *
  * @author Frank C. Wimberly
  * @author josephramsey
  */
 public final class Ccd implements IGraphSearch {
+    // The independence test to be used.
     private final IndependenceTest independenceTest;
+    // The nodes in the graph.
     private final List<Node> nodes;
+    // Whether the R1 rule should be applied.
     private boolean applyR1;
 
     /**
