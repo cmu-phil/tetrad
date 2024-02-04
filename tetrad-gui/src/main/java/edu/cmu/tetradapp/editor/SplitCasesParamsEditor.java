@@ -125,7 +125,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
     }
 
     public void setup() {
-        this.numSplitsField = new IntTextField(this.params.getInt("numSplits", 3), 2);
+        this.numSplitsField = new IntTextField(this.params.getInt("numSplits", 2), 2);
         this.numSplitsField.setFilter((value, oldValue) -> {
             SplitCasesParamsEditor.this.setNumSplits(value);
             return value;
