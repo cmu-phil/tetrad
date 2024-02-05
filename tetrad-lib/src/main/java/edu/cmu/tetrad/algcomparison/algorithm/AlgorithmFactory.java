@@ -26,6 +26,8 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.graph.Graph;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Aug 30, 2017 3:14:40 PM
@@ -41,14 +43,15 @@ public class AlgorithmFactory {
      * Creates an algorithm.
      *
      * @param algoClass algorithm class
-     * @param test      independence test
-     * @param score     score
+     * @param test independence test
+     * @param score score
      * @return algorithm
      * @throws IllegalAccessException Reflection exception
      * @throws InstantiationException Reflection exception
+     * @throws InvocationTargetException Reflection exception
      */
     public static Algorithm create(Class<? extends Algorithm> algoClass, IndependenceWrapper test, ScoreWrapper score)
-            throws IllegalAccessException, InstantiationException {
+            throws IllegalAccessException, InstantiationException, InvocationTargetException {
         if (algoClass == null) {
             throw new IllegalArgumentException("Algorithm class cannot be null.");
         }
@@ -64,7 +67,7 @@ public class AlgorithmFactory {
             throw new IllegalArgumentException("Score is required.");
         }
 
-        Algorithm algorithm = algoClass.newInstance();
+        Algorithm algorithm = createAlgorithmNewInstance(algoClass);
         if (testRequired) {
             ((TakesIndependenceWrapper) algorithm).setIndependenceWrapper(test);
         }
@@ -77,6 +80,7 @@ public class AlgorithmFactory {
 
     /**
      * Creates an algorithm.
+     *
      * @param algoClass algorithm class
      * @param test independence test
      * @param score score
@@ -84,9 +88,11 @@ public class AlgorithmFactory {
      * @return algorithm
      * @throws IllegalAccessException Reflection exception
      * @throws InstantiationException Reflection exception
+     * @throws InvocationTargetException Reflection exception
      */
-    public static Algorithm create(Class<? extends Algorithm> algoClass, IndependenceWrapper test, ScoreWrapper score, Graph externalGraph)
-            throws IllegalAccessException, InstantiationException {
+    public static Algorithm create(
+            Class<? extends Algorithm> algoClass, IndependenceWrapper test, ScoreWrapper score, Graph externalGraph)
+            throws IllegalAccessException, InstantiationException, InvocationTargetException {
         Algorithm algorithm = AlgorithmFactory.create(algoClass, test, score);
         if (externalGraph != null && algorithm instanceof TakesExternalGraph) {
             ((TakesExternalGraph) algorithm).setExternalGraph(new SingleGraphAlg(externalGraph));
@@ -98,27 +104,32 @@ public class AlgorithmFactory {
     /**
      * Creates an algorithm.
      *
-     * @param algoClass    algorithm class
+     * @param algoClass algorithm class
      * @param indTestClass independence test class
-     * @param scoreClass   score class
+     * @param scoreClass score class
      * @return algorithm
      * @throws IllegalAccessException Reflection exception
      * @throws InstantiationException Reflection exception
+     * @throws InvocationTargetException Reflection exception
      */
-    public static Algorithm create(Class<? extends Algorithm> algoClass, Class<? extends IndependenceWrapper> indTestClass, Class<? extends ScoreWrapper> scoreClass)
-            throws IllegalAccessException, InstantiationException {
+    public static Algorithm create(
+            Class<? extends Algorithm> algoClass,
+            Class<? extends IndependenceWrapper> indTestClass,
+            Class<? extends ScoreWrapper> scoreClass)
+            throws IllegalAccessException, InstantiationException, InvocationTargetException {
         if (algoClass == null) {
             throw new IllegalArgumentException("Algorithm class cannot be null.");
         }
 
-        IndependenceWrapper test = (indTestClass == null) ? null : indTestClass.newInstance();
-        ScoreWrapper score = (scoreClass == null) ? null : scoreClass.newInstance();
+        IndependenceWrapper test = createTestOfIndependenceNewInstance(indTestClass);
+        ScoreWrapper score = createScoreNewInstance(scoreClass);
 
         return AlgorithmFactory.create(algoClass, test, score);
     }
 
     /**
      * Creates an algorithm.
+     *
      * @param algoClass algorithm class
      * @param indTestClass independence test class
      * @param scoreClass score class
@@ -126,15 +137,75 @@ public class AlgorithmFactory {
      * @return algorithm
      * @throws IllegalAccessException Reflection exception
      * @throws InstantiationException Reflection exception
+     * @throws InvocationTargetException Reflection exception
      */
-    public static Algorithm create(Class<? extends Algorithm> algoClass, Class<? extends IndependenceWrapper> indTestClass, Class<? extends ScoreWrapper> scoreClass, Graph externalGraph)
-            throws IllegalAccessException, InstantiationException {
+    public static Algorithm create(
+            Class<? extends Algorithm> algoClass,
+            Class<? extends IndependenceWrapper> indTestClass,
+            Class<? extends ScoreWrapper> scoreClass, Graph externalGraph)
+            throws IllegalAccessException, InstantiationException, InvocationTargetException {
         Algorithm algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
         if (externalGraph != null && algorithm instanceof TakesExternalGraph) {
             ((TakesExternalGraph) algorithm).setExternalGraph(new SingleGraphAlg(externalGraph));
         }
 
         return algorithm;
+    }
+
+    private static ScoreWrapper createScoreNewInstance(Class<? extends ScoreWrapper> scoreClass)
+            throws IllegalAccessException, InstantiationException, InvocationTargetException {
+        Constructor<? extends ScoreWrapper> constructor = getScoreNoArgConstructor(scoreClass);
+
+        return (constructor == null) ? null : constructor.newInstance();
+    }
+
+    private static IndependenceWrapper createTestOfIndependenceNewInstance(Class<? extends IndependenceWrapper> indTestClass)
+            throws IllegalAccessException, InstantiationException, InvocationTargetException {
+        Constructor<? extends IndependenceWrapper> constructor = getTestOfIndependenceNoArgConstructor(indTestClass);
+
+        return (constructor == null) ? null : constructor.newInstance();
+    }
+
+    private static Algorithm createAlgorithmNewInstance(Class<? extends Algorithm> algoClass) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+        Constructor<? extends Algorithm> constructor = getAlgorithmNoArgConstructor(algoClass);
+
+        return (constructor == null) ? null : constructor.newInstance();
+    }
+
+    private static Constructor<? extends ScoreWrapper> getScoreNoArgConstructor(Class<? extends ScoreWrapper> scoreClass) {
+        if (scoreClass != null) {
+            for (Constructor constructor : scoreClass.getDeclaredConstructors()) {
+                if (constructor.getGenericParameterTypes().length == 0) {
+                    return constructor;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static Constructor<? extends IndependenceWrapper> getTestOfIndependenceNoArgConstructor(Class<? extends IndependenceWrapper> indTestClass) {
+        if (indTestClass != null) {
+            for (Constructor constructor : indTestClass.getDeclaredConstructors()) {
+                if (constructor.getGenericParameterTypes().length == 0) {
+                    return constructor;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static Constructor<? extends Algorithm> getAlgorithmNoArgConstructor(Class<? extends Algorithm> algoClass) {
+        if (algoClass != null) {
+            for (Constructor constructor : algoClass.getDeclaredConstructors()) {
+                if (constructor.getGenericParameterTypes().length == 0) {
+                    return constructor;
+                }
+            }
+        }
+
+        return null;
     }
 
 }
