@@ -349,7 +349,16 @@ public class ChiSquareTest {
      * The type of test to perform.
      */
     public enum TestType {
-        CHI_SQUARE, G_SQUARE
+
+        /**
+         * The chi-square test. See Spirtes et al., Causation, Predication and Search.
+         */
+        CHI_SQUARE,
+
+        /**
+         * The G-square test. See Spirtes et al. Causation, Prediction and Search.
+         */
+        G_SQUARE
     }
 
     /**

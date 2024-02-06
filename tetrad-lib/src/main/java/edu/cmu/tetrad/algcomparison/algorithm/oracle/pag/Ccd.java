@@ -37,10 +37,17 @@ public class Ccd implements Algorithm, TakesIndependenceWrapper, ReturnsBootstra
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
 
+    /**
+     * Constructs a new CCD algorithm.
+     */
     public Ccd() {
         // Used in reflection; do not delete.
     }
 
+    /**
+     * Constructs a new CCD algorithm with the given independence test.
+     * @param test the independence test
+     */
     public Ccd(IndependenceWrapper test) {
         this.test = test;
     }

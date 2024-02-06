@@ -51,6 +51,8 @@ public interface ClusteringAlgorithm {
 
     /**
      * True iff verbose output should be printed.
+     *
+     * @param verbose True iff verbose output should be printed.
      */
     void setVerbose(boolean verbose);
 }

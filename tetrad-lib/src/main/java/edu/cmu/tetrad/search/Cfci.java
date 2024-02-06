@@ -77,7 +77,6 @@ public final class Cfci implements IGraphSearch {
     // Whether to do the discriminating path rule.
     private boolean doDiscriminatingPathRule;
 
-
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      *
@@ -91,7 +90,6 @@ public final class Cfci implements IGraphSearch {
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
     }
-
 
     /**
      * Performs the search and returns the PAG.
@@ -411,32 +409,66 @@ public final class Cfci implements IGraphSearch {
         return this.verbose;
     }
 
+    /**
+     * Whether verbose output (about independencies) is output.
+     *
+     * @param verbose True iff verbose output (about independencies) is output.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Whether to do the discriminating path rule.
+     *
+     * @return True iff the discriminating path rule is done.
+     */
     public boolean isPossibleMsepSearchDone() {
         return this.possibleMsepSearchDone;
     }
 
+    /**
+     * Whether to do the discriminating path rule.
+     *
+     * @param possibleMsepSearchDone True iff the discriminating path rule is done.
+     */
     public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
         this.possibleMsepSearchDone = possibleMsepSearchDone;
     }
 
+    /**
+     * Returns the maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     *
+     * @return This length.
+     */
     public int getMaxReachablePathLength() {
         return this.maxReachablePathLength;
     }
 
+    /**
+     * Sets the maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     *
+     * @param maxReachablePathLength This length.
+     */
     public void setMaxReachablePathLength(int maxReachablePathLength) {
         this.maxReachablePathLength = maxReachablePathLength;
     }
 
+    /**
+     * Whether to do the discriminating path rule.
+     *
+     * @param doDiscriminatingPathRule True iff the discriminating path rule is done.
+     */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
     /**
      * Orients according to background knowledge
+     *
+     * @param bk        The background knowledge
+     * @param graph     The graph to orient
+     * @param variables The variables in the graph
      */
     private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         if (this.verbose) {
