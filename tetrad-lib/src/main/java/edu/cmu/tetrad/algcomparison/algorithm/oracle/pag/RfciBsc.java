@@ -23,12 +23,12 @@ import java.util.List;
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "RFCI-BSC",
-        command = "rfci-bsc",
-        algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.Discrete
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "RFCI-BSC",
+//        command = "rfci-bsc",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        dataType = DataType.Discrete
+//)
 @Experimental
 public class RfciBsc implements Algorithm, HasKnowledge {
 

@@ -40,6 +40,12 @@ import edu.cmu.tetrad.util.Params;
  * @author josephramsey
  */
 public class BryanSensitivityStudy {
+
+    /**
+     * Run the example.
+     *
+     * @param args not used
+     */
     public static void main(String... args) {
         Statistics statistics = new Statistics();
 

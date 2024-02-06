@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,71 +46,43 @@ import java.util.List;
  *
  * @author Frank Wimberly based on a specification by Clark Glymour
  */
-public final class ClassifierBayesUpdaterDiscrete
-        implements ClassifierDiscrete, TetradSerializable {
+public final class ClassifierBayesUpdaterDiscrete implements ClassifierDiscrete, TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
-    /**
-     * The BayesIm instance used to create an updater.  Supplied as an argument to the constructor.
-     *
-     * @serial
-     */
+    // The BayesIm instance used to create an updater.  Supplied as an argument to the constructor.
     private final BayesIm bayesIm;
-
-    /**
-     * The dataset to be classified.
-     *
-     * @serial
-     */
+    // The dataset to be classified.
     private final DataSet testData;
-    /*
-     * The variables in the dataset to be classified.  These should be
-     * the same variables as in the training dataset according to the
-     * "equals" method of DiscreteVariable.
-     * @serial
-     */
+    // The variables in the dataset to be classified.  These should be
+    // the same variables as in the training dataset according to the
+    // "equals" method of DiscreteVariable.
     private final List<Node> bayesImVars;
-    /**
-     * The percentage of correct estimates of the target variable.  This will be set to a meaningful value upon
-     * completion of the crossTabulate method.
-     *
-     * @serial
-     */
+    // The percentage of correct estimates of the target variable.  This will be set to a meaningful value upon
+    // completion of the crossTabulate method.
     private double percentCorrect;
-    /**
-     * The target variable (inferred from its name).
-     *
-     * @serial
-     */
+    // The target variable (inferred from its name).
     private DiscreteVariable targetVariable;
-    /**
-     * @serial
-     */
+    // The classifications of the target variable.
     private int[] classifications;
-
-    /**
-     * @serial
-     */
+    // The marginals.
     private double[][] marginals;
-
-    /**
-     * @serial
-     */
+    // The number of cases in the dataset.
     private int numCases = -1;
-
-    /**
-     * @serial
-     */
+    // The number of usable cases in the dataset.
     private int totalUsableCases;
 
     //===========================CONSTRUCTORS==========================//
 
-    /*
-     * The constructor sets the values of the private member variables.
+    /**
+     * The constructor sets the values of the private member variables. The BayesIm instance is used to create an
+     * updater.  The dataset to be classified is the test data.  The variables in the dataset to be classified are the
+     * same as the variables in the Bayes net. The target variable is not set.
+     *
+     * @param bayesIm  the BayesIm instance used to create an updater.
+     * @param testData the dataset to be classified.
      */
-
-    public ClassifierBayesUpdaterDiscrete(BayesIm bayesIm,
-                                          DataSet testData) {
+    public ClassifierBayesUpdaterDiscrete(BayesIm bayesIm, DataSet testData) {
         if (bayesIm == null) {
             throw new IllegalArgumentException("BayesIm must not be null.");
         }
@@ -126,10 +99,11 @@ public final class ClassifierBayesUpdaterDiscrete
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a simple exemplar of this class to test serialization.
      */
     public static ClassifierBayesUpdaterDiscrete serializableInstance() {
-        return new ClassifierBayesUpdaterDiscrete(MlBayesIm.serializableInstance(),
-                DataUtils.discreteSerializableInstance());
+        return new ClassifierBayesUpdaterDiscrete(MlBayesIm.serializableInstance(), DataUtils.discreteSerializableInstance());
     }
 
     //==========================PUBLIC METHODS========================//
@@ -154,8 +128,7 @@ public final class ClassifierBayesUpdaterDiscrete
         }
 
         if (targetVariable == null) {
-            throw new IllegalArgumentException(
-                    "Not an available target: " + target);
+            throw new IllegalArgumentException("Not an available target: " + target);
         }
 
         this.targetVariable = targetVariable;
@@ -184,8 +157,7 @@ public final class ClassifierBayesUpdaterDiscrete
         List<Node> dataVars = this.testData.getVariables();
 
         for (int i = 0; i < nvars; i++) {
-            DiscreteVariable variable =
-                    (DiscreteVariable) getBayesImVars().get(i);
+            DiscreteVariable variable = (DiscreteVariable) getBayesImVars().get(i);
 
 
             if (variable == this.targetVariable) {
@@ -195,10 +167,7 @@ public final class ClassifierBayesUpdaterDiscrete
             varIndices[i] = dataVars.indexOf(variable);
 
             if (varIndices[i] == -1) {
-                throw new IllegalArgumentException(
-                        "Can't find the (non-target) variable " + variable +
-                                " in the data. Either it's not there, or else its " +
-                                "categories are in a different order.");
+                throw new IllegalArgumentException("Can't find the (non-target) variable " + variable + " in the data. Either it's not there, or else its " + "categories are in a different order.");
             }
         }
 
@@ -208,8 +177,7 @@ public final class ClassifierBayesUpdaterDiscrete
 
         int[] estimatedValues = new int[ncases];
         int numTargetCategories = this.targetVariable.getNumCategories();
-        double[][] probOfClassifiedValues =
-                new double[numTargetCategories][ncases];
+        double[][] probOfClassifiedValues = new double[numTargetCategories][ncases];
         Arrays.fill(estimatedValues, -1);
 
         //For each case in the dataset to be classified compute the estimated
@@ -261,8 +229,7 @@ public final class ClassifierBayesUpdaterDiscrete
                 double highestProb = -0.1;
 
                 for (int j = 0; j < numTargetCategories; j++) {
-                    double marginal =
-                            bayesUpdater.getMarginal(indexTargetBN, j);
+                    double marginal = bayesUpdater.getMarginal(indexTargetBN, j);
                     probOfClassifiedValues[j][i] = marginal;
 
                     if (marginal >= highestProb) {
@@ -348,8 +315,7 @@ public final class ClassifierBayesUpdaterDiscrete
             }
         }
 
-        this.percentCorrect =
-                100.0 * ((double) numberCorrect) / ((double) ncases);
+        this.percentCorrect = 100.0 * ((double) numberCorrect) / ((double) ncases);
         this.totalUsableCases = ntot;
 
         return crosstabs;
@@ -446,8 +412,8 @@ public final class ClassifierBayesUpdaterDiscrete
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
      */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
+    @Serial
+    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
         if (this.bayesIm == null) {

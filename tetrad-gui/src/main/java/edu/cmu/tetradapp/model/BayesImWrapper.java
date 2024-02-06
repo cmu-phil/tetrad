@@ -33,6 +33,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,23 +44,28 @@ import java.util.List;
  */
 public class BayesImWrapper implements SessionModel, Memorable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
-
+    // The number of models in the simulation.
     private int numModels = 1;
+    // The index of the model to be used.
     private int modelIndex;
+    // The name of the model source.
     private String modelSourceName;
-
-    /**
-     * @serial Can be null.
-     */
+    // The name of the Bayes IM.
     private String name;
-
-    /**
-     * @serial Cannot be null.
-     */
+    // The Bayes IM.
     private List<BayesIm> bayesIms;
 
     //===========================CONSTRUCTORS===========================//
+
+    /**
+     * Constructs a new BayesImWrapper.
+     *
+     * @param bayesPmWrapper    the Bayes Pm wrapper
+     * @param oldBayesImwrapper the old Bayes Im wrapper
+     * @param params            the parameters
+     */
     public BayesImWrapper(BayesPmWrapper bayesPmWrapper, BayesImWrapper oldBayesImwrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
@@ -79,9 +85,13 @@ public class BayesImWrapper implements SessionModel, Memorable {
         } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
             setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
         }
-//        log(bayesIm);
     }
 
+    /**
+     * Constructs a new BayesImWrapper.
+     *
+     * @param simulation the simulation
+     */
     public BayesImWrapper(Simulation simulation) {
         List<BayesIm> bayesIms = null;
 
@@ -112,6 +122,12 @@ public class BayesImWrapper implements SessionModel, Memorable {
         this.modelSourceName = simulation.getName();
     }
 
+    /**
+     * Constructs a new BayesImWrapper for a RowSummingExactUpdaterWrapper.
+     *
+     * @param wrapper    the wrapper
+     * @param parameters the parameters
+     */
     public BayesImWrapper(RowSummingExactWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -119,6 +135,12 @@ public class BayesImWrapper implements SessionModel, Memorable {
         setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
     }
 
+    /**
+     * Constructs a new BayesImWrapper for a CptInvariantUpdaterWrapper.
+     *
+     * @param wrapper    the wrapper
+     * @param parameters the parameters
+     */
     public BayesImWrapper(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -151,9 +173,13 @@ public class BayesImWrapper implements SessionModel, Memorable {
         } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
             setBayesIm(new MlBayesIm(bayesPm, MlBayesIm.RANDOM));
         }
-//        log(bayesIm);
     }
 
+    /**
+     * Constructs a new BayesImWrapper for a BayesIm.
+     *
+     * @param bayesIm the BayesIm
+     */
     public BayesImWrapper(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
@@ -171,66 +197,130 @@ public class BayesImWrapper implements SessionModel, Memorable {
                 new Parameters());
     }
 
-    private void setBayesIm(BayesPm bayesPm, BayesIm oldBayesIm, int manual) {
-        this.bayesIms = new ArrayList<>();
-        this.bayesIms.add(new MlBayesIm(bayesPm, oldBayesIm, manual));
-    }
-
-    //=============================PUBLIC METHODS=========================//
+    /**
+     * Returns the BayesIm.
+     *
+     * @return the BayesIm
+     */
     public BayesIm getBayesIm() {
         return this.bayesIms.get(getModelIndex());
     }
 
+    /**
+     * Sets the BayesIm.
+     *
+     * @param bayesIm the BayesIm
+     */
     public void setBayesIm(BayesIm bayesIm) {
         this.bayesIms = new ArrayList<>();
         this.bayesIms.add(bayesIm);
     }
 
+    /**
+     * Returns the graph.
+     *
+     * @return the graph
+     */
     public Graph getGraph() {
         return getBayesIm().getBayesPm().getDag();
     }
 
+    /**
+     * Returns the name of the BayesIm.
+     *
+     * @return the name of the BayesIm
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Sets the name of the BayesIm.
+     *
+     * @param name the name of the BayesIm
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Returns the source graph.
+     *
+     * @return the source graph
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
 
+    /**
+     * Returns the result graph.
+     *
+     * @return the result graph
+     */
     public Graph getResultGraph() {
         return getGraph();
     }
 
+    /**
+     * Returns the variable names.
+     *
+     * @return the variable names
+     */
     public List<String> getVariableNames() {
         return getGraph().getNodeNames();
     }
 
+    /**
+     * Returns the variables.
+     *
+     * @return the variables
+     */
     public List<Node> getVariables() {
         return getGraph().getNodes();
     }
 
+    /**
+     * Returns the number of models.
+     *
+     * @return the number of models
+     */
     public int getNumModels() {
         return this.numModels;
     }
 
+    /**
+     * Returns the index of the model to be used.
+     *
+     * @return the index of the model to be used
+     */
     public int getModelIndex() {
         return this.modelIndex;
     }
 
+    /**
+     * Sets the index of the model to be used.
+     *
+     * @param modelIndex the index of the model to be used
+     */
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
+    /**
+     * Returns the name of the model source.
+     *
+     * @return the name of the model source
+     */
     public String getModelSourceName() {
         return this.modelSourceName;
     }
 
     //============================== private methods ============================//
+
+    private void setBayesIm(BayesPm bayesPm, BayesIm oldBayesIm, int manual) {
+        this.bayesIms = new ArrayList<>();
+        this.bayesIms.add(new MlBayesIm(bayesPm, oldBayesIm, manual));
+    }
 
     /**
      * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
@@ -240,9 +330,9 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
-
 }

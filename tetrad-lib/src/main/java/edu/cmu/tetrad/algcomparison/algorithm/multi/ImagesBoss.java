@@ -30,7 +30,7 @@ import java.util.List;
  * Wraps the IMaGES algorithm for continuous variables. This version uses the BOSS algorithm in place of FGES.
  * <p>
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many datasets should be taken at a time
- * (randomly). This cannot given multiple values.
+ * (randomly). This cannot be given multiple values.
  *
  * @author josephramsey
  */

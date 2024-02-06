@@ -46,7 +46,7 @@ public final class IndependenceTestDescriptions {
     private final Map<String, String> descriptions = new HashMap<>();
 
     private IndependenceTestDescriptions() {
-        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("docs/manual/index.html")) {
             Document doc = Jsoup.parse(inputStream, StandardCharsets.UTF_8.name(), "");
             getShortNames().forEach(shortName -> {
                 Element element = doc.getElementById(shortName);
