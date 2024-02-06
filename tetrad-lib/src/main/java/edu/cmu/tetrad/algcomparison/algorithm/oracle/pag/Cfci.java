@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  * Conservative FCI. This is a wrapper for the CFCI algorithm in Tetrad, which is conservative in the same sense as CPC,
- * Conservative PC. That is, it checks, for triple <X, Y, Z>, whether orienting colliders or noncoliders can be done
+ * Conservative PC. That is, it checks, for triple &lt;X, Y, Z&gt;, whether orienting colliders or noncoliders can be done
  * unambiguously. If not, it leaves the edge undirected. It is also similar to FCI in that it allows for latent common
  * causes.
  *
