@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.Experimental;
-import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
@@ -17,12 +16,15 @@ import java.util.List;
  *
  * @author josephramsey
  */
+
+// Taking this out of the interface since it's not used in the codebase at
+// request of the author.
 @Experimental
-@TestOfIndependence(
-        name = "Multinomial Logistic Regression Likelihood Ratio Test",
-        command = "mnlrlr-test",
-        dataType = DataType.Mixed
-)
+//@TestOfIndependence(
+//        name = "Multinomial Logistic Regression Likelihood Ratio Test",
+//        command = "mnlrlr-test",
+//        dataType = DataType.Mixed
+//)
 public class Mnlrlrt implements IndependenceWrapper {
 
     private static final long serialVersionUID = 23L;

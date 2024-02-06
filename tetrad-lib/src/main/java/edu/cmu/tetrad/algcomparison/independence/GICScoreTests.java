@@ -21,11 +21,13 @@ import java.util.List;
  *
  * @author josephramsey
  */
-@TestOfIndependence(
-        name = "Generalized Information Criterion Score Tests",
-        command = "gic-score-tests",
-        dataType = {DataType.Continuous, DataType.Covariance}
-)
+
+// Removing from interface.
+//@TestOfIndependence(
+//        name = "Generalized Information Criterion Score Tests",
+//        command = "gic-score-tests",
+//        dataType = {DataType.Continuous, DataType.Covariance}
+//)
 @LinearGaussian
 public class GICScoreTests implements IndependenceWrapper {
 

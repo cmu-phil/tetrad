@@ -17,11 +17,13 @@ import java.util.List;
  *
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Score(
-        name = "MAG SEM BIC Score",
-        command = "mag-sem-bic-score",
-        dataType = {DataType.Continuous, DataType.Covariance}
-)
+
+// Taking this out of the interface since it's not used in the codebase.
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "MAG SEM BIC Score",
+//        command = "mag-sem-bic-score",
+//        dataType = {DataType.Continuous, DataType.Covariance}
+//)
 public class MagSemBicScore implements ScoreWrapper {
 
     private static final long serialVersionUID = 23L;
