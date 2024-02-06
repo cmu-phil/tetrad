@@ -37,7 +37,8 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * Implements the DAGMA algorithm. The reference is here:
  * <p>
- * NEEDS DOCUMENTATION
+ * Bello, K., Aragam, B., & Ravikumar, P. (2022). Dagma: Learning dags via m-matrices and a log-determinant acyclicity
+ * characterization. Advances in Neural Information Processing Systems, 35, 8226-8239.
  *
  * @author bryanandrews
  */
