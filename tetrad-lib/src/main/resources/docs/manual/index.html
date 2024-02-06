@@ -4186,7 +4186,16 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         regressing a child variable onto all of its parents in the model. </p>
     </div>
 
-    <h4>Parameters</h4>
+    <h3>Mixed Variable Polynomial Likelihood Ratio Test</h3>
+
+    <div id="mvplr-test">
+        <p>Performs a test of conditional independence X _||_ Y | Z1...Zn where all variables are either continuous or discrete.
+        This test is valid for both ordinal and non-ordinal discrete searchVariables.</p>
+        <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables. International
+        journal of data science and analytics, 6, 3-18.</p>
+    </div>
+
+    <h4>Parameters</h4>d
 
     <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
 
@@ -4528,7 +4537,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h3>GIC Scores</h3>
 
-    <div id="kim-scores"><p>
+    <div id="gic-scores"><p>
         This is a set of generalized information criterion (GIC) scores based on
         the paper, Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection
         criteria on high dimensions. The Journal 0of Machine Learning Research,
@@ -4538,6 +4547,14 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         to 1 (since the lambda choice is essentially picking a penalty discount
         for you).
     </p>
+    </div>
+
+    <h3>Mixed Variable Polynomial Scores</h3>
+
+    <div id="mvp-bic-score"><p>
+        <p>Implements a mixed variable polynomial BIC score. The reference is here:</p>
+        <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
+        International journal of data science and analytics, 6, 3-18.</p>
     </div>
 
     <h3>Poisson Prior Score</h3>
