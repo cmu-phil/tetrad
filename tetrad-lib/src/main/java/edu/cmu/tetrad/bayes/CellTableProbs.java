@@ -39,7 +39,7 @@ public final class CellTableProbs implements DiscreteProbs {
     // An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
     // numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
     private final int[] dims;
-    // A single-dimension array containing all of the cells of the table. Must be at least long enough to contain data
+    // A single-dimension array containing all the cells of the table. Must be at least long enough to contain data
     // for each cell allowed for by the given dimension array--in other words, the length must be greater than or equal
     // to dims[0] & dims[1] ... * dims[dims.length - 1].
     private final int[] cells;
@@ -78,10 +78,6 @@ public final class CellTableProbs implements DiscreteProbs {
         int numRows = dataSet.getNumRows();
 
         int[] point = new int[this.dims.length];
-        /**
-         * True iff a missing value case was found.
-         */
-        boolean missingValueCaseFound = false;
 
         point:
         for (int i = 0; i < numRows; i++) {
@@ -89,7 +85,6 @@ public final class CellTableProbs implements DiscreteProbs {
                 point[j] = dataSet.getInt(i, j);
 
                 if (point[j] == DiscreteVariable.MISSING_VALUE) {
-                    missingValueCaseFound = true;
                     continue point;
                 }
             }
