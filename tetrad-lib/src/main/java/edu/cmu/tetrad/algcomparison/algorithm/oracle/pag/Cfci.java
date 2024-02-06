@@ -19,11 +19,15 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FCI.
+ * Conservative FCI. This is a wrapper for the CFCI algorithm in Tetrad, which is conservative in the same sense as CPC,
+ * Conservative PC. That is, it checks, for triple <X, Y, Z>, whether orienting colliders or noncoliders can be done
+ * unambiguously. If not, it leaves the edge undirected. It is also similar to FCI in that it allows for latent common
+ * causes.
  *
  * @author josephramsey
  */
@@ -36,6 +40,7 @@ import java.util.List;
 public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
