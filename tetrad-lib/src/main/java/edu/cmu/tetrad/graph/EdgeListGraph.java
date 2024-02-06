@@ -26,6 +26,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
@@ -44,6 +45,7 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
  */
 public class EdgeListGraph implements Graph, TripleClassifier {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * The edges in the graph.

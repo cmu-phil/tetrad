@@ -940,7 +940,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
 
         // Create a graph's legend
-        if (graph.getAllAttributes().size() > 0) {
+        if (!graph.getAllAttributes().isEmpty()) {
 
             final int margin = 5;
 
@@ -1163,11 +1163,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return;
         }
 
-        if (!getGraph().containsEdge(modelEdge)) {
-            System.out.println("Attempt to add edge not in model: " + modelEdge);
-            return;
-//            throw new IllegalArgumentException("Attempt to add edge not in model.");
-        }
+        // This causes problems with the random MIM 2-factor method and is not needed.
+//        if (!getGraph().containsEdge(modelEdge)) {
+//            System.out.println("Attempt to add edge not in model: " + modelEdge);
+//            return;
+////            throw new IllegalArgumentException("Attempt to add edge not in model.");
+//        }
 
         // construct a display edge for the model edge
         Node modelNodeA = modelEdge.getNode1();
