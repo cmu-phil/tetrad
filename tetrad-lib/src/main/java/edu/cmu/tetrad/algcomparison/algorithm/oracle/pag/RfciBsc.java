@@ -15,14 +15,17 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Jan 4, 2019 4:32:05 PM
+ * Runs RFCI-BSC, which is RFCI with bootstrap sampling of PAGs.
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  */
+
+// Taking this out for now until we can get a good description for it.
 //@edu.cmu.tetrad.annotation.Algorithm(
 //        name = "RFCI-BSC",
 //        command = "rfci-bsc",
@@ -32,22 +35,40 @@ import java.util.List;
 @Experimental
 public class RfciBsc implements Algorithm, HasKnowledge {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+    // Independence test; must the ProbabilisticTest.
     private final IndependenceWrapper test = new ProbabilisticTest();
+    // Knowledge
     private Knowledge knowledge = new Knowledge();
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-
+    /**
+     * Returns the knowledge.
+     *
+     * @return the knowledge
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * Sets the knowledge.
+     *
+     * @param knowledge a knowledge object.
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /**
+     * Performs the RFCI-BSC search.
+     *
+     * @param dataSet    The data set to run to the search on.
+     * @param parameters The paramters of the search.
+     * @return the graph
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(this.test.getTest(dataSet, parameters));
@@ -72,22 +93,43 @@ public class RfciBsc implements Algorithm, HasKnowledge {
         return RfciBsc.search();
     }
 
+    /**
+     * Returns the comparison graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return the comparison graph
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph trueGraph = new EdgeListGraph(graph);
         return GraphTransforms.dagToPag(trueGraph);
     }
 
+    /**
+     * Returns the description of the algorithm.
+     *
+     * @return the description of the algorithm
+     */
     @Override
     public String getDescription() {
         return "RFCI-BSC using " + this.test.getDescription();
     }
 
+    /**
+     * Returns the data type that the algorithm can handle, which is discrete.
+     *
+     * @return the data type that the algorithm can handle, which is discrete.
+     */
     @Override
     public DataType getDataType() {
         return DataType.Discrete;
     }
 
+    /**
+     * Returns the parameters of the algorithm.
+     *
+     * @return the parameters of the algorithm
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
