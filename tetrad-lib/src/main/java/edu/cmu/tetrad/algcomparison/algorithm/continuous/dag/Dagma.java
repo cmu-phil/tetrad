@@ -2,8 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
@@ -12,7 +10,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -23,7 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DAGMA.
+ * Implements the DAGMA algorithm. The reference is here:
+ * <p>
+ * Bello, K., Aragam, B., &amp; Ravikumar, P. (2022). Dagma: Learning dags via m-matrices and a log-determinant acyclicity
+ * characterization. Advances in Neural Information Processing Systems, 35, 8226-8239.
  *
  * @author bryanandrews
  */
@@ -39,7 +39,8 @@ public class Dagma implements Algorithm, ReturnsBootstrapGraphs {
     private static final long serialVersionUID = 23L;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-    public Dagma() {}
+    public Dagma() {
+    }
 
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {

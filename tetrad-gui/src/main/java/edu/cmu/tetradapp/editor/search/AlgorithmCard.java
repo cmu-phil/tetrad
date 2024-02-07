@@ -384,7 +384,7 @@ public class AlgorithmCard extends JPanel {
 
         try {
             algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
-        } catch (IllegalAccessException | InstantiationException exception) {
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException exception) {
             TetradLogger.getInstance().forceLogMessage(exception.toString());
         }
 

@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.awt.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +41,7 @@ import java.util.List;
  * @author josephramsey
  */
 public class Edge implements TetradSerializable, Comparable<Edge> {
+    @Serial
     private static final long serialVersionUID = 23L;
     private final Node node1;
     private final Node node2;
@@ -248,7 +250,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
         // Bootstrapping edge type distribution
         List<EdgeTypeProbability> edgeTypeDist = getEdgeTypeProbabilities();
-        if (edgeTypeDist.size() > 0) {
+        if (!edgeTypeDist.isEmpty()) {
             buf.append(" ");
 
             String n1 = getNode1().getName();
@@ -291,7 +293,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
                         _type = new StringBuilder(n1 + " " + _type + " " + n2);
                     }
                     List<Property> properties = etp.getProperties();
-                    if (properties != null && properties.size() > 0) {
+                    if (properties != null && !properties.isEmpty()) {
                         for (Property property : properties) {
                             _type.append(" ").append(property.toString());
                         }
@@ -306,7 +308,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         }
 
         List<Property> properties = getProperties();
-        if (properties != null && properties.size() > 0) {
+        if (properties != null && !properties.isEmpty()) {
             for (Property property : properties) {
                 buf.append(" ");
                 buf.append(property.toString());
@@ -324,12 +326,9 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * Two edges are equal just in case they connect the same nodes and have the same endpoints proximal to each node.
      */
     public final boolean equals(Object o) {
-        if (o == null)
-            return false;
-        if (!(o instanceof Edge))
-            return false;
-
-        Edge edge = (Edge) o;
+        if (o == null) return false;
+        if (o == this) return true;
+        if (!(o instanceof Edge edge)) return false;
 
         // Equality of nodes can only dependent on the object identity of the
         // nodes, not on their name. Otherwise, the identity of an edge could be

@@ -37,11 +37,11 @@ import java.util.List;
  */
 public final class CellTable {
 
+    // The table of cell counts.
     private final MultiDimIntTable table;
-    /**
-     * The value used in the data for missing values.
-     */
+    // The value used in the data for missing values.
     private int missingValue = -99;
+    // The rows to be used in the table.
     private List<Integer> rows;
 
     /**
@@ -53,6 +53,12 @@ public final class CellTable {
         this.table = new MultiDimIntTable(dims);
     }
 
+    /**
+     * Adds the given data set to the table, using the given indices to specify the variables to be used in the table.
+     *
+     * @param dataSet the data set to be used in the table.
+     * @param indices the indices of the variables to be used in the table.
+     */
     public void addToTable(DataSet dataSet, int[] indices) {
         if (rows == null) {
             rows = new ArrayList<>();
@@ -160,18 +166,40 @@ public final class CellTable {
         return Arrays.copyOf(coords, coords.length);
     }
 
+    /**
+     * Returns the missing value marker.
+     *
+     * @return the missing value marker.
+     */
     private int getMissingValue() {
         return this.missingValue;
     }
 
+    /**
+     * Sets the missing value marker.
+     *
+     * @param missingValue the missing value marker.
+     */
     public void setMissingValue(int missingValue) {
         this.missingValue = missingValue;
     }
 
+    /**
+     * Returns the value of the cell specified by the given coordinates.
+     *
+     * @param testCell the coordinates of the cell.
+     * @return the value of the cell.
+     */
     public long getValue(int[] testCell) {
         return this.table.getValue(testCell);
     }
 
+    /**
+     * Sets the rows to be used in the table. If the rows are null, the table will use all the rows in the data set.
+     * Otherwise, the table will use only the rows specified.
+     *
+     * @param rows the rows to be used in the table.
+     */
     public void setRows(List<Integer> rows) {
         if (rows == null) {
             this.rows = null;

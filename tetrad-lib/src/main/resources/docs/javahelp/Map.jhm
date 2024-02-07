@@ -62,8 +62,8 @@
 
     <mapID target="data_set_list" url="manual/boxes/data/data_set_list.html"/>
 
-    <mapID target="mode_interpolator" url="manual/index.html"/>
-    <mapID target="extra_category_interpolator" url="manual/index.html"/>
+    <mapID target="mode_interpolator" url="docs/manual/index.html"/>
+    <mapID target="extra_category_interpolator" url="docs/manual/index.html"/>
     <mapID target="case_expander" url="manual/index.html"/>
     <mapID target="correlation_matrix_converter" url="manual/index.html"/>
     <mapID target="bootstrap_sampler" url="manual/index.html"/>

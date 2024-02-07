@@ -28,11 +28,11 @@ import java.util.*;
  * @author bryanandrews
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "Restricted-BOSS",
-        command = "r-boss",
-        algoType = AlgType.forbid_latent_common_causes
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "Restricted-BOSS",
+//        command = "r-boss",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
 @Bootstrapping
 public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
         ReturnsBootstrapGraphs {
@@ -78,7 +78,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
             System.out.println("targets: " + targets);
 
             // We will run BOSS with the target variables Tier 2 and the rest as Tier 1,
-            // with edges forbidden in Tier1, then grab all of the first layer variables
+            // with edges forbidden in Tier1, then grab all the first layer variables
             // together with the target nodes, restrict the score to just these variables,
             // for the knowedge again restrict to just these variables, with the target
             // variables as Tier 2 and the rest as Tier 1, and run BOSS again and return

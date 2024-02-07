@@ -42,34 +42,17 @@ import static org.apache.commons.math3.util.FastMath.round;
 @SuppressWarnings("WeakerAccess")
 public final class ChoiceGenerator {
 
-    /**
-     * The number of objects being selected from.
-     */
+    // The number of objects being selected from.
     private final int a;
-
-    /**
-     * The number of objects in the desired selection.
-     */
+    // The number of objects in the desired selection.
     private final int b;
-
-    /**
-     * The difference between a and b (should be nonnegative).
-     */
+    // The difference between a and b (should be nonnegative).
     private final int diff;
-
-    /**
-     * The internally stored choice.
-     */
+    // The internally stored choice.
     private final int[] choiceLocal;
-
-    /**
-     * The choice that is returned. Used, since the returned array can be modified by the user.
-     */
+    // The choice that is returned. Used, since the returned array can be modified by the user.
     private final int[] choiceReturned;
-
-    /**
-     * Indicates whether the next() method has been called since the last initialization.
-     */
+    // Indicates whether the next() method has been called since the last initialization.
     private boolean begun;
 
     /**
@@ -81,13 +64,6 @@ public final class ChoiceGenerator {
      * @param b the number of objects in the desired selection.
      */
     public ChoiceGenerator(int a, int b) {
-//        if ((b < 0) || (a < b)) {
-//            throw new IllegalArgumentException(
-//                    "For 'a choose b', a and b must be " +
-//                            "nonnegative with a >= b: " + "a = " + a +
-//                            ", b = " + b);
-//        }
-
         if (a < 0 || b < 0) throw new IllegalArgumentException("ERROR: a and b must be non-negative");
         if (b > a) b = a;
 
@@ -143,12 +119,25 @@ public final class ChoiceGenerator {
         System.out.println();
     }
 
+    /**
+     * Returns the number of combinations of a choose b.
+     *
+     * @param a the number of objects being selected from.
+     * @param b the number of objects in the desired selection.
+     * @return the number of combinations of a choose b.
+     */
     public static int getNumCombinations(int a, int b) {
         return (int) round(exp(ChoiceGenerator.logCombinations(a, b)));
     }
 
+    /**
+     * Returns the natural logarithm of the number of combinations of a choose b.
+     *
+     * @param a the number of objects being selected from.
+     * @param b the number of objects in the desired selection.
+     * @return the natural logarithm of the number of combinations of a choose b.
+     */
     public static double logCombinations(int a, int b) {
-//        return lngamma(a + 1) - lngamma(b + 1) - lngamma((a - b) + 1);
         return Gamma.logGamma(a + 1) - Gamma.logGamma(b + 1) - Gamma.logGamma((a - b) + 1);
     }
 

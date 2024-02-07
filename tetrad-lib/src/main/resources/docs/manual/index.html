@@ -15,7 +15,7 @@
 <div class="inner">
 
     <div class="header"><h1>Tetrad Manual</h1>
-        <p>Last updated: 1/14/2024</p></div>
+        <p>Last updated: 2/6/2024</p></div>
 
     <!-- Table of Contents, give each section a unique id -->
     <div
@@ -2730,6 +2730,10 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>A CPDAG, same as PC.</p>
 
+    <h3>The IMaGES Algorithm</h3>
+
+    <h4>Description</h4>
+
     <div id="images">
 
         <p>
@@ -2739,6 +2743,35 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             producing a model for all data sets that assumes they have the same
             graphical structure across dataset. Note that BIC is calculated
             as 2L - k ln N, so "higher is better."</p>
+
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>A set of datasets consistent with the chosen score with the same variables and sample
+        sizes.</p>
+
+    <h4>Output Format</h4>
+
+    <p>A CPDAG, interpreted as a common model for all datasets.</p>
+
+    <h4>Parameters</h4>
+
+    <p>All the parameters from FGES are available for IMaGES.
+        Additionally:</p>
+
+    <p><a href="#numRuns">numRuns</a>, <a
+            href="#randomSelectionSize">randomSelectionSize</a></p>
+
+    <h3>The IMaGES-BOSS Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="images-boss">
+        <p>Wraps the IMaGES algorithm for continuous variables. This version uses the BOSS algorithm in place of
+            FGES.</p>
+        <p>Requires that the parameter 'randomSelectionSize' be set to indicate how many datasets should be taken at a
+            time (randomly). This cannot be given multiple values.</p>
 
     </div>
 
@@ -2813,7 +2846,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Description</h4>
 
-    <div id="fcimax">
+    <div id="fci-max">
 
         <p>The FCI-Max algorithm simply changes the first collider
             orientation rule in FCI to use the PC-Max orientation.</p>
@@ -2842,6 +2875,38 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             href="#maxPathLength">maxPathLength</a>, <a
             href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
 
+    <h3>The CFCI Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="cfci">
+
+        <p>Adjusts FCI (see) to use conservative orientation as in CPC (see). Because the collider orientation is
+            conservative,
+            there may be ambiguous triples; these may be retrieved using that accessor method.</p>
+        <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of
+            temporal
+            tiers.</p>
+
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Data for which a conditional independence test is available.</p>
+
+    <h4>Output Format</h4>
+
+    <p>An adjustment to a partial ancestral graph (PAG), where ambiguous colliders are marked with underlings. See
+        Spirtes et al., 2000. Also, see the CPC algorithm.</p>
+
+    <h4>Parameters</h4>
+
+    <p>All the parameters from FCI are available for RFCI.
+        Additionally:</p>
+
+    <p><a href="#depth">depth</a>, <a
+            href="#maxPathLength">maxPathLength</a>, <a
+            href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
 
     <h3>The RFCI Algorithm</h3>
 
@@ -2993,6 +3058,46 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
         GRaSP.</p>
 
+
+    <h3>The BFCI Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="bfci">
+        <p>Uses BOSS in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG
+            than GFCI
+            as a result, for the latent variables case. This is a simple substitution; the reference for GFCI is
+            here:</p>
+        <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models,"
+            JMLR 2016.
+            Here, BOSS has been substituted for FGES.</p>
+        <p>For BOSS only a score is needed, but there are steps in GFCI that require a test, so for this method, both a
+            test and
+            a score need to be given.</p>
+        <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of
+            temporal
+            tiers.</p>
+
+        <p>Note: If one wants to analyze time series data using this algorithm,
+            one may set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform. The same goes for any
+            algorithm that has this parameter available in the interface.</p>
+    </div>
+
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
+        GRaSP.</p>
+
     <h3>The SP-FCI Algorithm</h3>
 
     <h4>Description</h4>
@@ -3029,6 +3134,19 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
         SP.</p>
 
+
+    <h3>The FCI-IOD Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="fci-iod">
+        <p>Runs FCI on multiple datasets using the IOD pooled dataset independence test. The reference is here:</p>
+        <p>Tillman, R., &amp; Spirtes, P. (2011, June). Learning equivalence classes of acyclic models with latent and
+            selection variables from multiple datasets with overlapping variables. In Proceedings of the Fourteenth
+            International Conference on Artificial Intelligence and Statistics (pp. 3-15). JMLR Workshop and Conference
+            Proceedings.</p>
+
+    </div>
 
     <h3>The SvarFCI Algorithm</h3>
 
@@ -3680,6 +3798,43 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p> This requires no parameters. This algorithm is applicable to data generated by linear, non-Gaussian
         models.</p>
 
+    <h3>The ICA LiNG-D Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="ica-ling-d">
+        <p>Implements the ICA-LiNG-D algorithm as well as a number of ancillary methods for LiNG-D and LiNGAM. The
+            reference is here:</p>
+        <p>Lacerda, G., Spirtes, P. L., Ramsey, J., &amp; Hoyer, P. O. (2012). Discovering cyclic causal models by
+            independent components analysis. arXiv preprint arXiv:1206.3273.</p>
+        <p>ICA-LING-D is a method for estimating a possible cyclic linear models graph from a dataset. It is based on
+            the assumption that the data are generated by a linear model with non-Gaussian noise. The method is based on
+            the following assumptions:</p>
+        <ol>
+            <li>The data are generated by a linear model with non-Gaussian noise.</li>
+            <li>The noise is independent across variables.</li>
+            <li>The noises for all but possibly one variable are non-Gaussian.</li>
+            <li>There is no unobserved confounding.</li>
+        </ol>
+        <p> lower bound of the absolute value of the coefficients in the W matrix.</p>
+        <p> Under these assumptions, the method estimates a matrix W such that WX = e, where X is the data matrix, e is
+            a matrix of noise, and W is a matrix of coefficients. The matrix W is then used to estimate a matrix B Hat,
+            where B Hat is the matrix of coefficients in the linear model that generated the data. The graph is then
+            estimated by finding edges in B Hat.</p>
+        <p>We use the N Rooks algorithm to find alternative diagonals for permutations of the W matrix. The parameter
+            that N Rooks requires is a threshold for entries in W to be included in possible diagonals, which is the
+            lowest number in absolute value that a W matrix entry can take to be part of a diagonal; the implied
+            permutations is the permutations that permutes rows so that these combination lies along the their
+            respective diagonals in W, which are then scaled, and the separate satisfactory B Hat matrices reported.</p>
+        <p> ICA-LiNG-D, which takes this W as an impute, is a method for estimating a directed graph (DG) from a
+            dataset. The graph is estimated by finding a
+            permutation of the columns of the dataset so that the resulting matrix has a strong diagonal. This
+            permutation is then used to estimate a DG. The method is an relaxation of LiNGAM, which estimates a DAG from
+            a dataset using independent components analysis (ICA). LiNG-D is particularly useful when the underlying
+            data may have multiple consistent cyclic models.</p>
+        <p> This class is not configured to respect knowledge of forbidden and required edges.</p>
+    </div>
+
     <h3>The FASK Algorithm</h3>
 
     <h4>Description</h4>
@@ -3736,6 +3891,38 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>A fully directed, potentially cyclic, causal graph.</p>
 
+    <h3>The DirectLiNGAM Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="direct-lingam">
+        <p>Implements the Direct-LiNGAM algorithm. The reference is here:</p>
+        <p>S. Shimizu, T. Inazumi, Y. Sogawa, A. Hyvärinen, Y. Kawahara, T. Washio, P. O. Hoyer and K. Bollen.
+            DirectLiNGAM: A direct method for learning a linear non-Gaussian structural equation model. Journal of
+            Machine Learning Research,
+            12(Apr): 1225–1248, 2011.</p>
+        <p>A. Hyvärinen and S. M. Smith. Pairwise likelihood ratios for estimation of non-Gaussian structural
+            evaluation models.
+            Journal of Machine Learning Research 14:111-152, 2013.</p>
+    </div>
+
+    <h3>The DAGMA Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="dagma">
+        <p>Implements the DAGMA algorithm. The reference is here:</p>
+        <p>Bello, K., Aragam, B., & Ravikumar, P. (2022). Dagma: Learning dags via m-matrices and a log-determinant
+            acyclicity characterization. Advances in Neural Information Processing Systems, 35, 8226-8239.</p>
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as FASK.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as FASK.</p>
 
     <h3>The FASK-Vote Algorithm</h3>
 
@@ -3845,6 +4032,28 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Parameters</h4>
 
     <p><a href="#maxit">alpha</a>, <a href="#depth">depth</a></p>
+
+    <h3>The BOSS-LiNGAM Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="boss-lingam">
+        <p> Implements the BOSS-LiNGAM algorithm which first finds a CPDAG for the variables and then uses a
+            non-Gaussian orientation method to orient the undirected edges. The reference is as follows:</p>
+        <p>Hoyer et al., "Causal discovery of linear acyclic models with arbitrary distributions," UAI 2008.</p>
+        <p>The test for normality used for residuals is Anderson-Darling, following 'ad.test' in the nortest package of
+            R. The default alpha level is 0.05--that is, p values from AD below 0.05 are taken to indicate
+            nongaussianity.</p>
+        <p>It is assumed that the CPDAG is the result of a CPDAG search such as PC or GES. In any case, it is important
+            that the residuals be independent for ICA to work.</p>
+        <p>This may be replaced by a more general algorithm that allows alternatives for the CPDAG search and for the
+            the non-Gaussian orientation method.</p>
+        <p>This class is not configured to respect knowledge of forbidden and required edges.</p>
+        <p>Note: If one wants to analyze time series data using this algorithm,
+            one may set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform. The same goes for any
+            algorithm that has this parameter available in the interface.</p>
+    </div>
 
     <h3>The CStaR Algorithm</h3>
 
@@ -3977,7 +4186,16 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         regressing a child variable onto all of its parents in the model. </p>
     </div>
 
-    <h4>Parameters</h4>
+    <h3>Mixed Variable Polynomial Likelihood Ratio Test</h3>
+
+    <div id="mvplr-test">
+        <p>Performs a test of conditional independence X _||_ Y | Z1...Zn where all variables are either continuous or discrete.
+        This test is valid for both ordinal and non-ordinal discrete searchVariables.</p>
+        <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables. International
+        journal of data science and analytics, 6, 3-18.</p>
+    </div>
+
+    <h4>Parameters</h4>d
 
     <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
 
@@ -4319,7 +4537,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h3>GIC Scores</h3>
 
-    <div id="kim-scores"><p>
+    <div id="gic-scores"><p>
         This is a set of generalized information criterion (GIC) scores based on
         the paper, Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection
         criteria on high dimensions. The Journal 0of Machine Learning Research,
@@ -4329,6 +4547,14 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         to 1 (since the lambda choice is essentially picking a penalty discount
         for you).
     </p>
+    </div>
+
+    <h3>Mixed Variable Polynomial Scores</h3>
+
+    <div id="mvp-bic-score"><p>
+        <p>Implements a mixed variable polynomial BIC score. The reference is here:</p>
+        <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
+        International journal of data science and analytics, 6, 3-18.</p>
     </div>
 
     <h3>Poisson Prior Score</h3>
