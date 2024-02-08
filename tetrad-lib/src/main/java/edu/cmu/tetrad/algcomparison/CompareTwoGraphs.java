@@ -33,8 +33,6 @@ public class CompareTwoGraphs {
      */
     @NotNull
     public static String getEdgewiseComparisonString(Graph trueGraph, Graph targetGraph) {
-        boolean printStars = false;
-
         StringBuilder builder = new StringBuilder();
         GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(trueGraph, targetGraph);
 
@@ -76,27 +74,7 @@ public class CompareTwoGraphs {
         } else {
             for (int i = 0; i < edgesRemoved.size(); i++) {
                 Edge edge = edgesRemoved.get(i);
-
-                Node node1 = trueGraph.getNode(edge.getNode1().getName());
-                Node node2 = trueGraph.getNode(edge.getNode2().getName());
-
                 builder.append("\n").append(i + 1).append(". ").append(edge);
-
-                if (printStars) {
-                    boolean directedInGraph1 = false;
-
-                    if (Edges.isDirectedEdge(edge) && trueGraph.paths().existsSemiDirectedPath(node1, node2)) {
-                        directedInGraph1 = true;
-                    } else if ((Edges.isUndirectedEdge(edge) || Edges.isBidirectedEdge(edge))
-                            && (trueGraph.paths().existsSemiDirectedPath(node1, node2)
-                            || trueGraph.paths().existsSemiDirectedPath(node2, node1))) {
-                        directedInGraph1 = true;
-                    }
-
-                    if (directedInGraph1) {
-                        builder.append(" *");
-                    }
-                }
             }
         }
 
@@ -113,8 +91,10 @@ public class CompareTwoGraphs {
             }
         }
 
-        builder.append("\n\n"
-                + "Two-cycles in true correctly adjacent in estimated");
+        builder.append("""
+
+
+                Two-cycles in true correctly adjacent in estimated""");
 
         sort(allSingleEdges);
 
@@ -140,7 +120,10 @@ public class CompareTwoGraphs {
         }
 
         {
-            builder.append("\n\n" + "Edges incorrectly oriented");
+            builder.append("""
+
+
+                    Edges incorrectly oriented""");
 
             if (incorrect.isEmpty()) {
                 builder.append("\n  --NONE--");
@@ -158,7 +141,10 @@ public class CompareTwoGraphs {
         }
 
         {
-            builder.append("\n\n" + "Edges correctly oriented");
+            builder.append("""
+
+
+                    Edges correctly oriented""");
 
             List<Edge> correct = new ArrayList<>();
 
@@ -193,7 +179,7 @@ public class CompareTwoGraphs {
      * @return The comparison string.
      */
     public static String getStatsListTable(Graph trueGraph, Graph targetGraph) {
-        return getStatsListTable(trueGraph, targetGraph, null);
+        return getStatsListTable(trueGraph, targetGraph, null, -1);
     }
 
     /**
@@ -204,12 +190,12 @@ public class CompareTwoGraphs {
      * @param dataModel   The data model; some statistics (like BIC) may use this.
      * @return The comparison string.
      */
-    public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel) {
+    public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel, long elapsedTime) {
         Graph _targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
 
         List<Statistic> statistics = statistics();
 
-        TextTable table = new TextTable(statistics.size(), 3);
+        TextTable table = new TextTable(statistics.size() + 1, 3);
         NumberFormat nf = new DecimalFormat("0.###");
 
         List<String> abbr = new ArrayList<>();
@@ -225,9 +211,15 @@ public class CompareTwoGraphs {
             }
         }
 
+        if (elapsedTime >= 0) {
+            abbr.add("Elapsed");
+            desc.add("Elapsed time (s)");
+            values.add((double) elapsedTime / 1000.0);
+        }
+
         for (int i = 0; i < abbr.size(); i++) {
             double value = values.get(i);
-            table.setToken(i, 1, Double.isNaN(value) ? "-" : "" + nf.format(value));
+            table.setToken(i, 1, Double.isNaN(value) ? "-" : nf.format(value));
             table.setToken(i, 0, abbr.get(i));
             table.setToken(i, 2, desc.get(i));
         }

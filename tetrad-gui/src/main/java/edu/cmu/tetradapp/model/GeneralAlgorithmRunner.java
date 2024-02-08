@@ -43,10 +43,7 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.Unmarshallable;
+import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -72,6 +69,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private List<Graph> graphList = new ArrayList<>();
     private Knowledge knowledge;
     private transient List<IndependenceTest> independenceTests;
+    // The elapsed time for the algorithm to run.
+    private long elapsedTime = -1L;
 
     //===========================CONSTRUCTORS===========================//
     public GeneralAlgorithmRunner(GeneralAlgorithmRunner runner, Parameters parameters) {
@@ -234,6 +233,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     //============================PUBLIC METHODS==========================//
     @Override
     public void execute() {
+        long start = MillisecondTimes.cpuTimeMillis();
+
         List<Graph> graphList = new ArrayList<>();
 
         if (this.independenceTests != null) {
@@ -250,7 +251,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
         }
 
-        if (getDataModelList().size() == 0 && getSourceGraph() != null) {
+        if (getDataModelList().isEmpty() && getSourceGraph() != null) {
             if (algo instanceof UsesScoreWrapper) {
                 // We inject the graph to the score to satisfy the tests like MSeparationScore - Zhou
                 ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWrapper();
@@ -279,6 +280,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
                 }
             }
+
+
 
             Graph graph = algo.search(null, this.parameters);
 
@@ -401,6 +404,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     });
                 }
             }
+
+            long stop = MillisecondTimes.cpuTimeMillis();
+
+            this.elapsedTime = stop - start;
         }
 
         if (knowledge != null && knowledge.getNumTiers() > 0) {
@@ -683,4 +690,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return this.userAlgoSelections;
     }
 
+    /**
+     * Returns the elapsed time for the algorithm to run, in milliseconds.
+     *
+     * @return the elapsed time for the algorithm to run. If the algorithm does not (or has not) run, this is set to -1.
+     */
+    public long getElapsedTime() {
+        return elapsedTime;
+    }
 }
