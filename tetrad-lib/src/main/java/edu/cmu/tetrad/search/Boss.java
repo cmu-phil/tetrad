@@ -506,8 +506,10 @@ public class Boss implements SuborderSearch {
 
         @Override
         public Void call() {
-            double score = gst.trace(this.prefix, this.all);
-            this.scores[index] = score;
+            if (!Thread.currentThread().isInterrupted()) {
+                double score = gst.trace(this.prefix, this.all);
+                this.scores[index] = score;
+            }
 
             return null;
         }
