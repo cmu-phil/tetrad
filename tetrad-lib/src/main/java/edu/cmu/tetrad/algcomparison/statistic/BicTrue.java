@@ -30,7 +30,7 @@ public class BicTrue implements Statistic {
     /**
      * Returns the description of the statistic.
      *
-     * @return
+     * @return The description of the statistic.
      */
     @Override
     public String getDescription() {

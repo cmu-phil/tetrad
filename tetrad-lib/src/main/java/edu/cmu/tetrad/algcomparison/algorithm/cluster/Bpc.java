@@ -32,9 +32,19 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
 
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs a new BPC algorithm.
+     */
     public Bpc() {
     }
 
+    /**
+     * Runs the BPC algorithm.
+     *
+     * @param dataSet    The data set to run to the search on.
+     * @param parameters The paramters of the search.
+     * @return The graph.
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -117,22 +127,43 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
         }
     }
 
+    /**
+     * Returns the true graph if there is one.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The graph that was found.
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph dag = new EdgeListGraph(graph);
         return GraphTransforms.cpdagForDag(dag);
     }
 
+    /**
+     * Returns the description of the algorithm.
+     *
+     * @return The description of the algorithm.
+     */
     @Override
     public String getDescription() {
         return "BPC (Build Pure Clusters)";
     }
 
+    /**
+     * Returns the data type that the algorithm can handle.
+     *
+     * @return The data type that the algorithm can handle.
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * Returns the parameters for the algorithm.
+     *
+     * @return The parameters for the algorithm.
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

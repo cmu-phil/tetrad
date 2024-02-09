@@ -119,6 +119,10 @@
                 <version>3.6.3</version>
                 <configuration>
                     <javadocExecutable>/usr/bin/javadoc</javadocExecutable>
+                    <additionalJOptions>
+                        <additionalJOption>-Xmaxwarns</additionalJOption>
+                        <additionalJOption>1000</additionalJOption>
+                    </additionalJOptions>
                 </configuration>
                 <executions>
                     <execution>

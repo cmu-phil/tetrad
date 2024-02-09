@@ -110,6 +110,11 @@ public enum BpcTestType implements TetradSerializable {
 
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Returns the serializable instance of the test type.
+     *
+     * @return the serializable instance of the test type.
+     */
     public static BpcTestType serializableInstance() {
         return BpcTestType.GAUSSIAN_PVALUE;
     }

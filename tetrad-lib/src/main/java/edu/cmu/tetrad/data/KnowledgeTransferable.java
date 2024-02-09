@@ -39,6 +39,7 @@ public interface KnowledgeTransferable extends TetradSerializable {
 
     /**
      * Sets knowledge to a copy of the given object.
+     * @param knowledge the knowledge to set
      */
     void setKnowledge(Knowledge knowledge);
 }

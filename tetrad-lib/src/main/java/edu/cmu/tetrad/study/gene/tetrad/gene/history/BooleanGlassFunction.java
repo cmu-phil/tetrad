@@ -46,11 +46,11 @@ import java.util.List;
  * <p>
  * The basal expression level is used in these functions as a threshold, above which a lookup value of true is used for
  * the boolean tables and below which a lookup value of false is used. A return value of true from the boolean lookup is
- * then mapped to some double value, which we call the "true value," and a return value of false is mapped to some
- * other (lesser) double value, which we call the "false value." The authors allow for the possibility of setting the
- * basal expression to 0.5 and using 0.0 as the false value and 1.0 as the true value. Generalizing, we include a
- * constructor to allow the basalExpression, true value and false value to be set by the user, with the only condition
- * being that the false value must be less than the true value.
+ * then mapped to some double value, which we call the "true value," and a return value of false is mapped to some other
+ * (lesser) double value, which we call the "false value." The authors allow for the possibility of setting the basal
+ * expression to 0.5 and using 0.0 as the false value and 1.0 as the true value. Generalizing, we include a constructor
+ * to allow the basalExpression, true value and false value to be set by the user, with the only condition being that
+ * the false value must be less than the true value.
  *
  * @author josephramsey
  */
@@ -161,6 +161,8 @@ public class BooleanGlassFunction implements UpdateFunction {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a simple exemplar of this class to test serialization.
      */
     public static BooleanGlassFunction serializableInstance() {
         return new BooleanGlassFunction(BasicLagGraph.serializableInstance());
@@ -319,6 +321,8 @@ public class BooleanGlassFunction implements UpdateFunction {
 
     /**
      * Sets the lower bound for expression levels.
+     *
+     * @param lowerBound the new lower bound.
      */
     public void setLowerBound(double lowerBound) {
         this.lowerBound = lowerBound;

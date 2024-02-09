@@ -26,7 +26,8 @@ import java.util.List;
 import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
 
 /**
- * Peter/Clark algorithm (PC).
+ * BOSS-LiNGAM algorithm. This runs the BOSS algorithm to find the CPDAG and then orients the undirected edges using the
+ * LiNGAM algorithm.
  *
  * @author josephramsey
  */
@@ -38,13 +39,28 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
+    /**
+     * Constructs a new BOSS-LiNGAM algorithm.
+     */
     public BossLingam() {
     }
 
+    /**
+     * Constructs a new BOSS-LiNGAM algorithm with the given score.
+     *
+     * @param scoreWrapper the score to use
+     */
     public BossLingam(ScoreWrapper scoreWrapper) {
         this.score = scoreWrapper;
     }
 
+    /**
+     * Runs the BOSS-LiNGAM algorithm.
+     *
+     * @param dataModel  The data set to run to the search on.
+     * @param parameters The paramters of the search.
+     * @return The graph.
+     */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -92,21 +108,42 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
         }
     }
 
+    /**
+     * Returns the comparison graph.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The comparison graph.
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /**
+     * Returns the description of the algorithm.
+     *
+     * @return The description of the algorithm.
+     */
     @Override
     public String getDescription() {
         return "BOSS-LiNGAM using " + this.score.getDescription();
     }
 
+    /**
+     * Returns the data type that the algorithm can handle.
+     *
+     * @return The data type that the algorithm can handle.
+     */
     @Override
     public DataType getDataType() {
         return this.score.getDataType();
     }
 
+    /**
+     * Returns the parameters for the algorithm.
+     *
+     * @return The parameters for the algorithm.
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -120,26 +157,51 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
         return parameters;
     }
 
+    /**
+     * Returns the knowledge.
+     *
+     * @return The knowledge.
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * Sets the knowledge.
+     *
+     * @param knowledge a knowledge object.
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
 
+    /**
+     * Returns the score wrapper.
+     *
+     * @return The score wrapper.
+     */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
+    /**
+     * Sets the score wrapper.
+     *
+     * @param score the score wrapper.
+     */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 
+    /**
+     * Returns the bootstrap graphs.
+     *
+     * @return The bootstrap graphs.
+     */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

@@ -27,7 +27,7 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.MatrixF;
 import java.io.IOException;
 
 /**
- * Simple implementation of a directed Graph.  edges are just represented by float values (a zero == no edge) stored in
+ * Simple implementation of a directed Graph edges are just represented by float values (a zero == no edge) stored in
  * a matrix.
  * <p>
  * Two edges of different orientation can exist between two nodes, but no more than one edge of a given orientation can
@@ -62,6 +62,7 @@ public class Digraph extends BasicGraph {
      * Creates a OldDigraph reading it from file <code>fname</code>.
      *
      * @param fname the name of the file to read the graph from.
+     * @throws IOException if an error occurs while reading the file.
      */
     public Digraph(String fname) throws IOException {
         super(fname);
@@ -177,7 +178,7 @@ public class Digraph extends BasicGraph {
      * 0 (e.g. not null)
      *
      * @param j the index of the node
-     * @return
+     * @return an array with the indexes of the parents of node i.
      */
     public int[] getParents(int j) {
         if ((j < 0) || (j >= this.nNodes)) {

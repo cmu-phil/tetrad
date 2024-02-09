@@ -235,6 +235,11 @@ public final class BFci implements IGraphSearch {
         this.bossUseBes = useBes;
     }
 
+    /**
+     * Sets the seed for the random number generator.
+     *
+     * @param seed The seed for the random number generator.
+     */
     public void setSeed(long seed) {
         this.seed = seed;
     }

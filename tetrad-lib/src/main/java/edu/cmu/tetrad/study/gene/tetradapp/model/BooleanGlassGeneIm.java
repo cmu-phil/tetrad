@@ -80,7 +80,8 @@ public class BooleanGlassGeneIm implements SessionModel {
      * Obtains a boolean Glass function from the boolean Glass gene PM provided and uses it to create a Glass history
      * and a measurement simulator. Editing this IM consists in editing the wrapped measurement simulator.
      *
-     * @param genePm the BooleanGlassGenePm from which the BooleanGlassFunction is extracted.
+     * @param genePm     the BooleanGlassGenePm from which the BooleanGlassFunction is extracted.
+     * @param parameters the parameters for the measurement simulator.
      */
     public BooleanGlassGeneIm(BooleanGlassGenePm genePm, Parameters parameters) {
         try {
@@ -98,6 +99,8 @@ public class BooleanGlassGeneIm implements SessionModel {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a simple exemplar of this class to test serialization.
      */
     public static BooleanGlassGeneIm serializableInstance() {
         return new BooleanGlassGeneIm(
@@ -108,6 +111,8 @@ public class BooleanGlassGeneIm implements SessionModel {
 
     /**
      * Returns the list of factors in the history.
+     *
+     * @return the list of factors in the history.
      */
     public List<String> getFactors() {
         List<String> factors = new ArrayList<>();
@@ -148,6 +153,8 @@ public class BooleanGlassGeneIm implements SessionModel {
     /**
      * Returns the MeasurementSimulator. The simulation parameters can be edited directly with this. (Needs to be cast
      * to MeasurementSimulator.)
+     *
+     * @return the MeasurementSimulator.
      */
     public Object getSimulationParams() {
         return this.simulator;
@@ -157,6 +164,7 @@ public class BooleanGlassGeneIm implements SessionModel {
      * Returns the number of parents that a given factor has.
      *
      * @param factor the given factor, e.g. "V3", formatted as a String name.
+     * @return the number of parents that the given factor has.
      */
     public int getNumParents(int factor) {
         IndexedLagGraph connectivity = getBooleanGlassFunction()
@@ -168,6 +176,8 @@ public class BooleanGlassGeneIm implements SessionModel {
     /**
      * Returns the value in the given row of the boolean table for the given factor.
      *
+     * @param factor the factor.
+     * @param row    the row.
      * @return true or false.
      */
     public boolean getRowValueAt(int factor, int row) {
@@ -176,11 +186,18 @@ public class BooleanGlassGeneIm implements SessionModel {
 
     /**
      * Sets the value in the given row of the boolean table for the given factor to the given value (true/false).
+     *
+     * @param factor the factor.
+     * @param row    the row.
      */
     public void setRowValueAt(int factor, int row, boolean value) {
         getBooleanGlassFunction().getSubFunction(factor).setValue(row, value);
     }
 
+    /**
+     * Sets the simulation parameters for the MeasurementSimulator.
+     * @param simulator the simulation parameters for the MeasurementSimulator.
+     */
     public void setSimulator(MeasurementSimulatorParams simulator) {
         simulator.setHistory(getHistory());
         this.simulator = simulator;
@@ -337,6 +354,7 @@ public class BooleanGlassGeneIm implements SessionModel {
 
     /**
      * Returns the Glass function case to BooleanGlassFunction for convenience.
+     * @return the Glass function case to BooleanGlassFunction for convenience.
      */
     public BooleanGlassFunction getBooleanGlassFunction() {
         return this.glassFunction;
@@ -344,6 +362,7 @@ public class BooleanGlassGeneIm implements SessionModel {
 
     /**
      * Returns the Glass history case to GlassHistory for convenience.
+     * @return the Glass history case to GlassHistory for convenience.
      */
     public GeneHistory getHistory() {
         return this.history;
@@ -352,6 +371,8 @@ public class BooleanGlassGeneIm implements SessionModel {
     /**
      * Sets the error distribution for the given factor to the given distribution. Values for the transcription error
      * for this factor will be drawn from this distribution.
+     * @param factor the factor.
+     * @param distribution the distribution.
      */
     public void setErrorDistribution(int factor, Distribution distribution) {
         getBooleanGlassFunction().setErrorDistribution(factor, distribution);
@@ -360,7 +381,8 @@ public class BooleanGlassGeneIm implements SessionModel {
     /**
      * Returns the error distribution for the given factor.
      *
-     * @see #setErrorDistribution
+     * @param factor the factor.
+     * @return the error distribution for the given factor.
      */
     public Distribution getErrorDistribution(int factor) {
         return getBooleanGlassFunction().getErrorDistribution(factor);
@@ -399,10 +421,18 @@ public class BooleanGlassGeneIm implements SessionModel {
         }
     }
 
+    /**
+     * Returns the name of the session model.
+     * @return the name of the session model.
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Sets the name of the session model.
+     * @param name the name of the session model.
+     */
     public void setName(String name) {
         this.name = name;
     }

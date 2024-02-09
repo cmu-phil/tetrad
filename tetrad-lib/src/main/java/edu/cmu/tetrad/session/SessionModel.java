@@ -41,6 +41,8 @@ public interface SessionModel extends TetradSerializable {
 
     /**
      * Sets the name of the session model.
+     *
+     * @param name the name of the session model.
      */
     void setName(String name);
 

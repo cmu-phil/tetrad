@@ -39,7 +39,9 @@ import java.util.Set;
  */
 public class ClusterUtils {
 
-    // The prefix for latent variables.
+    /**
+     * The prefix for latent variables.
+     */
     public static final String LATENT_PREFIX = "_L";
 
     /**

@@ -42,6 +42,12 @@ import edu.cmu.tetrad.util.Parameters;
  * @author josephramsey
  */
 public class CompareExternalAlgorithms {
+
+    /**
+     * Run the example.
+     *
+     * @param args not used
+     */
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 

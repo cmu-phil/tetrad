@@ -65,6 +65,18 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
 
     //============================CONSTRUCTOR===========================//
 
+    /**
+     * Constructs a new ClassifierMbDiscrete object using the given training and test data, target variable, alpha
+     * value,
+     *
+     * @param trainPath        the path to the training data file
+     * @param testPath         the path to the test data file
+     * @param targetString     the name of the target variable
+     * @param alphaString      the alpha value for the Dirichlet estimator
+     * @param depthString      the depth for the PC-MB search
+     * @param priorString      the prior for the Dirichlet estimator
+     * @param maxMissingString the maximum number of missing values for a test case
+     */
     public ClassifierMbDiscrete(String trainPath, String testPath, String targetString,
                                 String alphaString, String depthString, String priorString, String maxMissingString) {
         try {

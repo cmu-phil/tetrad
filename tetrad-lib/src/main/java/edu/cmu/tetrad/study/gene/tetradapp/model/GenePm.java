@@ -43,7 +43,9 @@ public abstract class GenePm implements TetradSerializable {
     private final LagGraph lagGraph;
 
     /**
-     * Construct a new gene pm, wrapping the given lag workbench.
+     * Construct a new gene pm, wrapping the given lag graph.
+     *
+     * @param lagGraph The lag graph to wrap.
      */
     public GenePm(LagGraph lagGraph) {
         if (lagGraph == null) {
@@ -55,6 +57,8 @@ public abstract class GenePm implements TetradSerializable {
 
     /**
      * Gets the lag workbench that is wrapped.
+     *
+     * @return The lag workbench that is wrapped.
      */
     public LagGraph getLagGraph() {
         return this.lagGraph;

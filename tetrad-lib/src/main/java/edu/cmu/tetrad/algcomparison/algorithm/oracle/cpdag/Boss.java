@@ -44,14 +44,29 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     private List<Graph> bootstrapGraphs = new ArrayList<>();
     private long seed = 01;
 
+    /**
+     * Constructs a new BOSS algorithm.
+     */
     public Boss() {
         // Used in reflection; do not delete.
     }
 
+    /**
+     * Constructs a new BOSS algorithm with the given score.
+     *
+     * @param score the score to use
+     */
     public Boss(ScoreWrapper score) {
         this.score = score;
     }
 
+    /**
+     * Runs the BOSS algorithm.
+     *
+     * @param dataModel  The data set to run to the search on.
+     * @param parameters The paramters of the search.
+     * @return The graph that was found.
+     */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         this.seed = parameters.getLong(Params.SEED);
@@ -97,21 +112,42 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         }
     }
 
+    /**
+     * Returns the true graph if there is one.
+     *
+     * @param graph The true directed graph, if there is one.
+     * @return The graph that was found.
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /**
+     * Returns the description of the algorithm.
+     *
+     * @return The description of the algorithm.
+     */
     @Override
     public String getDescription() {
         return "BOSS (Best Order Score Search) using " + this.score.getDescription();
     }
 
+    /**
+     * Returns the name of the algorithm.
+     *
+     * @return The name of the algorithm.
+     */
     @Override
     public DataType getDataType() {
         return this.score.getDataType();
     }
 
+    /**
+     * Returns the parameters for the algorithm.
+     *
+     * @return The parameters for the algorithm.
+     */
     @Override
     public List<String> getParameters() {
         ArrayList<String> params = new ArrayList<>();
@@ -128,26 +164,51 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         return params;
     }
 
+    /**
+     * Returns the score wrapper.
+     *
+     * @return The score wrapper.
+     */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
+    /**
+     * Sets the score wrapper.
+     *
+     * @param score the score wrapper.
+     */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 
+    /**
+     * Returns the knowledge.
+     *
+     * @return The knowledge.
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * Sets the knowledge.
+     *
+     * @param knowledge a knowledge object.
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
+    /**
+     * Returns the bootstrap graphs.
+     *
+     * @return The bootstrap graphs.
+     */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

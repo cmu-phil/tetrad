@@ -67,6 +67,11 @@ public enum BpcAlgorithmType implements TetradSerializable {
 
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Returns the serializable instance of the algorithm type.
+     *
+     * @return The serializable instance of the algorithm type.
+     */
     public static BpcAlgorithmType serializableInstance() {
         return BpcAlgorithmType.BUILD_PURE_CLUSTERS;
     }

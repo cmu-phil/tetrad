@@ -99,6 +99,7 @@ public interface DataSet extends DataModel {
     /**
      * If this is a continuous data set, returns the correlation matrix.
      *
+     * @return the correlation matrix.
      * @throws IllegalStateException if this is not a continuous data set.
      */
     Matrix getCorrelationMatrix();
@@ -106,6 +107,7 @@ public interface DataSet extends DataModel {
     /**
      * If this is a continuous data set, returns the covariance matrix.
      *
+     * @return the covariance matrix.
      * @throws IllegalStateException if this is not a continuous data set.
      */
     Matrix getCovarianceMatrix();
@@ -125,6 +127,8 @@ public interface DataSet extends DataModel {
     Matrix getDoubleData();
 
     /**
+     * @param row    The index of the case.
+     * @param column The index of the variable.
      * @return the value at the given row and column as an int, rounding if necessary. For discrete variables, this
      * returns the category index of the datum for the variable at that column. Returns DiscreteVariable.MISSING_VALUE
      * for missing values.
@@ -257,13 +261,17 @@ public interface DataSet extends DataModel {
     /**
      * Sets the value at the given (row, column) to the given value.
      *
-     * @param row The index of the case.
-     * @param col The index of the variable.
+     * @param row   The index of the case.
+     * @param col   The index of the variable.
+     * @param value The value to set.
      */
     void setObject(int row, int col, Object value);
 
     /**
      * Marks the given column as selected if 'selected' is true or deselected if 'selected' is false.
+     *
+     * @param variable The variable to select or deselect.
+     * @param selected True to select the variable, false to deselect it.
      */
     void setSelected(Node variable, boolean selected);
 
@@ -274,6 +282,7 @@ public interface DataSet extends DataModel {
      * variables of this DataSet. The ordering of the elements of vars will be the same as in the list of variables in
      * this DataSet.
      *
+     * @param vars The variables to include in the new data set.
      * @return a new data set consisting of the variables in the list vars.
      */
     DataSet subsetColumns(List<Node> vars);

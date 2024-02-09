@@ -45,6 +45,7 @@ public interface DataModel
 
     /**
      * Sets the name of the data model (may be null).
+     * @param name the name to set
      */
     void setName(String name);
 
@@ -53,13 +54,28 @@ public interface DataModel
      */
     String toString();
 
+    /**
+     * @return true if the data model is continuous, false otherwise.
+     */
     boolean isContinuous();
 
+    /**
+     * @return true if the data model is discrete, false otherwise.
+     */
     boolean isDiscrete();
 
+    /**
+     * @return true if the data model is mixed continuous/discrete, false otherwise.
+     */
     boolean isMixed();
 
+    /**
+     * @return the variable with the given name, or null if no such variable exists.
+     */
     Node getVariable(String name);
 
+    /**
+     * @return a copy of the data model.
+     */
     DataModel copy();
 }

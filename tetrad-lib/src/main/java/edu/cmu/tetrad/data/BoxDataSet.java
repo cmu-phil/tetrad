@@ -1356,6 +1356,9 @@ public final class BoxDataSet implements DataSet {
         this.nf = nf;
     }
 
+    /**
+     * @return the data box that holds the data for this data set.
+     */
     public DataBox getDataBox() {
         return this.dataBox;
     }

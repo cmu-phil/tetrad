@@ -34,6 +34,11 @@ public class BooleanGlassSimulation implements Simulation {
         this.randomGraph = graph;
     }
 
+    /**
+     * Lays out the nodes in the graph from top to bottom.
+     *
+     * @param graph The graph to lay out.
+     */
     public static void topToBottomLayout(TimeLagGraph graph) {
 
         final int xStart = 65;
@@ -66,6 +71,11 @@ public class BooleanGlassSimulation implements Simulation {
         }
     }
 
+    /**
+     * Creates a new data set.
+     * @param parameters The parameters to use in the simulation.
+     * @param newModel If true, a new model is created. If false, the model is reused.
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -123,21 +133,39 @@ public class BooleanGlassSimulation implements Simulation {
         this.graph = graph;
     }
 
+    /**
+     * Returns the true graph.
+     * @param index The index of the desired true graph.
+     * @return The true graph.
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graph;
     }
 
+    /**
+     * Returns the simulated data set.
+     * @param index The index of the desired simulated data set.
+     * @return The simulated data set.
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /**
+     * Returns the description of the simulation.
+     * @return The description of the simulation.
+     */
     @Override
     public String getDescription() {
         return "Boolean Glass Simulation " + this.randomGraph.getDescription();
     }
 
+    /**
+     * Returns the parameters for the simulation.
+     * @return The parameters for the simulation.
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -164,11 +192,19 @@ public class BooleanGlassSimulation implements Simulation {
         return parameters;
     }
 
+    /**
+     * Returns the number of true graphs.
+     * @return The number of true graphs.
+     */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /**
+     * Returns the data type of the simulation.
+     * @return The data type of the simulation.
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;

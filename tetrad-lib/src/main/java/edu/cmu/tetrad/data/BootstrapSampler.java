@@ -52,6 +52,9 @@ public final class BootstrapSampler {
     /**
      * This method takes a dataset and a sample size and creates a new dataset containing that number of samples by
      * drawing with replacement from the original dataset.
+     *
+     * @param dataSet       the dataset to sample from
+     * @param newSampleSize the number of samples to draw
      */
     public DataSet sample(DataSet dataSet, int newSampleSize) {
         if (newSampleSize < 1) {
@@ -91,11 +94,21 @@ public final class BootstrapSampler {
         return newDataSet;
     }
 
-
+    /**
+     * This method takes a dataset and a sample size and creates a new dataset containing that number of samples by
+     *
+     * @return the sample size
+     */
     public boolean isWithoutReplacements() {
         return this.withoutReplacements;
     }
 
+    /**
+     * This method takes a dataset and a sample size and creates a new dataset containing that number of samples by
+     * drawing with replacement from the original dataset.
+     *
+     * @param withoutReplacements the sample size
+     */
     public void setWithoutReplacements(boolean withoutReplacements) {
         this.withoutReplacements = withoutReplacements;
     }

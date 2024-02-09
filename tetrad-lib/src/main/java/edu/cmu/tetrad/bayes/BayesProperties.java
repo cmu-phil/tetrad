@@ -50,6 +50,7 @@ public final class BayesProperties {
 
     /**
      * Constructs a new BayesProperties object for the given data set.
+     *
      * @param dataSet The data set.
      */
     public BayesProperties(DataSet dataSet) {
@@ -91,15 +92,6 @@ public final class BayesProperties {
                 this.numCategories[i] = variable.getNumCategories();
             }
         }
-    }
-
-    private static int getRowIndex(int[] dim, int[] values) {
-        int rowIndex = 0;
-        for (int i = 0; i < dim.length; i++) {
-            rowIndex *= dim[i];
-            rowIndex += values[i];
-        }
-        return rowIndex;
     }
 
     /**
@@ -157,7 +149,6 @@ public final class BayesProperties {
         return _ret;
     }
 
-
     /**
      * Call after calling getLikelihoodP().
      *
@@ -192,6 +183,39 @@ public final class BayesProperties {
      */
     public double getLikelihood() {
         return this.likelihood;
+    }
+
+    /**
+     * Returns the sample size.
+     *
+     * @return The sample size.
+     */
+    public int getSampleSize() {
+        return this.sampleSize;
+    }
+
+    /**
+     * Returns the variable with the given name (assumed the target).
+     *
+     * @param targetName The name of the target variable.
+     */
+    public Node getVariable(String targetName) {
+        for (Node node : this.variables) {
+            if (node.getName().equals(targetName)) {
+                return node;
+            }
+        }
+
+        return null;
+    }
+
+    private static int getRowIndex(int[] dim, int[] values) {
+        int rowIndex = 0;
+        for (int i = 0; i < dim.length; i++) {
+            rowIndex *= dim[i];
+            rowIndex += values[i];
+        }
+        return rowIndex;
     }
 
     private int getDof(Graph graph) {
@@ -316,26 +340,6 @@ public final class BayesProperties {
         return r * c;
     }
 
-    /**
-     * Returns the number of categories for the given variable.
-     */
-    public int getSampleSize() {
-        return this.sampleSize;
-    }
-
-    /**
-     * Returns the variable with the given name (assumed the target).
-     */
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
-
     private DiscreteVariable getVariable(int i) {
         if (this.variables.get(i) instanceof DiscreteVariable) {
             return (DiscreteVariable) this.variables.get(i);
@@ -353,6 +357,7 @@ public final class BayesProperties {
 
         /**
          * Constructs a new Ret object.
+         *
          * @param lik The likelihood.
          * @param dof The degrees of freedom.
          */
@@ -363,6 +368,7 @@ public final class BayesProperties {
 
         /**
          * Returns the likelihood.
+         *
          * @return The likelihood.
          */
         public double getLik() {
@@ -371,7 +377,8 @@ public final class BayesProperties {
 
         /**
          * Returns the degrees of freedom.
-         * @return  The degrees of freedom.
+         *
+         * @return The degrees of freedom.
          */
         public int getDof() {
             return this.dof;

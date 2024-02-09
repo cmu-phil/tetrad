@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -35,6 +36,7 @@ import java.util.stream.IntStream;
  * @author Ricardo Silva
  */
 public final class Clusters implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -70,6 +72,8 @@ public final class Clusters implements TetradSerializable {
 
     /**
      * Copy constructor.
+     *
+     * @param clusters the clusters to copy.
      */
     public Clusters(Clusters clusters) {
         this.clusters = new HashMap<>(clusters.clusters);
@@ -79,6 +83,8 @@ public final class Clusters implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a simple exemplar of this class to test serialization.
      */
     public static Clusters serializableInstance() {
         return new Clusters();
@@ -104,6 +110,7 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
+     * @param varNames the names of the variables.
      * @return the list of edges not in any tier.
      */
     public List<String> getVarsNotInCluster(List<String> varNames) {
@@ -125,6 +132,8 @@ public final class Clusters implements TetradSerializable {
 
     /**
      * Sets the number of clusters represented, or -1 if the number is allowed to vary.
+     *
+     * @param numClusters the number of clusters represented, or -1 if the number is allowed to vary.
      */
     public void setNumClusters(int numClusters) {
         if (numClusters < -1) {
@@ -207,6 +216,7 @@ public final class Clusters implements TetradSerializable {
 
     /**
      * Removes the given variable from the clusters.
+     * @param var the variable to remove.
      */
     public void removeFromClusters(String var) {
         this.clusters.remove(var);
@@ -221,6 +231,11 @@ public final class Clusters implements TetradSerializable {
         return hash;
     }
 
+    /**
+     * Compares this object to another.
+     * @param o the object to compare to.
+     * @return true if the objects are equal, false otherwise.
+     */
     public boolean equals(Object o) {
         if (o == this) {
             return true;
@@ -289,15 +304,15 @@ public final class Clusters implements TetradSerializable {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (this.clusters == null) {
-            throw new NullPointerException();
-        }
     }
 
+    /**
+     * @return true if there are no clusters, false otherwise.
+     */
     public boolean isEmpty() {
         return this.clusters.keySet().isEmpty();
     }
