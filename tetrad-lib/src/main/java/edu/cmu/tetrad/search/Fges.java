@@ -133,6 +133,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     private boolean symmetricFirstStep = false;
     // True, if FGES should run in a single thread, no if parallelized.
     private boolean parallelized = false;
+    private ExecutorService pool;
 
     /**
      * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
@@ -149,6 +150,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
         setScore(score);
         this.graph = new EdgeListGraph(getVariables());
+        this.pool = new ForkJoinPool(10 * Runtime.getRuntime().availableProcessors());
     }
 
 
@@ -387,7 +389,12 @@ public final class Fges implements IGraphSearch, DagScorer {
 
         int chunkSize = getChunkSize(nodes.size());
 
-        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+        for (int i = 0; i < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
+            if (Thread.currentThread().isInterrupted()) {
+                pool.shutdownNow();
+                break;
+            }
+
             NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, min(nodes.size(), i + chunkSize),
                     nodes, emptySet);
 
@@ -399,7 +406,11 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
 
         if (parallelized) {
-            ForkJoinPool.commonPool().invokeAll(tasks);
+            try {
+                pool.invokeAll(tasks);
+            } catch (InterruptedException e) {
+                pool.shutdownNow();
+            }
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -540,7 +551,12 @@ public final class Fges implements IGraphSearch, DagScorer {
 
         int chunkSize = getChunkSize(nodes.size());
 
-        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+        for (int i = 0; i < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
+            if (Thread.currentThread().isInterrupted()) {
+                pool.shutdownNow();
+                break;
+            }
+
             AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
 
             if (!this.parallelized) {
@@ -551,7 +567,11 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
 
         if (this.parallelized) {
-            ForkJoinPool.commonPool().invokeAll(tasks);
+            try {
+                pool.invokeAll(tasks);
+            } catch (InterruptedException e) {
+                pool.shutdownNow();
+            }
         }
     }
 
@@ -633,7 +653,12 @@ public final class Fges implements IGraphSearch, DagScorer {
         int chunkSize = getChunkSize(TT.size());
         List<EvalTask> tasks = new ArrayList<>();
 
-        for (int i = 0; i < TT.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+        for (int i = 0; i < TT.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
+            if (Thread.currentThread().isInterrupted()) {
+                pool.shutdownNow();
+                break;
+            }
+
             EvalTask task = new EvalTask(TT, i, min(TT.size(), i + chunkSize), hashIndices);
 
             if (!this.parallelized) {
@@ -649,17 +674,24 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
 
         if (this.parallelized) {
-            List<Future<EvalPair>> futures = ForkJoinPool.commonPool().invokeAll(tasks);
+            List<Future<EvalPair>> futures = null;
+            try {
+                futures = pool.invokeAll(tasks);
+            } catch (InterruptedException e) {
+                pool.shutdownNow();
+            }
 
-            for (Future<EvalPair> future : futures) {
-                try {
-                    EvalPair pair = future.get();
-                    if (pair.bump > maxBump) {
-                        maxT = pair.T;
-                        maxBump = pair.bump;
+            if (futures != null) {
+                for (Future<EvalPair> future : futures) {
+                    try {
+                        EvalPair pair = future.get();
+                        if (pair.bump > maxBump) {
+                            maxT = pair.T;
+                            maxBump = pair.bump;
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
                     }
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
                 }
             }
         }
@@ -775,7 +807,12 @@ public final class Fges implements IGraphSearch, DagScorer {
             return;
         }
 
-        for (Iterator<KnowledgeEdge> it = getKnowledge().requiredEdgesIterator(); it.hasNext() && !Thread.currentThread().isInterrupted(); ) {
+        for (Iterator<KnowledgeEdge> it = getKnowledge().requiredEdgesIterator(); it.hasNext() /*&& !Thread.currentThread().isInterrupted()*/; ) {
+            if (Thread.currentThread().isInterrupted()) {
+                pool.shutdownNow();
+                break;
+            }
+
             KnowledgeEdge next = it.next();
 
             Node nodeA = graph.getNode(next.getFrom());
@@ -792,6 +829,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
         for (Edge edge : graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
+                pool.shutdownNow();
                 break;
             }
 
@@ -1193,7 +1231,12 @@ public final class Fges implements IGraphSearch, DagScorer {
 
                 Node y = nodes.get(i);
 
-                for (int j = i + 1; j < nodes.size() && !Thread.currentThread().isInterrupted(); j++) {
+                for (int j = i + 1; j < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; j++) {
+                    if (Thread.interrupted()) {
+                        pool.shutdownNow();
+                        break;
+                    }
+
                     Node x = nodes.get(j);
 
                     if (existsKnowledge()) {
