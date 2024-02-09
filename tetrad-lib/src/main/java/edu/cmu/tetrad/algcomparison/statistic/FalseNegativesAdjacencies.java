@@ -10,20 +10,24 @@ import java.util.List;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class FalseNegativesAdjacencies implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "FN-Adj";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "False Negatives Adjacencies";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int fn = 0;
@@ -46,6 +50,7 @@ public class FalseNegativesAdjacencies implements Statistic {
         return fn;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

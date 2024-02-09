@@ -28,8 +28,10 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * of a global maximum.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface SemOptimizer extends TetradSerializable {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**
@@ -39,8 +41,18 @@ public interface SemOptimizer extends TetradSerializable {
      */
     void optimize(SemIm sem);
 
+    /**
+     * <p>getNumRestarts.</p>
+     *
+     * @return a int
+     */
     int getNumRestarts();
 
+    /**
+     * <p>setNumRestarts.</p>
+     *
+     * @param numRestarts a int
+     */
     void setNumRestarts(int numRestarts);
 }
 

@@ -44,6 +44,10 @@ class NormalityTests {
 
     /**
      * Constructs a readable table of normality test results
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param variable a {@link edu.cmu.tetrad.data.ContinuousVariable} object
+     * @return a {@link java.lang.String} object
      */
     public static String runNormalityTests(DataSet dataSet, ContinuousVariable variable) {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -114,7 +118,6 @@ class NormalityTests {
      * @return Kolmogorov-Smirnov statistics: index 0 is the D_n value, 1-5 are the critical values at alpha = .2, .15.
      * .10, .05, and .01 respectively.
      */
-
     public static double[] kolmogorovSmirnov(DataSet dataSet, ContinuousVariable variable) {
         int n = dataSet.getNumRows();
         int columnIndex = dataSet.getColumn(variable);

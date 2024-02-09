@@ -39,6 +39,7 @@ import java.util.*;
  * Checks independence facts for variables associated with a sepset by simply querying the sepset
  *
  * @author Robert Tillman
+ * @version $Id: $Id
  */
 public class IndTestSepsetDci implements IndependenceTest {
 
@@ -65,6 +66,9 @@ public class IndTestSepsetDci implements IndependenceTest {
 
     /**
      * Constructs a new independence test that returns d-separation facts for the given graph as independence results.
+     *
+     * @param sepset a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
+     * @param nodes a {@link java.util.List} object
      */
     public IndTestSepsetDci(SepsetMapDci sepset, List<Node> nodes) {
         if (sepset == null) {
@@ -84,6 +88,8 @@ public class IndTestSepsetDci implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Required by IndependenceTest.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -102,12 +108,9 @@ public class IndTestSepsetDci implements IndependenceTest {
     }
 
     /**
-     * Checks the indicated independence fact.
+     * {@inheritDoc}
      *
-     * @param x one node.
-     * @param y a second node.
-     * @param z a List of nodes (conditioning variables)
-     * @return True iff x _||_ y | z
+     * Checks the indicated independence fact.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (z == null) {
@@ -155,12 +158,16 @@ public class IndTestSepsetDci implements IndependenceTest {
 
     /**
      * Needed for IndependenceTest interface. P value is not meaningful here.
+     *
+     * @return a double
      */
     public double getPValue() {
         return Double.NaN;
     }
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the list of TetradNodes over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
@@ -168,18 +175,26 @@ public class IndTestSepsetDci implements IndependenceTest {
         return Collections.unmodifiableList(this.observedVars);
     }
 
+    /** {@inheritDoc} */
     public boolean determines(List<Node> z, Node x1) {
         return z.contains(x1);
     }
 
+    /**
+     * <p>getAlpha.</p>
+     *
+     * @return a double
+     */
     public double getAlpha() {
         throw new UnsupportedOperationException();
     }
 
+    /** {@inheritDoc} */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
+    /** {@inheritDoc} */
     public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
             Node variable = getVariables().get(i);
@@ -193,31 +208,53 @@ public class IndTestSepsetDci implements IndependenceTest {
     }
 
     /**
+     * <p>getVariable.</p>
+     *
      * @return the variable associated with the given node in the graph.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     public Node getVariable(Node node) {
         return this.nodesToVariables.get(node);
     }
 
     /**
+     * <p>getNode.</p>
+     *
      * @return the node associated with the given variable in the graph.
+     * @param variable a {@link edu.cmu.tetrad.graph.Node} object
      */
     public Node getNode(Node variable) {
         return this.variablesToNodes.get(variable);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "D-separation";
     }
 
+    /**
+     * <p>getData.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getData() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /** {@inheritDoc} */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
  * graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ArrowheadFpr implements Statistic {
     private static final long serialVersionUID = 23L;
@@ -20,16 +21,19 @@ public class ArrowheadFpr implements Statistic {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "AHFPR";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Arrowhead False Positive Rate";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
@@ -38,6 +42,7 @@ public class ArrowheadFpr implements Statistic {
         return adjFp / (double) (adjFp + adjTn);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

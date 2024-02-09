@@ -25,12 +25,16 @@ package edu.cmu.tetrad.calculator.expression;
  * Looks up the value of a variable.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public interface Context {
 
 
     /**
+     * <p>getValue.</p>
+     *
      * @return the double value for the given var, or null if the variable has not been assigned a value.
+     * @param var a {@link java.lang.String} object
      */
     Double getValue(String var);
 

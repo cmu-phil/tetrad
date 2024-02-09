@@ -27,6 +27,7 @@ import java.util.List;
  * Dec 18, 2018 11:21:23 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class Metadata {
 
@@ -58,9 +59,9 @@ public class Metadata {
     }
 
     /**
-     * Returns a string representation of this object.
+     * {@inheritDoc}
      *
-     * @return a string representation of this object.
+     * Returns a string representation of this object.
      */
     @Override
     public String toString() {

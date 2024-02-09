@@ -20,6 +20,7 @@ import java.util.List;
  * SEM simulation.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemSimulation implements Simulation {
 
@@ -32,10 +33,20 @@ public class SemSimulation implements Simulation {
     private List<SemIm> ims = new ArrayList<>();
     private long seed = -1L;
 
+    /**
+     * <p>Constructor for SemSimulation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public SemSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
+    /**
+     * <p>Constructor for SemSimulation.</p>
+     *
+     * @param pm a {@link edu.cmu.tetrad.sem.SemPm} object
+     */
     public SemSimulation(SemPm pm) {
         SemGraph graph = pm.getGraph();
         graph.setShowErrorTerms(false);
@@ -43,6 +54,11 @@ public class SemSimulation implements Simulation {
         this.pm = pm;
     }
 
+    /**
+     * <p>Constructor for SemSimulation.</p>
+     *
+     * @param im a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemSimulation(SemIm im) {
         SemGraph graph = im.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
@@ -54,6 +70,7 @@ public class SemSimulation implements Simulation {
         this.ims.add(im);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -105,21 +122,25 @@ public class SemSimulation implements Simulation {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Linear, Gaussian SEM simulation using " + this.randomGraph.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -148,11 +169,13 @@ public class SemSimulation implements Simulation {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
@@ -201,6 +224,11 @@ public class SemSimulation implements Simulation {
         return this.im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
     }
 
+    /**
+     * <p>getSemIms.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<SemIm> getSemIms() {
         return ims;
     }

@@ -40,6 +40,7 @@ import java.util.List;
  * Wraps a SemEstimator for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemEstimatorWrapper implements SessionModel {
     @Serial
@@ -60,6 +61,10 @@ public class SemEstimatorWrapper implements SessionModel {
     /**
      * Private constructor for serialization only. Problem is, for the real constructors, I'd like to call the degrees
      * of freedom check, which pops up a dialog. This is irritating when running unit tests. jdramsey 8/29/07
+     *
+     * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
+     * @param semPm a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemEstimatorWrapper(DataModel dataModel, SemPm semPm, Parameters params) {
         this.params = params;
@@ -89,6 +94,13 @@ public class SemEstimatorWrapper implements SessionModel {
         }
     }
 
+    /**
+     * <p>Constructor for SemEstimatorWrapper.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param semPmWrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SemEstimatorWrapper(DataWrapper dataWrapper,
                                SemPmWrapper semPmWrapper, Parameters params) {
         this(dataWrapper.getSelectedDataModel(), semPmWrapper.getSemPm(), params);
@@ -99,6 +111,7 @@ public class SemEstimatorWrapper implements SessionModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
      */
     public static SemEstimatorWrapper serializableInstance() {
         List<Node> variables = new LinkedList<>();
@@ -146,34 +159,70 @@ public class SemEstimatorWrapper implements SessionModel {
     }
 
     //============================PUBLIC METHODS=========================//
+    /**
+     * <p>Getter for the field <code>semEstimator</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemEstimator} object
+     */
     public SemEstimator getSemEstimator() {
         return this.semEstimator;
     }
 
+    /**
+     * <p>Setter for the field <code>semEstimator</code>.</p>
+     *
+     * @param semEstimator a {@link edu.cmu.tetrad.sem.SemEstimator} object
+     */
     public void setSemEstimator(SemEstimator semEstimator) {
         this.semEstimator = semEstimator;
     }
 
+    /**
+     * <p>getEstimatedSemIm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getEstimatedSemIm() {
         return this.semEstimator.getEstimatedSem();
     }
 
+    /**
+     * <p>getSemOptimizerType.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getSemOptimizerType() {
         return getParams().getString("semOptimizerType", "Regression");
     }
 
+    /**
+     * <p>setSemOptimizerType.</p>
+     *
+     * @param type a {@link java.lang.String} object
+     */
     public void setSemOptimizerType(String type) {
         getParams().set("semOptimizerType", type);
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.semEstimator.getEstimatedSem().getSemPm().getGraph();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
@@ -201,6 +250,11 @@ public class SemEstimatorWrapper implements SessionModel {
         s.defaultReadObject();
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }
@@ -266,18 +320,38 @@ public class SemEstimatorWrapper implements SessionModel {
         return new SemIm(semPm).getNumFixedParams() > 0;
     }
 
+    /**
+     * <p>getScoreType.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.ScoreType} object
+     */
     public ScoreType getScoreType() {
         return (ScoreType) this.params.get("scoreType", ScoreType.SemBic);
     }
 
+    /**
+     * <p>setScoreType.</p>
+     *
+     * @param scoreType a {@link edu.cmu.tetrad.sem.ScoreType} object
+     */
     public void setScoreType(ScoreType scoreType) {
         this.params.set("scoreType", scoreType);
     }
 
+    /**
+     * <p>getNumRestarts.</p>
+     *
+     * @return a int
+     */
     public int getNumRestarts() {
         return getParams().getInt("numRestarts", 1);
     }
 
+    /**
+     * <p>setNumRestarts.</p>
+     *
+     * @param numRestarts a int
+     */
     public void setNumRestarts(int numRestarts) {
         getParams().set("numRestarts", numRestarts);
     }

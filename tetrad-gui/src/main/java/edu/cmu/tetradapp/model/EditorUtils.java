@@ -35,8 +35,15 @@ import java.util.prefs.Preferences;
  * Some basic utilities for editor stuff.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class EditorUtils {
+    /**
+     * <p>getTopLeftPoint.</p>
+     *
+     * @param modelElements a {@link java.util.List} object
+     * @return a {@link java.awt.Point} object
+     */
     public static Point getTopLeftPoint(List<Object> modelElements) {
         int x = Integer.MAX_VALUE;
         int y = Integer.MAX_VALUE;
@@ -102,6 +109,17 @@ public class EditorUtils {
         }
     }
 
+    /**
+     * <p>getSaveFileWithPath.</p>
+     *
+     * @param prefix a {@link java.lang.String} object
+     * @param suffix a {@link java.lang.String} object
+     * @param parent a {@link java.awt.Component} object
+     * @param overwrite a boolean
+     * @param dialogName a {@link java.lang.String} object
+     * @param saveLocation a {@link java.lang.String} object
+     * @return a {@link java.io.File} object
+     */
     public static File getSaveFileWithPath(String prefix, String suffix,
                                            Component parent, boolean overwrite, String dialogName, String saveLocation) {
         JFileChooser chooser = EditorUtils.createJFileChooser(dialogName, saveLocation);
@@ -173,6 +191,7 @@ public class EditorUtils {
      * @param overwrite True iff the file prefix.suffix should be overwritten. If false, the next avialable filename in
      *                  the series prefix{n}.suffix will be suggested.
      * @return null, if the selection was cancelled or there was an error.
+     * @param dialogName a {@link java.lang.String} object
      */
     public static File getSaveFile(String prefix, String suffix,
                                    Component parent, boolean overwrite, String dialogName) {

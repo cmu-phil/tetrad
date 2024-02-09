@@ -33,6 +33,7 @@ import java.util.List;
  * marked up text.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphIntersectionsEditor extends JPanel {
 
@@ -44,6 +45,8 @@ public class GraphIntersectionsEditor extends JPanel {
 
     /**
      * Constructs the editor given the model
+     *
+     * @param comparison a {@link edu.cmu.tetradapp.editor.GraphAdjacencyIntersectionWrapper} object
      */
     public GraphIntersectionsEditor(GraphAdjacencyIntersectionWrapper comparison) {
         this.graphs = comparison.getGraphs();

@@ -63,6 +63,7 @@ import java.util.concurrent.RecursiveTask;
  * @see Fas
  * @see FciOrient
  * @see Knowledge
+ * @version $Id: $Id
  */
 public final class FciMax implements IGraphSearch {
     // The independence test.
@@ -94,6 +95,8 @@ public final class FciMax implements IGraphSearch {
 
     /**
      * Constructor.
+     *
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public FciMax(IndependenceTest independenceTest) {
         if (independenceTest == null) {

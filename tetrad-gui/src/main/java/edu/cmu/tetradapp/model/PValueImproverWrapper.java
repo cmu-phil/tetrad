@@ -44,6 +44,7 @@ import java.util.List;
  * Extends AbstractAlgorithmRunner to produce a wrapper for the GES algorithm.
  *
  * @author Ricardo Silva
+ * @version $Id: $Id
  */
 public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     @Serial
@@ -59,6 +60,13 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     private SemIm originalSemIm;
     private SemIm newSemIm;
 
+    /**
+     * <p>Constructor for PValueImproverWrapper.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
     public PValueImproverWrapper(DataWrapper dataWrapper,
                                  Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
@@ -69,6 +77,12 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
 
     //============================CONSTRUCTORS============================//
 
+    /**
+     * <p>Constructor for PValueImproverWrapper.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public PValueImproverWrapper(DataWrapper dataWrapper,
                                  Parameters params) {
         super(dataWrapper, params, null);
@@ -77,6 +91,14 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         setGraph(new EdgeListGraph(dataWrapper.getSelectedDataModel().getVariables()));
     }
 
+    /**
+     * <p>Constructor for PValueImproverWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
     public PValueImproverWrapper(GraphWrapper graphWrapper,
                                  DataWrapper dataWrapper,
                                  Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -86,6 +108,13 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
+    /**
+     * <p>Constructor for PValueImproverWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public PValueImproverWrapper(GraphWrapper graphWrapper,
                                  DataWrapper dataWrapper,
                                  Parameters params) {
@@ -95,6 +124,14 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
+    /**
+     * <p>Constructor for PValueImproverWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
     public PValueImproverWrapper(DagWrapper graphWrapper,
                                  DataWrapper dataWrapper,
                                  Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -104,6 +141,13 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
+    /**
+     * <p>Constructor for PValueImproverWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public PValueImproverWrapper(DagWrapper graphWrapper,
                                  DataWrapper dataWrapper,
                                  Parameters params) {
@@ -113,6 +157,14 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
+    /**
+     * <p>Constructor for PValueImproverWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
     public PValueImproverWrapper(SemGraphWrapper graphWrapper,
                                  DataWrapper dataWrapper,
                                  Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -122,6 +174,13 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
+    /**
+     * <p>Constructor for PValueImproverWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public PValueImproverWrapper(SemGraphWrapper graphWrapper,
                                  DataWrapper dataWrapper,
                                  Parameters params) {
@@ -131,6 +190,14 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
+    /**
+     * <p>Constructor for PValueImproverWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.AbstractAlgorithmRunner} object
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
     public PValueImproverWrapper(AbstractAlgorithmRunner graphWrapper,
                                  DataWrapper dataWrapper,
                                  Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -140,6 +207,13 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         setGraph(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
+    /**
+     * <p>Constructor for PValueImproverWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.AbstractAlgorithmRunner} object
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public PValueImproverWrapper(AbstractAlgorithmRunner graphWrapper,
                                  DataWrapper dataWrapper,
                                  Parameters params) {
@@ -153,29 +227,51 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
 
+    /**
+     * <p>Getter for the field <code>algorithmType</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.PValueImproverWrapper.AlgorithmType} object
+     */
     public AlgorithmType getAlgorithmType() {
         return this.algorithmType;
     }
 
+    /**
+     * <p>Setter for the field <code>algorithmType</code>.</p>
+     *
+     * @param algorithmType a {@link edu.cmu.tetradapp.model.PValueImproverWrapper.AlgorithmType} object
+     */
     public void setAlgorithmType(AlgorithmType algorithmType) {
         this.algorithmType = algorithmType;
     }
 
     //============================PUBLIC METHODS==========================//
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>isShuffleMoves.</p>
+     *
+     * @return a boolean
+     */
     public boolean isShuffleMoves() {
         return false;
     }
@@ -183,7 +279,6 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     /**
      * Executes the algorithm, producing (at least) a result workbench. Must be implemented in the extending class.
      */
-
     public void execute() {
         DataModel dataModel = getDataModel();
 
@@ -247,16 +342,27 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         setResultGraph(GraphTransforms.cpdagForDag(this.graph));
     }
 
+    /**
+     * <p>supportsKnowledge.</p>
+     *
+     * @return a boolean
+     */
     public boolean supportsKnowledge() {
         return true;
     }
 
+    /**
+     * <p>getMeekRules.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.utils.MeekRules} object
+     */
     public MeekRules getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setKnowledge((Knowledge) this.params.get("knowledge", new Knowledge()));
         return rules;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getAlgorithmName() {
         return "BFF";
@@ -266,6 +372,11 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         return this.params.getBoolean("MeekPreventCycles", false);
     }
 
+    /**
+     * <p>addPropertyChangeListener.</p>
+     *
+     * @param l a {@link java.beans.PropertyChangeListener} object
+     */
     public void addPropertyChangeListener(PropertyChangeListener l) {
         if (!getListeners().contains(l)) getListeners().add(l);
     }
@@ -276,6 +387,11 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>graph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return getResultGraph();
     }
@@ -286,17 +402,15 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     }
 
     /**
+     * <p>getTriplesClassificationTypes.</p>
+     *
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
         return new LinkedList<>();
     }
 
-    /**
-     * @param node The node that the classifications are for. All triple from adjacencies to this node to adjacencies to
-     *             this node through the given node will be considered.
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given node.
-     */
+    /** {@inheritDoc} */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<>();
     }
@@ -308,6 +422,14 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         return this.listeners;
     }
 
+    /**
+     * <p>simulateDataCholesky.</p>
+     *
+     * @param sampleSize a int
+     * @param covar a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param variableNodes a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet simulateDataCholesky(int sampleSize, Matrix covar, List<Node> variableNodes) {
 
         List<Node> variables = new LinkedList<>(variableNodes);
@@ -383,6 +505,11 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>originalSemIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getOriginalSemIm() {
         return this.originalSemIm;
     }
@@ -393,10 +520,20 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>newSemIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getNewSemIm() {
         return this.newSemIm;
     }
 
+    /**
+     * <p>Setter for the field <code>newSemIm</code>.</p>
+     *
+     * @param newSemIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public void setNewSemIm(SemIm newSemIm) {
         this.newSemIm = newSemIm;
     }

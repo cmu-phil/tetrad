@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
  * Parses the tokens of an expression.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class ExpressionLexer {
 
@@ -70,6 +71,11 @@ public class ExpressionLexer {
     private Matcher lastMatcher;
 
 
+    /**
+     * <p>Constructor for ExpressionLexer.</p>
+     *
+     * @param seq a {@link java.lang.CharSequence} object
+     */
     public ExpressionLexer(CharSequence seq) {
         if (seq == null) {
             throw new NullPointerException("CharSequence must not be null.");
@@ -141,6 +147,8 @@ public class ExpressionLexer {
     }
 
     /**
+     * <p>nextToken.</p>
+     *
      * @return the type of the next token. For words and quoted charSequence tokens, the charSequence that the token
      * represents can be fetched by calling the getString method.
      */
@@ -158,6 +166,11 @@ public class ExpressionLexer {
         return Token.UNKNOWN;
     }
 
+    /**
+     * <p>nextTokenIncludingWhitespace.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.calculator.parser.Token} object
+     */
     public final Token nextTokenIncludingWhitespace() {
         for (Token token : this.tokens) {
             if (readToken(token)) {
@@ -174,6 +187,8 @@ public class ExpressionLexer {
     //=================================== Private Methods ====================================//
 
     /**
+     * <p>getTokenString.</p>
+     *
      * @return the string corresponding to the last token lexed.
      */
     public String getTokenString() {
@@ -188,6 +203,8 @@ public class ExpressionLexer {
     }
 
     /**
+     * <p>Getter for the field <code>currentOffset</code>.</p>
+     *
      * @return the previous offset, before the getModel token was read (i.e. the offset of the getModel token.
      */
     public int getCurrentOffset() {
@@ -195,6 +212,8 @@ public class ExpressionLexer {
     }
 
     /**
+     * <p>Getter for the field <code>nextOffset</code>.</p>
+     *
      * @return the getModel offset.
      */
     public int getNextOffset() {

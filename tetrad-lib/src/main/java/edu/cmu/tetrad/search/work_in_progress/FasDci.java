@@ -43,6 +43,7 @@ import java.util.*;
  * S({x, y}) is returned for edges x *-* y that have been removed.
  *
  * @author Robert Tillman.
+ * @version $Id: $Id
  */
 public class FasDci {
 
@@ -106,6 +107,9 @@ public class FasDci {
 
     /**
      * Constructs a new FastAdjacencySearch for DCI.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public FasDci(Graph graph, IndependenceTest independenceTest) {
         this.graph = graph;
@@ -115,6 +119,14 @@ public class FasDci {
 
     /**
      * Constructs a new FastAdjacencySearch for DCI with independence test pooling to resolve inconsistencies.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param method a {@link edu.cmu.tetrad.search.utils.ResolveSepsets.Method} object
+     * @param marginalVars a {@link java.util.List} object
+     * @param independenceTests a {@link java.util.List} object
+     * @param knownIndependencies a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
+     * @param knownAssociations a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
      */
     public FasDci(Graph graph, IndependenceTest independenceTest,
                   ResolveSepsets.Method method, List<Set<Node>> marginalVars,
@@ -187,10 +199,20 @@ public class FasDci {
         return sepset;
     }
 
+    /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
+     * @return a int
+     */
     public int getDepth() {
         return this.depth;
     }
 
+    /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
+     * @param depth a int
+     */
     public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
@@ -200,10 +222,20 @@ public class FasDci {
         this.depth = depth;
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException("Cannot set knowledge to null");
@@ -355,6 +387,11 @@ public class FasDci {
         return more;
     }
 
+    /**
+     * <p>Getter for the field <code>numIndependenceTests</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }

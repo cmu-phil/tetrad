@@ -31,6 +31,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @author josephramsey
  * @see Cstar
  * @see NodeEffects
+ * @version $Id: $Id
  */
 public class Ida {
     // The dataset being searched over.
@@ -96,6 +97,8 @@ public class Ida {
      *
      * @param trueDag The true DAG.
      * @return The true effect of (x, y).
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
      */
     public double trueEffect(Node x, Node y, Graph trueDag) {
         if (x == y) throw new IllegalArgumentException("x == y");
@@ -115,6 +118,8 @@ public class Ida {
      * Returns the distance between the effects and the true effect.
      *
      * @return This difference.
+     * @param effects a {@link java.util.LinkedList} object
+     * @param trueEffect a double
      */
     public double distance(LinkedList<Double> effects, double trueEffect) {
         effects = new LinkedList<>(effects);

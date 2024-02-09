@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * nonlinear nonGaussian with the additive error case. This is for additive (but otherwise general) models.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndTestConditionalCorrelation implements IndependenceTest {
 
@@ -89,19 +90,19 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
 
     /**
+     * {@inheritDoc}
+     *
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
      * given data set (must be continuous). The given significance level is used.
-     *
-     * @throws UnsupportedOperationException This method is not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
-     * Checks the independence of x _||_ y | z
+     * {@inheritDoc}
      *
-     * @return the result.
+     * Checks the independence of x _||_ y | z
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
@@ -151,10 +152,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the significance level at which independence judgments should be made. Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
-     *
-     * @param alpha The alpha level.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -175,9 +176,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         return this.variables;
     }
 
-    /**
-     * @throws UnsupportedOperationException Since such code is not available.
-     */
+    /** {@inheritDoc} */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("The 'determines' method is not implemented");
     }
@@ -210,9 +209,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * Sets whether verbose output should be printed.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets whether verbose output should be printed.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

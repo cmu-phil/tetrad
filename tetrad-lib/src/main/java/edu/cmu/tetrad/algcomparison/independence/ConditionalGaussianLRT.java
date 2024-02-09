@@ -17,6 +17,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @TestOfIndependence(
         name = "CG-LRT (Conditional Gaussian Likelihood Ratio Test)",
@@ -28,6 +29,7 @@ public class ConditionalGaussianLRT implements IndependenceWrapper {
 
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         IndTestConditionalGaussianLrt test
@@ -38,16 +40,19 @@ public class ConditionalGaussianLRT implements IndependenceWrapper {
         return test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Conditional Gaussian Likelihood Ratio Test";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

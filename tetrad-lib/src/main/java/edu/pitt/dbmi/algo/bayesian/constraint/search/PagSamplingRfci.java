@@ -17,6 +17,7 @@ import java.util.concurrent.*;
  * Jan 29, 2023 4:10:52 PM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
+ * @version $Id: $Id
  */
 public class PagSamplingRfci implements IGraphSearch {
 
@@ -47,9 +48,9 @@ public class PagSamplingRfci implements IGraphSearch {
     }
 
     /**
-     * Search for a PAG.
+     * {@inheritDoc}
      *
-     * @return a PAG.
+     * Search for a PAG.
      */
     @Override
     public Graph search() {

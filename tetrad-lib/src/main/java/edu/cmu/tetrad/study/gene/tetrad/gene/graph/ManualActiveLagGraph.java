@@ -26,6 +26,9 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor;
 
 /**
  * Constructs as a (manual) update graph.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class ManualActiveLagGraph extends ActiveLagGraph implements SessionModel {
     private static final long serialVersionUID = 23L;
@@ -49,15 +52,23 @@ public class ManualActiveLagGraph extends ActiveLagGraph implements SessionModel
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.graph.ActiveLagGraph} object
      */
     public static ActiveLagGraph serializableInstance() {
         return new ManualActiveLagGraph();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }

@@ -42,6 +42,7 @@ import java.util.*;
  * @author josephramsey
  * @see edu.cmu.tetrad.graph.Dag
  * @see BayesIm
+ * @version $Id: $Id
  */
 public final class BayesPm implements Pm, VariableSource {
     private static final long serialVersionUID = 23L;
@@ -321,9 +322,9 @@ public final class BayesPm implements Pm, VariableSource {
     }
 
     /**
-     * Will return true if the argument is a BayesPm with the same graph and variables.
+     * {@inheritDoc}
      *
-     * @param o Ibid.
+     * Will return true if the argument is a BayesPm with the same graph and variables.
      */
     public boolean equals(Object o) {
         if (o == null) {
@@ -350,6 +351,11 @@ public final class BayesPm implements Pm, VariableSource {
         mapNodeToVariable(node, categories);
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         List<Node> variables = new LinkedList<>();
 
@@ -406,6 +412,7 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Prints out the list of values for each node.
+     *
      * @return Ibid.
      */
     public String toString() {
@@ -431,6 +438,7 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Returns the node by the given name.
+     *
      * @param nodeName Ibid.
      * @return Ibid.
      */
@@ -440,6 +448,7 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Returns the node at the given index.
+     *
      * @param index Ibid.
      * @return Ibid.
      */
@@ -449,6 +458,7 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Returns the node index.
+     *
      * @return -1.
      */
     public int getNodeIndex() {
@@ -457,6 +467,7 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * Returns the number of nodes.
+     *
      * @return Ibid.
      */
     public int getNumNodes() {

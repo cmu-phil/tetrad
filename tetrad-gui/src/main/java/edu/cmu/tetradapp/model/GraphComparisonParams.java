@@ -40,6 +40,7 @@ import java.util.List;
  * Stores a reference to a file to which records can be appended.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphComparisonParams extends SessionAdapter
         implements ExecutionRestarter {
@@ -92,6 +93,8 @@ public class GraphComparisonParams extends SessionAdapter
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetradapp.model.GraphComparisonParams} object
      */
     public static GraphComparisonParams serializableInstance() {
         return new GraphComparisonParams();
@@ -99,6 +102,9 @@ public class GraphComparisonParams extends SessionAdapter
 
     //==========================PUBLIC METHODS===========================//
 
+    /**
+     * <p>newExecution.</p>
+     */
     public final void newExecution() {
         ContinuousVariable adjCorrect = new ContinuousVariable("ADJ_COR");
         ContinuousVariable adjFn = new ContinuousVariable("ADJ_FN");
@@ -131,6 +137,11 @@ public class GraphComparisonParams extends SessionAdapter
         this.dataSet.setNumberFormat(new DecimalFormat("0"));
     }
 
+    /**
+     * <p>addRecord.</p>
+     *
+     * @param comparison a {@link edu.cmu.tetrad.graph.GraphUtils.GraphComparison} object
+     */
     public void addRecord(GraphUtils.GraphComparison comparison) {
         int newRow = this.dataSet.getNumRows();
         this.dataSet.setDouble(newRow, 0, comparison.getAdjCor());
@@ -146,31 +157,66 @@ public class GraphComparisonParams extends SessionAdapter
         this.dataSet.setDouble(newRow, 10, comparison.getShd());
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
 
 
+    /**
+     * <p>isResetTableOnExecute.</p>
+     *
+     * @return a boolean
+     */
     public boolean isResetTableOnExecute() {
         return this.resetTableOnExecute;
     }
 
+    /**
+     * <p>Setter for the field <code>resetTableOnExecute</code>.</p>
+     *
+     * @param resetTableOnExecute a boolean
+     */
     public void setResetTableOnExecute(boolean resetTableOnExecute) {
         this.resetTableOnExecute = resetTableOnExecute;
     }
 
+    /**
+     * <p>isKeepLatents.</p>
+     *
+     * @return a boolean
+     */
     public boolean isKeepLatents() {
         return this.keepLatents;
     }
 
+    /**
+     * <p>Setter for the field <code>keepLatents</code>.</p>
+     *
+     * @param keepLatents a boolean
+     */
     public void setKeepLatents(boolean keepLatents) {
         this.keepLatents = keepLatents;
     }
 
+    /**
+     * <p>Getter for the field <code>referenceGraphName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getReferenceGraphName() {
         return this.referenceGraphName;
     }
 
+    /**
+     * <p>Setter for the field <code>referenceGraphName</code>.</p>
+     *
+     * @param name a {@link java.lang.String} object
+     */
     public void setReferenceGraphName(String name) {
         this.referenceGraphName = name;
     }
@@ -188,10 +234,20 @@ public class GraphComparisonParams extends SessionAdapter
         s.defaultReadObject();
     }
 
+    /**
+     * <p>Getter for the field <code>targetGraphName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getTargetGraphName() {
         return this.targetGraphName;
     }
 
+    /**
+     * <p>Setter for the field <code>targetGraphName</code>.</p>
+     *
+     * @param targetGraphName a {@link java.lang.String} object
+     */
     public void setTargetGraphName(String targetGraphName) {
         this.targetGraphName = targetGraphName;
     }

@@ -51,6 +51,7 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
  * Panel (to be put in a dialog) for letting the user choose how a data file should be loaded.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class LoadDataDialog extends JPanel {
 
@@ -96,6 +97,11 @@ public final class LoadDataDialog extends JPanel {
     private JButton loadButton;
 
     //================================CONSTRUCTOR=======================//
+    /**
+     * <p>Constructor for LoadDataDialog.</p>
+     *
+     * @param files a {@link java.io.File} object
+     */
     public LoadDataDialog(File... files) {
         // Add all files into the loadedFiles list - Zhou
         // Arrays.asList: Returns a fixed-size list backed by the specified array.
@@ -134,6 +140,11 @@ public final class LoadDataDialog extends JPanel {
     }
 
     //==============================PUBLIC METHODS=========================//
+    /**
+     * <p>showDataLoaderDialog.</p>
+     *
+     * @throws java.io.IOException if any.
+     */
     public void showDataLoaderDialog() throws IOException {
         // Overall container
         // contains data preview panel, loading params panel, and load button
@@ -825,6 +836,8 @@ public final class LoadDataDialog extends JPanel {
 
     /**
      * This is called by LoadDataAction.java
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModelList} object
      */
     public DataModelList getDataModels() {
         return this.dataModelList;

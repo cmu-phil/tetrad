@@ -40,6 +40,7 @@ import java.util.Map;
  * Takes an xml element representing a bayes im and converts it to a BayesIM
  *
  * @author mattheweasterday
+ * @version $Id: $Id
  */
 public class BayesImParser {
 

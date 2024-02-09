@@ -38,6 +38,7 @@ import java.util.List;
  * Wrapper for degenerate Gaussian BIC score
  *
  * @author bandrews
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "DG-BIC (Degenerate Gaussian BIC Score)",
@@ -50,6 +51,7 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
     private static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
+    /** {@inheritDoc} */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
@@ -60,16 +62,19 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
         return degenerateGaussianScore;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Degenerate Gaussian BIC Score";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -79,6 +84,7 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);

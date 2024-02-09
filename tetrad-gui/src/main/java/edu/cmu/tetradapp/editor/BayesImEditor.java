@@ -36,6 +36,7 @@ import java.awt.*;
  *
  * @author Aaron Powers
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesImEditor extends JPanel {
 
@@ -50,6 +51,8 @@ public class BayesImEditor extends JPanel {
 
     /**
      * Constructs a new instanted model editor from a Bayes IM.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
      */
     public BayesImEditor(BayesImWrapper wrapper) {
         this.wrapper = wrapper;
@@ -153,6 +156,8 @@ public class BayesImEditor extends JPanel {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of this editor.
      */
     public void setName(String name) {
@@ -162,12 +167,17 @@ public class BayesImEditor extends JPanel {
     }
 
     /**
+     * <p>Getter for the field <code>wizard</code>.</p>
+     *
      * @return a reference to this editor.
      */
     public BayesImEditorWizard getWizard() {
         return this.wizard;
     }
 
+    /**
+     * <p>getBayesIm.</p>
+     */
     public void getBayesIm() {
         removeAll();
         setEditorPanel();

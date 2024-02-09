@@ -28,8 +28,14 @@ import javax.swing.*;
  * An interface for editors that delegate their editing responsibilities.
  *
  * @author William Taysom -- Jun 14, 2003
+ * @version $Id: $Id
  */
 public interface DelegatesEditing {
+    /**
+     * <p>getEditDelegate.</p>
+     *
+     * @return a {@link javax.swing.JComponent} object
+     */
     JComponent getEditDelegate();
 }
 

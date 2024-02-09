@@ -29,12 +29,24 @@ import edu.cmu.tetrad.session.SessionModel;
  * Tags classes that can yield graphs as input to knowledge.
  *
  * @author kaalpurush
+ * @version $Id: $Id
  */
 public interface KnowledgeBoxInput extends SessionModel, VariableSource {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     Graph getSourceGraph();
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     Graph getResultGraph();
 }
 

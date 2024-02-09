@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
  * graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class AdjacencyFpr implements Statistic {
     private static final long serialVersionUID = 23L;
@@ -21,8 +22,9 @@ public class AdjacencyFpr implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the name of the statistic.
-     * @return The name.
      */
     @Override
     public String getAbbreviation() {
@@ -30,8 +32,9 @@ public class AdjacencyFpr implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the description of the statistic.
-     * @return The description.
      */
     @Override
     public String getDescription() {
@@ -39,11 +42,9 @@ public class AdjacencyFpr implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the value of the statistic, given the true graph and the estimated graph.
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
-     * @return The value of the statistic.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -54,9 +55,9 @@ public class AdjacencyFpr implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns a mapping of the statistic to the interval [0, 1], with higher being better. This is used for a
-     * @param value The value of the statistic.
-     * @return The normalized value.
      */
     @Override
     public double getNormValue(double value) {

@@ -9,20 +9,24 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumCompatibleDirectedEdgeNonAncestors implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "#CompDNA";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Number X-->Y for which not X<~~L->..->Y in true";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         GraphUtils.addPagColoring(estGraph);
@@ -50,6 +54,7 @@ public class NumCompatibleDirectedEdgeNonAncestors implements Statistic {
         return tp;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

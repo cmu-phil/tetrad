@@ -35,6 +35,7 @@ import java.io.ObjectInputStream;
  * differentiation may be nutrition, temperature, etc.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DishModel implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -60,6 +61,12 @@ public class DishModel implements TetradSerializable {
 
     //===============================CONSTRUCTORS========================//
 
+    /**
+     * <p>Constructor for DishModel.</p>
+     *
+     * @param numDishes a int
+     * @param dishBumpStDev a double
+     */
     public DishModel(int numDishes, double dishBumpStDev) {
 
         if (numDishes < 1) {
@@ -87,6 +94,8 @@ public class DishModel implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.DishModel} object
      */
     public static DishModel serializableInstance() {
         return new DishModel(1, 1.0);
@@ -96,6 +105,8 @@ public class DishModel implements TetradSerializable {
 
     /**
      * Returns the number of the getModel dish.
+     *
+     * @return a int
      */
     public int getDishNumber() {
         return this.dishNumber;
@@ -103,6 +114,8 @@ public class DishModel implements TetradSerializable {
 
     /**
      * Sets the number of the getModel dish.
+     *
+     * @param dishNumber a int
      */
     public void setDishNumber(int dishNumber) {
 
@@ -116,6 +129,9 @@ public class DishModel implements TetradSerializable {
 
     /**
      * Bumps the given expression value in the manner prescribed for the getModel dish.
+     *
+     * @param expressionLevel a double
+     * @return a double
      */
     public double bumpInitialization(double expressionLevel) {
 
@@ -123,10 +139,20 @@ public class DishModel implements TetradSerializable {
         return expressionLevel * this.dishBumps[this.dishNumber] / 100.0;
     }
 
+    /**
+     * <p>Getter for the field <code>dishBumpStDev</code>.</p>
+     *
+     * @return a double
+     */
     public double getDishBumpStDev() {
         return this.dishBumpStDev;
     }
 
+    /**
+     * <p>Setter for the field <code>dishBumpStDev</code>.</p>
+     *
+     * @param dishBumpStDev a double
+     */
     public void setDishBumpStDev(double dishBumpStDev) {
         this.dishBumpStDev = dishBumpStDev;
     }

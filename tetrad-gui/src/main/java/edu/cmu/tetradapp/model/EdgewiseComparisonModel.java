@@ -41,6 +41,7 @@ import java.io.ObjectInputStream;
  *
  * @author josephramsey
  * @author Erin Korber (added remove latents functionality July 2004)
+ * @version $Id: $Id
  */
 public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
@@ -53,6 +54,10 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
      * Compares the results of a PC to a reference workbench by counting errors of omission and commission. The counts
      * can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
+     *
+     * @param model1 a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param model2 a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public EdgewiseComparisonModel(GraphSource model1, GraphSource model2, Parameters params) {
         if (params == null) {
@@ -88,6 +93,13 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
 
     //=============================CONSTRUCTORS==========================//
 
+    /**
+     * <p>getComparisonGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph getComparisonGraph(Graph graph, Parameters params) {
         String type = params.getString("graphComparisonType");
 
@@ -108,18 +120,34 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
 
     //==============================PUBLIC METHODS========================//
 
+    /**
+     * <p>getDataSet.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return (DataSet) this.params.get("dataSet", null);
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>getComparisonString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getComparisonString() {
         String refName = getParams().getString("referenceGraphName", null);
         String targetName = getParams().getString("targetGraphName", null);
@@ -143,6 +171,11 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
         s.defaultReadObject();
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }

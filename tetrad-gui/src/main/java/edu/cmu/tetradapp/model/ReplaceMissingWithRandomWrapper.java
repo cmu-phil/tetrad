@@ -34,6 +34,7 @@ import java.io.ObjectInputStream;
  *
  * @author josephramsey
  * @author Frank Wimberly based on similar class by Ramsey
+ * @version $Id: $Id
  */
 public class ReplaceMissingWithRandomWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
@@ -45,6 +46,11 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
 
     //============================CONSTRUCTORS=============================//
 
+    /**
+     * <p>Constructor for ReplaceMissingWithRandomWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     */
     public ReplaceMissingWithRandomWrapper(DataWrapper wrapper) {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
@@ -61,6 +67,7 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

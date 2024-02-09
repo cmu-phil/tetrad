@@ -39,10 +39,17 @@ import java.util.List;
  * Splits continuous data sets by collinear columns.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class CovMatrixAverageWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for CovMatrixAverageWrapper.</p>
+     *
+     * @param covs an array of {@link edu.cmu.tetradapp.model.DataWrapper} objects
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public CovMatrixAverageWrapper(DataWrapper[] covs, Parameters params) {
 
         List<DataWrapper> matrices = new ArrayList<>(Arrays.asList(covs));
@@ -54,6 +61,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

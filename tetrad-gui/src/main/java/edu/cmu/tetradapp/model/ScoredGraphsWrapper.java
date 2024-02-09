@@ -44,6 +44,7 @@ import java.util.Map;
  * Holds a list of graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshallable, DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
@@ -68,6 +69,12 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         this.graphScorer = null;
     }
 
+    /**
+     * <p>Constructor for ScoredGraphsWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param scorer a {@link edu.cmu.tetrad.search.utils.DagScorer} object
+     */
     public ScoredGraphsWrapper(Graph graph, DagScorer scorer) {
         List<Graph> dags = GraphTransforms.generateCpdagDags(graph, true);
         this.graphsToScores = new HashMap<>();
@@ -94,18 +101,42 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         log();
     }
 
+    /**
+     * <p>Constructor for ScoredGraphsWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ScoredGraphsWrapper(DagWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
+    /**
+     * <p>Constructor for ScoredGraphsWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ScoredGraphsWrapper(GraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
+    /**
+     * <p>Constructor for ScoredGraphsWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ScoredGraphsWrapper(SemGraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
+    /**
+     * <p>Constructor for ScoredGraphsWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ScoredGraphsWrapper(PcRunner wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
@@ -114,6 +145,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.ScoredGraphsWrapper} object
      */
     public static ScoredGraphsWrapper serializableInstance() {
         return new ScoredGraphsWrapper(PcRunner.serializableInstance(), new Parameters());
@@ -121,6 +153,11 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
 
     //==============================PUBLIC METHODS======================//
 
+    /**
+     * <p>Getter for the field <code>graphsToScores</code>.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public Map<Graph, Double> getGraphsToScores() {
         Map<Graph, Double> _graphsToScores = new LinkedHashMap<>();
 
@@ -132,10 +169,16 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     }
 
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
@@ -172,6 +215,8 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
 
     /**
      * May be null; a selected graph must be set.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph getGraph() {
         return this.selectedGraph;
@@ -179,6 +224,8 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
 
     /**
      * May be null; a selected graph must be set.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph getSelectedGraph() {
         return this.selectedGraph;
@@ -186,6 +233,8 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
 
     /**
      * Sets a selected graph. Must be one of the graphs in <code>getGraphToScore().keySet</code>.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void setSelectedGraph(Graph graph) {
         if (!this.graphsToScores.containsKey(graph)) {
@@ -195,6 +244,11 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         this.selectedGraph = graph;
     }
 
+    /**
+     * <p>Getter for the field <code>graphScorer</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.utils.DagScorer} object
+     */
     public DagScorer getGraphScorer() {
         return this.graphScorer;
     }

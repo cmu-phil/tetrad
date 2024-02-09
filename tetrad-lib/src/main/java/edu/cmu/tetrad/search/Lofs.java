@@ -57,6 +57,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @see Score
  * @see Rule
  * @see Knowledge
+ * @version $Id: $Id
  */
 public class Lofs {
     // The graph to be oriented.
@@ -98,6 +99,7 @@ public class Lofs {
      * @param graph    The graph to be oriented. Orientations for the graph will be overwritten.
      * @param dataSets A list of datasets to use to do the orientation. This may be just one dataset. If more than one
      *                 dataset are given, the data will be concatenated (pooled).
+     * @throws java.lang.IllegalArgumentException if any.
      */
     public Lofs(Graph graph, List<DataSet> dataSets)
             throws IllegalArgumentException {
@@ -768,6 +770,15 @@ public class Lofs {
     }
 
     // rowIndex is for the W matrix, not for the data.
+    /**
+     * <p>scoreRow.</p>
+     *
+     * @param rowIndex a int
+     * @param data a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param rows a {@link java.util.List} object
+     * @param parameters a {@link java.util.List} object
+     * @return a double
+     */
     public double scoreRow(int rowIndex, Matrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
         if (this.col == null) {
             this.col = new double[data.getNumRows()];
@@ -1274,10 +1285,20 @@ public class Lofs {
         return false;
     }
 
+    /**
+     * <p>Setter for the field <code>epsilon</code>.</p>
+     *
+     * @param epsilon a double
+     */
     public void setEpsilon(double epsilon) {
         this.epsilon = epsilon;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -1287,7 +1308,10 @@ public class Lofs {
     }
 
     /**
+     * <p>getPValue.</p>
+     *
      * @return the probability associated with the most recently computed independence test.
+     * @param fisherZ a double
      */
     public double getPValue(double fisherZ) {
         return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
@@ -1813,52 +1837,106 @@ public class Lofs {
         return median(g) / 0.6745 * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
+    /**
+     * <p>kernel.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel(double z) {
         return kernel1(z);
     }
 
     // Gaussian
+    /**
+     * <p>kernel1.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel1(double z) {
         return exp(-(z * z) / 2.) / this.SQRT; //(sqrt(2. * PI));
     }
 
     // Uniform
+    /**
+     * <p>kernel2.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel2(double z) {
         if (abs(z) > 1) return 0;
         else return .5;
     }
 
     // Triangular
+    /**
+     * <p>kernel3.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel3(double z) {
         if (abs(z) > 1) return 0;
         else return 1 - abs(z);
     }
 
     // Epanechnikov
+    /**
+     * <p>kernel4.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel4(double z) {
         if (abs(z) > 1) return 0;
         else return (3. / 4.) * (1. - z * z);
     }
 
     // Quartic
+    /**
+     * <p>kernel5.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel5(double z) {
         if (abs(z) > 1) return 0;
         else return 15. / 16. * pow(1. - z * z, 2.);
     }
 
     // Triweight
+    /**
+     * <p>kernel6.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel6(double z) {
         if (abs(z) > 1) return 0;
         else return 35. / 32. * pow(1. - z * z, 3.);
     }
 
     // Tricube
+    /**
+     * <p>kernel7.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel7(double z) {
         if (abs(z) > 1) return 0;
         else return 70. / 81. * pow(1. - z * z * z, 3.);
     }
 
     // Cosine
+    /**
+     * <p>kernel8.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel8(double z) {
         if (abs(z) > 1) return 0;
         else return (PI / 4.) * cos((PI / 2.) * z);

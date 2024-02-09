@@ -43,8 +43,10 @@ import static jgpml.covariancefunctions.MatrixOperations.exp;
  * where the P matrix is ell^2 times the unit matrix and sf2 is the signal variance. The hyperparameters are:
  * <p>
  * [ log(ell) log(sqrt(sf2)) ]
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
-
 public class CovSEiso implements CovarianceFunction {
 
     /**
@@ -79,6 +81,7 @@ public class CovSEiso implements CovarianceFunction {
 
     /**
      * Main method for testing purposes
+     *
      * @param args ignored
      */
     public static void main(String[] args) {
@@ -103,11 +106,9 @@ public class CovSEiso implements CovarianceFunction {
     }
 
     /**
-     * Compute covariance matrix of a dataset X
+     * {@inheritDoc}
      *
-     * @param loghyper column <code>Matrix</code> of hyperparameters
-     * @param X        input dataset
-     * @return K covariance <code>Matrix</code>
+     * Compute covariance matrix of a dataset X
      */
     public Matrix compute(Matrix loghyper, Matrix X) {
 
@@ -121,12 +122,9 @@ public class CovSEiso implements CovarianceFunction {
     }
 
     /**
-     * Compute compute test set covariances
+     * {@inheritDoc}
      *
-     * @param loghyper column <code>Matrix</code> of hyperparameters
-     * @param X        input dataset
-     * @param Xstar    test set
-     * @return [K(Xstar, Xstar) K(X,Xstar)]
+     * Compute compute test set covariances
      */
     public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar) {
 
@@ -146,13 +144,10 @@ public class CovSEiso implements CovarianceFunction {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
      * <code>idx</code>
-     *
-     * @param loghyper hyperparameters
-     * @param X        input dataset
-     * @param index    hyperparameter index
-     * @return <code>Matrix</code> of derivatives
      */
     public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index) {
 

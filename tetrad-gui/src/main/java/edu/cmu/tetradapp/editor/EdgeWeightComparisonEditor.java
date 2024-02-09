@@ -27,7 +27,10 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
+ * <p>EdgeWeightComparisonEditor class.</p>
+ *
  * @author Michael Freenor
+ * @version $Id: $Id
  */
 public class EdgeWeightComparisonEditor extends JPanel {
     /**
@@ -38,6 +41,8 @@ public class EdgeWeightComparisonEditor extends JPanel {
 
     /**
      * Constructs the editor given the model
+     *
+     * @param comparison a {@link edu.cmu.tetradapp.model.EdgeWeightComparison} object
      */
     public EdgeWeightComparisonEditor(EdgeWeightComparison comparison) {
         this.comparison = comparison;

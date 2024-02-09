@@ -48,6 +48,7 @@ import java.util.List;
  * Extends AbstractAlgorithmRunner to produce a wrapper for the BuildPureClusters algorithm.
  *
  * @author Ricardo Silva
+ * @version $Id: $Id
  */
 public class BuildPureClustersRunner extends AbstractMimRunner
         implements GraphSource, Unmarshallable {
@@ -63,14 +64,23 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 
     /**
      * Constructs a wrapper for the given DataWrapper.
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param pureClustersParams a {@link edu.cmu.tetrad.util.Parameters} object
      */
-
     public BuildPureClustersRunner(DataWrapper dataWrapper,
                                    Parameters pureClustersParams) {
         super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
 
     }
 
+    /**
+     * <p>Constructor for BuildPureClustersRunner.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param semImWrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param pureClustersParams a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public BuildPureClustersRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
                                    Parameters pureClustersParams) {
         super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
@@ -78,6 +88,13 @@ public class BuildPureClustersRunner extends AbstractMimRunner
         this.trueGraph = this.semIm.getSemPm().getGraph();
     }
 
+    /**
+     * <p>Constructor for BuildPureClustersRunner.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param pureClustersParams a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public BuildPureClustersRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
                                    Parameters pureClustersParams) {
         super(dataWrapper, (Clusters) pureClustersParams.get("clusters", null), pureClustersParams);
@@ -88,6 +105,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -271,10 +289,20 @@ public class BuildPureClustersRunner extends AbstractMimRunner
         }
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return getResultGraph();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public java.util.List<Node> getVariables() {
         List<Node> latents = new ArrayList<>();
 
@@ -287,6 +315,11 @@ public class BuildPureClustersRunner extends AbstractMimRunner
         return latents;
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         List<List<Node>> partition = ClusterUtils.clustersToPartition(getClusters(),
                 getData().getVariables());

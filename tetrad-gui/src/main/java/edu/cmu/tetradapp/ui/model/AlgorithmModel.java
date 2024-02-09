@@ -30,6 +30,7 @@ import java.io.Serializable;
  * Nov 30, 2017 4:41:37 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> {
 
@@ -41,6 +42,11 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
     private final boolean requiredScore;
     private final boolean requiredTest;
 
+    /**
+     * <p>Constructor for AlgorithmModel.</p>
+     *
+     * @param algorithm a {@link edu.cmu.tetrad.annotation.AnnotatedClass} object
+     */
     public AlgorithmModel(AnnotatedClass<Algorithm> algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("Algorithm annotation cannot be null.");
@@ -53,32 +59,59 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
         this.requiredTest = TakesIndependenceWrapper.class.isAssignableFrom(algorithm.clazz());
     }
 
+    /** {@inheritDoc} */
     @Override
     public int compareTo(AlgorithmModel other) {
         return this.name.compareTo(other.name);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return this.name;
     }
 
+    /**
+     * <p>Getter for the field <code>algorithm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.annotation.AnnotatedClass} object
+     */
     public AnnotatedClass<Algorithm> getAlgorithm() {
         return this.algorithm;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * <p>Getter for the field <code>description</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return this.description;
     }
 
+    /**
+     * <p>isRequiredScore.</p>
+     *
+     * @return a boolean
+     */
     public boolean isRequiredScore() {
         return this.requiredScore;
     }
 
+    /**
+     * <p>isRequiredTest.</p>
+     *
+     * @return a boolean
+     */
     public boolean isRequiredTest() {
         return this.requiredTest;
     }

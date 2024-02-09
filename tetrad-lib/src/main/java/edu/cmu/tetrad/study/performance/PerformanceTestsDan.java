@@ -42,8 +42,14 @@ import java.util.List;
  * Contains some tests for Dan Malinsky, that might be of interest to others.
  *
  * @author josephramsey.
+ * @version $Id: $Id
  */
 public class PerformanceTestsDan {
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         System.out.println("Start ");
 

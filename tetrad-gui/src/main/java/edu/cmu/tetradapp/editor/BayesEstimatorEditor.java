@@ -43,6 +43,7 @@ import java.text.NumberFormat;
  *
  * @author Aaron Powers
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesEstimatorEditor extends JPanel {
 
@@ -57,6 +58,9 @@ public class BayesEstimatorEditor extends JPanel {
 
     /**
      * Constructs a new instantiated model editor from a Bayes IM.
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public BayesEstimatorEditor(BayesIm bayesIm, DataSet dataSet) {
         this(new BayesEstimatorWrapper(new DataWrapper(dataSet), new BayesImWrapper(bayesIm)));
@@ -64,6 +68,8 @@ public class BayesEstimatorEditor extends JPanel {
 
     /**
      * Constructs a new Bayes IM Editor from a Bayes estimator wrapper.
+     *
+     * @param bayesEstWrapper a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
      */
     public BayesEstimatorEditor(BayesEstimatorWrapper bayesEstWrapper) {
         this.wrapper = bayesEstWrapper;
@@ -109,6 +115,8 @@ public class BayesEstimatorEditor extends JPanel {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of this editor.
      */
     public void setName(String name) {

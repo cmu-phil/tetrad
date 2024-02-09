@@ -32,11 +32,14 @@ import javax.swing.*;
  * Colors a graph using the PAG coloring. Optionally checks to make sure it's  legal PAG.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PagColorer extends JCheckBoxMenuItem {
 
     /**
      * Creates a new copy subsession action for the given desktop and clipboard.
+     *
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public PagColorer(GraphWorkbench workbench) {
         super("Add/Remove PAG Coloring");

@@ -22,6 +22,7 @@ import java.util.*;
  * A version of the Lee and Hastic simulation which is guaranteed to generate a discrete data set.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @Experimental
 public class BooleanGlassSimulation implements Simulation {
@@ -30,6 +31,11 @@ public class BooleanGlassSimulation implements Simulation {
     private List<DataSet> dataSets = new ArrayList<>();
     private Graph graph = new EdgeListGraph();
 
+    /**
+     * <p>Constructor for BooleanGlassSimulation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public BooleanGlassSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
@@ -72,9 +78,9 @@ public class BooleanGlassSimulation implements Simulation {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Creates a new data set.
-     * @param parameters The parameters to use in the simulation.
-     * @param newModel If true, a new model is created. If false, the model is reused.
      */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
@@ -134,9 +140,9 @@ public class BooleanGlassSimulation implements Simulation {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the true graph.
-     * @param index The index of the desired true graph.
-     * @return The true graph.
      */
     @Override
     public Graph getTrueGraph(int index) {
@@ -144,9 +150,9 @@ public class BooleanGlassSimulation implements Simulation {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the simulated data set.
-     * @param index The index of the desired simulated data set.
-     * @return The simulated data set.
      */
     @Override
     public DataModel getDataModel(int index) {
@@ -154,8 +160,9 @@ public class BooleanGlassSimulation implements Simulation {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the description of the simulation.
-     * @return The description of the simulation.
      */
     @Override
     public String getDescription() {
@@ -163,8 +170,9 @@ public class BooleanGlassSimulation implements Simulation {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the parameters for the simulation.
-     * @return The parameters for the simulation.
      */
     @Override
     public List<String> getParameters() {
@@ -193,8 +201,9 @@ public class BooleanGlassSimulation implements Simulation {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the number of true graphs.
-     * @return The number of true graphs.
      */
     @Override
     public int getNumDataModels() {
@@ -202,8 +211,9 @@ public class BooleanGlassSimulation implements Simulation {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the data type of the simulation.
-     * @return The data type of the simulation.
      */
     @Override
     public DataType getDataType() {

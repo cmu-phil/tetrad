@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author josephramsey
  * @see ChiSquareTest
+ * @version $Id: $Id
  */
 public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
@@ -103,9 +104,9 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Creates a new IndTestChiSquare for a subset of the nodes.
+     * {@inheritDoc}
      *
-     * @param nodes This list of nodes.
+     * Creates a new IndTestChiSquare for a subset of the nodes.
      */
     public IndependenceTest indTestSubset(List<Node> nodes) {
         if (nodes.isEmpty()) {
@@ -154,9 +155,9 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
+     * {@inheritDoc}
      *
-     * @return True iff x _||_ y | z.
+     * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (_z == null) {
@@ -216,11 +217,9 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns True if the variables z determining the variable z.
+     * {@inheritDoc}
      *
-     * @param z The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
-     * @param x The one variable whose determination by z we want to know.
-     * @return true if it is estimated that z determines x or z determines y.
+     * Returns True if the variables z determining the variable z.
      */
     public boolean determines(List<Node> z, Node x) {
         if (z == null) {
@@ -286,10 +285,10 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
-     *
-     * @param alpha the new significance level.
      */
     public void setAlpha(double alpha) {
         this.chiSquareTest.setAlpha(alpha);
@@ -325,9 +324,9 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns true if verbose output should be printed.
+     * {@inheritDoc}
      *
-     * @return This.
+     * Returns true if verbose output should be printed.
      */
     @Override
     public boolean isVerbose() {
@@ -335,9 +334,9 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Sets whether verbose output should be printed.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets whether verbose output should be printed.
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -365,9 +364,9 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns the rows used for the test. If null, all rows are used.
+     * {@inheritDoc}
      *
-     * @return The rows used for the test. Can be null.
+     * Returns the rows used for the test. If null, all rows are used.
      */
     @Override
     public List<Integer> getRows() {
@@ -375,9 +374,9 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Sets the rows to use for the test. If null, all rows are used.
+     * {@inheritDoc}
      *
-     * @param rows The rows to use for the test. Can be null.
+     * Sets the rows to use for the test. If null, all rows are used.
      */
     @Override
     public void setRows(List<Integer> rows) {

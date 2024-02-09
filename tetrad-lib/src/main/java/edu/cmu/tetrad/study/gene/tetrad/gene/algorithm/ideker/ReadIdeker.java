@@ -27,7 +27,18 @@ import java.io.*;
 import java.text.NumberFormat;
 import java.util.StringTokenizer;
 
+/**
+ * <p>ReadIdeker class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class ReadIdeker {
+    /**
+     * <p>main.</p>
+     *
+     * @param argv an array of {@link java.lang.String} objects
+     */
     public static void main(String[] argv) {
 
         String fileName = argv[0];

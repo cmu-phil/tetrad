@@ -28,6 +28,7 @@ import java.util.*;
  * @see Boss
  * @see Sp
  * @see Knowledge
+ * @version $Id: $Id
  */
 public class PermutationSearch {
     private final SuborderSearch suborderSearch;
@@ -146,16 +147,32 @@ public class PermutationSearch {
         return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
     }
 
+    /**
+     * <p>Getter for the field <code>order</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getOrder() {
         return this.order;
     }
 
+    /**
+     * <p>Setter for the field <code>order</code>.</p>
+     *
+     * @param order a {@link java.util.List} object
+     */
     public void setOrder(List<Node> order) {
         assert new HashSet<>(order).containsAll(this.variables);
         this.order.clear();
         this.order.addAll(order);
     }
 
+    /**
+     * <p>getGST.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.search.utils.GrowShrinkTree} object
+     */
     public GrowShrinkTree getGST(Node node) {
         return this.gsts.get(node);
     }
@@ -190,6 +207,11 @@ public class PermutationSearch {
         }
     }
 
+    /**
+     * <p>Setter for the field <code>seed</code>.</p>
+     *
+     * @param seed a long
+     */
     public void setSeed(long seed) {
         this.seed = seed;
     }

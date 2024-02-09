@@ -51,6 +51,12 @@ final class DirichletBayesImCountsWizard extends JPanel {
     private final JPanel tablePanel;
     private DirichletBayesImNodeCountsTable editingTable;
 
+    /**
+     * <p>Constructor for DirichletBayesImCountsWizard.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public DirichletBayesImCountsWizard(DirichletBayesIm bayesIm,
                                         GraphWorkbench workbench) {
         if (bayesIm == null) {

@@ -37,12 +37,15 @@ import java.text.NumberFormat;
  * Puts up a panel showing some graph properties, e.g., number of nodes and edges in the graph, etc.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
     private GraphWorkbench workbench;
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and clipboard.
+     *
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public GraphPropertiesAction(GraphWorkbench workbench) {
         super("Graph Properties");
@@ -50,6 +53,8 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
@@ -192,17 +197,30 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
 
 
+    /**
+     * <p>setGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public void setGraph(Graph graph, GraphWorkbench workbench) {
         workbench.setGraph(graph);
         this.workbench = workbench;
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.workbench.getGraph();
     }

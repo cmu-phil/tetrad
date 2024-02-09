@@ -31,15 +31,20 @@ import java.util.regex.Pattern;
  * by ",". Custom replaces tabs by a specified regular expression.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class DelimiterType implements TetradSerializable {
 
+    /** Constant <code>WHITESPACE</code> */
     public static final DelimiterType WHITESPACE
             = new DelimiterType("Whitespace", "\\s+");
+    /** Constant <code>TAB</code> */
     public static final DelimiterType TAB
             = new DelimiterType("Tab", "\t");
+    /** Constant <code>COMMA</code> */
     public static final DelimiterType COMMA
             = new DelimiterType("Comma", ",");
+    /** Constant <code>COLON</code> */
     public static final DelimiterType COLON
             = new DelimiterType("Colon", ":");
     private static final long serialVersionUID = 23L;
@@ -66,12 +71,16 @@ public final class DelimiterType implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.DelimiterType} object
      */
     public static DelimiterType serializableInstance() {
         return DelimiterType.TAB;
     }
 
     /**
+     * <p>Getter for the field <code>pattern</code>.</p>
+     *
      * @return the CPDAG representing this delimiter type. This CPDAG can be used to parse, using a matcher.
      */
     public Pattern getPattern() {
@@ -80,6 +89,8 @@ public final class DelimiterType implements TetradSerializable {
 
     /**
      * Prints out the name of the type.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return this.name;

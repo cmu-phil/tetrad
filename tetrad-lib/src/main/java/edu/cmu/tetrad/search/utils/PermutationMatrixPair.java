@@ -34,6 +34,7 @@ import java.util.Arrays;
  * @author josephramsey
  * @see IcaLingam
  * @see IcaLingD
+ * @version $Id: $Id
  */
 public class PermutationMatrixPair {
     private final int[] rowPerm;
@@ -73,6 +74,8 @@ public class PermutationMatrixPair {
     }
 
     /**
+     * <p>Getter for the field <code>rowPerm</code>.</p>
+     *
      * @return The row permutation.
      */
     public int[] getRowPerm() {
@@ -80,6 +83,8 @@ public class PermutationMatrixPair {
     }
 
     /**
+     * <p>Getter for the field <code>colPerm</code>.</p>
+     *
      * @return The column permutation.
      */
     public int[] getColPerm() {

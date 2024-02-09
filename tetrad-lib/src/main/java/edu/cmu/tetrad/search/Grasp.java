@@ -51,6 +51,7 @@ import static java.util.Collections.shuffle;
  * @see Boss
  * @see Sp
  * @see Knowledge
+ * @version $Id: $Id
  */
 public class Grasp {
     // The variables to be permuted.
@@ -527,6 +528,11 @@ public class Grasp {
         }
     }
 
+    /**
+     * <p>Setter for the field <code>seed</code>.</p>
+     *
+     * @param seed a long
+     */
     public void setSeed(long seed) {
         this.seed = seed;
     }

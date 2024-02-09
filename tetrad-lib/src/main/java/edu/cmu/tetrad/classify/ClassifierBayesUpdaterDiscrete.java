@@ -45,6 +45,7 @@ import java.util.List;
  * stored. Note that the variables must be the same in the dataset and the Bayes net.
  *
  * @author Frank Wimberly based on a specification by Clark Glymour
+ * @version $Id: $Id
  */
 public final class ClassifierBayesUpdaterDiscrete implements ClassifierDiscrete, TetradSerializable {
     @Serial
@@ -322,6 +323,8 @@ public final class ClassifierBayesUpdaterDiscrete implements ClassifierDiscrete,
     }
 
     /**
+     * <p>Getter for the field <code>percentCorrect</code>.</p>
+     *
      * @return the percentage of cases in which the target variable is correctly classified.
      */
     public double getPercentCorrect() {
@@ -332,6 +335,8 @@ public final class ClassifierBayesUpdaterDiscrete implements ClassifierDiscrete,
     }
 
     /**
+     * <p>Getter for the field <code>targetVariable</code>.</p>
+     *
      * @return the discrete variables which is the target variable.
      * @see DiscreteVariable
      */

@@ -67,6 +67,7 @@ import org.jetbrains.annotations.NotNull;
  * tier of the knowledge, and Z should be in previous tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MarkovCheckEditor extends JPanel {
 
@@ -100,6 +101,8 @@ public class MarkovCheckEditor extends JPanel {
 
     /**
      * Constructs a new editor for the given model.
+     *
+     * @param model a {@link edu.cmu.tetradapp.model.MarkovCheckIndTestModel} object
      */
     public MarkovCheckEditor(MarkovCheckIndTestModel model) {
         if (model == null) {
@@ -362,6 +365,11 @@ public class MarkovCheckEditor extends JPanel {
         );
     }
 
+    /**
+     * <p>getHelpMessage.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @NotNull
     public static String getHelpMessage() {
         return """

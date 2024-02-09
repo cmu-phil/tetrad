@@ -69,6 +69,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * @see PermutationSearch
  * @see Grasp
  * @see Knowledge
+ * @version $Id: $Id
  */
 public class Boss implements SuborderSearch {
     // The score.
@@ -123,14 +124,12 @@ public class Boss implements SuborderSearch {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Searches a suborder of the variables. The prefix is the set of variables that must precede the suborder. The
      * suborder is the set of variables to be ordered. The gsts is a map from variables to GrowShrinkTrees, which are
      * used to cache scores for the variables. The searchSuborder method will update the suborder to be the best
      * ordering found.
-     *
-     * @param prefix   The prefix of the suborder.
-     * @param suborder The suborder.
-     * @param gsts     The GrowShrinkTree being used to do caching of scores.
      */
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
@@ -226,9 +225,9 @@ public class Boss implements SuborderSearch {
     }
 
     /**
-     * Sets the knowledge to be used for the search.
+     * {@inheritDoc}
      *
-     * @param knowledge This knowledge. If null, no knowledge will be used.
+     * Sets the knowledge to be used for the search.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -286,9 +285,9 @@ public class Boss implements SuborderSearch {
     }
 
     /**
-     * Returns the variables.
+     * {@inheritDoc}
      *
-     * @return This list.
+     * Returns the variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -296,9 +295,9 @@ public class Boss implements SuborderSearch {
     }
 
     /**
-     * Returns the map from nodes to the sets of their parents.
+     * {@inheritDoc}
      *
-     * @return This map.
+     * Returns the map from nodes to the sets of their parents.
      */
     @Override
     public Map<Node, Set<Node>> getParents() {
@@ -306,9 +305,9 @@ public class Boss implements SuborderSearch {
     }
 
     /**
-     * Returns the score being used for the search.
+     * {@inheritDoc}
      *
-     * @return This score.
+     * Returns the score being used for the search.
      */
     @Override
     public Score getScore() {

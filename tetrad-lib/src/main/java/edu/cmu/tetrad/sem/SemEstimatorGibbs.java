@@ -39,6 +39,7 @@ import java.util.List;
  * Structural Equation Models" by Scheines, Hoijtink and Boomsma, Psychometrika, v. 64, no. 1.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public final class SemEstimatorGibbs {
     private static final long serialVersionUID = 23L;
@@ -76,6 +77,8 @@ public final class SemEstimatorGibbs {
     private Matrix dataSet;
 
     /**
+     * <p>Constructor for SemEstimatorGibbs.</p>
+     *
      * @param semPm         a SemPm specifying the graph and parameterization for the model.
      * @param startIm       SemIm
      * @param sampleCovars  sample covariance matrix
@@ -97,6 +100,18 @@ public final class SemEstimatorGibbs {
         this.priorCov = new Matrix(sampleCovars);
     }
 
+    /**
+     * <p>Constructor for SemEstimatorGibbs.</p>
+     *
+     * @param numIterations a int
+     * @param stretch1 a double
+     * @param stretch2 a double
+     * @param tolerance a double
+     * @param priorVariance a double
+     * @param semPm a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param startIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @param flatPrior a boolean
+     */
     public SemEstimatorGibbs(int numIterations, double stretch1, double stretch2, double tolerance, double priorVariance, SemPm semPm, SemIm startIm, boolean flatPrior) {
         this.numIterations = numIterations;
         this.stretch1 = stretch1;
@@ -458,6 +473,8 @@ public final class SemEstimatorGibbs {
     }
 
     /**
+     * <p>Getter for the field <code>estimatedSem</code>.</p>
+     *
      * @return SemIm
      */
     public SemIm getEstimatedSem() {
@@ -465,6 +482,8 @@ public final class SemEstimatorGibbs {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of the Sem.
      */
     public String toString() {
@@ -496,10 +515,20 @@ public final class SemEstimatorGibbs {
     }
 
 
+    /**
+     * <p>Getter for the field <code>semPm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemPm} object
+     */
     public SemPm getSemPm() {
         return this.semPm;
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public Matrix getDataSet() {
         return this.dataSet;
     }

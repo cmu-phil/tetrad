@@ -22,7 +22,22 @@
 package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin;
 
 
+/**
+ * <p>NbFunctionOr class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class NbFunctionOr extends AbstractNbComponent {
+    /**
+     * <p>Constructor for NbFunctionOr.</p>
+     *
+     * @param factor a double
+     * @param power a double
+     * @param parents an array of {@link edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin.NbComponent} objects
+     * @param inhibitExcite an array of {@link int} objects
+     * @param name a {@link java.lang.String} object
+     */
     public NbFunctionOr(double factor, double power, NbComponent[] parents,
                         int[] inhibitExcite, String name) {
 
@@ -34,6 +49,9 @@ public class NbFunctionOr extends AbstractNbComponent {
         }
     }
 
+    /**
+     * <p>update.</p>
+     */
     public void update() {
         //System.out.println("Updating " + name);
         double sum = 0.0;

@@ -30,6 +30,9 @@ import java.util.List;
 
 /**
  * Represents an ordered sextad of variables.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class Sextad implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -41,6 +44,16 @@ public class Sextad implements TetradSerializable {
     private final Node m;
     private final Node n;
 
+    /**
+     * <p>Constructor for Sextad.</p>
+     *
+     * @param i a {@link edu.cmu.tetrad.graph.Node} object
+     * @param j a {@link edu.cmu.tetrad.graph.Node} object
+     * @param k a {@link edu.cmu.tetrad.graph.Node} object
+     * @param l a {@link edu.cmu.tetrad.graph.Node} object
+     * @param m a {@link edu.cmu.tetrad.graph.Node} object
+     * @param n a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Sextad(Node i, Node j, Node k, Node l, Node m, Node n) {
         testDistinctness(i, j, k, l, m, n);
         this.i = i;
@@ -51,6 +64,11 @@ public class Sextad implements TetradSerializable {
         this.n = n;
     }
 
+    /**
+     * <p>Constructor for Sextad.</p>
+     *
+     * @param nodes an array of {@link edu.cmu.tetrad.graph.Node} objects
+     */
     public Sextad(Node[] nodes) {
         if (nodes.length != 6) throw new IllegalArgumentException("Must provide exactly 6 nodes.");
 
@@ -67,6 +85,8 @@ public class Sextad implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.search.work_in_progress.Sextad} object
      */
     public static Sextad serializableInstance() {
         Node i = new GraphNode("i");
@@ -100,30 +120,65 @@ public class Sextad implements TetradSerializable {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>i</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getI() {
         return this.i;
     }
 
+    /**
+     * <p>Getter for the field <code>j</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getJ() {
         return this.j;
     }
 
+    /**
+     * <p>Getter for the field <code>k</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getK() {
         return this.k;
     }
 
+    /**
+     * <p>Getter for the field <code>l</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getL() {
         return this.l;
     }
 
+    /**
+     * <p>Getter for the field <code>m</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getM() {
         return this.m;
     }
 
+    /**
+     * <p>Getter for the field <code>n</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getN() {
         return this.n;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         int hash = 17 * this.i.hashCode() * this.j.hashCode() * this.k.hashCode();
         hash += 29 * this.l.hashCode() * this.m.hashCode() * this.n.hashCode();
@@ -131,6 +186,7 @@ public class Sextad implements TetradSerializable {
         return hash;
     }
 
+    /** {@inheritDoc} */
     public boolean equals(Object o) {
         if (!(o instanceof Sextad)) throw new IllegalArgumentException();
         Sextad sextad = (Sextad) o;
@@ -152,10 +208,20 @@ public class Sextad implements TetradSerializable {
         return leftEquals && rightEquals;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "<" + this.i + ", " + this.j + ", " + this.k + "; " + this.l + ", " + this.m + ", " + this.n + ">";
     }
 
+    /**
+     * <p>getNodes.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getNodes() {
         List<Node> nodes = new ArrayList<>();
         nodes.add(this.i);

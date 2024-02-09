@@ -69,6 +69,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * @see edu.cmu.tetrad.search.Sp
  * @see edu.cmu.tetrad.search.Grasp
  * @see edu.cmu.tetrad.search.Boss
+ * @version $Id: $Id
  */
 public class SemBicScore implements Score {
 
@@ -159,6 +160,9 @@ public class SemBicScore implements Score {
      * @param covariances         The covariance matrix.
      * @param calculateRowSubsets True if row subsets should be calculated.
      * @return The variance of the residual of the regression of the ith variable on its parents.
+     * @param data a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param usePseudoInverse a boolean
+     * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances,
                                   boolean calculateRowSubsets, boolean usePseudoInverse)
@@ -303,6 +307,7 @@ public class SemBicScore implements Score {
         this.usePseudoInverse = usePseudoInverse;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         if (this.ruleType == RuleType.NANDY) {
@@ -312,6 +317,14 @@ public class SemBicScore implements Score {
         }
     }
 
+    /**
+     * <p>nandyBic.</p>
+     *
+     * @param x a int
+     * @param y a int
+     * @param z an array of {@link int} objects
+     * @return a double
+     */
     public double nandyBic(int x, int y, int[] z) {
         double sp1 = getStructurePrior(z.length + 1);
         double sp2 = getStructurePrior(z.length);
@@ -438,10 +451,9 @@ public class SemBicScore implements Score {
     }
 
     /**
-     * Returns true if the given bump is an effect edge.
+     * {@inheritDoc}
      *
-     * @param bump The bump.
-     * @return True if the given bump is an effect edge.
+     * Returns true if the given bump is an effect edge.
      */
     @Override
     public boolean isEffectEdge(double bump) {
@@ -476,9 +488,9 @@ public class SemBicScore implements Score {
     }
 
     /**
-     * Returns the variables of the covariance matrix.
+     * {@inheritDoc}
      *
-     * @return The variables of the covariance matrix.
+     * Returns the variables of the covariance matrix.
      */
     @Override
     public List<Node> getVariables() {
@@ -499,9 +511,9 @@ public class SemBicScore implements Score {
     }
 
     /**
-     * Returns the maximum degree of the score.
+     * {@inheritDoc}
      *
-     * @return The maximum degree of the score.
+     * Returns the maximum degree of the score.
      */
     @Override
     public int getMaxDegree() {
@@ -509,11 +521,9 @@ public class SemBicScore implements Score {
     }
 
     /**
-     * Returns true is the variables in z determine the variable y.
+     * {@inheritDoc}
      *
-     * @param z The set of nodes.
-     * @param y The node.
-     * @return True is the variables in z determine the variable y.
+     * Returns true is the variables in z determine the variable y.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {

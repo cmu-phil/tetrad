@@ -32,6 +32,7 @@ import java.util.List;
  * Converts a continuous data set to a correlation matrix.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DataCenterer extends DataWrapper {
 
@@ -66,6 +67,7 @@ public class DataCenterer extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

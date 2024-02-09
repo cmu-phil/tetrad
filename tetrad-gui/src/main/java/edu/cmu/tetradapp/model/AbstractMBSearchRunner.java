@@ -44,6 +44,7 @@ import java.util.List;
  * as input for a search box.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public abstract class AbstractMBSearchRunner extends DataWrapper implements MarkovBlanketSearchRunner {
     private static final long serialVersionUID = 23L;
@@ -104,6 +105,8 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     }
 
     /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
      * @return the parameters for the search.
      */
     public Parameters getParams() {
@@ -111,6 +114,8 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     }
 
     /**
+     * <p>getDataModelForMarkovBlanket.</p>
+     *
      * @return the data model for the variables in the Markov blanket or null if the runner has not executed yet.
      */
     public DataSet getDataModelForMarkovBlanket() {
@@ -118,6 +123,8 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     }
 
     /**
+     * <p>getMarkovBlanket.</p>
+     *
      * @return the variables in the MB searhc.
      */
     public List<Node> getMarkovBlanket() {
@@ -125,6 +132,8 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     }
 
     /**
+     * <p>Getter for the field <code>source</code>.</p>
+     *
      * @return the source of the search.
      */
     public DataSet getSource() {
@@ -132,6 +141,8 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     }
 
     /**
+     * <p>Getter for the field <code>searchName</code>.</p>
+     *
      * @return the search name, or "Markov Blanket Search" by default.
      */
     public String getSearchName() {
@@ -143,6 +154,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
 
     //============== Protected methods ===============================//
 
+    /** {@inheritDoc} */
     public void setSearchName(String n) {
         this.searchName = n;
     }

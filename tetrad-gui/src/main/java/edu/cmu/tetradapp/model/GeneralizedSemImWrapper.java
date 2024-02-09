@@ -38,6 +38,7 @@ import java.util.List;
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
 
@@ -59,6 +60,11 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
     private boolean showErrors;
 
     //==============================CONSTRUCTORS==========================//
+    /**
+     * <p>Constructor for GeneralizedSemImWrapper.</p>
+     *
+     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
+     */
     public GeneralizedSemImWrapper(Simulation simulation) {
         List<GeneralizedSemIm> semIms = new ArrayList<>();
 
@@ -99,11 +105,19 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
 
     /**
      * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
      */
     public GeneralizedSemImWrapper(GeneralizedSemPmWrapper wrapper) {
         this(wrapper.getSemPm());
     }
 
+    /**
+     * <p>Constructor for GeneralizedSemImWrapper.</p>
+     *
+     * @param genSemPm a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
+     * @param imWrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     */
     public GeneralizedSemImWrapper(GeneralizedSemPmWrapper genSemPm, SemImWrapper imWrapper) {
         this.semIms.add(new GeneralizedSemIm(genSemPm.getSemPm(), imWrapper.getSemIm()));
     }
@@ -112,12 +126,18 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.GeneralizedSemImWrapper} object
      */
     public static GeneralizedSemImWrapper serializableInstance() {
         return new GeneralizedSemImWrapper(GeneralizedSemPmWrapper.serializableInstance());
     }
 
     //============================PUBLIC METHODS=========================//
+    /**
+     * <p>Getter for the field <code>semIms</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<GeneralizedSemIm> getSemIms() {
         return this.semIms;
     }
@@ -139,22 +159,43 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
         }
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.semIms.get(0).getSemPm().getGraph();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>isShowErrors.</p>
+     *
+     * @return a boolean
+     */
     public boolean isShowErrors() {
         return this.showErrors;
     }
 
+    /**
+     * <p>Setter for the field <code>showErrors</code>.</p>
+     *
+     * @param showErrors a boolean
+     */
     public void setShowErrors(boolean showErrors) {
         this.showErrors = showErrors;
     }
@@ -165,18 +206,38 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
         TetradLogger.getInstance().log("im", im.toString());
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getGraph().getNodeNames();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getGraph().getNodes();
     }

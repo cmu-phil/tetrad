@@ -15,9 +15,17 @@ import java.util.List;
 
 /**
  * Created by Erich on 7/14/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class GdistanceApply {
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         final double xdist = 2.4;
         final double ydist = 2.4;

@@ -33,6 +33,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @author josephramsey
  * @see Fges
  * @see Boss
+ * @version $Id: $Id
  */
 public class Bes {
 

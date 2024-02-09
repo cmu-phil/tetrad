@@ -30,10 +30,17 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * Tyler was lazy and didn't document this....
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class MergeDatasetsWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for MergeDatasetsWrapper.</p>
+     *
+     * @param data an array of {@link edu.cmu.tetradapp.model.DataWrapper} objects
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public MergeDatasetsWrapper(DataWrapper[] data, Parameters params) {
         construct(data);
     }
@@ -42,6 +49,7 @@ public class MergeDatasetsWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

@@ -12,22 +12,26 @@ import edu.cmu.tetrad.graph.Graph;
  * We use what's on this page called the "traditional" F1 statistic.
  *
  * @author Joseh Ramsey
+ * @version $Id: $Id
  */
 public class FBetaAdj implements Statistic {
     private static final long serialVersionUID = 23L;
 
     private double beta = 1;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "FBetaAdj";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "FBeta statistic for adjacencies";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
@@ -41,15 +45,26 @@ public class FBetaAdj implements Statistic {
                 / (beta * beta * adjPrecision + adjRecall);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;
     }
 
+    /**
+     * <p>Getter for the field <code>beta</code>.</p>
+     *
+     * @return a double
+     */
     public double getBeta() {
         return beta;
     }
 
+    /**
+     * <p>Setter for the field <code>beta</code>.</p>
+     *
+     * @param beta a double
+     */
     public void setBeta(double beta) {
         this.beta = beta;
     }

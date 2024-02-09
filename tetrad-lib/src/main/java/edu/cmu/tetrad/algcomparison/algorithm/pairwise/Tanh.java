@@ -22,6 +22,7 @@ import java.util.List;
  * Tanh.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @Bootstrapping
 public class Tanh implements Algorithm, TakesExternalGraph {
@@ -31,10 +32,16 @@ public class Tanh implements Algorithm, TakesExternalGraph {
     private Algorithm algorithm;
     private Graph externalGraph;
 
+    /**
+     * <p>Constructor for Tanh.</p>
+     *
+     * @param algorithm a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
+     */
     public Tanh(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -69,22 +76,26 @@ public class Tanh implements Algorithm, TakesExternalGraph {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Tahn" + (this.algorithm != null ? " with initial graph from "
                 + this.algorithm.getDescription() : "");
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new LinkedList<>();
@@ -98,6 +109,7 @@ public class Tanh implements Algorithm, TakesExternalGraph {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {

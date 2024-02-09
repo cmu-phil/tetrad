@@ -40,6 +40,7 @@ import java.util.List;
  * @author Ricardo Silva
  * @author Don Crimbchin
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SemEstimator implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -155,6 +156,8 @@ public final class SemEstimator implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemEstimator} object
      */
     public static SemEstimator serializableInstance() {
         return new SemEstimator(CovarianceMatrix.serializableInstance(),
@@ -176,6 +179,8 @@ public final class SemEstimator implements TetradSerializable {
 
     /**
      * Runs the estimator on the data and SemPm passed in through the constructor.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
      */
     public SemIm estimate() {
         if (getSemOptimizer() != null) {
@@ -233,6 +238,8 @@ public final class SemEstimator implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>estimatedSem</code>.</p>
+     *
      * @return the estimated SemIm. If the <code>estimate</code> method has not yet been called, <code>null</code> is
      * returned.
      */
@@ -244,6 +251,11 @@ public final class SemEstimator implements TetradSerializable {
         this.estimatedSem = estimatedSem;
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
@@ -264,6 +276,11 @@ public final class SemEstimator implements TetradSerializable {
         this.dataSet = _dataSet;
     }
 
+    /**
+     * <p>Getter for the field <code>semPm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemPm} object
+     */
     public SemPm getSemPm() {
         return this.semPm;
     }
@@ -272,6 +289,11 @@ public final class SemEstimator implements TetradSerializable {
         this.semPm = semPm;
     }
 
+    /**
+     * <p>Getter for the field <code>covMatrix</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public ICovarianceMatrix getCovMatrix() {
         return this.covMatrix;
     }
@@ -284,11 +306,18 @@ public final class SemEstimator implements TetradSerializable {
         return this.semOptimizer;
     }
 
+    /**
+     * <p>Setter for the field <code>semOptimizer</code>.</p>
+     *
+     * @param semOptimizer a {@link edu.cmu.tetrad.sem.SemOptimizer} object
+     */
     public void setSemOptimizer(SemOptimizer semOptimizer) {
         this.semOptimizer = semOptimizer;
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of the Sem.
      */
     public String toString() {
@@ -434,10 +463,20 @@ public final class SemEstimator implements TetradSerializable {
         return this.scoreType;
     }
 
+    /**
+     * <p>Setter for the field <code>scoreType</code>.</p>
+     *
+     * @param scoreType a {@link edu.cmu.tetrad.sem.ScoreType} object
+     */
     public void setScoreType(ScoreType scoreType) {
         this.scoreType = scoreType;
     }
 
+    /**
+     * <p>Setter for the field <code>numRestarts</code>.</p>
+     *
+     * @param numRestarts a int
+     */
     public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;
     }

@@ -35,6 +35,7 @@ import java.util.List;
  * Provides static methods for saving data to files.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class DataWriter {
 
@@ -45,7 +46,7 @@ public final class DataWriter {
      * @param dataSet   The data set to save.
      * @param out       The writer to write the output to.
      * @param separator The character separating fields, usually '\t' or ','.
-     * @throws IOException If there is some problem dealing with the writer.
+     * @throws java.io.IOException If there is some problem dealing with the writer.
      */
     public static void writeRectangularData(DataSet dataSet,
                                             Writer out, char separator) throws IOException {
@@ -109,6 +110,8 @@ public final class DataWriter {
      * <code>out</code> will need to be called externally.
      *
      * @param out The writer to write the output to.
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param nf a {@link java.text.NumberFormat} object
      */
     public static void writeCovMatrix(ICovarianceMatrix covMatrix,
                                       PrintWriter out, NumberFormat nf) {
@@ -145,6 +148,13 @@ public final class DataWriter {
         out.close();
     }
 
+    /**
+     * <p>saveKnowledge.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param out a {@link java.io.Writer} object
+     * @throws java.io.IOException if any.
+     */
     public static void saveKnowledge(Knowledge knowledge, Writer out) throws IOException {
         StringBuilder buf = new StringBuilder();
         buf.append("/knowledge");

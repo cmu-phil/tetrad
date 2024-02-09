@@ -41,6 +41,7 @@ import java.util.List;
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesImWrapper implements SessionModel, Memorable {
 
@@ -148,6 +149,12 @@ public class BayesImWrapper implements SessionModel, Memorable {
         setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
     }
 
+    /**
+     * <p>Constructor for BayesImWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.ApproximateUpdaterWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public BayesImWrapper(ApproximateUpdaterWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -155,6 +162,12 @@ public class BayesImWrapper implements SessionModel, Memorable {
         setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
     }
 
+    /**
+     * <p>Constructor for BayesImWrapper.</p>
+     *
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public BayesImWrapper(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
@@ -191,6 +204,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
      */
     public static BayesImWrapper serializableInstance() {
         return new BayesImWrapper(BayesPmWrapper.serializableInstance(),
@@ -235,9 +249,9 @@ public class BayesImWrapper implements SessionModel, Memorable {
     }
 
     /**
-     * Sets the name of the BayesIm.
+     * {@inheritDoc}
      *
-     * @param name the name of the BayesIm
+     * Sets the name of the BayesIm.
      */
     public void setName(String name) {
         this.name = name;

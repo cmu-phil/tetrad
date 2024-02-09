@@ -12,20 +12,24 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumDirectedShouldBePartiallyDirected implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "#X->Y-Shouldbe-o->";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Number X-->Y for which both not X~~>Y and not Y~~>X but X<~~L~~>Y (should be Xo->Y) ";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -44,6 +48,7 @@ public class NumDirectedShouldBePartiallyDirected implements Statistic {
         return tp;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

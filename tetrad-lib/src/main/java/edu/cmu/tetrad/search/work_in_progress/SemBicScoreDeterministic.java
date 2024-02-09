@@ -39,6 +39,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * Implements the continuous BIC score for FGES.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemBicScoreDeterministic implements Score {
 
@@ -58,6 +59,8 @@ public class SemBicScoreDeterministic implements Score {
 
     /**
      * Constructs the score using a covariance matrix.
+     *
+     * @param covariances a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
     public SemBicScoreDeterministic(ICovarianceMatrix covariances) {
         if (covariances == null) {
@@ -71,6 +74,10 @@ public class SemBicScoreDeterministic implements Score {
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
+     *
+     * @param i a int
+     * @param parents a int
+     * @return a double
      */
     public double localScore(int i, int... parents) {
         double small = getDeterminismThreshold();
@@ -111,6 +118,7 @@ public class SemBicScoreDeterministic implements Score {
     }
 
 
+    /** {@inheritDoc} */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
 
@@ -130,17 +138,27 @@ public class SemBicScoreDeterministic implements Score {
 
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
+     *
+     * @return a double
      */
-
-
     public double getPenaltyDiscount() {
         return this.penaltyDiscount;
     }
 
+    /**
+     * <p>Setter for the field <code>penaltyDiscount</code>.</p>
+     *
+     * @param penaltyDiscount a double
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    /**
+     * <p>Getter for the field <code>covariances</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public ICovarianceMatrix getCovariances() {
         return this.covariances;
     }
@@ -149,32 +167,59 @@ public class SemBicScoreDeterministic implements Score {
         this.covariances = covariances;
     }
 
+    /**
+     * <p>Getter for the field <code>sampleSize</code>.</p>
+     *
+     * @return a int
+     */
     public int getSampleSize() {
         return this.sampleSize;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;//-0.25 * getPenaltyDiscount() * FastMath.log(sampleSize);
     }
 
+    /**
+     * <p>getDataSet.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbose a boolean
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * <p>Setter for the field <code>variables</code>.</p>
+     *
+     * @param variables a {@link java.util.List} object
+     */
     public void setVariables(List<Node> variables) {
         this.covariances.setVariables(variables);
         this.variables = variables;
@@ -184,11 +229,13 @@ public class SemBicScoreDeterministic implements Score {
         return cov.getSelection(rows, cols);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(log(this.sampleSize));
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean determines(List<Node> z, Node y) {
         int i = this.variables.indexOf(y);
@@ -220,10 +267,20 @@ public class SemBicScoreDeterministic implements Score {
         return false;
     }
 
+    /**
+     * <p>Getter for the field <code>determinismThreshold</code>.</p>
+     *
+     * @return a double
+     */
     public double getDeterminismThreshold() {
         return this.determinismThreshold;
     }
 
+    /**
+     * <p>Setter for the field <code>determinismThreshold</code>.</p>
+     *
+     * @param determinismThreshold a double
+     */
     public void setDeterminismThreshold(double determinismThreshold) {
         this.determinismThreshold = determinismThreshold;
     }

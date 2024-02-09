@@ -31,6 +31,7 @@ import java.io.Serial;
  * Applies a logarithmic transform.
  *
  * @author Jeremy Espino
+ * @version $Id: $Id
  */
 public class LogData extends DataWrapper {
     @Serial
@@ -72,6 +73,7 @@ public class LogData extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

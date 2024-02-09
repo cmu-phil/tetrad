@@ -42,8 +42,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * consistent with all the PAGs (same d-separations and d-connections)
  *
  * @author Robert Tillman
+ * @version $Id: $Id
  */
-
 public class Dci {
 
     /**
@@ -137,6 +137,11 @@ public class Dci {
 
     //=============================CONSTRUCTORS==========================//
 
+    /**
+     * <p>Constructor for Dci.</p>
+     *
+     * @param tests a {@link java.util.List} object
+     */
     public Dci(List<IndependenceTest> tests) {
         Set<Node> variables = new HashSet<>();
         for (IndependenceTest test : tests) {
@@ -150,6 +155,12 @@ public class Dci {
         this.variables.addAll(variables);
     }
 
+    /**
+     * <p>Constructor for Dci.</p>
+     *
+     * @param tests a {@link java.util.List} object
+     * @param method a {@link edu.cmu.tetrad.search.utils.ResolveSepsets.Method} object
+     */
     public Dci(List<IndependenceTest> tests, ResolveSepsets.Method method) {
         Set<Node> variables = new HashSet<>();
         for (IndependenceTest test : tests) {
@@ -279,10 +290,20 @@ public class Dci {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
+     * @return a int
+     */
     public int getDepth() {
         return depth;
     }
 
+    /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
+     * @param depth a int
+     */
     public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
@@ -292,6 +313,11 @@ public class Dci {
         this.depth = depth;
     }
 
+    /**
+     * <p>Getter for the field <code>elapsedTime</code>.</p>
+     *
+     * @return a long
+     */
     public long getElapsedTime() {
         return elapsedTime;
     }
@@ -300,6 +326,8 @@ public class Dci {
 
     /**
      * Gets the resulting sepsets
+     *
+     * @return a {@link java.util.List} object
      */
     public List<SepsetMapDci> getSepset() {
         return this.sepsetMaps;
@@ -307,6 +335,8 @@ public class Dci {
 
     /**
      * Begins the DCI search procedure, described at each step
+     *
+     * @return a {@link java.util.List} object
      */
     public List<Graph> search() {
         this.elapsedTime = MillisecondTimes.timeMillis();
@@ -907,6 +937,10 @@ public class Dci {
 
     /**
      * Determines whether one trek is a subtrek of another trek
+     *
+     * @param trek a {@link java.util.List} object
+     * @param subtrek a {@link java.util.List} object
+     * @return a boolean
      */
     public boolean isSubtrek(List<Node> trek, List<Node> subtrek) {
         int l = 0;

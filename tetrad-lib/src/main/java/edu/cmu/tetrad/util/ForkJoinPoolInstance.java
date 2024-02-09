@@ -25,6 +25,9 @@ import java.util.concurrent.ForkJoinPool;
 
 /**
  * Static instance of a ForkJoinPool. Not sure this is necessary. Created by josephramsey on 2/7/15.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class ForkJoinPoolInstance {
     private static final ForkJoinPoolInstance INSTANCE = new ForkJoinPoolInstance();
@@ -34,10 +37,20 @@ public class ForkJoinPoolInstance {
 
     }
 
+    /**
+     * <p>getInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.ForkJoinPoolInstance} object
+     */
     public static ForkJoinPoolInstance getInstance() {
         return ForkJoinPoolInstance.INSTANCE;
     }
 
+    /**
+     * <p>Getter for the field <code>pool</code>.</p>
+     *
+     * @return a {@link java.util.concurrent.ForkJoinPool} object
+     */
     public ForkJoinPool getPool() {
         return this.pool;
     }

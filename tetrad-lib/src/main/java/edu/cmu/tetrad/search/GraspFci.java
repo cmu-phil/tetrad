@@ -58,6 +58,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see GFci
  * @see FciOrient
  * @see Knowledge
+ * @version $Id: $Id
  */
 public final class GraspFci implements IGraphSearch {
 
@@ -100,7 +101,7 @@ public final class GraspFci implements IGraphSearch {
      * Constructs a new GraspFci object.
      *
      * @param test  The independence test.
-     * @param score
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
      */
     public GraspFci(IndependenceTest test, Score score) {
         if (score == null) {
@@ -294,6 +295,11 @@ public final class GraspFci implements IGraphSearch {
         this.ordered = ordered;
     }
 
+    /**
+     * <p>Setter for the field <code>seed</code>.</p>
+     *
+     * @param seed a long
+     */
     public void setSeed(long seed) {
         this.seed = seed;
     }

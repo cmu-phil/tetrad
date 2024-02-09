@@ -33,6 +33,7 @@ import java.util.concurrent.*;
  *
  * @author josephramsey
  * @see Ida
+ * @version $Id: $Id
  */
 public class Cstar {
     private final IndependenceWrapper test;
@@ -49,6 +50,10 @@ public class Cstar {
 
     /**
      * Constructor.
+     *
+     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Cstar(IndependenceWrapper test, ScoreWrapper score, Parameters parameters) {
         this.test = test;
@@ -129,6 +134,8 @@ public class Cstar {
      *                        stored. If the path is specified, then if the process is stopped and restarted, previously
      *                        computed interim results will be loaded.
      * @see Record
+     * @param topBracket a int
+     * @return a {@link java.util.LinkedList} object
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, int topBracket, String path) {
         if (topBracket < 1) {
@@ -402,6 +409,7 @@ public class Cstar {
      * Makes a graph of the estimated predictors to the effect.
      *
      * @param records The list of records obtained from a method above.
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph makeGraph(List<Record> records) {
         List<Node> outNodes = new ArrayList<>();
@@ -466,6 +474,11 @@ public class Cstar {
         this.numSubsamples = numSubsamples;
     }
 
+    /**
+     * <p>getDir.</p>
+     *
+     * @return a {@link java.io.File} object
+     */
     public File getDir() {
         return newDir;
     }
@@ -535,6 +548,9 @@ public class Cstar {
 
     /**
      * Returns a text table from the given records
+     *
+     * @param records a {@link java.util.LinkedList} object
+     * @return a {@link java.lang.String} object
      */
     public String makeTable(LinkedList<Record> records) {
         String header = "# Potential Causes = " + records.get(0).getNumCauses() + "\n"

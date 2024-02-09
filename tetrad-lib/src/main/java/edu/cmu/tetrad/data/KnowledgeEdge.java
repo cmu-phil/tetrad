@@ -30,6 +30,7 @@ import java.io.ObjectInputStream;
  * Implements a knowledge edge X--&gt;Y as a simple ordered pair of strings.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class KnowledgeEdge implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -46,6 +47,9 @@ public final class KnowledgeEdge implements TetradSerializable {
 
     /**
      * Constructs a knowledge edge for from--&gt;to.
+     *
+     * @param from a {@link java.lang.String} object
+     * @param to a {@link java.lang.String} object
      */
     public KnowledgeEdge(String from, String to) {
         if (from == null || to == null) {
@@ -58,12 +62,16 @@ public final class KnowledgeEdge implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.KnowledgeEdge} object
      */
     public static KnowledgeEdge serializableInstance() {
         return new KnowledgeEdge("X", "Y");
     }
 
     /**
+     * <p>Getter for the field <code>from</code>.</p>
+     *
      * @return the tail node of the edge.
      */
     public String getFrom() {
@@ -71,6 +79,8 @@ public final class KnowledgeEdge implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>to</code>.</p>
+     *
      * @return the head node of the edge.
      */
     public String getTo() {
@@ -78,6 +88,8 @@ public final class KnowledgeEdge implements TetradSerializable {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Reteurns true if (from1, to1) == (from2, to2).
      */
     public boolean equals(Object object) {
@@ -94,6 +106,8 @@ public final class KnowledgeEdge implements TetradSerializable {
     }
 
     /**
+     * <p>hashCode.</p>
+     *
      * @return a good hashcode.
      */
     public int hashCode() {
@@ -101,6 +115,11 @@ public final class KnowledgeEdge implements TetradSerializable {
         return 37 * hashCode + this.to.hashCode();
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return this.from + "-->" + this.to;
     }

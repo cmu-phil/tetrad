@@ -31,6 +31,7 @@ import static edu.cmu.tetrad.util.Params.*;
  * (randomly). This cannot given multiple values.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @Bootstrapping
 @edu.cmu.tetrad.annotation.Algorithm(
@@ -48,10 +49,19 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     private Algorithm algorithm;
 
     // Don't delete.
+    /**
+     * <p>Constructor for Fask.</p>
+     */
     public Fask() {
 
     }
 
+    /**
+     * <p>Constructor for Fask.</p>
+     *
+     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public Fask(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
@@ -61,6 +71,7 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         return search.search();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         DataSet _data = (DataSet) dataSet;
@@ -141,11 +152,13 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         if (this.test != null) {
@@ -157,11 +170,13 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -182,36 +197,43 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setExternalGraph(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
+    /** {@inheritDoc} */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;

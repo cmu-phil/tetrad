@@ -25,6 +25,9 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
  * Enumerates the test types for BuildPureClusters, and Purify.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public enum BpcTestType implements TetradSerializable {
 
@@ -108,6 +111,7 @@ public enum BpcTestType implements TetradSerializable {
      */
     GAP;
 
+    /** Constant <code>serialVersionUID=23L</code> */
     private static final long serialVersionUID = 23L;
 
     /**

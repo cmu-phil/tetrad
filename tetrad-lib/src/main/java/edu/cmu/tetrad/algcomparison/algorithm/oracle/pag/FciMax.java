@@ -28,6 +28,7 @@ import java.util.List;
  * FCI.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FCI-Max",
@@ -44,13 +45,22 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
+    /**
+     * <p>Constructor for FciMax.</p>
+     */
     public FciMax() {
     }
 
+    /**
+     * <p>Constructor for FciMax.</p>
+     *
+     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     */
     public FciMax(IndependenceWrapper test) {
         this.test = test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -99,21 +109,29 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph trueGraph = new EdgeListGraph(graph);
         return GraphTransforms.dagToPag(trueGraph);
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return "FCI-Max (Fast Causal Inference Max P-value) using " + this.test.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.test.getDataType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -130,26 +148,31 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

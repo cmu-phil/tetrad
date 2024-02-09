@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * Optimizes a SEM using RICF (see that class).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemOptimizerRicf implements SemOptimizer {
     private static final long serialVersionUID = 23L;
@@ -44,12 +45,16 @@ public class SemOptimizerRicf implements SemOptimizer {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemOptimizerRicf} object
      */
     public static SemOptimizerRicf serializableInstance() {
         return new SemOptimizerRicf();
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Optimizes the fitting function of the given Sem using the Powell method from Numerical Recipes by adjusting the
      * freeParameters of the Sem.
      */
@@ -118,16 +123,23 @@ public class SemOptimizerRicf implements SemOptimizer {
         System.out.println(semIm);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Sem Optimizer RICF";
     }

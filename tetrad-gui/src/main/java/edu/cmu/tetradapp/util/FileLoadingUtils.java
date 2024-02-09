@@ -32,10 +32,20 @@ import java.nio.charset.Charset;
 
 /**
  * Sundry utilities for loading files.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class FileLoadingUtils {
     // Converts the contents of a file into a CharSequence
     // suitable for use by the regex package.
+    /**
+     * <p>fromFile.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link java.lang.String} object
+     * @throws java.io.IOException if any.
+     */
     public static String fromFile(File file) throws IOException {
         FileInputStream fis = new FileInputStream(file);
         FileChannel fc = fis.getChannel();
@@ -50,6 +60,12 @@ public class FileLoadingUtils {
         return s;
     }
 
+    /**
+     * <p>fromResources.</p>
+     *
+     * @param path a {@link java.lang.String} object
+     * @return a {@link java.lang.String} object
+     */
     public static String fromResources(String path) {
         try {
             URL url = Version.class.getResource(path);

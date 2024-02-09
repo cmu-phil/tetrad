@@ -50,6 +50,9 @@ import java.util.List;
 /**
  * Implementation of Lee and Hastie's (2012) pseudolikelihood method for learning Mixed Gaussian-Categorical Graphical
  * Models Created by ajsedgewick on 7/15/15.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class Mgm extends ConvexProximal implements IGraphSearch {
     private final DoubleFactory2D factory2D = DoubleFactory2D.dense;
@@ -78,6 +81,15 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     private DoubleMatrix1D weights;
     private MGMParams params;
 
+    /**
+     * <p>Constructor for Mgm.</p>
+     *
+     * @param x a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @param y a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @param variables a {@link java.util.List} object
+     * @param l an array of {@link int} objects
+     * @param lambda an array of {@link double} objects
+     */
     public Mgm(DoubleMatrix2D x, DoubleMatrix2D y, List<Node> variables, int[] l, double[] lambda) {
 
         if (l.length != y.columns())
@@ -107,6 +119,12 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         makeDummy();
     }
 
+    /**
+     * <p>Constructor for Mgm.</p>
+     *
+     * @param ds a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param lambda an array of {@link double} objects
+     */
     public Mgm(DataSet ds, double[] lambda) {
         this.variables = ds.getVariables();
 
@@ -154,6 +172,12 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     //create column major vector from matrix (i.e. concatenate columns)
+    /**
+     * <p>flatten.</p>
+     *
+     * @param m a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @return a {@link cern.colt.matrix.DoubleMatrix1D} object
+     */
     public static DoubleMatrix1D flatten(DoubleMatrix2D m) {
         DoubleMatrix1D[] colArray = new DoubleMatrix1D[m.columns()];
         for (int i = 0; i < m.columns(); i++) {
@@ -202,6 +226,13 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     //zeros out everthing below di-th diagonal
+    /**
+     * <p>upperTri.</p>
+     *
+     * @param mat a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @param di a int
+     * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
+     */
     public static DoubleMatrix2D upperTri(DoubleMatrix2D mat, int di) {
         for (int i = FastMath.max(-di + 1, 0); i < mat.rows(); i++) {
             if (Thread.currentThread().isInterrupted()) {
@@ -361,10 +392,20 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         System.out.println("adjMat:\n" + model.adjMatFromMGM());
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         Mgm.runTests1();
     }
 
+    /**
+     * <p>Setter for the field <code>params</code>.</p>
+     *
+     * @param newParams a {@link edu.pitt.csb.mgm.Mgm.MGMParams} object
+     */
     public void setParams(MGMParams newParams) {
         this.params = newParams;
     }
@@ -450,10 +491,9 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * non-penalized -log(pseudolikelihood) this is the smooth function g(x) in prox gradient
+     * {@inheritDoc}
      *
-     * @param parIn
-     * @return
+     * non-penalized -log(pseudolikelihood) this is the smooth function g(x) in prox gradient
      */
     public double smoothValue(DoubleMatrix1D parIn) {
         //work with copy
@@ -532,13 +572,11 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * non-penalized -log(pseudolikelihood) this is the smooth function g(x) in prox gradient this overloaded version
      * calculates both nll and the smooth gradient at the same time any value in gradOut will be replaced by the new
      * calculations
-     *
-     * @param parIn
-     * @param gradOutVec
-     * @return
      */
     public double smooth(DoubleMatrix1D parIn, DoubleMatrix1D gradOutVec) {
         //work with copy
@@ -705,10 +743,9 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * Calculates penalty term of objective function
+     * {@inheritDoc}
      *
-     * @param parIn
-     * @return
+     * Calculates penalty term of objective function
      */
     public double nonSmoothValue(DoubleMatrix1D parIn) {
         //DoubleMatrix1D tlam = lambda.copy().assign(Functions.mult(t));
@@ -789,10 +826,9 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * Gradient of the pseudolikelihood
+     * {@inheritDoc}
      *
-     * @param parIn
-     * @return
+     * Gradient of the pseudolikelihood
      */
     public DoubleMatrix1D smoothGradient(DoubleMatrix1D parIn) {
         int n = this.xDat.rows();
@@ -937,11 +973,9 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * A proximal operator for the MGM
+     * {@inheritDoc}
      *
-     * @param t parameter for operator, must be positive
-     * @param X input vector to operator
-     * @return output vector, same dimension as X
+     * A proximal operator for the MGM
      */
     public DoubleMatrix1D proximalOperator(double t, DoubleMatrix1D X) {
         //System.out.println("PROX with t = " + t);
@@ -1054,12 +1088,9 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * Calculates penalty term and proximal operator at the same time for speed
+     * {@inheritDoc}
      *
-     * @param t  proximal operator parameter
-     * @param X  input
-     * @param pX prox operator solution
-     * @return value of penalty term
+     * Calculates penalty term and proximal operator at the same time for speed
      */
     public double nonSmooth(double t, DoubleMatrix1D X, DoubleMatrix1D pX) {
 
@@ -1197,7 +1228,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
      * Learn MGM using edge convergence using default 3 iterations of no edge changes. Recommended when we only care
      * about edge existence.
      *
-     * @param iterLimit
+     * @param iterLimit a int
      */
     public void learnEdges(int iterLimit) {
         ProximalGradient pg = new ProximalGradient(.5, .9, true);
@@ -1208,8 +1239,8 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
      * Learn MGM using edge convergence using edgeChangeTol (see ProximalGradient for documentation). Recommended when
      * we only care about edge existence.
      *
-     * @param iterLimit
-     * @param edgeChangeTol
+     * @param iterLimit a int
+     * @param edgeChangeTol a int
      */
     public void learnEdges(int iterLimit, int edgeChangeTol) {
         ProximalGradient pg = new ProximalGradient(.5, .9, true);
@@ -1220,7 +1251,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     /**
      * Converts MGM object to Graph object with edges if edge parameters are non-zero. Loses all edge param information
      *
-     * @return
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph graphFromMGM() {
 
@@ -1295,7 +1326,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
      * Converts MGM to matrix of doubles. uses 2-norm to combine c-d edge parameters into single value and f-norm for
      * d-d edge parameters.
      *
-     * @return
+     * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
      */
     public DoubleMatrix2D adjMatFromMGM() {
         //List<Node> variables = getVariable();
@@ -1350,7 +1381,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     /**
      * Simple search command for GraphSearch implementation. Uses default edge convergence, 1000 iter limit.
      *
-     * @return
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search() {
         long startTime = MillisecondTimes.timeMillis();
@@ -1362,7 +1393,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     /**
      * Return time of execution for learning.
      *
-     * @return
+     * @return a long
      */
     public long getElapsedTime() {
         return this.elapsedTime;

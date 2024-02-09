@@ -29,6 +29,7 @@ import java.awt.datatransfer.Clipboard;
  * Toolkit.getDefaultToolkit().getSystemClipboard().
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class InternalClipboard extends Clipboard {
     private static final InternalClipboard ourInstance = new InternalClipboard();
@@ -38,10 +39,20 @@ public class InternalClipboard extends Clipboard {
         super("Internal Clipboard");
     }
 
+    /**
+     * <p>getInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.util.InternalClipboard} object
+     */
     public static InternalClipboard getInstance() {
         return InternalClipboard.ourInstance;
     }
 
+    /**
+     * <p>Getter for the field <code>layoutInstance</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.util.InternalClipboard} object
+     */
     public static InternalClipboard getLayoutInstance() {
         return InternalClipboard.layoutInstance;
     }

@@ -50,10 +50,22 @@ import java.util.concurrent.RecursiveAction;
  * This is under construction...likely to be buggy
  * <p>
  * Created by ajsedgewick on 9/4/15.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class StabilityUtils {
 
     //returns an adjacency matrix containing the edgewise instability as defined in Liu et al
+    /**
+     * <p>StabilitySearch.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param gs a {@link edu.pitt.csb.stability.DataGraphSearch} object
+     * @param N a int
+     * @param b a int
+     * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
+     */
     public static DoubleMatrix2D StabilitySearch(DataSet data, DataGraphSearch gs, int N, int b) {
         int numVars = data.getNumColumns();
         DoubleMatrix2D thetaMat = DoubleFactory2D.dense.make(numVars, numVars, 0.0);
@@ -73,6 +85,15 @@ public class StabilityUtils {
     }
 
     //returns an adjacency matrix containing the edgewise instability as defined in Liu et al
+    /**
+     * <p>StabilitySearchPar.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param gs a {@link edu.pitt.csb.stability.DataGraphSearch} object
+     * @param N a int
+     * @param b a int
+     * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
+     */
     public static DoubleMatrix2D StabilitySearchPar(DataSet data, DataGraphSearch gs, int N, int b) {
 
         int numVars = data.getNumColumns();
@@ -138,6 +159,13 @@ public class StabilityUtils {
 
     //needs a symmetric matrix
     //array of averages of instability matrix over [all, cc, cd, dd] edges
+    /**
+     * <p>totalInstabilityUndir.</p>
+     *
+     * @param xi a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @param vars a {@link java.util.List} object
+     * @return an array of {@link double} objects
+     */
     public static double[] totalInstabilityUndir(DoubleMatrix2D xi, List<Node> vars) {
         if (vars.size() != xi.columns() || vars.size() != xi.rows()) {
             throw new IllegalArgumentException("stability mat must have same number of rows and columns as there are vars");
@@ -166,6 +194,13 @@ public class StabilityUtils {
     }
 
     //array of averages of instability matrix over [all, cc, cd, dd] edges
+    /**
+     * <p>totalInstabilityDir.</p>
+     *
+     * @param xi a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @param vars a {@link java.util.List} object
+     * @return an array of {@link double} objects
+     */
     public static double[] totalInstabilityDir(DoubleMatrix2D xi, List<Node> vars) {
         if (vars.size() != xi.columns() || vars.size() != xi.rows()) {
             throw new IllegalArgumentException("stability mat must have same number of rows and columns as there are vars");
@@ -186,6 +221,14 @@ public class StabilityUtils {
     }
 
     //returns an numSub by subSize matrix of subsamples of the sequence 1:sampSize
+    /**
+     * <p>subSampleNoReplacement.</p>
+     *
+     * @param sampSize a int
+     * @param subSize a int
+     * @param numSub a int
+     * @return an array of {@link int} objects
+     */
     public static int[][] subSampleNoReplacement(int sampSize, int subSize, int numSub) {
 
         if (subSize < 1) {
@@ -234,6 +277,11 @@ public class StabilityUtils {
 
 
     //some tests...
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         final String fn = "/Users/ajsedgewick/tetrad_mgm_runs/run2/networks/DAG_0_graph.txt";
         Graph trueGraph = GraphSaveLoadUtils.loadGraphTxt(new File(fn));

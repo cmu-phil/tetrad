@@ -35,11 +35,18 @@ import java.util.List;
  * Add description
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class SubsetDiscreteVariablesWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
 
+    /**
+     * <p>Constructor for SubsetDiscreteVariablesWrapper.</p>
+     *
+     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SubsetDiscreteVariablesWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
@@ -60,6 +67,7 @@ public class SubsetDiscreteVariablesWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

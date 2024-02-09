@@ -41,6 +41,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * characterization. Advances in Neural Information Processing Systems, 35, 8226-8239.
  *
  * @author bryanandrews
+ * @version $Id: $Id
  */
 public class Dagma {
 
@@ -65,6 +66,8 @@ public class Dagma {
 
     /**
      * Constructor.
+     *
+     * @param dataset a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public Dagma(DataSet dataset) {
         this.variables = dataset.getVariables();
@@ -97,6 +100,8 @@ public class Dagma {
 
     /**
      * NEEDS DOCUMENTATION
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search() {
         RealMatrix W = createRealMatrix(this.d, this.d);
@@ -121,31 +126,61 @@ public class Dagma {
     }
 
 
+    /**
+     * <p>Getter for the field <code>lambda1</code>.</p>
+     *
+     * @return a double
+     */
     public double getLambda1() {
         return this.lambda1;
     }
 
 
+    /**
+     * <p>Setter for the field <code>lambda1</code>.</p>
+     *
+     * @param lambda1 a double
+     */
     public void setLambda1(double lambda1) {
         this.lambda1 = lambda1;
     }
 
 
+    /**
+     * <p>Getter for the field <code>wThreshold</code>.</p>
+     *
+     * @return a double
+     */
     public double getWThreshold() {
         return this.wThreshold;
     }
 
 
+    /**
+     * <p>Setter for the field <code>wThreshold</code>.</p>
+     *
+     * @param wThreshold a double
+     */
     public void setWThreshold(double wThreshold) {
         this.wThreshold = wThreshold;
     }
 
 
+    /**
+     * <p>Getter for the field <code>cpdag</code>.</p>
+     *
+     * @return a boolean
+     */
     public boolean getCpdag() {
         return this.cpdag;
     }
 
 
+    /**
+     * <p>Setter for the field <code>cpdag</code>.</p>
+     *
+     * @param cpdag a boolean
+     */
     public void setCpdag(boolean cpdag) {
         this.cpdag = cpdag;
     }

@@ -32,6 +32,7 @@ import java.awt.*;
  * marked up text.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class EdgewiseComparisonEditor extends JPanel {
 
@@ -46,6 +47,8 @@ public class EdgewiseComparisonEditor extends JPanel {
 
     /**
      * Constructs the editor given the model
+     *
+     * @param comparison a {@link edu.cmu.tetradapp.model.EdgewiseComparisonModel} object
      */
     public EdgewiseComparisonEditor(EdgewiseComparisonModel comparison) {
         this.comparison = comparison;

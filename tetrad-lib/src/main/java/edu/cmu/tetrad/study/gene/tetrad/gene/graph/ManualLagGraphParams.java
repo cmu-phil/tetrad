@@ -30,6 +30,7 @@ import java.io.ObjectInputStream;
  * Stores the parameters needed to generate a new lag graph, whether randomized or manually constructed.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ManualLagGraphParams implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -58,6 +59,8 @@ public class ManualLagGraphParams implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.graph.ManualLagGraphParams} object
      */
     public static ManualLagGraphParams serializableInstance() {
         return new ManualLagGraphParams();
@@ -67,6 +70,8 @@ public class ManualLagGraphParams implements TetradSerializable {
 
     /**
      * Returns the number of variables per individual.
+     *
+     * @return a int
      */
     public int getVarsPerInd() {
         return this.varsPerInd;
@@ -74,6 +79,8 @@ public class ManualLagGraphParams implements TetradSerializable {
 
     /**
      * Sets the number of variables per individual.
+     *
+     * @param varsPerInd a int
      */
     public void setVarsPerInd(int varsPerInd) {
         if (varsPerInd <= 0) {
@@ -85,6 +92,8 @@ public class ManualLagGraphParams implements TetradSerializable {
 
     /**
      * Returns the maximum lag.
+     *
+     * @return a int
      */
     public int getMlag() {
         return this.mlag;
@@ -92,6 +101,8 @@ public class ManualLagGraphParams implements TetradSerializable {
 
     /**
      * Sets the maximum lag.
+     *
+     * @param mlag a int
      */
     public void setMlag(int mlag) {
         if (mlag <= 0) {

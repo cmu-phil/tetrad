@@ -40,7 +40,10 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 /**
+ * <p>ShiftDataParamsEditor class.</p>
+ *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
 
@@ -61,6 +64,8 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
 
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the parameters.
      */
     public void setParams(Parameters params) {
@@ -69,6 +74,8 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * Does nothing
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
      */
     public void setParentModels(Object[] parentModels) {
         this.parentModels = parentModels;
@@ -272,6 +279,8 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
     }
 
     /**
+     * <p>mustBeShown.</p>
+     *
      * @return true
      */
     public boolean mustBeShown() {

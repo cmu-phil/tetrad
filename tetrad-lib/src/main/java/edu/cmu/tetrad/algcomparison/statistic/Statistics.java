@@ -9,11 +9,15 @@ import java.util.Map;
  * A list of statistics and their utility weights.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Statistics {
     private final List<Statistic> statistics = new ArrayList<>();
     private final Map<Statistic, Double> weights = new HashMap<>();
 
+    /**
+     * <p>Constructor for Statistics.</p>
+     */
     public Statistics() {
     }
 

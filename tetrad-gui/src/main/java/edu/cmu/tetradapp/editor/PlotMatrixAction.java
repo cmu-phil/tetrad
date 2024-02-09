@@ -46,6 +46,8 @@ class PlotMatrixAction extends AbstractAction {
 
     /**
      * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code> that It's attached to.
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
     public PlotMatrixAction(DataEditor editor) {
         super("Plot Matrix...");
@@ -53,6 +55,7 @@ class PlotMatrixAction extends AbstractAction {
     }
 
 
+    /** {@inheritDoc} */
     public void actionPerformed(ActionEvent e) {
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {

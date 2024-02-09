@@ -32,22 +32,39 @@ import edu.cmu.tetrad.util.TetradLogger;
  * Picks a DAG from the given graph.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class GenerateCompleteGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 
 
+    /**
+     * <p>Constructor for GenerateCompleteGraphWrapper.</p>
+     *
+     * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public GenerateCompleteGraphWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
+    /**
+     * <p>Constructor for GenerateCompleteGraphWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public GenerateCompleteGraphWrapper(Graph graph) {
         super(GenerateCompleteGraphWrapper.generateCompleteGraph(graph), "Generate Complete Graph");
         TetradLogger.getInstance().log("graph", getGraph() + "");
     }
 
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.GenerateCompleteGraphWrapper} object
+     */
     public static GenerateCompleteGraphWrapper serializableInstance() {
         return new GenerateCompleteGraphWrapper(EdgeListGraph.serializableInstance());
     }
@@ -60,6 +77,7 @@ public class GenerateCompleteGraphWrapper extends GraphWrapper implements DoNotA
         return GraphUtils.completeGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean allowRandomGraph() {
         return false;

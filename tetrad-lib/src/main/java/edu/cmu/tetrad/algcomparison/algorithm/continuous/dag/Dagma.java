@@ -26,6 +26,7 @@ import java.util.List;
  * characterization. Advances in Neural Information Processing Systems, 35, 8226-8239.
  *
  * @author bryanandrews
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "DAGMA",
@@ -39,9 +40,13 @@ public class Dagma implements Algorithm, ReturnsBootstrapGraphs {
     private static final long serialVersionUID = 23L;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
+    /**
+     * <p>Constructor for Dagma.</p>
+     */
     public Dagma() {
     }
 
+    /** {@inheritDoc} */
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
@@ -70,20 +75,28 @@ public class Dagma implements Algorithm, ReturnsBootstrapGraphs {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return "DAGMA (DAGs via M-matrices for Acyclicity)";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -94,6 +107,7 @@ public class Dagma implements Algorithm, ReturnsBootstrapGraphs {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

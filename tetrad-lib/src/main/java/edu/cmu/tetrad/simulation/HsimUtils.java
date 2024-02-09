@@ -14,9 +14,20 @@ import java.util.Set;
 
 /**
  * Created by Erich on 4/22/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class HsimUtils {
     //this method will trim an input graph down to the nodes and edges that are used for evaluation
+    /**
+     * <p>evalEdges.</p>
+     *
+     * @param inputgraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param simnodes a {@link java.util.Set} object
+     * @param realnodes a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph evalEdges(Graph inputgraph, Set<Node> simnodes, Set<Node> realnodes) {
         //first, restrict down to subgraph containing only simnods and realnodes
         Set<Node> aNodes = new HashSet<>();
@@ -43,6 +54,13 @@ public class HsimUtils {
     }
 
     //this method returns the set of all parents of a provided set of parents, given a provided graph
+    /**
+     * <p>getAllParents.</p>
+     *
+     * @param inputgraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param inputnodes a {@link java.util.Set} object
+     * @return a {@link java.util.Set} object
+     */
     public static Set<Node> getAllParents(Graph inputgraph, Set<Node> inputnodes) {
         Set<Node> parents = new HashSet<>();
         List<Node> pAdd;
@@ -62,6 +80,13 @@ public class HsimUtils {
     }
 
     //this method returns an array of doubles, which are standard error metrics for graph learning
+    /**
+     * <p>errorEval.</p>
+     *
+     * @param estCPDAG a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param truePattern a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return an array of {@link double} objects
+     */
     public static double[] errorEval(Graph estCPDAG, Graph truePattern) {
         GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(estCPDAG, truePattern);
 
@@ -95,6 +120,12 @@ public class HsimUtils {
         return output;
     }
 
+    /**
+     * <p>correctnessRatio.</p>
+     *
+     * @param counts an array of {@link int} objects
+     * @return a double
+     */
     public static double correctnessRatio(int[][] counts) {
         //StringBuilder builder = new StringBuilder();
 
@@ -142,6 +173,12 @@ public class HsimUtils {
     }
 
     //this method makes a VerticalIntDataBox from a regular data set
+    /**
+     * <p>makeVertIntBox.</p>
+     *
+     * @param dataset a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.VerticalIntDataBox} object
+     */
     public static VerticalIntDataBox makeVertIntBox(DataSet dataset) {
         //this is for turning regular data set into verticalintbox (not doublebox...)
         int[][] data = new int[dataset.getNumColumns()][dataset.getNumRows()];
@@ -154,6 +191,12 @@ public class HsimUtils {
     }
 
     //returns a String formatted as a latex table, which can be pasted directly into a latex document
+    /**
+     * <p>makeLatexTable.</p>
+     *
+     * @param tablevalues an array of {@link java.lang.String} objects
+     * @return a {@link java.lang.String} object
+     */
     public static String makeLatexTable(String[][] tablevalues) {
         String nl = System.lineSeparator();
         String output = "\\begin{table}[ht]" + nl;
@@ -183,6 +226,13 @@ public class HsimUtils {
 
     //this turns an array of doubles into an array of strings, formatted for easier reading
     //the input String should be formatted appropriately for the String.format method
+    /**
+     * <p>formatErrorsArray.</p>
+     *
+     * @param inputArray an array of {@link double} objects
+     * @param formatting a {@link java.lang.String} object
+     * @return an array of {@link java.lang.String} objects
+     */
     public static String[] formatErrorsArray(double[] inputArray, String formatting) {
         String[] output = new String[inputArray.length];
         for (int i = 0; i < inputArray.length; i++) {
@@ -192,6 +242,13 @@ public class HsimUtils {
     }
 
     //used for making random graphs for SEMS without having to manually constuct the variable set each time
+    /**
+     * <p>mkRandSEMDAG.</p>
+     *
+     * @param numVars a int
+     * @param numEdges a int
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph mkRandSEMDAG(int numVars, int numEdges) {
         List<Node> varslist = new ArrayList<>();
         for (int i = 0; i < numVars; i++) {

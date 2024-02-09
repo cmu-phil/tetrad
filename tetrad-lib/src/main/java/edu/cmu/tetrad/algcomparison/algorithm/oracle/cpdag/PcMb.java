@@ -28,6 +28,7 @@ import java.util.List;
  * PC.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "PC-MB",
@@ -44,13 +45,22 @@ public class PcMb implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     private List<Node> targets;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
+    /**
+     * <p>Constructor for PcMb.</p>
+     */
     public PcMb() {
     }
 
+    /**
+     * <p>Constructor for PcMb.</p>
+     *
+     * @param type a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     */
     public PcMb(IndependenceWrapper type) {
         this.test = type;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -96,21 +106,25 @@ public class PcMb implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         return targets;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return GraphUtils.markovBlanketSubgraph(targets.get(0), new EdgeListGraph(graph));
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "PC-MB (Markov blanket search using PC) using " + this.test.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.test.getDataType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -122,26 +136,31 @@ public class PcMb implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

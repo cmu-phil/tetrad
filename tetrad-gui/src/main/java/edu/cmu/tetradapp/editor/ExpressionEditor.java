@@ -81,6 +81,10 @@ class ExpressionEditor extends JPanel {
 
     /**
      * Creates the editor given the data set being worked on.
+     *
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param lhs a {@link java.lang.String} object
+     * @param rhs a {@link java.lang.String} object
      */
     public ExpressionEditor(DataSet data, String lhs, String rhs) {
         this.parser = new ExpressionParser(data.getVariableNames(), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
@@ -119,6 +123,8 @@ class ExpressionEditor extends JPanel {
     //============================ Public Method ======================================//
 
     /**
+     * <p>getEquation.</p>
+     *
      * @return the expression.
      * @throws java.text.ParseException - If the values in the editor are not well-formed.
      */
@@ -143,6 +149,8 @@ class ExpressionEditor extends JPanel {
     /**
      * Adds a focus listener that will be notified about the focus events of the fields in the editor.  The listener
      * will only be notified of gain focus events.
+     *
+     * @param listener a {@link java.awt.event.FocusListener} object
      */
     public void addFieldFocusListener(FocusListener listener) {
         this.listeners.add(listener);
@@ -217,6 +225,8 @@ class ExpressionEditor extends JPanel {
 
     /**
      * Adds the signature to the expression field.
+     *
+     * @param signature a {@link edu.cmu.tetrad.calculator.expression.ExpressionSignature} object
      */
     public void addExpressionSignature(ExpressionSignature signature) {
         this.expression.grabFocus();
@@ -263,6 +273,7 @@ class ExpressionEditor extends JPanel {
      * Inserts the given symbol into the last focused field, of if there isn't one the expression field.
      *
      * @param append States whether it should append to the field's getModel value or not.
+     * @param symbol a {@link java.lang.String} object
      */
     public void insertLastFocused(String symbol, boolean append) {
         if (this.variable == this.lastFocused) {
@@ -273,6 +284,11 @@ class ExpressionEditor extends JPanel {
     }
 
 
+    /**
+     * <p>removeSelected.</p>
+     *
+     * @return a boolean
+     */
     public boolean removeSelected() {
         return this.remove;
     }

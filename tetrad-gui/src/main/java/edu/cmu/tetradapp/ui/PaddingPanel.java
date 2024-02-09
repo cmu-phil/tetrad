@@ -26,6 +26,7 @@ import javax.swing.*;
  * Nov 22, 2017 11:35:16 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class PaddingPanel extends JPanel {
 
@@ -34,6 +35,11 @@ public class PaddingPanel extends JPanel {
     private final JComponent innerComponent;
     private final JLayeredPane layeredPane;
 
+    /**
+     * <p>Constructor for PaddingPanel.</p>
+     *
+     * @param innerComponent a {@link javax.swing.JComponent} object
+     */
     public PaddingPanel(JComponent innerComponent) {
         this.innerComponent = (innerComponent == null) ? new JPanel() : innerComponent;
         this.layeredPane = new JLayeredPane();

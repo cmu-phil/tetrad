@@ -12,20 +12,24 @@ import java.util.List;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TrueDagRecallArrows implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "*->-Rec";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Proportion of <Y, X> where there is no directed(Y, X) in the true for which and X*->Y in the estimated graph";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -54,6 +58,7 @@ public class TrueDagRecallArrows implements Statistic {
         return tp / (double) (tp + fn);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

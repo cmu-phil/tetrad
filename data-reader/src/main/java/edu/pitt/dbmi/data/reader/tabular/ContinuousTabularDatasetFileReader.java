@@ -32,6 +32,7 @@ import java.util.Set;
  * Jan 2, 2019 1:56:16 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class ContinuousTabularDatasetFileReader extends DatasetFileReader implements ContinuousTabularDatasetReader {
 
@@ -50,11 +51,13 @@ public class ContinuousTabularDatasetFileReader extends DatasetFileReader implem
         this.quoteChar = '"';
     }
 
+    /** {@inheritDoc} */
     @Override
     public Data readInData() throws IOException {
         return readInData(Collections.EMPTY_SET);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Data readInData(Set<String> namesOfColumnsToExclude) throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
@@ -74,6 +77,7 @@ public class ContinuousTabularDatasetFileReader extends DatasetFileReader implem
         return dataReader.read(dataColumns, this.hasHeader);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Data readInData(int[] columnsToExclude) throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
@@ -93,11 +97,13 @@ public class ContinuousTabularDatasetFileReader extends DatasetFileReader implem
         return dataReader.read(dataColumns, this.hasHeader);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setHasHeader(boolean hasHeader) {
         this.hasHeader = hasHeader;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setQuoteCharacter(char quoteCharacter) {
         this.quoteChar = quoteCharacter;

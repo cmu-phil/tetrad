@@ -34,11 +34,15 @@ import java.util.prefs.Preferences;
  * Prompts and allows them to config general logging features.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class SetupLoggingAction extends AbstractAction {
 
     private static final long serialVersionUID = -3792483383186114713L;
 
+    /**
+     * <p>Constructor for SetupLoggingAction.</p>
+     */
     public SetupLoggingAction() {
         super("Logging");
     }
@@ -188,6 +192,7 @@ public class SetupLoggingAction extends AbstractAction {
         return box;
     }
 
+    /** {@inheritDoc} */
     public void actionPerformed(ActionEvent e) {
         JComponent comp = SetupLoggingAction.buildSetupLoggingComponent();
         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), comp,

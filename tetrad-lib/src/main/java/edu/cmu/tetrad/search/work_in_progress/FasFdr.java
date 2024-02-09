@@ -51,6 +51,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * acceptance, and rerunning using the specified cutoff.
  *
  * @author josephramsey.
+ * @version $Id: $Id
  */
 public class FasFdr implements IFas {
     private final Matrix cov;
@@ -173,39 +174,43 @@ public class FasFdr implements IFas {
     }
 
     /**
-     * Sets whether verbose output will be printed.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets whether verbose output will be printed.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /** {@inheritDoc} */
     @Override
     public long getElapsedTime() {
         return 0;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Node> getNodes() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the depth of the search--i.e., the maximum number of variables conditioned on for any conditional
      * independence test.
-     *
-     * @param depth This maximum.
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -217,9 +222,9 @@ public class FasFdr implements IFas {
     }
 
     /**
-     * Sets the knowledge to be used in the search.
+     * {@inheritDoc}
      *
-     * @param knowledge This knowledge.
+     * Sets the knowledge to be used in the search.
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);

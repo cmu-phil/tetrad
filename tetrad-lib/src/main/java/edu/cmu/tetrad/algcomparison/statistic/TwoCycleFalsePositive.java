@@ -11,20 +11,24 @@ import org.apache.commons.math3.util.FastMath;
  * estimated graph does contain it, one false positive is counted.
  *
  * @author josephramsey, rubens (November 2016)
+ * @version $Id: $Id
  */
 public class TwoCycleFalsePositive implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "2CFP";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "2-cycle false positive";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
@@ -32,6 +36,7 @@ public class TwoCycleFalsePositive implements Statistic {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return 1.0 - FastMath.tanh(value);

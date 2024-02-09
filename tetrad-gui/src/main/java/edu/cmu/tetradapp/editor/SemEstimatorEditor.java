@@ -61,6 +61,7 @@ import java.util.Map;
  * Lets the user interact with a SEM estimator.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SemEstimatorEditor extends JPanel {
 
@@ -76,15 +77,32 @@ public final class SemEstimatorEditor extends JPanel {
     private OneEditor oneEditorPanel;
 
 
+    /**
+     * <p>Constructor for SemEstimatorEditor.</p>
+     *
+     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public SemEstimatorEditor(SemIm semIm, DataSet dataSet) {
         this(new SemEstimatorWrapper(dataSet, semIm.getSemPm(), new Parameters()));
     }
 
 
+    /**
+     * <p>Constructor for SemEstimatorEditor.</p>
+     *
+     * @param semPm a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public SemEstimatorEditor(SemPm semPm, DataSet dataSet) {
         this(new SemEstimatorWrapper(dataSet, semPm, new Parameters()));
     }
 
+    /**
+     * <p>Constructor for SemEstimatorEditor.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     */
     public SemEstimatorEditor(SemEstimatorWrapper wrapper) {
         setLayout(new BorderLayout());
         this.targetPanel = new JPanel();

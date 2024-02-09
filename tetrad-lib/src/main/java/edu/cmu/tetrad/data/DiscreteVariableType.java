@@ -31,8 +31,10 @@ import java.io.ObjectStreamException;
  * discrete variable is an ordinal discrete variable for which relative distances between categories can be specified.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class DiscreteVariableType implements TetradSerializable {
+    /** Constant <code>NOMINAL</code> */
     public static final DiscreteVariableType NOMINAL =
             new DiscreteVariableType("Nominal");
     private static final long serialVersionUID = 23L;
@@ -56,6 +58,8 @@ public final class DiscreteVariableType implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.DiscreteVariableType} object
      */
     public static DiscreteVariableType serializableInstance() {
         return DiscreteVariableType.NOMINAL;
@@ -63,6 +67,8 @@ public final class DiscreteVariableType implements TetradSerializable {
 
     /**
      * Prints out the name of the type.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return this.name;

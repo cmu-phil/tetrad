@@ -35,6 +35,7 @@ import java.util.*;
  * Parses Bayes elements back to objects.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class BayesXmlParser {
     private Map<String, Node> namesToVars;

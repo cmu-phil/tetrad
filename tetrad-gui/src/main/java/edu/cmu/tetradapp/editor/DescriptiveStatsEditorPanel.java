@@ -52,6 +52,9 @@ class DescriptiveStatsEditorPanel extends JPanel {
 
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
+     *
+     * @param selected a {@link edu.cmu.tetrad.graph.Node} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DescriptiveStatsEditorPanel(Node selected, DataSet dataSet) {
         //   construct components

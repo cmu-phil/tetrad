@@ -50,6 +50,7 @@ import java.util.List;
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  * @author Zhou Yuan (zhy19@pitt.edu)
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeListener, ActionListener, FinalizingEditor {
     @Serial
@@ -66,6 +67,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     private final TetradDesktop desktop;
     private String jsonResult;
 
+    /**
+     * <p>Constructor for GeneralAlgorithmEditor.</p>
+     *
+     * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     */
     public GeneralAlgorithmEditor(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
@@ -110,6 +116,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         this.graphCard.addPropertyChangeListener(this);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if ("algoFwdBtn".equals(evt.getPropertyName())) {
@@ -117,6 +124,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent evt) {
         Object obj = evt.getSource();
@@ -134,6 +142,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         }
     }
 
+    /**
+     * <p>setAlgorithmResult.</p>
+     *
+     * @param jsonResult a {@link java.lang.String} object
+     */
     public void setAlgorithmResult(String jsonResult) {
         this.jsonResult = jsonResult;
         System.out.println("json result: " + jsonResult);
@@ -149,6 +162,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         showGraphCard();
     }
 
+    /**
+     * <p>setAlgorithmErrorResult.</p>
+     *
+     * @param errorResult a {@link java.lang.String} object
+     */
     public void setAlgorithmErrorResult(String errorResult) {
         JOptionPane.showMessageDialog(this.desktop, this.jsonResult);
 
@@ -199,6 +217,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         new MyWatchedProcess();
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean finalizeEditor() {
         List<Graph> graphs = this.algorithmRunner.getGraphs();

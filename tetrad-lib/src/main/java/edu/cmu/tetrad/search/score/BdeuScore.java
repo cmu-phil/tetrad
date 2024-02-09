@@ -42,6 +42,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @see BdeScore
+ * @version $Id: $Id
  */
 public class BdeuScore implements DiscreteScore {
 
@@ -111,11 +112,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * Calculates the BDeu score of a node given its parents.
+     * {@inheritDoc}
      *
-     * @param node    The index of the node.
-     * @param parents The indices of the node's parents.
-     * @return The score.
+     * Calculates the BDeu score of a node given its parents.
      */
     @Override
     public double localScore(int node, int[] parents) {
@@ -199,12 +198,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * Calculates localScore(y | z, x) - localScore(y | z).
+     * {@inheritDoc}
      *
-     * @param x The index of x.
-     * @param y The index of y.
-     * @param z The indices of the z variables.
-     * @return The score difference.
+     * Calculates localScore(y | z, x) - localScore(y | z).
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -212,9 +208,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * Returns the variables of the data.
+     * {@inheritDoc}
      *
-     * @return These variables as a list.
+     * Returns the variables of the data.
      */
     @Override
     public List<Node> getVariables() {
@@ -231,10 +227,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * For FGES, this determines whether an edge counts as an effect edge.
+     * {@inheritDoc}
      *
-     * @param bump The bump for the edge.
-     * @return True, if so.
+     * For FGES, this determines whether an edge counts as an effect edge.
      * @see Fges
      */
     public boolean isEffectEdge(double bump) {
@@ -242,9 +237,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * Returns the dataset being analyzed.
+     * {@inheritDoc}
      *
-     * @return This dataset
+     * Returns the dataset being analyzed.
      */
     @Override
     public DataSet getDataSet() {
@@ -261,9 +256,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * Sets the structure prior
+     * {@inheritDoc}
      *
-     * @param structurePrior This prior.
+     * Sets the structure prior
      */
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
@@ -279,9 +274,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * Set the sample prior
+     * {@inheritDoc}
      *
-     * @param samplePrior This prior.
+     * Set the sample prior
      */
     @Override
     public void setSamplePrior(double samplePrior) {
@@ -289,9 +284,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * Returns a string representation of this score.
+     * {@inheritDoc}
      *
-     * @return This string.
+     * Returns a string representation of this score.
      */
     @Override
     public String toString() {
@@ -300,9 +295,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * Returns the needed max degree for some searches.
+     * {@inheritDoc}
      *
-     * @return This max degree.
+     * Returns the needed max degree for some searches.
      */
     @Override
     public int getMaxDegree() {
@@ -310,12 +305,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * This score does not implement a method to decide whether a node is determined by its parents.
+     * {@inheritDoc}
      *
-     * @param z The parents.
-     * @param y The node.
-     * @return This determination
-     * @throws UnsupportedOperationException Since this method not implemented for this core.
+     * This score does not implement a method to decide whether a node is determined by its parents.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {

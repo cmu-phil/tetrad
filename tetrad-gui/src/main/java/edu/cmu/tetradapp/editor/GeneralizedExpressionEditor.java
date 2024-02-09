@@ -545,6 +545,8 @@ class GeneralizedExpressionEditor extends JComponent {
     //==================================================PUBLIC METHODS==========================================//
 
     /**
+     * <p>Getter for the field <code>expressionString</code>.</p>
+     *
      * @return the expression string (that is, the edited string, with error term appended if necessary, without
      * "variable = " or "parameter ~". This is the final product of the editing.
      */

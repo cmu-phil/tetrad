@@ -40,6 +40,7 @@ import java.util.*;
  * by Tetrad.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         DoNotAddOldModel, SimulationParamsSource, MultipleDataSource {
@@ -71,6 +72,9 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     private Map<String, String> allParamSettings;
 
     //==============================CONSTRUCTORS===========================//
+    /**
+     * <p>Constructor for DataWrapper.</p>
+     */
     protected DataWrapper() {
         setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<>()));
         this.parameters = new Parameters();
@@ -78,12 +82,20 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     /**
      * Constructs a data wrapper using a new DataSet as data model.
+     *
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public DataWrapper(Parameters parameters) {
         setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<>()));
         this.parameters = parameters;
     }
 
+    /**
+     * <p>Constructor for DataWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.Simulation} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public DataWrapper(Simulation wrapper, Parameters parameters) {
         this.name = wrapper.getName();
         this.dataModelList = new DataModelList();
@@ -303,6 +315,8 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -365,6 +379,8 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
+     * <p>getDataModels.</p>
+     *
      * @return the data model for this wrapper.
      */
     public List<DataModel> getDataModels() {
@@ -372,6 +388,8 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
+     * <p>getSelectedDataModel.</p>
+     *
      * @return the selected data model for this wrapper.
      */
     public DataModel getSelectedDataModel() {
@@ -399,6 +417,8 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
+     * <p>getKnowledge.</p>
+     *
      * @return the knowledge for this wrapper.
      */
     public Knowledge getKnowledge() {
@@ -406,15 +426,17 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
-     * Sets knowledge to a copy of the given object.
+     * {@inheritDoc}
      *
-     * @param knowledge the knowledge to set.
+     * Sets knowledge to a copy of the given object.
      */
     public void setKnowledge(Knowledge knowledge) {
         getSelectedDataModel().setKnowledge(knowledge.copy());
     }
 
     /**
+     * <p>getVarNames.</p>
+     *
      * @return the variable names of the selected data model.
      */
     public List<String> getVarNames() {
@@ -422,6 +444,8 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
+     * <p>Getter for the field <code>sourceGraph</code>.</p>
+     *
      * @return the source graph.
      */
     public Graph getSourceGraph() {
@@ -438,6 +462,8 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
+     * <p>getResultGraph.</p>
+     *
      * @return the result graph.
      */
     public Graph getResultGraph() {
@@ -445,6 +471,8 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the variables, in order.
      */
     public List<Node> getVariables() {
@@ -466,6 +494,8 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
      * @return the name of the data wrapper.
      */
     public String getName() {
@@ -473,9 +503,9 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
-     * Sets the name of the data wrapper.
+     * {@inheritDoc}
      *
-     * @param name the name to set.
+     * Sets the name of the data wrapper.
      */
     public void setName(String name) {
         this.name = name;
@@ -513,9 +543,9 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
-     * Returns the parameter setting map.
+     * {@inheritDoc}
      *
-     * @return the parameter setting map.
+     * Returns the parameter setting map.
      */
     @Override
     public Map<String, String> getParamSettings() {
@@ -543,9 +573,9 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
-     * Returns the parameter setting map.
+     * {@inheritDoc}
      *
-     * @return the parameter setting map.
+     * Returns the parameter setting map.
      */
     @Override
     public Map<String, String> getAllParamSettings() {
@@ -553,9 +583,9 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
-     * Sets the parameter setting map.
+     * {@inheritDoc}
      *
-     * @param paramSettings the parameter setting map to set.
+     * Sets the parameter setting map.
      */
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {

@@ -71,6 +71,8 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
 
     /**
      * Constructs a new Graph toolbar governing the modes of the given GraphWorkbench.
+     *
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public DagGraphToolbar(GraphWorkbench workbench) {
         if (workbench == null) {
@@ -177,6 +179,8 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Responds to property change events.
      */
     public void propertyChange(PropertyChangeEvent e) {

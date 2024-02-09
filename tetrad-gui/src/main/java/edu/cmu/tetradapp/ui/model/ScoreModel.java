@@ -28,6 +28,7 @@ import java.io.Serializable;
  * Dec 1, 2017 11:37:56 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class ScoreModel implements Serializable, Comparable<ScoreModel> {
 
@@ -37,30 +38,52 @@ public class ScoreModel implements Serializable, Comparable<ScoreModel> {
     private final String name;
     private final String description;
 
+    /**
+     * <p>Constructor for ScoreModel.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.annotation.AnnotatedClass} object
+     */
     public ScoreModel(AnnotatedClass<Score> score) {
         this.score = score;
         this.name = score.annotation().name();
         this.description = ScoreDescriptions.getInstance().get(score.annotation().command());
     }
 
+    /** {@inheritDoc} */
     @Override
     public int compareTo(ScoreModel other) {
         return this.score.annotation().name().compareTo(other.score.annotation().name());
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return this.name;
     }
 
+    /**
+     * <p>Getter for the field <code>score</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.annotation.AnnotatedClass} object
+     */
     public AnnotatedClass<Score> getScore() {
         return this.score;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * <p>Getter for the field <code>description</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return this.description;
     }

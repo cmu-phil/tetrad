@@ -17,9 +17,17 @@ import java.util.List;
 
 /**
  * Created by Erich on 7/6/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class GdistanceTest {
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         //first generate a couple random graphs
         final int numVars = 16;

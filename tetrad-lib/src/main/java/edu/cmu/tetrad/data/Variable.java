@@ -31,6 +31,7 @@ import edu.cmu.tetrad.graph.Node;
  * column in question.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface Variable extends Node {
 

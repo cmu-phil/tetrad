@@ -35,6 +35,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
  * marked up text.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MisclassificationsEditor extends JPanel {
 
@@ -49,6 +50,8 @@ public class MisclassificationsEditor extends JPanel {
 
     /**
      * Constructs the editor given the model
+     *
+     * @param comparison a {@link edu.cmu.tetradapp.model.Misclassifications} object
      */
     public MisclassificationsEditor(Misclassifications comparison) {
         this.comparison = comparison;

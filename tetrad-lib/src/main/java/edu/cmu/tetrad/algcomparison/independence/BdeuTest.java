@@ -18,6 +18,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @TestOfIndependence(
         name = "BDeu Test",
@@ -30,10 +31,9 @@ public class BdeuTest implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the test.
-     * @param dataSet    The data set to test independence against.
-     * @param parameters The paramters of the test.
-     * @return Ibid.
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
@@ -44,8 +44,9 @@ public class BdeuTest implements IndependenceWrapper {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the description of the test.
-     * @return Ibid.
      */
     @Override
     public String getDescription() {
@@ -53,8 +54,9 @@ public class BdeuTest implements IndependenceWrapper {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the data type of the test.
-     * @return Ibid.
      */
     @Override
     public DataType getDataType() {
@@ -62,8 +64,9 @@ public class BdeuTest implements IndependenceWrapper {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the parameters of the test.
-     * @return Ibid.
      */
     @Override
     public List<String> getParameters() {

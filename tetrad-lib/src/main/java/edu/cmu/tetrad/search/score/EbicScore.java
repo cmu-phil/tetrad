@@ -47,6 +47,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class EbicScore implements Score {
     // The variables of the covariance matrix.
@@ -110,9 +111,9 @@ public class EbicScore implements Score {
     }
 
     /**
-     * Returns the score of the node at index y, given its parents.
+     * {@inheritDoc}
      *
-     * @return localScore(y | z, x) - localScore(y | z).
+     * Returns the score of the node at index y, given its parents.
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -125,6 +126,7 @@ public class EbicScore implements Score {
      * @param i       The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
+     * @throws java.lang.RuntimeException if any.
      */
     public double localScore(int i, int... parents) throws RuntimeException {
         int pi = parents.length;
@@ -160,10 +162,9 @@ public class EbicScore implements Score {
     }
 
     /**
-     * Returns a judgement for FGES of whether the given bump implies an effect edge.
+     * {@inheritDoc}
      *
-     * @param bump The bump
-     * @return True if so
+     * Returns a judgement for FGES of whether the given bump implies an effect edge.
      * @see Fges
      */
     @Override
@@ -172,9 +173,9 @@ public class EbicScore implements Score {
     }
 
     /**
-     * Returns the variables for this score.
+     * {@inheritDoc}
      *
-     * @return This list.
+     * Returns the variables for this score.
      */
     @Override
     public List<Node> getVariables() {
@@ -182,9 +183,9 @@ public class EbicScore implements Score {
     }
 
     /**
-     * Returns an estimate of max degree of the graph for some algorithms.
+     * {@inheritDoc}
      *
-     * @return This max degree.
+     * Returns an estimate of max degree of the graph for some algorithms.
      * @see Fges
      * @see MagSemBicScore
      */
@@ -194,9 +195,9 @@ public class EbicScore implements Score {
     }
 
     /**
-     * Return a judgment of whether the variable in z determine y exactly.
+     * {@inheritDoc}
      *
-     * @return This judgment
+     * Return a judgment of whether the variable in z determine y exactly.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {

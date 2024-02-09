@@ -32,15 +32,27 @@ import edu.cmu.tetrad.util.TetradLogger;
  * Picks a DAG from the given graph.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for DagFromCPDAGWrapper.</p>
+     *
+     * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public DagFromCPDAGWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
+    /**
+     * <p>Constructor for DagFromCPDAGWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public DagFromCPDAGWrapper(Graph graph) {
         super(DagFromCPDAGWrapper.getGraph(graph), "Choose DAG in CPDAG.");
         TetradLogger.getInstance().log("graph", getGraph() + "");
@@ -51,10 +63,16 @@ public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldMode
     }
 
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.DagFromCPDAGWrapper} object
+     */
     public static DagFromCPDAGWrapper serializableInstance() {
         return new DagFromCPDAGWrapper(EdgeListGraph.serializableInstance());
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean allowRandomGraph() {
         return false;

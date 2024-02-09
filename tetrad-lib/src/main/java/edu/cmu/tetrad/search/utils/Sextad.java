@@ -9,6 +9,7 @@ import java.util.List;
  * Represents an ordered sextad of nodes.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Sextad implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -22,6 +23,13 @@ public class Sextad implements TetradSerializable {
 
     /**
      * Constructor.
+     *
+     * @param i a int
+     * @param j a int
+     * @param k a int
+     * @param l a int
+     * @param m a int
+     * @param n a int
      */
     public Sextad(int i, int j, int k, int l, int m, int n) {
         testDistinctness(i, j, k, l, m, n);
@@ -35,35 +43,72 @@ public class Sextad implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.search.utils.Sextad} object
      */
     public static Sextad serializableInstance() {
         return new Sextad(0, 1, 2, 3, 4, 5);
     }
 
+    /**
+     * <p>Getter for the field <code>i</code>.</p>
+     *
+     * @return a int
+     */
     public int getI() {
         return this.i;
     }
 
+    /**
+     * <p>Getter for the field <code>j</code>.</p>
+     *
+     * @return a int
+     */
     public int getJ() {
         return this.j;
     }
 
+    /**
+     * <p>Getter for the field <code>k</code>.</p>
+     *
+     * @return a int
+     */
     public int getK() {
         return this.k;
     }
 
+    /**
+     * <p>Getter for the field <code>l</code>.</p>
+     *
+     * @return a int
+     */
     public int getL() {
         return this.l;
     }
 
+    /**
+     * <p>Getter for the field <code>m</code>.</p>
+     *
+     * @return a int
+     */
     public int getM() {
         return this.m;
     }
 
+    /**
+     * <p>Getter for the field <code>n</code>.</p>
+     *
+     * @return a int
+     */
     public int getN() {
         return this.n;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         int hash = this.i * this.j * this.k;
         hash += this.l * this.m * this.n;
@@ -71,10 +116,9 @@ public class Sextad implements TetradSerializable {
     }
 
     /**
-     * Returns a judgment of equality with another Sextad instance.
+     * {@inheritDoc}
      *
-     * @param o The other Sextad instance.
-     * @return True if equal.
+     * Returns a judgment of equality with another Sextad instance.
      */
     public boolean equals(Object o) {
         if (!(o instanceof Sextad)) return false;
@@ -97,6 +141,11 @@ public class Sextad implements TetradSerializable {
         return leftEquals && rightEquals;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "<" + this.i + ", " + this.j + ", " + this.k + "; " + this.l + ", " + this.m + ", " + this.n + ">";
     }

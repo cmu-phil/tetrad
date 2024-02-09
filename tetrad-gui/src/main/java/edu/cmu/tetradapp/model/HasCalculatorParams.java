@@ -25,9 +25,17 @@ import edu.cmu.tetrad.util.Parameters;
 
 /**
  * Tags classes that store calculator params.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public interface HasCalculatorParams {
 
+    /**
+     * <p>getCalculatorParams.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     Parameters getCalculatorParams();
 }
 

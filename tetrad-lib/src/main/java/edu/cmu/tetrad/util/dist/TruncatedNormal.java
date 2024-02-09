@@ -33,6 +33,7 @@ import java.text.NumberFormat;
  * = standard deviation.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TruncatedNormal implements Distribution {
     private static final long serialVersionUID = 23L;
@@ -85,10 +86,16 @@ public class TruncatedNormal implements Distribution {
 
     //=========================PUBLIC METHODS=========================//
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return "TruncNormal";
     }
 
+    /** {@inheritDoc} */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.mean = value;
@@ -104,6 +111,7 @@ public class TruncatedNormal implements Distribution {
         }
     }
 
+    /** {@inheritDoc} */
     public double getParameter(int index) {
         if (index == 0) {
             return this.mean;
@@ -114,6 +122,7 @@ public class TruncatedNormal implements Distribution {
         }
     }
 
+    /** {@inheritDoc} */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Mean";
@@ -129,6 +138,8 @@ public class TruncatedNormal implements Distribution {
     }
 
     /**
+     * <p>getNumParameters.</p>
+     *
      * @return the number of parameters = 2.
      */
     public int getNumParameters() {
@@ -136,12 +147,19 @@ public class TruncatedNormal implements Distribution {
     }
 
     /**
+     * <p>nextRandom.</p>
+     *
      * @return the next random sample from the distribution.
      */
     public double nextRandom() {
         return RandomUtil.getInstance().nextTruncatedNormal(this.mean, this.sd, this.low, this.high);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         return "TruncNormal(" + nf.format(this.mean) + ", " + nf.format(this.sd) + ", " + nf.format(this.low) + ", " + nf.format(this.high) + ")";

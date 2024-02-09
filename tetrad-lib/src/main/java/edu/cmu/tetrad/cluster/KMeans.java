@@ -40,6 +40,7 @@ import java.util.*;
  * step.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class KMeans implements ClusteringAlgorithm {
 
@@ -162,6 +163,8 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Runs the batch K-means clustering algorithm on the data, returning a result.
      */
     public void cluster(Matrix data) {
@@ -215,6 +218,11 @@ public class KMeans implements ClusteringAlgorithm {
 
     }
 
+    /**
+     * <p>Getter for the field <code>clusters</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<List<Integer>> getClusters() {
         return KMeans.convertClusterIndicesToLists(this.clusters);
     }
@@ -237,10 +245,21 @@ public class KMeans implements ClusteringAlgorithm {
         this.maxIterations = maxIterations;
     }
 
+    /**
+     * <p>getNumClusters.</p>
+     *
+     * @return a int
+     */
     public int getNumClusters() {
         return this.centers.getNumRows();
     }
 
+    /**
+     * <p>getCluster.</p>
+     *
+     * @param k a int
+     * @return a {@link java.util.List} object
+     */
     public List<Integer> getCluster(int k) {
         List<Integer> cluster = new ArrayList<>();
 
@@ -258,6 +277,8 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     /**
+     * <p>iterations.</p>
+     *
      * @return the number of iterations.
      */
     public int iterations() {
@@ -299,6 +320,8 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of the cluster result.
      */
     public String toString() {
@@ -415,10 +438,16 @@ public class KMeans implements ClusteringAlgorithm {
         return counts;
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /** {@inheritDoc} */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

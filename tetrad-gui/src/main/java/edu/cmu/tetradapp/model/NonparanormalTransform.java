@@ -28,12 +28,19 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * Converts a continuous data set to a correlation matrix.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NonparanormalTransform extends DataWrapper {
 
     private static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
+    /**
+     * <p>Constructor for NonparanormalTransform.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public NonparanormalTransform(DataWrapper wrapper, Parameters params) {
         DataModel dataModel = wrapper.getSelectedDataModel();
 
@@ -54,6 +61,7 @@ public class NonparanormalTransform extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

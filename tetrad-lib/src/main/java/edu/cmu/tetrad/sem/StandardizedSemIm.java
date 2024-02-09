@@ -49,6 +49,9 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * Thus, the standardized SEM can never go "out of bounds."
  * <p>
  * Currently we are not allowing bidirected edges in the SEM graph.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class StandardizedSemIm implements Simulator {
     private static final long serialVersionUID = 23L;
@@ -85,6 +88,7 @@ public class StandardizedSemIm implements Simulator {
      * Constructs a new standardized SEM IM, initializing from the freeParameters in the given SEM IM.
      *
      * @param im The SEM IM that the freeParameters will be initialized from.
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public StandardizedSemIm(SemIm im, Parameters parameters) {
         this(im, Initialization.CALCULATE_FROM_SEM, parameters);
@@ -95,6 +99,7 @@ public class StandardizedSemIm implements Simulator {
      *
      * @param im             Stop asking me for these things! The given SEM IM!!!
      * @param initialization CALCULATE_FROM_SEM if the initial values will be calculated from the given SEM IM;
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) {
         if (im.getSemPm().getGraph().isTimeLagModel()) {
@@ -172,15 +177,28 @@ public class StandardizedSemIm implements Simulator {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.StandardizedSemIm} object
      */
     public static StandardizedSemIm serializableInstance() {
         return new StandardizedSemIm(SemIm.serializableInstance(), new Parameters());
     }
 
+    /**
+     * <p>Getter for the field <code>sampleSize</code>.</p>
+     *
+     * @return a int
+     */
     public int getSampleSize() {
         return this.sampleSize;
     }
 
+    /**
+     * <p>containsParameter.</p>
+     *
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a boolean
+     */
     public boolean containsParameter(Edge edge) {
         if (Edges.isBidirectedEdge(edge)) {
             edge = Edges.bidirectedEdge(this.semGraph.getExogenous(edge.getNode1()),
@@ -247,6 +265,8 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
+     * <p>Getter for the field <code>edgeCoef</code>.</p>
+     *
      * @param a a-&gt;b
      * @param b a-&gt;b
      * @return The coefficient for a-&gt;b.
@@ -264,6 +284,8 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
+     * <p>getErrorCovariance.</p>
+     *
      * @param a a-&gt;b
      * @param b a-&gt;b
      * @return The coefficient for a-&gt;b.
@@ -279,6 +301,12 @@ public class StandardizedSemIm implements Simulator {
         return d;
     }
 
+    /**
+     * <p>getParameterValue.</p>
+     *
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a double
+     */
     public double getParameterValue(Edge edge) {
         if (Edges.isDirectedEdge(edge)) {
             return getEdgeCoef(edge.getNode1(), edge.getNode2());
@@ -289,6 +317,12 @@ public class StandardizedSemIm implements Simulator {
         }
     }
 
+    /**
+     * <p>setParameterValue.</p>
+     *
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @param value a double
+     */
     public void setParameterValue(Edge edge, double value) {
         if (Edges.isDirectedEdge(edge)) {
             setEdgeCoefficient(edge.getNode1(), edge.getNode2(), value);
@@ -299,15 +333,31 @@ public class StandardizedSemIm implements Simulator {
         }
     }
 
+    /**
+     * <p>getCoefficientRange.</p>
+     *
+     * @param a a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.sem.StandardizedSemIm.ParameterRange} object
+     */
     public ParameterRange getCoefficientRange(Node a, Node b) {
         return getParameterRange(Edges.directedEdge(a, b));
     }
 
+    /**
+     * <p>getCovarianceRange.</p>
+     *
+     * @param a a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.sem.StandardizedSemIm.ParameterRange} object
+     */
     public ParameterRange getCovarianceRange(Node a, Node b) {
         return getParameterRange(Edges.bidirectedEdge(this.semGraph.getExogenous(a), this.semGraph.getExogenous(b)));
     }
 
     /**
+     * <p>getParameterRange.</p>
+     *
      * @param edge a-&gt;b or a&lt;-&gt;b.
      * @return the range of the covariance parameter for a-&gt;b or a&lt;-&gt;b.
      */
@@ -407,6 +457,8 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
+     * <p>getErrorVariance.</p>
+     *
      * @param error The error term. A node with NodeType.ERROR.
      * @return the error variance for the given error term. THIS IS NOT A PARAMETER OF THE MODEL! Its value is simply
      * calculated from the given coefficients of the model. Returns Double.NaN if the error variance cannot be
@@ -435,6 +487,8 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of the coefficients and variances of the model.
      */
     public String toString() {
@@ -475,6 +529,8 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
+     * <p>getVariableNodes.</p>
+     *
      * @return the list of variable nodes of the model, in order.
      */
     public List<Node> getVariableNodes() {
@@ -516,6 +572,8 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
+     * <p>means.</p>
+     *
      * @return For compatibility only. Returns the variable means of the model. These are always zero, since this is a
      * standardized model. THESE ARE ALSO NOT PARAMETERS OF THE MODEL. ONLY THE COEFFICIENTS ARE PARAMETERS.
      */
@@ -524,17 +582,22 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * A convenience method, in case we want to change out mind about how to simulate. For instance, it's unclear yet
      * whether we can allow nongaussian errors, so we don't know yet whether the reduced form method is needed.
-     *
-     * @param sampleSize      The sample size of the desired data set.
-     * @param latentDataSaved True if latent variables should be included in the data set.
-     * @return This returns a standardized data set simulated from the model, using the reduced form method.
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         return simulateDataReducedForm(sampleSize, latentDataSaved);
     }
 
+    /**
+     * <p>simulateDataReducedForm.</p>
+     *
+     * @param sampleSize a int
+     * @param latentDataSaved a boolean
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         this.edgeCoef = null;
         this.errorCovar = null;
@@ -593,6 +656,8 @@ public class StandardizedSemIm implements Simulator {
 //    }
 
     /**
+     * <p>Getter for the field <code>implCovar</code>.</p>
+     *
      * @return a copy of the implied covariance matrix over all the variables.
      */
     public Matrix getImplCovar() {
@@ -600,6 +665,8 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
+     * <p>Getter for the field <code>implCovarMeas</code>.</p>
+     *
      * @return a copy of the implied covariance matrix over the measured variables only.
      */
     public Matrix getImplCovarMeas() {
@@ -691,11 +758,18 @@ public class StandardizedSemIm implements Simulator {
 
     /**
      * The list of measured nodes for the semPm. (Unmodifiable.)
+     *
+     * @return a {@link java.util.List} object
      */
     public List<Node> getMeasuredNodes() {
         return getSemPm().getMeasuredNodes();
     }
 
+    /**
+     * <p>getErrorNodes.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getErrorNodes() {
         List<Node> errorNodes = new ArrayList<>();
 
@@ -707,6 +781,8 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
+     * <p>Getter for the field <code>semPm</code>.</p>
+     *
      * @return a copy of the SEM PM.
      */
     public SemPm getSemPm() {

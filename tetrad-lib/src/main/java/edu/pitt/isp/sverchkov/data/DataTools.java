@@ -30,10 +30,14 @@ import java.util.Scanner;
  * Data tools.
  *
  * @author YUS24
+ * @version $Id: $Id
  */
 public class DataTools {
+    /** Constant <code>NEWLINE="System.getProperty(line.separator)"</code> */
     public static final String NEWLINE = System.getProperty("line.separator");
+    /** Constant <code>DELIMITER_REGEX=" *, *"</code> */
     public static final String DELIMITER_REGEX = " *, *";
+    /** Constant <code>DELIMITER=", "</code> */
     public static final String DELIMITER = ", ";
 
     /**
@@ -41,7 +45,7 @@ public class DataTools {
      *
      * @param file The file to read from
      * @return The data table
-     * @throws FileNotFoundException if the file is not found
+     * @throws java.io.FileNotFoundException if the file is not found
      */
     public static DataTable<String, String> dataTableFromFile(File file) throws FileNotFoundException {
         DataTable<String, String> data = null;
@@ -59,7 +63,9 @@ public class DataTools {
      * @param data    The data table to save
      * @param dest    The file to save to
      * @param headers Whether to include headers
-     * @throws IOException if something goes wrong
+     * @throws java.io.IOException if something goes wrong
+     * @param <Attribute> a Attribute class
+     * @param <Value> a Value class
      */
     public static <Attribute, Value> void saveCSV(DataTable<Attribute, Value> data, File dest, boolean headers) throws IOException {
         try (BufferedWriter out = new BufferedWriter(new FileWriter(dest))) {

@@ -69,6 +69,7 @@ import java.util.*;
  * @author Ricardo Silva
  * @see Fofc
  * @see Ftfc
+ * @version $Id: $Id
  */
 public final class Bpc {
     /*

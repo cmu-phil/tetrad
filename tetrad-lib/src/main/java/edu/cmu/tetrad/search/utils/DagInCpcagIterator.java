@@ -31,6 +31,7 @@ import java.util.*;
  * another one and next() to get it. next() will return null if there are no more.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DagInCpcagIterator {
 
@@ -51,7 +52,7 @@ public class DagInCpcagIterator {
      * not acyclic, it is rejected.
      *
      * @param CPDAG The CPDAG for which DAGS are wanted. May result in cyclic outputs.
-     * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
+     * @throws java.lang.IllegalArgumentException if the CPDAG is not a CPDAG.
      */
     public DagInCpcagIterator(Graph CPDAG) {
         this(CPDAG, new Knowledge(), false, true);
@@ -63,7 +64,7 @@ public class DagInCpcagIterator {
      *
      * @param CPDAG     The CPDAG for which DAGS are wanted. May result in cyclic outputs.
      * @param knowledge The knowledge to be used to constrain the DAGs.
-     * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
+     * @throws java.lang.IllegalArgumentException if the CPDAG is not a CPDAG.
      */
     public DagInCpcagIterator(Graph CPDAG, Knowledge knowledge) {
         this(CPDAG, knowledge, false, true);
@@ -78,7 +79,7 @@ public class DagInCpcagIterator {
      * @param allowArbitraryOrientations True if arbitrary orientations are allowable when reasonable ones cannot be
      *                                   made. May result in cyclic outputs.
      * @param allowNewColliders          True if new colliders are allowed in teh graphs.
-     * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
+     * @throws java.lang.IllegalArgumentException if the CPDAG is not a CPDAG.
      */
     public DagInCpcagIterator(Graph CPDAG, Knowledge knowledge, boolean allowArbitraryOrientations,
                               boolean allowNewColliders) {

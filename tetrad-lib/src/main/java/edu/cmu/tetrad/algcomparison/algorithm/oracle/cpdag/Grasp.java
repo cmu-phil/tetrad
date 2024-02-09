@@ -32,6 +32,7 @@ import java.util.List;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "GRASP",
@@ -48,15 +49,25 @@ public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
 
+    /**
+     * <p>Constructor for Grasp.</p>
+     */
     public Grasp() {
         // Used in reflection; do not delete.
     }
 
+    /**
+     * <p>Constructor for Grasp.</p>
+     *
+     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public Grasp(IndependenceWrapper test, ScoreWrapper score) {
         this.score = score;
         this.test = test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -113,22 +124,26 @@ public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "GRaSP (Greedy Relaxed Sparsest Permutation) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.score.getDataType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         ArrayList<String> params = new ArrayList<>();
@@ -151,36 +166,43 @@ public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         return params;
     }
 
+    /** {@inheritDoc} */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return new Knowledge((Knowledge) knowledge);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

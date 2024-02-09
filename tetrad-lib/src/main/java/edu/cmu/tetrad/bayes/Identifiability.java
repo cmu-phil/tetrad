@@ -36,6 +36,7 @@ import java.util.List;
  * Science, University of California, Los Angeles, 2002.
  *
  * @author Choh Man Teng
+ * @version $Id: $Id
  */
 public final class Identifiability implements ManipulatingBayesUpdater {
     private static final long serialVersionUID = 23L;
@@ -65,6 +66,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
     /**
      * Constructs a new updater for the given Bayes net.
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public Identifiability(BayesIm bayesIm) {
         this(bayesIm, Evidence.tautology(bayesIm));
@@ -74,6 +77,12 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     // Constructs a new updater with misc tests.
     // debug indicates debug information is to be generated
     //
+    /**
+     * <p>Constructor for Identifiability.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
+     */
     public Identifiability(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -92,6 +101,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.Identifiability} object
      */
     public static Identifiability serializableInstance() {
         return new Identifiability(MlBayesIm.serializableInstance());
@@ -104,6 +115,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /**
      * The BayesIm that this updater bases its update on. This BayesIm is not modified; rather, a new BayesIm is created
      * and updated.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesIm getBayesIm() {
         return this.bayesIm;
@@ -112,6 +125,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /////////////////////////////////////////////////////////////////
 
     /**
+     * <p>Getter for the field <code>manipulatedBayesIm</code>.</p>
+     *
      * @return the updated BayesIm.
      */
     public BayesIm getManipulatedBayesIm() {
@@ -119,6 +134,11 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
+    /**
+     * <p>getManipulatedGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getManipulatedGraph() {
         return getManipulatedBayesIm().getDag();
     }
@@ -129,6 +149,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
      * The updated BayesIm. This is a different object from the source BayesIm.
      *
      * @see #getBayesIm
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesIm getUpdatedBayesIm() {
         return null;
@@ -137,6 +158,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /////////////////////////////////////////////////////////////////
 
     /**
+     * <p>Getter for the field <code>evidence</code>.</p>
+     *
      * @return a defensive copy of the evidence.
      */
     public Evidence getEvidence() {
@@ -144,6 +167,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
+    /** {@inheritDoc} */
     public void setEvidence(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
@@ -169,6 +193,11 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
+    /**
+     * <p>isJointMarginalSupported.</p>
+     *
+     * @return a boolean
+     */
     public boolean isJointMarginalSupported() {
         return true;
     }
@@ -182,6 +211,13 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     // (i.e., no disjunctions of values of a variable even those they
     // are allowed in Proposition)
     //
+    /**
+     * <p>getJointMarginal.</p>
+     *
+     * @param sVariables an array of {@link int} objects
+     * @param sValues an array of {@link int} objects
+     * @return a double
+     */
     public double getJointMarginal(int[] sVariables, int[] sValues) {
         if (sVariables.length != sValues.length) {
             throw new IllegalArgumentException("Values must match variables.");
@@ -505,6 +541,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     // The following methods are for here for compatibility with ManipulatingBayesUpdater
     //
 
+    /** {@inheritDoc} */
     public double getMarginal(int variable, int value) {
         int[] sVariables = {variable};
         int[] sValues = {value};
@@ -512,6 +549,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
+    /** {@inheritDoc} */
     public double[] calculatePriorMarginals(int nodeIndex) {
         Evidence evidence = getEvidence();
         setEvidence(Evidence.tautology(evidence.getVariableSource()));
@@ -532,6 +570,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
+    /** {@inheritDoc} */
     public double[] calculateUpdatedMarginals(int nodeIndex) {
         //double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
         double[] marginals = new double[getBayesIm().getNumColumns(nodeIndex)];
@@ -545,6 +584,11 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
 
     /////////////////////////////////////////////////////////////////
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Identifiability";
     }

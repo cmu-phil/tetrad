@@ -22,6 +22,7 @@ import java.util.List;
  * RSkewE.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 //@Experimental
 //@edu.cmu.tetrad.annotation.Algorithm(
@@ -37,14 +38,23 @@ public class RskewE implements Algorithm, TakesExternalGraph {
     private Algorithm algorithm;
     private Graph externalGraph;
 
+    /**
+     * <p>Constructor for RskewE.</p>
+     */
     public RskewE() {
 
     }
 
+    /**
+     * <p>Constructor for RskewE.</p>
+     *
+     * @param algorithm a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
+     */
     public RskewE(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -79,22 +89,26 @@ public class RskewE implements Algorithm, TakesExternalGraph {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "RSkewE" + (this.externalGraph != null ? " with initial graph from "
                 + this.algorithm.getDescription() : "");
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new LinkedList<>();
@@ -108,6 +122,7 @@ public class RskewE implements Algorithm, TakesExternalGraph {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {

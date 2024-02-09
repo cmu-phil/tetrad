@@ -37,8 +37,14 @@ import edu.cmu.tetrad.util.Parameters;
  * An example script to simulate data and run a comparison analysis on it.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ExampleFirstInflection {
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 

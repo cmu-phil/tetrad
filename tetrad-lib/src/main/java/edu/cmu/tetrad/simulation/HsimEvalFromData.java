@@ -24,9 +24,17 @@ import java.util.*;
 
 /**
  * Created by ekummerfeld on 1/26/2017.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class HsimEvalFromData {
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         long timestart = System.nanoTime();
         System.out.println("Beginning Evaluation");

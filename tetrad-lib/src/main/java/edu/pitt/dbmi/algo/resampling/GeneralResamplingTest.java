@@ -17,6 +17,9 @@ import java.util.List;
  * Created by mahdi on 1/16/17.
  * <p>
  * Updated: Chirayu Kong Wongchokprasitti, PhD on 9/13/2018
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class GeneralResamplingTest {
 
@@ -126,6 +129,7 @@ public class GeneralResamplingTest {
      *
      * @param truth    the true graph.
      * @param estimate the estimated graph.
+     * @return an array of {@link int} objects
      */
     public static int[][] getAdjConfusionMatrix(Graph truth, Graph estimate) {
         Graph complete = new EdgeListGraph(estimate.getNodes());
@@ -167,6 +171,7 @@ public class GeneralResamplingTest {
      *
      * @param truth    the true graph.
      * @param estimate the estimated graph.
+     * @return an array of {@link int} objects
      */
     public static int[][] getEdgeTypeConfusionMatrix(Graph truth, Graph estimate) {
         Graph complete = new EdgeListGraph(estimate.getNodes());
@@ -269,6 +274,8 @@ public class GeneralResamplingTest {
     }
 
     /**
+     * <p>Getter for the field <code>out</code>.</p>
+     *
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
@@ -308,6 +315,8 @@ public class GeneralResamplingTest {
 
     /**
      * Sets the initial graph.
+     *
+     * @param externalGraph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
@@ -388,6 +397,7 @@ public class GeneralResamplingTest {
 
     /**
      * Sets the independence wrapper.
+     *
      * @param independenceWrapper the independence wrapper.
      */
     public void setIndTestWrapper(IndependenceWrapper independenceWrapper) {

@@ -13,16 +13,19 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  * Difference between the true and estiamted BIC scores.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BicDiffPerRecord implements Statistic {
     private static final long serialVersionUID = 23L;
     private boolean precomputeCovariances = true;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "BicDiffPerRecord";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Difference between the true and estimated BIC scores, " +
@@ -30,12 +33,9 @@ public class BicDiffPerRecord implements Statistic {
     }
 
     /**
-     * Returns the difference between the true and estimated BIC scores, divided by the sample size.
+     * {@inheritDoc}
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
-     * @return The difference between the true and estimated BIC scores, divided by the sample size.
+     * Returns the difference between the true and estimated BIC scores, divided by the sample size.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -47,10 +47,9 @@ public class BicDiffPerRecord implements Statistic {
     }
 
     /**
-     * Returns the normalized value of the statistic.
+     * {@inheritDoc}
      *
-     * @param value The value of the statistic.
-     * @return The normalized value of the statistic.
+     * Returns the normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

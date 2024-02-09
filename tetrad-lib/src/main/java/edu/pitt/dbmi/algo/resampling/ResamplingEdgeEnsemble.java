@@ -4,6 +4,7 @@ package edu.pitt.dbmi.algo.resampling;
  * Sep 12, 2018 4:07:46 PM
  *
  * @author Chirayu (Kong) Wongchokprasitti, PhD
+ * @version $Id: $Id
  */
 public enum ResamplingEdgeEnsemble {
 

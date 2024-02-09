@@ -40,6 +40,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @see IndependenceTest
+ * @version $Id: $Id
  */
 public class IndTestScore implements Score {
     // The independence test.
@@ -71,6 +72,7 @@ public class IndTestScore implements Score {
      *
      * @param i       The index of the variable.
      * @param parents The indices of the parents of i.
+     * @return a double
      */
     public double localScore(int i, int[] parents) {
         throw new UnsupportedOperationException();
@@ -78,13 +80,10 @@ public class IndTestScore implements Score {
 
 
     /**
+     * {@inheritDoc}
+     *
      * Returns a "score difference", which amounts to a conditional local scoring criterion results. Only difference
      * methods is implemented, since the other methods don't make sense here.
-     *
-     * @param x A node.
-     * @param y TAhe node.
-     * @param z A set of nodes.
-     * @return The "difference".
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -93,25 +92,27 @@ public class IndTestScore implements Score {
     }
 
     /**
-     * @throws UnsupportedOperationException if called.
+     * <p>localScore.</p>
+     *
+     * @throws java.lang.UnsupportedOperationException if called.
+     * @param i a int
+     * @param parent a int
+     * @return a double
      */
     public double localScore(int i, int parent) {
         throw new UnsupportedOperationException();
     }
 
 
-    /**
-     * @throws UnsupportedOperationException if called.
-     */
+    /** {@inheritDoc} */
     public double localScore(int i) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns true if the edge with the given bump is an effect edge.
+     * {@inheritDoc}
      *
-     * @param bump The bump.
-     * @return True if so.
+     * Returns true if the edge with the given bump is an effect edge.
      */
     @Override
     public boolean isEffectEdge(double bump) {
@@ -120,6 +121,7 @@ public class IndTestScore implements Score {
 
     /**
      * Returns the data set.
+     *
      * @return The data set.
      */
     public DataSet getDataSet() {
@@ -128,6 +130,7 @@ public class IndTestScore implements Score {
 
     /**
      * Returns true if verbose output should be sent to out.
+     *
      * @return True if verbose output should be sent to out.
      */
     public boolean isVerbose() {
@@ -136,6 +139,7 @@ public class IndTestScore implements Score {
 
     /**
      * Sets whether verbose output should be sent to out.
+     *
      * @param verbose True if verbose output should be sent to out.
      */
     public void setVerbose(boolean verbose) {
@@ -143,8 +147,9 @@ public class IndTestScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the list of variables.
-     * @return The list of variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -153,6 +158,7 @@ public class IndTestScore implements Score {
 
     /**
      * Returns the sample size.
+     *
      * @return The sample size.
      */
     public int getSampleSize() {
@@ -160,8 +166,9 @@ public class IndTestScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the maximum degree, which is set to 1000.
-     * @return 1000.
      */
     @Override
     public int getMaxDegree() {
@@ -169,10 +176,9 @@ public class IndTestScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the 'determines' judgment from the first score.
-     * @param z The set of nodes.
-     * @param y The node.
-     * @return This judgment, true if the 'determine' relations holds.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {

@@ -7,20 +7,24 @@ import edu.cmu.tetrad.graph.*;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumDefinitelyNotDirectedPaths implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "#X-->Y-DefNotDir";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Number of X-->Y in est where !semi(X, Y) in true";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int count = 0;
@@ -41,6 +45,7 @@ public class NumDefinitelyNotDirectedPaths implements Statistic {
         return count;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

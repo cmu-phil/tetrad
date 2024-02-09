@@ -11,6 +11,7 @@ import edu.cmu.tetrad.graph.Graph;
  * false positive is counted. Similarly for false negatives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ArrowheadPrecisionCommonEdges implements Statistic {
     private static final long serialVersionUID = 23L;
@@ -22,16 +23,19 @@ public class ArrowheadPrecisionCommonEdges implements Statistic {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "AHPC";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Arrowhead precision (common edges)";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion confusion = new ArrowConfusion(trueGraph, estGraph);
@@ -40,6 +44,7 @@ public class ArrowheadPrecisionCommonEdges implements Statistic {
         return arrowsTp / (arrowsTp + arrowsFp);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

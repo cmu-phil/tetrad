@@ -28,12 +28,18 @@ import edu.cmu.tetrad.util.RandomUtil;
  * be manipulated in an interface.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Exponential implements Distribution {
     private static final long serialVersionUID = 23L;
 
     private double lambda;
 
+    /**
+     * <p>Constructor for Exponential.</p>
+     *
+     * @param lambda a double
+     */
     public Exponential(double lambda) {
         this.lambda = lambda;
     }
@@ -47,14 +53,25 @@ public class Exponential implements Distribution {
         return new Exponential(.5);
     }
 
+    /**
+     * <p>getNumParameters.</p>
+     *
+     * @return a int
+     */
     public int getNumParameters() {
         return 1;
     }
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return "Exponential";
     }
 
+    /** {@inheritDoc} */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.lambda = value;
@@ -63,6 +80,7 @@ public class Exponential implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /** {@inheritDoc} */
     public double getParameter(int index) {
         if (index == 0) {
             return this.lambda;
@@ -71,6 +89,7 @@ public class Exponential implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /** {@inheritDoc} */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Lambda";
@@ -79,10 +98,20 @@ public class Exponential implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * <p>nextRandom.</p>
+     *
+     * @return a double
+     */
     public double nextRandom() {
         return RandomUtil.getInstance().nextExponential(this.lambda);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Exponential(" + this.lambda + ")";
     }

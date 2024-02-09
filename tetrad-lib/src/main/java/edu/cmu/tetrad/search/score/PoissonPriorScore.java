@@ -45,6 +45,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PoissonPriorScore implements Score {
 
@@ -111,12 +112,9 @@ public class PoissonPriorScore implements Score {
     }
 
     /**
-     * Returns the score difference localScore(y | z, x) - localScore(y | z).
+     * {@inheritDoc}
      *
-     * @param x A node.
-     * @param y TAhe node.
-     * @param z A set of nodes.
-     * @return The score difference.
+     * Returns the score difference localScore(y | z, x) - localScore(y | z).
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -129,6 +127,7 @@ public class PoissonPriorScore implements Score {
      * @param i       The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
+     * @throws java.lang.RuntimeException if any.
      */
     public double localScore(int i, int... parents) throws RuntimeException {
         int pi = parents.length + 1;
@@ -201,10 +200,9 @@ public class PoissonPriorScore implements Score {
     }
 
     /**
-     * Returns true if the edge with the given bump is an effect edge.
+     * {@inheritDoc}
      *
-     * @param bump The bump.
-     * @return True if so.
+     * Returns true if the edge with the given bump is an effect edge.
      */
     @Override
     public boolean isEffectEdge(double bump) {
@@ -212,9 +210,9 @@ public class PoissonPriorScore implements Score {
     }
 
     /**
-     * Returns the variables.
+     * {@inheritDoc}
      *
-     * @return This list.
+     * Returns the variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -222,9 +220,9 @@ public class PoissonPriorScore implements Score {
     }
 
     /**
-     * Returns the max degree.
+     * {@inheritDoc}
      *
-     * @return This maximum.
+     * Returns the max degree.
      */
     @Override
     public int getMaxDegree() {
@@ -232,11 +230,9 @@ public class PoissonPriorScore implements Score {
     }
 
     /**
-     * Returns true if z determines y.
+     * {@inheritDoc}
      *
-     * @param z The set of nodes.
-     * @param y The node.
-     * @return True if z determines y.
+     * Returns true if z determines y.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {

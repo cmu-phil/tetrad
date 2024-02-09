@@ -28,6 +28,7 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.history.SimpleRandomizer;
  * Constructs as a randomized update workbench.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class RandomActiveLagGraph extends ActiveLagGraph
         implements SessionModel {
@@ -75,15 +76,23 @@ public class RandomActiveLagGraph extends ActiveLagGraph
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.graph.ActiveLagGraph} object
      */
     public static ActiveLagGraph serializableInstance() {
         return new RandomActiveLagGraph(LagGraphParams.serializableInstance());
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }

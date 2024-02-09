@@ -29,6 +29,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @author dmalinsky
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "SvarFCI",
@@ -47,13 +48,22 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
 
+    /**
+     * <p>Constructor for SvarFci.</p>
+     */
     public SvarFci() {
     }
 
+    /**
+     * <p>Constructor for SvarFci.</p>
+     *
+     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     */
     public SvarFci(IndependenceWrapper test) {
         this.test = test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -89,20 +99,28 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new TsDagToPag(new EdgeListGraph(graph)).convert();
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return "SvarFCI (SVAR Fast Causal Inference) using " + this.test.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.test.getDataType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -112,26 +130,31 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

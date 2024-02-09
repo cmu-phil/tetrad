@@ -50,6 +50,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  *
  * @author josephramsey
  * @author Frank Wimberly adapted IndTestCramerT for Fisher's Z
+ * @version $Id: $Id
  */
 public final class IndTestFisherZRecursive implements IndependenceTest {
 
@@ -131,6 +132,9 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
+     *
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param alpha a double
      */
     public IndTestFisherZRecursive(ICovarianceMatrix covMatrix, double alpha) {
         this.covMatrix = covMatrix;
@@ -146,6 +150,8 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     //==========================PUBLIC METHODS=============================//
 
     /**
+     * {@inheritDoc}
+     *
      * Creates a new independence test instance for a subset of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -173,13 +179,9 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     }
 
     /**
-     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     * {@inheritDoc}
      *
-     * @param x the one variable being compared.
-     * @param y the second variable being compared.
-     * @param z the list of conditioning variables.
-     * @return true iff x _||_ y | z.
-     * @throws RuntimeException if a matrix singularity is encountered.
+     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         int n = sampleSize();
@@ -224,6 +226,8 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     }
 
     /**
+     * <p>getPValue.</p>
+     *
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
@@ -232,12 +236,16 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 
     /**
      * Gets the getModel significance level.
+     *
+     * @return a double
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -251,6 +259,8 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     }
 
     /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
      * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
@@ -258,20 +268,25 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         return this.variables;
     }
 
+    /**
+     * <p>Setter for the field <code>variables</code>.</p>
+     *
+     * @param variables a {@link java.util.List} object
+     */
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = new ArrayList<>(variables);
         this.covMatrix.setVariables(variables);
     }
 
-    /**
-     * @return the variable with the given name.
-     */
+    /** {@inheritDoc} */
     public Node getVariable(String name) {
         return this.nameMap.get(name);
     }
 
     /**
+     * {@inheritDoc}
+     *
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      */
@@ -301,6 +316,8 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     }
 
     /**
+     * <p>getData.</p>
+     *
      * @return the data set being analyzed.
      */
     public DataSet getData() {
@@ -310,6 +327,8 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     //==========================PRIVATE METHODS============================//
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of this test.
      */
     public String toString() {
@@ -344,10 +363,16 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         return indexMap;
     }
 
+    /**
+     * <p>getCov.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public ICovarianceMatrix getCov() {
         return this.covMatrix;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<DataSet> getDataSets() {
         List<DataSet> dataSets = new ArrayList<>();
@@ -355,15 +380,22 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         return dataSets;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getSampleSize() {
         return this.covMatrix.getSampleSize();
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /** {@inheritDoc} */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

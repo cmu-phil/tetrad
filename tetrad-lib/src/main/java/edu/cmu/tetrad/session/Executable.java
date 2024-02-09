@@ -26,15 +26,17 @@ package edu.cmu.tetrad.session;
  * Interface indicating that a class can be executed as an algorithm.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface Executable {
     @SuppressWarnings("UnusedDeclaration")
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**
      * Executes the algorithm.
      *
-     * @throws Exception if execution is stopped at some point by an exception.
+     * @throws java.lang.Exception if execution is stopped at some point by an exception.
      */
     void execute() throws Exception;
 }

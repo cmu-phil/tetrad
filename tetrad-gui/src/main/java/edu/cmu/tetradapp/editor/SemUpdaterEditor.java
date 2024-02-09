@@ -40,6 +40,7 @@ import java.util.Map;
  * Lets the user calculate updated probabilities for a SEM.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemUpdaterEditor extends JPanel {
 
@@ -58,6 +59,8 @@ public class SemUpdaterEditor extends JPanel {
 
     /**
      * Constructs a new instantiated model editor from a SEM Updater.
+     *
+     * @param semUpdater a {@link edu.cmu.tetrad.sem.SemUpdater} object
      */
     public SemUpdaterEditor(SemUpdater semUpdater) {
         if (semUpdater == null) {
@@ -81,6 +84,8 @@ public class SemUpdaterEditor extends JPanel {
 
     /**
      * Constructs a new instantiated model editor from a SEM IM wrapper.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemUpdaterWrapper} object
      */
     public SemUpdaterEditor(SemUpdaterWrapper wrapper) {
         this(wrapper.getSemUpdater());
@@ -264,6 +269,8 @@ public class SemUpdaterEditor extends JPanel {
     //================================PUBLIC METHODS========================//
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of this editor.
      */
     @Override

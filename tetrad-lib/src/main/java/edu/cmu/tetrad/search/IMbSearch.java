@@ -29,21 +29,29 @@ import java.util.Set;
  * Gives an interface for Markov blanket searches.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface IMbSearch {
 
     /**
      * Given the target, this returns all the nodes in the Markov Blanket.
+     *
+     * @param target a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.Set} object
      */
     Set<Node> findMb(Node target);
 
     /**
      * The name of the algorithm.
+     *
+     * @return a {@link java.lang.String} object
      */
     String getAlgorithmName();
 
     /**
      * Number of independent tests.
+     *
+     * @return a int
      */
     int getNumIndependenceTests();
 }

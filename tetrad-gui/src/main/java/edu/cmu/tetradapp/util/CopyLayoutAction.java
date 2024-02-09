@@ -33,6 +33,7 @@ import java.awt.event.ActionEvent;
  * Copies the getModel graph in a given container, storing it so that another container can be laid out the same way.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CopyLayoutAction extends AbstractAction implements ClipboardOwner {
 
@@ -43,6 +44,8 @@ public class CopyLayoutAction extends AbstractAction implements ClipboardOwner {
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and clipboard.
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
     public CopyLayoutAction(LayoutEditable layoutEditable) {
         super("Copy Layout");
@@ -55,6 +58,8 @@ public class CopyLayoutAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
@@ -64,6 +69,8 @@ public class CopyLayoutAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

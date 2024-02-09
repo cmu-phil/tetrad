@@ -24,9 +24,17 @@ import edu.cmu.tetrad.data.DataModel;
 
 /**
  * Tags a class that can return a data model.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public interface DataModelContainer {
 
+    /**
+     * <p>getDataModel.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     DataModel getDataModel();
 
 }

@@ -35,13 +35,13 @@ import java.text.NumberFormat;
  * Wraps a Bayes Updater for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 
 ///////////////////////////////////////
 // Identifiability wrapper
 // based on RowSummingExactWrapper
 ///////////////////////////////////////
-
 public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unmarshallable {
     private static final long serialVersionUID = 23L;
 
@@ -62,6 +62,12 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
 
     //=============================CONSTRUCTORS============================//
 
+    /**
+     * <p>Constructor for IdentifiabilityWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapperObs} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IdentifiabilityWrapper(BayesImWrapperObs wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -75,6 +81,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -82,14 +89,25 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
 
     //==============================PUBLIC METHODS========================//
 
+    /**
+     * <p>Getter for the field <code>bayesUpdater</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.ManipulatingBayesUpdater} object
+     */
     public ManipulatingBayesUpdater getBayesUpdater() {
         return this.bayesUpdater;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
@@ -169,6 +187,11 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         }
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }

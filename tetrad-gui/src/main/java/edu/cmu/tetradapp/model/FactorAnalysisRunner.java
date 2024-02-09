@@ -34,7 +34,10 @@ import java.util.List;
 import java.util.Vector;
 
 /**
+ * <p>FactorAnalysisRunner class.</p>
+ *
  * @author Michael Freenor
+ * @version $Id: $Id
  */
 public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
     private static final long serialVersionUID = 23L;
@@ -59,6 +62,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -66,6 +70,9 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
+    /**
+     * <p>execute.</p>
+     */
     public void execute() {
         DataSet selectedModel = (DataSet) getDataModel();
 
@@ -142,33 +149,49 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
 
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return getResultGraph();
     }
 
     /**
+     * <p>getTriplesClassificationTypes.</p>
+     *
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
         return new ArrayList<>();
     }
 
-    /**
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given node.
-     */
+    /** {@inheritDoc} */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new ArrayList<>();
     }
 
+    /**
+     * <p>supportsKnowledge.</p>
+     *
+     * @return a boolean
+     */
     public boolean supportsKnowledge() {
         return true;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getAlgorithmName() {
         return "Factor Analysis";
     }
 
+    /**
+     * <p>Getter for the field <code>output</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getOutput() {
         return this.output;
     }

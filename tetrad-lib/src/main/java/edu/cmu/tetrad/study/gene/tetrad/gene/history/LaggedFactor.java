@@ -30,6 +30,7 @@ import java.io.ObjectInputStream;
  * Identifies a particular factor (by name) at a particular lag (integer).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LaggedFactor implements Comparable, TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -69,6 +70,8 @@ public class LaggedFactor implements Comparable, TetradSerializable {
 
     /**
      * Copy constructor- creates a new object with the same properties as the original
+     *
+     * @param orig a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
      */
     public LaggedFactor(LaggedFactor orig) {
         this.factor = orig.factor;
@@ -77,6 +80,8 @@ public class LaggedFactor implements Comparable, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
      */
     public static LaggedFactor serializableInstance() {
         return new LaggedFactor("X", 1);
@@ -85,10 +90,9 @@ public class LaggedFactor implements Comparable, TetradSerializable {
     //=================================PUBLIC METHODS======================//
 
     /**
-     * Determines whether the given lagged factor is temporally prior to this lagged factor.
+     * {@inheritDoc}
      *
-     * @param o an Object, which should be a LaggedFactor.
-     * @return this lag minus the given lag, if the lagged factors have the same name; otherwise, 0.
+     * Determines whether the given lagged factor is temporally prior to this lagged factor.
      */
     public int compareTo(Object o) {
 
@@ -117,6 +121,8 @@ public class LaggedFactor implements Comparable, TetradSerializable {
 
     /**
      * Sets the name of the lagged factor
+     *
+     * @param factor a {@link java.lang.String} object
      */
     public void setFactor(String factor) {
         this.factor = factor;
@@ -133,12 +139,16 @@ public class LaggedFactor implements Comparable, TetradSerializable {
 
     /**
      * Probably should recheck this later.
+     *
+     * @return a int
      */
     public int hashCode() {
         return 127 * this.factor.hashCode() + this.lag;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Two lagged factors are equals just in case their factors are equals and their lags are equal.
      */
     public boolean equals(Object o) {

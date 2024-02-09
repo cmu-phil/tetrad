@@ -20,11 +20,13 @@ import java.util.Vector;
  * Factor analysis.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @Bootstrapping
 public class FactorAnalysis implements Algorithm {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     public Graph search(DataModel ds, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
 
@@ -137,19 +139,27 @@ public class FactorAnalysis implements Algorithm {
 
     }
 
+    /** {@inheritDoc} */
     public Graph getComparisonGraph(Graph graph) {
         return GraphUtils.undirectedGraph(graph);
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return "GLASSO (Graphical LASSO)";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

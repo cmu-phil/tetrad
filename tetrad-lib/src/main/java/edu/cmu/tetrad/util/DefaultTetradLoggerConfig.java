@@ -28,6 +28,7 @@ import java.util.*;
  * Logger configuration.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
@@ -74,11 +75,18 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.util.DefaultTetradLoggerConfig} object
      */
     public static DefaultTetradLoggerConfig serializableInstance() {
         return new DefaultTetradLoggerConfig();
     }
 
+    /**
+     * <p>copy.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.TetradLoggerConfig} object
+     */
     public TetradLoggerConfig copy() {
         DefaultTetradLoggerConfig copy = new DefaultTetradLoggerConfig();
         copy.events = new ArrayList<>(events);
@@ -88,18 +96,30 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
     //=========================== public methods ================================//
 
+    /** {@inheritDoc} */
     public boolean isEventActive(String id) {
         return active.contains(id);
     }
 
+    /**
+     * <p>isActive.</p>
+     *
+     * @return a boolean
+     */
     public boolean isActive() {
         return !active.isEmpty();
     }
 
+    /**
+     * <p>getSupportedEvents.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<TetradLoggerConfig.Event> getSupportedEvents() {
         return Collections.unmodifiableList(events);
     }
 
+    /** {@inheritDoc} */
     public void setEventActive(String id, boolean active) {
         if (!this.contains(id)) {
             throw new IllegalArgumentException("There is no event known under the given id: " + id);
@@ -111,6 +131,11 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
         }
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append("\nDefaultTetradLoggerConfig: events as follows:");

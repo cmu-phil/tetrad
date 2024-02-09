@@ -19,6 +19,7 @@ import java.util.List;
  * Standardized SEM simulation.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class StandardizedSemSimulation implements Simulation {
     private static final long serialVersionUID = 23L;
@@ -28,10 +29,20 @@ public class StandardizedSemSimulation implements Simulation {
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
 
+    /**
+     * <p>Constructor for StandardizedSemSimulation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public StandardizedSemSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
+    /**
+     * <p>Constructor for StandardizedSemSimulation.</p>
+     *
+     * @param pm a {@link edu.cmu.tetrad.sem.SemPm} object
+     */
     public StandardizedSemSimulation(SemPm pm) {
         SemGraph graph = pm.getGraph();
         graph.setShowErrorTerms(false);
@@ -39,12 +50,18 @@ public class StandardizedSemSimulation implements Simulation {
         this.pm = pm;
     }
 
+    /**
+     * <p>Constructor for StandardizedSemSimulation.</p>
+     *
+     * @param im a {@link edu.cmu.tetrad.sem.StandardizedSemIm} object
+     */
     public StandardizedSemSimulation(StandardizedSemIm im) {
         this.randomGraph = new SingleGraph(im.getSemPm().getGraph());
         this.standardizedIm = im;
         this.pm = im.getSemPm();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -75,21 +92,25 @@ public class StandardizedSemSimulation implements Simulation {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Linear, Gaussian SEM simulation using " + this.randomGraph.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -106,11 +127,13 @@ public class StandardizedSemSimulation implements Simulation {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;

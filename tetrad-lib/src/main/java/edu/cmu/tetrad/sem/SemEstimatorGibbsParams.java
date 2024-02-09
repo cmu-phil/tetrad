@@ -32,6 +32,7 @@ import java.io.ObjectInputStream;
  * Stores the freeParameters for an instance of a SemEstimatorGibbs.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public final class SemEstimatorGibbsParams implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -58,6 +59,8 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemEstimatorGibbsParams} object
      */
     public static SemEstimatorGibbsParams serializableInstance() {
         SemGraph graph = new SemGraph();
@@ -66,38 +69,83 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
         );
     }
 
+    /**
+     * <p>Getter for the field <code>startIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getStartIm() {
         return this.startIm;
     }
 
+    /**
+     * <p>Setter for the field <code>startIm</code>.</p>
+     *
+     * @param startIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public void setStartIm(SemIm startIm) {
         this.startIm = startIm;
     }
 
+    /**
+     * <p>Getter for the field <code>stretch</code>.</p>
+     *
+     * @return a double
+     */
     public double getStretch() {
         return this.stretch;
     }
 
+    /**
+     * <p>Setter for the field <code>stretch</code>.</p>
+     *
+     * @param stretch a double
+     */
     public void setStretch(double stretch) {
         this.stretch = stretch;
     }
 
+    /**
+     * <p>Getter for the field <code>tolerance</code>.</p>
+     *
+     * @return a double
+     */
     public double getTolerance() {
         return this.tolerance;
     }
 
+    /**
+     * <p>Getter for the field <code>numIterations</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumIterations() {
         return this.numIterations;
     }
 
+    /**
+     * <p>Setter for the field <code>numIterations</code>.</p>
+     *
+     * @param numIterations a int
+     */
     public void setNumIterations(int numIterations) {
         this.numIterations = numIterations;
     }
 
+    /**
+     * <p>isFlatPrior.</p>
+     *
+     * @return a boolean
+     */
     public boolean isFlatPrior() {
         return this.flatPrior;
     }
 
+    /**
+     * <p>Setter for the field <code>flatPrior</code>.</p>
+     *
+     * @param flatPrior a boolean
+     */
     public void setFlatPrior(boolean flatPrior) {
         this.flatPrior = flatPrior;
     }

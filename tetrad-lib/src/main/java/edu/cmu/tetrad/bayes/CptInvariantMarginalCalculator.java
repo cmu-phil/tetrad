@@ -32,6 +32,7 @@ import java.util.*;
  * Calculates marginals of the form P(V=v') for an updated Bayes net for purposes of the CPT Invariant Updater.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class CptInvariantMarginalCalculator
         implements TetradSerializable {
@@ -60,6 +61,9 @@ public final class CptInvariantMarginalCalculator
      * Constructs a new marginal calculator for the given updated Bayes IM. It is assumed that the first BayesIm
      * encountered on calling the getParentIm() method recursively is the Bayes IM with respect to which conjunctions of
      * the form P(V1=v1' and V2=v2' and ... and Vn=vn') should be calculated.
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
      */
     public CptInvariantMarginalCalculator(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) {
@@ -83,6 +87,8 @@ public final class CptInvariantMarginalCalculator
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.CptInvariantMarginalCalculator} object
      */
     public static CptInvariantMarginalCalculator serializableInstance() {
         MlBayesIm bayesIm = MlBayesIm.serializableInstance();
@@ -93,7 +99,11 @@ public final class CptInvariantMarginalCalculator
     //=============================PUBLIC METHODS========================//
 
     /**
+     * <p>getMarginal.</p>
+     *
      * @return P(variable = category).
+     * @param variable a int
+     * @param category a int
      */
     public double getMarginal(int variable, int category) {
         if (this.storedMarginals[variable][category] != -99.0) {
@@ -129,6 +139,11 @@ public final class CptInvariantMarginalCalculator
         return marginal;
     }
 
+    /**
+     * <p>Getter for the field <code>updatedBayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.UpdatedBayesIm} object
+     */
     public UpdatedBayesIm getUpdatedBayesIm() {
         return this.updatedBayesIm;
     }

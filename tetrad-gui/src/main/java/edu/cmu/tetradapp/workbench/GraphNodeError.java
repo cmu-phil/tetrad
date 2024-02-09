@@ -39,11 +39,14 @@ import java.util.List;
  *
  * @author josephramsey
  * @author Willie Wheeler
+ * @version $Id: $Id
  */
 public class GraphNodeError extends DisplayNode {
 
     /**
      * Constructs a display node for an error term.
+     *
+     * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
      */
     public GraphNodeError(Node modelNode) {
         setModelNode(modelNode);
@@ -59,6 +62,8 @@ public class GraphNodeError extends DisplayNode {
     //===========================PUBLIC METHODS========================//
 
     /**
+     * {@inheritDoc}
+     *
      * Launches a dialog that lets the user change the name of the variable, making sure the user doesn't pick a name
      * that's already being used. That's what the given graph is used for--to provide a list of variables whose names
      * should not be picked by the user as the new name for any variable.
@@ -72,6 +77,9 @@ public class GraphNodeError extends DisplayNode {
         }
     }
 
+    /**
+     * <p>doDoubleClickAction.</p>
+     */
     public void doDoubleClickAction() {
         doDoubleClickAction(new EdgeListGraph());
     }

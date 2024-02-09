@@ -27,24 +27,33 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * Represents the signature of the expression, for example sqrt(number).
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public interface ExpressionSignature extends TetradSerializable {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
 
     /**
+     * <p>getSignature.</p>
+     *
      * @return the sigature as a string.
      */
     String getSignature();
 
     /**
+     * <p>getNumberOfArguments.</p>
+     *
      * @return the number o f arguments.
      */
     int getNumberOfArguments();
 
 
     /**
+     * <p>getArgument.</p>
+     *
      * @return the argument type at the given index.
+     * @param index a int
      */
     String getArgument(int index);
 

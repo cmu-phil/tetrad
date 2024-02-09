@@ -14,20 +14,24 @@ import edu.cmu.tetrad.graph.Graph;
  * false positive is counted. Similarly for false negatives
  *
  * @author Joseh Ramsey
+ * @version $Id: $Id
  */
 public class F1Arrow implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "F1Arrow";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "F1 statistic for arrows";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion arrowConfusion = new ArrowConfusion(trueGraph, estGraph);
@@ -39,6 +43,7 @@ public class F1Arrow implements Statistic {
         return 2 * (arrowPrecision * arrowRecall) / (arrowPrecision + arrowRecall);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

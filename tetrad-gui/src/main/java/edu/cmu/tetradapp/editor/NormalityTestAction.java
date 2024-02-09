@@ -50,12 +50,15 @@ class NormalityTestAction extends AbstractAction {
 
     /**
      * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code> that its attached to.
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
     public NormalityTestAction(DataEditor editor) {
         super("Normality Tests...");
         this.dataEditor = editor;
     }
 
+    /** {@inheritDoc} */
     public void actionPerformed(ActionEvent e) {
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {

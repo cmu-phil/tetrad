@@ -34,6 +34,7 @@ import java.io.ObjectInputStream;
  * Wraps a DirichletEstimator.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesUpdaterClassifierWrapper implements SessionModel {
     private static final long serialVersionUID = 23L;
@@ -50,6 +51,12 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
 
     //==============================CONSTRUCTORS===========================//
 
+    /**
+     * <p>Constructor for BayesUpdaterClassifierWrapper.</p>
+     *
+     * @param bayesImWrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     */
     public BayesUpdaterClassifierWrapper(BayesImWrapper bayesImWrapper,
                                          DataWrapper dataWrapper) {
         if (bayesImWrapper == null) {
@@ -67,6 +74,12 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
         this.classifier = new ClassifierBayesUpdaterDiscrete(bayesIm, dataSet);
     }
 
+    /**
+     * <p>Constructor for BayesUpdaterClassifierWrapper.</p>
+     *
+     * @param bayesImWrapper a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     */
     public BayesUpdaterClassifierWrapper(DirichletBayesImWrapper bayesImWrapper,
                                          DataWrapper dataWrapper) {
         if (bayesImWrapper == null) {
@@ -88,6 +101,7 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -95,6 +109,11 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
 
     //==============================PUBLIC METHODS=======================//
 
+    /**
+     * <p>Getter for the field <code>classifier</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.classify.ClassifierBayesUpdaterDiscrete} object
+     */
     public ClassifierBayesUpdaterDiscrete getClassifier() {
         return this.classifier;
     }
@@ -108,10 +127,16 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }

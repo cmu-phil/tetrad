@@ -54,6 +54,8 @@ import org.apache.commons.math3.util.Precision;
  * @see <a href="http://mathworld.wolfram.com/EigenDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/Eigendecomposition_of_a_matrix">Wikipedia</a>
  * @since 2.0 (changed to concrete class in 3.0)
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class EigenDecomposition {
 
@@ -109,8 +111,7 @@ public class EigenDecomposition {
      * Supports decomposition of a general matrix since 3.1.
      *
      * @param matrix Matrix to decompose.
-     * @throws MaxCountExceededException if the algorithm fails to converge.
-     * @throws MathArithmeticException   if the decomposition of a general matrix results in a matrix with zero norm
+     * @throws org.apache.commons.math3.exception.MathArithmeticException   if the decomposition of a general matrix results in a matrix with zero norm
      * @since 3.1
      */
     public EigenDecomposition(RealMatrix matrix)
@@ -131,8 +132,7 @@ public class EigenDecomposition {
      *
      * @param matrix         Matrix to decompose.
      * @param splitTolerance Dummy parameter (present for backward compatibility only).
-     * @throws MathArithmeticException   if the decomposition of a general matrix results in a matrix with zero norm
-     * @throws MaxCountExceededException if the algorithm fails to converge.
+     * @throws org.apache.commons.math3.exception.MathArithmeticException   if the decomposition of a general matrix results in a matrix with zero norm
      * @deprecated in 3.1 (to be removed in 4.0) due to unused parameter
      */
     @Deprecated
@@ -148,7 +148,6 @@ public class EigenDecomposition {
      *
      * @param main      Main diagonal of the symmetric tridiagonal form.
      * @param secondary Secondary of the tridiagonal form.
-     * @throws MaxCountExceededException if the algorithm fails to converge.
      * @since 3.1
      */
     public EigenDecomposition(double[] main, double[] secondary) {
@@ -171,7 +170,6 @@ public class EigenDecomposition {
      * @param main           Main diagonal of the symmetric tridiagonal form.
      * @param secondary      Secondary of the tridiagonal form.
      * @param splitTolerance Dummy parameter (present for backward compatibility only).
-     * @throws MaxCountExceededException if the algorithm fails to converge.
      * @deprecated in 3.1 (to be removed in 4.0) due to unused parameter
      */
     @Deprecated
@@ -343,7 +341,6 @@ public class EigenDecomposition {
      * definite.
      *
      * @return the square-root of the matrix.
-     * @throws MathUnsupportedOperationException if the matrix is not symmetric or not positive definite.
      * @since 3.1
      */
     public RealMatrix getSquareRoot() {
@@ -369,11 +366,10 @@ public class EigenDecomposition {
     /**
      * Gets a solver for finding the A &times; X = B solution in exact linear sense.
      * <p>
-     * Since 3.1, eigen decomposition of a general matrix is supported, but the {@link DecompositionSolver} only
+     * Since 3.1, eigen decomposition of a general matrix is supported, but the {@link org.apache.commons.math3.linear.DecompositionSolver} only
      * supports real eigenvalues.
      *
      * @return a solver
-     * @throws MathUnsupportedOperationException if the decomposition resulted in complex eigenvalues
      */
     public DecompositionSolver getSolver() {
         if (hasComplexEigenvalues()) {

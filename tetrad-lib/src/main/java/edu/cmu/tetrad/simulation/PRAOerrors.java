@@ -6,6 +6,9 @@ import java.util.List;
 /**
  * Created by Erich on 8/21/2016. This class is for storing precision and recall values for both adjacencies and
  * orientations
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public final class PRAOerrors {
     private double AdjRecall, AdjPrecision, OrientPrecision, OrientRecall; //these store the actual errors
@@ -14,6 +17,12 @@ public final class PRAOerrors {
     //****************CONSTRUCTORS*******************//
     //this constructor makes a PRAOerrors object from an array of error values.
     //make sure the array is storing its values in the correct order, if you use this
+    /**
+     * <p>Constructor for PRAOerrors.</p>
+     *
+     * @param input an array of {@link double} objects
+     * @param thename a {@link java.lang.String} object
+     */
     public PRAOerrors(double[] input, String thename) {
         if (Array.getLength(input) == 5) {
             this.AdjRecall = input[1];
@@ -35,6 +44,12 @@ public final class PRAOerrors {
     }
 
     //method for constructing a mean PRAO from a list of PRAO objects
+    /**
+     * <p>Constructor for PRAOerrors.</p>
+     *
+     * @param input a {@link java.util.List} object
+     * @param thename a {@link java.lang.String} object
+     */
     public PRAOerrors(List<PRAOerrors> input, String thename) {
         double totalAR = 0;
         double totalAP = 0;
@@ -71,37 +86,77 @@ public final class PRAOerrors {
     }
 
     //****************Public Methods******************8//
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.errorsName;
     }
 
+    /**
+     * <p>getAdjRecall.</p>
+     *
+     * @return a double
+     */
     public double getAdjRecall() {
         return this.AdjRecall;
     }
 
+    /**
+     * <p>getAdjPrecision.</p>
+     *
+     * @return a double
+     */
     public double getAdjPrecision() {
         return this.AdjPrecision;
     }
 
+    /**
+     * <p>getOrientRecall.</p>
+     *
+     * @return a double
+     */
     public double getOrientRecall() {
         return this.OrientRecall;
     }
 
+    /**
+     * <p>getOrientPrecision.</p>
+     *
+     * @return a double
+     */
     public double getOrientPrecision() {
         return this.OrientPrecision;
     }
 
+    /**
+     * <p>valuesToString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String valuesToString() {
         return "AR: " + this.AdjRecall + " AP: " + this.AdjPrecision + " OR: " + this.OrientRecall + " OP: " + this.OrientPrecision;
     }
 
     //returns a string summarizing all the information
+    /**
+     * <p>allToString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String allToString() {
         String nl = System.lineSeparator();
         return this.errorsName + nl + "AR: " + this.AdjRecall + " AP: " + this.AdjPrecision + " OR: " + this.OrientRecall + " OP: " + this.OrientPrecision;
     }
 
     //returns an array of the error values
+    /**
+     * <p>toArray.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[] toArray() {
         double[] output = new double[4];
         output[0] = this.AdjRecall;

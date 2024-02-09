@@ -9,25 +9,30 @@ import org.apache.commons.math3.util.FastMath;
  * by the comparison class and recorded if this statistic is used.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ElapsedCpuTime implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "E-CPU";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Elapsed CPU Time in Seconds";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         return Double.NaN; // This has to be handled separately.
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return 1 - FastMath.tanh(0.001 * value);

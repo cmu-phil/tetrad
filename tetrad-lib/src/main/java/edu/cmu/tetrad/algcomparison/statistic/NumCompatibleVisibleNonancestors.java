@@ -9,20 +9,24 @@ import static edu.cmu.tetrad.graph.GraphUtils.compatible;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumCompatibleVisibleNonancestors implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "#CVNA";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Number compatible visible X-->Y for which X is not an ancestor of Y in true";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = GraphTransforms.dagToPag(trueGraph);
@@ -51,6 +55,7 @@ public class NumCompatibleVisibleNonancestors implements Statistic {
         return fp;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

@@ -37,12 +37,19 @@ import java.util.List;
  * the adjacencies that are shared by all but one graph, and so on down to one graph.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
     private List<Graph> graphs;
     private String name = "";
 
+    /**
+     * <p>Constructor for GraphAdjacencyIntersectionWrapper.</p>
+     *
+     * @param data1 an array of {@link edu.cmu.tetradapp.model.GraphSource} objects
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public GraphAdjacencyIntersectionWrapper(GraphSource[] data1, Parameters parameters) {
         construct(data1);
     }
@@ -51,6 +58,7 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAdd
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public static DataWrapper serializableInstance() {
         return new DataWrapper(new Parameters());
@@ -72,14 +80,25 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAdd
         this.graphs = graphs;
     }
 
+    /**
+     * <p>Getter for the field <code>graphs</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Graph> getGraphs() {
         return this.graphs;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }

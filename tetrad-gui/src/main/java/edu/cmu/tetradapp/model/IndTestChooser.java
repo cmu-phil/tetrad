@@ -46,13 +46,25 @@ import java.util.List;
 final class IndTestChooser {
     private boolean precomputeCovariances = true;
 
+    /**
+     * <p>getTest.</p>
+     *
+     * @param dataSource a {@link java.lang.Object} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     */
     public IndependenceTest getTest(Object dataSource, Parameters params) {
         return getTest(dataSource, params, IndTestType.DEFAULT);
     }
 
     /**
+     * <p>getTest.</p>
+     *
      * @return an independence checker appropriate to the given data source. Also sets the Parameters on the params to
      * an appropriate type object (using the existing one if it's of the right type).
+     * @param dataSource a {@link java.lang.Object} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param testType a {@link edu.cmu.tetradapp.util.IndTestType} object
      */
     public IndependenceTest getTest(Object dataSource, Parameters params,
                                     IndTestType testType) {
@@ -215,6 +227,11 @@ final class IndTestChooser {
                 params.getDouble("alpha", 0.001));
     }
 
+    /**
+     * <p>Setter for the field <code>precomputeCovariances</code>.</p>
+     *
+     * @param precomputeCovariances a boolean
+     */
     public void setPrecomputeCovariances(boolean precomputeCovariances) {
         this.precomputeCovariances = precomputeCovariances;
     }

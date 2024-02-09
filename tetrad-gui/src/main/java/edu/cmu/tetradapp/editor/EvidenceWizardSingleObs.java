@@ -42,6 +42,11 @@ import javax.swing.border.MatteBorder;
 // same as EvidenceWizardSingle.java except that here EvidenceEditorObs
 // is called instead of EvidenceEditor
 //
+
+////////////////////////////////////////////////////////////////////////
+// same as EvidenceWizardSingle.java except that here EvidenceEditorObs
+// is called instead of EvidenceEditor
+//
 class EvidenceWizardSingleObs extends JPanel {
     private final UpdaterWrapper updaterWrapper;
     private final GraphWorkbench workbench;
@@ -50,6 +55,9 @@ class EvidenceWizardSingleObs extends JPanel {
     /**
      * This is the wizard for the BayesUpdateEditor class.  It allows you to add and remove evidence, and to update
      * based on it.
+     *
+     * @param updaterWrapper a {@link edu.cmu.tetradapp.model.UpdaterWrapper} object
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public EvidenceWizardSingleObs(UpdaterWrapper updaterWrapper,
                                    GraphWorkbench workbench) {

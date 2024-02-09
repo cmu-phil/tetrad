@@ -25,6 +25,7 @@ import java.util.List;
  * (randomly). This cannot given multiple values.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @Bootstrapping
 public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
@@ -32,10 +33,16 @@ public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge
     private final Lofs.Rule rule;
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * <p>Constructor for FaskLofsConcatenated.</p>
+     *
+     * @param rule a {@link edu.cmu.tetrad.search.Lofs.Rule} object
+     */
     public FaskLofsConcatenated(Lofs.Rule rule) {
         this.rule = rule;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(List<DataModel> dataModels, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -75,11 +82,13 @@ public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         // Not used.
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndTestWrapper(IndependenceWrapper test) {
         // Not used.
@@ -89,6 +98,7 @@ public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge
         return search.search();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -111,21 +121,25 @@ public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "FAS followed by " + this.rule;
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -140,11 +154,13 @@ public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);

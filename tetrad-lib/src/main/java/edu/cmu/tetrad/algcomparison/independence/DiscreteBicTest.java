@@ -18,6 +18,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @TestOfIndependence(
         name = "Discrete BIC Test",
@@ -29,6 +30,7 @@ public class DiscreteBicTest implements IndependenceWrapper {
 
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         DiscreteBicScore score = new DiscreteBicScore(SimpleDataLoader.getDiscreteDataSet(dataSet));
@@ -37,16 +39,19 @@ public class DiscreteBicTest implements IndependenceWrapper {
         return new ScoreIndTest(score);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Discrete BIC Test";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Discrete;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

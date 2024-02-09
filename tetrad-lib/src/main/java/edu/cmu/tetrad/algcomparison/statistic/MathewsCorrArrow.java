@@ -16,20 +16,24 @@ import org.apache.commons.math3.util.FastMath;
  * contain an arrowhead at X for an edge from X to Y, one false positive is counted. Similarly, for false negatives
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MathewsCorrArrow implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "McArrow";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Matthew's correlation coefficient for arrowheads";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
@@ -40,6 +44,7 @@ public class MathewsCorrArrow implements Statistic {
         return mcc(arrowsTp, arrowsFp, arrowsTn, arrowsFn);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return 0.5 + 0.5 * value;

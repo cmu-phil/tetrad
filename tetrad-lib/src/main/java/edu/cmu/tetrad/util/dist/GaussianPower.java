@@ -23,6 +23,12 @@ package edu.cmu.tetrad.util.dist;
 
 import edu.cmu.tetrad.util.RandomUtil;
 
+/**
+ * <p>GaussianPower class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class GaussianPower implements Distribution {
     private static final long serialVersionUID = 23L;
 
@@ -30,6 +36,11 @@ public class GaussianPower implements Distribution {
     private final String name;
     private double power;
 
+    /**
+     * <p>Constructor for GaussianPower.</p>
+     *
+     * @param power a double
+     */
     public GaussianPower(double power) {
         this.sd = 1;
         this.power = power;
@@ -45,10 +56,16 @@ public class GaussianPower implements Distribution {
         return new GaussianPower(2);
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.power = value;
@@ -57,6 +74,7 @@ public class GaussianPower implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /** {@inheritDoc} */
     public double getParameter(int index) {
         if (index == 0) {
             return this.sd;
@@ -67,6 +85,7 @@ public class GaussianPower implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /** {@inheritDoc} */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Standard Deviation";
@@ -77,10 +96,20 @@ public class GaussianPower implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * <p>getNumParameters.</p>
+     *
+     * @return a int
+     */
     public int getNumParameters() {
         return 2;
     }
 
+    /**
+     * <p>nextRandom.</p>
+     *
+     * @return a double
+     */
     public double nextRandom() {
         double value = RandomUtil.getInstance().nextNormal(0, 1);
         double poweredValue = org.apache.commons.math3.util.FastMath.pow(org.apache.commons.math3.util.FastMath.abs(value), this.power);

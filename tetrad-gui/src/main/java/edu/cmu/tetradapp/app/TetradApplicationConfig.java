@@ -40,6 +40,7 @@ import java.util.*;
  * Represents the configuration details for the Tetrad application.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class TetradApplicationConfig {
 
@@ -101,6 +102,8 @@ public class TetradApplicationConfig {
     }
 
     /**
+     * <p>Getter for the field <code>instance</code>.</p>
+     *
      * @return an instance of the session configuration.
      */
     public static TetradApplicationConfig getInstance() {
@@ -311,6 +314,8 @@ public class TetradApplicationConfig {
     }
 
     /**
+     * <p>getSessionNodeConfig.</p>
+     *
      * @param id - The id of the session config (e.g., "Graph" etc)
      * @return the <code>SessionNodeConfig</code> to be used for the given id, or null if there isn't one defined for
      * the given id.
@@ -320,7 +325,10 @@ public class TetradApplicationConfig {
     }
 
     /**
+     * <p>getSessionNodeConfig.</p>
+     *
      * @return the <code>SessionNodeConfig</code> that the given model is part of.
+     * @param model a {@link java.lang.Class} object
      */
     public SessionNodeConfig getSessionNodeConfig(Class model) {
         return this.classMap.get(model);
@@ -328,6 +336,8 @@ public class TetradApplicationConfig {
 
     /**
      * A map from ids to node configs.
+     *
+     * @return a {@link java.util.Map} object
      */
     public Map<String, SessionNodeConfig> getConfigs() {
         return this.configs;

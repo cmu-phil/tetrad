@@ -27,11 +27,23 @@ import java.util.List;
  * Marks a search algorithm as a triad classifier and returns the triad classifications if makes.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface TripleClassifier {
 
+    /**
+     * <p>getTriplesClassificationTypes.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     List<String> getTriplesClassificationTypes();
 
+    /**
+     * <p>getTriplesLists.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.List} object
+     */
     List<List<Triple>> getTriplesLists(Node node);
 }
 

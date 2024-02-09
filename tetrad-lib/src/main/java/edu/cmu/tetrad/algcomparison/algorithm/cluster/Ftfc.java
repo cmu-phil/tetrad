@@ -19,6 +19,7 @@ import java.util.List;
  * FTFC.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FTFC",
@@ -31,9 +32,13 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     private static final long serialVersionUID = 23L;
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * <p>Constructor for Ftfc.</p>
+     */
     public Ftfc() {
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -77,22 +82,26 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph dag = new EdgeListGraph(graph);
         return GraphTransforms.cpdagForDag(dag);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "FTFC (Find Two Factor Clusters)";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -105,11 +114,13 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);

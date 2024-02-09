@@ -38,6 +38,7 @@ import static org.apache.commons.math3.util.FastMath.round;
  * To see what this class does, try calling ChoiceGenerator.testPrint(5, 3), for instance.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @SuppressWarnings("WeakerAccess")
 public final class ChoiceGenerator {
@@ -142,6 +143,8 @@ public final class ChoiceGenerator {
     }
 
     /**
+     * <p>next.</p>
+     *
      * @return the next combination in the series, or null if the series is finished.
      */
     public synchronized int[] next() {
@@ -173,6 +176,8 @@ public final class ChoiceGenerator {
     }
 
     /**
+     * <p>Getter for the field <code>a</code>.</p>
+     *
      * @return Ibid.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -181,6 +186,8 @@ public final class ChoiceGenerator {
     }
 
     /**
+     * <p>Getter for the field <code>b</code>.</p>
+     *
      * @return Ibid.
      */
     public int getB() {

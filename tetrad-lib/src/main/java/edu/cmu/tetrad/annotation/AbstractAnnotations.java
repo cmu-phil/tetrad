@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
  *
  * @param <T> annotation type
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public abstract class AbstractAnnotations<T extends Annotation> {
 
@@ -43,6 +44,7 @@ public abstract class AbstractAnnotations<T extends Annotation> {
 
     /**
      * Constructor.
+     *
      * @param packageName package name
      * @param type annotation type
      */
@@ -57,6 +59,7 @@ public abstract class AbstractAnnotations<T extends Annotation> {
 
     /**
      * Get annotated classes.
+     *
      * @return annotated classes
      */
     public List<AnnotatedClass<T>> getAnnotatedClasses() {
@@ -65,6 +68,7 @@ public abstract class AbstractAnnotations<T extends Annotation> {
 
     /**
      * Filter annotated classes by annotation type.
+     *
      * @param annoClasses annotated classes
      * @param type annotation type
      * @return filtered annotated classes
@@ -83,6 +87,7 @@ public abstract class AbstractAnnotations<T extends Annotation> {
 
     /**
      * Filter out annotated classes by annotation type.
+     *
      * @param annoClasses annotated classes
      * @param type annotation type
      * @return filtered annotated classes

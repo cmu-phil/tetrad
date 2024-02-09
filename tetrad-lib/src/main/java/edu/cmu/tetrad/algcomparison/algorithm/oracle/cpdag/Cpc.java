@@ -29,6 +29,7 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
  * Conservative PC (CPC).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CPC",
@@ -45,13 +46,22 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
 
+    /**
+     * <p>Constructor for Cpc.</p>
+     */
     public Cpc() {
     }
 
+    /**
+     * <p>Constructor for Cpc.</p>
+     *
+     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     */
     public Cpc(IndependenceWrapper test) {
         this.test = test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -107,22 +117,26 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph dag = new EdgeListGraph(graph);
         return GraphTransforms.cpdagForDag(dag);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "CPC using " + this.test.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.test.getDataType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -136,26 +150,31 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

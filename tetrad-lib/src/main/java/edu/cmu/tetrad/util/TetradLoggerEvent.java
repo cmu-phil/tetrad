@@ -27,6 +27,7 @@ import java.util.EventObject;
  * An event associated with the <code>TetradLoggerListener</code>.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class TetradLoggerEvent extends EventObject {
 
@@ -47,6 +48,11 @@ public class TetradLoggerEvent extends EventObject {
     }
 
 
+    /**
+     * <p>getTetradLoggerConfig.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.TetradLoggerConfig} object
+     */
     public TetradLoggerConfig getTetradLoggerConfig() {
         return this.config;
     }

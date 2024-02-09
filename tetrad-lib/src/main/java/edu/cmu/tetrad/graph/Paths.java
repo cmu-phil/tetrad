@@ -10,11 +10,22 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+/**
+ * <p>Paths class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class Paths implements TetradSerializable {
     private static final long serialVersionUID = 23L;
 
     private final Graph graph;
 
+    /**
+     * <p>Constructor for Paths.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Paths(Graph graph) {
         if (graph == null) throw new NullPointerException("Null graph");
         this.graph = graph;
@@ -58,6 +69,11 @@ public class Paths implements TetradSerializable {
         return newOrder;
     }
 
+    /**
+     * <p>makeValidOrder.</p>
+     *
+     * @param order a {@link java.util.List} object
+     */
     public void makeValidOrder(List<Node> order) {
         List<Node> initialOrder = new ArrayList<>(order);
         Graph _graph = new EdgeListGraph(this.graph);
@@ -96,6 +112,11 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    /**
+     * <p>maxCliques.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Set<Node>> maxCliques() {
         int[][] graph = new int[this.graph.getNumNodes()][this.graph.getNumNodes()];
         List<Node> nodes = this.graph.getNodes();
@@ -141,6 +162,8 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * <p>connectedComponents.</p>
+     *
      * @return the connected components of the given graph, as a list of lists of nodes.
      */
     public List<List<Node>> connectedComponents() {
@@ -158,6 +181,14 @@ public class Paths implements TetradSerializable {
     }
 
 
+    /**
+     * <p>directedPathsFromTo.</p>
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param maxLength a int
+     * @return a {@link java.util.List} object
+     */
     public List<List<Node>> directedPathsFromTo(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
         directedPathsFromToVisit(node1, node2, new LinkedList<>(), paths, maxLength);
@@ -207,6 +238,14 @@ public class Paths implements TetradSerializable {
         path.removeLast();
     }
 
+    /**
+     * <p>semidirectedPathsFromTo.</p>
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param maxLength a int
+     * @return a {@link java.util.List} object
+     */
     public List<List<Node>> semidirectedPathsFromTo(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
         semidirectedPathsFromToVisit(node1, node2, new LinkedList<>(), paths, maxLength);
@@ -256,6 +295,14 @@ public class Paths implements TetradSerializable {
         path.removeLast();
     }
 
+    /**
+     * <p>allPathsFromTo.</p>
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param maxLength a int
+     * @return a {@link java.util.List} object
+     */
     public List<List<Node>> allPathsFromTo(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
         allPathsFromToVisit(node1, node2, new LinkedList<>(), paths, maxLength);
@@ -293,6 +340,14 @@ public class Paths implements TetradSerializable {
         path.removeLast();
     }
 
+    /**
+     * <p>allDirectedPathsFromTo.</p>
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param maxLength a int
+     * @return a {@link java.util.List} object
+     */
     public List<List<Node>> allDirectedPathsFromTo(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
         allDirectedPathsFromToVisit(node1, node2, new LinkedList<>(), paths, maxLength);
@@ -331,6 +386,14 @@ public class Paths implements TetradSerializable {
         path.removeLast();
     }
 
+    /**
+     * <p>treks.</p>
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param maxLength a int
+     * @return a {@link java.util.List} object
+     */
     public List<List<Node>> treks(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
         treks(node1, node2, new LinkedList<>(), paths, maxLength);
@@ -392,6 +455,13 @@ public class Paths implements TetradSerializable {
         path.removeLast();
     }
 
+    /**
+     * <p>treksIncludingBidirected.</p>
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.List} object
+     */
     public List<List<Node>> treksIncludingBidirected(Node node1, Node node2) {
         List<List<Node>> paths = new LinkedList<>();
         treksIncludingBidirected(node1, node2, new LinkedList<>(), paths);
@@ -459,6 +529,14 @@ public class Paths implements TetradSerializable {
         path.removeLast();
     }
 
+    /**
+     * <p>existsDirectedPathFromTo.</p>
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param depth a int
+     * @return a boolean
+     */
     public boolean existsDirectedPathFromTo(Node node1, Node node2, int depth) {
         return node1 == node2 || existsDirectedPathVisit(node1, node2, new LinkedList<>(), depth);
     }
@@ -503,6 +581,13 @@ public class Paths implements TetradSerializable {
 
     // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
     // length at most 'bound'. Cycle checker in other words.
+    /**
+     * <p>existsSemiDirectedPath.</p>
+     *
+     * @param from a {@link edu.cmu.tetrad.graph.Node} object
+     * @param to a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
+     */
     public boolean existsSemiDirectedPath(Node from, Node to) {
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
@@ -546,6 +631,14 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    /**
+     * <p>isMConnectedTo.</p>
+     *
+     * @param x a {@link java.util.Set} object
+     * @param y a {@link java.util.Set} object
+     * @param z a {@link java.util.Set} object
+     * @return a boolean
+     */
     public boolean isMConnectedTo(Set<Node> x, Set<Node> y, Set<Node> z) {
         Set<Node> ancestors = ancestorsOf(z);
 
@@ -601,6 +694,9 @@ public class Paths implements TetradSerializable {
      *
      * @param ancestorMap A map of nodes to their ancestors.
      * @return True if x and y are d-connected given z.
+     * @param x a {@link java.util.Set} object
+     * @param y a {@link java.util.Set} object
+     * @param z a {@link java.util.Set} object
      */
     public boolean isMConnectedTo(Set<Node> x, Set<Node> y, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
         if (ancestorMap == null) throw new NullPointerException("Ancestor map cannot be null.");
@@ -662,6 +758,13 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    /**
+     * <p>getMConnectedVars.</p>
+     *
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a {@link java.util.Set} object
+     */
     public Set<Node> getMConnectedVars(Node y, Set<Node> z) {
         Set<Node> Y = new HashSet<>();
 
@@ -726,6 +829,14 @@ public class Paths implements TetradSerializable {
         return Y;
     }
 
+    /**
+     * <p>getMConnectedVars.</p>
+     *
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @param ancestors a {@link java.util.Map} object
+     * @return a {@link java.util.Set} object
+     */
     public Set<Node> getMConnectedVars(Node y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
         Set<Node> Y = new HashSet<>();
 
@@ -964,6 +1075,16 @@ public class Paths implements TetradSerializable {
     }
 
     // Needs to be public.
+    /**
+     * <p>existsInducingPathVisit.</p>
+     *
+     * @param a a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param path a {@link java.util.LinkedList} object
+     * @return a boolean
+     */
     public boolean existsInducingPathVisit(Node a, Node b, Node x, Node y, LinkedList<Node> path) {
         if (path.contains(b)) {
             return false;
@@ -1002,6 +1123,13 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    /**
+     * <p>getInducingPath.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getInducingPath(Node x, Node y) {
         if (x.getNodeType() != NodeType.MEASURED) {
             throw new IllegalArgumentException();
@@ -1022,6 +1150,14 @@ public class Paths implements TetradSerializable {
         return null;
     }
 
+    /**
+     * <p>possibleMsep.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param maxPathLength a int
+     * @return a {@link java.util.List} object
+     */
     public List<Node> possibleMsep(Node x, Node y, int maxPathLength) {
         Set<Node> msep = new HashSet<>();
 
@@ -1198,6 +1334,11 @@ public class Paths implements TetradSerializable {
      * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y.
      *
      * @author Kevin V. Bui (March 2020)
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a boolean
      */
     public boolean isSatisfyBackDoorCriterion(Graph graph, Node x, Node y, Set<Node> z) {
         Dag dag = new Dag(graph);
@@ -1223,6 +1364,13 @@ public class Paths implements TetradSerializable {
     }
 
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
+    /**
+     * <p>getSepset.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.Set} object
+     */
     public Set<Node> getSepset(Node x, Node y) {
         Set<Node> sepset = getSepsetVisit(x, y);
         if (sepset == null) {
@@ -1328,6 +1476,9 @@ public class Paths implements TetradSerializable {
      * Detemrmines whether x and y are d-connected given z.
      *
      * @return true if x and y are d-connected given z; false otherwise.
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
      */
     public boolean isMConnectedTo(Node x, Node y, Set<Node> z) {
         class EdgeNode {
@@ -1404,6 +1555,10 @@ public class Paths implements TetradSerializable {
      * Detemrmines whether x and y are d-connected given z.
      *
      * @return true if x and y are d-connected given z; false otherwise.
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @param ancestors a {@link java.util.Map} object
      */
     public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
         class EdgeNode {
@@ -1499,7 +1654,8 @@ public class Paths implements TetradSerializable {
      * added by ekorber, 2004/06/11
      *
      * @return true if the given edge is definitely visible (Jiji, pg 25)
-     * @throws IllegalArgumentException if the given edge is not a directed edge in the graph
+     * @throws java.lang.IllegalArgumentException if the given edge is not a directed edge in the graph
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public boolean defVisible(Edge edge) {
         if (!edge.isDirected()) return false;
@@ -1587,6 +1743,11 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    /**
+     * <p>existsDirectedCycle.</p>
+     *
+     * @return a boolean
+     */
     public boolean existsDirectedCycle() {
         for (Node node : graph.getNodes()) {
             if (existsDirectedPathFromTo(node, node)) {
@@ -1598,7 +1759,11 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * <p>existsDirectedPathFromTo.</p>
+     *
      * @return true iff there is a (nonempty) directed path from node1 to node2. a
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      */
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
         Queue<Node> Q = new LinkedList<>();
@@ -1623,6 +1788,13 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    /**
+     * <p>existsSemiDirectedPath.</p>
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param nodes a {@link java.util.Set} object
+     * @return a boolean
+     */
     public boolean existsSemiDirectedPath(Node node1, Set<Node> nodes) {
         return existsSemiDirectedPathVisit(node1, nodes, new LinkedList<>());
     }
@@ -1631,6 +1803,10 @@ public class Paths implements TetradSerializable {
      * Determines whether a trek exists between two nodes in the graph. A trek exists if there is a directed path
      * between the two nodes or else, for some third node in the graph, there is a path to each of the two nodes in
      * question.
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
      */
     public boolean existsTrek(Node node1, Node node2) {
         for (Node node : graph.getNodes()) {
@@ -1642,6 +1818,12 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    /**
+     * <p>getDescendants.</p>
+     *
+     * @param nodes a {@link java.util.List} object
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getDescendants(List<Node> nodes) {
         Set<Node> ancestors = new HashSet<>();
 
@@ -1658,11 +1840,21 @@ public class Paths implements TetradSerializable {
 
     /**
      * Determines whether one node is an ancestor of another.
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
      */
     public boolean isAncestorOf(Node node1, Node node2) {
         return node1 == node2 || existsDirectedPathFromTo(node1, node2);
     }
 
+    /**
+     * <p>getAncestors.</p>
+     *
+     * @param nodes a {@link java.util.List} object
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getAncestors(List<Node> nodes) {
         Set<Node> ancestors = new HashSet<>();
 
@@ -1679,6 +1871,10 @@ public class Paths implements TetradSerializable {
 
     /**
      * Determines whether one node is a descendent of another.
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
      */
     public boolean isDescendentOf(Node node1, Node node2) {
         return node1 == node2 || existsDirectedPathFromTo(node2, node1);
@@ -1688,6 +1884,8 @@ public class Paths implements TetradSerializable {
      * added by ekorber, 2004/06/12
      *
      * @return true iff node2 is a definite nondecendent of node1
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      */
     public boolean definiteNonDescendent(Node node1, Node node2) {
         return !(possibleAncestor(node1, node2));
@@ -1710,6 +1908,15 @@ public class Paths implements TetradSerializable {
         return !isMConnectedTo(node1, node2, z);
     }
 
+    /**
+     * <p>isMSeparatedFrom.</p>
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @param ancestors a {@link java.util.Map} object
+     * @return a boolean
+     */
     public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z, Map<Node, Set<Node>> ancestors) {
         return !isMConnectedTo(node1, node2, z, ancestors);
     }
@@ -1744,6 +1951,13 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    /**
+     * <p>isDirectedFromTo.</p>
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
+     */
     public boolean isDirectedFromTo(Node node1, Node node2) {
         List<Edge> edges = graph.getEdges(node1, node2);
         if (edges.size() != 1) {
@@ -1753,11 +1967,25 @@ public class Paths implements TetradSerializable {
         return edge.pointsTowards(node2);
     }
 
+    /**
+     * <p>isUndirectedFromTo.</p>
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
+     */
     public boolean isUndirectedFromTo(Node node1, Node node2) {
         Edge edge = graph.getEdge(node1, node2);
         return edge != null && edge.getEndpoint1() == Endpoint.TAIL && edge.getEndpoint2() == Endpoint.TAIL;
     }
 
+    /**
+     * <p>possibleAncestor.</p>
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
+     */
     public boolean possibleAncestor(Node node1, Node node2) {
         return existsSemiDirectedPath(node1, Collections.singleton(node2));
     }

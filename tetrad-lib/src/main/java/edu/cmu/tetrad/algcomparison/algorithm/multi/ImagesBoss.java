@@ -33,6 +33,7 @@ import java.util.List;
  * (randomly). This cannot be given multiple values.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "IMaGES-BOSS",
@@ -48,13 +49,22 @@ public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, UsesScor
 
     private ScoreWrapper score = new SemBicScore();
 
+    /**
+     * <p>Constructor for ImagesBoss.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public ImagesBoss(ScoreWrapper score) {
         this.score = score;
     }
 
+    /**
+     * <p>Constructor for ImagesBoss.</p>
+     */
     public ImagesBoss() {
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
         int meta = parameters.getInt(Params.IMAGES_META_ALG);
@@ -134,6 +144,7 @@ public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, UsesScor
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -161,21 +172,25 @@ public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, UsesScor
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "IMaGES";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.All;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new LinkedList<>();
@@ -191,26 +206,31 @@ public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, UsesScor
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndTestWrapper(IndependenceWrapper test) {
         // Not used.

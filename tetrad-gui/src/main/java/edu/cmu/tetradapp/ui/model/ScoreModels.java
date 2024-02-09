@@ -33,6 +33,7 @@ import java.util.stream.Stream;
  * Dec 1, 2017 11:41:53 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class ScoreModels {
 
@@ -58,6 +59,11 @@ public final class ScoreModels {
         initDefaultModelMap();
     }
 
+    /**
+     * <p>getInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.ui.model.ScoreModels} object
+     */
     public static ScoreModels getInstance() {
         return ScoreModels.INSTANCE;
     }
@@ -129,14 +135,31 @@ public final class ScoreModels {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>models</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<ScoreModel> getModels() {
         return this.models;
     }
 
+    /**
+     * <p>Getter for the field <code>models</code>.</p>
+     *
+     * @param dataType a {@link edu.cmu.tetrad.data.DataType} object
+     * @return a {@link java.util.List} object
+     */
     public List<ScoreModel> getModels(DataType dataType) {
         return this.modelMap.getOrDefault(dataType, Collections.EMPTY_LIST);
     }
 
+    /**
+     * <p>getDefaultModel.</p>
+     *
+     * @param dataType a {@link edu.cmu.tetrad.data.DataType} object
+     * @return a {@link edu.cmu.tetradapp.ui.model.ScoreModel} object
+     */
     public ScoreModel getDefaultModel(DataType dataType) {
         return this.defaultModelMap.get(dataType);
     }

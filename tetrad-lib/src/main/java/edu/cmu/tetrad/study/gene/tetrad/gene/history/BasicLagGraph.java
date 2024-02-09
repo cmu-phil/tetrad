@@ -40,6 +40,7 @@ import java.util.*;
  * factors used for edge specifications must have lags &gt;= 1.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class BasicLagGraph implements LagGraph {
     private static final long serialVersionUID = 23L;
@@ -87,6 +88,7 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
      * @return a simple exemplar of this class to test serialization.
      */
     public static BasicLagGraph serializableInstance() {
@@ -99,11 +101,9 @@ public final class BasicLagGraph implements LagGraph {
     //===========================PUBLIC METHODS===========================//
 
     /**
-     * Adds an edge to the given factor at lag 0 from the specified lagged factor.
+     * {@inheritDoc}
      *
-     * @param factor       a factor name in the graph.
-     * @param laggedFactor a lagged factor with factor name in the graph and lag &gt;=1.
-     * @throws IllegalArgumentException if the edge cannot be added.
+     * Adds an edge to the given factor at lag 0 from the specified lagged factor.
      */
     public void addEdge(String factor, LaggedFactor laggedFactor)
             throws IllegalArgumentException {
@@ -139,9 +139,9 @@ public final class BasicLagGraph implements LagGraph {
     }
 
     /**
-     * Adds a factor to the graph. If the factor is already in the graph, no action is taken.
+     * {@inheritDoc}
      *
-     * @param factor the factor (name).
+     * Adds a factor to the graph. If the factor is already in the graph, no action is taken.
      */
     public void addFactor(String factor) {
         if (!NamingProtocol.isLegalName(factor)) {
@@ -156,21 +156,18 @@ public final class BasicLagGraph implements LagGraph {
     }
 
     /**
-     * Determines whether the given factor exists in the graph.
+     * {@inheritDoc}
      *
-     * @param factor the given factor.
-     * @return true if the given factor is in the graph, false if not.
+     * Determines whether the given factor exists in the graph.
      */
     public boolean existsFactor(String factor) {
         return this.connectivity.containsKey(factor);
     }
 
     /**
-     * Determines whether the edge to 'factor' at time lag 0 from 'laggedFactor' exists in the graph.
+     * {@inheritDoc}
      *
-     * @param factor       the "to" factor.
-     * @param laggedFactor the "from" factor at the given lag.
-     * @return true if this edge exists in the graph, false if not.
+     * Determines whether the edge to 'factor' at time lag 0 from 'laggedFactor' exists in the graph.
      */
     public boolean existsEdge(String factor, LaggedFactor laggedFactor) {
 
@@ -189,20 +186,18 @@ public final class BasicLagGraph implements LagGraph {
     }
 
     /**
-     * Returns the lagged factors which are into the given factor.
+     * {@inheritDoc}
      *
-     * @param factor the "into" factor.
-     * @return the set of lagged factors into this factor.
+     * Returns the lagged factors which are into the given factor.
      */
     public SortedSet<LaggedFactor> getParents(String factor) {
         return this.connectivity.get(factor);
     }
 
     /**
-     * Removes the lagged factor from the list of lagged factors associated with the given factor.
+     * {@inheritDoc}
      *
-     * @param factor       the "into" factor.
-     * @param laggedFactor the "outof" lagged factor.
+     * Removes the lagged factor from the list of lagged factors associated with the given factor.
      */
     public void removeEdge(String factor, LaggedFactor laggedFactor) {
 
@@ -219,12 +214,16 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * Gets the maximum allowable lag. Edges may not be added with lags greated than this.
+     *
+     * @return a int
      */
     public int getMaxLagAllowable() {
         return this.maxLagAllowable;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the maximum allowable lag. Edges may not be added with lags greater than this. This value must be &gt;= the
      * getModel value of getMaxLag().
      */
@@ -257,9 +256,9 @@ public final class BasicLagGraph implements LagGraph {
     }
 
     /**
-     * Removes a factor from the graph.
+     * {@inheritDoc}
      *
-     * @param factor the name of the factor.
+     * Removes a factor from the graph.
      */
     public void removeFactor(String factor) {
 
@@ -287,6 +286,8 @@ public final class BasicLagGraph implements LagGraph {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Renames a factor, changing all occurances of the old name to the new one
      */
     public void renameFactor(String oldName, String newName) {
@@ -362,6 +363,7 @@ public final class BasicLagGraph implements LagGraph {
         return buf.toString();
     }
 
+    /** {@inheritDoc} */
     public void addFactors(String base, int numFactors) {
 
         NumberFormat nf = NumberFormat.getInstance();
@@ -391,14 +393,21 @@ public final class BasicLagGraph implements LagGraph {
         }
     }
 
+    /** {@inheritDoc} */
     public void setLocation(String factor, PointXy point) {
         getLocations().put(factor, point);
     }
 
+    /** {@inheritDoc} */
     public PointXy getLocation(String factor) {
         return getLocations().get(factor);
     }
 
+    /**
+     * <p>Getter for the field <code>locations</code>.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public Map<String, PointXy> getLocations() {
 
         // This is to accomodate folks using a previous version.

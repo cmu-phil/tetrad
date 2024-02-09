@@ -53,12 +53,18 @@ import java.util.ArrayList;
 // display and edit a JPD
 ////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////
+// display and edit a JPD
+////////////////////////////////////////////////////////
 class BayesImNodeEditingTableObs extends JTable {
     private int focusRow;
     private int focusCol;
 
     /**
      * Constructs a new editing table from a given editing table model.
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesImNodeEditingTableObs(BayesIm bayesIm) {
         if (bayesIm == null) {
@@ -107,6 +113,9 @@ class BayesImNodeEditingTableObs extends JTable {
         setFocusColumn();
     }
 
+    /**
+     * <p>createDefaultColumnsFromModel.</p>
+     */
     public void createDefaultColumnsFromModel() {
         super.createDefaultColumnsFromModel();
 
@@ -200,6 +209,7 @@ class BayesImNodeEditingTableObs extends JTable {
         popup.show((Component) e.getSource(), e.getX(), e.getY());
     }
 
+    /** {@inheritDoc} */
     public void setModel(@NotNull TableModel model) {
         super.setModel(model);
     }

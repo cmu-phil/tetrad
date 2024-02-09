@@ -41,6 +41,12 @@ class LoadGraphPcalg extends AbstractAction {
      */
     private final GraphEditable graphEditable;
 
+    /**
+     * <p>Constructor for LoadGraphPcalg.</p>
+     *
+     * @param graphEditable a {@link edu.cmu.tetradapp.editor.GraphEditable} object
+     * @param title a {@link java.lang.String} object
+     */
     public LoadGraphPcalg(GraphEditable graphEditable, String title) {
         super(title);
 
@@ -62,6 +68,8 @@ class LoadGraphPcalg extends AbstractAction {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {

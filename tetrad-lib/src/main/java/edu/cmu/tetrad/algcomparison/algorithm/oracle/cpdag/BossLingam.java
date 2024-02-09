@@ -30,6 +30,7 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
  * LiNGAM algorithm.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(name = "BOSS-LiNGAM", command = "boss-lingam", algoType = AlgType.forbid_latent_common_causes)
 @Bootstrapping
@@ -55,11 +56,9 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
     }
 
     /**
-     * Runs the BOSS-LiNGAM algorithm.
+     * {@inheritDoc}
      *
-     * @param dataModel  The data set to run to the search on.
-     * @param parameters The paramters of the search.
-     * @return The graph.
+     * Runs the BOSS-LiNGAM algorithm.
      */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
@@ -109,10 +108,9 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
     }
 
     /**
-     * Returns the comparison graph.
+     * {@inheritDoc}
      *
-     * @param graph The true directed graph, if there is one.
-     * @return The comparison graph.
+     * Returns the comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -120,9 +118,9 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
     }
 
     /**
-     * Returns the description of the algorithm.
+     * {@inheritDoc}
      *
-     * @return The description of the algorithm.
+     * Returns the description of the algorithm.
      */
     @Override
     public String getDescription() {
@@ -130,9 +128,9 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
     }
 
     /**
-     * Returns the data type that the algorithm can handle.
+     * {@inheritDoc}
      *
-     * @return The data type that the algorithm can handle.
+     * Returns the data type that the algorithm can handle.
      */
     @Override
     public DataType getDataType() {
@@ -140,9 +138,9 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
     }
 
     /**
-     * Returns the parameters for the algorithm.
+     * {@inheritDoc}
      *
-     * @return The parameters for the algorithm.
+     * Returns the parameters for the algorithm.
      */
     @Override
     public List<String> getParameters() {
@@ -158,9 +156,9 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
     }
 
     /**
-     * Returns the knowledge.
+     * {@inheritDoc}
      *
-     * @return The knowledge.
+     * Returns the knowledge.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -168,9 +166,9 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
     }
 
     /**
-     * Sets the knowledge.
+     * {@inheritDoc}
      *
-     * @param knowledge a knowledge object.
+     * Sets the knowledge.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -178,9 +176,9 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
     }
 
     /**
-     * Returns the score wrapper.
+     * {@inheritDoc}
      *
-     * @return The score wrapper.
+     * Returns the score wrapper.
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -188,9 +186,9 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
     }
 
     /**
-     * Sets the score wrapper.
+     * {@inheritDoc}
      *
-     * @param score the score wrapper.
+     * Sets the score wrapper.
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
@@ -198,9 +196,9 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
     }
 
     /**
-     * Returns the bootstrap graphs.
+     * {@inheritDoc}
      *
-     * @return The bootstrap graphs.
+     * Returns the bootstrap graphs.
      */
     @Override
     public List<Graph> getBootstrapGraphs() {

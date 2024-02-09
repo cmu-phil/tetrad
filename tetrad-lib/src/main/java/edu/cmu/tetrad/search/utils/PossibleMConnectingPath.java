@@ -31,6 +31,7 @@ import java.util.*;
  * Not thread safe.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class PossibleMConnectingPath {
 
@@ -63,6 +64,12 @@ public class PossibleMConnectingPath {
     /**
      * Finds all possible D-connection undirectedPaths as sub-graphs of the pag given at construction time from x to y
      * given z.
+     *
+     * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Collection} object
+     * @return a {@link java.util.List} object
      */
     public static List<PossibleMConnectingPath> findMConnectingPaths(Graph pag, Node x, Node y, Collection<Node> z) {
         if (!pag.containsNode(x) || !pag.containsNode(y) || x.equals(y)) {
@@ -90,6 +97,13 @@ public class PossibleMConnectingPath {
     /**
      * Finds all possible D-connection undirectedPaths as sub-graphs of the pag given at construction time from x to y
      * given z for a particular path length.
+     *
+     * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Collection} object
+     * @param length a {@link java.lang.Integer} object
+     * @return a {@link java.util.List} object
      */
     public static List<PossibleMConnectingPath> findMConnectingPathsOfLength(Graph pag, Node x, Node y, Collection<Node> z, Integer length) {
         if (!pag.containsNode(x) || !pag.containsNode(y) || x.equals(y)) {
@@ -245,22 +259,43 @@ public class PossibleMConnectingPath {
 
     //================================== Private methods =======================//
 
+    /**
+     * <p>Getter for the field <code>pag</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getPag() {
         return this.pag;
     }
 
+    /**
+     * <p>Getter for the field <code>conditions</code>.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Node> getConditions() {
         return Collections.unmodifiableSet(this.conditions);
     }
 
+    /**
+     * <p>Getter for the field <code>path</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getPath() {
         return Collections.unmodifiableList(this.path);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return this.path.toString();
     }
 
+    /** {@inheritDoc} */
     public boolean equals(Object o) {
         if (!(o instanceof PossibleMConnectingPath)) {
             return false;

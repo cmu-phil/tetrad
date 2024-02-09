@@ -38,6 +38,7 @@ import java.util.Set;
  * May 23, 2019 3:59:42 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class ParameterTab extends JPanel {
 
@@ -72,6 +73,11 @@ public class ParameterTab extends JPanel {
     private final Simulation simulation;
     private boolean initial = true;
 
+    /**
+     * <p>Constructor for ParameterTab.</p>
+     *
+     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
+     */
     public ParameterTab(Simulation simulation) {
         this.simulation = simulation;
 
@@ -389,6 +395,11 @@ public class ParameterTab extends JPanel {
         return items;
     }
 
+    /**
+     * <p>isInitial.</p>
+     *
+     * @return a boolean
+     */
     public boolean isInitial() {
         return initial;
     }

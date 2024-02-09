@@ -57,6 +57,7 @@ import java.util.*;
  *
  * @author josephramsey
  * @author Zhou Yuan
+ * @version $Id: $Id
  */
 public class GraphSelectionEditor extends JPanel implements GraphEditable, TripleClassifier {
 
@@ -81,7 +82,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     /**
      * Constructs a graph selection editor.
      *
-     * @throws NullPointerException if <code>wrapper</code> is null.
+     * @throws java.lang.NullPointerException if <code>wrapper</code> is null.
+     * @param wrapper a {@link edu.cmu.tetradapp.model.GraphSelectionWrapper} object
      */
     public GraphSelectionEditor(GraphSelectionWrapper wrapper) {
         if (wrapper == null) {
@@ -393,6 +395,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of this editor.
      */
     @Override
@@ -402,6 +406,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         this.firePropertyChange("name", oldName, getName());
     }
 
+    /** {@inheritDoc} */
     @Override
     public List getSelectedModelComponents() {
         List<Component> selectedComponents
@@ -422,6 +427,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         return selectedModelComponents;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
@@ -438,6 +444,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public GraphWorkbench getWorkbench() {
         int selectedIndex = tabbedPane.getSelectedIndex();
@@ -449,6 +456,12 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
 
     }
 
+    /**
+     * <p>getWorkbench.</p>
+     *
+     * @param selectionIndex a int
+     * @return a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public GraphWorkbench getWorkbench(int selectionIndex) {
         Graph layout = workbenches.get(prevSelected).getGraph();
         setLayoutGraph(layout);
@@ -473,6 +486,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         return workbenches.get(selectionIndex);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getGraph() {
         int selectedIndex = tabbedPane.getSelectedIndex();
@@ -482,6 +496,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         return wrapper.getSelectionGraph(selectedIndex);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setGraph(Graph graph) {
         wrapper.setGraphs(Collections.singletonList(graph));
@@ -489,6 +504,11 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         getWorkbench().setGraph(graph);
     }
 
+    /**
+     * <p>replace.</p>
+     *
+     * @param graphs a {@link java.util.List} object
+     */
     public void replace(List<Graph> graphs) {
         for (Graph graph : graphs) {
             for (Node node : graph.getNodes()) {
@@ -516,10 +536,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         }
     }
 
-    /**
-     * @return the names of the triple classifications. Coordinates with
-     * <code>getTriplesList</code>
-     */
+    /** {@inheritDoc} */
     @Override
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<>();
@@ -528,10 +545,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         return names;
     }
 
-    /**
-     * @return the list of triples corresponding to
-     * <code>getTripleClassificationNames</code> for the given node.
-     */
+    /** {@inheritDoc} */
     @Override
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();

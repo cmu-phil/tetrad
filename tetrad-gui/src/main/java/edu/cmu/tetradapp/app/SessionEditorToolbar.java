@@ -244,11 +244,14 @@ final class SessionEditorToolbar extends JPanel {
 
     /**
      * Sets whether the toolbar should react to events. This may need to be turned off temporarily.
+     *
+     * @param respondingToEvents a boolean
      */
     public void setRespondingToEvents(boolean respondingToEvents) {
         this.respondingToEvents = respondingToEvents;
     }
 
+    /** {@inheritDoc} */
     protected void processKeyEvent(KeyEvent e) {
         System.out.println("process key event " + e);
         super.processKeyEvent(e);

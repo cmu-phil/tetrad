@@ -36,6 +36,7 @@ import java.io.ObjectInputStream;
  * Wraps a Bayes Updater for use in the Tetrad application.
  *
  * @author William Taysom -- 2003/06/14
+ * @version $Id: $Id
  */
 public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper, Unmarshallable {
     private static final long serialVersionUID = 23L;
@@ -57,6 +58,12 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
 
     //============================CONSTRUCTORS==========================//
 
+    /**
+     * <p>Constructor for CptInvariantUpdaterWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public CptInvariantUpdaterWrapper(BayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -65,6 +72,12 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         setup(bayesIm, params);
     }
 
+    /**
+     * <p>Constructor for CptInvariantUpdaterWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public CptInvariantUpdaterWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -73,6 +86,12 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         setup(bayesIm, params);
     }
 
+    /**
+     * <p>Constructor for CptInvariantUpdaterWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public CptInvariantUpdaterWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -81,6 +100,12 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         setup(bayesIm, params);
     }
 
+    /**
+     * <p>Constructor for CptInvariantUpdaterWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletEstimatorWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public CptInvariantUpdaterWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -89,6 +114,12 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         setup(bayesIm, params);
     }
 
+    /**
+     * <p>Constructor for CptInvariantUpdaterWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.EmBayesEstimatorWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public CptInvariantUpdaterWrapper(EmBayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -101,6 +132,7 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper} object
      */
     public static CptInvariantUpdaterWrapper serializableInstance() {
         return new CptInvariantUpdaterWrapper(
@@ -109,14 +141,25 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
 
     //=============================PUBLIC METHODS==========================//
 
+    /**
+     * <p>Getter for the field <code>bayesUpdater</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.ManipulatingBayesUpdater} object
+     */
     public ManipulatingBayesUpdater getBayesUpdater() {
         return this.bayesUpdater;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
@@ -162,6 +205,11 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         }
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }

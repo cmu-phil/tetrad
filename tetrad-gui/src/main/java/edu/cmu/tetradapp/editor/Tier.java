@@ -45,6 +45,10 @@ class Tier extends JPanel {
 
     /**
      * A panel with a tier name, and all vars in that tier.
+     *
+     * @param kn a {@link edu.cmu.tetradapp.editor.TierList} object
+     * @param thisTier a int
+     * @param tierNames an array of {@link java.lang.String} objects
      */
     public Tier(TierList kn, int thisTier, String[] tierNames) {
 
@@ -61,6 +65,11 @@ class Tier extends JPanel {
         this.jsp.setViewportView(this.view);
     }
 
+    /**
+     * <p>setKnowledge.</p>
+     *
+     * @param k a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public static void setKnowledge(Knowledge k) {
         Tier.know = k;
     }
@@ -119,6 +128,11 @@ class Tier extends JPanel {
         }
     }
 
+    /**
+     * <p>setUnspecified.</p>
+     *
+     * @param varNames a {@link java.util.List} object
+     */
     public void setUnspecified(List<String> varNames) {
         removeAll();
         this.view.removeAll();
@@ -197,14 +211,29 @@ class Tier extends JPanel {
 
     // ======= The following make sure constraint is the proper size ======//
 
+    /**
+     * <p>getPreferredSize.</p>
+     *
+     * @return a {@link java.awt.Dimension} object
+     */
     public Dimension getPreferredSize() {
         return new Dimension(1000, 60);
     }
 
+    /**
+     * <p>getMinimumSize.</p>
+     *
+     * @return a {@link java.awt.Dimension} object
+     */
     public Dimension getMinimumSize() {
         return new Dimension(250, 60);
     }
 
+    /**
+     * <p>getMaximumSize.</p>
+     *
+     * @return a {@link java.awt.Dimension} object
+     */
     public Dimension getMaximumSize() {
         return new Dimension(2000, 60);
     }

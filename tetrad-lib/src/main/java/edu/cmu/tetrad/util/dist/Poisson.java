@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.RandomUtil;
  * be manipulated in an interface.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Poisson implements Distribution {
     private static final long serialVersionUID = 23L;
@@ -47,14 +48,25 @@ public class Poisson implements Distribution {
         return new Poisson();
     }
 
+    /**
+     * <p>getNumParameters.</p>
+     *
+     * @return a int
+     */
     public int getNumParameters() {
         return 1;
     }
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return "Distibution";
     }
 
+    /** {@inheritDoc} */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.mean = value;
@@ -63,6 +75,7 @@ public class Poisson implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /** {@inheritDoc} */
     public double getParameter(int index) {
         if (index == 0) {
             return this.mean;
@@ -71,6 +84,7 @@ public class Poisson implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /** {@inheritDoc} */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Mean";
@@ -79,10 +93,20 @@ public class Poisson implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * <p>nextRandom.</p>
+     *
+     * @return a double
+     */
     public double nextRandom() {
         return RandomUtil.getInstance().nextPoisson(this.mean);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Poisson(" + this.mean + ")";
     }

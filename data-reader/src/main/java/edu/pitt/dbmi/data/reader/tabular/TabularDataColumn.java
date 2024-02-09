@@ -24,6 +24,7 @@ import edu.pitt.dbmi.data.reader.DataColumn;
  * Dec 29, 2018 12:44:43 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class TabularDataColumn implements DataColumn {
 
@@ -61,9 +62,9 @@ public class TabularDataColumn implements DataColumn {
     }
 
     /**
-     * Returns a string representation of the object.
+     * {@inheritDoc}
      *
-     * @return a string representation of the object.
+     * Returns a string representation of the object.
      */
     @Override
     public String toString() {
@@ -71,9 +72,9 @@ public class TabularDataColumn implements DataColumn {
     }
 
     /**
-     * Get the name of the column.
+     * {@inheritDoc}
      *
-     * @return the name of the column.
+     * Get the name of the column.
      */
     @Override
     public String getName() {
@@ -81,9 +82,9 @@ public class TabularDataColumn implements DataColumn {
     }
 
     /**
-     * Get the column number.
+     * {@inheritDoc}
      *
-     * @return the column number.
+     * Get the column number.
      */
     @Override
     public int getColumnNumber() {
@@ -91,9 +92,9 @@ public class TabularDataColumn implements DataColumn {
     }
 
     /**
-     * Is the column generated?
+     * {@inheritDoc}
      *
-     * @return true if the column is generated, false otherwise.
+     * Is the column generated?
      */
     @Override
     public boolean isGenerated() {
@@ -101,9 +102,9 @@ public class TabularDataColumn implements DataColumn {
     }
 
     /**
-     * Is the column discrete?
+     * {@inheritDoc}
      *
-     * @return true if the column is discrete, false otherwise.
+     * Is the column discrete?
      */
     @Override
     public boolean isDiscrete() {
@@ -111,9 +112,9 @@ public class TabularDataColumn implements DataColumn {
     }
 
     /**
-     * Set the discrete status of the column.
+     * {@inheritDoc}
      *
-     * @param discrete true if the column is discrete, false otherwise.
+     * Set the discrete status of the column.
      */
     @Override
     public void setDiscrete(boolean discrete) {

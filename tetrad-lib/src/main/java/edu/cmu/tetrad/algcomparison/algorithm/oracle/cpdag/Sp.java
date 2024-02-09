@@ -30,6 +30,7 @@ import java.util.List;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "SP",
@@ -44,15 +45,24 @@ public class Sp implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBoo
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
+    /**
+     * <p>Constructor for Sp.</p>
+     */
     public Sp() {
         // Used in reflection; do not delete.
     }
 
+    /**
+     * <p>Constructor for Sp.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public Sp(ScoreWrapper score) {
         this.score = score;
     }
 
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -89,46 +99,55 @@ public class Sp implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBoo
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "SP (Sparsest Permutation) using " + this.score.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.score.getDataType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         return new ArrayList<>();
     }
 
+    /** {@inheritDoc} */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

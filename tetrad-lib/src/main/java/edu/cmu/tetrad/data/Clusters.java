@@ -34,6 +34,7 @@ import java.util.stream.IntStream;
  *
  * @author josephramsey
  * @author Ricardo Silva
+ * @version $Id: $Id
  */
 public final class Clusters implements TetradSerializable {
     @Serial
@@ -110,6 +111,8 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
+     * <p>getVarsNotInCluster.</p>
+     *
      * @param varNames the names of the variables.
      * @return the list of edges not in any tier.
      */
@@ -120,6 +123,8 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>numClusters</code>.</p>
+     *
      * @return the number of measurement clusters for use in Purify and MIM Build. R. Silva (04/2003)
      */
     public int getNumClusters() {
@@ -144,6 +149,8 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>clusters</code>.</p>
+     *
      * @return a copy of the cluster map, which is a map from variable names to integers.
      */
     public Map<String, Integer> getClusters() {
@@ -151,6 +158,8 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
+     * <p>getCluster.</p>
+     *
      * @param index the index of the desired index.
      * @return a copy of this index.
      */
@@ -173,6 +182,12 @@ public final class Clusters implements TetradSerializable {
         return cluster;
     }
 
+    /**
+     * <p>getClusterName.</p>
+     *
+     * @param index a int
+     * @return a {@link java.lang.String} object
+     */
     public String getClusterName(int index) {
         if (isClustersBounded() && index > getNumClusters()) {
             throw new IllegalArgumentException();
@@ -190,6 +205,12 @@ public final class Clusters implements TetradSerializable {
         return this.numClusters != -1;
     }
 
+    /**
+     * <p>setClusterName.</p>
+     *
+     * @param index a int
+     * @param name a {@link java.lang.String} object
+     */
     public synchronized void setClusterName(int index, String name) {
         if (name == null) {
             throw new NullPointerException();
@@ -216,6 +237,7 @@ public final class Clusters implements TetradSerializable {
 
     /**
      * Removes the given variable from the clusters.
+     *
      * @param var the variable to remove.
      */
     public void removeFromClusters(String var) {
@@ -224,6 +246,8 @@ public final class Clusters implements TetradSerializable {
 
     /**
      * Computes a hashcode.
+     *
+     * @return a int
      */
     public int hashCode() {
         int hash = 37;
@@ -232,9 +256,9 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Compares this object to another.
-     * @param o the object to compare to.
-     * @return true if the objects are equal, false otherwise.
      */
     public boolean equals(Object o) {
         if (o == this) {
@@ -250,6 +274,8 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return the contents of this Knowledge object in String form.
      */
     public String toString() {
@@ -311,6 +337,8 @@ public final class Clusters implements TetradSerializable {
     }
 
     /**
+     * <p>isEmpty.</p>
+     *
      * @return true if there are no clusters, false otherwise.
      */
     public boolean isEmpty() {

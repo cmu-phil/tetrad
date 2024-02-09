@@ -31,6 +31,7 @@ import java.util.List;
  * Interface for graph editors, useful for situations where graph editors need to be treated generally.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface GraphEditable {
 
@@ -42,6 +43,8 @@ public interface GraphEditable {
     void setName(String name);
 
     /**
+     * <p>getSelectedModelComponents.</p>
+     *
      * @return the selected components (display nodes and display edges) in the editor.
      */
     List getSelectedModelComponents();
@@ -55,11 +58,15 @@ public interface GraphEditable {
     void pasteSubsession(List<Object> sessionElements, Point upperLeft);
 
     /**
+     * <p>getWorkbench.</p>
+     *
      * @return the graph workbench.
      */
     GraphWorkbench getWorkbench();
 
     /**
+     * <p>getGraph.</p>
+     *
      * @return the graph.
      */
     Graph getGraph();

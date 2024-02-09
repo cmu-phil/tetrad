@@ -19,6 +19,7 @@ import java.util.*;
  * A simulation method based on the conditional Gaussian assumption.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ConditionalGaussianSimulation implements Simulation {
 
@@ -36,6 +37,11 @@ public class ConditionalGaussianSimulation implements Simulation {
     private double meanLow = -1;
     private double meanHigh = 1;
 
+    /**
+     * <p>Constructor for ConditionalGaussianSimulation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public ConditionalGaussianSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
@@ -68,6 +74,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         return outG;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -130,21 +137,25 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Conditional Gaussian simulation using " + this.randomGraph.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
@@ -169,11 +180,13 @@ public class ConditionalGaussianSimulation implements Simulation {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.dataType;
@@ -404,30 +417,65 @@ public class ConditionalGaussianSimulation implements Simulation {
         return d;
     }
 
+    /**
+     * <p>Setter for the field <code>varLow</code>.</p>
+     *
+     * @param varLow a double
+     */
     public void setVarLow(double varLow) {
         this.varLow = varLow;
     }
 
+    /**
+     * <p>Setter for the field <code>varHigh</code>.</p>
+     *
+     * @param varHigh a double
+     */
     public void setVarHigh(double varHigh) {
         this.varHigh = varHigh;
     }
 
+    /**
+     * <p>Setter for the field <code>coefLow</code>.</p>
+     *
+     * @param coefLow a double
+     */
     public void setCoefLow(double coefLow) {
         this.coefLow = coefLow;
     }
 
+    /**
+     * <p>Setter for the field <code>coefHigh</code>.</p>
+     *
+     * @param coefHigh a double
+     */
     public void setCoefHigh(double coefHigh) {
         this.coefHigh = coefHigh;
     }
 
+    /**
+     * <p>Setter for the field <code>coefSymmetric</code>.</p>
+     *
+     * @param coefSymmetric a boolean
+     */
     public void setCoefSymmetric(boolean coefSymmetric) {
         this.coefSymmetric = coefSymmetric;
     }
 
+    /**
+     * <p>Setter for the field <code>meanLow</code>.</p>
+     *
+     * @param meanLow a double
+     */
     public void setMeanLow(double meanLow) {
         this.meanLow = meanLow;
     }
 
+    /**
+     * <p>Setter for the field <code>meanHigh</code>.</p>
+     *
+     * @param meanHigh a double
+     */
     public void setMeanHigh(double meanHigh) {
         this.meanHigh = meanHigh;
     }

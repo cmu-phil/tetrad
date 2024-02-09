@@ -19,6 +19,7 @@ import java.util.*;
  * Implements the DM search.
  *
  * @author Alexander Murray-Watters
+ * @version $Id: $Id
  */
 public class DMSearch {
     private int[] inputs;
@@ -48,79 +49,174 @@ public class DMSearch {
     private CovarianceMatrix cov;
     private LatentStructure dmStructure;
 
+    /**
+     * <p>Setter for the field <code>minDiscount</code>.</p>
+     *
+     * @param minDiscount a int
+     */
     public void setMinDiscount(int minDiscount) {
         this.minDiscount = minDiscount;
     }
 
+    /**
+     * <p>getMinDepth.</p>
+     *
+     * @return a int
+     */
     public int getMinDepth() {
         return (this.minDiscount);
     }
 
+    /**
+     * <p>Getter for the field <code>gesDepth</code>.</p>
+     *
+     * @return a int
+     */
     public int getGesDepth() {
         return (gesDepth);
     }
 
+    /**
+     * <p>Setter for the field <code>gesDepth</code>.</p>
+     *
+     * @param gesDepth a int
+     */
     public void setGesDepth(int gesDepth) {
         this.gesDepth = gesDepth;
     }
 
+    /**
+     * <p>Getter for the field <code>trueInputs</code>.</p>
+     *
+     * @return an array of {@link int} objects
+     */
     public int[] getTrueInputs() {
         return (this.trueInputs);
     }
 
+    /**
+     * <p>Setter for the field <code>trueInputs</code>.</p>
+     *
+     * @param trueInputs an array of {@link int} objects
+     */
     public void setTrueInputs(int[] trueInputs) {
         this.trueInputs = trueInputs;
     }
 
+    /**
+     * <p>Getter for the field <code>data</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getData() {
         return (this.data);
     }
 
+    /**
+     * <p>Setter for the field <code>data</code>.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public void setData(DataSet data) {
         this.data = data;
     }
 
+    /**
+     * <p>Getter for the field <code>inputs</code>.</p>
+     *
+     * @return an array of {@link int} objects
+     */
     public int[] getInputs() {
         return (inputs);
     }
 
+    /**
+     * <p>Setter for the field <code>inputs</code>.</p>
+     *
+     * @param inputs an array of {@link int} objects
+     */
     public void setInputs(int[] inputs) {
         this.inputs = inputs;
     }
 
+    /**
+     * <p>Getter for the field <code>outputs</code>.</p>
+     *
+     * @return an array of {@link int} objects
+     */
     public int[] getOutputs() {
         return (outputs);
     }
 
+    /**
+     * <p>Setter for the field <code>outputs</code>.</p>
+     *
+     * @param outputs an array of {@link int} objects
+     */
     public void setOutputs(int[] outputs) {
         this.outputs = outputs;
     }
 
+    /**
+     * <p>Getter for the field <code>dmStructure</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.work_in_progress.DMSearch.LatentStructure} object
+     */
     public LatentStructure getDmStructure() {
         return (dmStructure);
     }
 
+    /**
+     * <p>Setter for the field <code>dmStructure</code>.</p>
+     *
+     * @param structure a {@link edu.cmu.tetrad.search.work_in_progress.DMSearch.LatentStructure} object
+     */
     public void setDmStructure(LatentStructure structure) {
         this.dmStructure = structure;
     }
 
+    /**
+     * <p>Setter for the field <code>alphaSober</code>.</p>
+     *
+     * @param alpha a double
+     */
     public void setAlphaSober(double alpha) {
         this.alphaSober = alpha;
     }
 
+    /**
+     * <p>Setter for the field <code>alphaPC</code>.</p>
+     *
+     * @param alpha a double
+     */
     public void setAlphaPC(double alpha) {
         this.alphaPC = alpha;
     }
 
+    /**
+     * <p>setDiscount.</p>
+     *
+     * @param discount a double
+     */
     public void setDiscount(double discount) {
         this.gesDiscount = discount;
     }
 
+    /**
+     * <p>setUseFgES.</p>
+     *
+     * @param set a boolean
+     */
     public void setUseFgES(boolean set) {
         this.useGES = set;
     }
 
 
+    /**
+     * <p>search.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph search() {
 
         int[] trueInputs = getTrueInputs();
@@ -208,6 +304,14 @@ public class DMSearch {
 
     }
 
+    /**
+     * <p>applyDmSearch.</p>
+     *
+     * @param pattern a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param inputString a {@link java.util.Set} object
+     * @param penalty a double
+     * @return a {@link edu.cmu.tetrad.search.work_in_progress.DMSearch.LatentStructure} object
+     */
     public LatentStructure applyDmSearch(Graph pattern, Set<String> inputString, double penalty) {
 
         List<Set<Node>> outputParentsList = new ArrayList<Set<Node>>();
@@ -708,6 +812,7 @@ public class DMSearch {
         return (false);
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);

@@ -13,6 +13,12 @@ import java.awt.*;
 
 import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
 
+/**
+ * <p>StatsListEditor class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class StatsListEditor extends JPanel {
 
     private static final long serialVersionUID = 8455624852328328919L;
@@ -24,6 +30,11 @@ public class StatsListEditor extends JPanel {
     private Graph referenceGraph;
     private JTextArea area;
 
+    /**
+     * <p>Constructor for StatsListEditor.</p>
+     *
+     * @param comparison a {@link edu.cmu.tetradapp.model.TabularComparison} object
+     */
     public StatsListEditor(TabularComparison comparison) {
         this.comparison = comparison;
         this.params = comparison.getParams();

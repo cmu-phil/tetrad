@@ -63,6 +63,7 @@ import java.util.Map;
  * @author Aaron Powers
  * @author josephramsey
  * @author Zhou Yuan
+ * @version $Id: $Id
  */
 public final class DagEditor extends JPanel
         implements GraphEditable, LayoutEditable, DelegatesEditing, IndTestProducer {
@@ -73,6 +74,11 @@ public final class DagEditor extends JPanel
     private final EdgeTypeTable edgeTypeTable;
     private GraphWorkbench workbench;
 
+    /**
+     * <p>Constructor for DagEditor.</p>
+     *
+     * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     */
     public DagEditor(DagWrapper dagWrapper) {
         setLayout(new BorderLayout());
         this.parameters = dagWrapper.getParameters();
@@ -84,6 +90,8 @@ public final class DagEditor extends JPanel
     //===========================PUBLIC METHODS======================//
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of this editor.
      */
     @Override
@@ -93,22 +101,24 @@ public final class DagEditor extends JPanel
         firePropertyChange("name", oldName, getName());
     }
 
+    /** {@inheritDoc} */
     @Override
     public JComponent getEditDelegate() {
         return getWorkbench();
     }
 
+    /** {@inheritDoc} */
     @Override
     public GraphWorkbench getWorkbench() {
         return this.workbench;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns a list of all the SessionNodeWrappers (TetradNodes) and SessionNodeEdges that are model components for
      * the respective SessionNodes and SessionEdges selected in the workbench. Note that the workbench, not the
      * SessionEditorNodes themselves, keeps track of the selection.
-     *
-     * @return the set of selected model nodes.
      */
     @Override
     public List getSelectedModelComponents() {
@@ -131,6 +141,8 @@ public final class DagEditor extends JPanel
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Pastes list of session elements into the workbench.
      */
     @Override
@@ -148,11 +160,13 @@ public final class DagEditor extends JPanel
         getWorkbench().selectConnectingEdges();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getGraph() {
         return this.workbench.getGraph();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setGraph(Graph graph) {
         try {
@@ -163,36 +177,43 @@ public final class DagEditor extends JPanel
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map getModelEdgesToDisplay() {
         return this.workbench.getModelEdgesToDisplay();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map getModelNodesToDisplay() {
         return this.workbench.getModelNodesToDisplay();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getSourceGraph() {
         return getWorkbench().getGraph();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void layoutByGraph(Graph graph) {
         getWorkbench().layoutByGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void layoutByKnowledge() {
         // Does nothing.
     }
 
+    /** {@inheritDoc} */
     @Override
     public Rectangle getVisibleRect() {
         return getWorkbench().getVisibleRect();
@@ -469,6 +490,7 @@ public final class DagEditor extends JPanel
         return graph;
     }
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceTest getIndependenceTest() {
         return new MsepTest(this.workbench.getGraph());

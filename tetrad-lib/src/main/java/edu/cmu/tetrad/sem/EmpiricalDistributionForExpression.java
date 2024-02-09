@@ -31,12 +31,22 @@ import java.util.List;
 
 /**
  * Returns a sample empirical distribution for a particular expression.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class EmpiricalDistributionForExpression {
     private final GeneralizedSemPm semPm;
     private final Node error;
     private final Context context;
 
+    /**
+     * <p>Constructor for EmpiricalDistributionForExpression.</p>
+     *
+     * @param semPm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @param error a {@link edu.cmu.tetrad.graph.Node} object
+     * @param context a {@link edu.cmu.tetrad.calculator.expression.Context} object
+     */
     public EmpiricalDistributionForExpression(GeneralizedSemPm semPm, Node error,
                                               Context context) {
         this.semPm = semPm;
@@ -44,6 +54,11 @@ public class EmpiricalDistributionForExpression {
         this.context = context;
     }
 
+    /**
+     * <p>getDist.</p>
+     *
+     * @return a {@link org.apache.commons.math3.distribution.RealDistribution} object
+     */
     public RealDistribution getDist() {
         List<Double> drawFromDistribution = new ArrayList<>();
         Expression expression = this.semPm.getNodeExpression(this.error);

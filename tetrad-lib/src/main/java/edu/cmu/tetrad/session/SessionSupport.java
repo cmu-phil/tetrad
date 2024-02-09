@@ -28,6 +28,7 @@ import java.util.List;
  * Handles firing of SessionSupport events to listeners.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SessionSupport {
 
@@ -44,6 +45,8 @@ public class SessionSupport {
     /**
      * Constructs a new session support object for the given source object. The source object will be stamped on all
      * fired events.
+     *
+     * @param source a {@link java.lang.Object} object
      */
     public SessionSupport(Object source) {
         if (source == null) {
@@ -55,6 +58,8 @@ public class SessionSupport {
 
     /**
      * Adds a listener for SessionEvents.
+     *
+     * @param l a {@link edu.cmu.tetrad.session.SessionListener} object
      */
     public void addSessionListener(SessionListener l) {
         if (!(this.sessionListeners.contains(l))) {
@@ -64,6 +69,8 @@ public class SessionSupport {
 
     /**
      * Removes a listener for SessionEvents.
+     *
+     * @param l a {@link edu.cmu.tetrad.session.SessionListener} object
      */
     public void removeSessionListener(SessionListener l) {
         this.sessionListeners.remove(l);
@@ -71,6 +78,8 @@ public class SessionSupport {
 
     /**
      * Fires an event indicating that a session node has been added to the session.
+     *
+     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void fireNodeAdded(SessionNode node) {
         SessionEvent event =
@@ -81,6 +90,8 @@ public class SessionSupport {
 
     /**
      * Fires an event indicating that a sesison node has been removed from the session.
+     *
+     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void fireNodeRemoved(SessionNode node) {
         SessionEvent event =
@@ -92,6 +103,9 @@ public class SessionSupport {
     /**
      * Fires an event indicating that a parent has been added from the given parent to the given child session node in
      * the session.
+     *
+     * @param parent a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param child a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void fireParentAdded(SessionNode parent, SessionNode child) {
         SessionEvent event = new SessionEvent(this.source, parent, child,
@@ -103,6 +117,9 @@ public class SessionSupport {
     /**
      * Fires an event indicating that a parent has been removed from the given parent to the given child session node in
      * the session.
+     *
+     * @param parent a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param child a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void fireParentRemoved(SessionNode parent, SessionNode child) {
         SessionEvent event = new SessionEvent(this.source, parent, child,
@@ -113,6 +130,8 @@ public class SessionSupport {
 
     /**
      * Fires an event indicating that a new model has been created for the given session node in the session.
+     *
+     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void fireModelCreated(SessionNode node) {
         SessionEvent event =
@@ -123,6 +142,8 @@ public class SessionSupport {
 
     /**
      * Fires an event indicating that the model for the given session node in the session has been destroyed.
+     *
+     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void fireModelDestroyed(SessionNode node) {
         SessionEvent event = new SessionEvent(this.source, node,
@@ -133,6 +154,8 @@ public class SessionSupport {
 
     /**
      * Fires an event indicating that the model for the given session node in the session has been destroyed.
+     *
+     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void fireModelUnclear(SessionNode node) {
         SessionEvent event =
@@ -143,6 +166,8 @@ public class SessionSupport {
 
     /**
      * Fires an event indicating that the model for the given session node in the session has been destroyed.
+     *
+     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void fireRepetitionChanged(SessionNode node) {
         SessionEvent event = new SessionEvent(this.source, node,
@@ -174,6 +199,8 @@ public class SessionSupport {
     /**
      * Fires a session event. Calls the correct method on the listener for the type of session event it is. All event
      * fired with this session support are stamped with the source object of this session support.
+     *
+     * @param event a {@link edu.cmu.tetrad.session.SessionEvent} object
      */
     public void fireSessionEvent(SessionEvent event) {
         fireSessionEvent(event, true);

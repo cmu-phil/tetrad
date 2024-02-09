@@ -50,6 +50,8 @@ class QQPlotAction extends AbstractAction {
 
     /**
      * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code> that its attached to.
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
     public QQPlotAction(DataEditor editor) {
         super("Q-Q Plots...");
@@ -57,6 +59,7 @@ class QQPlotAction extends AbstractAction {
     }
 
 
+    /** {@inheritDoc} */
     public void actionPerformed(ActionEvent e) {
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {

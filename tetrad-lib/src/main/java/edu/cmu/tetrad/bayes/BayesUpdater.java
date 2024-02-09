@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @see Evidence
  * @see Proposition
  * @see Manipulation
+ * @version $Id: $Id
  */
 public interface BayesUpdater extends TetradSerializable {
     /**

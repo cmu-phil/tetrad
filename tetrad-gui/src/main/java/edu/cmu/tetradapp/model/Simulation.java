@@ -39,6 +39,7 @@ import java.util.*;
  * essentially stores an ordered pair of [Graph, List[DataSet]]. It is edited by SimulationEditor.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Simulation extends DataWrapper implements
         GraphSource, MultipleGraphSource {
@@ -56,6 +57,11 @@ public class Simulation extends DataWrapper implements
     private Simulation() {
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(Parameters parameters) {
         if (this.simulation == null) {
             // By default there shouldn't be a simulation until the users create one - Zhou
@@ -66,6 +72,12 @@ public class Simulation extends DataWrapper implements
         }
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(GraphSource graphSource, Parameters parameters) {
         if (graphSource instanceof Simulation) {
             Simulation simulation = (Simulation) graphSource;
@@ -93,84 +105,168 @@ public class Simulation extends DataWrapper implements
         }
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(BayesImWrapper wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapperObs} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(BayesImWrapperObs wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(BayesPmWrapper wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getBayesPm());
         this.parameters = parameters;
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(BayesEstimatorWrapper wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(DirichletBayesImWrapper wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getDirichletBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletEstimatorWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(DirichletEstimatorWrapper wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
         this.simulation = new BayesNetSimulation(wrapper.getBayesUpdater().getManipulatedBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(SemPmWrapper wrapper, Parameters parameters) {
         this.simulation = new SemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(SemImWrapper wrapper, Parameters parameters) {
         this.simulation = new SemSimulation(wrapper.getSemIm());
         this.parameters = parameters;
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.StandardizedSemImWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(StandardizedSemImWrapper wrapper, Parameters parameters) {
         this.simulation = new StandardizedSemSimulation(wrapper.getStandardizedSemIm());
         this.parameters = parameters;
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(SemEstimatorWrapper wrapper, Parameters parameters) {
         this.simulation = new SemSimulation(wrapper.getEstimatedSemIm());
         this.parameters = parameters;
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemUpdaterWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(SemUpdaterWrapper wrapper, Parameters parameters) {
         this.simulation = new SemSimulation(wrapper.getSemUpdater().getManipulatedSemIm());
         this.parameters = parameters;
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(GeneralizedSemPmWrapper wrapper, Parameters parameters) {
         this.simulation = new GeneralSemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemImWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(GeneralizedSemImWrapper wrapper, Parameters parameters) {
         if (wrapper.getSemIms().size() != 1) {
             throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
@@ -181,6 +277,12 @@ public class Simulation extends DataWrapper implements
         createSimulation();
     }
 
+    /**
+     * <p>Constructor for Simulation.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Simulation(DataWrapper dataWrapper, Parameters parameters) {
         if (this.simulation == null) {
             this.simulation = new LinearFisherModel(new RandomForward(), dataWrapper.getDataModelList());
@@ -195,43 +297,75 @@ public class Simulation extends DataWrapper implements
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
 
+    /**
+     * <p>Getter for the field <code>simulation</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.algcomparison.simulation.Simulation} object
+     */
     public edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation() {
         return this.simulation;
     }
 
+    /**
+     * <p>Setter for the field <code>simulation</code>.</p>
+     *
+     * @param simulation a {@link edu.cmu.tetrad.algcomparison.simulation.Simulation} object
+     */
     public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation) {
         this.simulation = simulation;
     }
 
+    /**
+     * <p>Setter for the field <code>simulation</code>.</p>
+     *
+     * @param simulation a {@link edu.cmu.tetrad.algcomparison.simulation.Simulation} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, Parameters parameters) {
         this.simulation = simulation;
         this.parameters = parameters;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>getParams.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.parameters;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the data model.
      */
     public void setDataModel(DataModel dataModel) {
     }
 
     /**
+     * <p>getDataModelList.</p>
+     *
      * @return the list of models.
      */
     public DataModelList getDataModelList() {
@@ -244,11 +378,14 @@ public class Simulation extends DataWrapper implements
         return list;
     }
 
+    /** {@inheritDoc} */
     public void setDataModelList(DataModelList dataModelList) {
         throw new UnsupportedOperationException();
     }
 
     /**
+     * <p>getDataModels.</p>
+     *
      * @return the list of models.
      */
     public List<DataModel> getDataModels() {
@@ -261,15 +398,20 @@ public class Simulation extends DataWrapper implements
         return list;
     }
 
+    /** {@inheritDoc} */
     public void setParameters(Parameters parameters) {
         this.parameters = parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, String> getParamSettings() {
         return new HashMap<>();
     }
 
+    /**
+     * <p>createSimulation.</p>
+     */
     public void createSimulation() {
         // Every time the users click the Simulate button, new data needs to be created
         // regardless of already created data - Zhou
@@ -280,6 +422,8 @@ public class Simulation extends DataWrapper implements
 
     /**
      * Returns all of the graphs in the simulation, in order.
+     *
+     * @return a {@link java.util.List} object
      */
     public List<Graph> getGraphs() {
         List<Graph> graphs = new ArrayList<>();
@@ -291,22 +435,47 @@ public class Simulation extends DataWrapper implements
         return graphs;
     }
 
+    /**
+     * <p>isFixedSimulation.</p>
+     *
+     * @return a boolean
+     */
     public boolean isFixedSimulation() {
         return this.fixedSimulation;
     }
 
+    /**
+     * <p>Setter for the field <code>fixedSimulation</code>.</p>
+     *
+     * @param fixedSimulation a boolean
+     */
     public void setFixedSimulation(boolean fixedSimulation) {
         this.fixedSimulation = fixedSimulation;
     }
 
+    /**
+     * <p>isFixedGraph.</p>
+     *
+     * @return a boolean
+     */
     public boolean isFixedGraph() {
         return this.fixedGraph;
     }
 
+    /**
+     * <p>Setter for the field <code>fixedGraph</code>.</p>
+     *
+     * @param fixedGraph a boolean
+     */
     public void setFixedGraph(boolean fixedGraph) {
         this.fixedGraph = fixedGraph;
     }
 
+    /**
+     * <p>getKnowledge.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         if (this.simulation instanceof HasKnowledge) {
             return ((HasKnowledge) this.simulation).getKnowledge();
@@ -315,10 +484,16 @@ public class Simulation extends DataWrapper implements
         }
     }
 
+    /**
+     * <p>Getter for the field <code>inputDataModelList</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<DataModel> getInputDataModelList() {
         return this.inputDataModelList;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getGraph() {
         Set<Graph> graphs = new HashSet<>(getGraphs());

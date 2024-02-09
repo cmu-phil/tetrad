@@ -53,6 +53,7 @@ import java.util.prefs.Preferences;
  * Lists independence facts specified by user and allows the list to be sorted by independence fact or by p value.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class IndependenceFactsEditor extends JPanel {
     private final NumberFormat nf = new DecimalFormat("0.0000");
@@ -66,6 +67,11 @@ public class IndependenceFactsEditor extends JPanel {
     private int lastSortCol;
     private boolean showPs;
 
+    /**
+     * <p>Constructor for IndependenceFactsEditor.</p>
+     *
+     * @param model a {@link edu.cmu.tetradapp.model.IndTestModel} object
+     */
     public IndependenceFactsEditor(IndTestModel model) {
         this.indTestProducers = model.getIndTestProducers();
         this.model = model;
@@ -103,6 +109,12 @@ public class IndependenceFactsEditor extends JPanel {
 
     //========================PUBLIC METHODS==========================//
 
+    /**
+     * <p>Constructor for IndependenceFactsEditor.</p>
+     *
+     * @param layout a {@link java.awt.LayoutManager} object
+     * @param isDoubleBuffered a boolean
+     */
     public IndependenceFactsEditor(LayoutManager layout, boolean isDoubleBuffered) {
         super(layout, isDoubleBuffered);
     }

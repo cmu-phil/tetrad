@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * algorithm by maximizing p-value. arXiv preprint arXiv:1610.00378.</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class MaxP {
     private final IndependenceTest independenceTest;
@@ -68,6 +69,8 @@ public final class MaxP {
     }
 
     /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
      * @param depth The depth of search for the Fast Adjacency Search.
      */
     public void setDepth(int depth) {

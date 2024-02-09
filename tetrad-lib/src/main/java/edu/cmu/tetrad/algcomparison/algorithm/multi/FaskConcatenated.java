@@ -26,6 +26,7 @@ import java.util.List;
  * (randomly). This cannot given multiple values.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 //@edu.cmu.tetrad.annotation.Algorithm(
 //        name = "FASK Concatenated",
@@ -40,15 +41,25 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * <p>Constructor for FaskConcatenated.</p>
+     */
     public FaskConcatenated() {
 
     }
 
+    /**
+     * <p>Constructor for FaskConcatenated.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     */
     public FaskConcatenated(ScoreWrapper score, IndependenceWrapper test) {
         this.score = score;
         this.test = test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -93,16 +104,19 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         // Not used.
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndTestWrapper(IndependenceWrapper test) {
         // Not used.
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -125,21 +139,25 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "FASK Concatenated";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -155,21 +173,25 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;

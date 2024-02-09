@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
  * The adjacency precision. The true positives are the number of adjacencies in both the true and estimated graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class AverageDegreeEst implements Statistic {
     private static final long serialVersionUID = 23L;
@@ -18,21 +19,25 @@ public class AverageDegreeEst implements Statistic {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "AvgDegEst";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Average Degree of Estimated Graph";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         return 2.0 * estGraph.getNumEdges() / estGraph.getNumNodes();
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

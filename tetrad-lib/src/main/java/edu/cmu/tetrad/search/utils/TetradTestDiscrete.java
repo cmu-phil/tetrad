@@ -43,8 +43,8 @@ import java.util.List;
  * A. and Secrest D. (1966) Gaussian Quadrature Formulas. Prentice Hall.
  *
  * @author Ricardo Silva
+ * @version $Id: $Id
  */
-
 public final class TetradTestDiscrete implements TetradTest {
     private static final int MAX_VALUES = 50;
     private static final int RHO_GRID_SIZE = 1000;
@@ -91,20 +91,41 @@ public final class TetradTestDiscrete implements TetradTest {
     private double sig;
     private boolean[] bvalues;
 
+    /**
+     * <p>Constructor for TetradTestDiscrete.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param sig a double
+     */
     public TetradTestDiscrete(DataSet dataSet, double sig) {
         this.dataSet = dataSet;
         this.sig = sig;
         initialization();
     }
 
+    /**
+     * <p>getVarNames.</p>
+     *
+     * @return an array of {@link java.lang.String} objects
+     */
     public String[] getVarNames() {
         return this.dataSet.getVariableNames().toArray(new String[0]);
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return this.dataSet.getVariables();
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
@@ -190,6 +211,9 @@ public final class TetradTestDiscrete implements TetradTest {
         resetCache();
     }
 
+    /**
+     * <p>resetCache.</p>
+     */
     public void resetCache() {
         for (int v1 = 0; v1 < this.values.length; v1++) {
             for (int v2 = v1 + 1; v2 < this.values.length; v2++) {
@@ -211,14 +235,21 @@ public final class TetradTestDiscrete implements TetradTest {
         }
     }
 
+    /**
+     * <p>getSignificance.</p>
+     *
+     * @return a double
+     */
     public double getSignificance() {
         return this.sig;
     }
 
+    /** {@inheritDoc} */
     public void setSignificance(double sig) {
         this.sig = sig;
     }
 
+    /** {@inheritDoc} */
     public int tetradScore(int i, int j, int k, int l) {
         if (!oneFactorTest(i, j, k, l)) {
             twoFactorTest(i, l, j, k);
@@ -263,6 +294,8 @@ public final class TetradTestDiscrete implements TetradTest {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Tests the tetrad (v1, v3) x (v2, v4) = (v1, v4) x (v2, v3), and only that.
      */
     public boolean tetradScore1(int v1, int v2, int v3, int v4) {
@@ -273,17 +306,21 @@ public final class TetradTestDiscrete implements TetradTest {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Tests if all tetrad constraints hold
      */
     public boolean tetradScore3(int v1, int v2, int v3, int v4) {
         return oneFactorTest(v1, v2, v3, v4);
     }
 
+    /** {@inheritDoc} */
     public double tetradPValue(int v1, int v2, int v3, int v4) {
         twoFactorTest(v1, v2, v3, v4);
         return this.tempProb;
     }
 
+    /** {@inheritDoc} */
     public boolean tetradHolds(int i, int j, int k, int l) {
         twoFactorTest(i, l, j, k);
         this.prob[0] = this.tempProb;
@@ -496,28 +533,38 @@ public final class TetradTestDiscrete implements TetradTest {
         return bestRho;
     }
 
+    /** {@inheritDoc} */
     public boolean oneFactorTest(int i, int j, int k, int l) {
         throw new UnsupportedOperationException();
     }
 
+    /** {@inheritDoc} */
     public boolean oneFactorTest(int i, int j, int k, int l, int x) {
         throw new UnsupportedOperationException();
     }
 
+    /** {@inheritDoc} */
     public boolean twoFactorTest(int i, int j, int k, int l) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
     }
 
+    /** {@inheritDoc} */
     public boolean twoFactorTest(int i, int j, int k, int l, int x) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
 
     }
 
+    /** {@inheritDoc} */
     public boolean twoFactorTest(int i, int j, int k, int l, int x, int y) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
     }
 
 
+    /**
+     * <p>getCovMatrix.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public ICovarianceMatrix getCovMatrix() {
         return null;
     }

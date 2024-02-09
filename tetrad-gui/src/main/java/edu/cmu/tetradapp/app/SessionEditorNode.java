@@ -59,6 +59,7 @@ import java.util.Set;
  * @see edu.cmu.tetrad.graph.Edge
  * @see edu.cmu.tetrad.session.SessionNode
  * @see edu.cmu.tetrad.session.Session
+ * @version $Id: $Id
  */
 public final class SessionEditorNode extends DisplayNode {
 
@@ -84,6 +85,9 @@ public final class SessionEditorNode extends DisplayNode {
 
     /**
      * Wraps the given SessionNodeWrapper as a SessionEditorNode.
+     *
+     * @param modelNode a {@link edu.cmu.tetradapp.model.SessionNodeWrapper} object
+     * @param simulationStudy a {@link edu.cmu.tetrad.session.SimulationStudy} object
      */
     public SessionEditorNode(SessionNodeWrapper modelNode, SimulationStudy simulationStudy) {
         setModelNode(modelNode);
@@ -182,6 +186,9 @@ public final class SessionEditorNode extends DisplayNode {
         return nodeConfig.getModels();
     }
 
+    /**
+     * <p>adjustToModel.</p>
+     */
     public void adjustToModel() {
         String acronym = getAcronym();
 
@@ -230,15 +237,16 @@ public final class SessionEditorNode extends DisplayNode {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void doDoubleClickAction() {
         doDoubleClickAction(null);
     }
 
     /**
-     * Launches the editor associates with this node.
+     * {@inheritDoc}
      *
-     * @param sessionWrapper Needed to allow the option of deleting edges
+     * Launches the editor associates with this node.
      */
     @Override
     public void doDoubleClickAction(Graph sessionWrapper) {
@@ -344,9 +352,9 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
-     * Sets the selection status of the node.
+     * {@inheritDoc}
      *
-     * @param selected the selection status of the node (true or false).
+     * Sets the selection status of the node.
      */
     @Override
     public void setSelected(boolean selected) {
@@ -898,8 +906,11 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * Creates a model in the wrapped SessionNode, given the SessionNode's parent models.
      *
-     * @throws IllegalStateException if the model cannot be created. The reason why the model cannot be created is in
+     * @throws java.lang.IllegalStateException if the model cannot be created. The reason why the model cannot be created is in
      *                               the message of the exception.
+     * @param simulation a boolean
+     * @return a boolean
+     * @throws java.lang.Exception if any.
      */
     public boolean createModel(boolean simulation) throws Exception {
         if (getSessionNode().getModel() != null) {
@@ -940,7 +951,10 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     /**
+     * <p>determineTheModelClass.</p>
+     *
      * @return the model class, or null if no model class was determined.
+     * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public Class determineTheModelClass(SessionNode sessionNode) {
 
@@ -1024,6 +1038,11 @@ public final class SessionEditorNode extends DisplayNode {
         chooser.getSelectedModel();
     }
 
+    /**
+     * <p>getChildren.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<SessionNode> getChildren() {
         SessionNodeWrapper _sessionNodeWrapper
                 = (SessionNodeWrapper) getModelNode();
@@ -1041,6 +1060,11 @@ public final class SessionEditorNode extends DisplayNode {
 
     /**
      * Tries to edit the parameters, returns true if successfully otherwise false is returned
+     *
+     * @param modelClass a {@link java.lang.Class} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parentModels an array of {@link java.lang.Object} objects
+     * @return a boolean
      */
     public boolean editParameters(Class modelClass, Parameters params,
                                   Object[] parentModels) {
@@ -1086,6 +1110,11 @@ public final class SessionEditorNode extends DisplayNode {
 
     }
 
+    /**
+     * <p>getSessionNode.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.session.SessionNode} object
+     */
     public SessionNode getSessionNode() {
         SessionNodeWrapper wrapper = (SessionNodeWrapper) this.getModelNode();
         return wrapper.getSessionNode();

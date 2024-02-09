@@ -24,12 +24,20 @@ import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
  * Jun 4, 2019 5:21:45 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class SimulationUtils {
 
     private SimulationUtils() {
     }
 
+    /**
+     * <p>create.</p>
+     *
+     * @param simulationType a {@link java.lang.String} object
+     * @param randomGraph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     * @return a {@link edu.cmu.tetrad.algcomparison.simulation.Simulation} object
+     */
     public static Simulation create(String simulationType, RandomGraph randomGraph) {
         switch (simulationType) {
             case SimulationTypes.BAYS_NET:

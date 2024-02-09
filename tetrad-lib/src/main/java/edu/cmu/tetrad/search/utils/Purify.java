@@ -54,6 +54,7 @@ import java.util.*;
  * Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of Psychology 19, 180-187.
  *
  * @author Ricardo Silva
+ * @version $Id: $Id
  */
 public class Purify {
     /**
@@ -114,9 +115,16 @@ public class Purify {
     private int numVars;
     private TetradTest tetradTest;
 
-    /*********************************************************
+    /**
+     *******************************************************
      * INITIALIZATION                                                                                        o
-     *********************************************************/
+     ********************************************************
+     *
+     * @param correlationMatrix a {@link edu.cmu.tetrad.data.CorrelationMatrix} object
+     * @param sig a double
+     * @param testType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
+     * @param clusters a {@link edu.cmu.tetrad.data.Clusters} object
+     */
 
     /*
      * Constructor Purify
@@ -139,6 +147,14 @@ public class Purify {
         this.variables = correlationMatrix.getVariables();
     }
 
+    /**
+     * <p>Constructor for Purify.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param sig a double
+     * @param testType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
+     * @param clusters a {@link edu.cmu.tetrad.data.Clusters} object
+     */
     public Purify(DataSet dataSet, double sig, BpcTestType testType,
                   Clusters clusters) {
         if (DataUtils.containsMissingValue(dataSet)) {
@@ -158,6 +174,12 @@ public class Purify {
         this.variables = dataSet.getVariables();
     }
 
+    /**
+     * <p>Constructor for Purify.</p>
+     *
+     * @param tetradTest a {@link edu.cmu.tetrad.search.utils.TetradTest} object
+     * @param knowledge a {@link edu.cmu.tetrad.data.Clusters} object
+     */
     public Purify(TetradTest tetradTest, Clusters knowledge) {
         this.tetradTest = tetradTest;
         initAlgorithm(-1., BpcTestType.NONE, knowledge);
@@ -165,6 +187,12 @@ public class Purify {
         this.variables = tetradTest.getVariables();
     }
 
+    /**
+     * <p>convertSearchGraph.</p>
+     *
+     * @param input a {@link edu.cmu.tetrad.graph.SemGraph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph convertSearchGraph(SemGraph input) {
         if (input == null) {
             List<Node> nodes = new ArrayList<>();
@@ -253,8 +281,9 @@ public class Purify {
     /**
      * ****************************************************** SEARCH INTERFACE
      * *******************************************************
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
-
     public Graph search() {
         return getResultGraph();
     }

@@ -47,6 +47,7 @@ import java.util.*;
  * Based on work by Rob Tillman, Peter Spirtes, and referencing earlier work by David Danks.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class IndTestIod implements IndependenceTest {
     // The list of nodes over which this independence checker is capable of determining independence relations.
@@ -58,6 +59,8 @@ public class IndTestIod implements IndependenceTest {
 
     /**
      * Constructs a new pooled independence test from the given list of independence tests.
+     *
+     * @param tests a {@link java.util.List} object
      */
     public IndTestIod(List<IndependenceTest> tests) {
         for (IndependenceTest test : tests) {
@@ -96,20 +99,15 @@ public class IndTestIod implements IndependenceTest {
         this.nodeList = nodeList;
     }
 
-    /**
-     * @throws UnsupportedOperationException Since the method is not implemented.
-     */
+    /** {@inheritDoc} */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
-     * Checks the indicated independence fact by pooling available tests for the given variables.
+     * {@inheritDoc}
      *
-     * @param x one node.
-     * @param y a second node.
-     * @param z a List of nodes (conditioning variables)
-     * @return True iff x _||_ y | z
+     * Checks the indicated independence fact by pooling available tests for the given variables.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         List<IndependenceTest> tests = new ArrayList<>();
@@ -136,11 +134,9 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * Returns true if z contains x.
+     * {@inheritDoc}
      *
-     * @param z A list of nodes.
-     * @param x The target node.
-     * @return True if z contains x.
+     * Returns true if z contains x.
      */
     public boolean determines(List<Node> z, Node x) {
         return z.contains(x);
@@ -156,19 +152,18 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * Sets the alpha level for this test.
+     * {@inheritDoc}
      *
-     * @param alpha This level.
+     * Sets the alpha level for this test.
      */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns the variable associated with the given name in the graph.
+     * {@inheritDoc}
      *
-     * @param name The name of the variable.
-     * @return This variable.
+     * Returns the variable associated with the given name in the graph.
      */
     public Node getVariable(String name) {
         for (Node variable : nodeList) {
@@ -184,6 +179,7 @@ public class IndTestIod implements IndependenceTest {
      * Returns the variable associated with the given node in the graph.
      *
      * @return This variable.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     public Node getVariable(Node node) {
         return getVariable(node.getName());
@@ -193,6 +189,7 @@ public class IndTestIod implements IndependenceTest {
      * Return the node associated with the given variable in the graph.
      *
      * @return This node.
+     * @param variable a {@link edu.cmu.tetrad.graph.Node} object
      */
     public Node getNode(Node variable) {
         for (Node node : nodeList) {
@@ -232,9 +229,9 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * Sets the test to verbose or not.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets the test to verbose or not.
      */
     public void setVerbose(boolean verbose) {
         for (IndependenceTest test : tests) {

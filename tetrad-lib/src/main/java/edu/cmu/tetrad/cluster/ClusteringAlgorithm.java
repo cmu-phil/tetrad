@@ -31,6 +31,7 @@ import java.util.List;
  * it can be passed to another class to do clustering on data.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface ClusteringAlgorithm {
 
@@ -44,6 +45,8 @@ public interface ClusteringAlgorithm {
     void cluster(Matrix data);
 
     /**
+     * <p>getClusters.</p>
+     *
      * @return a list of clusters, each consisting of a list of indices in the dataset provided as an argument to
      * <code>cluster</code>, or null if the data has not yet been clustered.
      */

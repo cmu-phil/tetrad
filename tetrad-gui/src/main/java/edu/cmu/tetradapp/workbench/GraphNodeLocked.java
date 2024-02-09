@@ -38,11 +38,14 @@ import java.util.List;
  *
  * @author josephramsey
  * @author Willie Wheeler
+ * @version $Id: $Id
  */
 public class GraphNodeLocked extends DisplayNode {
 
     /**
      * Constructs a new node for representing latent variables in the graph workbench.
+     *
+     * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
      */
     public GraphNodeLocked(Node modelNode) {
         setModelNode(modelNode);
@@ -54,6 +57,7 @@ public class GraphNodeLocked extends DisplayNode {
         setDisplayComp(new LatentDisplayComp(modelNode.getName()));
     }
 
+    /** {@inheritDoc} */
     public void doDoubleClickAction(Graph graph) {
         String newName;
         List<Node> nodes = graph.getNodes();
@@ -148,6 +152,9 @@ public class GraphNodeLocked extends DisplayNode {
         return newName;
     }
 
+    /**
+     * <p>doDoubleClickAction.</p>
+     */
     public void doDoubleClickAction() {
         doDoubleClickAction(new EdgeListGraph());
     }

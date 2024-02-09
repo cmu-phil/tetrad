@@ -32,11 +32,12 @@ import java.util.prefs.Preferences;
  * Stores some static methods useful for graph editing.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphEditorUtils {
 
     /**
-     *
+     * <p>editkamadaKawaiLayoutParams.</p>
      */
     public static void editkamadaKawaiLayoutParams() {
         boolean initializeRandomly = Preferences.userRoot().getBoolean(

@@ -77,6 +77,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Boss
  * @see Sp
  * @see Knowledge
+ * @version $Id: $Id
  */
 public final class Fges implements IGraphSearch, DagScorer {
     // Used to find semidirected paths for cycle checking.
@@ -261,9 +262,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         return elapsedTime;
     }
 
-    /**
-     * @return the score of the given DAG, up to a constant.
-     */
+    /** {@inheritDoc} */
     public double scoreDag(Graph dag) {
         return scoreDag(dag, false);
     }
@@ -289,6 +288,8 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>out</code>.</p>
+     *
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
@@ -1059,10 +1060,20 @@ public final class Fges implements IGraphSearch, DagScorer {
         return variables;
     }
 
+    /**
+     * <p>Setter for the field <code>parallelized</code>.</p>
+     *
+     * @param parallelized a boolean
+     */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
     }
 
+    /**
+     * <p>Setter for the field <code>initialGraph</code>.</p>
+     *
+     * @param initialGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setInitialGraph(Graph initialGraph) {
         this.initialGraph = initialGraph;
     }

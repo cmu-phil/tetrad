@@ -21,6 +21,7 @@ import java.util.Objects;
  * Load data sets and graphs from a directory.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LoadDataAndGraphs implements Simulation {
 
@@ -33,10 +34,16 @@ public class LoadDataAndGraphs implements Simulation {
 
     private transient PrintStream stdout = System.out;
 
+    /**
+     * <p>Constructor for LoadDataAndGraphs.</p>
+     *
+     * @param path a {@link java.lang.String} object
+     */
     public LoadDataAndGraphs(String path) {
         this.path = path;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
@@ -109,31 +116,37 @@ public class LoadDataAndGraphs implements Simulation {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Load data sets and graphs from a directory" + (!("".equals(this.description)) ? ": " + this.description : "");
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         return this.usedParameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         boolean continuous = false;
@@ -165,6 +178,11 @@ public class LoadDataAndGraphs implements Simulation {
         return DataType.Mixed;
     }
 
+    /**
+     * <p>Setter for the field <code>stdout</code>.</p>
+     *
+     * @param stdout a {@link java.io.PrintStream} object
+     */
     public void setStdout(PrintStream stdout) {
         this.stdout = stdout;
     }

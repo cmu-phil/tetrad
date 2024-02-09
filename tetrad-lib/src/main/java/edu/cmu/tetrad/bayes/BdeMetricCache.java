@@ -49,6 +49,7 @@ import java.util.Set;
  * Chickering. Microsoft Technical Report MSR-TR-94-09.&gt; 0
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public final class BdeMetricCache {
     private final DataSet dataSet;

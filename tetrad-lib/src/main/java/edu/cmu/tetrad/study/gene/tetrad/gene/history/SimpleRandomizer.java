@@ -38,6 +38,7 @@ import java.util.List;
  * indegree for each factor is correctly distributed.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SimpleRandomizer implements GraphInitializer {
     /**
@@ -74,6 +75,14 @@ public class SimpleRandomizer implements GraphInitializer {
      */
     private double percentHousekeeping = 80.0;
 
+    /**
+     * <p>Constructor for SimpleRandomizer.</p>
+     *
+     * @param indegree a int
+     * @param indegreeType a int
+     * @param mlag a int
+     * @param percentHousekeeping a double
+     */
     public SimpleRandomizer(int indegree, int indegreeType, int mlag,
                             double percentHousekeeping) {
 
@@ -118,6 +127,8 @@ public class SimpleRandomizer implements GraphInitializer {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Randomizes the graph.
      */
     public void initialize(LagGraph lagGraph) {

@@ -10,10 +10,12 @@ import java.util.List;
  * Creates a random graph by adding forward edges.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class RandomForward implements RandomGraph {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public Graph createGraph(Parameters parameters) {
         return edu.cmu.tetrad.graph.RandomGraph.randomGraphRandomForwardEdges(
@@ -26,11 +28,13 @@ public class RandomForward implements RandomGraph {
                 parameters.getBoolean("connected"));
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Graph constructed by adding random forward edges";
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

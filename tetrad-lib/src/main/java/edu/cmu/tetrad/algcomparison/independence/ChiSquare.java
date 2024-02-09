@@ -16,6 +16,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @TestOfIndependence(
         name = "Chi Square Test",
@@ -26,6 +27,7 @@ public class ChiSquare implements IndependenceWrapper {
 
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         IndTestChiSquare test = new IndTestChiSquare(SimpleDataLoader.getDiscreteDataSet(dataSet), parameters.getDouble(Params.ALPHA));
@@ -33,16 +35,19 @@ public class ChiSquare implements IndependenceWrapper {
         return test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Chi Square Test";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Discrete;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

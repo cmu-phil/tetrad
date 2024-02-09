@@ -21,6 +21,7 @@ import java.util.List;
  * PC.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @Bootstrapping
 public class Pcd implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
@@ -28,9 +29,13 @@ public class Pcd implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
+    /**
+     * <p>Constructor for Pcd.</p>
+     */
     public Pcd() {
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -72,21 +77,25 @@ public class Pcd implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return GraphTransforms.cpdagForDag(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "PC (\"Peter and Clark\") Deternimistic";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -99,16 +108,19 @@ public class Pcd implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

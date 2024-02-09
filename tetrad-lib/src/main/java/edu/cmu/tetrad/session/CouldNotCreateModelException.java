@@ -26,18 +26,34 @@ package edu.cmu.tetrad.session;
  * Indicates that a model could not be created. As to which model it was, call the getModelClass() method.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CouldNotCreateModelException extends Exception {
     private final Class modelClass;
 
+    /**
+     * <p>Constructor for CouldNotCreateModelException.</p>
+     *
+     * @param modelClass a {@link java.lang.Class} object
+     */
     public CouldNotCreateModelException(Class modelClass) {
         this.modelClass = modelClass;
     }
 
+    /**
+     * <p>Getter for the field <code>modelClass</code>.</p>
+     *
+     * @return a {@link java.lang.Class} object
+     */
     public Class getModelClass() {
         return this.modelClass;
     }
 
+    /**
+     * <p>getMessage.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getMessage() {
         return "Couldn't create that model; perhaps one of its parents is missing.";
     }

@@ -33,8 +33,16 @@ import java.io.File;
 
 /**
  * Created by ajsedgewick on 9/10/15.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class ExploreIndepTests {
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         try {
             String path = ExampleMixedSearch.class.getResource("test_data").getPath();

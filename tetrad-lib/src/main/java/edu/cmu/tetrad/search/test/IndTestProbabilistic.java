@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Uses BCInference by Cooper and Bui to calculate probabilistic conditional independence judgments.
  *
  * @author josephramsey 3/2014
+ * @version $Id: $Id
  */
 public class IndTestProbabilistic implements IndependenceTest {
 
@@ -68,6 +69,8 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     /**
      * Initializes the test using a discrete data sets.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public IndTestProbabilistic(DataSet dataSet) {
         if (!dataSet.isDiscrete()) {
@@ -103,21 +106,16 @@ public class IndTestProbabilistic implements IndependenceTest {
         this.bci = setup(_data);
     }
 
-    /**
-     * @throws UnsupportedOperationException Method not implemented.
-     */
+    /** {@inheritDoc} */
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns an independence result that states whether x _||_y | z and what the p-value of the test is.
+     * {@inheritDoc}
      *
-     * @param x  The first variable.
-     * @param y  The second variable.
-     * @param _z The conditioning set.
-     * @return an independence result (see)
+     * Returns an independence result that states whether x _||_y | z and what the p-value of the test is.
      * @see IndependenceResult
      */
     @Override
@@ -139,12 +137,9 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
-     * Returns an independence result that states whether x _||_y | z and what the p-value of the test is.
+     * {@inheritDoc}
      *
-     * @param x The first variable.
-     * @param y The second variable.
-     * @param z The conditioning set.
-     * @return an independence result (see)
+     * Returns an independence result that states whether x _||_y | z and what the p-value of the test is.
      * @see IndependenceResult
      */
     @Override
@@ -252,8 +247,9 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the variables of the data set.
-     * @return The variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -261,6 +257,8 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the variable with the given name.
      */
     @Override
@@ -272,33 +270,28 @@ public class IndTestProbabilistic implements IndependenceTest {
         return null;
     }
 
-    /**
-     * @throws UnsupportedOperationException Method not implemented.
-     */
+    /** {@inheritDoc} */
     @Override
     public boolean determines(Set<Node> z, Node y) {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * @throws UnsupportedOperationException Method not implemented.
-     */
+    /** {@inheritDoc} */
     @Override
     public double getAlpha() {
         throw new UnsupportedOperationException("The Probabiistic Test doesn't use an alpha parameter");
     }
 
-    /**
-     * @throws UnsupportedOperationException Method not implemented.
-     */
+    /** {@inheritDoc} */
     @Override
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the data set for which conditional independence judgments are requested.
-     * @return The data set.
      */
     @Override
     public DataModel getData() {
@@ -307,6 +300,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     /**
      * Returns a map from independence facts to their probabilities of independence.
+     *
      * @return The map.
      */
     public Map<IndependenceFact, Double> getH() {
@@ -315,6 +309,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     /**
      * Returns the posterior probability of the last independence test.
+     *
      * @return The posterior probability.
      */
     public double getPosterior() {
@@ -322,8 +317,9 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns true if verbose output should be printed.
-     * @return True, if so.
      */
     @Override
     public boolean isVerbose() {
@@ -331,8 +327,9 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets whether verbose output should be printed.
-     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -341,6 +338,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     /**
      * Sets whether the independence test should be thresholded (true) or randomized (false).
+     *
      * @param threshold true if the independence test should be thresholded, false if it should be randomized.
      */
     public void setThreshold(boolean threshold) {
@@ -349,12 +347,18 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     /**
      * Sets the cutoff for the independence test.
+     *
      * @param cutoff the cutoff for the independence test.
      */
     public void setCutoff(double cutoff) {
         this.cutoff = cutoff;
     }
 
+    /**
+     * <p>Setter for the field <code>priorEquivalentSampleSize</code>.</p>
+     *
+     * @param priorEquivalentSampleSize a double
+     */
     public void setPriorEquivalentSampleSize(double priorEquivalentSampleSize) {
         this.priorEquivalentSampleSize = priorEquivalentSampleSize;
     }

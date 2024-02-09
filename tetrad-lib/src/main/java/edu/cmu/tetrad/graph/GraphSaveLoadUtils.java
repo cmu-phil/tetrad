@@ -20,9 +20,16 @@ import java.util.regex.Pattern;
  * Methods to load or save graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphSaveLoadUtils {
 
+    /**
+     * <p>loadGraph.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadGraph(File file) {
 
         Element root;
@@ -40,6 +47,12 @@ public class GraphSaveLoadUtils {
         return graph;
     }
 
+    /**
+     * <p>loadGraphTxt.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadGraphTxt(File file) {
         try {
             Reader in1 = new FileReader(file);
@@ -51,6 +64,12 @@ public class GraphSaveLoadUtils {
         }
     }
 
+    /**
+     * <p>loadGraphRuben.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadGraphRuben(File file) {
         try {
             final String commentMarker = "//";
@@ -80,6 +99,12 @@ public class GraphSaveLoadUtils {
         }
     }
 
+    /**
+     * <p>loadGraphJson.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadGraphJson(File file) {
         try {
             Reader in1 = new FileReader(file);
@@ -122,6 +147,13 @@ public class GraphSaveLoadUtils {
 
 
     // Bayes net toolbox.
+    /**
+     * <p>loadGraphBNTPcMatrix.</p>
+     *
+     * @param vars a {@link java.util.List} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadGraphBNTPcMatrix(List<Node> vars, DataSet dataSet) {
         Graph graph = new EdgeListGraph(vars);
 
@@ -141,6 +173,13 @@ public class GraphSaveLoadUtils {
         return graph;
     }
 
+    /**
+     * <p>graphRMatrixTxt.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     * @throws java.lang.IllegalArgumentException if any.
+     */
     public static String graphRMatrixTxt(Graph graph) throws IllegalArgumentException {
         int[][] m = GraphSaveLoadUtils.incidenceMatrix(graph);
 
@@ -166,6 +205,12 @@ public class GraphSaveLoadUtils {
 
     }
 
+    /**
+     * <p>loadRSpecial.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadRSpecial(File file) {
         DataSet eg = null;
 
@@ -200,6 +245,12 @@ public class GraphSaveLoadUtils {
         return graph;
     }
 
+    /**
+     * <p>loadGraphPcalg.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadGraphPcalg(File file) {
         try {
             DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
@@ -268,6 +319,13 @@ public class GraphSaveLoadUtils {
         }
     }
 
+    /**
+     * <p>loadGraphRMatrix.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     * @throws java.lang.IllegalArgumentException if any.
+     */
     public static String loadGraphRMatrix(Graph graph) throws IllegalArgumentException {
         int[][] m = GraphSaveLoadUtils.incidenceMatrix(graph);
 
@@ -293,10 +351,24 @@ public class GraphSaveLoadUtils {
     }
 
 
+    /**
+     * <p>readerToGraphTxt.</p>
+     *
+     * @param graphString a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.io.IOException if any.
+     */
     public static Graph readerToGraphTxt(String graphString) throws IOException {
         return readerToGraphTxt(new CharArrayReader(graphString.toCharArray()));
     }
 
+    /**
+     * <p>readerToGraphTxt.</p>
+     *
+     * @param reader a {@link java.io.Reader} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.io.IOException if any.
+     */
     public static Graph readerToGraphTxt(Reader reader) throws IOException {
         Graph graph = new EdgeListGraph();
         try (BufferedReader in = new BufferedReader(reader)) {
@@ -317,6 +389,8 @@ public class GraphSaveLoadUtils {
     }
 
     /**
+     * <p>saveGraph.</p>
+     *
      * @param graph The graph to be saved.
      * @param file  The file to save it in.
      * @param xml   True if to be saved in XML, false if in text.
@@ -341,6 +415,13 @@ public class GraphSaveLoadUtils {
         return out;
     }
 
+    /**
+     * <p>readerToGraphRuben.</p>
+     *
+     * @param reader a {@link java.io.Reader} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.io.IOException if any.
+     */
     public static Graph readerToGraphRuben(Reader reader) throws IOException {
         Graph graph = new EdgeListGraph();
         try (BufferedReader in = new BufferedReader(reader)) {
@@ -494,6 +575,13 @@ public class GraphSaveLoadUtils {
         }
     }
 
+    /**
+     * <p>readerToGraphJson.</p>
+     *
+     * @param reader a {@link java.io.Reader} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.io.IOException if any.
+     */
     public static Graph readerToGraphJson(Reader reader) throws IOException {
         BufferedReader in = new BufferedReader(reader);
 
@@ -510,6 +598,9 @@ public class GraphSaveLoadUtils {
 
     /**
      * Converts a graph to a Graphviz .dot file
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
      */
     public static String graphToDot(Graph graph) {
         StringBuilder builder = new StringBuilder();
@@ -613,6 +704,12 @@ public class GraphSaveLoadUtils {
         return builder.toString();
     }
 
+    /**
+     * <p>graphToDot.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param file a {@link java.io.File} object
+     */
     public static void graphToDot(Graph graph, File file) {
         try {
             Writer writer = new FileWriter(file);
@@ -624,7 +721,10 @@ public class GraphSaveLoadUtils {
     }
 
     /**
+     * <p>convertToXml.</p>
+     *
      * @return an XML element representing the given graph. (Well, only a basic graph for now...)
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Element convertToXml(Graph graph) {
         Element element = new Element("graph");
@@ -698,6 +798,12 @@ public class GraphSaveLoadUtils {
         return triple.getX() + ", " + triple.getY() + ", " + triple.getZ();
     }
 
+    /**
+     * <p>graphToXml.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     */
     public static String graphToXml(Graph graph) {
         Document document = new Document(convertToXml(graph));
         OutputStream out = new ByteArrayOutputStream();
@@ -714,6 +820,12 @@ public class GraphSaveLoadUtils {
         return out.toString();
     }
 
+    /**
+     * <p>graphToLavaan.</p>
+     *
+     * @param g a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     */
     public static String graphToLavaan(Graph g) {
         boolean includeIntercepts = true;
         boolean includeErrors = true;
@@ -767,6 +879,12 @@ public class GraphSaveLoadUtils {
         return lavaan.toString();
     }
 
+    /**
+     * <p>graphToPcalg.</p>
+     *
+     * @param g a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     */
     public static String graphToPcalg(Graph g) {
         Map<Endpoint, Integer> mark2Int = new HashMap<>();
         mark2Int.put(Endpoint.NULL, 0);
@@ -801,6 +919,14 @@ public class GraphSaveLoadUtils {
         return table.toString();
     }
 
+    /**
+     * <p>parseGraphXml.</p>
+     *
+     * @param graphElement a {@link nu.xom.Element} object
+     * @param nodes a {@link java.util.Map} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws nu.xom.ParsingException if any.
+     */
     public static Graph parseGraphXml(Element graphElement, Map<String, Node> nodes) throws ParsingException {
         if (!"graph".equals(graphElement.getLocalName())) {
             throw new IllegalArgumentException("Expecting graph element: " + graphElement.getLocalName());
@@ -980,6 +1106,14 @@ public class GraphSaveLoadUtils {
         return null;
     }
 
+    /**
+     * <p>getRootElement.</p>
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link nu.xom.Element} object
+     * @throws nu.xom.ParsingException if any.
+     * @throws java.io.IOException if any.
+     */
     public static Element getRootElement(File file) throws ParsingException, IOException {
         Builder builder = new Builder();
         Document document = builder.build(file);
@@ -1020,6 +1154,12 @@ public class GraphSaveLoadUtils {
     }
 
 
+    /**
+     * <p>grabLayout.</p>
+     *
+     * @param nodes a {@link java.util.List} object
+     * @return a {@link java.util.HashMap} object
+     */
     public static HashMap<String, PointXy> grabLayout(List<Node> nodes) {
         HashMap<String, PointXy> layout = new HashMap<>();
 
@@ -1031,7 +1171,11 @@ public class GraphSaveLoadUtils {
     }
 
     /**
+     * <p>getCollidersFromGraph.</p>
+     *
      * @return A list of triples of the form X*-&gt;Y&lt;-*Z.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static List<Triple> getCollidersFromGraph(Node node, Graph graph) {
         List<Triple> colliders = new ArrayList<>();

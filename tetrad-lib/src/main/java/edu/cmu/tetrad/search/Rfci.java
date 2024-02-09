@@ -51,6 +51,7 @@ import java.util.*;
  * @author Choh-Man Teng
  * @see Fci
  * @see Knowledge
+ * @version $Id: $Id
  */
 public final class Rfci implements IGraphSearch {
     // The variables to search over (optional)
@@ -76,6 +77,8 @@ public final class Rfci implements IGraphSearch {
 
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.
+     *
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public Rfci(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -89,6 +92,9 @@ public final class Rfci implements IGraphSearch {
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge and a list of variables to
      * search over.
+     *
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param searchVars a {@link java.util.List} object
      */
     public Rfci(IndependenceTest independenceTest, List<Node> searchVars) {
         if (independenceTest == null) {

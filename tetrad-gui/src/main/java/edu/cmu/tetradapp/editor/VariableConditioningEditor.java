@@ -19,6 +19,7 @@ import java.util.*;
  * Edits the conditions used for the Plot Matrix.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class VariableConditioningEditor extends JPanel {
     private final JComboBox<Node> newConditioningVariableSelector;
@@ -28,6 +29,9 @@ public class VariableConditioningEditor extends JPanel {
 
     /**
      * Constructs the editor panel given the initial histogram and any previous conditioning panel map.
+     *
+     * @param dataset a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param _conditioningPanelMap a {@link java.util.Map} object
      */
     public VariableConditioningEditor(DataSet dataset, Map<Node, ConditioningPanel> _conditioningPanelMap) {
         if (_conditioningPanelMap == null) throw new NullPointerException();
@@ -181,6 +185,11 @@ public class VariableConditioningEditor extends JPanel {
         repaint();
     }
 
+    /**
+     * <p>Getter for the field <code>conditioningPanelMap</code>.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public Map<Node, ConditioningPanel> getConditioningPanelMap() {
         return new HashMap<>(conditioningPanelMap);
     }

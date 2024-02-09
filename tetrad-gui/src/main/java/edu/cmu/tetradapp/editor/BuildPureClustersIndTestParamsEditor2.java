@@ -38,6 +38,12 @@ import java.text.NumberFormat;
 class BuildPureClustersIndTestParamsEditor2 extends JComponent {
     private final Parameters paramsPureClusters;
 
+    /**
+     * <p>Constructor for BuildPureClustersIndTestParamsEditor2.</p>
+     *
+     * @param paramsPureClusters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param discreteData a boolean
+     */
     public BuildPureClustersIndTestParamsEditor2(
             Parameters paramsPureClusters,
             boolean discreteData) {

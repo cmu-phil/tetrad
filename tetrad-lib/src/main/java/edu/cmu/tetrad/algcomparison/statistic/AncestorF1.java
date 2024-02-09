@@ -11,6 +11,7 @@ import edu.cmu.tetrad.graph.Graph;
  * We use what's on this page called the "traditional" F1 statistic.
  *
  * @author Joseh Ramsey
+ * @version $Id: $Id
  */
 public class AncestorF1 implements Statistic {
     private static final long serialVersionUID = 23L;
@@ -23,8 +24,9 @@ public class AncestorF1 implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the name of the statistic.
-     * @return the name of the statistic
      */
     @Override
     public String getAbbreviation() {
@@ -32,8 +34,9 @@ public class AncestorF1 implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the name of the statistic.
-     * @return the name of the statistic
      */
     @Override
     public String getDescription() {
@@ -41,11 +44,9 @@ public class AncestorF1 implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Calculates the F1 statistic for adjacencies.
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
-     * @return the F1 statistic for adjacencies
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -55,9 +56,9 @@ public class AncestorF1 implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the norm value of the statistic.
-     * @param value The value of the statistic.
-     * @return  the value of the statistic
      */
     @Override
     public double getNormValue(double value) {

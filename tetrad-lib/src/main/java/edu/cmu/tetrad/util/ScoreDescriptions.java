@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
  * May 14, 2019 11:23:54 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class ScoreDescriptions {
 
@@ -64,10 +65,21 @@ public final class ScoreDescriptions {
         }
     }
 
+    /**
+     * <p>getInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.ScoreDescriptions} object
+     */
     public static ScoreDescriptions getInstance() {
         return ScoreDescriptions.INSTANCE;
     }
 
+    /**
+     * <p>get.</p>
+     *
+     * @param shortName a {@link java.lang.String} object
+     * @return a {@link java.lang.String} object
+     */
     public String get(String shortName) {
         String description = this.descriptions.get(shortName);
 

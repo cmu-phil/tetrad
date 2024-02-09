@@ -33,6 +33,7 @@ import java.io.Serial;
  * be easy to put these stored graphs into sets and lists.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ScoredGraph implements Comparable<ScoredGraph>, TetradSerializable {
     @Serial

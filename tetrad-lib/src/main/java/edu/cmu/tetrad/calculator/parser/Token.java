@@ -25,6 +25,7 @@ package edu.cmu.tetrad.calculator.parser;
  * Allowable tokens.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public enum Token {
 

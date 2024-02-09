@@ -23,12 +23,20 @@ class ScatterplotPanel extends JPanel {
     private boolean drawAxes = false;
     private int pointSize = 5;
 
+    /**
+     * <p>Constructor for ScatterplotPanel.</p>
+     *
+     * @param ScatterPlot a {@link edu.cmu.tetradapp.editor.ScatterPlot} object
+     */
     public ScatterplotPanel(ScatterPlot ScatterPlot) {
         this(ScatterPlot, false);
     }
 
     /**
      * Constructor.
+     *
+     * @param ScatterPlot a {@link edu.cmu.tetradapp.editor.ScatterPlot} object
+     * @param removeZeroPointsPerPlot a boolean
      */
     public ScatterplotPanel(ScatterPlot ScatterPlot, boolean removeZeroPointsPerPlot) {
         this.scatterPlot = ScatterPlot;
@@ -44,6 +52,8 @@ class ScatterplotPanel extends JPanel {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Renders the view.
      */
     public void paintComponent(Graphics graphics) {
@@ -160,10 +170,20 @@ class ScatterplotPanel extends JPanel {
         }
     }
 
+    /**
+     * <p>Setter for the field <code>drawAxes</code>.</p>
+     *
+     * @param drawAxes a boolean
+     */
     public void setDrawAxes(boolean drawAxes) {
         this.drawAxes = drawAxes;
     }
 
+    /**
+     * <p>Setter for the field <code>pointSize</code>.</p>
+     *
+     * @param pointSize a int
+     */
     public void setPointSize(int pointSize) {
         this.pointSize = pointSize;
     }

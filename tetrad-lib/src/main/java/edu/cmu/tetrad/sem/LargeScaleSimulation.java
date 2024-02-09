@@ -48,6 +48,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * sizes.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class LargeScaleSimulation {
 
@@ -75,6 +76,11 @@ public final class LargeScaleSimulation {
     private boolean errorsNormal = true;
     private double selfLoopCoef;
 
+    /**
+     * <p>Constructor for LargeScaleSimulation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public LargeScaleSimulation(Graph graph) {
         this.graph = graph;
         this.variableNodes = graph.getNodes();
@@ -92,6 +98,13 @@ public final class LargeScaleSimulation {
         }
     }
 
+    /**
+     * <p>Constructor for LargeScaleSimulation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param nodes a {@link java.util.List} object
+     * @param tierIndices an array of {@link int} objects
+     */
     public LargeScaleSimulation(Graph graph, List<Node> nodes, int[] tierIndices) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
@@ -106,10 +119,22 @@ public final class LargeScaleSimulation {
         }
     }
 
+    /**
+     * <p>getPrefix.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     * @return a {@link java.lang.String} object
+     */
     public static String getPrefix(String s) {
         return s.substring(0, 1);
     }
 
+    /**
+     * <p>getIndex.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     * @return a int
+     */
     public static int getIndex(String s) {
         int y = 0;
         for (int i = s.length() - 1; i >= 0; i--) {
@@ -122,6 +147,12 @@ public final class LargeScaleSimulation {
         throw new IllegalArgumentException("Not integer suffix.");
     }
 
+    /**
+     * <p>getLag.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     * @return a int
+     */
     public static int getLag(String s) {
         if (s.indexOf(':') == -1) {
             return 0;
@@ -135,6 +166,9 @@ public final class LargeScaleSimulation {
      * through the SEM, assuming it is acyclic. Works, but will hang for cyclic models, and is very slow for large
      * numbers of variables (probably due to the heavyweight lookups of various values--could be improved). The model
      * must be acyclic, or else this will spin.
+     *
+     * @param sampleSize a int
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSet simulateDataRecursive(int sampleSize) {
         if (this.tierIndices == null) {
@@ -225,6 +259,7 @@ public final class LargeScaleSimulation {
      * Simulates data using the model X = (I - B)Y^-1 * e. Errors are uncorrelated.
      *
      * @param sampleSize The nubmer of samples to draw.
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSet simulateDataReducedForm(int sampleSize) {
         if (sampleSize < 1) {
@@ -276,6 +311,7 @@ public final class LargeScaleSimulation {
      * between shocks of 50 and a convergence threshold of 1e-5. Uncorrelated Gaussian shocks are used.
      *
      * @param sampleSize The number of samples to be drawn. Must be a positive integer.
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSet simulateDataFisher(int sampleSize) {
         return simulateDataFisher(getSoCalledPoissonShocks(sampleSize), 50, 1e-5);
@@ -291,6 +327,7 @@ public final class LargeScaleSimulation {
      *                              for the j'th variables.
      * @param intervalBetweenShocks External shock is applied every this many steps. Must be positive integer.
      * @param epsilon               The convergence criterion; |xi.t - xi.t-1| &lt; epsilon.fff
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSet simulateDataFisher(double[][] shocks, int intervalBetweenShocks, double epsilon) {
         if (intervalBetweenShocks < 1) {
@@ -360,6 +397,16 @@ public final class LargeScaleSimulation {
         return DataTransforms.restrictToMeasured(boxDataSet);
     }
 
+    /**
+     * <p>simulateDataFisher.</p>
+     *
+     * @param intervalBetweenShocks a int
+     * @param intervalBetweenRecordings a int
+     * @param sampleSize a int
+     * @param epsilon a double
+     * @param saveLatentVars a boolean
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet simulateDataFisher(int intervalBetweenShocks, int intervalBetweenRecordings, int sampleSize, double epsilon, boolean saveLatentVars) {
         if (intervalBetweenShocks < 1) {
             throw new IllegalArgumentException(
@@ -529,41 +576,89 @@ public final class LargeScaleSimulation {
         this.alreadySetUp = true;
     }
 
+    /**
+     * <p>Getter for the field <code>graph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.graph;
     }
 
+    /**
+     * <p>setCoefRange.</p>
+     *
+     * @param coefLow a double
+     * @param coefHigh a double
+     */
     public void setCoefRange(double coefLow, double coefHigh) {
         this.coefLow = coefLow;
         this.coefHigh = coefHigh;
     }
 
+    /**
+     * <p>setVarRange.</p>
+     *
+     * @param varLow a double
+     * @param varHigh a double
+     */
     public void setVarRange(double varLow, double varHigh) {
         this.varLow = varLow;
         this.varHigh = varHigh;
     }
 
+    /**
+     * <p>setMeanRange.</p>
+     *
+     * @param meanLow a double
+     * @param meanHigh a double
+     */
     public void setMeanRange(double meanLow, double meanHigh) {
         this.meanLow = meanLow;
         this.meanHigh = meanHigh;
     }
 
+    /**
+     * <p>Getter for the field <code>out</code>.</p>
+     *
+     * @return a {@link java.io.PrintStream} object
+     */
     public PrintStream getOut() {
         return this.out;
     }
 
+    /**
+     * <p>Setter for the field <code>out</code>.</p>
+     *
+     * @param out a {@link java.io.PrintStream} object
+     */
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbose a boolean
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * <p>getCoefficientMatrix.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[][] getCoefficientMatrix() {
         double[][] c = new double[this.coefs.length][this.coefs.length];
 
@@ -576,6 +671,11 @@ public final class LargeScaleSimulation {
         return c;
     }
 
+    /**
+     * <p>Getter for the field <code>variableNodes</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariableNodes() {
         return this.variableNodes;
     }
@@ -663,6 +763,12 @@ public final class LargeScaleSimulation {
         return (pairList);
     }
 
+    /**
+     * <p>getNameNoLag.</p>
+     *
+     * @param obj a {@link java.lang.Object} object
+     * @return a {@link java.lang.String} object
+     */
     public String getNameNoLag(Object obj) {
         String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
@@ -672,6 +778,12 @@ public final class LargeScaleSimulation {
         }
     }
 
+    /**
+     * <p>getKnowledge.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge(Graph graph) {
         int numLags;
         List<Node> variables = graph.getNodes();
@@ -730,6 +842,12 @@ public final class LargeScaleSimulation {
         return knowledge;
     }
 
+    /**
+     * <p>getUncorrelatedShocks.</p>
+     *
+     * @param sampleSize a int
+     * @return an array of {@link double} objects
+     */
     public double[][] getUncorrelatedShocks(int sampleSize) {
         AbstractRealDistribution distribution;
         AbstractRealDistribution varDist;
@@ -760,6 +878,12 @@ public final class LargeScaleSimulation {
         return shocks;
     }
 
+    /**
+     * <p>getSoCalledPoissonShocks.</p>
+     *
+     * @param sampleSize a int
+     * @return an array of {@link double} objects
+     */
     public double[][] getSoCalledPoissonShocks(int sampleSize) {
         int numVars = this.variableNodes.size();
         setupModel(numVars);
@@ -781,22 +905,47 @@ public final class LargeScaleSimulation {
         return shocks;
     }
 
+    /**
+     * <p>Setter for the field <code>includePositiveCoefs</code>.</p>
+     *
+     * @param includePositiveCoefs a boolean
+     */
     public void setIncludePositiveCoefs(boolean includePositiveCoefs) {
         this.includePositiveCoefs = includePositiveCoefs;
     }
 
+    /**
+     * <p>Setter for the field <code>includeNegativeCoefs</code>.</p>
+     *
+     * @param includeNegativeCoefs a boolean
+     */
     public void setIncludeNegativeCoefs(boolean includeNegativeCoefs) {
         this.includeNegativeCoefs = includeNegativeCoefs;
     }
 
+    /**
+     * <p>Setter for the field <code>errorsNormal</code>.</p>
+     *
+     * @param errorsNormal a boolean
+     */
     public void setErrorsNormal(boolean errorsNormal) {
         this.errorsNormal = errorsNormal;
     }
 
+    /**
+     * <p>Getter for the field <code>selfLoopCoef</code>.</p>
+     *
+     * @return a double
+     */
     public double getSelfLoopCoef() {
         return this.selfLoopCoef;
     }
 
+    /**
+     * <p>Setter for the field <code>selfLoopCoef</code>.</p>
+     *
+     * @param selfLoopCoef a double
+     */
     public void setSelfLoopCoef(double selfLoopCoef) {
         this.selfLoopCoef = selfLoopCoef;
     }

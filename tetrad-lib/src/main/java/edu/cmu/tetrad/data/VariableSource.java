@@ -32,18 +32,22 @@ import java.util.List;
  * so on.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface VariableSource extends TetradSerializable {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**
      * Returns the list of variables associated with this object.
+     *
      * @return the list of variables associated with this object.
      */
     List<Node> getVariables();
 
     /**
      * Returns the variable names associated with this getVariableNames.
+     *
      * @return the variable names associated with this getVariableNames.
      */
     List<String> getVariableNames();

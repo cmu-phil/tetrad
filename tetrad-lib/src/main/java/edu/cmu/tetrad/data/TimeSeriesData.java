@@ -34,6 +34,7 @@ import java.util.List;
  * Stores time series data as a list of continuous columns.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class TimeSeriesData implements DataModel {
     private static final long serialVersionUID = 23L;
@@ -59,6 +60,9 @@ public final class TimeSeriesData implements DataModel {
      * Constructs a new time series data contains for the given row-major data array and the given list of variables.
      * Each row of the data, data[i], contains a measured for each variable (in order) for a particular time. The series
      * of times is in increasing order.
+     *
+     * @param matrix a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param varNames a {@link java.util.List} object
      */
     public TimeSeriesData(Matrix matrix, List<String> varNames) {
         if (matrix == null) {
@@ -86,6 +90,8 @@ public final class TimeSeriesData implements DataModel {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.TimeSeriesData} object
      */
     public static TimeSeriesData serializableInstance() {
         List<String> varNames = new ArrayList<>();
@@ -94,10 +100,16 @@ public final class TimeSeriesData implements DataModel {
         return new TimeSeriesData(new Matrix(2, 2), varNames);
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
@@ -105,31 +117,41 @@ public final class TimeSeriesData implements DataModel {
         this.name = name;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isContinuous() {
         return true;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isDiscrete() {
         return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isMixed() {
         return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Node getVariable(String name) {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataModel copy() {
         return null;
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         List<String> varNames = getVariableNames();
         List<Node> vars = new LinkedList<>();
@@ -141,12 +163,18 @@ public final class TimeSeriesData implements DataModel {
         return vars;
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         System.out.println();
 
         return this.knowledge.copy();
     }
 
+    /** {@inheritDoc} */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -156,24 +184,48 @@ public final class TimeSeriesData implements DataModel {
     }
 
     /**
+     * <p>getVariableNames.</p>
+     *
      * @return (a copy of) the List of Variables for the data set, in the order of their columns.
      */
     public List<String> getVariableNames() {
         return this.varNames;
     }
 
+    /**
+     * <p>getData.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public Matrix getData() {
         return this.data2.copy();
     }
 
+    /**
+     * <p>getNumTimePoints.</p>
+     *
+     * @return a int
+     */
     public int getNumTimePoints() {
         return getData().getNumRows();
     }
 
+    /**
+     * <p>getNumVars.</p>
+     *
+     * @return a int
+     */
     public int getNumVars() {
         return getVariableNames().size();
     }
 
+    /**
+     * <p>getDatum.</p>
+     *
+     * @param row a int
+     * @param col a int
+     * @return a double
+     */
     public double getDatum(int row, int col) {
         return this.data2.get(row, col);
     }

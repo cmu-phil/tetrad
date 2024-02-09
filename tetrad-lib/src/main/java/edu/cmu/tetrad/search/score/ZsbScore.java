@@ -57,6 +57,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ZsbScore implements Score {
 
@@ -100,6 +101,7 @@ public class ZsbScore implements Score {
      * Constructs the score using a covariance matrix.
      *
      * @param dataSet The data set.
+     * @param precomputeCovariances a boolean
      */
     public ZsbScore(DataSet dataSet, boolean precomputeCovariances) {
         this(SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances));
@@ -180,12 +182,9 @@ public class ZsbScore implements Score {
     }
 
     /**
-     * Returns localScore(y | z, x) - localScore(y | z).
+     * {@inheritDoc}
      *
-     * @param x Node 1
-     * @param y Node 2
-     * @param z The conditioning nodes.
-     * @return The score.
+     * Returns localScore(y | z, x) - localScore(y | z).
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -237,10 +236,9 @@ public class ZsbScore implements Score {
     }
 
     /**
-     * Returns a judgement for FGES for whether a certain bump in score gives efidence of an effect edges.
+     * {@inheritDoc}
      *
-     * @param bump The bump.
-     * @return True, if so.
+     * Returns a judgement for FGES for whether a certain bump in score gives efidence of an effect edges.
      * @see Fges
      */
     @Override
@@ -249,9 +247,9 @@ public class ZsbScore implements Score {
     }
 
     /**
-     * Returns the variables.
+     * {@inheritDoc}
      *
-     * @return This list.
+     * Returns the variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -259,9 +257,9 @@ public class ZsbScore implements Score {
     }
 
     /**
-     * Returns a judgment of max degree for some algorithms.
+     * {@inheritDoc}
      *
-     * @return This maximum.
+     * Returns a judgment of max degree for some algorithms.
      * @see Fges
      */
     @Override
@@ -270,9 +268,9 @@ public class ZsbScore implements Score {
     }
 
     /**
-     * Returns true if the variable in Z determine y.
+     * {@inheritDoc}
      *
-     * @return True, if so.
+     * Returns true if the variable in Z determine y.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {

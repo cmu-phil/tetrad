@@ -33,6 +33,7 @@ import java.util.Map;
  * Model for a conditional histogram for mixed continuous and discrete variables.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Histogram {
     private final DataSet dataSet;
@@ -44,6 +45,10 @@ public class Histogram {
 
     /**
      * This histogram is for variables in a particular data set. These may be continuous or discrete.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param target a {@link java.lang.String} object
+     * @param removeZeroPointsPerPlot a boolean
      */
     public Histogram(DataSet dataSet, String target, boolean removeZeroPointsPerPlot) {
         if (dataSet.getVariables().size() < 1) {
@@ -115,6 +120,8 @@ public class Histogram {
     }
 
     /**
+     * <p>getFrequencies.</p>
+     *
      * @return the counts for the histogram, one count for each target, in an integer array.
      */
     public int[] getFrequencies() {
@@ -174,6 +181,8 @@ public class Histogram {
 
     /**
      * For a continuous target, returns the maximum value of the values histogrammed, for the unconditioned data.
+     *
+     * @return a double
      */
     public double getMax() {
         List<Double> conditionedDataContinuous = getUnconditionedDataContinuous();
@@ -183,6 +192,8 @@ public class Histogram {
 
     /**
      * For a continuous target, returns the minimum value of the values histogrammed, for the unconditioned data.
+     *
+     * @return a double
      */
     public double getMin() {
         List<Double> conditionedDataContinuous = getUnconditionedDataContinuous();
@@ -193,6 +204,8 @@ public class Histogram {
     /**
      * For a continuous target, returns the number of values histogrammed. This may be less than the sample size of the
      * data set because of conditioning.
+     *
+     * @return a int
      */
     public int getN() {
         List<Double> conditionedDataContinuous = getConditionedDataContinuous();
@@ -203,6 +216,7 @@ public class Histogram {
      * A convenience method to return the data for a particular named continuous variable.
      *
      * @param variable The name of the variable.
+     * @return an array of {@link double} objects
      */
     public double[] getContinuousData(String variable) {
         int index = this.dataSet.getColumn(this.dataSet.getVariable(variable));
@@ -216,6 +230,8 @@ public class Histogram {
     }
 
     /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
      * @return the data set for this histogram.
      */
     public DataSet getDataSet() {
@@ -223,6 +239,8 @@ public class Histogram {
     }
 
     /**
+     * <p>Getter for the field <code>target</code>.</p>
+     *
      * @return the target node being histogrammed. Could be continuous or discrete.
      */
     public String getTarget() {
@@ -250,6 +268,11 @@ public class Histogram {
 //        this.numBins = (int) ceil(log(this.dataSet.getNumRows()) / log(2) + 1);
     }
 
+    /**
+     * <p>getTargetNode.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getTargetNode() {
         return this.target;
     }

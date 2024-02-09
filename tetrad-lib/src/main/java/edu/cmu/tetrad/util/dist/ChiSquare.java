@@ -31,6 +31,7 @@ import java.io.ObjectInputStream;
  * be manipulated in an interface. See Wikipedia.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ChiSquare implements Distribution {
     private static final long serialVersionUID = 23L;
@@ -58,6 +59,7 @@ public class ChiSquare implements Distribution {
         return new ChiSquare();
     }
 
+    /** {@inheritDoc} */
     public void setParameter(int index, double value) {
         if (index == 0 && value >= 0.0) {
             this.df = value;
@@ -66,6 +68,7 @@ public class ChiSquare implements Distribution {
         }
     }
 
+    /** {@inheritDoc} */
     public double getParameter(int index) {
         if (index == 0) {
             return this.df;
@@ -74,6 +77,7 @@ public class ChiSquare implements Distribution {
         }
     }
 
+    /** {@inheritDoc} */
     public String getParameterName(int index) {
         if (index == 0) {
             return "DF";
@@ -82,18 +86,38 @@ public class ChiSquare implements Distribution {
         }
     }
 
+    /**
+     * <p>getNumParameters.</p>
+     *
+     * @return a int
+     */
     public int getNumParameters() {
         return 1;
     }
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return "Chi Square";
     }
 
+    /**
+     * <p>nextRandom.</p>
+     *
+     * @return a double
+     */
     public double nextRandom() {
         return RandomUtil.getInstance().nextChiSquare(this.df);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "ChiSquare(" + this.df + ")";
     }

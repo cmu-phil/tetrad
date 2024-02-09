@@ -26,6 +26,7 @@ import java.util.List;
  * Direct LiNGAM.
  *
  * @author bryanandrews
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "Direct-LiNGAM",
@@ -40,14 +41,23 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
     private ScoreWrapper score;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
+    /**
+     * <p>Constructor for DirectLingam.</p>
+     */
     public DirectLingam() {
         // Used in reflection; do not delete.
     }
 
+    /**
+     * <p>Constructor for DirectLingam.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public DirectLingam(ScoreWrapper score) {
         this.score = score;
     }
 
+    /** {@inheritDoc} */
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
@@ -74,18 +84,26 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) { return new EdgeListGraph(graph); }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return "Direct-LiNGAM (Direct Linear Non-Gaussian Acyclic Model";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -93,16 +111,19 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;
     }
 
+    /** {@inheritDoc} */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;

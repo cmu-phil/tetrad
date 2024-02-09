@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
  * Sep 7, 2018 1:38:50 PM
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ * @version $Id: $Id
  */
 public class GeneralResamplingSearch {
 
@@ -178,6 +179,8 @@ public class GeneralResamplingSearch {
     }
 
     /**
+     * <p>Getter for the field <code>out</code>.</p>
+     *
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
@@ -186,6 +189,7 @@ public class GeneralResamplingSearch {
 
     /**
      * Sets the output stream that output (except for log output) should be sent to. By default System.out.
+     *
      * @param out the output stream.
      */
     public void setOut(PrintStream out) {
@@ -341,6 +345,8 @@ public class GeneralResamplingSearch {
 
     /**
      * Returns the score wrapper.
+     *
+     * @param scoreWrapper a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
      */
     public void setScoreWrapper(ScoreWrapper scoreWrapper) {
         this.scoreWrapper = scoreWrapper;

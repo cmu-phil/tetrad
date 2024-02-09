@@ -15,6 +15,7 @@ import java.util.List;
  * Wrapper for Discrete BIC test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Discrete BIC Score",
@@ -26,6 +27,7 @@ public class DiscreteBicScore implements ScoreWrapper {
     private static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
+    /** {@inheritDoc} */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
@@ -36,16 +38,19 @@ public class DiscreteBicScore implements ScoreWrapper {
         return score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Discrete BIC Score";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Discrete;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
@@ -54,6 +59,7 @@ public class DiscreteBicScore implements ScoreWrapper {
         return params;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);

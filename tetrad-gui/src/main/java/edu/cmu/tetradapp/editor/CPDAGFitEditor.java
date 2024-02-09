@@ -36,6 +36,7 @@ import java.util.List;
  * marked up text.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CPDAGFitEditor extends JPanel {
 
@@ -47,6 +48,8 @@ public class CPDAGFitEditor extends JPanel {
 
     /**
      * Constructs the editor given the model
+     *
+     * @param comparison a {@link edu.cmu.tetradapp.model.CPDAGFitModel} object
      */
     public CPDAGFitEditor(CPDAGFitModel comparison) {
         this.comparison = comparison;

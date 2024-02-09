@@ -36,11 +36,18 @@ import java.util.List;
  * Tyler was lazy and didn't document this....
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class ReorderColumnsWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
 
+    /**
+     * <p>Constructor for ReorderColumnsWrapper.</p>
+     *
+     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ReorderColumnsWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
@@ -90,6 +97,12 @@ public class ReorderColumnsWrapper extends DataWrapper {
 
     }
 
+    /**
+     * <p>shuffleColumns.</p>
+     *
+     * @param dataModel a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet shuffleColumns(DataSet dataModel) {
 
         List<Node> vars = new ArrayList<>();
@@ -110,6 +123,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

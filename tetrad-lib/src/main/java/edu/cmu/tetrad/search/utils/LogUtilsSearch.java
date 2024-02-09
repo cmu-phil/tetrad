@@ -40,32 +40,82 @@ import java.util.*;
  * Contains utilities for logging search steps.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LogUtilsSearch {
+    /**
+     * <p>edgeOrientedMsg.</p>
+     *
+     * @param reason a {@link java.lang.String} object
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a {@link java.lang.String} object
+     */
     public static String edgeOrientedMsg(String reason, Edge edge) {
         return "Orienting edge (" + reason + "): " + edge;
     }
 
+    /**
+     * <p>colliderOrientedMsg.</p>
+     *
+     * @param note a {@link java.lang.String} object
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.lang.String} object
+     */
     public static String colliderOrientedMsg(String note, Node x, Node y, Node z) {
         return "Orienting collider (" + note + "): " + x.getName() + " *-> " +
                 y.getName() + " <-* " + z.getName();
     }
 
+    /**
+     * <p>colliderOrientedMsg.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.lang.String} object
+     */
     public static String colliderOrientedMsg(Node x, Node y, Node z) {
         return "Orienting collider: " + x.getName() + " *-> " +
                 y.getName() + " <-* " + z.getName();
     }
 
+    /**
+     * <p>colliderOrientedMsg.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     * @param sepset a {@link java.util.Set} object
+     * @return a {@link java.lang.String} object
+     */
     public static String colliderOrientedMsg(Node x, Node y, Node z, Set<Node> sepset) {
         return "Orienting collider: " + x.getName() + " *-&gt; " +
                 y.getName() + " <-* " + z.getName() + "\t(Sepset = " + sepset +
                 ")";
     }
 
+    /**
+     * <p>determinismDetected.</p>
+     *
+     * @param sepset a {@link java.util.Set} object
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.lang.String} object
+     */
     public static String determinismDetected(Set<Node> sepset, Node x) {
         return "Determinism detected: " + sepset + " -> " + x.getName();
     }
 
+    /**
+     * <p>independenceFactMsg.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet a {@link java.util.Set} object
+     * @param pValue a double
+     * @return a {@link java.lang.String} object
+     */
     public static String independenceFactMsg(Node x, Node y, Set<Node> condSet, double pValue) {
         StringBuilder sb = new StringBuilder();
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -80,6 +130,15 @@ public class LogUtilsSearch {
         return sb.toString();
     }
 
+    /**
+     * <p>dependenceFactMsg.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet a {@link java.util.Set} object
+     * @param pValue a double
+     * @return a {@link java.lang.String} object
+     */
     public static String dependenceFactMsg(Node x, Node y, Set<Node> condSet, double pValue) {
         StringBuilder sb = new StringBuilder();
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -95,6 +154,14 @@ public class LogUtilsSearch {
     }
 
 
+    /**
+     * <p>independenceFact.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet a {@link java.util.Set} object
+     * @return a {@link java.lang.String} object
+     */
     public static String independenceFact(Node x, Node y, Set<Node> condSet) {
         StringBuilder sb = new StringBuilder();
 
@@ -117,6 +184,14 @@ public class LogUtilsSearch {
         return sb.toString();
     }
 
+    /**
+     * <p>getScoreFact.</p>
+     *
+     * @param i a int
+     * @param parents an array of {@link int} objects
+     * @param variables a {@link java.util.List} object
+     * @return a {@link java.lang.String} object
+     */
     public static String getScoreFact(int i, int[] parents, List<Node> variables) {
         StringBuilder fact = new StringBuilder(variables.get(i) + " | ");
 
@@ -132,6 +207,13 @@ public class LogUtilsSearch {
         return fact.toString();
     }
 
+    /**
+     * <p>getScoreFact.</p>
+     *
+     * @param i a {@link edu.cmu.tetrad.graph.Node} object
+     * @param parents a {@link java.util.List} object
+     * @return a {@link java.lang.String} object
+     */
     public static String getScoreFact(Node i, List<Node> parents) {
         StringBuilder fact = new StringBuilder(i + " | ");
 
@@ -146,6 +228,12 @@ public class LogUtilsSearch {
         return fact.toString();
     }
 
+    /**
+     * <p>buildIndexing.</p>
+     *
+     * @param nodes a {@link java.util.List} object
+     * @return a {@link java.util.Map} object
+     */
     public static Map<Node, Integer> buildIndexing(List<Node> nodes) {
         Map<Node, Integer> hashIndices = new HashMap<>();
 
@@ -158,6 +246,12 @@ public class LogUtilsSearch {
         return hashIndices;
     }
 
+    /**
+     * <p>stampWithScore.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
+     */
     @NotNull
     public static void stampWithScore(Graph graph, Score score) {
         if (score instanceof GraphScore) return;
@@ -185,6 +279,12 @@ public class LogUtilsSearch {
         }
     }
 
+    /**
+     * <p>stampWithBic.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public static void stampWithBic(Graph graph, DataModel dataModel) {
         if (dataModel != null && (dataModel.isContinuous() || dataModel.isDiscrete())
                 && !graph.getAllAttributes().containsKey("BIC")) {

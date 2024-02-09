@@ -39,6 +39,7 @@ import java.beans.PropertyChangeEvent;
  * Lets the user calculate updated probabilities for a Bayes net.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     private static final int SINGLE_VALUE = 0;
@@ -124,6 +125,8 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     //================================PUBLIC METHODS========================//
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of this editor.
      */
     public void setName(String name) {
@@ -140,6 +143,11 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
         return this.evidenceWizardMultiple;
     }
 
+    /**
+     * <p>getEditDelegate.</p>
+     *
+     * @return a {@link javax.swing.JComponent} object
+     */
     public JComponent getEditDelegate() {
         return this.evidenceWizardSingle;
     }
@@ -154,6 +162,8 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
 
     /**
      * Reacts to property change events.
+     *
+     * @param e a {@link java.beans.PropertyChangeEvent} object
      */
     public void propertyChange(PropertyChangeEvent e) {
         if ("editorClosing".equals(e.getPropertyName())) {

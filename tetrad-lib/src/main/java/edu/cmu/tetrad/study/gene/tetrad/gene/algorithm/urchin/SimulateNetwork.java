@@ -25,7 +25,18 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 
 import java.text.NumberFormat;
 
+/**
+ * <p>SimulateNetwork class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class SimulateNetwork {
+    /**
+     * <p>main.</p>
+     *
+     * @param argv an array of {@link java.lang.String} objects
+     */
     public static void main(String[] argv) {
 
         NbComponent matCBeta =

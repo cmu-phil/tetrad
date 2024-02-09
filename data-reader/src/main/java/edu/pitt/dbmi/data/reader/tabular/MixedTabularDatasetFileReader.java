@@ -30,6 +30,7 @@ import java.util.Set;
  * Dec 14, 2018 1:54:31 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class MixedTabularDatasetFileReader extends DatasetFileReader implements MixedTabularDatasetReader {
 
@@ -52,21 +53,16 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     /**
-     * Reads in the data.
+     * {@inheritDoc}
      *
-     * @return The data.
-     * @throws IOException If an I/O error occurs.
+     * Reads in the data.
      */
     @Override
     public Data readInData() throws IOException {
         return readInData(Collections.EMPTY_SET);
     }
 
-    /**
-     * @param namesOfColumnsToExclude the names of columns to exclude
-     * @return The data.
-     * @throws IOException If an I/O error occurs.
-     */
+    /** {@inheritDoc} */
     @Override
     public Data readInData(Set<String> namesOfColumnsToExclude) throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
@@ -89,11 +85,9 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     /**
-     * Reads in the data.
+     * {@inheritDoc}
      *
-     * @param columnsToExclude the columns to exclude
-     * @return The data.
-     * @throws IOException If an I/O error occurs.
+     * Reads in the data.
      */
     @Override
     public Data readInData(int[] columnsToExclude) throws IOException {
@@ -167,9 +161,9 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     /**
-     * Sets whether the data file has a header.
+     * {@inheritDoc}
      *
-     * @param hasHeader Whether the data file has a header.
+     * Sets whether the data file has a header.
      */
     @Override
     public void setHasHeader(boolean hasHeader) {
@@ -177,9 +171,9 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
     }
 
     /**
-     * Sets the quote character.
+     * {@inheritDoc}
      *
-     * @param quoteCharacter The quote character.
+     * Sets the quote character.
      */
     @Override
     public void setQuoteCharacter(char quoteCharacter) {

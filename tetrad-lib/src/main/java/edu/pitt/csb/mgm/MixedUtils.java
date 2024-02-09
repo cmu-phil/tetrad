@@ -45,12 +45,22 @@ import java.util.*;
 
 /**
  * Created by ajsedgewick on 7/29/15.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class MixedUtils {
 
     //labels corresponding to values from allEdgeStats
+    /** Constant <code>EdgeStatHeader="TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\"{trunked}</code> */
     public static final String EdgeStatHeader = "TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\tBidir";
 
+    /**
+     * <p>getDiscreteInds.</p>
+     *
+     * @param nodes a {@link java.util.List} object
+     * @return an array of {@link int} objects
+     */
     public static int[] getDiscreteInds(List<Node> nodes) {
         List<Integer> indList = new ArrayList<>();
         int curInd = 0;
@@ -68,6 +78,12 @@ public class MixedUtils {
         return inds;
     }
 
+    /**
+     * <p>getContinuousInds.</p>
+     *
+     * @param nodes a {@link java.util.List} object
+     * @return an array of {@link int} objects
+     */
     public static int[] getContinuousInds(List<Node> nodes) {
         List<Integer> indList = new ArrayList<>();
         int curInd = 0;
@@ -86,6 +102,12 @@ public class MixedUtils {
     }
 
     //Converts a Dataset with both ContinuousVariables and DiscreteVariables to only ContinuousVariables
+    /**
+     * <p>makeContinuousData.</p>
+     *
+     * @param dsMix a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet makeContinuousData(DataSet dsMix) {
         ArrayList<Node> contVars = new ArrayList<>();
         for (Node n : dsMix.getVariables()) {
@@ -102,6 +124,14 @@ public class MixedUtils {
 
     //takes DataSet of all ContinuousVariables
     //convert variables to discrete if there is an entry with <NodeName, "Disc"> in nodeDists
+    /**
+     * <p>makeMixedData.</p>
+     *
+     * @param dsCont a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param nodeDists a {@link java.util.Map} object
+     * @param numCategories a int
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet makeMixedData(DataSet dsCont, Map<String, String> nodeDists, int numCategories) {
         ArrayList<Node> mixVars = new ArrayList<>();
         for (Node n : dsCont.getVariables()) {
@@ -118,6 +148,13 @@ public class MixedUtils {
 
     //takes DataSet of all ContinuousVariables
     //convert variables to discrete if there is an entry with <NodeName, x> with x > 0, num categories set to x
+    /**
+     * <p>makeMixedData.</p>
+     *
+     * @param dsCont a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param nodeDists a {@link java.util.Map} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet makeMixedData(DataSet dsCont, Map<String, Integer> nodeDists) {
         ArrayList<Node> mixVars = new ArrayList<>();
         for (Node n : dsCont.getVariables()) {
@@ -137,6 +174,7 @@ public class MixedUtils {
      * Makes a deep copy of a dataset (Nodes copied as well). Useful for paralellization
      *
      * @param ds dataset to be copied
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet deepCopy(DataSet ds) {
         List<Node> vars = new ArrayList<>(ds.getNumColumns());
@@ -153,6 +191,12 @@ public class MixedUtils {
     }
 
     //Takes a mixed dataset and returns only data corresponding to ContinuousVariables in order
+    /**
+     * <p>getContinousData.</p>
+     *
+     * @param ds a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet getContinousData(DataSet ds) {
         ArrayList<Node> contVars = new ArrayList<>();
         for (Node n : ds.getVariables()) {
@@ -163,6 +207,12 @@ public class MixedUtils {
     }
 
     //Takes a mixed dataset and returns only data corresponding to DiscreteVariables in order
+    /**
+     * <p>getDiscreteData.</p>
+     *
+     * @param ds a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet getDiscreteData(DataSet ds) {
         ArrayList<Node> discVars = new ArrayList<>();
         for (Node n : ds.getVariables()) {
@@ -172,6 +222,12 @@ public class MixedUtils {
         return ds.subsetColumns(discVars);
     }
 
+    /**
+     * <p>getDiscLevels.</p>
+     *
+     * @param ds a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return an array of {@link int} objects
+     */
     public static int[] getDiscLevels(DataSet ds) {
         //ArrayList<Integer> levels = new ArrayList<Integer>[];
         DataSet discDs = MixedUtils.getDiscreteData(ds);
@@ -187,8 +243,8 @@ public class MixedUtils {
     /**
      * return vector of the maximum of each column in m (as ints, i.e. for discrete data)
      *
-     * @param m
-     * @return
+     * @param m a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @return an array of {@link int} objects
      */
     public static int[] colMax(DoubleMatrix2D m) {
         int[] maxVec = new int[m.columns()];
@@ -205,6 +261,12 @@ public class MixedUtils {
         return maxVec;
     }
 
+    /**
+     * <p>vecMax.</p>
+     *
+     * @param vec a {@link cern.colt.matrix.DoubleMatrix1D} object
+     * @return a double
+     */
     public static double vecMax(DoubleMatrix1D vec) {
         double curMax = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < vec.size(); i++) {
@@ -216,10 +278,22 @@ public class MixedUtils {
         return curMax;
     }
 
+    /**
+     * <p>numVals.</p>
+     *
+     * @param vec a {@link cern.colt.matrix.DoubleMatrix1D} object
+     * @return a double
+     */
     public static double numVals(DoubleMatrix1D vec) {
         return MixedUtils.valSet(vec).size();
     }
 
+    /**
+     * <p>valSet.</p>
+     *
+     * @param vec a {@link cern.colt.matrix.DoubleMatrix1D} object
+     * @return a {@link java.util.Set} object
+     */
     public static Set<Double> valSet(DoubleMatrix1D vec) {
         Set<Double> vals = new HashSet<>();
         for (int i = 0; i < vec.size(); i++) {
@@ -230,6 +304,16 @@ public class MixedUtils {
 
     //generate PM from trueGraph for mixed Gaussian and Trinary variables
     //Don't use, buggy
+    /**
+     * <p>GaussianTrinaryPm.</p>
+     *
+     * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param nodeDists a {@link java.util.HashMap} object
+     * @param maxSample a int
+     * @param paramTemplate a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @throws java.lang.IllegalStateException if any.
+     */
     public static GeneralizedSemPm GaussianTrinaryPm(Graph trueGraph, HashMap<String, String> nodeDists, int maxSample, String paramTemplate) throws IllegalStateException {
 
         GeneralizedSemPm semPm = new GeneralizedSemPm(trueGraph);
@@ -305,6 +389,14 @@ public class MixedUtils {
 
     //generate PM from trueGraph for mixed Gaussian and Categorical variables
     //public static GeneralizedSemPm GaussianCategoricalPm(Graph trueGraph, HashMap<String, Integer> nodeDists, String paramTemplate) throws IllegalStateException{
+    /**
+     * <p>GaussianCategoricalPm.</p>
+     *
+     * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param paramTemplate a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @throws java.lang.IllegalStateException if any.
+     */
     public static GeneralizedSemPm GaussianCategoricalPm(Graph trueGraph, String paramTemplate) throws IllegalStateException {
 
         Map<String, Integer> nodeDists = MixedUtils.getNodeDists(trueGraph);
@@ -412,6 +504,10 @@ public class MixedUtils {
 
     /**
      * Set all existing parameters that begins with sta to template and also set template for any new parameters
+     *
+     * @param sta a {@link java.lang.String} object
+     * @param template a {@link java.lang.String} object
+     * @param pm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
      */
     public static void setStartsWith(String sta, String template, GeneralizedSemPm pm) {
         try {
@@ -428,6 +524,12 @@ public class MixedUtils {
     }
 
     //legacy
+    /**
+     * <p>GaussianCategoricalIm.</p>
+     *
+     * @param pm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
+     */
     public static GeneralizedSemIm GaussianCategoricalIm(GeneralizedSemPm pm) {
         return MixedUtils.GaussianCategoricalIm(pm, true);
     }
@@ -441,9 +543,9 @@ public class MixedUtils {
      * -w/(categories-1) in the rest. For random, c-d params are uniformly drawn from 0 to 1 then transformed to have w
      * as max value and sum to 0.
      *
-     * @param pm
+     * @param pm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
      * @param discParamRand true for random edge generation behavior, false for deterministic
-     * @return
+     * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
      */
     public static GeneralizedSemIm GaussianCategoricalIm(GeneralizedSemPm pm, boolean discParamRand) {
 
@@ -532,6 +634,14 @@ public class MixedUtils {
     }
 
     //Given two node names and a parameterized model return list of parameters corresponding to edge between them
+    /**
+     * <p>getEdgeParams.</p>
+     *
+     * @param s1 a {@link java.lang.String} object
+     * @param s2 a {@link java.lang.String} object
+     * @param pm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @return a {@link java.util.List} object
+     */
     public static List<String> getEdgeParams(String s1, String s2, GeneralizedSemPm pm) {
         Node n1 = pm.getNode(s1);
         Node n2 = pm.getNode(s2);
@@ -539,6 +649,12 @@ public class MixedUtils {
     }
 
     //randomly permute an array of doubles
+    /**
+     * <p>arrayPermute.</p>
+     *
+     * @param a an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] arrayPermute(double[] a) {
         double[] out = new double[a.length];
         List<Double> l = new ArrayList<>(a.length);
@@ -553,6 +669,12 @@ public class MixedUtils {
     }
 
     //randomly permute array of ints
+    /**
+     * <p>arrayPermute.</p>
+     *
+     * @param a an array of {@link int} objects
+     * @return an array of {@link int} objects
+     */
     public static int[] arrayPermute(int[] a) {
         int[] out = new int[a.length];
         List<Integer> l = new ArrayList<>(a.length);
@@ -567,6 +689,13 @@ public class MixedUtils {
     }
 
     //generates a vector of length L that starts with -w and increases with consistent steps to w
+    /**
+     * <p>evenSplitVector.</p>
+     *
+     * @param w a double
+     * @param L a int
+     * @return an array of {@link double} objects
+     */
     public static double[] evenSplitVector(double w, int L) {
         double[] vec = new double[L];
         double step = 2.0 * w / (L - 1.0);
@@ -577,6 +706,14 @@ public class MixedUtils {
     }
 
     //Given two nodes and a parameterized model return list of parameters corresponding to edge between them
+    /**
+     * <p>getEdgeParams.</p>
+     *
+     * @param n1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param n2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param pm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @return a {@link java.util.List} object
+     */
     public static List<String> getEdgeParams(Node n1, Node n2, GeneralizedSemPm pm) {
         //there may be a better way to do this using recursive calls of Expression.getExpressions
         Set<String> allParams = pm.getParameters();
@@ -623,6 +760,13 @@ public class MixedUtils {
     }
 
     //generates a vector of length L with maximum value w that sums to 0
+    /**
+     * <p>generateMixedEdgeParams.</p>
+     *
+     * @param w a double
+     * @param L a int
+     * @return an array of {@link double} objects
+     */
     public static double[] generateMixedEdgeParams(double w, int L) {
         double[] vec = new double[L];
         RandomUtil ru = RandomUtil.getInstance();
@@ -652,6 +796,13 @@ public class MixedUtils {
     }
 
     //assumes Graphs have properly assigned variable types
+    /**
+     * <p>allEdgeStats.</p>
+     *
+     * @param pT a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param pE a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return an array of {@link int} objects
+     */
     public static int[][] allEdgeStats(Graph pT, Graph pE) {
         HashMap<String, String> nd = new HashMap<>();
 
@@ -669,6 +820,14 @@ public class MixedUtils {
     // break out stats by node distributions, here only "Norm" and "Disc"
     // so three types of possible edges, cc, cd, dd, output is edge type by stat type
     // counts bidirected
+    /**
+     * <p>allEdgeStats.</p>
+     *
+     * @param pT a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param pE a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param nodeDists a {@link java.util.HashMap} object
+     * @return an array of {@link int} objects
+     */
     public static int[][] allEdgeStats(Graph pT, Graph pE, HashMap<String, String> nodeDists) {
         int[][] stats = new int[3][10];
         for (int i = 0; i < stats.length; i++) {
@@ -752,6 +911,13 @@ public class MixedUtils {
     }
 
     //Utils
+    /**
+     * <p>makeMixedGraph.</p>
+     *
+     * @param g a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param m a {@link java.util.Map} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph makeMixedGraph(Graph g, Map<String, Integer> m) {
         List<Node> nodes = g.getNodes();
         for (int i = 0; i < nodes.size(); i++) {
@@ -774,6 +940,12 @@ public class MixedUtils {
         return outG;
     }
 
+    /**
+     * <p>stringFrom2dArray.</p>
+     *
+     * @param arr an array of {@link int} objects
+     * @return a {@link java.lang.String} object
+     */
     public static String stringFrom2dArray(int[][] arr) {
         String outStr = "";
         for (int[] ints : arr) {
@@ -787,12 +959,28 @@ public class MixedUtils {
         return outStr;
     }
 
+    /**
+     * <p>loadDataSet.</p>
+     *
+     * @param dir a {@link java.lang.String} object
+     * @param filename a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.io.IOException if any.
+     */
     public static DataSet loadDataSet(String dir, String filename) throws IOException {
         File file = new File(dir, filename);
         return SimpleDataLoader.loadContinuousData(file, "//", '\"',
                 "*", true, Delimiter.TAB, false);
     }
 
+    /**
+     * <p>loadDelim.</p>
+     *
+     * @param dir a {@link java.lang.String} object
+     * @param filename a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.io.IOException if any.
+     */
     public static DataSet loadDelim(String dir, String filename) throws IOException {
         File file = new File(dir, filename);
         return SimpleDataLoader.loadContinuousData(file, "//", '\"',
@@ -800,6 +988,12 @@ public class MixedUtils {
     }
 
     //Gives a map of number of categories of DiscreteVariables in g. ContinuousVariables are mapped to 0
+    /**
+     * <p>getNodeDists.</p>
+     *
+     * @param g a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.util.Map} object
+     */
     public static Map<String, Integer> getNodeDists(Graph g) {
         HashMap<String, Integer> map = new HashMap<>();
         List<Node> nodes = g.getNodes();
@@ -812,6 +1006,14 @@ public class MixedUtils {
         return map;
     }
 
+    /**
+     * <p>loadData.</p>
+     *
+     * @param dir a {@link java.lang.String} object
+     * @param filename a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.io.IOException if any.
+     */
     public static DataSet loadData(String dir, String filename) throws IOException {
         File file = new File(dir, filename);
         return SimpleDataLoader.loadContinuousData(file, "//", '\"',
@@ -822,9 +1024,9 @@ public class MixedUtils {
      * Check each pair of variables to see if correlation is 1. WARNING: calculates correlation matrix, memory heavy
      * when there are lots of variables
      *
-     * @param ds
-     * @param verbose
-     * @return
+     * @param ds a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param verbose a boolean
+     * @return a boolean
      */
     public static boolean isColinear(DataSet ds, boolean verbose) {
         List<Node> nodes = ds.getVariables();
@@ -845,6 +1047,14 @@ public class MixedUtils {
         return isco;
     }
 
+    /**
+     * <p>graphToMatrix.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param undirectedWeight a double
+     * @param directedWeight a double
+     * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
+     */
     public static DoubleMatrix2D graphToMatrix(Graph graph, double undirectedWeight, double directedWeight) {
         // initialize matrix
         int n = graph.getNumNodes();
@@ -881,6 +1091,12 @@ public class MixedUtils {
     }
 
     //returns undirected skeleton matrix (symmetric
+    /**
+     * <p>skeletonToMatrix.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
+     */
     public static DoubleMatrix2D skeletonToMatrix(Graph graph) {
         // initialize matrix
         int n = graph.getNumNodes();
@@ -908,6 +1124,12 @@ public class MixedUtils {
         return matrix;
     }
 
+    /**
+     * <p>graphToMatrix.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
+     */
     public static DoubleMatrix2D graphToMatrix(Graph graph) {
         return MixedUtils.graphToMatrix(graph, 1, 1);
     }
@@ -916,8 +1138,10 @@ public class MixedUtils {
      * Returns independence tests by name located in edu.cmu.tetrad.search and edu.pitt.csb.mgm also supports shorthand
      * for LRT ("lrt) and t-tests ("tlin" for prefer linear (fastest) or "tlog" for prefer logistic)
      *
-     * @param name
-     * @return
+     * @param name a {@link java.lang.String} object
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param alpha a double
+     * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public static IndependenceTest IndTestFromString(String name, DataSet data, double alpha) {
 
@@ -968,6 +1192,11 @@ public class MixedUtils {
     }
 
     //main for testing
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         //Graph g = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X4");
         Graph g = GraphUtils.convert("X1-->X2,X2-->X3,X3-->X4, X5-->X4");

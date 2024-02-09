@@ -36,6 +36,7 @@ import org.apache.commons.math3.util.FastMath;
  * the Javadocs, below.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TestMeasurementSimulator extends TestCase {
 
@@ -67,6 +68,8 @@ public class TestMeasurementSimulator extends TestCase {
 
     /**
      * Standard constructor for JUnit test cases.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public TestMeasurementSimulator(String name) {
         super(name);
@@ -75,6 +78,8 @@ public class TestMeasurementSimulator extends TestCase {
     /**
      * This method uses reflection to collect up all of the test methods from this class and return them to the test
      * runner.
+     *
+     * @return a {@link junit.framework.Test} object
      */
     public static Test suite() {
 

@@ -39,6 +39,7 @@ import java.util.*;
  * Uses BCInference by Cooper and Bui to calculate probabilistic conditional independence judgments.
  *
  * @author josephramsey 3/2014
+ * @version $Id: $Id
  */
 public class ProbabilisticMapIndependence implements IndependenceTest {
 
@@ -72,6 +73,8 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
 
     /**
      * Initializes the test using a discrete data sets.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public ProbabilisticMapIndependence(DataSet dataSet) {
         this.data = dataSet;
@@ -108,11 +111,13 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
         this.H = new HashMap<>();
     }
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         List<Node> z = new ArrayList<>(_z);
@@ -123,6 +128,7 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
         return checkIndependence(x, y, nodes);
     }
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Node... z) {
         double pInd = probConstraint(BCInference.OP.independent, x, y, z);
@@ -146,6 +152,15 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, pInd, getAlpha() - pInd);
     }
 
+    /**
+     * <p>probConstraint.</p>
+     *
+     * @param op a {@link edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference.OP} object
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z an array of {@link edu.cmu.tetrad.graph.Node} objects
+     * @return a double
+     */
     public double probConstraint(BCInference.OP op, Node x, Node y, Node[] z) {
 
         int _x = indices.get(x) + 1;
@@ -158,11 +173,13 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
         return bci.probConstraint(op, _x, _y, _z);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Node> getVariables() {
         return nodes;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Node getVariable(String name) {
         for (Node node : nodes) {
@@ -172,26 +189,35 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean determines(Set<Node> z, Node y) {
         throw new UnsupportedOperationException();
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getAlpha() {
         throw new UnsupportedOperationException();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataModel getData() {
         return data;
     }
 
+    /**
+     * <p>getH.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public Map<IndependenceFact, Double> getH() {
         return new HashMap<>(H);
     }
@@ -204,15 +230,22 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
         return probOp;
     }
 
+    /**
+     * <p>Getter for the field <code>posterior</code>.</p>
+     *
+     * @return a double
+     */
     public double getPosterior() {
         return this.posterior;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

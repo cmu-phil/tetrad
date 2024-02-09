@@ -29,8 +29,10 @@ import edu.cmu.tetrad.util.TetradSerializable;
  *
  * @author josephramsey
  * @see SimulationStudy
+ * @version $Id: $Id
  */
 public interface ExecutionRestarter extends TetradSerializable {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**

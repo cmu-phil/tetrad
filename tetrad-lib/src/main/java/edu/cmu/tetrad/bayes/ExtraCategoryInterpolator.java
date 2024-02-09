@@ -32,8 +32,10 @@ import java.util.List;
  * the missing values, with missing values being reported as belong this category.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class ExtraCategoryInterpolator implements DataFilter {
+    /** {@inheritDoc} */
     public DataSet filter(DataSet dataSet) {
 
         // Why does it have to be discrete? Why can't we simply expand

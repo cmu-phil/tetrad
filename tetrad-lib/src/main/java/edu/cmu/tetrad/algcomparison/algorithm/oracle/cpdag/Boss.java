@@ -29,6 +29,7 @@ import java.util.List;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "BOSS",
@@ -61,11 +62,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     }
 
     /**
-     * Runs the BOSS algorithm.
+     * {@inheritDoc}
      *
-     * @param dataModel  The data set to run to the search on.
-     * @param parameters The paramters of the search.
-     * @return The graph that was found.
+     * Runs the BOSS algorithm.
      */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
@@ -113,10 +112,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     }
 
     /**
-     * Returns the true graph if there is one.
+     * {@inheritDoc}
      *
-     * @param graph The true directed graph, if there is one.
-     * @return The graph that was found.
+     * Returns the true graph if there is one.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -124,9 +122,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     }
 
     /**
-     * Returns the description of the algorithm.
+     * {@inheritDoc}
      *
-     * @return The description of the algorithm.
+     * Returns the description of the algorithm.
      */
     @Override
     public String getDescription() {
@@ -134,9 +132,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     }
 
     /**
-     * Returns the name of the algorithm.
+     * {@inheritDoc}
      *
-     * @return The name of the algorithm.
+     * Returns the name of the algorithm.
      */
     @Override
     public DataType getDataType() {
@@ -144,9 +142,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     }
 
     /**
-     * Returns the parameters for the algorithm.
+     * {@inheritDoc}
      *
-     * @return The parameters for the algorithm.
+     * Returns the parameters for the algorithm.
      */
     @Override
     public List<String> getParameters() {
@@ -165,9 +163,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     }
 
     /**
-     * Returns the score wrapper.
+     * {@inheritDoc}
      *
-     * @return The score wrapper.
+     * Returns the score wrapper.
      */
     @Override
     public ScoreWrapper getScoreWrapper() {
@@ -175,9 +173,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     }
 
     /**
-     * Sets the score wrapper.
+     * {@inheritDoc}
      *
-     * @param score the score wrapper.
+     * Sets the score wrapper.
      */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
@@ -185,9 +183,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     }
 
     /**
-     * Returns the knowledge.
+     * {@inheritDoc}
      *
-     * @return The knowledge.
+     * Returns the knowledge.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -195,9 +193,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     }
 
     /**
-     * Sets the knowledge.
+     * {@inheritDoc}
      *
-     * @param knowledge a knowledge object.
+     * Sets the knowledge.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -205,9 +203,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     }
 
     /**
-     * Returns the bootstrap graphs.
+     * {@inheritDoc}
      *
-     * @return The bootstrap graphs.
+     * Returns the bootstrap graphs.
      */
     @Override
     public List<Graph> getBootstrapGraphs() {

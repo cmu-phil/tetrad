@@ -50,6 +50,7 @@ import java.util.List;
  * @author adambrodie
  * @see Knowledge
  * @see Mimbuild
+ * @version $Id: $Id
  */
 public class MimbuildTrek {
     // The clustering from BPC or equivalent. Small clusters are removed.
@@ -412,11 +413,18 @@ public class MimbuildTrek {
 
     /**
      * jf Clusters smaller than this size will be tossed out.
+     *
+     * @return a int
      */
     public int getMinClusterSize() {
         return this.minClusterSize;
     }
 
+    /**
+     * <p>Setter for the field <code>minClusterSize</code>.</p>
+     *
+     * @param minClusterSize a int
+     */
     public void setMinClusterSize(int minClusterSize) {
         if (minClusterSize < 3)
             throw new IllegalArgumentException("Minimum cluster size must be >= 3: " + minClusterSize);

@@ -16,6 +16,7 @@ import java.util.*;
  * @author josephramsey
  * @author Zhou Yuan zhy19@pitt.edu
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class ParamDescriptions {
 
@@ -122,10 +123,21 @@ public final class ParamDescriptions {
         this.map.put(Params.PRINT_STREAM, new ParamDescription(Params.PRINT_STREAM, "printStream", "A writer to print output messages.", ""));
     }
 
+    /**
+     * <p>getInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.ParamDescriptions} object
+     */
     public static ParamDescriptions getInstance() {
         return ParamDescriptions.INSTANCE;
     }
 
+    /**
+     * <p>get.</p>
+     *
+     * @param name a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.util.ParamDescription} object
+     */
     public ParamDescription get(String name) {
         ParamDescription paramDesc = this.map.get(name);
 
@@ -134,14 +146,30 @@ public final class ParamDescriptions {
                 : paramDesc;
     }
 
+    /**
+     * <p>put.</p>
+     *
+     * @param name a {@link java.lang.String} object
+     * @param paramDescription a {@link edu.cmu.tetrad.util.ParamDescription} object
+     */
     public void put(String name, ParamDescription paramDescription) {
         this.map.put(name, paramDescription);
     }
 
+    /**
+     * <p>getNames.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<String> getNames() {
         return this.map.keySet();
     }
 
+    /**
+     * <p>Getter for the field <code>paramsWithUnsupportedValueType</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getParamsWithUnsupportedValueType() {
         return this.paramsWithUnsupportedValueType;
     }

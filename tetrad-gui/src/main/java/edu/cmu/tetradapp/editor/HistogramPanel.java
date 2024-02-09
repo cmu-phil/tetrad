@@ -34,8 +34,10 @@ import java.util.Map;
  * View for the Histogram class. Shows a histogram and gives controls for conditioning, etc.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class HistogramPanel extends JPanel {
+    /** Constant <code>tiles</code> */
     public static final String[] tiles = {"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
             "septile", "octile", "nontile", "decile"};
     private static final Color LINE_COLOR = Color.GRAY.darker();
@@ -49,6 +51,7 @@ public class HistogramPanel extends JPanel {
      * Constructs the histogram display panel given the initial histogram to display.
      *
      * @param histogram The histogram to display.
+     * @param drawAxes a boolean
      */
     public HistogramPanel(Histogram histogram, boolean drawAxes) {
         this.drawAxes = drawAxes;
@@ -77,6 +80,7 @@ public class HistogramPanel extends JPanel {
         return max;
     }
 
+    /** {@inheritDoc} */
     public String getToolTipText(MouseEvent evt) {
 
         Point point = evt.getPoint();
@@ -95,6 +99,8 @@ public class HistogramPanel extends JPanel {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Paints the histogram and related items.
      */
     public void paintComponent(Graphics graphics) {
@@ -159,11 +165,18 @@ public class HistogramPanel extends JPanel {
 
     /**
      * The histogram we are displaying.
+     *
+     * @return a {@link edu.cmu.tetrad.data.Histogram} object
      */
     public Histogram getHistogram() {
         return this.histogram;
     }
 
+    /**
+     * <p>Setter for the field <code>barColor</code>.</p>
+     *
+     * @param barColor a {@link java.awt.Color} object
+     */
     public void setBarColor(Color barColor) {
         this.barColor = barColor;
     }

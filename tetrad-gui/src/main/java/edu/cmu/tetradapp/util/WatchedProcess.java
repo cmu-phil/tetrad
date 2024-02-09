@@ -32,6 +32,7 @@ import java.awt.event.ComponentEvent;
  *
  * @author josephramsey
  * @author ChatGPT
+ * @version $Id: $Id
  */
 public abstract class WatchedProcess {
     private final JFrame frame;
@@ -68,7 +69,7 @@ public abstract class WatchedProcess {
      * This is the method that will be called in a separate thread. It should be a long-running process that can be
      * interrupted by the user.
      *
-     * @throws InterruptedException if the process is interrupted while running.
+     * @throws java.lang.InterruptedException if the process is interrupted while running.
      */
     public abstract void watch() throws InterruptedException;
 

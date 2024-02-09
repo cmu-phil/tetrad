@@ -13,8 +13,10 @@ import java.util.List;
  * Interface that algorithm must implement.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface IndependenceWrapper extends HasParameters, TetradSerializable {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**

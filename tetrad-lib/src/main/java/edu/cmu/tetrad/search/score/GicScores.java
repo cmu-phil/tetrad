@@ -43,6 +43,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GicScores implements Score {
 
@@ -115,12 +116,9 @@ public class GicScores implements Score {
     }
 
     /**
-     * Calculates the sample likelihood and BIC score for index i given its parents in a simple SEM model.
+     * {@inheritDoc}
      *
-     * @param x A node.
-     * @param y TAhe node.
-     * @param z A set of nodes.
-     * @return The score difference.
+     * Calculates the sample likelihood and BIC score for index i given its parents in a simple SEM model.
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -221,10 +219,9 @@ public class GicScores implements Score {
     }
 
     /**
-     * Returns true if an edge with this bump is an effect edge.
+     * {@inheritDoc}
      *
-     * @param bump The bump.
-     * @return True if so.
+     * Returns true if an edge with this bump is an effect edge.
      */
     @Override
     public boolean isEffectEdge(double bump) {
@@ -259,9 +256,9 @@ public class GicScores implements Score {
     }
 
     /**
-     * Returns the variables of the dataset.
+     * {@inheritDoc}
      *
-     * @return These variables as  list.
+     * Returns the variables of the dataset.
      */
     @Override
     public List<Node> getVariables() {
@@ -282,9 +279,9 @@ public class GicScores implements Score {
     }
 
     /**
-     * Returns the max degree of the graph for some algorithms.
+     * {@inheritDoc}
      *
-     * @return This max degree.
+     * Returns the max degree of the graph for some algorithms.
      */
     @Override
     public int getMaxDegree() {
@@ -292,11 +289,9 @@ public class GicScores implements Score {
     }
 
     /**
-     * Returns a judgment of whether the variable in z determine y exactly.
+     * {@inheritDoc}
      *
-     * @param z The set of nodes.
-     * @param y The node.
-     * @return This judgment
+     * Returns a judgment of whether the variable in z determine y exactly.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {

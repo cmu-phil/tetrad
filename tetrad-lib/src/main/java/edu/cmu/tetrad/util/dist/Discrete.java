@@ -31,6 +31,7 @@ import java.util.Arrays;
  * 1th p value.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Discrete implements Distribution {
     private static final long serialVersionUID = 23L;
@@ -55,26 +56,44 @@ public class Discrete implements Distribution {
         return new Discrete(.1, .4, .9);
     }
 
+    /**
+     * <p>getNumParameters.</p>
+     *
+     * @return a int
+     */
     public int getNumParameters() {
         return this.p.length;
     }
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return "Discrete";
     }
 
+    /** {@inheritDoc} */
     public void setParameter(int index, double value) {
         this.p[index] = value;
     }
 
+    /** {@inheritDoc} */
     public double getParameter(int index) {
         return this.p[index];
     }
 
+    /** {@inheritDoc} */
     public String getParameterName(int index) {
         return "Cut #" + (index + 1);
     }
 
+    /**
+     * <p>nextRandom.</p>
+     *
+     * @return a double
+     */
     public double nextRandom() {
         double r = RandomUtil.getInstance().nextDouble();
 
@@ -85,6 +104,11 @@ public class Discrete implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Discrete(" + Arrays.toString(this.p) + ")";
     }

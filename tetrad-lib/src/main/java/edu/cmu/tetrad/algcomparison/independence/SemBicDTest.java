@@ -16,11 +16,13 @@ import java.util.List;
  * Wrapper for Fisher Z test. Ignore this for now
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemBicDTest implements IndependenceWrapper {
 
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
@@ -28,16 +30,19 @@ public class SemBicDTest implements IndependenceWrapper {
         return new ScoreIndTest(score, dataSet);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "SEM BIC test";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

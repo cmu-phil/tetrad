@@ -18,6 +18,9 @@ import java.util.concurrent.Executors;
  * between their endpoints the distance between edges calculated this way is a true distance the distance between two
  * graphs is not a true distance because it is not symmetric this version allows for non-cubic voxels, and parallelizes
  * the most expensive loop
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class Gdistance {
 
@@ -33,6 +36,14 @@ public class Gdistance {
     private final int cores = Runtime.getRuntime().availableProcessors();
 
     //With the parallel version, it is better to make a constructor for central data like locationMap
+    /**
+     * <p>Constructor for Gdistance.</p>
+     *
+     * @param locationMap a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param xDist a double
+     * @param yDist a double
+     * @param zDist a double
+     */
     public Gdistance(DataSet locationMap, double xDist, double yDist, double zDist) {
         this.locationMap = locationMap;
         this.xDist = xDist;
@@ -105,6 +116,13 @@ public class Gdistance {
 
     }
 
+    /**
+     * <p>distances.</p>
+     *
+     * @param graph1 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph2 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.util.List} object
+     */
     public List<Double> distances(Graph graph1, Graph graph2) {
         // needs to calculate distances for non-cubic voxels.
         //dimensions along each dimension should be given as input: xdist, ydist, zdist

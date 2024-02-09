@@ -32,12 +32,19 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * Converts a continuous data set to a correlation matrix.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CorrMatrixConverter extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
 
+    /**
+     * <p>Constructor for CorrMatrixConverter.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public CorrMatrixConverter(DataWrapper wrapper, Parameters params) {
         ICovarianceMatrix covMatrix;
 
@@ -68,6 +75,7 @@ public class CorrMatrixConverter extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

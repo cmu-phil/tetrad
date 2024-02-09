@@ -26,6 +26,7 @@ import java.util.concurrent.RecursiveAction;
  * Feb 9, 2016 3:19:52 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class VarianceVectorForkJoin implements Variance {
 
@@ -37,6 +38,12 @@ public class VarianceVectorForkJoin implements Variance {
 
     private final int numOfThreads;
 
+    /**
+     * <p>Constructor for VarianceVectorForkJoin.</p>
+     *
+     * @param data an array of {@link float} objects
+     * @param numOfThreads a int
+     */
     public VarianceVectorForkJoin(float[][] data, int numOfThreads) {
         this.data = data;
         this.numOfRows = data.length;
@@ -44,6 +51,7 @@ public class VarianceVectorForkJoin implements Variance {
         this.numOfThreads = (numOfThreads > this.numOfCols) ? this.numOfCols : numOfThreads;
     }
 
+    /** {@inheritDoc} */
     @Override
     public float[] compute(boolean biasCorrected) {
         float[] means = new float[this.numOfCols];

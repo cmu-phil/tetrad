@@ -36,6 +36,7 @@ import java.util.concurrent.ForkJoinPool;
  * Some static utility methods for dealing with data sets.
  *
  * @author Various folks.
+ * @version $Id: $Id
  */
 public final class DataUtils {
 
@@ -76,6 +77,8 @@ public final class DataUtils {
     }
 
     /**
+     * <p>defaultCategory.</p>
+     *
      * @param index Ond plus the given index.
      * @return the default category for index i. (The default category should ALWAYS be obtained by calling this
      * method.)
@@ -86,6 +89,8 @@ public final class DataUtils {
 
     /**
      * A discrete data set used to construct some other serializable instances.
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet discreteSerializableInstance() {
         List<Node> variables = new LinkedList<>();
@@ -97,7 +102,10 @@ public final class DataUtils {
     }
 
     /**
+     * <p>containsMissingValue.</p>
+     *
      * @return true iff the data sets contains a missing value.
+     * @param data a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public static boolean containsMissingValue(Matrix data) {
         for (int i = 0; i < data.getNumRows(); i++) {
@@ -112,6 +120,12 @@ public final class DataUtils {
     }
 
 
+    /**
+     * <p>containsMissingValue.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a boolean
+     */
     public static boolean containsMissingValue(DataSet data) {
         for (int j = 0; j < data.getNumColumns(); j++) {
             Node node = data.getVariable(j);
@@ -137,6 +151,12 @@ public final class DataUtils {
     }
 
 
+    /**
+     * <p>createContinuousVariables.</p>
+     *
+     * @param varNames an array of {@link java.lang.String} objects
+     * @return a {@link java.util.List} object
+     */
     public static List<Node> createContinuousVariables(String[] varNames) {
         List<Node> variables = new LinkedList<>();
 
@@ -148,7 +168,13 @@ public final class DataUtils {
     }
 
     /**
+     * <p>subMatrix.</p>
+     *
      * @return the submatrix of m with variables in the order of the x variables.
+     * @param m a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.List} object
      */
     public static Matrix subMatrix(ICovarianceMatrix m, Node x, Node y, List<Node> z) {
         if (x == null) {
@@ -194,7 +220,14 @@ public final class DataUtils {
     }
 
     /**
+     * <p>subMatrix.</p>
+     *
      * @return the submatrix of m with variables in the order of the x variables.
+     * @param m a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param variables a {@link java.util.List} object
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.List} object
      */
     public static Matrix subMatrix(Matrix m, List<Node> variables, Node x, Node y, List<Node> z) {
         if (x == null) {
@@ -231,7 +264,14 @@ public final class DataUtils {
     }
 
     /**
+     * <p>subMatrix.</p>
+     *
      * @return the submatrix of m with variables in the order of the x variables.
+     * @param m a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param indexMap a {@link java.util.Map} object
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.List} object
      */
     public static Matrix subMatrix(Matrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
         if (x == null) {
@@ -267,7 +307,14 @@ public final class DataUtils {
     }
 
     /**
+     * <p>subMatrix.</p>
+     *
      * @return the submatrix of m with variables in the order of the x variables.
+     * @param m a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param indexMap a {@link java.util.Map} object
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.List} object
      */
     public static Matrix subMatrix(ICovarianceMatrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
         int[] indices = new int[2 + z.size()];
@@ -282,6 +329,12 @@ public final class DataUtils {
         return m.getSelection(indices, indices);
     }
 
+    /**
+     * <p>means.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public static Vector means(Matrix data) {
         Vector means = new Vector(data.getNumColumns());
 
@@ -308,6 +361,9 @@ public final class DataUtils {
 
     /**
      * Column major data.
+     *
+     * @param data an array of {@link double} objects
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
     public static Vector means(double[][] data) {
         Vector means = new Vector(data.length);
@@ -334,6 +390,12 @@ public final class DataUtils {
         return means;
     }
 
+    /**
+     * <p>cov.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public static Matrix cov(Matrix data) {
         for (int j = 0; j < data.getNumColumns(); j++) {
             double sum = 0.0;
@@ -411,6 +473,12 @@ public final class DataUtils {
         return out;
     }
 
+    /**
+     * <p>mean.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public static Vector mean(Matrix data) {
         Vector mean = new Vector(data.getNumColumns());
 
@@ -423,6 +491,8 @@ public final class DataUtils {
     }
 
     /**
+     * <p>choleskySimulation.</p>
+     *
      * @param cov The variables and covariance matrix over the variables.
      * @return The simulated data.
      */
@@ -477,6 +547,12 @@ public final class DataUtils {
         return dataSet;
     }
 
+    /**
+     * <p>ranks.</p>
+     *
+     * @param x an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] ranks(double[] x) {
         int numRows = x.length;
         double[] ranks = new double[numRows];
@@ -497,6 +573,13 @@ public final class DataUtils {
         return ranks;
     }
 
+    /**
+     * <p>getExampleNonsingular.</p>
+     *
+     * @param covarianceMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param depth a int
+     * @return a {@link java.util.List} object
+     */
     public static List<Node> getExampleNonsingular(ICovarianceMatrix covarianceMatrix, int depth) {
         List<Node> variables = covarianceMatrix.getVariables();
 
@@ -525,6 +608,9 @@ public final class DataUtils {
 
     /**
      * Returns the equivalent sample size, assuming all units are equally correlated and all unit variances are equal.
+     *
+     * @param covariances a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @return a double
      */
     public static double getEss(ICovarianceMatrix covariances) {
         Matrix C = new CorrelationMatrix(covariances).getMatrix();

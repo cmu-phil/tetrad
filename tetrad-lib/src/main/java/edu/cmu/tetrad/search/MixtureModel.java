@@ -12,6 +12,7 @@ import edu.cmu.tetrad.util.Matrix;
  * distributions.
  *
  * @author Madelyn Glymour
+ * @version $Id: $Id
  */
 public class MixtureModel {
     // The mixed data set
@@ -77,6 +78,8 @@ public class MixtureModel {
     }
 
     /**
+     * <p>Getter for the field <code>data</code>.</p>
+     *
      * @return the mixed data set in array form
      */
     public double[][] getData() {
@@ -84,6 +87,8 @@ public class MixtureModel {
     }
 
     /**
+     * <p>getMeans.</p>
+     *
      * @return the means matrix
      */
     public double[][] getMeans() {
@@ -91,6 +96,8 @@ public class MixtureModel {
     }
 
     /**
+     * <p>getWeights.</p>
+     *
      * @return the weights array
      */
     public double[] getWeights() {
@@ -98,6 +105,8 @@ public class MixtureModel {
     }
 
     /**
+     * <p>getVariances.</p>
+     *
      * @return the variance matrix
      */
     public Matrix[] getVariances() {
@@ -105,6 +114,8 @@ public class MixtureModel {
     }
 
     /**
+     * <p>Getter for the field <code>cases</code>.</p>
+     *
      * @return an array assigning each case an integer corresponding to a model
      */
     public int[] getCases() {
@@ -113,6 +124,9 @@ public class MixtureModel {
 
     /**
      * Classifies a given case into a model, based on which model has the highest gamma value for that case.
+     *
+     * @param caseNum a int
+     * @return a int
      */
     public int getDistribution(int caseNum) {
 
@@ -161,6 +175,11 @@ public class MixtureModel {
      * Sort the mixed data set into its component data sets.
      *
      * @return a list of data sets
+     */
+    /**
+     * <p>getDemixedData.</p>
+     *
+     * @return an array of {@link edu.cmu.tetrad.data.DataSet} objects
      */
     public DataSet[] getDemixedData() {
         DoubleDataBox[] dataBoxes = new DoubleDataBox[numModels];

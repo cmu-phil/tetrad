@@ -31,7 +31,10 @@ import java.awt.*;
 import java.util.List;
 
 /**
+ * <p>FactorAnalysisEditor class.</p>
+ *
  * @author Michael Freenor
+ * @version $Id: $Id
  */
 public class FactorAnalysisEditor extends AbstractSearchEditor {
 
@@ -39,6 +42,8 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
 
     /**
      * Opens up an editor to let the user view the given PcRunner.
+     *
+     * @param runner a {@link edu.cmu.tetradapp.model.FactorAnalysisRunner} object
      */
     public FactorAnalysisEditor(FactorAnalysisRunner runner) {
         super(runner, "Factor Analysis");
@@ -46,14 +51,29 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
 
     //=============================== Public Methods ==================================//
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return getWorkbench().getGraph();
     }
 
+    /**
+     * <p>layoutByGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void layoutByGraph(Graph graph) {
         getWorkbench().layoutByGraph(graph);
     }
 
+    /**
+     * <p>getVisibleRect.</p>
+     *
+     * @return a {@link java.awt.Rectangle} object
+     */
     public Rectangle getVisibleRect() {
         return getWorkbench().getVisibleRect();
     }
@@ -62,6 +82,8 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
 
 
     /**
+     * {@inheritDoc}
+     *
      * Sets up the editor, does the layout, and so on.
      */
     protected void setup(String resultLabel) {
@@ -103,10 +125,16 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
         add(panel);
     }
 
+    /** {@inheritDoc} */
     protected void addSpecialMenus(JMenuBar menuBar) {
 
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         Graph sourceGraph = getWorkbench().getGraph();
 
@@ -117,16 +145,27 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
         return sourceGraph;
     }
 
+    /**
+     * <p>getVarNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVarNames() {
         return (List<String>) getAlgorithmRunner().getParams().get("varNames", null);
     }
 
+    /**
+     * <p>getToolbar.</p>
+     *
+     * @return a {@link javax.swing.JPanel} object
+     */
     public JPanel getToolbar() {
         return null;
     }
 
     //================================PRIVATE METHODS====================//
 
+    /** {@inheritDoc} */
     protected void doDefaultArrangement(Graph resultGraph) {
         if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
             LayoutUtil.arrangeBySourceGraph(resultGraph,

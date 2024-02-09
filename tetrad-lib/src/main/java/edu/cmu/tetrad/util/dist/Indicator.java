@@ -26,6 +26,9 @@ import edu.cmu.tetrad.util.RandomUtil;
 /**
  * Created by IntelliJ IDEA. User: jdramsey Date: Jan 15, 2008 Time: 5:07:01 PM To change this template use File |
  * Settings | File Templates.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class Indicator implements Distribution {
     private static final long serialVersionUID = 23L;
@@ -48,14 +51,25 @@ public class Indicator implements Distribution {
         return new Indicator();
     }
 
+    /**
+     * <p>getNumParameters.</p>
+     *
+     * @return a int
+     */
     public int getNumParameters() {
         return 1;
     }
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return "Indicator";
     }
 
+    /** {@inheritDoc} */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.p = value;
@@ -64,6 +78,7 @@ public class Indicator implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /** {@inheritDoc} */
     public double getParameter(int index) {
         if (index == 0) {
             return this.p;
@@ -72,6 +87,7 @@ public class Indicator implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /** {@inheritDoc} */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Cutuff";
@@ -80,10 +96,20 @@ public class Indicator implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * <p>nextRandom.</p>
+     *
+     * @return a double
+     */
     public double nextRandom() {
         return RandomUtil.getInstance().nextDouble() < this.p ? 1 : 0;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Indicator(" + this.p + ")";
     }

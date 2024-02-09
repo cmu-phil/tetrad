@@ -34,6 +34,7 @@ import java.util.List;
  * Note that in the calculation, points x such that log(1 - distributions.get(x))) is infinite are ignored.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MultiGeneralAndersonDarlingTest {
 
@@ -60,6 +61,9 @@ public class MultiGeneralAndersonDarlingTest {
 
     /**
      * Constructs an Anderson-Darling test for the given column of data.
+     *
+     * @param data a {@link java.util.List} object
+     * @param distributions a {@link java.util.List} object
      */
     public MultiGeneralAndersonDarlingTest(List<List<Double>> data, List<RealDistribution> distributions) {
         if (distributions == null) {
@@ -78,6 +82,8 @@ public class MultiGeneralAndersonDarlingTest {
     }
 
     /**
+     * <p>Getter for the field <code>aSquared</code>.</p>
+     *
      * @return the A^2 statistic.
      */
     public double getASquared() {
@@ -85,6 +91,8 @@ public class MultiGeneralAndersonDarlingTest {
     }
 
     /**
+     * <p>Getter for the field <code>aSquaredStar</code>.</p>
+     *
      * @return the A^2* statistic, which is the A^2 statistic adjusted heuristically for sample size.
      */
     public double getASquaredStar() {
@@ -92,6 +100,8 @@ public class MultiGeneralAndersonDarlingTest {
     }
 
     /**
+     * <p>Getter for the field <code>p</code>.</p>
+     *
      * @return the p value of the A^2* statistic, which is interpolated using exponential functions.
      */
     public double getP() {

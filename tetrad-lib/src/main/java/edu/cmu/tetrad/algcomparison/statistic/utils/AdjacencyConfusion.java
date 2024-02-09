@@ -11,6 +11,7 @@ import java.util.Set;
  * A confusion matrix for adjacencies--i.e. TP, FP, TN, FN for counts of adjacencies.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class AdjacencyConfusion {
     private final int tn;
@@ -20,6 +21,7 @@ public class AdjacencyConfusion {
 
     /**
      * Constructs a new AdjacencyConfusion object from the given graphs.
+     *
      * @param truth The true graph.
      * @param est The estimated graph.
      */
@@ -61,6 +63,7 @@ public class AdjacencyConfusion {
 
     /**
      * Returns the true positive count.
+     *
      * @return the true positive count.
      */
     public int getTp() {
@@ -69,6 +72,7 @@ public class AdjacencyConfusion {
 
     /**
      * Returns the false positive count.
+     *
      * @return the false positive count.
      */
     public int getFp() {
@@ -77,6 +81,7 @@ public class AdjacencyConfusion {
 
     /**
      * Returns the false negative count.
+     *
      * @return the false negative count.
      */
     public int getFn() {
@@ -85,6 +90,7 @@ public class AdjacencyConfusion {
 
     /**
      * Returns the true negative count.
+     *
      * @return the true negative count.
      */
     public int getTn() {

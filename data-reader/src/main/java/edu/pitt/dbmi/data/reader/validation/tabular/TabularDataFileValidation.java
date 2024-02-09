@@ -39,6 +39,7 @@ import java.util.List;
  * Dec 12, 2018 10:56:57 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class TabularDataFileValidation extends DatasetFileReader implements TabularDataValidation {
 
@@ -56,11 +57,9 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
     }
 
     /**
-     * Constructor.
+     * {@inheritDoc}
      *
-     * @param dataColumns the data columns.
-     * @param hasHeader   the data has header.
-     * @return the validation results.
+     * Constructor.
      */
     @Override
     public List<ValidationResult> validate(DataColumn[] dataColumns, boolean hasHeader) {
@@ -918,6 +917,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
         results.add(result);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setMaximumNumberOfMessages(int maxNumOfMsg) {
         this.maxNumOfMsg = maxNumOfMsg;

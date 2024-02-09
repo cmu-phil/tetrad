@@ -43,6 +43,7 @@ import java.util.Set;
  * Displays data objects and allows users to edit these objects as well as load and save them.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class DataEditor extends JPanel implements KnowledgeEditable,
         PropertyChangeListener {
@@ -67,6 +68,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         this.parameters = new Parameters();
     }
 
+    /**
+     * <p>Constructor for DataEditor.</p>
+     *
+     * @param tabPlacement a int
+     */
     public DataEditor(int tabPlacement) {
         this.tabbedPane = new JTabbedPane(tabPlacement);
         this.parameters = new Parameters();
@@ -82,28 +88,60 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         this.parameters = new Parameters();
     }
 
+    /**
+     * <p>Constructor for DataEditor.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     */
     public DataEditor(DataWrapper dataWrapper) {
         this(dataWrapper, true);
     }
 
+    /**
+     * <p>Constructor for DataEditor.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param tabPlacement a int
+     */
     public DataEditor(DataWrapper dataWrapper, int tabPlacement) {
         this(dataWrapper, true, tabPlacement);
     }
 
+    /**
+     * <p>Constructor for DataEditor.</p>
+     *
+     * @param comparison a {@link edu.cmu.tetradapp.model.TabularComparison} object
+     */
     public DataEditor(TabularComparison comparison) {
         this(new DataWrapper(comparison.getDataSet()));
     }
 
+    /**
+     * <p>Constructor for DataEditor.</p>
+     *
+     * @param comparison a {@link edu.cmu.tetradapp.model.TabularComparison} object
+     * @param showMenus a boolean
+     */
     public DataEditor(TabularComparison comparison, boolean showMenus) {
         this(new DataWrapper(comparison.getDataSet()), showMenus);
     }
 
+    /**
+     * <p>Constructor for DataEditor.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param showMenus a boolean
+     */
     public DataEditor(DataWrapper dataWrapper, boolean showMenus) {
         this(dataWrapper, showMenus, SwingConstants.TOP);
     }
 
     /**
      * Constructs a standalone data editor.
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param showMenus a boolean
+     * @param tabPlacement a int
      */
     public DataEditor(DataWrapper dataWrapper, boolean showMenus, int tabPlacement) {
         if (dataWrapper == null) {
@@ -275,6 +313,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         validate();
     }
 
+    /**
+     * <p>reset.</p>
+     *
+     * @param extraModels a {@link edu.cmu.tetrad.data.DataModelList} object
+     */
     public void reset(DataModelList extraModels) {
         tabbedPane().removeAll();
         setPreferredSize(new Dimension(600, 400));
@@ -304,6 +347,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         firePropertyChange("modelChanged", null, null);
     }
 
+    /**
+     * <p>reset.</p>
+     *
+     * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public void reset(DataModel dataModel) {
         tabbedPane().removeAll();
         setPreferredSize(new Dimension(600, 400));
@@ -333,6 +381,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     }
 
     /**
+     * <p>getSelectedDataModel.</p>
+     *
      * @return the data sets that's currently in front.
      */
     public DataModel getSelectedDataModel() {
@@ -346,6 +396,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         return scrollPane.getDataModel();
     }
 
+    /**
+     * <p>selectFirstTab.</p>
+     */
     public void selectFirstTab() {
 //        tabbedPane().setSelectedIndex(tabbedPane().getTabCount() - 1);
         tabbedPane().setSelectedIndex(0);
@@ -365,29 +418,48 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         }
     }
 
+    /**
+     * <p>getVarNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVarNames() {
         return this.dataWrapper.getVarNames();
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return this.dataWrapper.getSourceGraph();
     }
 
     /**
      * Retrieves the data wrapper for this editor (read-only).
+     *
+     * @return a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public DataWrapper getDataWrapper() {
         return this.dataWrapper;
     }
 
+    /**
+     * <p>getKnowledge.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.dataWrapper.getKnowledge();
     }
 
+    /** {@inheritDoc} */
     public void setKnowledge(Knowledge knowledge) {
         this.dataWrapper.setKnowledge(knowledge);
     }
 
+    /** {@inheritDoc} */
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
     }
@@ -755,10 +827,20 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         return this.tabbedPane;
     }
 
+    /**
+     * <p>getDataModelList.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModelList} object
+     */
     public DataModelList getDataModelList() {
         return this.dataWrapper.getDataModelList();
     }
 
+    /**
+     * <p>Getter for the field <code>parameters</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParameters() {
         return this.parameters;
     }

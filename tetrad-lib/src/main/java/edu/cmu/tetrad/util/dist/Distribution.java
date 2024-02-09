@@ -29,19 +29,23 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * randomness.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @SuppressWarnings("UnusedDeclaration")
 public interface Distribution extends TetradSerializable {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**
      * Returns the number of parameters in the distribution.
+     *
      * @return the number of parameters.
      */
     int getNumParameters();
 
     /**
      * Returns the name of the distribution.
+     *
      * @return the name.
      */
     String getName();
@@ -56,6 +60,7 @@ public interface Distribution extends TetradSerializable {
 
     /**
      * Returns the index'th parameter.
+     *
      * @param index Ibid. Muist be &lt;= 0 and &lt; # parameters.
      * @return The Ibid.
      */
@@ -71,6 +76,7 @@ public interface Distribution extends TetradSerializable {
 
     /**
      * Returns the next random number from the distribution.
+     *
      * @return Ibid.
      */
     double nextRandom();

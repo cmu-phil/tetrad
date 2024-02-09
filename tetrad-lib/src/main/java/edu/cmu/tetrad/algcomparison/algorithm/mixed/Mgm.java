@@ -18,6 +18,7 @@ import java.util.List;
  * MGM.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "MGM",
@@ -29,9 +30,13 @@ public class Mgm implements Algorithm {
 
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for Mgm.</p>
+     */
     public Mgm() {
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel ds, Parameters parameters) {
         if (!(ds instanceof DataSet)) {
@@ -102,21 +107,25 @@ public class Mgm implements Algorithm {
     }
 
     // Need to marry the parents on this.
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return GraphUtils.undirectedGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Returns the output of the MGM (Mixed Graphical Model) algorithm (a Markov random field)";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

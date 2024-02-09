@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author josephramsey
  * @see IndTestFisherZ
+ * @version $Id: $Id
  */
 public final class IndTestFisherZConcatenateResiduals implements IndependenceTest {
 
@@ -95,18 +96,15 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         this.dataSets = dataSets2;
     }
 
-    /**
-     * @throws UnsupportedOperationException Not implemented.
-     */
+    /** {@inheritDoc} */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Determines whether x _||_ y | z.
+     * {@inheritDoc}
      *
-     * @return an independence result
-     * @throws org.apache.commons.math3.linear.SingularMatrixException if a matrix singularity is encountered.
+     * Determines whether x _||_ y | z.
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
@@ -181,12 +179,16 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     /**
      * Gets the getModel significance level.
+     *
+     * @return a double
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -200,6 +202,8 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
      * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
@@ -207,9 +211,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         return this.variables;
     }
 
-    /**
-     * @throws UnsupportedOperationException Not implemented.
-     */
+    /** {@inheritDoc} */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
@@ -224,9 +226,9 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * Returns teh covaraince matrix of the concatenated data.
+     * {@inheritDoc}
      *
-     * @return This covariance matrix.
+     * Returns teh covaraince matrix of the concatenated data.
      */
     @Override
     public ICovarianceMatrix getCov() {
@@ -240,6 +242,8 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of this test.
      */
     public String toString() {
@@ -256,9 +260,9 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * Sets whether verbose output is printed.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets whether verbose output is printed.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

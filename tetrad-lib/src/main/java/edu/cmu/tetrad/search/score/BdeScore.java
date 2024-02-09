@@ -40,6 +40,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @see BdeuScore
+ * @version $Id: $Id
  */
 public class BdeScore implements DiscreteScore {
 
@@ -150,12 +151,9 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * Returns the difference between localScore(y | z, x) and localScore(y | z)
+     * {@inheritDoc}
      *
-     * @param x The index of the x variable
-     * @param y The index of the y variable.
-     * @param z The indices of the z variables
-     * @return The difference in scores.
+     * Returns the difference between localScore(y | z, x) and localScore(y | z)
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -164,9 +162,9 @@ public class BdeScore implements DiscreteScore {
 
 
     /**
-     * Returns the dataset being analyzed.
+     * {@inheritDoc}
      *
-     * @return This dataset.
+     * Returns the dataset being analyzed.
      */
     @Override
     public DataSet getDataSet() {
@@ -182,24 +180,20 @@ public class BdeScore implements DiscreteScore {
         return rowIndex;
     }
 
-    /**
-     * @throws UnsupportedOperationException Since this method is not implemented for this score.
-     */
+    /** {@inheritDoc} */
     public void setStructurePrior(double structurePrior) {
         throw new UnsupportedOperationException("BDe does not use a structure prior.");
     }
 
-    /**
-     * @throws UnsupportedOperationException Since this method is not implemented for this score.
-     */
+    /** {@inheritDoc} */
     public void setSamplePrior(double samplePrior) {
         throw new UnsupportedOperationException("BDe does not use a sample prior.");
     }
 
     /**
-     * Returns the variables of the dataset.
+     * {@inheritDoc}
      *
-     * @return These variables as  list.
+     * Returns the variables of the dataset.
      */
     @Override
     public List<Node> getVariables() {
@@ -216,11 +210,10 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns a judgment of whether the given bump in score allows one to conclude that the edge is an "effect edge"
      * for FGES.
-     *
-     * @param bump The bump.
-     * @return True iff so.
      * @see Fges
      */
     @Override
@@ -229,9 +222,9 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * Returns the maximum degree of the graphs as they're searched.
+     * {@inheritDoc}
      *
-     * @return This maximum degree.
+     * Returns the maximum degree of the graphs as they're searched.
      */
     @Override
     public int getMaxDegree() {
@@ -239,9 +232,9 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * Returns "BDe Score".
+     * {@inheritDoc}
      *
-     * @return This string.
+     * Returns "BDe Score".
      */
     @Override
     public String toString() {

@@ -5,12 +5,22 @@ import java.util.List;
 
 /**
  * Created by Erich on 8/11/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class GdistanceUtils {
     //*************** Just a class of tertiary static methods used in some Gdistance projects*****//
 
     //this method returns a list of percents of how many members of input
     //fall into the various buckets determined by the array of thresholds (ordered from least to greatest)
+    /**
+     * <p>histogram.</p>
+     *
+     * @param input a {@link java.util.List} object
+     * @param thresholds an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] histogram(List<Double> input, double[] thresholds) {
         double[] output;
         output = new double[Array.getLength(thresholds) + 1];

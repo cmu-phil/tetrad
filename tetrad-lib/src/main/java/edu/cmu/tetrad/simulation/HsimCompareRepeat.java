@@ -7,8 +7,16 @@ import java.util.List;
 
 /**
  * Created by Erich on 7/15/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class HsimCompareRepeat {
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         final int count = 1;
 

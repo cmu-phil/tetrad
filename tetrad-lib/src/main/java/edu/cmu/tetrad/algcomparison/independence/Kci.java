@@ -17,6 +17,7 @@ import java.util.List;
  * Wrapper for KCI test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @TestOfIndependence(
         name = "KCI-Test (Kernel Conditional Independence Test)",
@@ -30,11 +31,9 @@ public class Kci implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
-     * Returns a KCI test.
+     * {@inheritDoc}
      *
-     * @param dataSet    The data set to test independence against.
-     * @param parameters The paramters of the test.
-     * @return A KCI test.
+     * Returns a KCI test.
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
@@ -49,9 +48,9 @@ public class Kci implements IndependenceWrapper {
     }
 
     /**
-     * Returns the name of the test.
+     * {@inheritDoc}
      *
-     * @return The name of the test.
+     * Returns the name of the test.
      */
     @Override
     public String getDescription() {
@@ -59,9 +58,9 @@ public class Kci implements IndependenceWrapper {
     }
 
     /**
-     * Returns the data type of the test, which is continuous.
+     * {@inheritDoc}
      *
-     * @return The data type of the test, which is continuous.
+     * Returns the data type of the test, which is continuous.
      * @see DataType
      */
     @Override
@@ -70,9 +69,9 @@ public class Kci implements IndependenceWrapper {
     }
 
     /**
-     * Returns the parameters of the test.
+     * {@inheritDoc}
      *
-     * @return The parameters of the test.
+     * Returns the parameters of the test.
      */
     @Override
     public List<String> getParameters() {

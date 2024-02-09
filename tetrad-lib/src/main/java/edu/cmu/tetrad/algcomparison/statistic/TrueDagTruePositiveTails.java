@@ -9,20 +9,24 @@ import edu.cmu.tetrad.graph.Graph;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TrueDagTruePositiveTails implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "DTPT";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "True Positives for Tails compared to true DAG";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -44,6 +48,7 @@ public class TrueDagTruePositiveTails implements Statistic {
         return tp;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

@@ -20,6 +20,7 @@ import java.util.concurrent.RecursiveAction;
  * StARS
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class StARS implements Algorithm {
 
@@ -29,6 +30,14 @@ public class StARS implements Algorithm {
     private final String parameter;
     private final Algorithm algorithm;
 
+    /**
+     * <p>Constructor for StARS.</p>
+     *
+     * @param algorithm a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
+     * @param parameter a {@link java.lang.String} object
+     * @param low a double
+     * @param high a double
+     */
     public StARS(Algorithm algorithm, String parameter, double low, double high) {
         if (low >= high) {
             throw new IllegalArgumentException("Must have low < high");
@@ -124,6 +133,7 @@ public class StARS implements Algorithm {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         DataSet _dataSet;
@@ -165,21 +175,25 @@ public class StARS implements Algorithm {
         return this.algorithm.search(dataSet, _parameters);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return this.algorithm.getComparisonGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "StARS for " + this.algorithm.getDescription() + " parameter = " + this.parameter;
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.algorithm.getDataType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.algorithm.getParameters();

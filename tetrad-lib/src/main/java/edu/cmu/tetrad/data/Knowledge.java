@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
  *
  * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class Knowledge implements TetradSerializable {
 
@@ -70,6 +71,9 @@ public final class Knowledge implements TetradSerializable {
     private final Map<KnowledgeGroup, OrderedPair<Set<String>>> knowledgeGroupRules;
     private boolean defaultToKnowledgeLayout;
 
+    /**
+     * <p>Constructor for Knowledge.</p>
+     */
     public Knowledge() {
         this.variables = new HashSet<>();
         this.forbiddenRulesSpecs = new ArrayList<>();
@@ -79,6 +83,11 @@ public final class Knowledge implements TetradSerializable {
         this.knowledgeGroupRules = new HashMap<>();
     }
 
+    /**
+     * <p>Constructor for Knowledge.</p>
+     *
+     * @param nodes a {@link java.util.Collection} object
+     */
     public Knowledge(Collection<String> nodes) {
         this();
 
@@ -91,6 +100,11 @@ public final class Knowledge implements TetradSerializable {
         });
     }
 
+    /**
+     * <p>Constructor for Knowledge.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new IllegalArgumentException("Knowledge is null.");
@@ -113,6 +127,8 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public static Knowledge serializableInstance() {
         return new Knowledge();
@@ -210,6 +226,9 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Adds the given variable or wildcard cpdag to the given tier. The tier is a non-negative integer.
+     *
+     * @param tier a int
+     * @param spec a {@link java.lang.String} object
      */
     public void addToTier(int tier, String spec) {
         if (tier < 0) {
@@ -239,6 +258,8 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Puts a variable into tier i if its name is xxx:ti for some xxx and some i.
+     *
+     * @param varNames a {@link java.util.List} object
      */
     public void addToTiersByVarNames(List<String> varNames) {
         if (!this.variables.containsAll(varNames)) {
@@ -262,6 +283,8 @@ public final class Knowledge implements TetradSerializable {
     /**
      * Adds a knowledge group. Legacy method, replaced by setForbidden, setRequired with cpdags. Needed for the
      * interface.
+     *
+     * @param group a {@link edu.cmu.tetrad.data.KnowledgeGroup} object
      */
     public void addKnowledgeGroup(KnowledgeGroup group) {
         if (group == null) throw new NullPointerException("Knowledge group is null.");
@@ -282,6 +305,11 @@ public final class Knowledge implements TetradSerializable {
         }
     }
 
+    /**
+     * <p>addVariable.</p>
+     *
+     * @param varName a {@link java.lang.String} object
+     */
     public void addVariable(String varName) {
         this.variables.add(varName);
     }
@@ -298,6 +326,8 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Iterator over the KnowledgeEdge's representing forbidden edges.
+     *
+     * @return a {@link java.util.Iterator} object
      */
     public Iterator<KnowledgeEdge> forbiddenEdgesIterator() {
         List<KnowledgeEdge> forbiddenEdges = getListOfForbiddenEdges();
@@ -305,6 +335,8 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>knowledgeGroups</code>.</p>
+     *
      * @return a shallow copy of the list of group rules.
      */
     public List<KnowledgeGroup> getKnowledgeGroups() {
@@ -323,6 +355,8 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
+     * <p>getVariablesNotInTiers.</p>
+     *
      * @return the list of edges not in any tier.
      */
     public List<String> getVariablesNotInTiers() {
@@ -336,6 +370,8 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
+     * <p>getTier.</p>
+     *
      * @param tier the index of the desired tier
      * @return a copy of this tier
      */
@@ -352,16 +388,28 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
+     * <p>getNumTiers.</p>
+     *
      * @return the number of temporal tiers
      */
     public int getNumTiers() {
         return this.tierSpecs.size();
     }
 
+    /**
+     * <p>isDefaultToKnowledgeLayout.</p>
+     *
+     * @return a boolean
+     */
     public boolean isDefaultToKnowledgeLayout() {
         return this.defaultToKnowledgeLayout;
     }
 
+    /**
+     * <p>Setter for the field <code>defaultToKnowledgeLayout</code>.</p>
+     *
+     * @param defaultToKnowledgeLayout a boolean
+     */
     public void setDefaultToKnowledgeLayout(boolean defaultToKnowledgeLayout) {
         this.defaultToKnowledgeLayout = defaultToKnowledgeLayout;
     }
@@ -378,6 +426,10 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Determines whether the edge var1 --&gt; var2 is forbidden.
+     *
+     * @param var1 a {@link java.lang.String} object
+     * @param var2 a {@link java.lang.String} object
+     * @return a boolean
      */
     public boolean isForbidden(String var1, String var2) {
         return isForbiddenByRules(var1, var2) || isForbiddenByTiers(var1, var2);
@@ -385,6 +437,10 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Legacy.
+     *
+     * @param var1 a {@link java.lang.String} object
+     * @param var2 a {@link java.lang.String} object
+     * @return a boolean
      */
     public boolean isForbiddenByGroups(String var1, String var2) {
         for (KnowledgeGroup group : this.knowledgeGroups) {
@@ -401,6 +457,10 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Determines whether the edge var1 --&gt; var2 is forbidden by the temporal tiers.
+     *
+     * @param var1 a {@link java.lang.String} object
+     * @param var2 a {@link java.lang.String} object
+     * @return a boolean
      */
     public boolean isForbiddenByTiers(String var1, String var2) {
         for (int i = tierSpecs.size() - 1; i >= 0; i--) {
@@ -416,6 +476,10 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Determines whether the edge var1 --&gt; var2 is required.
+     *
+     * @param var1 a {@link java.lang.String} object
+     * @param var2 a {@link java.lang.String} object
+     * @return a boolean
      */
     public boolean isRequired(String var1, String var2) {
         for (OrderedPair<Set<String>> o : this.requiredRulesSpecs) {
@@ -429,6 +493,10 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Legacy.
+     *
+     * @param var1 a {@link java.lang.String} object
+     * @param var2 a {@link java.lang.String} object
+     * @return a boolean
      */
     public boolean isRequiredByGroups(String var1, String var2) {
         for (KnowledgeGroup group : this.knowledgeGroups) {
@@ -445,6 +513,8 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * true if there is no background knowledge recorded.
+     *
+     * @return a boolean
      */
     public boolean isEmpty() {
         return this.forbiddenRulesSpecs.isEmpty()
@@ -454,6 +524,9 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Checks whether it is the case that any variable is forbidden by any other variable within a given tier.
+     *
+     * @param tier a int
+     * @return a boolean
      */
     public boolean isTierForbiddenWithin(int tier) {
         ensureTiers(tier);
@@ -466,6 +539,12 @@ public final class Knowledge implements TetradSerializable {
         return this.forbiddenRulesSpecs.contains(new OrderedPair<>(varsInTier, varsInTier));
     }
 
+    /**
+     * <p>isViolatedBy.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a boolean
+     */
     public boolean isViolatedBy(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Sorry, a graph hasn't been provided.");
@@ -481,12 +560,21 @@ public final class Knowledge implements TetradSerializable {
                 });
     }
 
+    /**
+     * <p>noEdgeRequired.</p>
+     *
+     * @param x a {@link java.lang.String} object
+     * @param y a {@link java.lang.String} object
+     * @return a boolean
+     */
     public boolean noEdgeRequired(String x, String y) {
         return !(isRequired(x, y) || isRequired(y, x));
     }
 
     /**
      * Removes the given variable by name or search string from all tiers.
+     *
+     * @param spec a {@link java.lang.String} object
      */
     public void removeFromTiers(String spec) {
         if (spec == null) {
@@ -505,6 +593,8 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Removes the knowledge group at the given index.
+     *
+     * @param index a int
      */
     public void removeKnowledgeGroup(int index) {
         OrderedPair<Set<String>> old = this.knowledgeGroupRules.get(this.knowledgeGroups.get(index));
@@ -517,6 +607,8 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Iterator over the KnowledgeEdge's representing required edges.
+     *
+     * @return a {@link java.util.Iterator} object
      */
     public Iterator<KnowledgeEdge> requiredEdgesIterator() {
         Set<KnowledgeEdge> edges = new HashSet<>();
@@ -532,6 +624,9 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Marks the edge var1 --&gt; var2 as forbid.
+     *
+     * @param var1 a {@link java.lang.String} object
+     * @param var2 a {@link java.lang.String} object
      */
     public void setForbidden(String var1, String var2) {
         if (isForbidden(var1, var2)) return;
@@ -556,6 +651,9 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Marks the edge var1 --&gt; var2 as not forbid.
+     *
+     * @param var1 a {@link java.lang.String} object
+     * @param var2 a {@link java.lang.String} object
      */
     public void removeForbidden(String var1, String var2) {
         var1 = checkSpec(var1);
@@ -569,6 +667,9 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Marks the edge var1 --&gt; var2 as required.
+     *
+     * @param var1 a {@link java.lang.String} object
+     * @param var2 a {@link java.lang.String} object
      */
     public void setRequired(String var1, String var2) {
         if (isRequired(var1, var1)) return;
@@ -602,6 +703,9 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Marks the edge var1 --&gt; var2 as not required.
+     *
+     * @param var1 a {@link java.lang.String} object
+     * @param var2 a {@link java.lang.String} object
      */
     public void removeRequired(String var1, String var2) {
         var1 = checkSpec(var1);
@@ -615,6 +719,9 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Legacy, do not use.
+     *
+     * @param index a int
+     * @param group a {@link edu.cmu.tetrad.data.KnowledgeGroup} object
      */
     public void setKnowledgeGroup(int index, KnowledgeGroup group) {
         OrderedPair<Set<String>> o = getGroupRule(group);
@@ -640,6 +747,9 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Sets the variable in a given tier to the specified list.
+     *
+     * @param tier a int
+     * @param vars a {@link java.util.List} object
      */
     public void setTier(int tier, List<String> vars) {
         ensureTiers(tier);
@@ -653,6 +763,9 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Forbids any variable from being parent of any other variable within the given tier, or cancels this forbidding.
+     *
+     * @param tier a int
+     * @param forbidden a boolean
      */
     public void setTierForbiddenWithin(int tier, boolean forbidden) {
         ensureTiers(tier);
@@ -670,6 +783,8 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
+     * <p>getMaxTierForbiddenWithin.</p>
+     *
      * @return the largest indes of a tier in which every variable is forbidden by every other variable, or -1 if there
      * is not such tier.
      */
@@ -685,6 +800,8 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Makes a shallow copy.
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public Knowledge copy() {
         return new Knowledge(this);
@@ -692,6 +809,9 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Returns the index of the tier of node if it's in a tier, otherwise -1.
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a int
      */
     public int isInWhichTier(Node node) {
         for (int i = 0; i < this.tierSpecs.size(); i++) {
@@ -707,6 +827,11 @@ public final class Knowledge implements TetradSerializable {
         return -1;
     } // added by DMalinsky for tsFCI on 4/20/16
 
+    /**
+     * <p>getListOfRequiredEdges.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<KnowledgeEdge> getListOfRequiredEdges() {
         Set<KnowledgeEdge> edges = new HashSet<>();
 
@@ -719,10 +844,20 @@ public final class Knowledge implements TetradSerializable {
         return new ArrayList<>(edges);
     }
 
+    /**
+     * <p>getListOfExplicitlyRequiredEdges.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<KnowledgeEdge> getListOfExplicitlyRequiredEdges() {
         return getListOfRequiredEdges();
     }
 
+    /**
+     * <p>getListOfForbiddenEdges.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<KnowledgeEdge> getListOfForbiddenEdges() {
         Set<KnowledgeEdge> edges = new HashSet<>();
 
@@ -764,6 +899,11 @@ public final class Knowledge implements TetradSerializable {
         return new ArrayList<>(edges);
     }
 
+    /**
+     * <p>getListOfExplicitlyForbiddenEdges.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges() {
         Set<OrderedPair<Set<String>>> copy = new HashSet<>(this.forbiddenRulesSpecs);
         forbiddenTierRules().forEach(copy::remove);
@@ -777,6 +917,12 @@ public final class Knowledge implements TetradSerializable {
         return new ArrayList<>(edges);
     }
 
+    /**
+     * <p>isOnlyCanCauseNextTier.</p>
+     *
+     * @param tier a int
+     * @return a boolean
+     */
     public boolean isOnlyCanCauseNextTier(int tier) {
         ensureTiers(tier);
 
@@ -802,6 +948,12 @@ public final class Knowledge implements TetradSerializable {
         return true;
     }
 
+    /**
+     * <p>setOnlyCanCauseNextTier.</p>
+     *
+     * @param tier a int
+     * @param onlyCausesNext a boolean
+     */
     public void setOnlyCanCauseNextTier(int tier, boolean onlyCausesNext) {
         ensureTiers(tier);
 
@@ -821,6 +973,8 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * Computes a hashcode.
+     *
+     * @return a int
      */
     public int hashCode() {
         int hash = 37;
@@ -832,6 +986,8 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Two Knowledge objects are equal just in case their forbidden and required edges are equal, and their tiers are
      * equal.
      */
@@ -847,6 +1003,8 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return the contents of this Knowledge object in String form.
      */
     public String toString() {

@@ -12,6 +12,7 @@ import java.util.Map;
  * Jan 22, 2019 3:39:27 PM
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ * @version $Id: $Id
  */
 public class DisplayLegend extends JComponent implements TetradSerializableExcluded {
 
@@ -19,6 +20,11 @@ public class DisplayLegend extends JComponent implements TetradSerializableExclu
 
     private final Map<String, Object> attributes;
 
+    /**
+     * <p>Constructor for DisplayLegend.</p>
+     *
+     * @param attributes a {@link java.util.Map} object
+     */
     public DisplayLegend(Map<String, Object> attributes) {
         this.attributes = attributes;
         initiateUI();

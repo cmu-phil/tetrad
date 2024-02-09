@@ -42,6 +42,7 @@ import java.util.Set;
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SampleVcpcRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {
@@ -62,15 +63,32 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     /**
      * Constructs a wrapper for the given DataWrapper. The DataWrapper must contain a DataSet that is either a DataSet
      * or a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SampleVcpcRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
+    /**
+     * <p>Constructor for SampleVcpcRunner.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
     public SampleVcpcRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
+    /**
+     * <p>Constructor for SampleVcpcRunner.</p>
+     *
+     * @param semImWrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     */
     public SampleVcpcRunner(SemImWrapper semImWrapper, Parameters params, DataWrapper dataWrapper) {
         super(dataWrapper, params, null);
         this.semIm = semImWrapper.getSemIm();
@@ -79,6 +97,9 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SampleVcpcRunner(Graph graph, Parameters params) {
         super(graph, params);
@@ -86,6 +107,10 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public SampleVcpcRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
@@ -93,6 +118,9 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SampleVcpcRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
@@ -100,6 +128,10 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public SampleVcpcRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
@@ -107,11 +139,22 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public SampleVcpcRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
+    /**
+     * <p>Constructor for SampleVcpcRunner.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param model a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     */
     public SampleVcpcRunner(GraphSource graphWrapper, Parameters params, IndependenceFactsModel model) {
         super(graphWrapper.getGraph(), params);
         this.independenceFactsModel = model;
@@ -120,41 +163,98 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SampleVcpcRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
+    /**
+     * <p>Constructor for SampleVcpcRunner.</p>
+     *
+     * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SampleVcpcRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
+    /**
+     * <p>Constructor for SampleVcpcRunner.</p>
+     *
+     * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
     public SampleVcpcRunner(DagWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getDag(), params, knowledgeBoxModel);
     }
 
+    /**
+     * <p>Constructor for SampleVcpcRunner.</p>
+     *
+     * @param dagWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SampleVcpcRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
+    /**
+     * <p>Constructor for SampleVcpcRunner.</p>
+     *
+     * @param dagWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
     public SampleVcpcRunner(SemGraphWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dagWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
+    /**
+     * <p>Constructor for SampleVcpcRunner.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SampleVcpcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
         this.trueGraph = graphWrapper.getGraph();
     }
 
+    /**
+     * <p>Constructor for SampleVcpcRunner.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
     public SampleVcpcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
         this.trueGraph = graphWrapper.getGraph();
     }
 
+    /**
+     * <p>Constructor for SampleVcpcRunner.</p>
+     *
+     * @param model a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SampleVcpcRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
+    /**
+     * <p>Constructor for SampleVcpcRunner.</p>
+     *
+     * @param model a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
     public SampleVcpcRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
@@ -163,6 +263,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.SampleVcpcRunner} object
      */
     public static SampleVcpcRunner serializableInstance() {
         return new SampleVcpcRunner(Dag.serializableInstance(), new Parameters());
@@ -170,6 +271,9 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
+    /**
+     * <p>execute.</p>
+     */
     public void execute() {
         Knowledge knowledge = (Knowledge) getParams().get("knowledge", new Knowledge());
 
@@ -204,6 +308,11 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     }
 
     //
+    /**
+     * <p>getIndependenceTest.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     */
     public IndependenceTest getIndependenceTest() {
         Object dataModel = getDataModel();
 
@@ -216,11 +325,18 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     }
 
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return getResultGraph();
     }
 
     /**
+     * <p>getTriplesClassificationTypes.</p>
+     *
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
@@ -229,9 +345,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
         return names;
     }
 
-    /**
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
-     */
+    /** {@inheritDoc} */
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
@@ -239,22 +353,47 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
         return triplesList;
     }
 
+    /**
+     * <p>getAdj.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Edge> getAdj() {
         return new HashSet<>(this.sVcpcAdjacent);
     }
 
+    /**
+     * <p>getAppNon.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Edge> getAppNon() {
         return new HashSet<>(this.sVcpcApparent);
     }
 
+    /**
+     * <p>getDefNon.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Edge> getDefNon() {
         return new HashSet<>(this.sVcpcDefinite);
     }
 
+    /**
+     * <p>supportsKnowledge.</p>
+     *
+     * @return a boolean
+     */
     public boolean supportsKnowledge() {
         return true;
     }
 
+    /**
+     * <p>getMeekRules.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.utils.MeekRules} object
+     */
     public MeekRules getMeekRules() {
         MeekRules meekRules = new MeekRules();
         meekRules.setMeekPreventCycles(this.isMeekPreventCycles());
@@ -262,15 +401,26 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
         return meekRules;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getAlgorithmName() {
         return "Sample-VCPC";
     }
 
+    /**
+     * <p>Getter for the field <code>semIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getSemIm() {
         return this.semIm;
     }
 
+    /**
+     * <p>Getter for the field <code>semPm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemPm} object
+     */
     public SemPm getSemPm() {
         return this.semPm;
     }

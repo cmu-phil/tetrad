@@ -70,6 +70,7 @@ import java.util.*;
  * @author josephramsey
  * @see edu.cmu.tetrad.data.Variable
  * @see Knowledge
+ * @version $Id: $Id
  */
 public final class NumberObjectDataSet
         implements DataSet {
@@ -132,6 +133,12 @@ public final class NumberObjectDataSet
         }
     }
 
+    /**
+     * <p>Constructor for NumberObjectDataSet.</p>
+     *
+     * @param data an array of {@link java.lang.Number} objects
+     * @param variables a {@link java.util.List} object
+     */
     public NumberObjectDataSet(Number[][] data, List<Node> variables) {
         for (Number[] _data : data) {
             if (_data.length != variables.size()) {
@@ -165,6 +172,8 @@ public final class NumberObjectDataSet
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.NumberObjectDataSet} object
      */
     public static NumberObjectDataSet serializableInstance() {
         return new NumberObjectDataSet(0, new LinkedList<>());
@@ -207,18 +216,27 @@ public final class NumberObjectDataSet
         }
     }
 
+    /**
+     * <p>Getter for the field <code>columnToTooltip</code>.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public Map<String, String> getColumnToTooltip() {
         return this.columnToTooltip;
     }
 
     /**
      * Gets the name of the data set.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String getName() {
         return this.name;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of the data set.
      */
     public void setName(String name) {
@@ -229,6 +247,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>getNumColumns.</p>
+     *
      * @return the number of variables in the data set.
      */
     public int getNumColumns() {
@@ -236,6 +256,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>getNumRows.</p>
+     *
      * @return the number of rows in the rectangular data set, which is the maximum of the number of rows in the list of
      * wrapped columns.
      */
@@ -244,11 +266,10 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the value at the given (row, column) to the given int value, assuming the variable for the column is
      * discrete.
-     *
-     * @param row    The index of the case.
-     * @param column The index of the variable.
      */
     public void setInt(int row, int column, int value) {
         Node variable = getVariable(column);
@@ -290,11 +311,10 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the value at the given (row, column) to the given double value, assuming the variable for the column is
      * continuous.
-     *
-     * @param row    The index of the case.
-     * @param column The index of the variable.
      */
     public void setDouble(int row, int column, double value) {
         if (!(getVariable(column) instanceof ContinuousVariable)) {
@@ -318,13 +338,7 @@ public final class NumberObjectDataSet
         }
     }
 
-    /**
-     * @param row The index of the case.
-     * @param col The index of the variable.
-     * @return the value at the given row and column as an Object. The type returned is deliberately vague, allowing for
-     * variables of any type. Primitives will be returned as corresponding wrapping objects (for example, doubles as
-     * Doubles).
-     */
+    /** {@inheritDoc} */
     public Object getObject(int row, int col) {
         Object variable = getVariable(col);
 
@@ -344,10 +358,7 @@ public final class NumberObjectDataSet
         throw new IllegalArgumentException("Not a row/col in this data set.");
     }
 
-    /**
-     * @param row The index of the case.
-     * @param col The index of the variable.
-     */
+    /** {@inheritDoc} */
     public void setObject(int row, int col, Object value) {
         Object variable = getVariable(col);
 
@@ -364,6 +375,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>getSelectedIndices.</p>
+     *
      * @return the indices of the currently selected variables.
      */
     public int[] getSelectedIndices() {
@@ -383,6 +396,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>getSelectedVariables.</p>
+     *
      * @return the set of currently selected variables.
      */
     public Set<Node> getSelectedVariables() {
@@ -390,10 +405,10 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Adds the given variable to the data set, increasing the number of columns by one, moving columns i &gt;=
      * <code>index</code> to column i + 1, and inserting a column of missing values at column i.
-     *
-     * @throws IllegalArgumentException if the variable already exists in the dataset.
      */
     public void addVariable(Node variable) {
         if (this.variables.contains(variable)) {
@@ -411,6 +426,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Adds the given variable to the dataset, increasing the number of columns by one, moving columns i &gt;=
      * <code>index</code> to column i + 1, and inserting a column of missing values at column i.
      */
@@ -448,25 +465,25 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>getVariable.</p>
+     *
      * @return the variable at the given column.
+     * @param col a int
      */
     public Node getVariable(int col) {
         return this.variables.get(col);
     }
 
-    /**
-     * @return the index of the column of the given variable. You can also get this by calling
-     * getVariable().indexOf(variable).
-     */
+    /** {@inheritDoc} */
     public int getColumn(Node variable) {
         return this.variables.indexOf(variable);
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Changes the variable for the given column from <code>from</code> to
      * <code>to</code>. Supported currently only for discrete variables.
-     *
-     * @throws IllegalArgumentException if the given change is not supported.
      */
     public void changeVariable(Node from, Node to) {
         if (!(from instanceof DiscreteVariable &&
@@ -512,9 +529,7 @@ public final class NumberObjectDataSet
         this.variables.set(col, _to);
     }
 
-    /**
-     * @return the variable with the given name.
-     */
+    /** {@inheritDoc} */
     public Node getVariable(String varName) {
         for (Node variable1 : this.variables) {
             if (variable1.getName().equals(varName)) {
@@ -526,6 +541,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
      * @return (a copy of) the List of Variables for the data set, in the order of their columns.
      */
     public List<Node> getVariables() {
@@ -533,6 +550,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return a copy of the knowledge associated with this data set. (Cannot be null.)
      */
     public Knowledge getKnowledge() {
@@ -540,6 +559,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets knowledge to be associated with this data set. May not be null.
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -551,6 +572,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>getVariableNames.</p>
+     *
      * @return (a copy of) the List of Variables for the data set, in the order of their columns.
      */
     public List<String> getVariableNames() {
@@ -566,6 +589,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Marks the given column as selected if 'selected' is true or deselected if 'selected' is false.
      */
     public void setSelected(Node variable, boolean selected) {
@@ -588,6 +613,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Ensures that the dataset has at least the number of rows, adding rows if necessary to make that the case. The new
      * rows will be filled with missing values.
      */
@@ -598,6 +625,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Ensures that the dataset has at least the given number of columns, adding continuous variables with unique names
      * until that is true. The new columns will be filled with missing values.
      */
@@ -616,6 +645,7 @@ public final class NumberObjectDataSet
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean existsMissingValue() {
         for (int i = 0; i < getNumRows(); i++) {
@@ -633,15 +663,15 @@ public final class NumberObjectDataSet
         return false;
     }
 
-    /**
-     * @return true iff the given column has been marked as selected.
-     */
+    /** {@inheritDoc} */
     public boolean isSelected(Node variable) {
         return getSelection().contains(variable);
     }
 
     /**
      * Removes the column for the variable at the given index, reducing the number of columns by one.
+     *
+     * @param index a int
      */
     public void removeColumn(int index) {
         if (index < 0 || index >= this.variables.size()) {
@@ -682,6 +712,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Removes the columns for the given variable from the dataset, reducing the number of columns by one.
      */
     public void removeColumn(Node variable) {
@@ -693,6 +725,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Creates and returns a dataset consisting of those variables in the list vars.  Vars must be a subset of the
      * variables of this DataSet. The ordering of the elements of vars will be the same as in the list of variables in
      * this DataSet.
@@ -736,6 +770,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>isContinuous.</p>
+     *
      * @return true iff this is a continuous data set--that is, if every column in it is continuous. (By implication,
      * empty datasets are both discrete and continuous.)
      */
@@ -752,6 +788,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>isDiscrete.</p>
+     *
      * @return true iff this is a discrete data set--that is, if every column in it is discrete. (By implication, empty
      * datasets are both discrete and continuous.)
      */
@@ -768,6 +806,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>isMixed.</p>
+     *
      * @return true if this is a mixed data set--that is, if it contains at least one continuous column and one discrete
      * columnn.
      */
@@ -793,6 +833,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>getCorrelationMatrix.</p>
+     *
      * @return the correlation matrix for this dataset. Defers to
      * <code>Statistic.covariance()</code> in the COLT matrix library, so it
      * inherits the handling of missing values from that library--that is, any off-diagonal correlation involving a
@@ -808,6 +850,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>getCovarianceMatrix.</p>
+     *
      * @return the covariance matrix for this dataset. Defers to
      * <code>Statistic.covariance()</code> in the COLT matrix library, so it
      * inherits the handling of missing values from that library--that is, any covariance involving a column with a
@@ -837,10 +881,7 @@ public final class NumberObjectDataSet
         return cov;
     }
 
-    /**
-     * @return the value at the given row and column, rounded to the nearest integer, or DiscreteVariable.MISSING_VALUE
-     * if the value is missing.
-     */
+    /** {@inheritDoc} */
     public int getInt(int row, int column) {
         Number value = this.data[row][column];
 
@@ -851,10 +892,7 @@ public final class NumberObjectDataSet
         }
     }
 
-    /**
-     * @return the double value at the given row and column. For discrete variables, this returns an int cast to a
-     * double. The double value at the given row and column may be missing, in which case Double.NaN is returned.
-     */
+    /** {@inheritDoc} */
     public double getDouble(int row, int column) {
         Number value = this.data[row][column];
 
@@ -866,6 +904,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string, suitable for printing, of the dataset. Lines are separated by '\n', tokens in the line by
      * whatever character is set in the
      * <code>setOutputDelimiter()</code> method. The list of variables is printed
@@ -943,13 +983,15 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>getDoubleData.</p>
+     *
      * @return a copy of the underlying COLT TetradMatrix matrix, containing all of the data in this dataset, discrete
      * data included. Discrete data will be represented by ints cast to doubles. Rows in this matrix are cases, and
      * columns are variables. The list of variable, in the order in which they occur in the matrix, is given by
      * getVariable(). //     * <p> //     * If isMultipliersCollapsed() returns false, multipliers in the dataset are //
      * * first expanded before returning the matrix, so the number of rows in the //     * returned matrix may not be
      * the same as the number of rows in this //     * dataset.
-     * @throws IllegalStateException if this is not a continuous data set.
+     * @throws java.lang.IllegalStateException if this is not a continuous data set.
      * @see #getVariables //     * @see #isMulipliersCollapsed()
      */
     public Matrix getDoubleData() {
@@ -965,8 +1007,11 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>subsetColumns.</p>
+     *
      * @return a new data set in which the the column at indices[i] is placed at index i, for i = 0 to indices.length -
      * 1. (Moved over from Purify.)
+     * @param indices an array of {@link int} objects
      */
     public DataSet subsetColumns(int[] indices) {
         List<Node> variables = getVariables();
@@ -998,6 +1043,12 @@ public final class NumberObjectDataSet
         return _dataSet;
     }
 
+    /**
+     * <p>subsetRows.</p>
+     *
+     * @param rows an array of {@link int} objects
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet subsetRows(int[] rows) {
         int[] cols = new int[this.data[0].length];
 
@@ -1019,6 +1070,7 @@ public final class NumberObjectDataSet
         return _data;
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataSet subsetRowsColumns(int[] rows, int[] columns) {
         DataSet dataSet = subsetRows(rows);
@@ -1028,6 +1080,8 @@ public final class NumberObjectDataSet
 
     /**
      * Removes the given columns from the data set.
+     *
+     * @param cols an array of {@link int} objects
      */
     public void removeCols(int[] cols) {
 
@@ -1061,6 +1115,8 @@ public final class NumberObjectDataSet
 
     /**
      * Removes the given rows from the data set.
+     *
+     * @param selectedRows an array of {@link int} objects
      */
     public void removeRows(int[] selectedRows) {
 
@@ -1085,11 +1141,7 @@ public final class NumberObjectDataSet
         this.knowledge = this.knowledge.copy(); // Might have to delete some knowledge.
     }
 
-    /**
-     * @return true iff <code>obj</code> is a continuous RectangularDataSet with corresponding variables of the same
-     * name and corresponding data values equal, when rendered using the number format at
-     * <code>NumberFormatUtil.getInstance().getNumberFormat()</code>.
-     */
+    /** {@inheritDoc} */
     public boolean equals(Object obj) {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
@@ -1140,20 +1192,23 @@ public final class NumberObjectDataSet
         return true;
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataSet copy() {
         return new NumberObjectDataSet(this);
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataSet like() {
         return new NumberObjectDataSet(getNumRows(), this.variables);
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the character ('\t', ' ', ',', for instance) that is used to delimit tokens when the data set is printed out
      * using the toString() method.
-     *
      * @see #toString
      */
     public void setOutputDelimiter(Character character) {
@@ -1364,6 +1419,8 @@ public final class NumberObjectDataSet
     }
 
     /**
+     * <p>getNumberFormat.</p>
+     *
      * @return the number format, which by default is the one at
      * <code>NumberFormatUtil.getInstance().getNumberFormat()</code>, but can be
      * set by the user if desired.
@@ -1377,6 +1434,7 @@ public final class NumberObjectDataSet
         return this.nf;
     }
 
+    /** {@inheritDoc} */
     public void setNumberFormat(NumberFormat nf) {
         if (nf == null) {
             throw new NullPointerException();

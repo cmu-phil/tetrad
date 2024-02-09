@@ -19,6 +19,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @TestOfIndependence(
         name = "Fisher Z Test",
@@ -31,6 +32,7 @@ public class FisherZ implements IndependenceWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
         double alpha = parameters.getDouble(Params.ALPHA);
@@ -49,16 +51,19 @@ public class FisherZ implements IndependenceWrapper {
         return test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Fisher Z test";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

@@ -68,6 +68,7 @@ import java.util.Map;
  *
  * @author Donald Crimbchin
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SemImEditor extends JPanel implements LayoutEditable, DoNotScroll {
 
@@ -78,6 +79,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
+     *
+     * @param semImWrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
      */
     public SemImEditor(SemImWrapper semImWrapper) {
         this(semImWrapper, "Graphical Editor", "Tabular Editor", TabbedPaneDefault.GRAPHICAL);
@@ -85,6 +88,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
+     *
+     * @param semEstWrapper a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
      */
     public SemImEditor(SemEstimatorWrapper semEstWrapper) {
         this(new SemImWrapper(semEstWrapper.getSemEstimator().getEstimatedSem()));
@@ -92,6 +97,11 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
     /**
      * Constructs an editor for the given SemIm.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param graphicalEditorTitle a {@link java.lang.String} object
+     * @param tabularEditorTitle a {@link java.lang.String} object
+     * @param tabbedPaneDefault a {@link edu.cmu.tetradapp.editor.SemImEditor.TabbedPaneDefault} object
      */
     public SemImEditor(SemImWrapper wrapper, String graphicalEditorTitle,
                        String tabularEditorTitle, TabbedPaneDefault tabbedPaneDefault) {
@@ -140,57 +150,91 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         this.targetPanel.add(this.oneEditorPanel, BorderLayout.CENTER);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getGraph() {
         return this.oneEditorPanel.getGraph();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<Edge, Object> getModelEdgesToDisplay() {
         return this.oneEditorPanel.getModelEdgesToDisplay();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<Node, Object> getModelNodesToDisplay() {
         return this.oneEditorPanel.getModelNodesToDisplay();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.oneEditorPanel.getKnowledge();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getSourceGraph() {
         return this.oneEditorPanel.getSourceGraph();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void layoutByGraph(Graph graph) {
         this.oneEditorPanel.layoutByGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void layoutByKnowledge() {
 
     }
 
+    /**
+     * <p>setEditable.</p>
+     *
+     * @param editable a boolean
+     */
     public void setEditable(boolean editable) {
         this.oneEditorPanel.setEditable(editable);
     }
 
+    /**
+     * <p>getTabSelectionIndex.</p>
+     *
+     * @return a int
+     */
     public int getTabSelectionIndex() {
         return this.oneEditorPanel.getTabSelectionIndex();
     }
 
+    /**
+     * <p>getMatrixSelection.</p>
+     *
+     * @return a int
+     */
     public int getMatrixSelection() {
         return 0;
     }
 
+    /**
+     * <p>getWorkbench.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public GraphWorkbench getWorkbench() {
         return this.oneEditorPanel.getWorkbench();
     }
 
+    /**
+     * <p>displaySemIm.</p>
+     *
+     * @param updatedSem a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @param tabSelectionIndex a int
+     * @param matrixSelection a int
+     */
     public void displaySemIm(SemIm updatedSem, int tabSelectionIndex, int matrixSelection) {
         this.oneEditorPanel.displaySemIm(updatedSem, tabSelectionIndex, matrixSelection);
     }

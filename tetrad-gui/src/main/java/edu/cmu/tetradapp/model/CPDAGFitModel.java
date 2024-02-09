@@ -44,6 +44,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @author Erin Korber (added remove latents functionality July 2004)
+ * @version $Id: $Id
  */
 public final class CPDAGFitModel implements SessionModel {
     private static final long serialVersionUID = 23L;
@@ -62,6 +63,10 @@ public final class CPDAGFitModel implements SessionModel {
      * Compares the results of a PC to a reference workbench by counting errors of omission and commission. The counts
      * can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
+     *
+     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
+     * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public CPDAGFitModel(Simulation simulation, GeneralAlgorithmRunner algorithmRunner, Parameters params) {
         if (params == null) {
@@ -195,14 +200,26 @@ public final class CPDAGFitModel implements SessionModel {
 
     //==============================PUBLIC METHODS========================//
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>getBayesIm.</p>
+     *
+     * @param i a int
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getBayesIm(int i) {
         return this.bayesIms.get(i);
     }
@@ -220,26 +237,56 @@ public final class CPDAGFitModel implements SessionModel {
         s.defaultReadObject();
     }
 
+    /**
+     * <p>Getter for the field <code>referenceGraphs</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Graph> getReferenceGraphs() {
         return this.referenceGraphs;
     }
 
+    /**
+     * <p>Getter for the field <code>bayesIms</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<BayesIm> getBayesIms() {
         return this.bayesIms;
     }
 
+    /**
+     * <p>Getter for the field <code>dataModelList</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModelList} object
+     */
     public DataModelList getDataModelList() {
         return this.dataModelList;
     }
 
+    /**
+     * <p>Getter for the field <code>bayesPms</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<BayesPm> getBayesPms() {
         return this.bayesPms;
     }
 
+    /**
+     * <p>Getter for the field <code>semPms</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<SemPm> getSemPms() {
         return this.semPms;
     }
 
+    /**
+     * <p>getParams.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.parameters;
     }

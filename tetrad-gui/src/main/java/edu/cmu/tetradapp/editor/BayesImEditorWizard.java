@@ -40,6 +40,7 @@ import java.util.List;
  * conditional on that combination of parent values must sum to 1.0
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class BayesImEditorWizard extends JPanel {
 
@@ -52,6 +53,12 @@ public final class BayesImEditorWizard extends JPanel {
     private BayesImNodeEditingTable editingTable;
     private boolean enableEditing = true;
 
+    /**
+     * <p>Constructor for BayesImEditorWizard.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public BayesImEditorWizard(BayesIm bayesIm, GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -207,6 +214,11 @@ public final class BayesImEditorWizard extends JPanel {
         this.editingTable.grabFocus();
     }
 
+    /**
+     * <p>Getter for the field <code>bayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getBayesIm() {
         return this.bayesIm;
     }
@@ -215,10 +227,20 @@ public final class BayesImEditorWizard extends JPanel {
         return this.workbench;
     }
 
+    /**
+     * <p>isEnableEditing.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEnableEditing() {
         return this.enableEditing;
     }
 
+    /**
+     * <p>enableEditing.</p>
+     *
+     * @param enableEditing a boolean
+     */
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {

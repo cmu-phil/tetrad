@@ -28,6 +28,7 @@ import java.util.List;
  *
  * @author mglymour
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK-Vote",
@@ -44,19 +45,34 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     private ScoreWrapper score;
     private IndependenceWrapper test;
 
+    /**
+     * <p>Constructor for FaskVote.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public FaskVote(ScoreWrapper score) {
         this.score = score;
     }
 
+    /**
+     * <p>Constructor for FaskVote.</p>
+     */
     public FaskVote() {
 
     }
 
+    /**
+     * <p>Constructor for FaskVote.</p>
+     *
+     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public FaskVote(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
         for (DataModel d : dataSets) {
@@ -97,6 +113,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -121,21 +138,25 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "FASK-Vote";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new Images().getParameters();
@@ -144,36 +165,43 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndTestWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;

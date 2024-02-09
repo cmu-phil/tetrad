@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.NamingProtocol;
  *
  * @author Willie Wheeler 7/99
  * @author josephramsey modifications 12/00
+ * @version $Id: $Id
  */
 public abstract class AbstractVariable implements Variable {
 
@@ -62,16 +63,22 @@ public abstract class AbstractVariable implements Variable {
     }
 
     /**
+     * <p>getMissingValueMarker.</p>
+     *
      * @return the missing value marker as an Object.
      */
     public abstract Object getMissingValueMarker();
 
     /**
+     * {@inheritDoc}
+     *
      * Tests whether the given value is the missing data marker.
      */
     public abstract boolean isMissingValue(Object value);
 
     /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
      * @return the name of this variable.
      */
     public final String getName() {
@@ -79,6 +86,8 @@ public abstract class AbstractVariable implements Variable {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of this variable.
      */
     public final void setName(String name) {
@@ -96,6 +105,8 @@ public abstract class AbstractVariable implements Variable {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Checks to see whether the passed value is an acceptable value for
      * this variable. For AbstractVariable, this method always
      * returns true. Subclasses should override
@@ -107,22 +118,21 @@ public abstract class AbstractVariable implements Variable {
      * Since this method is not
      * static, subclasses may (but need not) provide for
      * instance-specific value checking.
-     *
-     * @param value a value
-     * @return true if the value is an acceptable value for
-     * this variable, and false otherwise
      */
     public boolean checkValue(Object value) {
         return true;
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a String representation of this variable. Specifically, the name of the variable is returned.
      */
     public String toString() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public abstract Node like(String name);
 
 //    @Override

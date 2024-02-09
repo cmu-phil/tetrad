@@ -38,6 +38,7 @@ import java.util.*;
  * Dec 12, 2018 3:28:26 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class TabularColumnFileValidation extends AbstractTabularColumnFileReader implements TabularColumnValidation {
 
@@ -55,9 +56,9 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
     }
 
     /**
-     * Constructor.
+     * {@inheritDoc}
      *
-     * @return The maximum number of messages.
+     * Constructor.
      */
     @Override
     public List<ValidationResult> validate() {
@@ -65,10 +66,9 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
     }
 
     /**
-     * Validate the data file.
+     * {@inheritDoc}
      *
-     * @param excludedColumns the columns to exclude.
-     * @return the validation results.
+     * Validate the data file.
      */
     @Override
     public List<ValidationResult> validate(int[] excludedColumns) {
@@ -93,10 +93,9 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
     }
 
     /**
-     * Validate the data file.
+     * {@inheritDoc}
      *
-     * @param excludedColumns the columns to exclude.
-     * @return the validation results.
+     * Validate the data file.
      */
     @Override
     public List<ValidationResult> validate(Set<String> excludedColumns) {
@@ -291,9 +290,9 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
     }
 
     /**
-     * Set the maximum number of messages.
+     * {@inheritDoc}
      *
-     * @param maxNumOfMsg the maximum number of messages.
+     * Set the maximum number of messages.
      */
     @Override
     public void setMaximumNumberOfMessages(int maxNumOfMsg) {

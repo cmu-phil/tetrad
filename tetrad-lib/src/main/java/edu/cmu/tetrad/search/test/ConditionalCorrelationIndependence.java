@@ -50,6 +50,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * We use Nadaraya-Watson kernel regression, though we further restrict the sample size to nearby points.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class ConditionalCorrelationIndependence {
 
@@ -116,6 +117,9 @@ public final class ConditionalCorrelationIndependence {
      * Returns the p-value of the test, x _||_ y | z. Can be compared to alpha.
      *
      * @return This p-value.
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
      */
     public double isIndependent(Node x, Node y, Set<Node> _z) {
         List<Node> z = new ArrayList<>(_z);
@@ -155,6 +159,9 @@ public final class ConditionalCorrelationIndependence {
      *
      * @return a double[2][] array. The first double[] array contains the residuals for x, and the second double[] array
      * contains the residuals for y.
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.List} object
+     * @param rows a {@link java.util.List} object
      */
     public double[] residuals(Node x, List<Node> z, List<Integer> rows) {
         int[] _rows = new int[rows.size()];

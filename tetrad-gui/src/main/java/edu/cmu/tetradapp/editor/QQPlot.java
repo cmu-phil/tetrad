@@ -77,6 +77,9 @@ class QQPlot {
 
     /**
      * Constructs the histogram given the dataset to wrap and the node that should be viewed.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param selectedNode a {@link edu.cmu.tetrad.graph.Node} object
      */
     public QQPlot(DataSet dataSet, Node selectedNode) {
 
@@ -148,6 +151,8 @@ class QQPlot {
     }
 
     /**
+     * <p>getMaxSample.</p>
+     *
      * @return the max sample value.
      */
     public double getMaxSample() {
@@ -155,6 +160,8 @@ class QQPlot {
     }
 
     /**
+     * <p>getMinSample.</p>
+     *
      * @return the min sample value.
      */
     public double getMinSample() {
@@ -162,6 +169,8 @@ class QQPlot {
     }
 
     /**
+     * <p>getMinIdeal.</p>
+     *
      * @return the min comparison value.
      */
     public double getMinIdeal() {
@@ -169,22 +178,39 @@ class QQPlot {
     }
 
     /**
+     * <p>Getter for the field <code>selectedVariable</code>.</p>
+     *
      * @return the node that has been selected.
      */
     public Node getSelectedVariable() {
         return this.selectedVariable;
     }
 
+    /**
+     * <p>Setter for the field <code>selectedVariable</code>.</p>
+     *
+     * @param c a {@link edu.cmu.tetrad.data.ContinuousVariable} object
+     */
     public void setSelectedVariable(ContinuousVariable c) {
         this.selectedVariable = c;
     }
 
+    /**
+     * <p>Getter for the field <code>comparisonVariable</code>.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[] getComparisonVariable() {
         return this.comparisonVariable;
     }
 
     //============================ Private Methods =======================//
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }

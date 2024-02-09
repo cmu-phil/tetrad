@@ -48,6 +48,7 @@ import java.util.Vector;
  * Created by IntelliJ IDEA.
  *
  * @author Mike Freenor
+ * @version $Id: $Id
  */
 public class FactorAnalysisAction extends AbstractAction {
 
@@ -60,12 +61,19 @@ public class FactorAnalysisAction extends AbstractAction {
 
     /**
      * Constructs the <code>HistogramAction</code> given the <code>DataEditor</code> that its attached to.
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
     public FactorAnalysisAction(DataEditor editor) {
         super("Factor Analysis...");
         this.dataEditor = editor;
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         java.util.List<Node> nodes = new ArrayList<>();
 
@@ -85,6 +93,7 @@ public class FactorAnalysisAction extends AbstractAction {
         factorAnalysis.successiveResidual();
     }
 
+    /** {@inheritDoc} */
     public void actionPerformed(ActionEvent e) {
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {

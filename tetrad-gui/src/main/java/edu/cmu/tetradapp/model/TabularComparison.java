@@ -42,6 +42,7 @@ import java.util.*;
  *
  * @author josephramsey
  * @author Erin Korber (added remove latents functionality July 2004)
+ * @version $Id: $Id
  */
 public final class TabularComparison implements SessionModel, SimulationParamsSource,
         DoNotAddOldModel {
@@ -153,14 +154,25 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     }
 
     //==============================PUBLIC METHODS========================//
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
@@ -180,49 +192,92 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         s.defaultReadObject();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, String> getParamSettings() {
         return new HashMap<>();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, String> getAllParamSettings() {
         return this.allParamSettings;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamSettings = new LinkedHashMap<>(paramSettings);
     }
 
+    /**
+     * <p>Getter for the field <code>referenceGraph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getReferenceGraph() {
         return this.referenceGraph;
     }
 
+    /**
+     * <p>Getter for the field <code>targetGraph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getTargetGraph() {
         return this.targetGraph;
     }
 
+    /**
+     * <p>Getter for the field <code>targetName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getTargetName() {
         return this.targetName;
     }
 
+    /**
+     * <p>Setter for the field <code>targetName</code>.</p>
+     *
+     * @param targetName a {@link java.lang.String} object
+     */
     public void setTargetName(String targetName) {
         this.targetName = targetName;
     }
 
+    /**
+     * <p>Getter for the field <code>referenceName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getReferenceName() {
         return this.referenceName;
     }
 
+    /**
+     * <p>Setter for the field <code>referenceName</code>.</p>
+     *
+     * @param referenceName a {@link java.lang.String} object
+     */
     public void setReferenceName(String referenceName) {
         this.referenceName = referenceName;
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }
 
+    /**
+     * <p>Getter for the field <code>dataModel</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public DataModel getDataModel() {
         return this.dataModel;
     }

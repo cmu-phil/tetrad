@@ -29,6 +29,7 @@ import java.awt.*;
  * Screen. The usage is show, (increment)* and hide.
  *
  * @author Juan Casares
+ * @version $Id: $Id
  */
 public class SplashScreen {
 
@@ -36,12 +37,25 @@ public class SplashScreen {
     private static SplashWindow WINDOW;
     private static JFrame frame;
 
+    /**
+     * <p>show.</p>
+     *
+     * @param parent a {@link java.awt.Frame} object
+     * @param title a {@link java.lang.String} object
+     * @param max a int
+     */
     public static void show(Frame parent, String title, int max) {
         SplashScreen.hide();
         SplashScreen.MAX = max;
         SplashScreen.WINDOW = new SplashWindow(parent, null, title);
     }
 
+    /**
+     * <p>show.</p>
+     *
+     * @param title a {@link java.lang.String} object
+     * @param max a int
+     */
     public static void show(String title, int max) {
         SplashScreen.hide();
         SplashScreen.MAX = max;
@@ -49,6 +63,9 @@ public class SplashScreen {
         SplashScreen.WINDOW = new SplashWindow(SplashScreen.frame, null, title);
     }
 
+    /**
+     * <p>hide.</p>
+     */
     public static void hide() {
         if (SplashScreen.WINDOW == null) {
             return;

@@ -18,6 +18,7 @@ import java.util.List;
  * Wrapper for MVP BIC Score.
  *
  * @author Bryan Andrews
+ * @version $Id: $Id
  */
 
 @Experimental
@@ -32,11 +33,9 @@ public class MVPBicScore implements ScoreWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
-     * Returns the MVP BIC score.
+     * {@inheritDoc}
      *
-     * @param dataSet    The data set to test independence against.
-     * @param parameters The paramters of the test.
-     * @return The MVP BIC score.
+     * Returns the MVP BIC score.
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
@@ -47,9 +46,9 @@ public class MVPBicScore implements ScoreWrapper {
     }
 
     /**
-     * Returns the description of the MVP BIC score.
+     * {@inheritDoc}
      *
-     * @return The description of the MVP BIC score.
+     * Returns the description of the MVP BIC score.
      */
     @Override
     public String getDescription() {
@@ -57,9 +56,9 @@ public class MVPBicScore implements ScoreWrapper {
     }
 
     /**
-     * Returns the data type of the MVP BIC score.
+     * {@inheritDoc}
      *
-     * @return The data type of the MVP BIC score.
+     * Returns the data type of the MVP BIC score.
      */
     @Override
     public DataType getDataType() {
@@ -67,9 +66,9 @@ public class MVPBicScore implements ScoreWrapper {
     }
 
     /**
-     * Returns the parameters of the MVP BIC score.
+     * {@inheritDoc}
      *
-     * @return The parameters of the MVP BIC score.
+     * Returns the parameters of the MVP BIC score.
      */
     @Override
     public List<String> getParameters() {
@@ -81,9 +80,9 @@ public class MVPBicScore implements ScoreWrapper {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the variable of the MVP BIC score by name.
-     * @param name the name.
-     * @return The variable of the MVP BIC score by name.
      */
     @Override
     public Node getVariable(String name) {

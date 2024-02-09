@@ -12,20 +12,24 @@ import java.util.List;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemidirectedRecall implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "Semidirected-Rec";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Proportion of (X, Y) where if semidirected path in true then also in est";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0, fn = 0;
@@ -51,6 +55,7 @@ public class SemidirectedRecall implements Statistic {
         return tp / (double) (tp + fn);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

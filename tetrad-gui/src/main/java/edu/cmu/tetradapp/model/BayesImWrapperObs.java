@@ -42,6 +42,12 @@ import java.util.List;
 //
 // @author josephramsey
 ///////////////////////////////////////////////////////////
+/**
+ * <p>BayesImWrapperObs class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class BayesImWrapperObs implements SessionModel, Memorable {
 
     private static final long serialVersionUID = 23L;
@@ -65,6 +71,12 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
     // the marginalized values of the allowUnfaithfulness probability values in
     // the old BayesIm, stored in a JPD
 
+    /**
+     * <p>Constructor for BayesImWrapperObs.</p>
+     *
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
@@ -91,28 +103,50 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
 
     //=============================PUBLIC METHODS=========================//
+    /**
+     * <p>Getter for the field <code>bayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getBayesIm() {
         return this.bayesIm;
     }
 
+    /**
+     * <p>Setter for the field <code>bayesIm</code>.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public void setBayesIm(BayesIm bayesIm) {
         this.bayesIm = bayesIm;
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.bayesIm.getBayesPm().getDag();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
@@ -141,18 +175,38 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
         }
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getGraph().getNodeNames();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getGraph().getNodes();
     }

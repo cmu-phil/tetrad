@@ -23,6 +23,7 @@ import java.util.List;
  * LiNG-D.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "ICA-LiNG-D",
@@ -37,6 +38,7 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
 
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
+    /** {@inheritDoc} */
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
@@ -85,20 +87,28 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return "LiNG-D (Linear Non-Gaussian Discovery";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -111,6 +121,7 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

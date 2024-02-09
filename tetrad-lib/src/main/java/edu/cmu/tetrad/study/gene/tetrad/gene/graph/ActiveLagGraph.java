@@ -44,6 +44,7 @@ import java.util.SortedSet;
  * In such a case, maxLagAllowable will be increased
  *
  * @author Gregory Li
+ * @version $Id: $Id
  */
 public class ActiveLagGraph implements LagGraph {
     private static final long serialVersionUID = 23L;
@@ -98,6 +99,8 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Attempts to add an edge to the graph. If the lag of the edge is greater than maxLagAllowable, maxLagAllowable
      * will automatically be increased so that the edge can be added. Will throw a propertyChange event of (null,
      * (LaggedEdge) newEdge)
@@ -119,6 +122,8 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Attempts to add a factor to the graph. Will throw a propertyChange event of (null, (String) factor).
      */
     public void addFactor(String factor) {
@@ -137,6 +142,8 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Attempts to remove an edge from the graph. Will throw a propertyChange event of ((LaggedEdge) edge_removed,
      * null).
      */
@@ -152,6 +159,8 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Attempts to remove a factor from the graph. Will also search through and remove any edges that involve this edge.
      * Will throw a propertyChange event of ((String) factor_removed, null).
      */
@@ -187,6 +196,8 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Attempts to rename a factor. Will throw a propertyChange event of ((String) oldName, (String) newName).
      */
     public void renameFactor(String oldName, String newName) {
@@ -205,27 +216,40 @@ public class ActiveLagGraph implements LagGraph {
         return this.propertyChangeManager;
     }
 
+    /**
+     * <p>clearEdges.</p>
+     */
     public void clearEdges() {
         this.lagGraph.clearEdges();
     }
 
+    /** {@inheritDoc} */
     public boolean existsFactor(String factor) {
         return this.lagGraph.existsFactor(factor);
     }
 
+    /** {@inheritDoc} */
     public boolean existsEdge(String factor, LaggedFactor laggedFactor) {
         return this.lagGraph.existsEdge(factor, laggedFactor);
     }
 
+    /** {@inheritDoc} */
     public SortedSet<LaggedFactor> getParents(String factor) {
         return this.lagGraph.getParents(factor);
     }
 
+    /**
+     * <p>getMaxLagAllowable.</p>
+     *
+     * @return a int
+     */
     public int getMaxLagAllowable() {
         return this.lagGraph.getMaxLagAllowable();
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Attemps to set the maximum allowable lag of an edge in the graph. This really is not necessary to use publicly
      * anymore since the addEdge function will now automatically increase the MaxAllowableLag of the graph if an edge's
      * lag is greater than MaxAllowableLag. Will throw a propertyChange event of (null, (Integer) newMaxLagAllowable).
@@ -238,34 +262,62 @@ public class ActiveLagGraph implements LagGraph {
         }
     }
 
+    /**
+     * <p>getMaxLag.</p>
+     *
+     * @return a int
+     */
     public int getMaxLag() {
         return this.lagGraph.getMaxLag();
     }
 
+    /**
+     * <p>getConnectivity.</p>
+     *
+     * @return a {@link java.util.SortedMap} object
+     */
     public SortedMap getConnectivity() {
         return this.lagGraph.getConnectivity();
     }
 
+    /**
+     * <p>getNumFactors.</p>
+     *
+     * @return a int
+     */
     public int getNumFactors() {
         return this.lagGraph.getNumFactors();
     }
 
+    /**
+     * <p>getFactors.</p>
+     *
+     * @return a {@link java.util.SortedSet} object
+     */
     public SortedSet<String> getFactors() {
         return this.lagGraph.getFactors();
     }
 
+    /** {@inheritDoc} */
     public void addFactors(String base, int numFactors) {
         this.lagGraph.addFactors(base, numFactors);
     }
 
+    /** {@inheritDoc} */
     public void setLocation(String factor, PointXy point) {
         this.lagGraph.setLocation(factor, point);
     }
 
+    /** {@inheritDoc} */
     public PointXy getLocation(String factor) {
         return this.lagGraph.getLocation(factor);
     }
 
+    /**
+     * <p>getLocations.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public Map getLocations() {
         return this.lagGraph.getLocations();
     }

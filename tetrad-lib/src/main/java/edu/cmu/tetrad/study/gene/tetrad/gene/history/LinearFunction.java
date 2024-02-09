@@ -33,6 +33,7 @@ import java.util.List;
  * is a polynomial function and ei is a random noise term.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LinearFunction implements UpdateFunction {
     private static final long serialVersionUID = 23L;
@@ -48,6 +49,8 @@ public class LinearFunction implements UpdateFunction {
 
     /**
      * Constructs a polyomial function where each factor is given a zero polynomial.
+     *
+     * @param lagGraph a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LagGraph} object
      */
     public LinearFunction(LagGraph lagGraph) {
         if (lagGraph == null) {
@@ -76,6 +79,8 @@ public class LinearFunction implements UpdateFunction {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LinearFunction} object
      */
     public static LinearFunction serializableInstance() {
         return new LinearFunction(BasicLagGraph.serializableInstance());
@@ -85,6 +90,10 @@ public class LinearFunction implements UpdateFunction {
 
     /**
      * Returns the value of the function.
+     *
+     * @param factorIndex a int
+     * @param history an array of {@link double} objects
+     * @return a double
      */
     public double getValue(int factorIndex, double[][] history) {
         return this.polynomialFunction.getValue(factorIndex, history);
@@ -92,6 +101,8 @@ public class LinearFunction implements UpdateFunction {
 
     /**
      * Returns the indexed connectivity.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.IndexedLagGraph} object
      */
     public IndexedLagGraph getIndexedLagGraph() {
         return this.polynomialFunction.getIndexedLagGraph();
@@ -99,6 +110,10 @@ public class LinearFunction implements UpdateFunction {
 
     /**
      * Sets the intercept for the given factor.
+     *
+     * @param factor a {@link java.lang.String} object
+     * @param intercept a double
+     * @return a boolean
      */
     public boolean setIntercept(String factor, double intercept) {
         IndexedLagGraph connectivity =
@@ -111,6 +126,10 @@ public class LinearFunction implements UpdateFunction {
 
     /**
      * Sets the intercept for the given factor.
+     *
+     * @param factor a int
+     * @param intercept a double
+     * @return a boolean
      */
     public boolean setIntercept(int factor, double intercept) {
         Polynomial p = this.polynomialFunction.getPolynomial(factor);
@@ -125,6 +144,11 @@ public class LinearFunction implements UpdateFunction {
 
     /**
      * Sets the intercept for the given factor.
+     *
+     * @param factor a {@link java.lang.String} object
+     * @param parent a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
+     * @param intercept a double
+     * @return a boolean
      */
     public boolean setCoefficient(String factor, LaggedFactor parent,
                                   double intercept) {
@@ -138,6 +162,11 @@ public class LinearFunction implements UpdateFunction {
 
     /**
      * Sets the coefficient for the given parent of the given factor.
+     *
+     * @param factor a int
+     * @param parent a int
+     * @param coefficient a double
+     * @return a boolean
      */
     public boolean setCoefficient(int factor, int parent, double coefficient) {
 
@@ -155,8 +184,8 @@ public class LinearFunction implements UpdateFunction {
     /**
      * Method setIntenalNoiseModel
      *
-     * @param factor
-     * @param distribution
+     * @param factor a int
+     * @param distribution a {@link edu.cmu.tetrad.util.dist.Distribution} object
      */
     public void setErrorDistribution(int factor, Distribution distribution) {
         this.polynomialFunction.setErrorDistribution(factor, distribution);
@@ -174,6 +203,8 @@ public class LinearFunction implements UpdateFunction {
 
     /**
      * Prints out the linear function of each factor of its parents.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
@@ -187,6 +218,8 @@ public class LinearFunction implements UpdateFunction {
 
     /**
      * Returns the number of factors in the history. This is used to set up the initial history array.
+     *
+     * @return a int
      */
     public int getNumFactors() {
         return this.polynomialFunction.getNumFactors();
@@ -194,6 +227,8 @@ public class LinearFunction implements UpdateFunction {
 
     /**
      * Returns the max lag of the history. This is used to set up the initial history array.
+     *
+     * @return a int
      */
     public int getMaxLag() {
         return this.polynomialFunction.getMaxLag();

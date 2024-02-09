@@ -10,20 +10,24 @@ import edu.cmu.tetrad.graph.Graph;
  * estimated graph does contain it, one false positive is counted.
  *
  * @author josephramsey, rubens (November 2016)
+ * @version $Id: $Id
  */
 public class TwoCycleTruePositive implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "2CTP";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "2-cycle true positive";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
@@ -31,6 +35,7 @@ public class TwoCycleTruePositive implements Statistic {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

@@ -46,6 +46,7 @@ import java.util.List;
  * @author josephramsey
  * @see ConditionalGaussianLikelihood
  * @see DegenerateGaussianScore
+ * @version $Id: $Id
  */
 public class ConditionalGaussianScore implements Score {
     // The dataset.
@@ -123,6 +124,7 @@ public class ConditionalGaussianScore implements Score {
      * @param x The index of the child.
      * @param z The indices of the parents.
      * @return The score difference.
+     * @param y a int
      */
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
@@ -138,10 +140,9 @@ public class ConditionalGaussianScore implements Score {
     }
 
     /**
-     * A method for FGES for determining whether an edge counts as an effect edges for this score bump.
+     * {@inheritDoc}
      *
-     * @param bump The bump in score.
-     * @return True iff so.
+     * A method for FGES for determining whether an edge counts as an effect edges for this score bump.
      * @see Fges
      */
     @Override
@@ -150,9 +151,9 @@ public class ConditionalGaussianScore implements Score {
     }
 
     /**
-     * Returns the variables of the data.
+     * {@inheritDoc}
      *
-     * @return This list.
+     * Returns the variables of the data.
      */
     @Override
     public List<Node> getVariables() {
@@ -160,9 +161,9 @@ public class ConditionalGaussianScore implements Score {
     }
 
     /**
-     * Returns the max degree recommended for the search form the MagSemBicScore and Fges.
+     * {@inheritDoc}
      *
-     * @return This max degree.
+     * Returns the max degree recommended for the search form the MagSemBicScore and Fges.
      * @see MagSemBicScore
      * @see Fges
      */
@@ -198,12 +199,18 @@ public class ConditionalGaussianScore implements Score {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
         return "Conditional Gaussian Score Penalty " + nf.format(this.penaltyDiscount);
     }
 
+    /**
+     * <p>Setter for the field <code>structurePrior</code>.</p>
+     *
+     * @param structurePrior a double
+     */
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
     }

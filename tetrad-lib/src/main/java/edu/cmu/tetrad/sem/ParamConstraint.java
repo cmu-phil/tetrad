@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * constraint implements an equality, less than or greater than relation.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class ParamConstraint implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -43,6 +44,11 @@ public class ParamConstraint implements TetradSerializable {
     /**
      * The first constructor specifies the parameter and a number and the type of relation imposed by the constraint.
      * The SemIm is required because the freeParameters' values are determined by it.
+     *
+     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @param param1 a {@link edu.cmu.tetrad.sem.Parameter} object
+     * @param type a {@link edu.cmu.tetrad.sem.ParamConstraintType} object
+     * @param number a double
      */
     public ParamConstraint(SemIm semIm, Parameter param1,
                            ParamConstraintType type, double number) {
@@ -54,24 +60,46 @@ public class ParamConstraint implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.ParamConstraint} object
      */
     public static ParamConstraint serializableInstance() {
         return new ParamConstraint(SemIm.serializableInstance(),
                 Parameter.serializableInstance(), ParamConstraintType.EQ, 1.0);
     }
 
+    /**
+     * <p>Getter for the field <code>type</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.ParamConstraintType} object
+     */
     public ParamConstraintType getType() {
         return this.type;
     }
 
+    /**
+     * <p>Setter for the field <code>type</code>.</p>
+     *
+     * @param type a {@link edu.cmu.tetrad.sem.ParamConstraintType} object
+     */
     public void setType(ParamConstraintType type) {
         this.type = type;
     }
 
+    /**
+     * <p>Getter for the field <code>number</code>.</p>
+     *
+     * @return a double
+     */
     public double getNumber() {
         return this.number;
     }
 
+    /**
+     * <p>Getter for the field <code>param2</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.Parameter} object
+     */
     public Parameter getParam2() {
         return this.param2;
     }
@@ -82,12 +110,18 @@ public class ParamConstraint implements TetradSerializable {
      * with respect to some measure of fit of the parameterized SEM to some dataset.
      *
      * @return true if the value would satisfy the constraint.
+     * @param testValue a double
      */
     public boolean wouldBeSatisfied(double testValue) {
         return this.type == ParamConstraintType.NONE || this.param2 == null && (this.type == ParamConstraintType.EQ && testValue == this.number || this.type == ParamConstraintType.GT && testValue > this.number || this.type == ParamConstraintType.LT && testValue < this.number);
 
     }
 
+    /**
+     * <p>Getter for the field <code>semIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getSemIm() {
         return this.semIm;
     }

@@ -44,6 +44,7 @@ import java.util.*;
  * Apr 15, 2019 11:31:10 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class AlgorithmCard extends JPanel {
 
@@ -86,6 +87,11 @@ public class AlgorithmCard extends JPanel {
     private boolean updatingTestModels;
     private boolean updatingScoreModels;
 
+    /**
+     * <p>Constructor for AlgorithmCard.</p>
+     *
+     * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     */
     public AlgorithmCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.dataType = getDataType(algorithmRunner);
@@ -234,10 +240,20 @@ public class AlgorithmCard extends JPanel {
         }
     }
 
+    /**
+     * <p>getSelectedAlgorithm.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.ui.model.AlgorithmModel} object
+     */
     public AlgorithmModel getSelectedAlgorithm() {
         return this.algorithmList.getSelectedValue();
     }
 
+    /**
+     * <p>getSelectedIndependenceTest.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.ui.model.IndependenceTestModel} object
+     */
     public IndependenceTestModel getSelectedIndependenceTest() {
         if (this.indTestComboBox.isEnabled()) {
             return this.indTestComboBox.getItemAt(this.indTestComboBox.getSelectedIndex());
@@ -246,6 +262,11 @@ public class AlgorithmCard extends JPanel {
         return null;
     }
 
+    /**
+     * <p>getSelectedScore.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.ui.model.ScoreModel} object
+     */
     public ScoreModel getSelectedScore() {
         if (this.scoreComboBox.isEnabled()) {
             this.scoreComboBox.getItemAt(this.scoreComboBox.getSelectedIndex());
@@ -359,10 +380,16 @@ public class AlgorithmCard extends JPanel {
         }
     }
 
+    /**
+     * <p>refresh.</p>
+     */
     public void refresh() {
         restoreUserAlgoSelections(this.algorithmRunner.getUserAlgoSelections());
     }
 
+    /**
+     * <p>saveStates.</p>
+     */
     public void saveStates() {
         rememberUserAlgoSelections(this.algorithmRunner.getUserAlgoSelections());
     }
@@ -370,9 +397,9 @@ public class AlgorithmCard extends JPanel {
     /**
      * Initialize algorithm
      *
-     * @param algoModel
-     * @param indTestModel
-     * @param scoreModel
+     * @param algoModel a {@link edu.cmu.tetradapp.ui.model.AlgorithmModel} object
+     * @param indTestModel a {@link edu.cmu.tetradapp.ui.model.IndependenceTestModel} object
+     * @param scoreModel a {@link edu.cmu.tetradapp.ui.model.ScoreModel} object
      * @return Algorithm
      */
     public Algorithm getAlgorithmFromInterface(AlgorithmModel algoModel, IndependenceTestModel indTestModel, ScoreModel scoreModel) {
@@ -397,6 +424,11 @@ public class AlgorithmCard extends JPanel {
         return algorithm;
     }
 
+    /**
+     * <p>isAllValid.</p>
+     *
+     * @return a boolean
+     */
     public boolean isAllValid() {
         AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
         IndependenceTestModel indTestModel = this.indTestComboBox.getItemAt(this.indTestComboBox.getSelectedIndex());

@@ -10,6 +10,7 @@ import java.util.List;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class AncestralRecall implements Statistic {
     private static final long serialVersionUID = 23L;
@@ -22,9 +23,9 @@ public class AncestralRecall implements Statistic {
     }
 
     /**
-     * Returns the name of the statistic.
+     * {@inheritDoc}
      *
-     * @return the name of the statistic
+     * Returns the name of the statistic.
      */
     @Override
     public String getAbbreviation() {
@@ -32,9 +33,9 @@ public class AncestralRecall implements Statistic {
     }
 
     /**
-     * Returns the description of the statistic.
+     * {@inheritDoc}
      *
-     * @return the description of the statistic
+     * Returns the description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -42,12 +43,9 @@ public class AncestralRecall implements Statistic {
     }
 
     /**
-     * Calculates the statistic.
+     * {@inheritDoc}
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
-     * @return the statistic
+     * Calculates the statistic.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -73,10 +71,9 @@ public class AncestralRecall implements Statistic {
     }
 
     /**
-     * Returns the norm value of the statistic.
+     * {@inheritDoc}
      *
-     * @param value The value of the statistic.
-     * @return the norm value.
+     * Returns the norm value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

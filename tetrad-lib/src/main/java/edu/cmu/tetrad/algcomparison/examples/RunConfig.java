@@ -27,8 +27,14 @@ import edu.cmu.tetrad.algcomparison.Comparison;
  * An example script to save out data files and graphs from a simulation.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class RunConfig {
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         new Comparison().configuration("comparison/Config");
     }

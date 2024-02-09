@@ -33,6 +33,9 @@ import java.util.Set;
 
 /**
  * Implements the Inter-IAMB algorithm.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class InterIamb implements IMbSearch {
 
@@ -60,6 +63,7 @@ public class InterIamb implements IMbSearch {
         this.variables = test.getVariables();
     }
 
+    /** {@inheritDoc} */
     public Set<Node> findMb(Node target) {
         Set<Node> cmb = new HashSet<>();
         boolean cont = true;
@@ -118,10 +122,20 @@ public class InterIamb implements IMbSearch {
         return 1.0 - result.getPValue();
     }
 
+    /**
+     * <p>getAlgorithmName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getAlgorithmName() {
         return "InterIAMB";
     }
 
+    /**
+     * <p>getNumIndependenceTests.</p>
+     *
+     * @return a int
+     */
     public int getNumIndependenceTests() {
         return 0;
     }

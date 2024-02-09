@@ -34,7 +34,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * <p>CalculatorWrapper class.</p>
+ *
  * @author Tyler
+ * @version $Id: $Id
  */
 public class CalculatorWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
@@ -43,6 +46,9 @@ public class CalculatorWrapper extends DataWrapper {
     /**
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
+     *
+     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public CalculatorWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
@@ -96,6 +102,7 @@ public class CalculatorWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

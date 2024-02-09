@@ -12,20 +12,24 @@ import java.util.List;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TrueDagFalseNegativesArrows implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "DFNA";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "False Negatives for Arrows compared to true DAG";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int fn = 0;
@@ -49,6 +53,7 @@ public class TrueDagFalseNegativesArrows implements Statistic {
         return fn;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

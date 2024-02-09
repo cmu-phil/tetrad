@@ -39,6 +39,7 @@ import java.util.prefs.Preferences;
  * Saves out a PNG image for a component.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SaveGraph extends AbstractAction {
 
@@ -55,6 +56,13 @@ public class SaveGraph extends AbstractAction {
      */
     private String title;
 
+    /**
+     * <p>Constructor for SaveGraph.</p>
+     *
+     * @param graphEditable a {@link edu.cmu.tetradapp.editor.GraphEditable} object
+     * @param title a {@link java.lang.String} object
+     * @param type a {@link edu.cmu.tetradapp.editor.SaveGraph.Type} object
+     */
     public SaveGraph(GraphEditable graphEditable, String title, Type type) {
         super(title);
         this.title = title;
@@ -70,6 +78,8 @@ public class SaveGraph extends AbstractAction {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {

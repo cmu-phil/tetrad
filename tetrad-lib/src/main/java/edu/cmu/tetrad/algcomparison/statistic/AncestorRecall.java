@@ -10,6 +10,7 @@ import java.util.List;
  * Ancestor recall.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class AncestorRecall implements Statistic {
     private static final long serialVersionUID = 23L;
@@ -22,8 +23,9 @@ public class AncestorRecall implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the name of the statistic.
-     * @return  the name of the statistic
      */
     @Override
     public String getAbbreviation() {
@@ -31,8 +33,9 @@ public class AncestorRecall implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the description of the statistic.
-     * @return the description of the statistic
      */
     @Override
     public String getDescription() {
@@ -40,11 +43,9 @@ public class AncestorRecall implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Calculates the statistic.
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
-     * @return the statistic
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -70,9 +71,9 @@ public class AncestorRecall implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the norm value of the statistic.
-     * @param value The value of the statistic.
-     * @return the value of the statistic
      */
     @Override
     public double getNormValue(double value) {

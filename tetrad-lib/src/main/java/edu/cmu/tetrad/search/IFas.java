@@ -33,6 +33,7 @@ import java.util.List;
  * Gives an interface for fast adjacency searches (i.e., PC adjacency searches).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface IFas extends IGraphSearch {
 

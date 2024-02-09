@@ -32,6 +32,7 @@ import java.util.Set;
  * Jan 2, 2019 2:40:26 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader implements VerticalDiscreteTabularDatasetReader {
 
@@ -51,10 +52,9 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
     }
 
     /**
-     * Reads in the data.
+     * {@inheritDoc}
      *
-     * @return The data.
-     * @throws IOException If an I/O error occurs.
+     * Reads in the data.
      */
     @Override
     public Data readInData() throws IOException {
@@ -62,11 +62,9 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
     }
 
     /**
-     * Reads in the data.
+     * {@inheritDoc}
      *
-     * @param namesOfColumnsToExclude the names of columns to exclude.
-     * @return The data.
-     * @throws IOException If an I/O error occurs.
+     * Reads in the data.
      */
     @Override
     public Data readInData(Set<String> namesOfColumnsToExclude) throws IOException {
@@ -88,11 +86,9 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
     }
 
     /**
-     * Reads in the data.
+     * {@inheritDoc}
      *
-     * @param columnsToExclude the columns to exclude.
-     * @return The data.
-     * @throws IOException If an I/O error occurs.
+     * Reads in the data.
      */
     @Override
     public Data readInData(int[] columnsToExclude) throws IOException {
@@ -114,9 +110,9 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
     }
 
     /**
-     * Set whether the data has a header.
+     * {@inheritDoc}
      *
-     * @param hasHeader whether the data has a header.
+     * Set whether the data has a header.
      */
     @Override
     public void setHasHeader(boolean hasHeader) {
@@ -124,9 +120,9 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
     }
 
     /**
-     * Set the quote character.
+     * {@inheritDoc}
      *
-     * @param quoteCharacter the quote character
+     * Set the quote character.
      */
     @Override
     public void setQuoteCharacter(char quoteCharacter) {

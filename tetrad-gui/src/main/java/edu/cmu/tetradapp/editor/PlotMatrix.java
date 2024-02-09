@@ -44,6 +44,7 @@ import java.util.Map;
  *
  * @author Adrian Tang
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PlotMatrix extends JPanel {
     private JPanel charts;
@@ -57,6 +58,11 @@ public class PlotMatrix extends JPanel {
     private Map<Node, VariableConditioningEditor.ConditioningPanel> conditioningPanelMap = new HashMap<>();
     private ScatterPlot.JitterStyle jitterStyle = ScatterPlot.JitterStyle.None;
 
+    /**
+     * <p>Constructor for PlotMatrix.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public PlotMatrix(DataSet dataSet) {
         setLayout(new BorderLayout());
 
@@ -309,22 +315,47 @@ public class PlotMatrix extends JPanel {
         });
     }
 
+    /**
+     * <p>Getter for the field <code>numBins</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumBins() {
         return numBins;
     }
 
+    /**
+     * <p>Setter for the field <code>numBins</code>.</p>
+     *
+     * @param numBins a int
+     */
     public void setNumBins(int numBins) {
         this.numBins = numBins;
     }
 
+    /**
+     * <p>isAddRegressionLines.</p>
+     *
+     * @return a boolean
+     */
     public boolean isAddRegressionLines() {
         return addRegressionLines;
     }
 
+    /**
+     * <p>Setter for the field <code>addRegressionLines</code>.</p>
+     *
+     * @param addRegressionLines a boolean
+     */
     public void setAddRegressionLines(boolean addRegressionLines) {
         this.addRegressionLines = addRegressionLines;
     }
 
+    /**
+     * <p>isRemoveTrendLinesPerPlot.</p>
+     *
+     * @return a boolean
+     */
     public boolean isRemoveTrendLinesPerPlot() {
         return removeZeroPointsPerPlot;
     }

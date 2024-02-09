@@ -32,6 +32,7 @@ import java.util.List;
  * Provides various kernel utilities.
  *
  * @author Robert Tillman
+ * @version $Id: $Id
  */
 public class KernelUtils {
 
@@ -42,6 +43,7 @@ public class KernelUtils {
      * @param kernels the kernels for each variable
      * @param dataset the dataset containing each variable
      * @param nodes   the variables to construct the Gram matrix for
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public static Matrix constructGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
         int m = dataset.getNumRows();
@@ -70,6 +72,7 @@ public class KernelUtils {
      * @param kernels the kernels for each variable
      * @param dataset the dataset containing each variable
      * @param nodes   the variables to construct the Gram matrix for
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public static Matrix constructCentralizedGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
         int m = dataset.getNumRows();
@@ -83,6 +86,7 @@ public class KernelUtils {
      * Constructs the projection matrix on 1/m
      *
      * @param m the sample size
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public static Matrix constructH(int m) {
         Matrix H = new Matrix(m, m);
@@ -106,6 +110,8 @@ public class KernelUtils {
      * @param kernels the kernels for each variable
      * @param dataset the dataset containing each variable
      * @param nodes   the variables to construct the Gram matrix for
+     * @param precision a double
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */
     public static Matrix incompleteCholeskyGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes, double precision) {
         if (precision <= 0) {

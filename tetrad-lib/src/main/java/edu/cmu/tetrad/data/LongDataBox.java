@@ -28,6 +28,9 @@ import java.util.List;
 
 /**
  * Stores a 2D array of long data. Note that the missing value marker for this box is -99.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class LongDataBox implements DataBox {
     private static final long serialVersionUID = 23L;
@@ -62,6 +65,8 @@ public class LongDataBox implements DataBox {
 
     /**
      * Constructs a new data box using the given 2D long data array as data.
+     *
+     * @param data an array of {@link long} objects
      */
     public LongDataBox(long[][] data) {
         int length = data[0].length;
@@ -80,6 +85,8 @@ public class LongDataBox implements DataBox {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.BoxDataSet} object
      */
     public static BoxDataSet serializableInstance() {
         List<Node> vars = new ArrayList<>();
@@ -88,6 +95,8 @@ public class LongDataBox implements DataBox {
     }
 
     /**
+     * <p>numRows.</p>
+     *
      * @return the number of rows in this data box.
      */
     public int numRows() {
@@ -95,6 +104,8 @@ public class LongDataBox implements DataBox {
     }
 
     /**
+     * <p>numCols.</p>
+     *
      * @return the number of columns in this data box.n
      */
     public int numCols() {
@@ -102,6 +113,8 @@ public class LongDataBox implements DataBox {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the value at the given row/column to the given Number value. The value used is number.longValue().
      */
     public void set(int row, int col, Number value) {
@@ -116,9 +129,7 @@ public class LongDataBox implements DataBox {
         }
     }
 
-    /**
-     * @return the Number value at the given row and column. If the value is missing (-99), null, is returned.
-     */
+    /** {@inheritDoc} */
     public Number get(int row, int col) {
         long datum = this.data[row][col];
 
@@ -130,6 +141,8 @@ public class LongDataBox implements DataBox {
     }
 
     /**
+     * <p>copy.</p>
+     *
      * @return a copy of this data box.
      */
     public DataBox copy() {
@@ -145,6 +158,8 @@ public class LongDataBox implements DataBox {
     }
 
     /**
+     * <p>like.</p>
+     *
      * @return a DataBox of type LongDataBox, but with the given dimensions.
      */
     public DataBox like() {
@@ -157,6 +172,7 @@ public class LongDataBox implements DataBox {
         return viewSelection(rows, cols);
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataBox viewSelection(int[] rows, int[] cols) {
         DataBox _dataBox = new LongDataBox(rows.length, cols.length);

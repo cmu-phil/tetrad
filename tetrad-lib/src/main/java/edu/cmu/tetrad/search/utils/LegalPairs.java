@@ -30,16 +30,28 @@ import java.util.List;
  * algorithm that uses this information. The pair would be n1---center---n2.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface LegalPairs {
 
     /**
+     * <p>isLegalFirstEdge.</p>
+     *
      * @return true iff x*-*y is a legal first edge for the base case.
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
      */
     boolean isLegalFirstEdge(Node x, Node y);
 
     /**
+     * <p>isLegalPair.</p>
+     *
      * @return true iff n1---center---n2 is a legal pair.
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c a {@link java.util.List} object
+     * @param d a {@link java.util.List} object
      */
     boolean isLegalPair(Node x, Node y, Node z, List<Node> c, List<Node> d);
 }

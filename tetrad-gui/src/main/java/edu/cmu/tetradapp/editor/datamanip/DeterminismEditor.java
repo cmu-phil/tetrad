@@ -23,6 +23,7 @@ import java.util.*;
  * Feb 11, 2019 4:17:17 PM
  *
  * @author Zhou Yuan zhy19@pitt.edu
+ * @version $Id: $Id
  */
 public class DeterminismEditor extends JPanel implements FinalizingParameterEditor {
 
@@ -48,6 +49,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     //============================= Public Methods ===================================//
 
     /**
+     * {@inheritDoc}
+     *
      * Sets up the GUI.
      */
     @Override
@@ -109,11 +112,11 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Tells the editor to commit any final details before it is closed (only called when the user selects "Ok" or
      * something of that nature). If false is returned the edit is considered invalid and it will be treated as if the
      * user selected "cancelAll".
-     *
-     * @return - true if the edit was committed.
      */
     @Override
     public boolean finalizeEdit() {
@@ -124,6 +127,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the previous params, must be <code>DiscretizationParams</code>.
      */
     @Override
@@ -132,6 +137,8 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     }
 
     /**
+     * {@inheritDoc}
+     *
      * The parent model should be a <code>DataWrapper</code>.
      */
     @Override
@@ -170,6 +177,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         this.sourceDataSetCopy = SerializationUtils.clone(dataSet);
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean mustBeShown() {
         return true;

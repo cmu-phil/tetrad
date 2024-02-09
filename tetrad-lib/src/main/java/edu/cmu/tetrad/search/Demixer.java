@@ -14,6 +14,7 @@ import java.util.Random;
  * distributions into its component data sets.
  *
  * @author Madelyn Glymour
+ * @version $Id: $Id
  */
 public class Demixer {
     // number of variables in the data set
@@ -41,6 +42,7 @@ public class Demixer {
 
     /**
      * Constructor. Initializes the means, weights, and covariance matrices for each model.
+     *
      * @param data the data set
      * @param k the number of models
      */
@@ -92,9 +94,11 @@ public class Demixer {
         return var;
     }
 
-    /*
+    /**
      * Runs the E-M algorithm iteratively until the weights array converges. Returns a MixtureModel object containing
      * the final values of the means, covariance matrices, weights, and gammas arrays.
+     *
+     * @return a {@link edu.cmu.tetrad.search.MixtureModel} object
      */
     public MixtureModel demix() {
         double[] tempWeights = new double[numClusters];
@@ -139,8 +143,10 @@ public class Demixer {
 
     }
 
-    /*
-     * Returns true if the algorithm has been run, and the gamma, mean, and covariance arrays are at their stable values
+    /**
+     * <p>isDemixed.</p>
+     *
+     * @return a boolean
      */
     public boolean isDemixed() {
         return demixed;

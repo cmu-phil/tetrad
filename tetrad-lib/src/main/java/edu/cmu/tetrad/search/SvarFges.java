@@ -59,6 +59,7 @@ import java.util.concurrent.*;
  * @see Fges
  * @see Knowledge
  * @see SvarFci
+ * @version $Id: $Id
  */
 public final class SvarFges implements IGraphSearch, DagScorer {
 
@@ -123,6 +124,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
      * Construct a Score and pass it in here. The totalScore should return a positive value in case of conditional
      * dependence and a negative values in case of conditional independence. See Chickering (2002), locally consistent
      * scoring criterion.
+     *
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
      */
     public SvarFges(Score score) {
         if (score == null) throw new NullPointerException();
@@ -208,12 +211,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
+     *
+     * @param faithfulnessAssumed a boolean
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
         this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the background knowledge.
      */
     public Knowledge getKnowledge() {
@@ -258,6 +265,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>numCPDAGsToStore</code>.</p>
+     *
      * @return the number of patterns to store.
      */
     public int getnumCPDAGsToStore() {
@@ -266,6 +275,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Sets the number of patterns to store. This should be set to zero for fast search.
+     *
+     * @param numCPDAGsToStore a int
      */
     public void setNumCPDAGsToStore(int numCPDAGsToStore) {
         if (numCPDAGsToStore < 0) {
@@ -276,6 +287,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>externalGraph</code>.</p>
+     *
      * @return the initial graph for the search. The search is initialized to this graph and proceeds from there.
      */
     public Graph getExternalGraph() {
@@ -306,6 +319,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Sets whether verbose output should be produced.
+     *
      * @param verbose true if verbose output should be produced.
      */
     public void setVerbose(boolean verbose) {
@@ -313,6 +327,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>out</code>.</p>
+     *
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
@@ -321,6 +337,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
+     *
      * @param out the output stream.
      */
     public void setOut(PrintStream out) {
@@ -328,6 +345,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>adjacencies</code>.</p>
+     *
      * @return the set of preset adjacencies for the algorithm; edges not in this adjacency graph will not be added.
      */
     public Graph getAdjacencies() {
@@ -336,6 +355,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Sets the set of preset adjacencies for the algorithm; edges not in this adjacencies graph will not be added.
+     *
      * @param adjacencies the adjacencies graph.
      */
     public void setAdjacencies(Graph adjacencies) {
@@ -362,7 +382,10 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>getMinChunk.</p>
+     *
      * @return the graph being constructed.
+     * @param n a int
      */
     public int getMinChunk(int n) {
         // The minimum number of operations to do before parallelizing.
@@ -371,6 +394,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Scores the given DAG, up to a constant.
      */
     public double scoreDag(Graph dag) {
@@ -1638,6 +1663,12 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return (pairList);
     }
 
+    /**
+     * <p>getNameNoLag.</p>
+     *
+     * @param obj a {@link java.lang.Object} object
+     * @return a {@link java.lang.String} object
+     */
     public String getNameNoLag(Object obj) {
         String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
@@ -1645,6 +1676,12 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         } else return tempS.substring(0, tempS.indexOf(':'));
     }
 
+    /**
+     * <p>addSimilarEdges.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public void addSimilarEdges(Node x, Node y) {
         List<List<Node>> simList = returnSimilarPairs(x, y);
         if (simList.isEmpty()) return;
@@ -1661,6 +1698,12 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
     }
 
+    /**
+     * <p>removeSimilarEdges.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public void removeSimilarEdges(Node x, Node y) {
         List<List<Node>> simList = returnSimilarPairs(x, y);
         if (simList.isEmpty()) return;

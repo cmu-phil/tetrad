@@ -43,6 +43,7 @@ import java.util.*;
  *
  * @author Tyler Gibson
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DiscretizationParamsEditor extends JPanel implements FinalizingParameterEditor {
 
@@ -230,6 +231,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the previous params, must be <code>DiscretizationParams</code>.
      */
     public void setParams(Parameters params) {
@@ -239,6 +242,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
     /**
      * The parant model should be a <code>DataWrapper</code>.
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
      */
     public void setParentModels(Object[] parentModels) {
         if (parentModels == null || parentModels.length == 0) {
@@ -263,6 +268,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     //=============================== Private Methods ================================//
 
     /**
+     * <p>mustBeShown.</p>
+     *
      * @return true
      */
     public boolean mustBeShown() {
@@ -354,6 +361,11 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         return -1;
     }
 
+    /**
+     * <p>getSpecs.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public Map<Node, DiscretizationSpec> getSpecs() {
         return (Map<Node, DiscretizationSpec>) parameters.get("discretizationSpecs");
     }

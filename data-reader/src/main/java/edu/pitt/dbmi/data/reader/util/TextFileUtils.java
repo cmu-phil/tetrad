@@ -29,6 +29,7 @@ import java.nio.channels.FileChannel;
  * Mar 8, 2017 10:51:43 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class TextFileUtils {
 
@@ -64,7 +65,7 @@ public class TextFileUtils {
      * @param quoteCharacter used for grouping characters
      * @param delims         the set of delimiters to test for
      * @return the inferred delimiter
-     * @throws IOException if an I/O error occurs
+     * @throws java.io.IOException if an I/O error occurs
      */
     public static char inferDelimiter(File file, int n, int skip, String comment, char quoteCharacter, char[] delims) throws IOException {
         if (file == null) {

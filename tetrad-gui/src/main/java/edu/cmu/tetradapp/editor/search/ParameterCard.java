@@ -27,6 +27,7 @@ import java.awt.*;
  * Apr 15, 2019 3:35:36 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class ParameterCard extends AlgorithmParameterPanel {
 
@@ -34,6 +35,11 @@ public class ParameterCard extends AlgorithmParameterPanel {
 
     private final GeneralAlgorithmRunner algorithmRunner;
 
+    /**
+     * <p>Constructor for ParameterCard.</p>
+     *
+     * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     */
     public ParameterCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
 
@@ -44,6 +50,9 @@ public class ParameterCard extends AlgorithmParameterPanel {
         setPreferredSize(new Dimension(800, 506));
     }
 
+    /**
+     * <p>refresh.</p>
+     */
     public void refresh() {
         addToPanel(this.algorithmRunner);
     }

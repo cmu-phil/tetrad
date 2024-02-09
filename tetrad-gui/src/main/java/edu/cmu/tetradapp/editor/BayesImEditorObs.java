@@ -36,6 +36,7 @@ import java.awt.*;
  *
  * @author Aaron Powers
  * @author josephramsey
+ * @version $Id: $Id
  */
 /////////////////////////////////////////////////////////////////
 // allow the user to set the probabilities of given combinations
@@ -52,6 +53,9 @@ public class BayesImEditorObs extends JPanel {
 
     /**
      * Constructs a new instanted model editor from a Bayes IM.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapperObs} object
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesImEditorObs(BayesImWrapperObs wrapper, BayesIm bayesIm) {
         if (wrapper == null) {
@@ -64,6 +68,8 @@ public class BayesImEditorObs extends JPanel {
 
     /**
      * Constructs a new instanted model editor from a Bayes IM wrapper.
+     *
+     * @param bayesImWrapperObs a {@link edu.cmu.tetradapp.model.BayesImWrapperObs} object
      */
     public BayesImEditorObs(BayesImWrapperObs bayesImWrapperObs) {
         this(bayesImWrapperObs, bayesImWrapperObs.getBayesIm());
@@ -125,6 +131,8 @@ public class BayesImEditorObs extends JPanel {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of this editor.
      */
     public void setName(String name) {
@@ -140,6 +148,11 @@ public class BayesImEditorObs extends JPanel {
         return this.wizard;
     }
 
+    /**
+     * <p>getBayesIm.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public void getBayesIm(BayesIm bayesIm) {
         this.wrapper.setBayesIm(bayesIm);
         removeAll();

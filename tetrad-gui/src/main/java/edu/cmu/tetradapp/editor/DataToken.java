@@ -26,6 +26,7 @@ package edu.cmu.tetradapp.editor;
  * Represents the tokens used for reading in data in Tetrad.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public enum DataToken implements Token {
     WHITESPACE("WHITESPACE"),
@@ -73,6 +74,8 @@ public enum DataToken implements Token {
 
 
     /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
      * @return the name of the token
      */
     public String getName() {

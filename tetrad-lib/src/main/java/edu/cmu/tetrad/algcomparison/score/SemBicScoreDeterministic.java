@@ -14,6 +14,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 //@edu.cmu.tetrad.annotation.Score(
 //        name = "Sem BIC Score Deterministic",
@@ -25,6 +26,7 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
     private static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
+    /** {@inheritDoc} */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
@@ -37,16 +39,19 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
         return semBicScore;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Sem BIC Score Deterministic";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -55,6 +60,7 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);

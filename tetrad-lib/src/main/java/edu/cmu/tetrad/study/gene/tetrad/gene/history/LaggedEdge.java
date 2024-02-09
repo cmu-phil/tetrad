@@ -30,6 +30,7 @@ import java.io.ObjectInputStream;
  * wrapper class for passing factor+edge via a propertyChange event
  *
  * @author gmli
+ * @version $Id: $Id
  */
 public class LaggedEdge implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -48,6 +49,9 @@ public class LaggedEdge implements TetradSerializable {
 
     /**
      * Creates new LaggedEdge
+     *
+     * @param factor a {@link java.lang.String} object
+     * @param laggedFactor a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
      */
     public LaggedEdge(String factor, LaggedFactor laggedFactor) {
         if (factor == null) {
@@ -64,6 +68,8 @@ public class LaggedEdge implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedEdge} object
      */
     public static LaggedEdge serializableInstance() {
         return new LaggedEdge("X", LaggedFactor.serializableInstance());
@@ -71,10 +77,20 @@ public class LaggedEdge implements TetradSerializable {
 
     //=============================PUBLIC METHODS======================//
 
+    /**
+     * <p>Getter for the field <code>factor</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getFactor() {
         return this.factor;
     }
 
+    /**
+     * <p>Getter for the field <code>laggedFactor</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
+     */
     public LaggedFactor getLaggedFactor() {
         return this.laggedFactor;
     }

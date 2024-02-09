@@ -37,6 +37,7 @@ import java.awt.event.ActionEvent;
  * Highlights all undirected edges in the given display graph.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SelectUndirectedAction extends AbstractAction implements ClipboardOwner {
 
@@ -61,9 +62,9 @@ public class SelectUndirectedAction extends AbstractAction implements ClipboardO
     }
 
     /**
-     * Selects all undirected edges in the given display graph.
+     * {@inheritDoc}
      *
-     * @param e the event to be processed
+     * Selects all undirected edges in the given display graph.
      */
     public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();
@@ -79,6 +80,8 @@ public class SelectUndirectedAction extends AbstractAction implements ClipboardO
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

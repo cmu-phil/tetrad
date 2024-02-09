@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
  * Nov 30, 2017 4:20:43 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class AlgorithmModels {
 
@@ -44,6 +45,11 @@ public final class AlgorithmModels {
         refreshModels();
     }
 
+    /**
+     * <p>getInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.ui.model.AlgorithmModels} object
+     */
     public static AlgorithmModels getInstance() {
         AlgorithmModels.INSTANCE.refreshModels();   // if we had a subscriber CPDAG for app settings would not have to waste time doing this every time!
         return AlgorithmModels.INSTANCE;
@@ -93,10 +99,25 @@ public final class AlgorithmModels {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * <p>Getter for the field <code>models</code>.</p>
+     *
+     * @param dataType a {@link edu.cmu.tetrad.data.DataType} object
+     * @param multiDataSetAlgorithm a boolean
+     * @return a {@link java.util.List} object
+     */
     public List<AlgorithmModel> getModels(DataType dataType, boolean multiDataSetAlgorithm) {
         return filterInclusivelyByAllOrSpecificDataType(this.models, dataType, multiDataSetAlgorithm);
     }
 
+    /**
+     * <p>Getter for the field <code>models</code>.</p>
+     *
+     * @param algType a {@link edu.cmu.tetrad.annotation.AlgType} object
+     * @param dataType a {@link edu.cmu.tetrad.data.DataType} object
+     * @param multiDataSetAlgorithm a boolean
+     * @return a {@link java.util.List} object
+     */
     public List<AlgorithmModel> getModels(AlgType algType, DataType dataType, boolean multiDataSetAlgorithm) {
         return this.modelMap.containsKey(algType)
                 ? filterInclusivelyByAllOrSpecificDataType(this.modelMap.get(algType), dataType, multiDataSetAlgorithm)

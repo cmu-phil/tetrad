@@ -51,6 +51,7 @@ import static edu.cmu.tetrad.util.StatUtils.sd;
  * variables. This instantiated model gives values for all of the parameters of the parameterized model.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GeneralizedSemIm implements Im, Simulator {
     private static final long serialVersionUID = 23L;
@@ -90,6 +91,12 @@ public class GeneralizedSemIm implements Im, Simulator {
         }
     }
 
+    /**
+     * <p>Constructor for GeneralizedSemIm.</p>
+     *
+     * @param pm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public GeneralizedSemIm(GeneralizedSemPm pm, SemIm semIm) {
         this(pm);
         SemPm semPm = semIm.getSemPm();
@@ -124,12 +131,16 @@ public class GeneralizedSemIm implements Im, Simulator {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
      */
     public static GeneralizedSemIm serializableInstance() {
         return new GeneralizedSemIm(GeneralizedSemPm.serializableInstance());
     }
 
     /**
+     * <p>getGeneralizedSemPm.</p>
+     *
      * @return a copy of the stored GeneralizedSemPm.
      */
     public GeneralizedSemPm getGeneralizedSemPm() {
@@ -137,6 +148,8 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
+     * <p>setParameterValue.</p>
+     *
      * @param parameter The parameter whose values is to be set.
      * @param value     The double value that <code>param</code> is to be set to.
      */
@@ -153,6 +166,8 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
+     * <p>getParameterValue.</p>
+     *
      * @param parameter The parameter whose value is to be retrieved.
      * @return The retrieved value.
      */
@@ -169,7 +184,10 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
+     * <p>getNodeSubstitutedString.</p>
+     *
      * @return the user's String formula with numbers substituted for freeParameters, where substitutions exist.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     public String getNodeSubstitutedString(Node node) {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -200,6 +218,8 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
+     * <p>getNodeSubstitutedString.</p>
+     *
      * @param node              The node whose expression is being evaluated.
      * @param substitutedValues A mapping from Strings parameter names to Double values; these values will be
      *                          substituted for the stored values where applicable.
@@ -244,6 +264,8 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a String representation of the IM, in this case a lsit of freeParameters and their values.
      */
     public String toString() {
@@ -276,6 +298,7 @@ public class GeneralizedSemIm implements Im, Simulator {
         return buf.toString();
     }
 
+    /** {@inheritDoc} */
     public synchronized DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         if (this.pm.getGraph().isTimeLagModel()) {
             return simulateTimeSeries(sampleSize);
@@ -379,6 +402,7 @@ public class GeneralizedSemIm implements Im, Simulator {
      *
      * @param sampleSize &gt; 0.
      * @return the simulated data set.
+     * @param latentDataSaved a boolean
      */
     public DataSet simulateDataRecursive(int sampleSize, boolean latentDataSaved) {
         List<Node> variables = this.pm.getNodes();
@@ -464,6 +488,13 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
 
+    /**
+     * <p>simulateDataMinimizeSurface.</p>
+     *
+     * @param sampleSize a int
+     * @param latentDataSaved a boolean
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet simulateDataMinimizeSurface(int sampleSize, boolean latentDataSaved) {
         Map<String, Double> variableValues = new HashMap<>();
 
@@ -595,6 +626,13 @@ public class GeneralizedSemIm implements Im, Simulator {
         }
     }
 
+    /**
+     * <p>simulateDataAvoidInfinity.</p>
+     *
+     * @param sampleSize a int
+     * @param latentDataSaved a boolean
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet simulateDataAvoidInfinity(int sampleSize, boolean latentDataSaved) {
         Map<String, Double> variableValues = new HashMap<>();
 
@@ -743,6 +781,7 @@ public class GeneralizedSemIm implements Im, Simulator {
      * between shocks of 50 and a convergence threshold of 1e-5. Uncorrelated Gaussian shocks are used.
      *
      * @param sampleSize The number of samples to be drawn. Must be a positive integer.
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public synchronized DataSet simulateDataFisher(int sampleSize) {
         return simulateDataFisher(sampleSize, 50, 1e-10);
@@ -757,6 +796,7 @@ public class GeneralizedSemIm implements Im, Simulator {
      * @param sampleSize            The number of samples to be drawn.
      * @param intervalBetweenShocks External shock is applied every this many steps. Must be positive integer.
      * @param epsilon               The convergence criterion; |xi.t - xi.t-1| &lt; epsilon.
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public synchronized DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
                                                    double epsilon) {
@@ -879,6 +919,12 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
 
+    /**
+     * <p>simulateOneRecord.</p>
+     *
+     * @param e a {@link edu.cmu.tetrad.util.Vector} object
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public Vector simulateOneRecord(Vector e) {
         Map<String, Double> variableValues = new HashMap<>();
 
@@ -963,6 +1009,13 @@ public class GeneralizedSemIm implements Im, Simulator {
         return _case;
     }
 
+    /**
+     * <p>simulateDataNSteps.</p>
+     *
+     * @param sampleSize a int
+     * @param latentDataSaved a boolean
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet simulateDataNSteps(int sampleSize, boolean latentDataSaved) {
         Map<String, Double> variableValues = new HashMap<>();
 
@@ -1070,10 +1123,20 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
 
+    /**
+     * <p>getSemPm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     */
     public GeneralizedSemPm getSemPm() {
         return new GeneralizedSemPm(this.pm);
     }
 
+    /**
+     * <p>setSubstitutions.</p>
+     *
+     * @param parameterValues a {@link java.util.Map} object
+     */
     public void setSubstitutions(Map<String, Double> parameterValues) {
         for (String parameter : parameterValues.keySet()) {
             if (this.parameterValues.containsKey(parameter)) {
@@ -1082,6 +1145,11 @@ public class GeneralizedSemIm implements Im, Simulator {
         }
     }
 
+    /**
+     * <p>Setter for the field <code>guaranteeIid</code>.</p>
+     *
+     * @param guaranteeIid a boolean
+     */
     public void setGuaranteeIid(boolean guaranteeIid) {
         this.guaranteeIid = guaranteeIid;
     }

@@ -34,12 +34,16 @@ import edu.cmu.tetradapp.model.PcRunner;
  * Splits continuous data sets by collinear columns.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class CovMatrixSumWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
      * Splits the given data set by collinear columns.
+     *
+     * @param wrapper1 a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param wrapper2 a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public CovMatrixSumWrapper(DataWrapper wrapper1, DataWrapper wrapper2) {
         if (wrapper1 == null || wrapper2 == null) {
@@ -74,6 +78,7 @@ public class CovMatrixSumWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

@@ -16,6 +16,7 @@ import java.util.List;
  * Wrapper for linear, Gaussian SEM BIC score.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 
 // Taking this out of the interface since it's not used in the codebase.
@@ -29,6 +30,7 @@ public class MagSemBicScore implements ScoreWrapper {
     private static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
+    /** {@inheritDoc} */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
@@ -50,16 +52,19 @@ public class MagSemBicScore implements ScoreWrapper {
         return semBicScore;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "MAG SEM BIC Score";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -70,6 +75,7 @@ public class MagSemBicScore implements ScoreWrapper {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);

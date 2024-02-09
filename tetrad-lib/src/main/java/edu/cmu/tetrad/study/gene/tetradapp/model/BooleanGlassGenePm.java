@@ -30,6 +30,7 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.graph.RandomActiveLagGraph;
  * There are no additional parameters to the PM.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BooleanGlassGenePm extends GenePm implements SessionModel {
     private static final long serialVersionUID = 23L;
@@ -75,9 +76,9 @@ public class BooleanGlassGenePm extends GenePm implements SessionModel {
     }
 
     /**
-     * Sets the name of the model.
+     * {@inheritDoc}
      *
-     * @param name the name of the model.
+     * Sets the name of the model.
      */
     public void setName(String name) {
         this.name = name;

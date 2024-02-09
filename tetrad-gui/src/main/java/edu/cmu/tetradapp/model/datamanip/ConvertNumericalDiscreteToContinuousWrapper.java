@@ -31,10 +31,17 @@ import edu.cmu.tetradapp.model.PcRunner;
  * Add description
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class ConvertNumericalDiscreteToContinuousWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for ConvertNumericalDiscreteToContinuousWrapper.</p>
+     *
+     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ConvertNumericalDiscreteToContinuousWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The given data must not be null");
@@ -72,6 +79,7 @@ public class ConvertNumericalDiscreteToContinuousWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

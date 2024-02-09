@@ -47,17 +47,20 @@ import java.util.prefs.Preferences;
  * for special purposes, it's easy enough to create a copy of this class with a different name and modify it.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class Tetrad implements PropertyChangeListener {
 
     // The experimental option
     private static final String EXP_OPT = "--experimental";
     // Whether to enable experimental features
+    /** Constant <code>enableExperimental=// Whether to enable experimental features</code> */
     public static boolean enableExperimental;
     // The main application title.
     private final String mainTitle
             = "Tetrad " + Version.currentViewableVersion();
     // The launch frame.
+    /** Constant <code>frame</code> */
     public static JFrame frame;
     // The desktop placed into the launch frame.
     private TetradDesktop desktop;
@@ -103,9 +106,9 @@ public final class Tetrad implements PropertyChangeListener {
     }
 
     /**
-     * Responds to "exitProgram" property change events by disposing of the Tetrad IV frame and exiting if possible.
+     * {@inheritDoc}
      *
-     * @param e the property change event
+     * Responds to "exitProgram" property change events by disposing of the Tetrad IV frame and exiting if possible.
      */
     @Override
     public void propertyChange(PropertyChangeEvent e) {

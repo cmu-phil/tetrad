@@ -25,6 +25,7 @@ package edu.cmu.tetrad.calculator.expression;
  * Represents an equation of the form Variable = Expression, where the Variable represents a column in some dataset.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class Equation {
 
@@ -46,6 +47,13 @@ public class Equation {
     private final String unparsedExpression;
 
 
+    /**
+     * <p>Constructor for Equation.</p>
+     *
+     * @param variable a {@link java.lang.String} object
+     * @param expression a {@link edu.cmu.tetrad.calculator.expression.Expression} object
+     * @param unparsed a {@link java.lang.String} object
+     */
     public Equation(String variable, Expression expression, String unparsed) {
         if (variable == null) {
             throw new NullPointerException("variable was null.");
@@ -64,16 +72,31 @@ public class Equation {
     //========================== Public Methods ======================//
 
 
+    /**
+     * <p>Getter for the field <code>unparsedExpression</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getUnparsedExpression() {
         return this.unparsedExpression;
     }
 
 
+    /**
+     * <p>Getter for the field <code>variable</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getVariable() {
         return this.variable;
     }
 
 
+    /**
+     * <p>Getter for the field <code>expression</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.calculator.expression.Expression} object
+     */
     public Expression getExpression() {
         return this.expression;
     }

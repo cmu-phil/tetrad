@@ -43,6 +43,8 @@ final class LaunchFlowchartAction extends AbstractAction {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Closes the frontmost session of this action's desktop.
      */
     public void actionPerformed(ActionEvent e) {

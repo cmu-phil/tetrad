@@ -86,6 +86,8 @@ class QQPlotDisplayPanel extends JPanel {
 
     /**
      * Constructs the histogram dipslay panel given the initial histogram to display.
+     *
+     * @param qqPlot a {@link edu.cmu.tetradapp.editor.QQPlot} object
      */
     public QQPlotDisplayPanel(QQPlot qqPlot) {
         this.qqPlot = qqPlot;
@@ -102,6 +104,8 @@ class QQPlotDisplayPanel extends JPanel {
 
     /**
      * Updates the histogram that is dispalyed to the given one.
+     *
+     * @param qqPlot a {@link edu.cmu.tetradapp.editor.QQPlot} object
      */
     public synchronized void updateQQPlot(QQPlot qqPlot) {
         if (qqPlot == null) {
@@ -113,12 +117,15 @@ class QQPlotDisplayPanel extends JPanel {
     }
 
 
+    /** {@inheritDoc} */
     public String getToolTipText(MouseEvent evt) {
         return null;
     }
 
 
     /**
+     * {@inheritDoc}
+     *
      * Paints the histogram and related items.
      */
     public void paintComponent(Graphics graphics) {
@@ -203,16 +210,31 @@ class QQPlotDisplayPanel extends JPanel {
     }
 
 
+    /**
+     * <p>getPreferredSize.</p>
+     *
+     * @return a {@link java.awt.Dimension} object
+     */
     public Dimension getPreferredSize() {
         return this.size;
     }
 
 
+    /**
+     * <p>getMaximumSize.</p>
+     *
+     * @return a {@link java.awt.Dimension} object
+     */
     public Dimension getMaximumSize() {
         return this.size;
     }
 
 
+    /**
+     * <p>getMinimumSize.</p>
+     *
+     * @return a {@link java.awt.Dimension} object
+     */
     public Dimension getMinimumSize() {
         return this.size;
     }

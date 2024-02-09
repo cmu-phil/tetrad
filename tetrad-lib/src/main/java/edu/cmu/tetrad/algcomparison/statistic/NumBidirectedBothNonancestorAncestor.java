@@ -10,20 +10,24 @@ import edu.cmu.tetrad.graph.Node;
  * The bidirected edge precision.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumBidirectedBothNonancestorAncestor implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "#<->,!Anc!Rev";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "# X<->Y for which both not X~~>Y and not Y~~>X";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int count = 0;
@@ -42,6 +46,7 @@ public class NumBidirectedBothNonancestorAncestor implements Statistic {
         return count;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

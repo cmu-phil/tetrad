@@ -12,20 +12,24 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BidirectedLatentPrecision implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "<->-Lat-Prec";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Percent of bidirected edges for which a latent confounder exists";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -47,6 +51,7 @@ public class BidirectedLatentPrecision implements Statistic {
     }
 
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

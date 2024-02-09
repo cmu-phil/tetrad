@@ -60,6 +60,7 @@ import java.util.*;
  * @see Pc
  * @see Fci
  * @see Knowledge
+ * @version $Id: $Id
  */
 public class Fas implements IFas {
     // The test to be used for conditional independence tests.
@@ -96,9 +97,9 @@ public class Fas implements IFas {
 
 
     /**
-     * Runs the search and returns the resulting (undirected) graph.
+     * {@inheritDoc}
      *
-     * @return This graph.
+     * Runs the search and returns the resulting (undirected) graph.
      */
     @Override
     public Graph search() {
@@ -231,10 +232,10 @@ public class Fas implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the depth of the search, which is the maximum number of variables that ben be conditioned on in any
      * conditional independence test.
-     *
-     * @param depth This maximum.
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -246,9 +247,9 @@ public class Fas implements IFas {
     }
 
     /**
-     * Sets the knowledge to be used in the search.
+     * {@inheritDoc}
      *
-     * @param knowledge This knowledge.
+     * Sets the knowledge to be used in the search.
      * @see Knowledge
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -275,9 +276,9 @@ public class Fas implements IFas {
     }
 
     /**
-     * Sets whether verbose output should be printed.
+     * {@inheritDoc}
      *
-     * @param verbose True iff the case.
+     * Sets whether verbose output should be printed.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -293,9 +294,9 @@ public class Fas implements IFas {
     }
 
     /**
-     * Returns the nodes from the test.
+     * {@inheritDoc}
      *
-     * @return These nodes.
+     * Returns the nodes from the test.
      */
     @Override
     public List<Node> getNodes() {
@@ -303,25 +304,24 @@ public class Fas implements IFas {
     }
 
     /**
-     * There are no ambiguous triples for this search, for any nodes.
+     * {@inheritDoc}
      *
-     * @param node The nodes in question.
-     * @return An empty list.
+     * There are no ambiguous triples for this search, for any nodes.
      */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
         return new ArrayList<>();
     }
 
-    /**
-     * @param out This print stream.
-     */
+    /** {@inheritDoc} */
     @Override
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
     /**
+     * <p>setPcHeuristicType.</p>
+     *
      * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search). Default is
      *                    PcHeuristicType.NONE.
      * @see PcCommon.PcHeuristicType

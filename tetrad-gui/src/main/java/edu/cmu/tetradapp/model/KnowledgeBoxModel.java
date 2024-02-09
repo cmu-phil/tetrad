@@ -36,7 +36,10 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.util.*;
 
 /**
+ * <p>KnowledgeBoxModel class.</p>
+ *
  * @author kaalpurush
+ * @version $Id: $Id
  */
 public class KnowledgeBoxModel implements SessionModel, ParamsResettable, KnowledgeEditable {
 
@@ -49,6 +52,11 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     private List<String> variableNames = new ArrayList<>();
     private int numTiers = 3;
 
+    /**
+     * <p>Constructor for KnowledgeBoxModel.</p>
+     *
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public KnowledgeBoxModel(Parameters params) {
         this.knowledge = new Knowledge();
         this.numTiers = 3;
@@ -59,6 +67,9 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 
     /**
      * Constructor from dataWrapper edge
+     *
+     * @param inputs an array of {@link edu.cmu.tetrad.data.KnowledgeBoxInput} objects
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public KnowledgeBoxModel(KnowledgeBoxInput[] inputs, Parameters params) {
         if (params == null) {
@@ -122,6 +133,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public static KnowledgeBoxModel serializableInstance() {
         return new KnowledgeBoxModel(new KnowledgeBoxInput[]{GraphWrapper.serializableInstance()}, new Parameters());
@@ -147,36 +159,47 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getSourceGraph() {
         return this.sourceGraph;
     }
 
     //    @Override
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return this.sourceGraph;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getVarNames() {
         return this.variableNames;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -190,6 +213,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 //        TetradLogger.getInstance().log("knowledge", knowledge.toString());
     }
 
+    /** {@inheritDoc} */
     @Override
     public void resetParams(Object params) {
         this.params = (Parameters) params;
@@ -199,25 +223,46 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 //        TetradLogger.getInstance().log("knowledge", knowledge.toString());
     }
 
+    /** {@inheritDoc} */
     @Override
     public Object getResettableParams() {
         return this.params;
     }
 
     //    @Override
+    /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return this.variables;
     }
 
     //    @Override
+    /**
+     * <p>Getter for the field <code>variableNames</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return this.variableNames;
     }
 
+    /**
+     * <p>Getter for the field <code>numTiers</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumTiers() {
         return this.numTiers;
     }
 
+    /**
+     * <p>Setter for the field <code>numTiers</code>.</p>
+     *
+     * @param numTiers a int
+     */
     public void setNumTiers(int numTiers) {
         this.numTiers = numTiers;
     }

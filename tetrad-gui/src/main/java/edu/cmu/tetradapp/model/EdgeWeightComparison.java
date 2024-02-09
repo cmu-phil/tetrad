@@ -31,7 +31,10 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.text.NumberFormat;
 
 /**
+ * <p>EdgeWeightComparison class.</p>
+ *
  * @author Michael Freenor
+ * @version $Id: $Id
  */
 public class EdgeWeightComparison implements SessionModel {
     private static final long serialVersionUID = 23L;
@@ -39,16 +42,37 @@ public class EdgeWeightComparison implements SessionModel {
     private final SemIm target;
     private String name;
 
+    /**
+     * <p>Constructor for EdgeWeightComparison.</p>
+     *
+     * @param reference a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     * @param target a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public EdgeWeightComparison(SemEstimatorWrapper reference, SemEstimatorWrapper target, Parameters parameters) {
         this.reference = reference.getEstimatedSemIm();
         this.target = target.getEstimatedSemIm();
     }
 
+    /**
+     * <p>Constructor for EdgeWeightComparison.</p>
+     *
+     * @param reference a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param target a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public EdgeWeightComparison(SemImWrapper reference, SemEstimatorWrapper target, Parameters parameters) {
         this.reference = reference.getSemIm();
         this.target = target.getEstimatedSemIm();
     }
 
+    /**
+     * <p>Constructor for EdgeWeightComparison.</p>
+     *
+     * @param reference a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param target a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public EdgeWeightComparison(SemImWrapper reference, SemImWrapper target, Parameters parameters) {
         this.reference = reference.getSemIm();
         this.target = target.getSemIm();
@@ -58,11 +82,17 @@ public class EdgeWeightComparison implements SessionModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public static DataWrapper serializableInstance() {
         return new DataWrapper(new Parameters());
     }
 
+    /**
+     * <p>getDisplayString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDisplayString() {
         String displayString = "";
 
@@ -87,10 +117,16 @@ public class EdgeWeightComparison implements SessionModel {
         return displayString;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }

@@ -91,6 +91,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * @author josephramsey
  * @see IcaLingD
  * @see edu.cmu.tetrad.search.utils.HungarianAlgorithm
+ * @version $Id: $Id
  */
 public class IcaLingam {
     // The threshold to use for set small elements to zero in the B Hat matrices.

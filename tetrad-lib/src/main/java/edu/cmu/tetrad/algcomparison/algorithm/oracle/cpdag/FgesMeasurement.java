@@ -24,6 +24,7 @@ import java.util.List;
  * FGES (the heuristic version).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @Bootstrapping
 public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
@@ -34,10 +35,16 @@ public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstra
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
 
+    /**
+     * <p>Constructor for FgesMeasurement.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public FgesMeasurement(ScoreWrapper score) {
         this.score = score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -83,22 +90,26 @@ public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstra
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph dag = new EdgeListGraph(graph);
         return GraphTransforms.cpdagForDag(dag);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "FGES adding measuremnt noise using " + this.score.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.score.getDataType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -110,16 +121,19 @@ public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstra
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

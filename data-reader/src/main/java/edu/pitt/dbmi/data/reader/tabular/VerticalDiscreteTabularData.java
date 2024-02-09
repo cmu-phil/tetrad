@@ -25,6 +25,7 @@ import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
  * Dec 29, 2018 5:17:39 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class VerticalDiscreteTabularData implements DiscreteData {
 
@@ -43,9 +44,9 @@ public class VerticalDiscreteTabularData implements DiscreteData {
     }
 
     /**
-     * Gets the data columns.
+     * {@inheritDoc}
      *
-     * @return the data columns.
+     * Gets the data columns.
      */
     @Override
     public DiscreteDataColumn[] getDataColumns() {
@@ -53,9 +54,9 @@ public class VerticalDiscreteTabularData implements DiscreteData {
     }
 
     /**
-     * Gets the data.
+     * {@inheritDoc}
      *
-     * @return the data.
+     * Gets the data.
      */
     @Override
     public int[][] getData() {

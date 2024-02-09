@@ -27,6 +27,7 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.SymMatrixF;
  * <p>Client of the Biolingua class, can be used to easily run the algorithm with different inputs.</p>
  *
  * @author Raul Saavedra, rsaavedr@ai.uwf.edu
+ * @version $Id: $Id
  */
 public class BiolinguaRunner {
     static final String dashes =

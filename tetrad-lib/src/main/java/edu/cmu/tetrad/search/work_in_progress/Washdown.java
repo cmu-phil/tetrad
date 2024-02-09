@@ -50,8 +50,8 @@ import java.util.List;
  * Clearly we can use any goodness of fit test we think is appropriate - the default being the chi-square test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
-
 public class Washdown {
     private final List<Node> variables;
     private final double alpha;

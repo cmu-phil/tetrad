@@ -12,6 +12,7 @@ import java.util.List;
  * for X*-&gt;Y in the estimated graph if X is not adjacent to Y or X--Y or X&lt;--Y.
  *
  * @author josephramsey, rubens (November, 2016)
+ * @version $Id: $Id
  */
 public class ArrowConfusion {
 
@@ -32,6 +33,7 @@ public class ArrowConfusion {
 
     /**
      * Constructs a new ArrowConfusion object.
+     *
      * @param truth the true graph
      * @param est the estimated graph
      */
@@ -41,6 +43,7 @@ public class ArrowConfusion {
 
     /**
      * Constructs a new ArrowConfusion object.
+     *
      * @param truth the true graph
      * @param est the estimated graph
      * @param truthAdj if true, use the true graph to determine adjacency for arrowhead FP's
@@ -272,6 +275,7 @@ public class ArrowConfusion {
 
     /**
      * True positives.
+     *
      * @return the number of true positives
      */
     public int getTp() {
@@ -280,6 +284,7 @@ public class ArrowConfusion {
 
     /**
      * False positives.
+     *
      * @return the number of false positives
      */
     public int getFp() {
@@ -288,6 +293,7 @@ public class ArrowConfusion {
 
     /**
      * False negatives.
+     *
      * @return the number of false negatives
      */
     public int getFn() {
@@ -296,6 +302,7 @@ public class ArrowConfusion {
 
     /**
      * True negatives.
+     *
      * @return the number of true negatives
      */
     public int getTn() {
@@ -304,6 +311,7 @@ public class ArrowConfusion {
 
     /**
      * Two positives for two-cycles.
+     *
      * @return the number of true positives for two-cycles.
      */
     public int getTwoCycleTp() {
@@ -312,6 +320,7 @@ public class ArrowConfusion {
 
     /**
      * False positives for two-cycles.
+     *
      * @return the number of false positives for two-cycles.
      */
     public int getTwoCycleFp() {
@@ -320,6 +329,7 @@ public class ArrowConfusion {
 
     /**
      * False negatives for two-cycles.
+     *
      * @return the number of false negatives for two-cycles.
      */
     public int getTwoCycleFn() {
@@ -328,6 +338,7 @@ public class ArrowConfusion {
 
     /**
      * True positives for common edges.
+     *
      * @return the number of true positives for common edges
      */
     public int getTpc() {
@@ -336,6 +347,7 @@ public class ArrowConfusion {
 
     /**
      * False positives for common edges.
+     *
      * @return the number of false positives for common edges
      */
     public int getFpc() {
@@ -344,6 +356,7 @@ public class ArrowConfusion {
 
     /**
      * False negatives for common edges.
+     *
      * @return the number of false negatives for common edges
      */
     public int getFnc() {
@@ -352,6 +365,7 @@ public class ArrowConfusion {
 
     /**
      * True Negatives for common edges.
+     *
      * @return the number of true negatives for common edges
      */
     public int getTnc() {
@@ -360,6 +374,7 @@ public class ArrowConfusion {
 
     /**
      * Returns true if the truth graph is used to determine adjacency for arrowhead FP's.
+     *
      * @return true if the truth graph is used to determine adjacency for arrowhead FP's
      */
     public boolean isTruthAdj() {

@@ -17,6 +17,7 @@ import java.util.List;
  * Wrapper for the Poisson prior score (Bryan)
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Poisson Prior Score",
@@ -29,6 +30,7 @@ public class PoissonPriorScore implements ScoreWrapper {
     private static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
+    /** {@inheritDoc} */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
@@ -49,16 +51,19 @@ public class PoissonPriorScore implements ScoreWrapper {
         return score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Poisson Prior Score";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -68,6 +73,7 @@ public class PoissonPriorScore implements ScoreWrapper {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);

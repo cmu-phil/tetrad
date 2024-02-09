@@ -12,20 +12,24 @@ import java.util.List;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemidirectedPrecision implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "Semidirected-Prec";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Proportion of (X, Y) where if semidirected path in est then also in true";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0, fp = 0;
@@ -51,6 +55,7 @@ public class SemidirectedPrecision implements Statistic {
         return tp / (double) (tp + fp);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

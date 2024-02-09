@@ -46,6 +46,7 @@ import java.util.prefs.Preferences;
  * Dec 6, 2017 1:02:46 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class SessionFileTransferHandler extends TransferHandler {
 
@@ -53,6 +54,7 @@ public class SessionFileTransferHandler extends TransferHandler {
 
 //    private static final Logger LOGGER = LoggerFactory.getLogger(SessionFileTransferHandler.class);
 
+    /** {@inheritDoc} */
     @Override
     public boolean canImport(TransferSupport support) {
         for (DataFlavor flavor : support.getDataFlavors()) {
@@ -64,6 +66,7 @@ public class SessionFileTransferHandler extends TransferHandler {
         return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean importData(TransferSupport support) {
         try {

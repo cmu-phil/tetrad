@@ -33,6 +33,7 @@ import java.lang.reflect.InvocationTargetException;
  * Aug 30, 2017 3:14:40 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class AlgorithmFactory {
 
@@ -46,9 +47,9 @@ public class AlgorithmFactory {
      * @param test independence test
      * @param score score
      * @return algorithm
-     * @throws IllegalAccessException Reflection exception
-     * @throws InstantiationException Reflection exception
-     * @throws InvocationTargetException Reflection exception
+     * @throws java.lang.IllegalAccessException Reflection exception
+     * @throws java.lang.InstantiationException Reflection exception
+     * @throws java.lang.reflect.InvocationTargetException Reflection exception
      */
     public static Algorithm create(Class<? extends Algorithm> algoClass, IndependenceWrapper test, ScoreWrapper score)
             throws IllegalAccessException, InstantiationException, InvocationTargetException {
@@ -86,9 +87,9 @@ public class AlgorithmFactory {
      * @param score score
      * @param externalGraph external graph
      * @return algorithm
-     * @throws IllegalAccessException Reflection exception
-     * @throws InstantiationException Reflection exception
-     * @throws InvocationTargetException Reflection exception
+     * @throws java.lang.IllegalAccessException Reflection exception
+     * @throws java.lang.InstantiationException Reflection exception
+     * @throws java.lang.reflect.InvocationTargetException Reflection exception
      */
     public static Algorithm create(
             Class<? extends Algorithm> algoClass, IndependenceWrapper test, ScoreWrapper score, Graph externalGraph)
@@ -108,9 +109,9 @@ public class AlgorithmFactory {
      * @param indTestClass independence test class
      * @param scoreClass score class
      * @return algorithm
-     * @throws IllegalAccessException Reflection exception
-     * @throws InstantiationException Reflection exception
-     * @throws InvocationTargetException Reflection exception
+     * @throws java.lang.IllegalAccessException Reflection exception
+     * @throws java.lang.InstantiationException Reflection exception
+     * @throws java.lang.reflect.InvocationTargetException Reflection exception
      */
     public static Algorithm create(
             Class<? extends Algorithm> algoClass,
@@ -135,9 +136,9 @@ public class AlgorithmFactory {
      * @param scoreClass score class
      * @param externalGraph external graph
      * @return algorithm
-     * @throws IllegalAccessException Reflection exception
-     * @throws InstantiationException Reflection exception
-     * @throws InvocationTargetException Reflection exception
+     * @throws java.lang.IllegalAccessException Reflection exception
+     * @throws java.lang.InstantiationException Reflection exception
+     * @throws java.lang.reflect.InvocationTargetException Reflection exception
      */
     public static Algorithm create(
             Class<? extends Algorithm> algoClass,

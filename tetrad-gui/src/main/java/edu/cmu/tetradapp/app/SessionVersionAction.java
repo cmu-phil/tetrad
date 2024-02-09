@@ -40,11 +40,16 @@ import java.text.SimpleDateFormat;
  */
 final class SessionVersionAction extends AbstractAction {
 
+    /**
+     * <p>Constructor for SessionVersionAction.</p>
+     */
     public SessionVersionAction() {
         super("Session Version");
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {

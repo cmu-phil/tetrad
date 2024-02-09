@@ -37,6 +37,7 @@ import java.util.WeakHashMap;
  *
  * @author josephramsey
  * @author peterspirtes
+ * @version $Id: $Id
  */
 public final class DagToPag {
 
@@ -64,12 +65,22 @@ public final class DagToPag {
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
+     *
+     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public DagToPag(Graph dag) {
         this.dag = new EdgeListGraph(dag);
     }
 
 
+    /**
+     * <p>existsInducingPathInto.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a boolean
+     */
     public static boolean existsInducingPathInto(Node x, Node y, Graph graph) {
         if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
         if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
@@ -135,10 +146,20 @@ public final class DagToPag {
         return graph;
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -148,6 +169,8 @@ public final class DagToPag {
     }
 
     /**
+     * <p>isCompleteRuleSetUsed.</p>
+     *
      * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
      * should be used. False by default.
      */
@@ -156,6 +179,8 @@ public final class DagToPag {
     }
 
     /**
+     * <p>Setter for the field <code>completeRuleSetUsed</code>.</p>
+     *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
@@ -182,6 +207,11 @@ public final class DagToPag {
         this.maxPathLength = maxPathLength;
     }
 
+    /**
+     * <p>Setter for the field <code>doDiscriminatingPathRule</code>.</p>
+     *
+     * @param doDiscriminatingPathRule a boolean
+     */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }

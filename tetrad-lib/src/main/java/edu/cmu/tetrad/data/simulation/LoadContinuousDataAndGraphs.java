@@ -24,6 +24,7 @@ import java.util.Objects;
  * Load data sets and graphs from a directory.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LoadContinuousDataAndGraphs implements Simulation {
     private static final long serialVersionUID = 23L;
@@ -32,10 +33,16 @@ public class LoadContinuousDataAndGraphs implements Simulation {
     private final List<String> usedParameters = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
 
+    /**
+     * <p>Constructor for LoadContinuousDataAndGraphs.</p>
+     *
+     * @param path a {@link java.lang.String} object
+     */
     public LoadContinuousDataAndGraphs(String path) {
         this.path = path;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
@@ -95,16 +102,19 @@ public class LoadContinuousDataAndGraphs implements Simulation {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         try {
@@ -126,16 +136,19 @@ public class LoadContinuousDataAndGraphs implements Simulation {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         return this.usedParameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;

@@ -39,6 +39,7 @@ import java.util.*;
  * Checks the graphoid axioms for a set of Independence Model statements.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphoidAxioms {
     private final Set<GraphoidIndFact> facts;
@@ -191,6 +192,8 @@ public class GraphoidAxioms {
     /**
      * Returns the independence facts in the form 1:2|3 for use in various Tetrad algorithms. Assumes decomposition and
      * compositios, so that there are no complex independence facts.
+     *
+     * @return a {@link edu.cmu.tetrad.data.IndependenceFacts} object
      */
     public IndependenceFacts getIndependenceFacts() {
         IndependenceFacts ifFacts = new IndependenceFacts();
@@ -210,6 +213,8 @@ public class GraphoidAxioms {
 
     /**
      * Checks is symmetry holds--i.e., X ⊥⊥ Y | Z ==&gt; Y ⊥⊥ X | Z
+     *
+     * @return a boolean
      */
     public boolean symmetry() {
 
@@ -233,6 +238,8 @@ public class GraphoidAxioms {
 
     /**
      * Checks if decomposition holds, e.g., X ⊥⊥ (Y ∪ W) |Z ==&gt; (X ⊥⊥ Y |Z) ∧ (X ⊥⊥ W |Z)
+     *
+     * @return a boolean
      */
     public boolean decomposition() {
         boolean found0 = false;
@@ -309,6 +316,8 @@ public class GraphoidAxioms {
 
     /**
      * Checks is weak union holds, e.g., X _||_ Y U W | Z ==&gt; X _||_ Y | Z U W
+     *
+     * @return a boolean
      */
     public boolean weakUnion() {
         boolean found0 = false;
@@ -364,6 +373,8 @@ public class GraphoidAxioms {
 
     /**
      * Checks if contraction holds--e.g., (X ⊥⊥ Y |Z) ∧ (X ⊥⊥ W |Z ∪ Y) ==&gt; X ⊥⊥ (Y ∪ W) |Z
+     *
+     * @return a boolean
      */
     public boolean contraction() {
         boolean found0 = false;
@@ -421,6 +432,8 @@ public class GraphoidAxioms {
 
     /**
      * Checks if intersection holds--e.g., (X ⊥⊥ Y | (Z ∪ W)) ∧ (X ⊥⊥ W | (Z ∪ Y)) ==&gt; X ⊥⊥ (Y ∪ W) |Z
+     *
+     * @return a boolean
      */
     public boolean intersection() {
         boolean found0 = false;
@@ -491,6 +504,8 @@ public class GraphoidAxioms {
 
     /**
      * Checks if composition holds--e.g., (X ⊥⊥ Y | Z) ∧ (X ⊥⊥ W |Z) ==&gt; X ⊥⊥ (Y ∪ W) |Z
+     *
+     * @return a boolean
      */
     public boolean composition() {
         boolean found0 = false;

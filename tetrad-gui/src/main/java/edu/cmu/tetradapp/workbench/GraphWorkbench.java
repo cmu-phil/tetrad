@@ -33,16 +33,24 @@ import java.util.List;
  * @author josephramsey
  * @author Willie Wheeler
  * @see AbstractWorkbench
+ * @version $Id: $Id
  */
 public class GraphWorkbench extends AbstractWorkbench implements TripleClassifier {
 
     //=================PUBLIC STATIC FINAL FIELDS=========================//
+    /** Constant <code>MEASURED_NODE=0</code> */
     public static final int MEASURED_NODE = 0;
+    /** Constant <code>LATENT_NODE=1</code> */
     public static final int LATENT_NODE = 1;
+    /** Constant <code>DIRECTED_EDGE=0</code> */
     public static final int DIRECTED_EDGE = 0;
+    /** Constant <code>NONDIRECTED_EDGE=2</code> */
     public static final int NONDIRECTED_EDGE = 2;
+    /** Constant <code>PARTIALLY_ORIENTED_EDGE=3</code> */
     public static final int PARTIALLY_ORIENTED_EDGE = 3;
+    /** Constant <code>BIDIRECTED_EDGE=4</code> */
     public static final int BIDIRECTED_EDGE = 4;
+    /** Constant <code>UNDIRECTED_EDGE=5</code> */
     public static final int UNDIRECTED_EDGE = 5;
     private static final long serialVersionUID = 938742592547332849L;
     //====================PRIVATE FIELDS=================================//
@@ -60,6 +68,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
 
     /**
      * Constructs a new workbench for the given graph model.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public GraphWorkbench(Graph graph) {
         super(graph);
@@ -92,6 +102,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
 
     /**
      * Sets the edge mode to the given mode.
+     *
+     * @param edgeMode a int
      */
     public void setEdgeMode(int edgeMode) {
         switch (edgeMode) {
@@ -113,6 +125,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
 
     /**
      * Creates a new model node for the workbench.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
      */
     public Node getNewModelNode() {
 
@@ -141,10 +155,9 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
-     * Creates a new display node for the workbench based on the given model node.
+     * {@inheritDoc}
      *
-     * @param modelNode the model node.
-     * @return the new display node.
+     * Creates a new display node for the workbench based on the given model node.
      */
     public DisplayNode getNewDisplayNode(Node modelNode) {
         DisplayNode displayNode;
@@ -173,10 +186,9 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
-     * Creates a new display edge for the workbench based on the given model edge.
+     * {@inheritDoc}
      *
-     * @param modelEdge the model edge.
-     * @return the new display edge.
+     * Creates a new display edge for the workbench based on the given model edge.
      */
     public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
         Node node1 = modelEdge.getNode1();
@@ -197,12 +209,10 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Creates a new model edge for the workbench connecting the two given model nodes and using the edge type from
      * #getEdgeType().
-     *
-     * @param node1 the one model node.
-     * @param node2 the other model node.
-     * @return the new model edge.
      */
     public Edge getNewModelEdge(Node node1, Node node2) {
         switch (this.edgeMode) {
@@ -227,12 +237,10 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Gets a new "tracking edge"--that is, an edge which is anchored at one end to a node but tracks the mouse at the
      * other end. Used for drawing new edges.
-     *
-     * @param node     the node to anchor to.
-     * @param mouseLoc the location of the mouse.
-     * @return the new tracking edge (a display edge).
      */
     public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
         Color color = null;
@@ -301,6 +309,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
 
     /**
      * Sets the type of this node to the given type.
+     *
+     * @param nodeType a int
      */
     public void setNodeType(int nodeType) {
         if (nodeType == GraphWorkbench.MEASURED_NODE || nodeType == GraphWorkbench.LATENT_NODE) {
@@ -315,6 +325,9 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
 
     /**
      * Pastes a list of session elements (SessionNodeWrappers and SessionEdges) into the workbench.
+     *
+     * @param graphElements a {@link java.util.List} object
+     * @param upperLeft a {@link java.awt.Point} object
      */
     public void pasteSubgraph(List graphElements, Point upperLeft) {
 
@@ -385,6 +398,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
+     * <p>getTriplesClassificationTypes.</p>
+     *
      * @return the names of the triple classifications. Coordinates with
      * <code>getTriplesList</code>
      */
@@ -396,10 +411,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
         return names;
     }
 
-    /**
-     * @return the list of triples corresponding to
-     * <code>getTripleClassificationNames</code> for the given node.
-     */
+    /** {@inheritDoc} */
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
@@ -409,6 +421,12 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
         return triplesList;
     }
 
+    /**
+     * <p>pasteSubgraph.</p>
+     *
+     * @param sessionElements a {@link java.util.List} object
+     * @param upperLeft a {@link edu.cmu.tetrad.util.Point} object
+     */
     public void pasteSubgraph(List sessionElements, edu.cmu.tetrad.util.Point upperLeft) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

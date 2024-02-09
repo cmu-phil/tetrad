@@ -18,10 +18,17 @@ import java.io.ObjectInputStream;
  * Feb 11, 2019 4:19:04 PM
  *
  * @author Zhou Yuan zhy19@pitt.edu
+ * @version $Id: $Id
  */
 public class DeterminismWraper extends DataWrapper {
     private static final long serialVersionUID = -5573234622763285581L;
 
+    /**
+     * <p>Constructor for DeterminismWraper.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public DeterminismWraper(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException("The given data must not be null");
@@ -47,6 +54,8 @@ public class DeterminismWraper extends DataWrapper {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

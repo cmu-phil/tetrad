@@ -38,6 +38,7 @@ import java.util.List;
  * variable is latent.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphNodeMeasured extends DisplayNode {
 
@@ -50,6 +51,8 @@ public class GraphNodeMeasured extends DisplayNode {
 
     /**
      * Constructs a new measured workbench node.
+     *
+     * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
      */
     public GraphNodeMeasured(Node modelNode) {
         setModelNode(modelNode);
@@ -65,6 +68,8 @@ public class GraphNodeMeasured extends DisplayNode {
     /**
      * Constructs a new display node for measured variables that doesn't bind to a model node, and instead has the name
      * set manually.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public GraphNodeMeasured(String name) {
         setName(name);
@@ -74,9 +79,9 @@ public class GraphNodeMeasured extends DisplayNode {
 
 
     /**
-     * Launches an editor for this node.
+     * {@inheritDoc}
      *
-     * @param graph Strings which are invalid names for this node.
+     * Launches an editor for this node.
      */
     public void doDoubleClickAction(Graph graph) {
         if (!isEditExitingMeasuredVarsAllowed()) {
@@ -190,6 +195,11 @@ public class GraphNodeMeasured extends DisplayNode {
         return this.editExitingMeasuredVarsAllowed;
     }
 
+    /**
+     * <p>Setter for the field <code>editExitingMeasuredVarsAllowed</code>.</p>
+     *
+     * @param editExitingMeasuredVarsAllowed a boolean
+     */
     public void setEditExitingMeasuredVarsAllowed(boolean editExitingMeasuredVarsAllowed) {
         this.editExitingMeasuredVarsAllowed = editExitingMeasuredVarsAllowed;
     }

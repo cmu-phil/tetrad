@@ -41,6 +41,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @author Erin Korber (added remove latents functionality July 2004)
+ * @version $Id: $Id
  */
 public final class MeasurementModelWrapper implements ParamsResettable,
         KnowledgeBoxInput {
@@ -61,6 +62,11 @@ public final class MeasurementModelWrapper implements ParamsResettable,
 
     //=============================CONSTRUCTORS==========================//
 
+    /**
+     * <p>Constructor for MeasurementModelWrapper.</p>
+     *
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public MeasurementModelWrapper(Parameters params) {
         this.setVarNames(new ArrayList<>());
         Clusters clusters = (Clusters) params.get("clusters", null);
@@ -69,6 +75,12 @@ public final class MeasurementModelWrapper implements ParamsResettable,
         this.params = params;
     }
 
+    /**
+     * <p>Constructor for MeasurementModelWrapper.</p>
+     *
+     * @param knowledgeInput a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public MeasurementModelWrapper(KnowledgeBoxInput knowledgeInput, Parameters params) {
         if (knowledgeInput instanceof GraphSource) {
             GraphSource graphWrapper = (GraphSource) knowledgeInput;
@@ -96,6 +108,12 @@ public final class MeasurementModelWrapper implements ParamsResettable,
         }
     }
 
+    /**
+     * <p>Constructor for MeasurementModelWrapper.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public MeasurementModelWrapper(DataWrapper dataWrapper, Parameters params) {
         this.setVarNames(dataWrapper.getVarNames());
         this.setClusters(new Clusters());
@@ -110,14 +128,25 @@ public final class MeasurementModelWrapper implements ParamsResettable,
         this.params = params;
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
@@ -136,6 +165,11 @@ public final class MeasurementModelWrapper implements ParamsResettable,
 
     }
 
+    /**
+     * <p>Getter for the field <code>clusters</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Clusters} object
+     */
     public Clusters getClusters() {
         return this.clusters;
     }
@@ -144,6 +178,11 @@ public final class MeasurementModelWrapper implements ParamsResettable,
         this.clusters = clusters;
     }
 
+    /**
+     * <p>Getter for the field <code>varNames</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVarNames() {
         return this.varNames;
     }
@@ -152,14 +191,29 @@ public final class MeasurementModelWrapper implements ParamsResettable,
         this.varNames = varNames;
     }
 
+    /**
+     * <p>Getter for the field <code>data</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getData() {
         return this.data;
     }
 
+    /**
+     * <p>Getter for the field <code>sourceGraph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return this.sourceGraph;
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return this.sourceGraph;
     }
@@ -168,14 +222,25 @@ public final class MeasurementModelWrapper implements ParamsResettable,
         return this.params;
     }
 
+    /** {@inheritDoc} */
     public void resetParams(Object params) {
         this.params = (Parameters) params;
     }
 
+    /**
+     * <p>getResettableParams.</p>
+     *
+     * @return a {@link java.lang.Object} object
+     */
     public Object getResettableParams() {
         return this.params;
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public java.util.List<Node> getVariables() {
         List<Node> latents = new ArrayList<>();
 
@@ -188,6 +253,11 @@ public final class MeasurementModelWrapper implements ParamsResettable,
         return latents;
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         List<List<Node>> partition = ClusterUtils.clustersToPartition(getClusters(),
                 getData().getVariables());

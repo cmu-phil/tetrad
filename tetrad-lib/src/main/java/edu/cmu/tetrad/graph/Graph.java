@@ -37,32 +37,54 @@ import java.util.Set;
  *
  * @author josephramsey
  * @see Endpoint
+ * @version $Id: $Id
  */
 public interface Graph extends TetradSerializable {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**
      * Adds a bidirected edges &lt;-&gt; to the graph.
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
      */
     boolean addBidirectedEdge(Node node1, Node node2);
 
     /**
      * Adds a directed edge --&gt; to the graph.
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
      */
     boolean addDirectedEdge(Node node1, Node node2);
 
     /**
      * Adds an undirected edge --- to the graph.
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
      */
     boolean addUndirectedEdge(Node node1, Node node2);
 
     /**
      * Adds a nondirected edges o-o to the graph.
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
      */
     boolean addNondirectedEdge(Node node1, Node node2);
 
     /**
      * Adds a partially oriented edge o-&gt; to the graph.
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
      */
     boolean addPartiallyOrientedEdge(Node node1, Node node2);
 
@@ -70,6 +92,7 @@ public interface Graph extends TetradSerializable {
      * Adds the specified edge to the graph, provided it is not already in the graph.
      *
      * @return true if the edge was added, false if not.
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
      */
     boolean addEdge(Edge edge);
 
@@ -78,11 +101,14 @@ public interface Graph extends TetradSerializable {
      * the same graph.
      *
      * @return true if nodes were added, false if not.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     boolean addNode(Node node);
 
     /**
      * Adds a PropertyChangeListener to the graph.
+     *
+     * @param e a {@link java.beans.PropertyChangeListener} object
      */
     void addPropertyChangeListener(PropertyChangeListener e);
 
@@ -95,6 +121,7 @@ public interface Graph extends TetradSerializable {
      * Determines whether this graph contains the given edge.
      *
      * @return true iff the graph contain 'edge'.
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
      */
     boolean containsEdge(Edge edge);
 
@@ -102,6 +129,7 @@ public interface Graph extends TetradSerializable {
      * Determines whether this graph contains the given node.
      *
      * @return true iff the graph contains 'node'.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     boolean containsNode(Node node);
 
@@ -111,132 +139,211 @@ public interface Graph extends TetradSerializable {
      * in both graphs, and if there are, e.g., three edges between A and B in the first graph, two of which are directed
      * edges and one of which is an undirected edge, then in the second graph there must also be two directed edges and
      * one undirected edge between nodes A and B.
+     *
+     * @param o a {@link java.lang.Object} object
+     * @return a boolean
      */
     boolean equals(Object o);
 
     /**
      * Removes all edges from the graph and fully connects it using #-# edges, where # is the given endpoint.
+     *
+     * @param endpoint a {@link edu.cmu.tetrad.graph.Endpoint} object
      */
     void fullyConnect(Endpoint endpoint);
 
     /**
      * Reorients all edges in the graph with the given endpoint.
+     *
+     * @param endpoint a {@link edu.cmu.tetrad.graph.Endpoint} object
      */
     void reorientAllWith(Endpoint endpoint);
 
     /**
+     * <p>getAdjacentNodes.</p>
+     *
      * @return a mutable list of nodes adjacent to the given node.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     List<Node> getAdjacentNodes(Node node);
 
     /**
+     * <p>getChildren.</p>
+     *
      * @return a mutable list of children for a node.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     List<Node> getChildren(Node node);
 
     /**
+     * <p>getDegree.</p>
+     *
      * @return the connectivity of the graph.
      */
     int getDegree();
 
     /**
+     * <p>getEdge.</p>
+     *
      * @return the edge connecting node1 and node2, provided a unique such edge exists.
-     * @throws UnsupportedOperationException if the graph allows multiple edges between node pairs.
+     * @throws java.lang.UnsupportedOperationException if the graph allows multiple edges between node pairs.
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      */
     Edge getEdge(Node node1, Node node2);
 
     /**
+     * <p>getDirectedEdge.</p>
+     *
      * @return the directed edge from node1 to node2, if there is one.
-     * @throws UnsupportedOperationException if the graph allows multiple edges between node pairs.
+     * @throws java.lang.UnsupportedOperationException if the graph allows multiple edges between node pairs.
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      */
     Edge getDirectedEdge(Node node1, Node node2);
 
     /**
+     * <p>getEdges.</p>
+     *
      * @return the list of edges connected to a particular node. No particular ordering of the edges in the list is
      * guaranteed.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     List<Edge> getEdges(Node node);
 
     /**
+     * <p>getEdges.</p>
+     *
      * @return the edges connecting node1 and node2.
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      */
     List<Edge> getEdges(Node node1, Node node2);
 
     /**
+     * <p>getEdges.</p>
+     *
      * @return the set of edges in the graph.  No particular ordering of the edges in the list is guaranteed.
      */
     Set<Edge> getEdges();
 
     /**
+     * <p>getEndpoint.</p>
+     *
      * @return the endpoint along the edge from node to node2 at the node2 end.
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      */
     Endpoint getEndpoint(Node node1, Node node2);
 
     /**
+     * <p>getIndegree.</p>
+     *
      * @return the number of arrow endpoints adjacent to a node.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     int getIndegree(Node node);
 
     /**
+     * <p>getDegree.</p>
+     *
      * @return the number of arrow endpoints adjacent to a node.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     int getDegree(Node node);
 
     /**
+     * <p>getNode.</p>
+     *
      * @return the node with the given string name.  In case of accidental duplicates, the first node encountered with
      * the given name is returned. In case no node exists with the given name, null is returned.
+     * @param name a {@link java.lang.String} object
      */
     Node getNode(String name);
 
     /**
+     * <p>getNodes.</p>
+     *
      * @return the list of nodes for the graph.
      */
     List<Node> getNodes();
 
+    /**
+     * <p>setNodes.</p>
+     *
+     * @param nodes a {@link java.util.List} object
+     */
     void setNodes(List<Node> nodes);
 
     /**
+     * <p>getNodeNames.</p>
+     *
      * @return the names of the nodes, in the order of <code>getNodes</code>.
      */
     List<String> getNodeNames();
 
     /**
+     * <p>getNumEdges.</p>
+     *
      * @return the number of edges in the (entire) graph.
      */
     int getNumEdges();
 
     /**
+     * <p>getNumEdges.</p>
+     *
      * @return the number of edges in the graph which are connected to a particular node.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     int getNumEdges(Node node);
 
     /**
+     * <p>getNumNodes.</p>
+     *
      * @return the number of nodes in the graph.
      */
     int getNumNodes();
 
     /**
+     * <p>getOutdegree.</p>
+     *
      * @return the number of null endpoints adjacent to an edge.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     int getOutdegree(Node node);
 
     /**
+     * <p>getParents.</p>
+     *
      * @return the list of parents for a node.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     List<Node> getParents(Node node);
 
     /**
+     * <p>isAdjacentTo.</p>
+     *
      * @return true iff node1 is adjacent to node2 in the graph.
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      */
     boolean isAdjacentTo(Node node1, Node node2);
 
     /**
+     * <p>isChildOf.</p>
+     *
      * @return true iff node1 is a child of node2 in the graph.
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      */
     boolean isChildOf(Node node1, Node node2);
 
     /**
      * Determines whether node1 is a parent of node2.
+     *
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
      */
     boolean isParentOf(Node node1, Node node2);
 
@@ -244,6 +351,9 @@ public interface Graph extends TetradSerializable {
      * Added by ekorber, 2004/6/9.
      *
      * @return true if node 2 is a definite noncollider between 1 and 3
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node3 a {@link edu.cmu.tetrad.graph.Node} object
      */
     boolean isDefNoncollider(Node node1, Node node2, Node node3);
 
@@ -251,21 +361,35 @@ public interface Graph extends TetradSerializable {
      * Added by ekorber, 2004/6/9.
      *
      * @return true if node 2 is a definite collider between 1 and 3
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node3 a {@link edu.cmu.tetrad.graph.Node} object
      */
     boolean isDefCollider(Node node1, Node node2, Node node3);
 
     /**
+     * <p>isExogenous.</p>
+     *
      * @return true iff the given node is exogenous in the graph.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     boolean isExogenous(Node node);
 
     /**
      * Nodes adjacent to the given node with the given proximal endpoint.
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param n a {@link edu.cmu.tetrad.graph.Endpoint} object
+     * @return a {@link java.util.List} object
      */
     List<Node> getNodesInTo(Node node, Endpoint n);
 
     /**
      * Nodes adjacent to the given node with the given distal endpoint.
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param n a {@link edu.cmu.tetrad.graph.Endpoint} object
+     * @return a {@link java.util.List} object
      */
     List<Node> getNodesOutTo(Node node, Endpoint n);
 
@@ -273,13 +397,17 @@ public interface Graph extends TetradSerializable {
      * Removes the given edge from the graph.
      *
      * @return true if the edge was removed, false if not.
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
      */
     boolean removeEdge(Edge edge);
 
     /**
      * Removes the edge connecting the two given nodes, provided there is exactly one such edge.
      *
-     * @throws UnsupportedOperationException if multiple edges between node pairs are not supported.
+     * @throws java.lang.UnsupportedOperationException if multiple edges between node pairs are not supported.
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
      */
     boolean removeEdge(Node node1, Node node2);
 
@@ -288,6 +416,8 @@ public interface Graph extends TetradSerializable {
      * multiple edges are permitted in some graph implementations, the number will in some cases be greater than one.
      *
      * @return true if edges were removed, false if not.
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      */
     boolean removeEdges(Node node1, Node node2);
 
@@ -296,6 +426,7 @@ public interface Graph extends TetradSerializable {
      * order in which they are presented in the iterator.
      *
      * @return true if edges were added, false if not.
+     * @param edges a {@link java.util.Collection} object
      */
     boolean removeEdges(Collection<Edge> edges);
 
@@ -303,6 +434,7 @@ public interface Graph extends TetradSerializable {
      * Removes a node from the graph.
      *
      * @return true if the node was removed, false if not.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     boolean removeNode(Node node);
 
@@ -311,22 +443,33 @@ public interface Graph extends TetradSerializable {
      * order in which they are presented in the iterator.
      *
      * @return true if nodes were added, false if not.
+     * @param nodes a {@link java.util.List} object
      */
     boolean removeNodes(List<Node> nodes);
 
     /**
      * Sets the endpoint type at the 'to' end of the edge from 'from' to 'to' to the given endpoint.  Note: NOT
      * CONSTRAINT SAFE
+     *
+     * @param from a {@link edu.cmu.tetrad.graph.Node} object
+     * @param to a {@link edu.cmu.tetrad.graph.Node} object
+     * @param endPoint a {@link edu.cmu.tetrad.graph.Endpoint} object
+     * @return a boolean
      */
     boolean setEndpoint(Node from, Node to, Endpoint endPoint);
 
     /**
      * Constructs and returns a subgraph consisting of a given subset of the nodes of this graph together with the edges
      * between them.
+     *
+     * @param nodes a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     Graph subgraph(List<Node> nodes);
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of the graph.
      */
     String toString();
@@ -341,69 +484,201 @@ public interface Graph extends TetradSerializable {
      */
     void transferNodesAndEdges(Graph graph) throws IllegalArgumentException;
 
+    /**
+     * <p>transferAttributes.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.lang.IllegalArgumentException if any.
+     */
     void transferAttributes(Graph graph) throws IllegalArgumentException;
 
+    /**
+     * <p>paths.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Paths} object
+     */
     Paths paths();
 
     /**
+     * <p>isParameterizable.</p>
+     *
      * @return true if the given node is parameterizable.
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     boolean isParameterizable(Node node);
 
     /**
+     * <p>isTimeLagModel.</p>
+     *
      * @return true if this is a time lag model, in which case getTimeLagGraph() returns the graph.
      */
     boolean isTimeLagModel();
 
     /**
+     * <p>getTimeLagGraph.</p>
+     *
      * @return the underlying time lag model, if there is one; otherwise, returns null.
      */
     TimeLagGraph getTimeLagGraph();
 
+    /**
+     * <p>getSepset.</p>
+     *
+     * @param n1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param n2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.Set} object
+     */
     Set<Node> getSepset(Node n1, Node n2);
 
+    /**
+     * <p>getAllAttributes.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     Map<String, Object> getAllAttributes();
 
+    /**
+     * <p>getAttribute.</p>
+     *
+     * @param key a {@link java.lang.String} object
+     * @return a {@link java.lang.Object} object
+     */
     Object getAttribute(String key);
 
+    /**
+     * <p>removeAttribute.</p>
+     *
+     * @param key a {@link java.lang.String} object
+     */
     void removeAttribute(String key);
 
+    /**
+     * <p>addAttribute.</p>
+     *
+     * @param key a {@link java.lang.String} object
+     * @param value a {@link java.lang.Object} object
+     */
     void addAttribute(String key, Object value);
 
+    /**
+     * <p>getUnderLines.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     Set<Triple> getUnderLines();
 
+    /**
+     * <p>getDottedUnderlines.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     Set<Triple> getDottedUnderlines();
 
+    /**
+     * <p>getAmbiguousTriples.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     Set<Triple> getAmbiguousTriples();
 
+    /**
+     * <p>setAmbiguousTriples.</p>
+     *
+     * @param triples a {@link java.util.Set} object
+     */
     void setAmbiguousTriples(Set<Triple> triples);
 
     /**
      * States whether r-s-r is an underline triple or not.
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
      */
     boolean isAmbiguousTriple(Node x, Node y, Node z);
 
     /**
      * States whether r-s-r is an underline triple or not.
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
      */
     boolean isUnderlineTriple(Node x, Node y, Node z);
 
+    /**
+     * <p>addAmbiguousTriple.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     */
     void addAmbiguousTriple(Node x, Node y, Node z);
 
+    /**
+     * <p>addUnderlineTriple.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     */
     void addUnderlineTriple(Node x, Node y, Node z);
 
+    /**
+     * <p>addDottedUnderlineTriple.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     */
     void addDottedUnderlineTriple(Node x, Node y, Node z);
 
+    /**
+     * <p>removeAmbiguousTriple.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     */
     void removeAmbiguousTriple(Node x, Node y, Node z);
 
+    /**
+     * <p>removeUnderlineTriple.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     */
     void removeUnderlineTriple(Node x, Node y, Node z);
 
+    /**
+     * <p>removeDottedUnderlineTriple.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     */
     void removeDottedUnderlineTriple(Node x, Node y, Node z);
 
+    /**
+     * <p>setUnderLineTriples.</p>
+     *
+     * @param triples a {@link java.util.Set} object
+     */
     void setUnderLineTriples(Set<Triple> triples);
 
+    /**
+     * <p>setDottedUnderLineTriples.</p>
+     *
+     * @param triples a {@link java.util.Set} object
+     */
     void setDottedUnderLineTriples(Set<Triple> triples);
 
+    /**
+     * <p>removeTriplesNotInGraph.</p>
+     */
     void removeTriplesNotInGraph();
 }
 

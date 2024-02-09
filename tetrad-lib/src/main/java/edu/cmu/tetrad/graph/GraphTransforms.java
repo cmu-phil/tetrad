@@ -15,14 +15,22 @@ import java.util.List;
  * Transformations that transform one graph into another.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphTransforms {
+    /**
+     * <p>dagFromCpdag.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph dagFromCpdag(Graph graph) {
         return dagFromCpdag(graph, null);
     }
 
     /**
      * Returns a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
+     *
      * @param graph the CPDAG
      * @param knowledge the knowledge
      * @return a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
@@ -58,6 +66,12 @@ public class GraphTransforms {
     }
 
     // Zhang 2008 Theorem 2
+    /**
+     * <p>pagToMag.</p>
+     *
+     * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph pagToMag(Graph pag) {
         Graph mag = new EdgeListGraph(pag.getNodes());
         for (Edge e : pag.getEdges()) mag.addEdge(new Edge(e));
@@ -123,6 +137,10 @@ public class GraphTransforms {
 
     /**
      * Generates the list of DAGs in the given cpdag.
+     *
+     * @param cpdag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param orientBidirectedEdges a boolean
+     * @return a {@link java.util.List} object
      */
     public static List<Graph> generateCpdagDags(Graph cpdag, boolean orientBidirectedEdges) {
         if (orientBidirectedEdges) {
@@ -132,6 +150,13 @@ public class GraphTransforms {
         return getDagsInCpdagMeek(cpdag, new Knowledge());
     }
 
+    /**
+     * <p>getDagsInCpdagMeek.</p>
+     *
+     * @param cpdag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @return a {@link java.util.List} object
+     */
     public static List<Graph> getDagsInCpdagMeek(Graph cpdag, Knowledge knowledge) {
         DagInCpcagIterator iterator = new DagInCpcagIterator(cpdag, knowledge);
         List<Graph> dags = new ArrayList<>();
@@ -153,6 +178,12 @@ public class GraphTransforms {
         return dags;
     }
 
+    /**
+     * <p>getAllGraphsByDirectingUndirectedEdges.</p>
+     *
+     * @param skeleton a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.util.List} object
+     */
     public static List<Graph> getAllGraphsByDirectingUndirectedEdges(Graph skeleton) {
         List<Graph> graphs = new ArrayList<>();
         List<Edge> edges = new ArrayList<>(skeleton.getEdges());
@@ -201,6 +232,12 @@ public class GraphTransforms {
         return graphs;
     }
 
+    /**
+     * <p>cpdagForDag.</p>
+     *
+     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph cpdagForDag(Graph dag) {
         Graph cpdag = new EdgeListGraph(dag);
         MeekRules rules = new MeekRules();
@@ -209,6 +246,12 @@ public class GraphTransforms {
         return cpdag;
     }
 
+    /**
+     * <p>dagToPag.</p>
+     *
+     * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     @NotNull
     public static Graph dagToPag(Graph trueGraph) {
         return new DagToPag(trueGraph).convert();

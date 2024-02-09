@@ -31,6 +31,7 @@ import java.io.ObjectStreamException;
  * given number (double) or the value of another parameter.
  *
  * @author Frank Wimberly following Joe Ramsey's ParamType class.
+ * @version $Id: $Id
  */
 public class ParamConstraintType implements TetradSerializable {
     /**
@@ -69,6 +70,8 @@ public class ParamConstraintType implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.ParamConstraintType} object
      */
     public static ParamConstraintType serializableInstance() {
         return ParamConstraintType.LT;
@@ -76,6 +79,8 @@ public class ParamConstraintType implements TetradSerializable {
 
     /**
      * Prints out the name of the type.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return this.name;

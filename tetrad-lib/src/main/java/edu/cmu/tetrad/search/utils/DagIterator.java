@@ -33,6 +33,7 @@ import java.util.LinkedList;
  * a Meek-algorithm-type method.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DagIterator {
 
@@ -46,7 +47,8 @@ public class DagIterator {
      * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it is
      * not acyclic, it is rejected.
      *
-     * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
+     * @throws java.lang.IllegalArgumentException if the CPDAG is not a CPDAG.
+     * @param CPDAG a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public DagIterator(Graph CPDAG) {
 

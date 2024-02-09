@@ -60,6 +60,7 @@ import java.util.Set;
  * @author danielmalinsky
  * @see Fci
  * @see Knowledge
+ * @version $Id: $Id
  */
 public final class SvarFci implements IGraphSearch {
     // The independence test to use.
@@ -83,6 +84,8 @@ public final class SvarFci implements IGraphSearch {
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
+     *
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public SvarFci(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -448,6 +451,12 @@ public final class SvarFci implements IGraphSearch {
         }
     }
 
+    /**
+     * <p>getNameNoLag.</p>
+     *
+     * @param obj a {@link java.lang.Object} object
+     * @return a {@link java.lang.String} object
+     */
     public String getNameNoLag(Object obj) {
         String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {

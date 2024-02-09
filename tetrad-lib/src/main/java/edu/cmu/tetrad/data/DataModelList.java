@@ -34,6 +34,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @see DataModel
+ * @version $Id: $Id
  */
 public final class DataModelList extends AbstractList<DataModel>
         implements DataModel {
@@ -68,9 +69,17 @@ public final class DataModelList extends AbstractList<DataModel>
      */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * <p>Constructor for DataModelList.</p>
+     */
     public DataModelList() {
     }
 
+    /**
+     * <p>Constructor for DataModelList.</p>
+     *
+     * @param dataModelList a {@link edu.cmu.tetrad.data.DataModelList} object
+     */
     public DataModelList(DataModelList dataModelList) {
 
         try {
@@ -87,26 +96,29 @@ public final class DataModelList extends AbstractList<DataModel>
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModelList} object
      */
     public static DataModelList serializableInstance() {
         return new DataModelList();
     }
 
-    /**
-     * @return this model, as an Object.
-     */
+    /** {@inheritDoc} */
     public DataModel get(int index) {
         return this.modelList.get(index);
     }
 
-    /**
-     * @return the size of the getModel list. Required for AbstractList.
-     */
+    /** {@inheritDoc} */
     @Override
     public int size() {
         return this.modelList.size();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         if (getSelectedModel() == null) {
             throw new NullPointerException();
@@ -114,10 +126,16 @@ public final class DataModelList extends AbstractList<DataModel>
         return getSelectedModel().getVariables();
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge.copy();
     }
 
+    /** {@inheritDoc} */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -127,6 +145,8 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
+     * <p>getVariableNames.</p>
+     *
      * @return the list of variable names for columns, in order.
      */
     public List<String> getVariableNames() {
@@ -147,6 +167,8 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Check if the modeList is empty Need to override this since this class is extending AbstractList.
      */
     @Override
@@ -157,6 +179,8 @@ public final class DataModelList extends AbstractList<DataModel>
     /**
      * Use this to check if the dataModelList only contains the default empty dataset that is being used to populat the
      * empty spreadsheet - Added by Kevin
+     *
+     * @return a boolean
      */
     public boolean containsEmptyData() {
         if (this.modelList.isEmpty()) {
@@ -166,15 +190,19 @@ public final class DataModelList extends AbstractList<DataModel>
         }
     }
 
+    /**
+     * <p>Getter for the field <code>modelList</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<DataModel> getModelList() {
         return this.modelList;
     }
 
     /**
-     * Removes the DataModel at the given index. Required for AbstractList. Required for AbstractList.
+     * {@inheritDoc}
      *
-     * @param index the index of the DataModel to remove.
-     * @return the DataModel just removed.
+     * Removes the DataModel at the given index. Required for AbstractList. Required for AbstractList.
      */
     public DataModel remove(int index) {
         DataModel removedObject = this.modelList.remove(index);
@@ -187,6 +215,8 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
+     * <p>Getter for the field <code>selectedModel</code>.</p>
+     *
      * @return the model that is currently selected. The default is the first model. If there are no models in the list,
      * null is returned.
      */
@@ -200,6 +230,11 @@ public final class DataModelList extends AbstractList<DataModel>
         }
     }
 
+    /**
+     * <p>Setter for the field <code>selectedModel</code>.</p>
+     *
+     * @param model a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public void setSelectedModel(DataModel model) {
         if (model == null) {
             throw new NullPointerException();
@@ -212,12 +247,16 @@ public final class DataModelList extends AbstractList<DataModel>
 
     /**
      * Gets the name of the data model list.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String getName() {
         return this.name;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of the data model list..
      */
     public void setName(String name) {
@@ -225,6 +264,8 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of the data model list.
      */
     public String toString() {
@@ -237,37 +278,48 @@ public final class DataModelList extends AbstractList<DataModel>
         return buf.toString();
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isContinuous() {
         return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isDiscrete() {
         return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isMixed() {
         return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Node getVariable(String name) {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataModel copy() {
         return null;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         int hashcode = 17;
         hashcode += 17 * this.name.hashCode();
         return hashcode;
     }
 
+    /** {@inheritDoc} */
     public boolean equals(Object o) {
         if (o == null) {
             return false;

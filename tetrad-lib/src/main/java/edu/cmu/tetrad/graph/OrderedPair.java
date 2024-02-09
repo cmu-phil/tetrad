@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
  *
  * @author Tyler Gibson
  * @param <E> The type of the objects in the pair.
+ * @version $Id: $Id
  */
 public class OrderedPair<E> implements TetradSerializable, TetradSerializableExcluded {
     private static final long serialVersionUID = 23L;
@@ -45,6 +46,12 @@ public class OrderedPair<E> implements TetradSerializable, TetradSerializableExc
     private final E second;
 
 
+    /**
+     * <p>Constructor for OrderedPair.</p>
+     *
+     * @param first a E object
+     * @param second a E object
+     */
     public OrderedPair(E first, E second) {
         if (first == null) {
             throw new NullPointerException("First node must not be null.");
@@ -58,24 +65,45 @@ public class OrderedPair<E> implements TetradSerializable, TetradSerializableExc
 
     //============================== Public methods =============================//
 
+    /**
+     * <p>Getter for the field <code>first</code>.</p>
+     *
+     * @return a E object
+     */
     public E getFirst() {
         return this.first;
     }
 
+    /**
+     * <p>Getter for the field <code>second</code>.</p>
+     *
+     * @return a E object
+     */
     public E getSecond() {
         return this.second;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         return 13 * this.first.hashCode() + 67 * this.second.hashCode();
     }
 
+    /** {@inheritDoc} */
     public boolean equals(Object o) {
         if (!(o instanceof OrderedPair)) throw new IllegalArgumentException();
         OrderedPair<E> that = (OrderedPair<E>) o;
         return this.first.equals(that.first) && this.second.equals(that.second);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "<" + this.first + ", " + this.second + ">";
     }

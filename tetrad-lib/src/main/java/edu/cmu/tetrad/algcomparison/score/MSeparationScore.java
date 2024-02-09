@@ -15,6 +15,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "M-separation Score",
@@ -34,10 +35,16 @@ public class MSeparationScore implements ScoreWrapper {
 
     }
 
+    /**
+     * <p>Constructor for MSeparationScore.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public MSeparationScore(Graph graph) {
         this.graph = graph;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
@@ -48,26 +55,35 @@ public class MSeparationScore implements ScoreWrapper {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "M-separation Score";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         return new ArrayList<>();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);
     }
 
+    /**
+     * <p>Setter for the field <code>graph</code>.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setGraph(Graph graph) {
         this.graph = graph;
     }

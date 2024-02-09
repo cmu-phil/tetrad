@@ -36,22 +36,30 @@ import edu.cmu.tetrad.util.Parameters;
  * calculated).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
         TripleClassifier, SimulationParamsSource, MultipleGraphSource {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**
+     * <p>getDataModel.</p>
+     *
      * @return the data used to execute this algorithm. Might possibly be a graph.
      */
     DataModel getDataModel();
 
     /**
+     * <p>getParams.</p>
+     *
      * @return the search parameters for this algorithm.
      */
     Parameters getParams();
 
     /**
+     * <p>getSourceGraph.</p>
+     *
      * @return the graph from which data was originally generated, if such a graph is available. Otherwise, returns
      * null.
      */
@@ -63,26 +71,36 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
     void execute();
 
     /**
+     * <p>supportsKnowledge.</p>
+     *
      * @return true if the algorithm supports knowledge.
      */
     boolean supportsKnowledge();
 
     /**
+     * <p>getMeekRules.</p>
+     *
      * @return the orientation rules for this search.
      */
     MeekRules getMeekRules();
 
     /**
+     * <p>getExternalGraph.</p>
+     *
      * @return the initial graph, if there is one, or null if not.
      */
     Graph getExternalGraph();
 
     /**
      * Sets the initial graph for the algorithm, if feasible.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     void setExternalGraph(Graph graph);
 
     /**
+     * <p>getAlgorithmName.</p>
+     *
      * @return the name of the algorithm.
      */
     String getAlgorithmName();

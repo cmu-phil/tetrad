@@ -49,6 +49,7 @@ import java.util.prefs.Preferences;
  * Edits knowledge of forbidden and required edges.
  *
  * @author kaalpurush
+ * @version $Id: $Id
  */
 public class KnowledgeBoxEditor extends JPanel {
 
@@ -76,10 +77,20 @@ public class KnowledgeBoxEditor extends JPanel {
     private boolean showForbiddenByGroups;
     private int numTiers = 3;
 
+    /**
+     * <p>Constructor for KnowledgeBoxEditor.</p>
+     *
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.ForbiddenGraphModel} object
+     */
     public KnowledgeBoxEditor(ForbiddenGraphModel knowledgeBoxModel) {
         this((KnowledgeBoxModel) knowledgeBoxModel);
     }
 
+    /**
+     * <p>Constructor for KnowledgeBoxEditor.</p>
+     *
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.RemoveNonSkeletonEdgesModel} object
+     */
     public KnowledgeBoxEditor(RemoveNonSkeletonEdgesModel knowledgeBoxModel) {
         this((KnowledgeBoxModel) knowledgeBoxModel);
     }
@@ -88,6 +99,8 @@ public class KnowledgeBoxEditor extends JPanel {
      * Constructs a Knowledge editor for the given knowledge, variable names (that is, the list of all variable names to
      * be considered, which may vary from object to object even for the same knowledge), and possible source graph. The
      * source graph is used only to arrange nodes in the edge panel.
+     *
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public KnowledgeBoxEditor(KnowledgeBoxModel knowledgeBoxModel) {
         this.vars = knowledgeBoxModel.getVariables();
@@ -208,6 +221,9 @@ public class KnowledgeBoxEditor extends JPanel {
         return menuBar;
     }
 
+    /**
+     * <p>resetTabbedPane.</p>
+     */
     public void resetTabbedPane() {
         this.tabbedPane.removeAll();
         this.tabbedPane.add("Tiers", tierDisplay());
@@ -706,6 +722,11 @@ public class KnowledgeBoxEditor extends JPanel {
         return this.knowledge;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();

@@ -9,10 +9,12 @@ import java.util.List;
  * Returns a scale free graph.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ScaleFree implements RandomGraph {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public edu.cmu.tetrad.graph.Graph createGraph(Parameters parameters) {
         return edu.cmu.tetrad.graph.RandomGraph.randomScaleFreeGraph(
@@ -25,11 +27,13 @@ public class ScaleFree implements RandomGraph {
         );
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Scale-free graph using the Bollobas et al. algorithm";
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

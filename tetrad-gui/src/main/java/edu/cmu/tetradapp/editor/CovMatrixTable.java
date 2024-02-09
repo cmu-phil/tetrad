@@ -88,12 +88,7 @@ class CovMatrixTable extends AbstractTableModel {
         return (getNumVariables() < 30) ? 30 : getNumVariables() + 1;
     }
 
-    /**
-     * @return the value at the given (row, column) coordinates of the table as an Object.  If the variable for the
-     * column is a DiscreteVariable, the String value (as opposed to the integer index value) is extracted and returned.
-     * If the coordinates are out of range of the wrapped table model, 'null' is returned. Otherwise, the value stored
-     * in the wrapped table model at the given coordinates is returned.
-     */
+    /** {@inheritDoc} */
     public Object getValueAt(int row, int col) {
         final int firstDataRow = 4;
         final int firstDataCol = 1;
@@ -128,6 +123,7 @@ class CovMatrixTable extends AbstractTableModel {
         return null;
     }
 
+    /** {@inheritDoc} */
     public boolean isCellEditable(int row, int col) {
         final int firstDataRow = 4;
         final int firstDataCol = 1;
@@ -161,6 +157,7 @@ class CovMatrixTable extends AbstractTableModel {
 
     }
 
+    /** {@inheritDoc} */
     public void setValueAt(Object aValue, int row, int col) {
         final int firstDataRow = 4;
         final int firstDataCol = 1;
@@ -198,6 +195,11 @@ class CovMatrixTable extends AbstractTableModel {
         }
     }
 
+    /**
+     * <p>addPropertyChangeListener.</p>
+     *
+     * @param listener a {@link java.beans.PropertyChangeListener} object
+     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.pcs.addPropertyChangeListener(listener);
     }
@@ -247,6 +249,11 @@ class CovMatrixTable extends AbstractTableModel {
         return this.editingMatrix.get(matrixRow, matrixCol);
     }
 
+    /**
+     * <p>Getter for the field <code>covMatrix</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public ICovarianceMatrix getCovMatrix() {
         return this.covMatrix;
     }
@@ -255,10 +262,18 @@ class CovMatrixTable extends AbstractTableModel {
         return this.covMatrix.getSize();
     }
 
+    /**
+     * <p>isEditingMatrixPositiveDefinite.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEditingMatrixPositiveDefinite() {
         return this.editingMatrixPositiveDefinite;
     }
 
+    /**
+     * <p>restore.</p>
+     */
     public void restore() {
         this.editingMatrix = this.covMatrix.getMatrix();
         this.editingMatrixPositiveDefinite =

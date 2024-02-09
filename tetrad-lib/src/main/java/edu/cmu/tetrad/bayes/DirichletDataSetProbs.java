@@ -32,6 +32,7 @@ import java.util.List;
  * Estimates probabilities directly from data on the fly using maximum likelihood method.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class DirichletDataSetProbs implements DiscreteProbs {
 
@@ -70,6 +71,9 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
 
     /**
      * Creates a cell count table for the given data set.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param symmValue a double
      */
     public DirichletDataSetProbs(DataSet dataSet, double symmValue) {
         if (dataSet == null) {
@@ -96,8 +100,11 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     //===========================PUBLIC METHODS=========================//
 
     /**
+     * <p>getCellProb.</p>
+     *
      * @return the estimated probability for the given cell. The order of the variable values is the order of the
      * variables in getVariable().
+     * @param variableValues an array of {@link int} objects
      */
     public double getCellProb(int[] variableValues) {
         int[] point = new int[this.dims.length];
@@ -116,9 +123,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
         return count / (double) this.numRows;
     }
 
-    /**
-     * @return the estimated probability of the given proposition.
-     */
+    /** {@inheritDoc} */
     public double getProb(Proposition assertion) {
         int[] point = new int[this.dims.length];
         int count = 0;
@@ -136,9 +141,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
         return count / (double) this.numRows;
     }
 
-    /**
-     * @return the estimated conditional probability for the given assertion conditional on the given condition.
-     */
+    /** {@inheritDoc} */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
@@ -191,6 +194,8 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     }
 
     /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
      * @return the dataset that this is estimating probabilities for.
      */
     public DataSet getDataSet() {
@@ -198,6 +203,8 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     }
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the list of variables for the dataset that this is estimating probabilities for.
      */
     public List<Node> getVariables() {
@@ -206,6 +213,8 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
 
     /**
      * True iff bounds checking is performed on variable values indices.
+     *
+     * @return a boolean
      */
     public boolean isBoundsEnforced() {
         return this.boundsEnforced;
@@ -213,6 +222,8 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
 
     /**
      * True iff bounds checking is performed on variable values indices.
+     *
+     * @param boundsEnforced a boolean
      */
     public void setBoundsEnforced(boolean boundsEnforced) {
         this.boundsEnforced = boundsEnforced;

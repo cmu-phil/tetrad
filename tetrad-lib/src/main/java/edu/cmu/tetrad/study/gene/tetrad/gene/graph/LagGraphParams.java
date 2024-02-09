@@ -5,9 +5,18 @@ import edu.cmu.tetrad.util.Parameters;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
+/**
+ * <p>LagGraphParams class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class LagGraphParams {
+    /** Constant <code>CONSTANT=0</code> */
     public static final int CONSTANT = 0;
+    /** Constant <code>MAX=1</code> */
     public static final int MAX = 1;
+    /** Constant <code>MEAN=2</code> */
     public static final int MEAN = 2;
     private static final long serialVersionUID = 23L;
     private final Parameters parameters;
@@ -17,18 +26,38 @@ public class LagGraphParams {
     private int indegree = 2;
     private double percentUnregulated = 10;
 
+    /**
+     * <p>Constructor for LagGraphParams.</p>
+     *
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public LagGraphParams(Parameters parameters) {
         this.parameters = parameters;
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.graph.LagGraphParams} object
+     */
     public static LagGraphParams serializableInstance() {
         return new LagGraphParams(new Parameters());
     }
 
+    /**
+     * <p>Getter for the field <code>varsPerInd</code>.</p>
+     *
+     * @return a int
+     */
     public int getVarsPerInd() {
         return this.parameters.getInt("lagGraphVarsPerInd", this.varsPerInd);
     }
 
+    /**
+     * <p>Setter for the field <code>varsPerInd</code>.</p>
+     *
+     * @param varsPerInd a int
+     */
     public void setVarsPerInd(int varsPerInd) {
         if (varsPerInd > 0) {
             this.parameters.set("lagGraphVarsPerInd", varsPerInd);
@@ -37,10 +66,20 @@ public class LagGraphParams {
 
     }
 
+    /**
+     * <p>Getter for the field <code>mlag</code>.</p>
+     *
+     * @return a int
+     */
     public int getMlag() {
         return this.parameters.getInt("lagGraphMlag", this.mlag);
     }
 
+    /**
+     * <p>Setter for the field <code>mlag</code>.</p>
+     *
+     * @param mlag a int
+     */
     public void setMlag(int mlag) {
         if (mlag > 0) {
             this.parameters.set("lagGraphMLag", mlag);
@@ -49,10 +88,20 @@ public class LagGraphParams {
 
     }
 
+    /**
+     * <p>Getter for the field <code>indegree</code>.</p>
+     *
+     * @return a int
+     */
     public int getIndegree() {
         return this.parameters.getInt("lagGraphIndegree", this.indegree);
     }
 
+    /**
+     * <p>Setter for the field <code>indegree</code>.</p>
+     *
+     * @param indegree a int
+     */
     public void setIndegree(int indegree) {
         if (indegree > 1) {
             this.indegree = indegree;
@@ -61,10 +110,20 @@ public class LagGraphParams {
 
     }
 
+    /**
+     * <p>Getter for the field <code>indegreeType</code>.</p>
+     *
+     * @return a int
+     */
     public int getIndegreeType() {
         return this.indegreeType;
     }
 
+    /**
+     * <p>Setter for the field <code>indegreeType</code>.</p>
+     *
+     * @param indegreeType a int
+     */
     public void setIndegreeType(int indegreeType) {
         switch (indegreeType) {
             case 0:
@@ -77,10 +136,20 @@ public class LagGraphParams {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>percentUnregulated</code>.</p>
+     *
+     * @return a double
+     */
     public double getPercentUnregulated() {
         return this.percentUnregulated;
     }
 
+    /**
+     * <p>Setter for the field <code>percentUnregulated</code>.</p>
+     *
+     * @param percentUnregulated a double
+     */
     public void setPercentUnregulated(double percentUnregulated) {
         if (percentUnregulated >= 0.0D && percentUnregulated <= 100.0D) {
             this.percentUnregulated = percentUnregulated;

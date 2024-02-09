@@ -29,6 +29,7 @@ import org.apache.commons.math3.util.FastMath;
  * A translation from Tibshirani's 2008 Fortran implementation of glasso.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Glasso {
 
@@ -79,11 +80,21 @@ public class Glasso {
      */
     private double thr = 1.0e-4;
 
+    /**
+     * <p>Constructor for Glasso.</p>
+     *
+     * @param cov a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public Glasso(Matrix cov) {
         this.n = cov.getNumRows();
         this.ss = cov;
     }
 
+    /**
+     * <p>search.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.work_in_progress.Glasso.Result} object
+     */
     public Result search() {
         int niter = 0;
         final double eps = 1.0e-7;
@@ -454,74 +465,159 @@ public class Glasso {
         }
     }
 
+    /**
+     * <p>isIa.</p>
+     *
+     * @return a boolean
+     */
     public boolean isIa() {
         return this.ia;
     }
 
+    /**
+     * <p>Setter for the field <code>ia</code>.</p>
+     *
+     * @param ia a boolean
+     */
     public void setIa(boolean ia) {
         this.ia = ia;
     }
 
+    /**
+     * <p>isIs.</p>
+     *
+     * @return a boolean
+     */
     public boolean isIs() {
         return this.is;
     }
 
+    /**
+     * <p>Setter for the field <code>is</code>.</p>
+     *
+     * @param is a boolean
+     */
     public void setIs(boolean is) {
         this.is = is;
     }
 
+    /**
+     * <p>isItr.</p>
+     *
+     * @return a boolean
+     */
     public boolean isItr() {
         return this.itr;
     }
 
+    /**
+     * <p>Setter for the field <code>itr</code>.</p>
+     *
+     * @param itr a boolean
+     */
     public void setItr(boolean itr) {
         this.itr = itr;
     }
 
+    /**
+     * <p>isIpen.</p>
+     *
+     * @return a boolean
+     */
     public boolean isIpen() {
         return this.ipen;
     }
 
+    /**
+     * <p>Setter for the field <code>ipen</code>.</p>
+     *
+     * @param ipen a boolean
+     */
     public void setIpen(boolean ipen) {
         this.ipen = ipen;
     }
 
+    /**
+     * <p>Getter for the field <code>thr</code>.</p>
+     *
+     * @return a double
+     */
     public double getThr() {
         return this.thr;
     }
 
+    /**
+     * <p>Setter for the field <code>thr</code>.</p>
+     *
+     * @param thr a double
+     */
     public void setThr(double thr) {
         if (thr < 0) throw new IllegalArgumentException("Threshold must be >= 0: " + thr);
 
         this.thr = thr;
     }
 
+    /**
+     * <p>Getter for the field <code>n</code>.</p>
+     *
+     * @return a int
+     */
     public int getN() {
         return this.n;
     }
 
+    /**
+     * <p>Setter for the field <code>n</code>.</p>
+     *
+     * @param n a int
+     */
     public void setN(int n) {
         if (n < 0) throw new IllegalArgumentException("Dimension >= 0: " + n);
 
         this.n = n;
     }
 
+    /**
+     * <p>Getter for the field <code>ss</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public Matrix getSs() {
         return this.ss;
     }
 
+    /**
+     * <p>Getter for the field <code>rho</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.work_in_progress.Glasso.Rho} object
+     */
     public Rho getRho() {
         return this.rho;
     }
 
+    /**
+     * <p>setRhoAllEqual.</p>
+     *
+     * @param rho a double
+     */
     public void setRhoAllEqual(double rho) {
         this.rho = (i, j) -> rho;
     }
 
+    /**
+     * <p>Getter for the field <code>maxit</code>.</p>
+     *
+     * @return a int
+     */
     public int getMaxit() {
         return this.maxit;
     }
 
+    /**
+     * <p>Setter for the field <code>maxit</code>.</p>
+     *
+     * @param maxit a int
+     */
     public void setMaxit(int maxit) {
         if (maxit <= 0) throw new IllegalArgumentException("Max iterations must be > 0: " + maxit);
 

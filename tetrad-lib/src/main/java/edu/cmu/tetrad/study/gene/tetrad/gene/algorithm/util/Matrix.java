@@ -28,12 +28,16 @@ import java.io.IOException;
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * @version $Id: $Id
  */
 public class Matrix extends BasicMatrix {
     protected short[][] A;
 
     /**
      * Creates a matrix with name <code>mname</code>, and <code>nrows</code> rows.
+     *
+     * @param mname a {@link java.lang.String} object
+     * @param nrows a int
      */
     public Matrix(String mname, int nrows) {
         super(mname, nrows);
@@ -51,6 +55,9 @@ public class Matrix extends BasicMatrix {
      * examples above they appear in different lines for more readability of the file. The file may have less elements
      * than the total needed to fill the matrix.  If it has more elements an illegal argument exception will be
      * generated.
+     *
+     * @param fname a {@link java.lang.String} object
+     * @throws java.io.IOException if any.
      */
     public Matrix(String fname) throws IOException {
         super(fname);
@@ -64,6 +71,8 @@ public class Matrix extends BasicMatrix {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Casts double value x to short and assigns it to element (r,c)
      */
     public void setDoubleValue(int r, int c, double x) {
@@ -78,6 +87,8 @@ public class Matrix extends BasicMatrix {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the value stored at element (r,c) as a double
      */
     public double getDoubleValue(int r, int c) {
@@ -89,6 +100,10 @@ public class Matrix extends BasicMatrix {
 
     /**
      * Assigns short x to matrix element at (r, c)
+     *
+     * @param r a int
+     * @param c a int
+     * @param x a short
      */
     public void setValue(int r, int c, short x) {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
@@ -100,6 +115,10 @@ public class Matrix extends BasicMatrix {
     /**
      * Assigns integer x to matrix element at (r, c).  This method checks that the integer x can be converted to a short
      * without causing overflow.
+     *
+     * @param r a int
+     * @param c a int
+     * @param x a int
      */
     public void setValue(int r, int c, int x) {
         if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
@@ -114,6 +133,10 @@ public class Matrix extends BasicMatrix {
 
     /**
      * Returns the value stored at element (r,c)
+     *
+     * @param r a int
+     * @param c a int
+     * @return a short
      */
     public short getValue(int r, int c) {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
@@ -135,6 +158,8 @@ public class Matrix extends BasicMatrix {
 
     /**
      * Returns a specially formatted string with all the contents of this matrix
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         String s = this.getClass().getName() + " " + this.name + "\n" + this.n +

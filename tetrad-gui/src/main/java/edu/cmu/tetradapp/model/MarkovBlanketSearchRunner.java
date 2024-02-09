@@ -32,35 +32,47 @@ import java.util.List;
  * Represents a runner for a Markov blanket search.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public interface MarkovBlanketSearchRunner extends Executable {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**
+     * <p>getParams.</p>
+     *
      * @return the search params.
      */
     Parameters getParams();
 
 
     /**
+     * <p>getSource.</p>
+     *
      * @return  the source for the search.
      */
     DataSet getSource();
 
 
     /**
+     * <p>getDataModelForMarkovBlanket.</p>
+     *
      * @return the data model for the variables in the markov blanket.
      */
     DataSet getDataModelForMarkovBlanket();
 
 
     /**
+     * <p>getMarkovBlanket.</p>
+     *
      * @return the variables in the markov blanket.
      */
     List<Node> getMarkovBlanket();
 
 
     /**
+     * <p>getSearchName.</p>
+     *
      * @return the name of the search.
      */
     String getSearchName();
@@ -68,6 +80,7 @@ public interface MarkovBlanketSearchRunner extends Executable {
 
     /**
      * Sets the search name.
+     *
      * @param n the name of the search.
      */
     void setSearchName(String n);

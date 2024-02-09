@@ -31,6 +31,7 @@ import java.awt.*;
  * Allows the user to choose a variable in a Bayes net and edit the parameters associated with that variable.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 //////////////////////////////////////
 // there is only one JPD table
@@ -44,6 +45,12 @@ public final class BayesImEditorWizardObs extends JPanel {
 
     private boolean enableEditing = true;
 
+    /**
+     * <p>Constructor for BayesImEditorWizardObs.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public BayesImEditorWizardObs(BayesIm bayesIm, GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -110,14 +117,29 @@ public final class BayesImEditorWizardObs extends JPanel {
         this.workbench = workbench;
     }
 
+    /**
+     * <p>Getter for the field <code>bayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getBayesIm() {
         return this.bayesIm;
     }
 
+    /**
+     * <p>isEnableEditing.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEnableEditing() {
         return this.enableEditing;
     }
 
+    /**
+     * <p>enableEditing.</p>
+     *
+     * @param enableEditing a boolean
+     */
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {

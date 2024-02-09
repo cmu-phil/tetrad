@@ -21,13 +21,31 @@
 
 package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin;
 
+/**
+ * <p>NbGene class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class NbGene extends AbstractNbComponent {
+    /**
+     * <p>Constructor for NbGene.</p>
+     *
+     * @param factor a double
+     * @param power a double
+     * @param parents an array of {@link edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin.NbComponent} objects
+     * @param inhibitExcite an array of {@link int} objects
+     * @param name a {@link java.lang.String} object
+     */
     public NbGene(double factor, double power, NbComponent[] parents,
                   int[] inhibitExcite, String name) {
 
         super(factor, power, parents, inhibitExcite, name);
     }
 
+    /**
+     * <p>update.</p>
+     */
     public void update() {
         System.out.println("Updating " + getName());
         double sum = 0.0;

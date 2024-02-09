@@ -39,6 +39,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @author Erin Korber (added remove latents functionality July 2004)
+ * @version $Id: $Id
  */
 public final class CheckKnowledgeModel implements SessionModel {
     private static final long serialVersionUID = 23L;
@@ -52,6 +53,10 @@ public final class CheckKnowledgeModel implements SessionModel {
      * Compares the results of a PC to a reference workbench by counting errors of omission and commission. The counts
      * can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
+     *
+     * @param model a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public CheckKnowledgeModel(GraphSource model, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         if (params == null) {
@@ -73,6 +78,11 @@ public final class CheckKnowledgeModel implements SessionModel {
     }
 
 
+    /**
+     * <p>getComparisonString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getComparisonString() {
         List<Edge> forbiddenViolations = CheckKnowledge.forbiddenViolations(graph, knowledge);
         List<Edge> requiredViolations = CheckKnowledge.requiredViolations(graph, knowledge);
@@ -118,15 +128,22 @@ public final class CheckKnowledgeModel implements SessionModel {
         s.defaultReadObject();
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getName() {
         return name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }

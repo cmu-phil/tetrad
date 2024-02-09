@@ -31,6 +31,7 @@ import java.util.Map;
  * dimensionality is set to null, the table cannot be used until a non-null dimensionality is set.&gt; 0
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MultiDimIntTable {
 
@@ -64,6 +65,8 @@ public class MultiDimIntTable {
     }
 
     /**
+     * <p>getCellIndex.</p>
+     *
      * @param coords The coordinates of the cell. Each value must be less than the number of possible value for the
      *               corresponding dimension in the table. (Enforced.)
      * @return the row in the table for the given node and combination of parent values.
@@ -80,6 +83,8 @@ public class MultiDimIntTable {
     }
 
     /**
+     * <p>getCoordinates.</p>
+     *
      * @param cellIndex an <code>int</code> value
      * @return the array representing the combination of parent values for this row.
      */
@@ -128,6 +133,8 @@ public class MultiDimIntTable {
     }
 
     /**
+     * <p>getValue.</p>
+     *
      * @param coords The coordinates of the table cell to update.
      * @return the new value at that table cell.
      */
@@ -142,6 +149,8 @@ public class MultiDimIntTable {
     }
 
     /**
+     * <p>Getter for the field <code>numCells</code>.</p>
+     *
      * @return this number.
      */
     public int getNumCells() {
@@ -149,6 +158,8 @@ public class MultiDimIntTable {
     }
 
     /**
+     * <p>getDimensions.</p>
+     *
      * @return this number.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -167,6 +178,8 @@ public class MultiDimIntTable {
     }
 
     /**
+     * <p>getNumDimensions.</p>
+     *
      * @return an <code>int</code> value
      */
     public int getNumDimensions() {
@@ -212,6 +225,12 @@ public class MultiDimIntTable {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>dims</code>.</p>
+     *
+     * @param varIndex a int
+     * @return a int
+     */
     public int getDims(int varIndex) {
         return this.dims[varIndex];
     }

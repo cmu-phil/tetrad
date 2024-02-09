@@ -29,6 +29,7 @@ import java.util.Set;
  * Nov 10, 2017 4:14:31 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class TetradProperties {
 
@@ -49,14 +50,30 @@ public class TetradProperties {
         properties.stringPropertyNames().forEach(e -> this.props.put(e, properties.getProperty(e)));
     }
 
+    /**
+     * <p>getInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.TetradProperties} object
+     */
     public static TetradProperties getInstance() {
         return TetradProperties.INSTANCE;
     }
 
+    /**
+     * <p>getProperties.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<String> getProperties() {
         return this.props.keySet();
     }
 
+    /**
+     * <p>getValue.</p>
+     *
+     * @param property a {@link java.lang.String} object
+     * @return a {@link java.lang.String} object
+     */
     public String getValue(String property) {
         if (property == null) {
             return null;

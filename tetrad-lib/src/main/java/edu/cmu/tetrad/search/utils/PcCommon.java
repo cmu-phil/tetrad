@@ -39,6 +39,7 @@ import java.util.Set;
  * FAS type, and conflict rule.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class PcCommon implements IGraphSearch {
 
@@ -79,6 +80,9 @@ public final class PcCommon implements IGraphSearch {
      * @param conflictRule The conflict rule to use.
      * @param graph        The graph to orient.
      * @see PcCommon.ConflictRule
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
      */
     public static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph) {
         if (conflictRule == ConflictRule.PRIORITIZE_EXISTING) {
@@ -104,6 +108,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>maxPathLength</code>.</p>
+     *
      * @param maxPathLength The max path length for the max p collider orientation heuristic.
      */
     public void setMaxPathLength(int maxPathLength) {
@@ -111,6 +117,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>fasType</code>.</p>
+     *
      * @param fasType The type of FAS to be used.
      */
     public void setFasType(FasType fasType) {
@@ -118,6 +126,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>pcHeuristicType</code>.</p>
+     *
      * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search). Default is
      *                    PcHeuristicType.NONE.
      * @see PcHeuristicType
@@ -127,6 +137,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>isMeekPreventCycles.</p>
+     *
      * @return true just in case edges will not be added if they would create cycles.
      */
     public boolean isMeekPreventCycles() {
@@ -266,6 +278,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>elapsedTime</code>.</p>
+     *
      * @return The elapsed time of search in milliseconds, after <code>search()</code> has been run.
      */
     public long getElapsedTime() {
@@ -273,6 +287,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return The knowledge specification used in the search. Non-null.
      */
     public Knowledge getKnowledge() {
@@ -281,12 +297,16 @@ public final class PcCommon implements IGraphSearch {
 
     /**
      * Sets the knowledge specification used in the search. Non-null.
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     /**
+     * <p>Getter for the field <code>independenceTest</code>.</p>
+     *
      * @return the independence test used in the search, set in the constructor. This is not returning a copy, for fear
      * of duplicating the data set!
      */
@@ -295,6 +315,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
      * @return The depth of the search--that is, the maximum number of variables conditioned on in any conditional
      * independence test.
      */
@@ -331,6 +353,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>ambiguousTriples</code>.</p>
+     *
      * @return The set of ambiguous triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
@@ -339,6 +363,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>colliderTriples</code>.</p>
+     *
      * @return The set of collider triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
@@ -347,6 +373,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>noncolliderTriples</code>.</p>
+     *
      * @return The set of noncollider triples found during the most recent run of the algorithm. Non-null after a call
      * to <code>search()</code>.
      */

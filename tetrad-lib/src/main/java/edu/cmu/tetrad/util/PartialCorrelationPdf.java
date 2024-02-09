@@ -30,6 +30,7 @@ import org.apache.commons.math3.util.FastMath;
  * Uses the equation (29.13.4) from Cramer's _Mathematical Methods of Statistics_.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PartialCorrelationPdf implements Function, TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -94,10 +95,9 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
     //==========================PUBLIC METHODS========================//
 
     /**
-     * Calculates the value of the function at the given domain point.
+     * {@inheritDoc}
      *
-     * @param x the domain point.
-     * @return the value of the function at x.
+     * Calculates the value of the function at the given domain point.
      */
     public double valueAt(double x) {
         return this.constant * FastMath.pow(1 - x * x, this.outsideExp);
@@ -118,6 +118,8 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a description of the function.
      */
     public String toString() {
@@ -130,6 +132,8 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>k</code>.</p>
+     *
      * @return Ibid.
      */
     public int getK() {

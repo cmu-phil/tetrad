@@ -31,27 +31,43 @@ import java.awt.*;
  */
 interface WorkbenchModel {
     /**
+     * <p>getNewModelNode.</p>
+     *
      * @return a new model node of type GraphNode.
      */
     Node getNewModelNode();
 
     /**
+     * <p>getNewDisplayNode.</p>
+     *
      * @return a new display node of type AbstractGraphNode given a model node of type modelNode.
+     * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
      */
     DisplayNode getNewDisplayNode(Node modelNode);
 
     /**
+     * <p>getNewDisplayEdge.</p>
+     *
      * @return a new display edge for the given model edge.
+     * @param modelEdge a {@link edu.cmu.tetrad.graph.Edge} object
      */
     IDisplayEdge getNewDisplayEdge(Edge modelEdge);
 
     /**
+     * <p>getNewModelEdge.</p>
+     *
      * @return a new model edge connecting the given nodes.
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      */
     Edge getNewModelEdge(Node node1, Node node2);
 
     /**
+     * <p>getNewTrackingEdge.</p>
+     *
      * @return a new tracking edge for the given display node at the given location.
+     * @param displayNode a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
+     * @param mouseLoc a {@link java.awt.Point} object
      */
     IDisplayEdge getNewTrackingEdge(DisplayNode displayNode, Point mouseLoc);
 }

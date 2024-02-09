@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.RandomUtil;
  * Wikipedia.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Beta implements Distribution {
     private static final long serialVersionUID = 23L;
@@ -69,10 +70,9 @@ public class Beta implements Distribution {
     }
 
     /**
-     * The order of parameters is alpha = 0, beta = 1.
+     * {@inheritDoc}
      *
-     * @param index the index of the parameter.
-     * @param value the value.
+     * The order of parameters is alpha = 0, beta = 1.
      */
     public void setParameter(int index, double value) {
         if (index == 0) {
@@ -85,8 +85,9 @@ public class Beta implements Distribution {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * The order of parameters is alpha = 0, beta = 1.
-     * @param index the index.
      */
     public double getParameter(int index) {
         if (index == 0) {
@@ -99,8 +100,9 @@ public class Beta implements Distribution {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * The order of parameters is alpha = 0, beta = 1.
-     * @param index the index.
      */
     public String getParameterName(int index) {
         if (index == 0) {
@@ -123,6 +125,8 @@ public class Beta implements Distribution {
 
     /**
      * Please don't make me say it...
+     *
+     * @return a {@link java.lang.String} object
      */
     public String getName() {
         return "Beta";
@@ -130,6 +134,8 @@ public class Beta implements Distribution {
 
     /**
      * A string representation of the distribution.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return "B(" + this.alpha + ", " + this.beta + ")";

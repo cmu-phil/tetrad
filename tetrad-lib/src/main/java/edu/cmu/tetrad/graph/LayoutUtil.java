@@ -7,7 +7,22 @@ import javax.swing.*;
 import java.text.NumberFormat;
 import java.util.*;
 
+/**
+ * <p>LayoutUtil class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class LayoutUtil {
+    /**
+     * <p>kamadaKawaiLayout.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param randomlyInitialized a boolean
+     * @param naturalEdgeLength a double
+     * @param springConstant a double
+     * @param stopEnergy a double
+     */
     public static void kamadaKawaiLayout(Graph graph, boolean randomlyInitialized, double naturalEdgeLength, double springConstant, double stopEnergy) {
         KamadaKawaiLayout layout = new KamadaKawaiLayout(graph);
         layout.setRandomlyInitialized(randomlyInitialized);
@@ -17,11 +32,22 @@ public class LayoutUtil {
         layout.doLayout();
     }
 
+    /**
+     * <p>fruchtermanReingoldLayout.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static void fruchtermanReingoldLayout(Graph graph) {
         FruchtermanReingoldLayout layout = new FruchtermanReingoldLayout(graph);
         layout.doLayout();
     }
 
+    /**
+     * <p>arrangeByLayout.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param layout a {@link java.util.HashMap} object
+     */
     public static void arrangeByLayout(Graph graph, HashMap<String, PointXy> layout) {
         for (Node node : graph.getNodes()) {
             PointXy point = layout.get(node.getName());
@@ -31,6 +57,7 @@ public class LayoutUtil {
 
     /**
      * Arranges the nodes in the graph in a circle if there are 20 or fewer nodes, otherwise arranges them in a square.
+     *
      * @param graph the graph to be arranged.
      */
     public static void defaultLayout(Graph graph) {
@@ -43,6 +70,7 @@ public class LayoutUtil {
 
     /**
      * Arranges the nodes in the graph in a circle.
+     *
      * @param graph the graph to be arranged.
      */
     public static void circleLayout(Graph graph) {
@@ -71,6 +99,11 @@ public class LayoutUtil {
         }
     }
 
+    /**
+     * <p>squareLayout.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static void squareLayout(Graph graph) {
         List<Node> nodes = new ArrayList<>(graph.getNodes());
 
@@ -124,6 +157,11 @@ public class LayoutUtil {
         }
     }
 
+    /**
+     * <p>layoutByCausalOrder.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static void layoutByCausalOrder(Graph graph) {
         List<List<Node>> tiers = getTiers(graph);
 
@@ -211,6 +249,8 @@ public class LayoutUtil {
      * Arranges the nodes in the result graph according to their positions in the source graph.
      *
      * @return true if all the nodes were arranged, false if not.
+     * @param resultGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param sourceGraph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static boolean arrangeBySourceGraph(Graph resultGraph, Graph sourceGraph) {
         if (resultGraph == null) {

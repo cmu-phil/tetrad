@@ -31,6 +31,7 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin;
  * Symposium on Biocomputing (2000).
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class BoolSearch {
     private final int[][] cases;
@@ -38,6 +39,12 @@ public class BoolSearch {
     private final int ntimes;
     String[] names;
 
+    /**
+     * <p>Constructor for BoolSearch.</p>
+     *
+     * @param cases an array of {@link int} objects
+     * @param names an array of {@link java.lang.String} objects
+     */
     public BoolSearch(int[][] cases, String[] names) {
         this.cases = cases;
         this.names = names;
@@ -49,6 +56,9 @@ public class BoolSearch {
      * Implements the BOOL-2 algorithm of Akutsu, et al, found in section 2.2 of their paper "Algorithms for Inferring
      * Qualitative Models of Biological Networks". The int k is the number of number of regulators of a given gene and
      * corresponds to K in the paper.
+     *
+     * @param k a int
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin.RevealOutputGraph} object
      */
     public RevealOutputGraph bool2(int k) {
 
@@ -186,6 +196,10 @@ public class BoolSearch {
     /**
      * Computes a byte vector which corresponds to the argument ind.  rep[0] is the high order bit. E.g.  if n=3 and
      * ind=6 the vector will be (1, 1, 0).
+     *
+     * @param ind a int
+     * @param n a int
+     * @return an array of {@link byte} objects
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];
@@ -206,6 +220,12 @@ public class BoolSearch {
         return rep;
     }
 
+    /**
+     * <p>sumBits.</p>
+     *
+     * @param b an array of {@link byte} objects
+     * @return a int
+     */
     public int sumBits(byte[] b) {
         int sum = 0;
 

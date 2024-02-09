@@ -45,6 +45,7 @@ import java.util.*;
  * @see Cpc
  * @see #getAmbiguousTriples()
  * @see Knowledge
+ * @version $Id: $Id
  */
 public final class Cfci implements IGraphSearch {
 

@@ -590,6 +590,11 @@ class GeneralizedTemplateEditor extends JComponent {
         return base + i;
     }
 
+    /**
+     * <p>Getter for the field <code>semPm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     */
     public GeneralizedSemPm getSemPm() {
         return this.semPm;
     }

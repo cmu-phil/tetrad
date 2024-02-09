@@ -57,6 +57,7 @@ import java.util.concurrent.*;
  * Nov 14, 2017 12:00:31 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class TimeoutComparison {
 
@@ -78,6 +79,16 @@ public class TimeoutComparison {
     private ArrayList<String> dirs;
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
 
+    /**
+     * <p>compareFromFiles.</p>
+     *
+     * @param filePath a {@link java.lang.String} object
+     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout a long
+     * @param unit a {@link java.util.concurrent.TimeUnit} object
+     */
     public void compareFromFiles(String filePath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
         compareFromFiles(filePath, filePath, algorithms, statistics, parameters, timeout, unit);
@@ -91,6 +102,8 @@ public class TimeoutComparison {
      * @param algorithms  The list of algorithms to be compared.
      * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
      * @param parameters  The list of parameters and their values.
+     * @param timeout a long
+     * @param unit a {@link java.util.concurrent.TimeUnit} object
      */
     public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
@@ -132,12 +145,35 @@ public class TimeoutComparison {
         compareFromSimulations(this.resultsPath, simulations, algorithms, statistics, parameters, timeout, unit);
     }
 
+    /**
+     * <p>generateReportFromExternalAlgorithms.</p>
+     *
+     * @param dataPath a {@link java.lang.String} object
+     * @param resultsPath a {@link java.lang.String} object
+     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout a long
+     * @param unit a {@link java.util.concurrent.TimeUnit} object
+     */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
         generateReportFromExternalAlgorithms(dataPath, resultsPath, "Comparison.txt", algorithms,
                 statistics, parameters, timeout, unit);
     }
 
+    /**
+     * <p>generateReportFromExternalAlgorithms.</p>
+     *
+     * @param dataPath a {@link java.lang.String} object
+     * @param resultsPath a {@link java.lang.String} object
+     * @param outputFileName a {@link java.lang.String} object
+     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout a long
+     * @param unit a {@link java.util.concurrent.TimeUnit} object
+     */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, String outputFileName, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
 
@@ -181,6 +217,17 @@ public class TimeoutComparison {
         compareFromSimulations(this.resultsPath, simulations, outputFileName, algorithms, statistics, parameters, timeout, unit);
     }
 
+    /**
+     * <p>compareFromSimulations.</p>
+     *
+     * @param resultsPath a {@link java.lang.String} object
+     * @param simulations a {@link edu.cmu.tetrad.algcomparison.simulation.Simulations} object
+     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout a long
+     * @param unit a {@link java.util.concurrent.TimeUnit} object
+     */
     public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
         compareFromSimulations(resultsPath, simulations, "Comparison.txt", algorithms, statistics, parameters, timeout, unit);
@@ -193,6 +240,10 @@ public class TimeoutComparison {
      * @param simulations The list of simulationWrapper that is used to generate graphs and data for the comparison.
      * @param algorithms  The list of algorithms to be compared.
      * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
+     * @param outputFileName a {@link java.lang.String} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout a long
+     * @param unit a {@link java.util.concurrent.TimeUnit} object
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
@@ -517,7 +568,9 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>configuration.</p>
      *
+     * @param path a {@link java.lang.String} object
      */
     public void configuration(String path) {
         try {
@@ -826,23 +879,45 @@ public class TimeoutComparison {
         }
     }
 
+    /**
+     * <p>isShowSimulationIndices.</p>
+     *
+     * @return a boolean
+     */
     public boolean isShowSimulationIndices() {
         return this.showSimulationIndices;
     }
 
+    /**
+     * <p>Setter for the field <code>showSimulationIndices</code>.</p>
+     *
+     * @param showSimulationIndices a boolean
+     */
     public void setShowSimulationIndices(boolean showSimulationIndices) {
         this.showSimulationIndices = showSimulationIndices;
     }
 
+    /**
+     * <p>isShowAlgorithmIndices.</p>
+     *
+     * @return a boolean
+     */
     public boolean isShowAlgorithmIndices() {
         return this.showAlgorithmIndices;
     }
 
+    /**
+     * <p>Setter for the field <code>showAlgorithmIndices</code>.</p>
+     *
+     * @param showAlgorithmIndices a boolean
+     */
     public void setShowAlgorithmIndices(boolean showAlgorithmIndices) {
         this.showAlgorithmIndices = showAlgorithmIndices;
     }
 
     /**
+     * <p>isShowUtilities.</p>
+     *
      * @return True iff a column of utilities marked "W" should be shown in the output.
      */
     public boolean isShowUtilities() {
@@ -850,6 +925,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>showUtilities</code>.</p>
+     *
      * @param showUtilities True iff a column of utilities marked "W" should be shown in the output.
      */
     public void setShowUtilities(boolean showUtilities) {
@@ -857,6 +934,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>isSortByUtility.</p>
+     *
      * @return True iff the output should be sorted by utility.
      */
     public boolean isSortByUtility() {
@@ -864,21 +943,35 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>sortByUtility</code>.</p>
+     *
      * @param sortByUtility true iff the output should be sorted by utility.
      */
     public void setSortByUtility(boolean sortByUtility) {
         this.sortByUtility = sortByUtility;
     }
 
+    /**
+     * <p>isParallelized.</p>
+     *
+     * @return a boolean
+     */
     public boolean isParallelized() {
         return this.parallelized;
     }
 
+    /**
+     * <p>Setter for the field <code>parallelized</code>.</p>
+     *
+     * @param parallelized a boolean
+     */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
     }
 
     /**
+     * <p>isSaveCPDAGs.</p>
+     *
      * @return True if CPDAGs should be saved out.
      */
     public boolean isSaveCPDAGs() {
@@ -886,6 +979,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>saveCPDAGs</code>.</p>
+     *
      * @param saveCPDAGs True if CPDAGs should be saved out.
      */
     public void setSaveCPDAGs(boolean saveCPDAGs) {
@@ -893,6 +988,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>isSavePags.</p>
+     *
      * @return True if patterns should be saved out.
      */
     public boolean isSavePags() {
@@ -900,6 +997,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>savePags</code>.</p>
+     *
      * @param savePags True if patterns should be saved out.
      */
     public void setSavePags(boolean savePags) {
@@ -907,6 +1006,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>isTabDelimitedTables.</p>
+     *
      * @return True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public boolean isTabDelimitedTables() {
@@ -914,6 +1015,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>tabDelimitedTables</code>.</p>
+     *
      * @param tabDelimitedTables True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public void setTabDelimitedTables(boolean tabDelimitedTables) {
@@ -921,6 +1024,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>isSaveGraphs.</p>
+     *
      * @return True if all graphs should be saved to files.
      */
     public boolean isSaveGraphs() {
@@ -928,6 +1033,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>saveGraphs</code>.</p>
+     *
      * @param saveGraphs True if all graphs should be saved to files.
      */
     public void setSaveGraphs(boolean saveGraphs) {
@@ -935,6 +1042,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>isCopyData.</p>
+     *
      * @return True if data should be copied before analyzing it.
      */
     public boolean isCopyData() {
@@ -942,6 +1051,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>copyData</code>.</p>
+     *
      * @param copyData True if data should be copied before analyzing it.
      */
     public void setCopyData(boolean copyData) {
@@ -950,6 +1061,8 @@ public class TimeoutComparison {
 
     /**
      * The type of graph the results are compared to.
+     *
+     * @return a {@link edu.cmu.tetrad.algcomparison.TimeoutComparison.ComparisonGraph} object
      */
     public ComparisonGraph getComparisonGraph() {
         return this.comparisonGraph;
@@ -957,6 +1070,8 @@ public class TimeoutComparison {
 
     /**
      * The type of graph the results are compared to.
+     *
+     * @param comparisonGraph a {@link edu.cmu.tetrad.algcomparison.TimeoutComparison.ComparisonGraph} object
      */
     public void setComparisonGraph(ComparisonGraph comparisonGraph) {
         if (comparisonGraph == null) {

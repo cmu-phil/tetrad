@@ -32,7 +32,10 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.*;
 
 /**
+ * <p>ResidualsWrapper class.</p>
+ *
  * @author Tyler
+ * @version $Id: $Id
  */
 public class ResidualsWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
@@ -41,6 +44,8 @@ public class ResidualsWrapper extends DataWrapper {
      * Constructs a new time series dataset.
      *
      * @param data - Previous data (from the parent node)
+     * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ResidualsWrapper(DataWrapper data, DagWrapper dagWrapper, Parameters params) {
         DataModelList list = data.getDataModelList();
@@ -63,6 +68,13 @@ public class ResidualsWrapper extends DataWrapper {
 
     }
 
+    /**
+     * <p>Constructor for ResidualsWrapper.</p>
+     *
+     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ResidualsWrapper(DataWrapper data, GraphWrapper graphWrapper, Parameters params) {
         DataModelList list = data.getDataModelList();
         DataModelList newList = new DataModelList();
@@ -83,6 +95,13 @@ public class ResidualsWrapper extends DataWrapper {
         LogDataUtils.logDataModelList("Parent data in which each column has been replaced by its regression residuals.", getDataModelList());
     }
 
+    /**
+     * <p>Constructor for ResidualsWrapper.</p>
+     *
+     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ResidualsWrapper(DataWrapper data, SemGraphWrapper wrapper, Parameters params) {
         DataModelList list = data.getDataModelList();
         DataModelList newList = new DataModelList();
@@ -107,6 +126,7 @@ public class ResidualsWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

@@ -13,21 +13,25 @@ import java.util.List;
  * The adjacency precision. The true positives are the number of adjacencies in both the true and estimated graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PercentAmbiguous implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "%AMB";
     }
 
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Percent Ambiguous Triples";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int numAmbiguous = 0;
@@ -59,6 +63,7 @@ public class PercentAmbiguous implements Statistic {
         return numAmbiguous / (double) numTriples;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return 1.0 - value;

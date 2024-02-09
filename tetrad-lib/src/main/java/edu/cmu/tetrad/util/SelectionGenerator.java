@@ -31,6 +31,7 @@ package edu.cmu.tetrad.util;
  * To see what this class does, try calling SelectionGenerator.testPrint(5, 3), for instance.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @SuppressWarnings("WeakerAccess")
 public final class SelectionGenerator {
@@ -117,6 +118,8 @@ public final class SelectionGenerator {
     }
 
     /**
+     * <p>next.</p>
+     *
      * @return the next selection in the series, or null if the series is finished.
      */
     public int[] next() {
@@ -149,6 +152,8 @@ public final class SelectionGenerator {
     }
 
     /**
+     * <p>Getter for the field <code>a</code>.</p>
+     *
      * @return Ibid.
      */
     public int getA() {

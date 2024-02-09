@@ -22,6 +22,7 @@ import java.util.List;
  * Bayes net simulation.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesNetSimulation implements Simulation {
 
@@ -66,10 +67,9 @@ public class BayesNetSimulation implements Simulation {
     }
 
     /**
-     * Creates the data.
+     * {@inheritDoc}
      *
-     * @param parameters The parameters to use in the simulation.
-     * @param newModel   If true, a new model is created. If false, the model is reused.
+     * Creates the data.
      */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
@@ -107,10 +107,9 @@ public class BayesNetSimulation implements Simulation {
     }
 
     /**
-     * Returns the simulated data set.
+     * {@inheritDoc}
      *
-     * @param index The index of the desired simulated data set.
-     * @return Ibid.
+     * Returns the simulated data set.
      */
     @Override
     public DataModel getDataModel(int index) {
@@ -118,10 +117,9 @@ public class BayesNetSimulation implements Simulation {
     }
 
     /**
-     * Returns the true graph.
+     * {@inheritDoc}
      *
-     * @param index The index of the desired true graph.
-     * @return Ibid.
+     * Returns the true graph.
      */
     @Override
     public Graph getTrueGraph(int index) {
@@ -133,9 +131,9 @@ public class BayesNetSimulation implements Simulation {
     }
 
     /**
-     * Returns the description.
+     * {@inheritDoc}
      *
-     * @return Ibid.
+     * Returns the description.
      */
     @Override
     public String getDescription() {
@@ -143,9 +141,9 @@ public class BayesNetSimulation implements Simulation {
     }
 
     /**
-     * Returns the parameters.
+     * {@inheritDoc}
      *
-     * @return Ibid.
+     * Returns the parameters.
      */
     @Override
     public List<String> getParameters() {
@@ -175,9 +173,9 @@ public class BayesNetSimulation implements Simulation {
     }
 
     /**
-     * Returns the number of data sets.
+     * {@inheritDoc}
      *
-     * @return Ibid.
+     * Returns the number of data sets.
      */
     @Override
     public int getNumDataModels() {
@@ -185,9 +183,9 @@ public class BayesNetSimulation implements Simulation {
     }
 
     /**
-     * Returns the data type.
+     * {@inheritDoc}
      *
-     * @return Ibid.
+     * Returns the data type.
      */
     @Override
     public DataType getDataType() {
@@ -231,6 +229,7 @@ public class BayesNetSimulation implements Simulation {
 
     /**
      * Returns the list of Bayes IMs.
+     *
      * @return Ibid.
      */
     public List<BayesIm> getBayesIms() {

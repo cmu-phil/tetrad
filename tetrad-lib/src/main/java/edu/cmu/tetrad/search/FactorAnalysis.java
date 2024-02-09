@@ -44,6 +44,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * This class is not configured to respect knowledge of forbidden and required edges.
  *
  * @author Mike Freenor
+ * @version $Id: $Id
  */
 public class FactorAnalysis {
     // the covariance matrix

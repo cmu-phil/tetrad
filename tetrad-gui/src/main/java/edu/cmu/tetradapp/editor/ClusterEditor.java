@@ -44,6 +44,7 @@ import java.util.List;
  * Edits which variables get assigned to which clusters.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class ClusterEditor extends JPanel {
 
@@ -55,6 +56,9 @@ public final class ClusterEditor extends JPanel {
     /**
      * Constructs an editor to allow the user to assign variables to clusters, showing a list of variables to choose
      * from.
+     *
+     * @param clusters a {@link edu.cmu.tetrad.data.Clusters} object
+     * @param varNames a {@link java.util.List} object
      */
     public ClusterEditor(Clusters clusters, List<String> varNames) {
         if (clusters == null) {
@@ -77,6 +81,11 @@ public final class ClusterEditor extends JPanel {
         }
     }
 
+    /**
+     * <p>Constructor for ClusterEditor.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
+     */
     public ClusterEditor(MeasurementModelWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -94,6 +103,11 @@ public final class ClusterEditor extends JPanel {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>clusters</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Clusters} object
+     */
     public Clusters getClusters() {
 //        return clusters;
         return new Clusters(this.clusters);
@@ -216,6 +230,11 @@ public final class ClusterEditor extends JPanel {
         return this.varNames;
     }
 
+    /**
+     * <p>Getter for the field <code>nameFields</code>.</p>
+     *
+     * @return a {@link java.util.ArrayList} object
+     */
     public ArrayList getNameFields() {
         return this.nameFields;
     }

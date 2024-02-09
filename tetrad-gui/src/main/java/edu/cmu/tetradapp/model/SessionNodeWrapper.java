@@ -36,6 +36,7 @@ import java.io.ObjectInputStream;
  * @see edu.cmu.tetrad.session.SessionNode
  * @see edu.cmu.tetrad.graph.GraphNode
  * @see SessionWrapper
+ * @version $Id: $Id
  */
 public class SessionNodeWrapper extends GraphNode {
     private static final long serialVersionUID = 23L;
@@ -60,6 +61,8 @@ public class SessionNodeWrapper extends GraphNode {
     /**
      * Wraps the given SessionNode as a SessionNodeWrapper for use in a SessionWrapper. The name of the SessionNode is
      * used as the name of the SessionNodeWrapper. A button type may optionally be set.
+     *
+     * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public SessionNodeWrapper(SessionNode sessionNode) {
         super(sessionNode.getDisplayName());
@@ -71,6 +74,7 @@ public class SessionNodeWrapper extends GraphNode {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetrad.graph.GraphNode} object
      */
     public static GraphNode serializableInstance() {
         return new SessionNodeWrapper(SessionNode.serializableInstance());
@@ -79,6 +83,8 @@ public class SessionNodeWrapper extends GraphNode {
     //===========================PUBLIC METHODS=======================//
 
     /**
+     * <p>getSessionName.</p>
+     *
      * @return the session name. (Should return the same as getNode.)
      */
     public String getSessionName() {
@@ -88,6 +94,8 @@ public class SessionNodeWrapper extends GraphNode {
     /**
      * Sets the session name. This method should be used in preference to setName, which only sets the name in the
      * superclass.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public void setSessionName(String name) {
 //        if (!NamingProtocol.isLegalName(name)) {
@@ -107,6 +115,8 @@ public class SessionNodeWrapper extends GraphNode {
 
     /**
      * Gets the buttonType of the node, which is the buttonType of the wrapped SessionNode.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String getButtonType() {
         return this.buttonType;
@@ -114,6 +124,8 @@ public class SessionNodeWrapper extends GraphNode {
 
     /**
      * Sets the buttonType of the node, which is the buttonType of the wrapped SessionNode.
+     *
+     * @param buttonType a {@link java.lang.String} object
      */
     public void setButtonType(String buttonType) {
         if (buttonType == null) {
@@ -124,16 +136,28 @@ public class SessionNodeWrapper extends GraphNode {
     }
 
     /**
+     * <p>Getter for the field <code>sessionNode</code>.</p>
+     *
      * @return the SessionNode being wrapped.
      */
     public SessionNode getSessionNode() {
         return this.sessionNode;
     }
 
+    /**
+     * <p>getRepetition.</p>
+     *
+     * @return a int
+     */
     public int getRepetition() {
         return this.sessionNode.getRepetition();
     }
 
+    /**
+     * <p>setRepetition.</p>
+     *
+     * @param repetition a int
+     */
     public void setRepetition(int repetition) {
         this.sessionNode.setRepetition(repetition);
     }
@@ -141,12 +165,16 @@ public class SessionNodeWrapper extends GraphNode {
     /**
      * Must override hashCode in GraphNode to make sure that this object doesn't get hashed differently if its name
      * changes. If it does, session box deletion won't work.
+     *
+     * @return a int
      */
     public int hashCode() {
         return 1;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Must override equals in GraphNode to make sure equality is object identity. In particular, change of name does
      * not constitute change of identity.
      */
@@ -155,6 +183,8 @@ public class SessionNodeWrapper extends GraphNode {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of the node.
      */
     public String toString() {

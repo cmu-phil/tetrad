@@ -24,11 +24,24 @@ package edu.cmu.tetrad.stat.correlation;
  * Jan 25, 2016 2:11:36 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public interface Covariance {
 
+    /**
+     * <p>computeLowerTriangle.</p>
+     *
+     * @param biasCorrected a boolean
+     * @return an array of {@link float} objects
+     */
     float[] computeLowerTriangle(boolean biasCorrected);
 
+    /**
+     * <p>compute.</p>
+     *
+     * @param biasCorrected a boolean
+     * @return an array of {@link float} objects
+     */
     float[][] compute(boolean biasCorrected);
 
 }

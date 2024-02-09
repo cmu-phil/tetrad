@@ -40,6 +40,7 @@ import java.util.prefs.Preferences;
  * Lets you choose models from a categorized list.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
@@ -71,10 +72,16 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
      */
     private SessionNode sessionNode;
 
+    /**
+     * <p>Getter for the field <code>title</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getTitle() {
         return this.title;
     }
 
+    /** {@inheritDoc} */
     public void setTitle(String title) {
         if (title == null) {
             throw new NullPointerException("The title must not be null");
@@ -82,6 +89,11 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         this.title = title;
     }
 
+    /**
+     * <p>getSelectedModel.</p>
+     *
+     * @return a {@link java.lang.Class} object
+     */
     public Class getSelectedModel() {
         TreePath path = this.tree.getSelectionPath();
 
@@ -97,6 +109,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         return null;
     }
 
+    /** {@inheritDoc} */
     public void setModelConfigs(List<SessionNodeModelConfig> configs) {
         ChooserTreeModel model = new ChooserTreeModel(configs);
         this.tree = new JTree(model);
@@ -160,6 +173,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         return null;
     }
 
+    /** {@inheritDoc} */
     public void setNodeId(String id) {
         if (id == null) {
             throw new NullPointerException("The given id must not be null");
@@ -167,11 +181,15 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         this.nodeId = id;
     }
 
+    /** {@inheritDoc} */
     public void setSessionNode(SessionNode sessionNode) {
         this.sessionNode = sessionNode;
         this.nodeName = sessionNode.getDisplayName();
     }
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         this.setLayout(new BorderLayout());
 

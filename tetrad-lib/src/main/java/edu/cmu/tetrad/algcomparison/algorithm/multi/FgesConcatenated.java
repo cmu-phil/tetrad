@@ -24,6 +24,7 @@ import java.util.List;
  * (randomly). This cannot given multiple values.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @Bootstrapping
 public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
@@ -33,20 +34,38 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     private Algorithm externalGraph;
     private boolean compareToTrue;
 
+    /**
+     * <p>Constructor for FgesConcatenated.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public FgesConcatenated(ScoreWrapper score) {
         this.score = score;
     }
 
+    /**
+     * <p>Constructor for FgesConcatenated.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     * @param compareToTrue a boolean
+     */
     public FgesConcatenated(ScoreWrapper score, boolean compareToTrue) {
         this.score = score;
         this.compareToTrue = compareToTrue;
     }
 
+    /**
+     * <p>Constructor for FgesConcatenated.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     * @param externalGraph a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
+     */
     public FgesConcatenated(ScoreWrapper score, Algorithm externalGraph) {
         this.score = score;
         this.externalGraph = externalGraph;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(List<DataModel> dataModels, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -102,16 +121,19 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         // Not used.
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndTestWrapper(IndependenceWrapper test) {
         // Not used.
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -135,6 +157,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         if (this.compareToTrue) {
@@ -145,16 +168,19 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "FGES (Fast Greedy Equivalence Search) on concatenated data using " + this.score.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -169,17 +195,21 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     /**
+     * <p>Setter for the field <code>compareToTrue</code>.</p>
+     *
      * @param compareToTrue true if the result should be compared to the true graph, false if to the CPDAG of the true
      *                      graph.
      */

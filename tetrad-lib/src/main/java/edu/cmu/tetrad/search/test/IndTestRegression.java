@@ -48,6 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author josephramsey
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public final class IndTestRegression implements IndependenceTest {
 
@@ -87,6 +88,8 @@ public final class IndTestRegression implements IndependenceTest {
 
 
     /**
+     * {@inheritDoc}
+     *
      * Creates a new IndTestCramerT instance for a subset of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -94,13 +97,9 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     /**
-     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     * {@inheritDoc}
      *
-     * @param xVar  the one variable being compared.
-     * @param yVar  the second variable being compared.
-     * @param zList the list of conditioning variables.
-     * @return The independence result.
-     * @throws RuntimeException if a matrix singularity is encountered.
+     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      */
     public IndependenceResult checkIndependence(Node xVar, Node yVar, Set<Node> zList) {
         if (facts.containsKey(new IndependenceFact(xVar, yVar, zList))) {
@@ -162,12 +161,16 @@ public final class IndTestRegression implements IndependenceTest {
 
     /**
      * Gets the getModel significance level.
+     *
+     * @return a double
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -180,6 +183,8 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
      * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
@@ -188,11 +193,17 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Linear Regression Test, alpha = " + IndTestRegression.nf.format(getAlpha());
     }
 
 
+    /** {@inheritDoc} */
     public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {
             throw new NullPointerException();
@@ -262,6 +273,7 @@ public final class IndTestRegression implements IndependenceTest {
 
     /**
      * Returns the data used.
+     *
      * @return the data used.
      */
     public DataSet getData() {
@@ -270,12 +282,16 @@ public final class IndTestRegression implements IndependenceTest {
 
     /**
      * Returns true if the test prints verbose output.
+     *
+     * @return a boolean
      */
     public boolean isVerbose() {
         return this.verbose;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets whether the test prints verbose output.
      */
     public void setVerbose(boolean verbose) {

@@ -33,6 +33,7 @@ import java.util.Set;
  * Since sampling is done with replacement, the output dataset can have more samples than the input.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public final class BootstrapSampler {
 
@@ -55,6 +56,7 @@ public final class BootstrapSampler {
      *
      * @param dataSet       the dataset to sample from
      * @param newSampleSize the number of samples to draw
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSet sample(DataSet dataSet, int newSampleSize) {
         if (newSampleSize < 1) {

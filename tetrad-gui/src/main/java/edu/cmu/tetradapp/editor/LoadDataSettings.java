@@ -63,6 +63,7 @@ import java.util.prefs.Preferences;
  * Panel (to be put in a dialog) for letting the user choose how a data file should be loaded.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class LoadDataSettings extends JPanel {
 
@@ -100,6 +101,11 @@ public final class LoadDataSettings extends JPanel {
     private StringTextField missingStringField;
 
     //================================CONSTRUCTOR=======================//
+    /**
+     * <p>Constructor for LoadDataSettings.</p>
+     *
+     * @param files a {@link java.util.List} object
+     */
     public LoadDataSettings(List<File> files) {
         this.files = files;
 
@@ -113,6 +119,12 @@ public final class LoadDataSettings extends JPanel {
     }
 
     // Step 1 items
+    /**
+     * <p>basicSettings.</p>
+     *
+     * @return a {@link javax.swing.Box} object
+     * @throws java.io.IOException if any.
+     */
     public Box basicSettings() throws IOException {
         // Data loading params layout
         Box basicSettingsBox = Box.createVerticalBox();
@@ -568,6 +580,11 @@ public final class LoadDataSettings extends JPanel {
     }
 
     // Step 2 items
+    /**
+     * <p>advancedSettings.</p>
+     *
+     * @return a {@link javax.swing.Box} object
+     */
     public Box advancedSettings() {
         // Data loading params layout
         Box advancedSettingsBox = Box.createVerticalBox();
@@ -910,6 +927,8 @@ public final class LoadDataSettings extends JPanel {
 
     /**
      * To check if the label is specified while that radio button is selected
+     *
+     * @return a boolean
      */
     public boolean isColumnLabelSpecified() {
         if (this.idLabeledColRadioButton.isSelected()) {
@@ -921,6 +940,8 @@ public final class LoadDataSettings extends JPanel {
 
     /**
      * To check if comment marker is supplied while Other radio button is selected
+     *
+     * @return a boolean
      */
     public boolean isOtherCommentMarkerSpecified() {
         if (this.commentOtherRadioButton.isSelected()) {
@@ -975,6 +996,10 @@ public final class LoadDataSettings extends JPanel {
 
     /**
      * Validate each file based on the specified settings
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link java.util.List} object
+     * @throws java.io.IOException if any.
      */
     public List<ValidationResult> validateDataWithSettings(File file) throws IOException {
         Delimiter delimiter = getDelimiterType();
@@ -1113,6 +1138,10 @@ public final class LoadDataSettings extends JPanel {
 
     /**
      * Kevin's data reader
+     *
+     * @param file a {@link java.io.File} object
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     * @throws java.io.IOException if any.
      */
     public DataModel loadDataWithSettings(File file) throws IOException {
         DataModel dataModel;

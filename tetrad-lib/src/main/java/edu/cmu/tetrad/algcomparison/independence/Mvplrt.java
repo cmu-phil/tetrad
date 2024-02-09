@@ -16,6 +16,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @Experimental
 @TestOfIndependence(
@@ -27,21 +28,25 @@ public class Mvplrt implements IndependenceWrapper {
 
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         return new IndTestMvpLrt(SimpleDataLoader.getMixedDataSet(dataSet), parameters.getDouble("alpha"), parameters.getInt("fDegree"), parameters.getInt("discretize") > 0);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Multinomial Logistic Regression Likelihood Ratio Test";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

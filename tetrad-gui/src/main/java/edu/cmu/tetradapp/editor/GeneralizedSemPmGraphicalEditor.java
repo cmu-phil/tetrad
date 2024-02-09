@@ -72,6 +72,9 @@ class GeneralizedSemPmGraphicalEditor extends JPanel {
 
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
+     *
+     * @param semPm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @param launchedEditors a {@link java.util.Map} object
      */
     public GeneralizedSemPmGraphicalEditor(GeneralizedSemPm semPm, Map<Object, EditorWindow> launchedEditors) {
         this.semPm = semPm;
@@ -147,6 +150,9 @@ class GeneralizedSemPmGraphicalEditor extends JPanel {
         return getWorkbench();
     }
 
+    /**
+     * <p>refreshLabels.</p>
+     */
     public void refreshLabels() {
         List nodes = graph().getNodes();
 
@@ -204,14 +210,29 @@ class GeneralizedSemPmGraphicalEditor extends JPanel {
     private void addMouseListenerToGraphNodesMeasured() {
     }
 
+    /**
+     * <p>Getter for the field <code>workbench</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public GraphWorkbench getWorkbench() {
         return this.workbench;
     }
 
+    /**
+     * <p>isEnableEditing.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEnableEditing() {
         return this.enableEditing;
     }
 
+    /**
+     * <p>enableEditing.</p>
+     *
+     * @param enableEditing a boolean
+     */
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {

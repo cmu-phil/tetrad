@@ -34,6 +34,7 @@ import java.util.Set;
  * Feb 25, 2017 1:36:46 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public abstract class AbstractTabularColumnFileReader extends DataFileReader {
 
@@ -52,7 +53,7 @@ public abstract class AbstractTabularColumnFileReader extends DataFileReader {
      *
      * @param columnNames the column names
      * @return the column numbers
-     * @throws IOException if an I/O error occurs
+     * @throws java.io.IOException if an I/O error occurs
      */
     protected int[] toColumnNumbers(Set<String> columnNames) throws IOException {
         List<Integer> colNums = new LinkedList<>();

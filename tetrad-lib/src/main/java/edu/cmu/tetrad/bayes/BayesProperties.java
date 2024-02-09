@@ -37,6 +37,7 @@ import java.util.List;
  * Calculates some scores for Bayes nets as a whole.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class BayesProperties {
     private final DataSet dataSet;
@@ -198,6 +199,7 @@ public final class BayesProperties {
      * Returns the variable with the given name (assumed the target).
      *
      * @param targetName The name of the target variable.
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
      */
     public Node getVariable(String targetName) {
         for (Node node : this.variables) {

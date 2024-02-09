@@ -37,12 +37,20 @@ import java.util.List;
  * Extends AbstractAlgorithmRunner to produce a wrapper for the Purify algorithm.
  *
  * @author Ricardo Silva
+ * @version $Id: $Id
  */
 public class PurifyRunner extends AbstractMimRunner implements GraphSource, KnowledgeBoxInput {
     private static final long serialVersionUID = 23L;
 
     //============================CONSTRUCTORS============================//
 
+    /**
+     * <p>Constructor for PurifyRunner.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param mmWrapper a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public PurifyRunner(DataWrapper dataWrapper,
                         MeasurementModelWrapper mmWrapper,
                         Parameters params) {
@@ -55,6 +63,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -107,18 +116,34 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
         setClusters(outputClusters);
     }
 
+    /**
+     * <p>getClusters.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Clusters} object
+     */
     public Clusters getClusters() {
         return super.getClusters();
     }
 
+    /** {@inheritDoc} */
     protected void setClusters(Clusters clusters) {
         super.setClusters(clusters);
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return getResultGraph();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public java.util.List<Node> getVariables() {
         List<Node> latents = new ArrayList<>();
 
@@ -131,6 +156,11 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
         return latents;
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         List<List<Node>> partition = ClusterUtils.clustersToPartition(getClusters(),
                 getData().getVariables());

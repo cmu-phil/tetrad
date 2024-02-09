@@ -54,6 +54,7 @@ import java.util.Set;
  * @author josephramsey
  * @see FgesMb
  * @see PcMb
+ * @version $Id: $Id
  */
 public class GrowShrink implements IMbSearch {
 
@@ -76,10 +77,9 @@ public class GrowShrink implements IMbSearch {
     }
 
     /**
-     * Finds the Markov blanket of the given target.
+     * {@inheritDoc}
      *
-     * @param target the target
-     * @return the set of node in the Markov blanket.
+     * Finds the Markov blanket of the given target.
      */
     public Set<Node> findMb(Node target) {
         Set<Node> blanket = new HashSet<>();
@@ -114,7 +114,10 @@ public class GrowShrink implements IMbSearch {
     }
 
     /**
-     * @throws UnsupportedOperationException Since independence tests are not counted.
+     * <p>getNumIndependenceTests.</p>
+     *
+     * @throws java.lang.UnsupportedOperationException Since independence tests are not counted.
+     * @return a int
      */
     public int getNumIndependenceTests() {
         throw new UnsupportedOperationException("Independence tests are not counted in the algorithm.");

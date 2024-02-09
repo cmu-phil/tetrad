@@ -40,6 +40,7 @@ import java.io.Serial;
  *
  * @author josephramsey
  * @author Frank Wimberly adapted for EM Bayes estimator and structural EM Bayes estimator
+ * @version $Id: $Id
  */
 public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
     @Serial
@@ -64,6 +65,13 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
 
     //============================CONSTRUCTORS==========================//
 
+    /**
+     * <p>Constructor for EmBayesEstimatorWrapper.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
                                    BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
@@ -101,6 +109,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -108,6 +117,11 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
 
     //================================PUBLIC METHODS======================//
 
+    /**
+     * <p>Getter for the field <code>estimateBayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getEstimateBayesIm() {
         return this.estimateBayesIm;
     }
@@ -124,6 +138,11 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
@@ -137,14 +156,25 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         }
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.estimateBayesIm.getBayesPm().getDag();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }

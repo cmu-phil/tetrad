@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
  * numerical values, and these will be represented as continuous.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ParameterColumn implements Statistic {
     private static final long serialVersionUID = 23L;
@@ -15,27 +16,33 @@ public class ParameterColumn implements Statistic {
     private final String parameter;
 
     /**
+     * <p>Constructor for ParameterColumn.</p>
+     *
      * @param parameter The name of the parameter to list. If this parameter does not exist, '*' is output.
      */
     public ParameterColumn(String parameter) {
         this.parameter = parameter;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return this.parameter;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Extra column for " + this.parameter;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         throw new UnsupportedOperationException();
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         throw new UnsupportedOperationException();

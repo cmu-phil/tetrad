@@ -13,28 +13,40 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
  * applicable to continuous data and really strictly only for Gaussian data.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class FractionDependentUnderAlternative implements Statistic {
     private static final long serialVersionUID = 23L;
     private double alpha = 0.01;
 
+    /**
+     * <p>Constructor for FractionDependentUnderAlternative.</p>
+     */
     public FractionDependentUnderAlternative() {
     }
 
+    /**
+     * <p>Constructor for FractionDependentUnderAlternative.</p>
+     *
+     * @param alpha a double
+     */
     public FractionDependentUnderAlternative(double alpha) {
         this.alpha = alpha;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "DA";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Fraction P-values Dependent Under the Alternative (depends only on the estimated DAG and the data)";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha), ConditioningSetType.LOCAL_MARKOV);
@@ -42,11 +54,17 @@ public class FractionDependentUnderAlternative implements Statistic {
         return markovCheck.getFractionDependent(false);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;
     }
 
+    /**
+     * <p>Setter for the field <code>alpha</code>.</p>
+     *
+     * @param alpha a double
+     */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }

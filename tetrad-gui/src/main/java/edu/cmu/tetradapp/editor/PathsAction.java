@@ -45,6 +45,7 @@ import java.util.prefs.Preferences;
  * Puts up a panel letting the user show undirectedPaths about some node in the graph.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PathsAction extends AbstractAction implements ClipboardOwner {
     private final GraphWorkbench workbench;
@@ -52,11 +53,17 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     private JTextArea textArea;
     private String method;
 
+    /**
+     * <p>Constructor for PathsAction.</p>
+     *
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public PathsAction(GraphWorkbench workbench) {
         super("Paths");
         this.workbench = workbench;
     }
 
+    /** {@inheritDoc} */
     public void actionPerformed(ActionEvent e) {
         Graph graph = this.workbench.getGraph();
 
@@ -334,6 +341,8 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
 
     /**
+     * {@inheritDoc}
+     *
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

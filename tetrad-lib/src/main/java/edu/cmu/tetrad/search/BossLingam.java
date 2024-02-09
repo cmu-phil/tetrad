@@ -58,6 +58,7 @@ import java.util.List;
  * @author peterspirtes
  * @author patrickhoyer
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BossLingam {
     // The CPDAG whose unoriented edges are to be oriented.
@@ -72,6 +73,7 @@ public class BossLingam {
      *
      * @param cpdag   The CPDAG whose unoriented edges are to be oriented.
      * @param dataSet Teh dataset to use.
+     * @throws java.lang.IllegalArgumentException if any.
      */
     public BossLingam(Graph cpdag, DataSet dataSet)
             throws IllegalArgumentException {

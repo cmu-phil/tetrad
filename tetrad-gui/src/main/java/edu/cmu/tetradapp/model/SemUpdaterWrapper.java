@@ -32,6 +32,7 @@ import java.io.ObjectInputStream;
  * Wraps a Bayes Updater for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemUpdaterWrapper implements SessionModel {
     private static final long serialVersionUID = 23L;
@@ -48,6 +49,11 @@ public class SemUpdaterWrapper implements SessionModel {
 
     //=============================CONSTRUCTORS============================//
 
+    /**
+     * <p>Constructor for SemUpdaterWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     */
     public SemUpdaterWrapper(SemEstimatorWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -56,6 +62,11 @@ public class SemUpdaterWrapper implements SessionModel {
 
     }
 
+    /**
+     * <p>Constructor for SemUpdaterWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     */
     public SemUpdaterWrapper(SemImWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -67,6 +78,7 @@ public class SemUpdaterWrapper implements SessionModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -75,6 +87,11 @@ public class SemUpdaterWrapper implements SessionModel {
 
     //==============================PUBLIC METHODS========================//
 
+    /**
+     * <p>Getter for the field <code>semUpdater</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemUpdater} object
+     */
     public SemUpdater getSemUpdater() {
         return this.semUpdater;
     }
@@ -96,10 +113,16 @@ public class SemUpdaterWrapper implements SessionModel {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }

@@ -10,20 +10,24 @@ import java.util.List;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumDirectedPathsTrue implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "#X~~>Y(True)";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Number of <X, Y> for which there is a path X~~>Y in the true graph";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         List<Node> nodes = trueGraph.getNodes();
@@ -42,6 +46,7 @@ public class NumDirectedPathsTrue implements Statistic {
         return count;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

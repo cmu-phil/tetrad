@@ -34,6 +34,7 @@ import javax.swing.text.StyledDocument;
  * that maybe someday the name of the node can be displayed in the interface. That day is not this day.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NoteModel implements SessionModel {
     private static final long serialVersionUID = 23L;
@@ -41,6 +42,11 @@ public class NoteModel implements SessionModel {
     private StyledDocument note = new DefaultStyledDocument();
     private String name;
 
+    /**
+     * <p>Constructor for NoteModel.</p>
+     *
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public NoteModel(Parameters parameters) {
 
     }
@@ -49,23 +55,40 @@ public class NoteModel implements SessionModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.NoteModel} object
      */
     public static NoteModel serializableInstance() {
         return new NoteModel(new Parameters());
     }
 
+    /**
+     * <p>Getter for the field <code>note</code>.</p>
+     *
+     * @return a {@link javax.swing.text.StyledDocument} object
+     */
     public StyledDocument getNote() {
         return this.note;
     }
 
+    /**
+     * <p>Setter for the field <code>note</code>.</p>
+     *
+     * @param note a {@link javax.swing.text.StyledDocument} object
+     */
     public void setNote(StyledDocument note) {
         this.note = note;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }

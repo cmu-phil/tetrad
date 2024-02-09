@@ -7,6 +7,7 @@ import java.io.Serializable;
  *
  * @author josephramsey
  * @author Zhou Yuan zhy19@pitt.edu
+ * @version $Id: $Id
  */
 public class ParamDescription {
 
@@ -22,6 +23,14 @@ public class ParamDescription {
     private long lowerBoundLong = Long.MIN_VALUE;
     private long upperBoundLong = Long.MAX_VALUE;
 
+    /**
+     * <p>Constructor for ParamDescription.</p>
+     *
+     * @param paramName a {@link java.lang.String} object
+     * @param shortDescription a {@link java.lang.String} object
+     * @param longDescription a {@link java.lang.String} object
+     * @param defaultValue a {@link java.io.Serializable} object
+     */
     public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
@@ -41,6 +50,16 @@ public class ParamDescription {
         this.defaultValue = defaultValue;
     }
 
+    /**
+     * <p>Constructor for ParamDescription.</p>
+     *
+     * @param paramName a {@link java.lang.String} object
+     * @param shortDescription a {@link java.lang.String} object
+     * @param longDescription a {@link java.lang.String} object
+     * @param defaultValue a {@link java.io.Serializable} object
+     * @param lowerBound a int
+     * @param upperBound a int
+     */
     public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, int lowerBound, int upperBound) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
@@ -62,6 +81,16 @@ public class ParamDescription {
         this.upperBoundInt = upperBound;
     }
 
+    /**
+     * <p>Constructor for ParamDescription.</p>
+     *
+     * @param paramName a {@link java.lang.String} object
+     * @param shortDescription a {@link java.lang.String} object
+     * @param longDescription a {@link java.lang.String} object
+     * @param defaultValue a {@link java.io.Serializable} object
+     * @param lowerBound a double
+     * @param upperBound a double
+     */
     public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, double lowerBound, double upperBound) {
         if (paramName == null) {
             throw new NullPointerException("Target parameter name is null.");
@@ -83,82 +112,182 @@ public class ParamDescription {
         this.upperBoundDouble = upperBound;
     }
 
+    /**
+     * <p>Getter for the field <code>paramName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getParamName() {
         return this.paramName;
     }
 
+    /**
+     * <p>Setter for the field <code>paramName</code>.</p>
+     *
+     * @param paramName a {@link java.lang.String} object
+     */
     public void setParamName(String paramName) {
         this.paramName = paramName;
     }
 
+    /**
+     * <p>Getter for the field <code>shortDescription</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getShortDescription() {
         return this.shortDescription;
     }
 
+    /**
+     * <p>Setter for the field <code>shortDescription</code>.</p>
+     *
+     * @param shortDescription a {@link java.lang.String} object
+     */
     public void setShortDescription(String shortDescription) {
         this.shortDescription = shortDescription;
     }
 
+    /**
+     * <p>Getter for the field <code>longDescription</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getLongDescription() {
         return this.longDescription;
     }
 
+    /**
+     * <p>Setter for the field <code>longDescription</code>.</p>
+     *
+     * @param longDescription a {@link java.lang.String} object
+     */
     public void setLongDescription(String longDescription) {
         this.longDescription = longDescription;
     }
 
+    /**
+     * <p>Getter for the field <code>defaultValue</code>.</p>
+     *
+     * @return a {@link java.io.Serializable} object
+     */
     public Serializable getDefaultValue() {
         return this.defaultValue;
     }
 
+    /**
+     * <p>Setter for the field <code>defaultValue</code>.</p>
+     *
+     * @param defaultValue a {@link java.io.Serializable} object
+     */
     public void setDefaultValue(Serializable defaultValue) {
         this.defaultValue = defaultValue;
     }
 
+    /**
+     * <p>Getter for the field <code>lowerBoundDouble</code>.</p>
+     *
+     * @return a double
+     */
     public double getLowerBoundDouble() {
         return this.lowerBoundDouble;
     }
 
+    /**
+     * <p>Setter for the field <code>lowerBoundDouble</code>.</p>
+     *
+     * @param lowerBoundDouble a double
+     */
     public void setLowerBoundDouble(double lowerBoundDouble) {
         this.lowerBoundDouble = lowerBoundDouble;
     }
 
+    /**
+     * <p>Getter for the field <code>upperBoundDouble</code>.</p>
+     *
+     * @return a double
+     */
     public double getUpperBoundDouble() {
         return this.upperBoundDouble;
     }
 
+    /**
+     * <p>Setter for the field <code>upperBoundDouble</code>.</p>
+     *
+     * @param upperBoundDouble a double
+     */
     public void setUpperBoundDouble(double upperBoundDouble) {
         this.upperBoundDouble = upperBoundDouble;
     }
 
+    /**
+     * <p>Getter for the field <code>lowerBoundInt</code>.</p>
+     *
+     * @return a int
+     */
     public int getLowerBoundInt() {
         return this.lowerBoundInt;
     }
 
+    /**
+     * <p>Setter for the field <code>lowerBoundInt</code>.</p>
+     *
+     * @param lowerBoundInt a int
+     */
     public void setLowerBoundInt(int lowerBoundInt) {
         this.lowerBoundInt = lowerBoundInt;
     }
 
+    /**
+     * <p>Getter for the field <code>upperBoundInt</code>.</p>
+     *
+     * @return a int
+     */
     public int getUpperBoundInt() {
         return this.upperBoundInt;
     }
 
+    /**
+     * <p>Setter for the field <code>upperBoundInt</code>.</p>
+     *
+     * @param upperBoundInt a int
+     */
     public void setUpperBoundInt(int upperBoundInt) {
         this.upperBoundInt = upperBoundInt;
     }
 
+    /**
+     * <p>Getter for the field <code>lowerBoundLong</code>.</p>
+     *
+     * @return a long
+     */
     public long getLowerBoundLong() {
         return lowerBoundLong;
     }
 
+    /**
+     * <p>Setter for the field <code>lowerBoundLong</code>.</p>
+     *
+     * @param lowerBoundLong a long
+     */
     public void setLowerBoundLong(long lowerBoundLong) {
         this.lowerBoundLong = lowerBoundLong;
     }
 
+    /**
+     * <p>Getter for the field <code>upperBoundLong</code>.</p>
+     *
+     * @return a long
+     */
     public long getUpperBoundLong() {
         return upperBoundLong;
     }
 
+    /**
+     * <p>Setter for the field <code>upperBoundLong</code>.</p>
+     *
+     * @param upperBoundLong a long
+     */
     public void setUpperBoundLong(long upperBoundLong) {
         this.upperBoundLong = upperBoundLong;
     }

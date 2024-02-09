@@ -32,6 +32,7 @@ import java.awt.*;
  * Edits the parameters for simulating data from Bayes nets.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DirichletBayesImParamsEditor extends JPanel implements ParameterEditor {
 
@@ -46,10 +47,20 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
     public DirichletBayesImParamsEditor() {
     }
 
+    /**
+     * <p>setParentModels.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
         // does nothing.
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return false;
     }
@@ -142,6 +153,7 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
         return this.params;
     }
 
+    /** {@inheritDoc} */
     public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();

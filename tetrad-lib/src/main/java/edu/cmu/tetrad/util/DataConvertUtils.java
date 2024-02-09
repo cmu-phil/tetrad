@@ -39,12 +39,20 @@ import java.util.stream.Collectors;
  * Dec 15, 2018 11:10:30 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class DataConvertUtils {
 
     private DataConvertUtils() {
     }
 
+    /**
+     * <p>toDataModel.</p>
+     *
+     * @param data a {@link edu.pitt.dbmi.data.reader.Data} object
+     * @param metadata a {@link edu.pitt.dbmi.data.reader.metadata.Metadata} object
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public static DataModel toDataModel(Data data, Metadata metadata) {
         if (data instanceof ContinuousData) {
             return DataConvertUtils.toContinuousDataModel((ContinuousData) data);
@@ -59,6 +67,12 @@ public class DataConvertUtils {
         }
     }
 
+    /**
+     * <p>toDataModel.</p>
+     *
+     * @param data a {@link edu.pitt.dbmi.data.reader.Data} object
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public static DataModel toDataModel(Data data) {
         if (data instanceof ContinuousData) {
             return DataConvertUtils.toContinuousDataModel((ContinuousData) data);
@@ -73,6 +87,12 @@ public class DataConvertUtils {
         }
     }
 
+    /**
+     * <p>toCovarianceMatrix.</p>
+     *
+     * @param dataset a {@link edu.pitt.dbmi.data.reader.covariance.CovarianceData} object
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public static DataModel toCovarianceMatrix(CovarianceData dataset) {
         List<Node> variables = DataConvertUtils.toNodes(dataset.getVariables());
         Matrix matrix = new Matrix(dataset.getData());
@@ -83,6 +103,10 @@ public class DataConvertUtils {
 
     /**
      * Converting using metadata
+     *
+     * @param dataset a {@link edu.pitt.dbmi.data.reader.tabular.MixedTabularData} object
+     * @param metadata a {@link edu.pitt.dbmi.data.reader.metadata.Metadata} object
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
      */
     public static DataModel toMixedDataBox(MixedTabularData dataset, Metadata metadata) {
         int numOfRows = dataset.getNumOfRows();
@@ -112,6 +136,12 @@ public class DataConvertUtils {
         return new BoxDataSet(new MixedDataBox(nodeList, numOfRows, continuousData, discreteData), nodeList);
     }
 
+    /**
+     * <p>toMixedDataBox.</p>
+     *
+     * @param dataset a {@link edu.pitt.dbmi.data.reader.tabular.MixedTabularData} object
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public static DataModel toMixedDataBox(MixedTabularData dataset) {
         int numOfRows = dataset.getNumOfRows();
         DiscreteDataColumn[] columns = dataset.getDataColumns();
@@ -129,6 +159,10 @@ public class DataConvertUtils {
 
     /**
      * Converting using metadata
+     *
+     * @param dataset a {@link edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularData} object
+     * @param metatdata a {@link edu.pitt.dbmi.data.reader.metadata.Metadata} object
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
      */
     public static DataModel toVerticalDiscreteDataModel(VerticalDiscreteTabularData dataset, Metadata metatdata) {
         Node[] nodes = DataConvertUtils.toNodes(dataset.getDataColumns()).toArray(new Node[0]);
@@ -151,6 +185,12 @@ public class DataConvertUtils {
         return new BoxDataSet(dataBox, nodeList);
     }
 
+    /**
+     * <p>toVerticalDiscreteDataModel.</p>
+     *
+     * @param dataset a {@link edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularData} object
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public static DataModel toVerticalDiscreteDataModel(VerticalDiscreteTabularData dataset) {
         DataBox dataBox = new VerticalIntDataBox(dataset.getData());
         List<Node> variables = DataConvertUtils.toNodes(dataset.getDataColumns());
@@ -158,6 +198,12 @@ public class DataConvertUtils {
         return new BoxDataSet(dataBox, variables);
     }
 
+    /**
+     * <p>toContinuousDataModel.</p>
+     *
+     * @param dataset a {@link edu.pitt.dbmi.data.reader.ContinuousData} object
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public static DataModel toContinuousDataModel(ContinuousData dataset) {
         DataBox dataBox = new DoubleDataBox(dataset.getData());
         List<Node> variables = DataConvertUtils.toNodes(dataset.getDataColumns());
@@ -165,18 +211,36 @@ public class DataConvertUtils {
         return new BoxDataSet(dataBox, variables);
     }
 
+    /**
+     * <p>toNodes.</p>
+     *
+     * @param variables a {@link java.util.List} object
+     * @return a {@link java.util.List} object
+     */
     public static List<Node> toNodes(List<String> variables) {
         return variables.stream()
                 .map(ContinuousVariable::new)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * <p>toNodes.</p>
+     *
+     * @param columns an array of {@link edu.pitt.dbmi.data.reader.DiscreteDataColumn} objects
+     * @return a {@link java.util.List} object
+     */
     public static List<Node> toNodes(DiscreteDataColumn[] columns) {
         return Arrays.stream(columns)
                 .map(e -> new DiscreteVariable(e.getDataColumn().getName(), e.getCategories()))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * <p>toNodes.</p>
+     *
+     * @param columns an array of {@link edu.pitt.dbmi.data.reader.DataColumn} objects
+     * @return a {@link java.util.List} object
+     */
     public static List<Node> toNodes(DataColumn[] columns) {
         return Arrays.stream(columns)
                 .map(e -> new ContinuousVariable(e.getName()))

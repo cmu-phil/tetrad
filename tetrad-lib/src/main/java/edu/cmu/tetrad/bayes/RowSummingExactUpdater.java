@@ -35,6 +35,7 @@ import java.util.List;
  * numVars - numVarsInEvidence is more than 15.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     private static final long serialVersionUID = 23L;
@@ -78,6 +79,8 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Constructs a new updater for the given Bayes net.
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public RowSummingExactUpdater(BayesIm bayesIm) {
         if (bayesIm == null) {
@@ -90,6 +93,9 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Constructs a new updater for the given Bayes net.
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
      */
     public RowSummingExactUpdater(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) {
@@ -102,6 +108,8 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.RowSummingExactUpdater} object
      */
     public static RowSummingExactUpdater serializableInstance() {
         return new RowSummingExactUpdater(MlBayesIm.serializableInstance());
@@ -112,18 +120,27 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     /**
      * The BayesIm that this updater bases its update on. This BayesIm is not modified; rather, a new BayesIm is created
      * and updated.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesIm getBayesIm() {
         return this.bayesIm;
     }
 
     /**
+     * <p>Getter for the field <code>manipulatedBayesIm</code>.</p>
+     *
      * @return the updated BayesIm.
      */
     public BayesIm getManipulatedBayesIm() {
         return this.manipulatedBayesIm;
     }
 
+    /**
+     * <p>getManipulatedGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getManipulatedGraph() {
         return getManipulatedBayesIm().getDag();
     }
@@ -132,6 +149,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
      * The updated BayesIm. This is a different object from the source BayesIm.
      *
      * @see #getBayesIm
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesIm getUpdatedBayesIm() {
         if (this.updatedBayesIm == null) {
@@ -142,12 +160,15 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
+     * <p>Getter for the field <code>evidence</code>.</p>
+     *
      * @return a defensive copy of the evidence.
      */
     public Evidence getEvidence() {
         return new Evidence(this.evidence);
     }
 
+    /** {@inheritDoc} */
     public void setEvidence(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
@@ -184,10 +205,22 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         this.updatedBayesIm = null;
     }
 
+    /**
+     * <p>isJointMarginalSupported.</p>
+     *
+     * @return a boolean
+     */
     public boolean isJointMarginalSupported() {
         return true;
     }
 
+    /**
+     * <p>getJointMarginal.</p>
+     *
+     * @param variables an array of {@link int} objects
+     * @param values an array of {@link int} objects
+     * @return a double
+     */
     public double getJointMarginal(int[] variables, int[] values) {
         if (variables.length != values.length) {
             throw new IllegalArgumentException("Values must match variables.");
@@ -208,9 +241,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         }
     }
 
-    /**
-     * @return P(variable = value | evidence) where evidence is getEvidence().
-     */
+    /** {@inheritDoc} */
     public double getMarginal(int variable, int value) {
         Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
         Proposition condition =
@@ -224,6 +255,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         }
     }
 
+    /** {@inheritDoc} */
     public double[] calculatePriorMarginals(int nodeIndex) {
         Evidence evidence = getEvidence();
         setEvidence(Evidence.tautology(evidence.getVariableSource()));
@@ -238,6 +270,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
+    /** {@inheritDoc} */
     public double[] calculateUpdatedMarginals(int nodeIndex) {
         double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
 
@@ -250,6 +283,8 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Prints out the most recent marginal.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return "Row summing exact updater, evidence = " + this.evidence;

@@ -41,6 +41,7 @@ import java.util.*;
  * as parent. Contains basic methods for executing algorithm and returning results.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public abstract class AbstractAlgorithmRunner
         implements AlgorithmRunner, ParamsResettable, Unmarshallable {
@@ -270,6 +271,8 @@ public abstract class AbstractAlgorithmRunner
 
     /**
      * Returns the graph that was the result of the algorithm's execution.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public final Graph getResultGraph() {
         return this.resultGraph;
@@ -277,6 +280,8 @@ public abstract class AbstractAlgorithmRunner
 
     /**
      * Sets the graph that was the result of the algorithm's execution.
+     *
+     * @param resultGraph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public final void setResultGraph(Graph resultGraph) {
         this.resultGraph = resultGraph;
@@ -310,18 +315,18 @@ public abstract class AbstractAlgorithmRunner
     }
 
     /**
-     * Sets the external graph for the algorithm.
+     * {@inheritDoc}
      *
-     * @param graph the graph
+     * Sets the external graph for the algorithm.
      */
     public void setExternalGraph(Graph graph) {
         this.externalGraph = graph;
     }
 
     /**
-     * Returns the algorithm's name.
+     * {@inheritDoc}
      *
-     * @return
+     * Returns the algorithm's name.
      */
     @Override
     public abstract String getAlgorithmName();
@@ -387,9 +392,9 @@ public abstract class AbstractAlgorithmRunner
     }
 
     /**
-     * Resets the parameters.
+     * {@inheritDoc}
      *
-     * @param params the parameters
+     * Resets the parameters.
      */
     public void resetParams(Object params) {
         this.params = (Parameters) params;
@@ -470,9 +475,9 @@ public abstract class AbstractAlgorithmRunner
     }
 
     /**
-     * Sets the name of the algorithm.
+     * {@inheritDoc}
      *
-     * @param name the name
+     * Sets the name of the algorithm.
      */
     public void setName(String name) {
         this.name = name;
@@ -489,9 +494,9 @@ public abstract class AbstractAlgorithmRunner
 
 
     /**
-     * Returns the param settings.
+     * {@inheritDoc}
      *
-     * @return the param settings
+     * Returns the param settings.
      */
     @Override
     public Map<String, String> getParamSettings() {
@@ -509,9 +514,9 @@ public abstract class AbstractAlgorithmRunner
     }
 
     /**
-     * Sets all param settings.
+     * {@inheritDoc}
      *
-     * @param allParamSettings the all param settings map.
+     * Sets all param settings.
      */
     public void setAllParamSettings(Map<String, String> allParamSettings) {
         this.allParamSettings = allParamSettings;

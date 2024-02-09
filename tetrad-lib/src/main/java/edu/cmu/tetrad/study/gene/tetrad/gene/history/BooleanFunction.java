@@ -32,6 +32,7 @@ import java.io.Serial;
  * Stores a boolean function from a set of boolean-valued parents to a single boolean-valued column.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BooleanFunction implements TetradSerializable {
     @Serial
@@ -75,6 +76,7 @@ public class BooleanFunction implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
      * @return a simple exemplar of this class to test serialization.
      */
     public static BooleanFunction serializableInstance() {
@@ -148,6 +150,8 @@ public class BooleanFunction implements TetradSerializable {
     }
 
     /**
+     * <p>getNumRows.</p>
+     *
      * @return the number of rows in the table.
      */
     public int getNumRows() {
@@ -155,6 +159,8 @@ public class BooleanFunction implements TetradSerializable {
     }
 
     /**
+     * <p>getParentValues.</p>
+     *
      * @param row the row of the table.
      * @return  the combination of parent values represented by a given row in the table.
      */

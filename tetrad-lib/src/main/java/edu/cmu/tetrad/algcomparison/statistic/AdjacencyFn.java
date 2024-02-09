@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
  * The adjacency precision. The true positives are the number of adjacencies in both the true and estimated graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class AdjacencyFn implements Statistic {
     private static final long serialVersionUID = 23L;
@@ -19,9 +20,9 @@ public class AdjacencyFn implements Statistic {
     }
 
     /**
-     * Returns the name of the statistic.
+     * {@inheritDoc}
      *
-     * @return The name.
+     * Returns the name of the statistic.
      */
     @Override
     public String getAbbreviation() {
@@ -29,9 +30,9 @@ public class AdjacencyFn implements Statistic {
     }
 
     /**
-     * Returns the description of the statistic.
+     * {@inheritDoc}
      *
-     * @return The description.
+     * Returns the description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -39,12 +40,9 @@ public class AdjacencyFn implements Statistic {
     }
 
     /**
-     * Returns the value of the statistic, given the true graph and the estimated graph.
+     * {@inheritDoc}
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
-     * @return The value of the statistic.
+     * Returns the value of the statistic, given the true graph and the estimated graph.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -53,12 +51,11 @@ public class AdjacencyFn implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns a mapping of the statistic to the interval [0, 1], with higher being better. This is used for a
      * calculation of a utility for an algorithm.If the statistic is already between 0 and 1, you can just return the
      * statistic.
-     *
-     * @param value The value of the statistic.
-     * @return The weight of the statistic, 0 to 1, higher is better.
      */
     @Override
     public double getNormValue(double value) {

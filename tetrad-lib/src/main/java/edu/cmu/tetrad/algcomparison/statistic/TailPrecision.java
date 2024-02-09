@@ -11,20 +11,24 @@ import edu.cmu.tetrad.graph.Graph;
  * false positive is counted. Similarly for false negatives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TailPrecision implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "TP";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Tail precision";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         TailConfusion adjConfusion = new TailConfusion(trueGraph, estGraph);
@@ -33,6 +37,7 @@ public class TailPrecision implements Statistic {
         return arrowsTp / (arrowsTp + arrowsFp);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

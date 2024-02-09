@@ -24,6 +24,7 @@ import static edu.cmu.tetrad.util.Params.*;
  *
  * @author Madelyn Glymour
  * @author josephramsey 9/5/2020
+ * @version $Id: $Id
  */
 public class FaskVote {
     private final IndependenceWrapper test;
@@ -139,6 +140,8 @@ public class FaskVote {
     }
 
     /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
      * @param knowledge Knowledge of forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {

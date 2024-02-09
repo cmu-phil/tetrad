@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author josephramsey
  * @see ChiSquareTest
+ * @version $Id: $Id
  */
 public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
@@ -99,9 +100,9 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Creates a new IndTestGSquare for a sublist of the variables.
+     * {@inheritDoc}
      *
-     * @param vars This sublist.
+     * Creates a new IndTestGSquare for a sublist of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -133,12 +134,9 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
+     * {@inheritDoc}
      *
-     * @param x  the one variable being compared.
-     * @param y  the second variable being compared.
-     * @param _z the list of conditioning varNames.
-     * @return True iff x _||_ y | z.
+     * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (this.facts.containsKey(new IndependenceFact(x, y, _z))) {
@@ -200,10 +198,10 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
-     *
-     * @param alpha the new significance level.
      */
     public void setAlpha(double alpha) {
         this.gSquareTest.setAlpha(alpha);
@@ -229,11 +227,9 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns a judgment whether the variables in z determine x.
+     * {@inheritDoc}
      *
-     * @param _z The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
-     * @param x  The one variable whose determination by z we want to know.
-     * @return true if it is estimated that z determines x or z determines y.
+     * Returns a judgment whether the variables in z determine x.
      */
     public boolean determines(Set<Node> _z, Node x) {
         if (_z == null) {
@@ -311,9 +307,9 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns True if verbose output is printed.
+     * {@inheritDoc}
      *
-     * @return True, if so.
+     * Returns True if verbose output is printed.
      */
     @Override
     public boolean isVerbose() {
@@ -321,9 +317,9 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Sets whether verbose output is printed.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets whether verbose output is printed.
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -343,9 +339,9 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns the rows used for the test. If null, all rows are used.
+     * {@inheritDoc}
      *
-     * @return The rows used for the test. Can be null.
+     * Returns the rows used for the test. If null, all rows are used.
      */
     @Override
     public List<Integer> getRows() {
@@ -353,9 +349,9 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Sets the rows to use for the test. If null, all rows are used.
+     * {@inheritDoc}
      *
-     * @param rows The rows to use for the test. Can be null.
+     * Sets the rows to use for the test. If null, all rows are used.
      */
     @Override
     public void setRows(List<Integer> rows) {

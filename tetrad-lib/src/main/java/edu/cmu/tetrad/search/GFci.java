@@ -67,6 +67,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see SpFci
  * @see Fges
  * @see Knowledge
+ * @version $Id: $Id
  */
 public final class GFci implements IGraphSearch {
     // The independence test used in search.

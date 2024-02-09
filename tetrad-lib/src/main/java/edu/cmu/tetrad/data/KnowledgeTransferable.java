@@ -28,17 +28,22 @@ import edu.cmu.tetrad.util.TetradSerializable;
  *
  * @author josephramsey
  * @see Knowledge
+ * @version $Id: $Id
  */
 public interface KnowledgeTransferable extends TetradSerializable {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**
+     * <p>getKnowledge.</p>
+     *
      * @return a copy of the knowledge for this class.
      */
     Knowledge getKnowledge();
 
     /**
      * Sets knowledge to a copy of the given object.
+     *
      * @param knowledge the knowledge to set
      */
     void setKnowledge(Knowledge knowledge);

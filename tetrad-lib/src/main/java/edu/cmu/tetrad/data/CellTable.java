@@ -34,6 +34,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @see edu.cmu.tetrad.util.MultiDimIntTable
+ * @version $Id: $Id
  */
 public final class CellTable {
 
@@ -102,6 +103,8 @@ public final class CellTable {
     }
 
     /**
+     * <p>getNumValues.</p>
+     *
      * @param varIndex the index of the variable in question.
      * @return the number of dimensions of the variable.
      */

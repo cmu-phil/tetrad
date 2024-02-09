@@ -45,6 +45,7 @@ import java.util.Set;
  * "Efficient Inclusion of Novel Variables."
  *
  * @author David Danks
+ * @version $Id: $Id
  */
 public class PossibleMsepFci {
     private final Graph graph;
@@ -83,6 +84,8 @@ public class PossibleMsepFci {
      * conditional on some subset of the union of Possible-M-Sep sets. This method returns the SepSet passed in the
      * constructor (if any), possibly augmented by some edge removals in this step. The GaSearchGraph passed in the
      * constructor is directly changed.
+     *
+     * @return a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
      */
     public SepsetMap search() {
 
@@ -109,6 +112,14 @@ public class PossibleMsepFci {
         return this.sepset;
     }
 
+    /**
+     * <p>Getter for the field <code>sepset</code>.</p>
+     *
+     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.Set} object
+     */
     public Set<Node> getSepset(IndependenceTest test, Node node1, Node node2) {
         Set<Node> condSet = getCondSet(test, node1, node2, this.maxReachablePathLength);
 
@@ -119,10 +130,20 @@ public class PossibleMsepFci {
         return condSet;
     }
 
+    /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
+     * @return a int
+     */
     public int getDepth() {
         return this.depth;
     }
 
+    /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
+     * @param depth a int
+     */
     public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
@@ -132,14 +153,29 @@ public class PossibleMsepFci {
         this.depth = depth;
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /**
+     * <p>setMaxPathLength.</p>
+     *
+     * @param maxReachablePathLength a int
+     */
     public void setMaxPathLength(int maxReachablePathLength) {
         if (maxReachablePathLength < -1) {
             throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxReachablePathLength);

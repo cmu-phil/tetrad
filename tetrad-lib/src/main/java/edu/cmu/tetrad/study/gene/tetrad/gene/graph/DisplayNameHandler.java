@@ -27,11 +27,15 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor;
  * Translates display names of lagged variables (e.g. "V1:L1") into model names (e.g. "V1:1") and vice-versa.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class DisplayNameHandler {
 
     /**
      * Converts the given lagged factor into a display string.
+     *
+     * @param laggedFactor a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
+     * @return a {@link java.lang.String} object
      */
     public static String getDisplayString(LaggedFactor laggedFactor) {
         return DisplayNameHandler.getDisplayString(laggedFactor.getFactor(),
@@ -40,6 +44,10 @@ public final class DisplayNameHandler {
 
     /**
      * Uses the given factor and lag information to construct a display string.
+     *
+     * @param factor a {@link java.lang.String} object
+     * @param lag a int
+     * @return a {@link java.lang.String} object
      */
     public static String getDisplayString(String factor, int lag) {
         return factor + ":L" + lag;
@@ -47,6 +55,9 @@ public final class DisplayNameHandler {
 
     /**
      * Parses the given string and returns the LaggedFactor it represents.
+     *
+     * @param displayString a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
      */
     public static LaggedFactor getLaggedFactor(String displayString) {
 
@@ -58,6 +69,9 @@ public final class DisplayNameHandler {
 
     /**
      * Parses the given string representing a lagged factor and return the part that represents the factor.
+     *
+     * @param laggedFactor a {@link java.lang.String} object
+     * @return a {@link java.lang.String} object
      */
     public static String extractFactor_Display(String laggedFactor) {
 

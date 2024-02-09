@@ -37,6 +37,7 @@ import java.util.Set;
  * Research 19, 80-92 and Bollen and Ting, Confirmatory Tetrad Analysis.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DeltaSextadTest {
     private static final long serialVersionUID = 23L;

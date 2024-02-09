@@ -33,6 +33,9 @@ import edu.pitt.csb.mgm.MixedUtils;
 
 /**
  * Created by ajsedgewick on 9/4/15.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class SearchWrappers {
     public static class PcStableWrapper extends DataGraphSearch {

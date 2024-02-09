@@ -48,6 +48,7 @@ import java.util.List;
  * @author josephramsey
  * @see edu.cmu.tetrad.graph.Dag
  * @see BayesPm
+ * @version $Id: $Id
  */
 public interface BayesIm extends VariableSource, Im, Simulator {
 
@@ -359,21 +360,17 @@ public interface BayesIm extends VariableSource, Im, Simulator {
     boolean isIncomplete(int nodeIndex);
 
     /**
-     * Simulates a sample with the given sample size.
+     * {@inheritDoc}
      *
-     * @param sampleSize the sample size.
-     * @param latentDataSaved true iff the latent data is to be saved.
-     * @return the simulated sample as a DataSet.
+     * Simulates a sample with the given sample size.
      */
     DataSet simulateData(int sampleSize, boolean latentDataSaved);
 
     /**
+     * {@inheritDoc}
+     *
      * Overwrites the given dataSet with a new simulated dataSet, to avoid allocating memory. The given dataSet must
      * have the necessary number of columns.
-     *
-     * @param dataSet the dataSet to be overwritten.
-     * @param latentDataSaved true iff the latent data is to be saved.
-     * @return the simulated sample as a DataSet.
      */
     DataSet simulateData(DataSet dataSet, boolean latentDataSaved);
 

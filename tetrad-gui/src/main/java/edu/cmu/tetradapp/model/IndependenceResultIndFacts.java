@@ -29,6 +29,9 @@ import java.text.NumberFormat;
 
 /**
  * Stores the result of an independence test.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndependenceResultIndFacts implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -38,6 +41,14 @@ public final class IndependenceResultIndFacts implements TetradSerializable {
     private final Type indep;
     private final double pValue;
 
+    /**
+     * <p>Constructor for IndependenceResultIndFacts.</p>
+     *
+     * @param index a int
+     * @param fact a {@link java.lang.String} object
+     * @param indep a {@link edu.cmu.tetradapp.model.IndependenceResultIndFacts.Type} object
+     * @param pValue a double
+     */
     public IndependenceResultIndFacts(int index, String fact, Type indep, double pValue) {
         this.index = index;
         this.fact = fact;
@@ -49,27 +60,53 @@ public final class IndependenceResultIndFacts implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.IndependenceResultIndFacts} object
      */
     public static IndependenceResultIndFacts serializableInstance() {
         return new IndependenceResultIndFacts(1, "X _||_ Y", Type.DEPENDENT, 0.0001);
     }
 
+    /**
+     * <p>Getter for the field <code>index</code>.</p>
+     *
+     * @return a int
+     */
     public int getIndex() {
         return this.index;
     }
 
+    /**
+     * <p>Getter for the field <code>fact</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getFact() {
         return this.fact;
     }
 
+    /**
+     * <p>getType.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.IndependenceResultIndFacts.Type} object
+     */
     public Type getType() {
         return this.indep;
     }
 
+    /**
+     * <p>Getter for the field <code>pValue</code>.</p>
+     *
+     * @return a double
+     */
     public double getpValue() {
         return this.pValue;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Result: " + getFact() + "\t" + getType() + "\t" + IndependenceResultIndFacts.nf.format(getpValue());
     }

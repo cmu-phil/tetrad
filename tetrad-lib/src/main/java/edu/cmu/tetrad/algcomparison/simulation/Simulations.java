@@ -7,11 +7,15 @@ import java.util.List;
  * A list of simulations to be compared.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Simulations {
     private static final long serialVersionUID = 23L;
     private final List<Simulation> simulations = new ArrayList<>();
 
+    /**
+     * <p>Constructor for Simulations.</p>
+     */
     public Simulations() {
     }
 

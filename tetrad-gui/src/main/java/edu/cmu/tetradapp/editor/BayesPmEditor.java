@@ -35,6 +35,7 @@ import java.beans.PropertyChangeListener;
  *
  * @author Aaron Powers
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesPmEditor extends JPanel
         implements PropertyChangeListener, DelegatesEditing {
@@ -49,6 +50,8 @@ public class BayesPmEditor extends JPanel
 
     /**
      * Constructs a new editor for parameterized models (for now only for Bayes net parameterized models).
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
      */
     public BayesPmEditor(BayesPmWrapper wrapper) {
         this.wrapper = wrapper;
@@ -133,6 +136,8 @@ public class BayesPmEditor extends JPanel
     }
 
     /**
+     * {@inheritDoc}
+     *
      * G Reacts to property change events.
      */
     public void propertyChange(PropertyChangeEvent e) {
@@ -152,6 +157,8 @@ public class BayesPmEditor extends JPanel
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name fo the Bayes PM.
      */
     public void setName(String name) {
@@ -160,6 +167,11 @@ public class BayesPmEditor extends JPanel
         firePropertyChange("name", oldName, getName());
     }
 
+    /**
+     * <p>getEditDelegate.</p>
+     *
+     * @return a {@link javax.swing.JComponent} object
+     */
     public JComponent getEditDelegate() {
         return this.wizard;
     }

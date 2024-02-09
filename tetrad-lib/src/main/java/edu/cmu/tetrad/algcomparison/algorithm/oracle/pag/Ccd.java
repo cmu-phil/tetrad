@@ -23,6 +23,7 @@ import java.util.List;
  * CCD (Cyclic Causal Discovery)
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CCD",
@@ -46,12 +47,14 @@ public class Ccd implements Algorithm, TakesIndependenceWrapper, ReturnsBootstra
 
     /**
      * Constructs a new CCD algorithm with the given independence test.
+     *
      * @param test the independence test
      */
     public Ccd(IndependenceWrapper test) {
         this.test = test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -74,21 +77,25 @@ public class Ccd implements Algorithm, TakesIndependenceWrapper, ReturnsBootstra
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "CCD (Cyclic Causal Discovery using " + test.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.test.getDataType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = test.getParameters();
@@ -100,16 +107,19 @@ public class Ccd implements Algorithm, TakesIndependenceWrapper, ReturnsBootstra
     }
 
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

@@ -21,6 +21,7 @@ import java.util.List;
  * Build Pure Clusters.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "BPC",
@@ -39,11 +40,9 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
     }
 
     /**
-     * Runs the BPC algorithm.
+     * {@inheritDoc}
      *
-     * @param dataSet    The data set to run to the search on.
-     * @param parameters The paramters of the search.
-     * @return The graph.
+     * Runs the BPC algorithm.
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -128,10 +127,9 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
     }
 
     /**
-     * Returns the true graph if there is one.
+     * {@inheritDoc}
      *
-     * @param graph The true directed graph, if there is one.
-     * @return The graph that was found.
+     * Returns the true graph if there is one.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -140,9 +138,9 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
     }
 
     /**
-     * Returns the description of the algorithm.
+     * {@inheritDoc}
      *
-     * @return The description of the algorithm.
+     * Returns the description of the algorithm.
      */
     @Override
     public String getDescription() {
@@ -150,9 +148,9 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
     }
 
     /**
-     * Returns the data type that the algorithm can handle.
+     * {@inheritDoc}
      *
-     * @return The data type that the algorithm can handle.
+     * Returns the data type that the algorithm can handle.
      */
     @Override
     public DataType getDataType() {
@@ -160,9 +158,9 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
     }
 
     /**
-     * Returns the parameters for the algorithm.
+     * {@inheritDoc}
      *
-     * @return The parameters for the algorithm.
+     * Returns the parameters for the algorithm.
      */
     @Override
     public List<String> getParameters() {

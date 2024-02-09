@@ -40,6 +40,7 @@ import java.util.List;
  * Extends AbstractAlgorithmRunner to produce a wrapper for the FCI algorithm.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class FciRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, IonInput {
@@ -47,46 +48,107 @@ public class FciRunner extends AbstractAlgorithmRunner
 
     //=========================CONSTRUCTORS================================//
 
+    /**
+     * <p>Constructor for FciRunner.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public FciRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
     }
 
     /**
      * Constucts a wrapper for the given EdgeListGraph.
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public FciRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
     }
 
 
+    /**
+     * <p>Constructor for FciRunner.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
     public FciRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(dataWrapper, params, knowledgeBoxModel);
     }
 
+    /**
+     * <p>Constructor for FciRunner.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public FciRunner(Graph graph, Parameters params) {
         super(graph, params);
     }
 
+    /**
+     * <p>Constructor for FciRunner.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
     public FciRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(graph, params, knowledgeBoxModel);
     }
 
+    /**
+     * <p>Constructor for FciRunner.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public FciRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
     }
 
+    /**
+     * <p>Constructor for FciRunner.</p>
+     *
+     * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public FciRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
     }
 
+    /**
+     * <p>Constructor for FciRunner.</p>
+     *
+     * @param dagWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public FciRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
     }
 
+    /**
+     * <p>Constructor for FciRunner.</p>
+     *
+     * @param model a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public FciRunner(IndependenceFactsModel model, Parameters params) {
         super(model, params, null);
     }
 
+    /**
+     * <p>Constructor for FciRunner.</p>
+     *
+     * @param model a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     */
     public FciRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
         super(model, params, knowledgeBoxModel);
     }
@@ -96,6 +158,7 @@ public class FciRunner extends AbstractAlgorithmRunner
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.FciRunner} object
      */
     public static FciRunner serializableInstance() {
         return new FciRunner(Dag.serializableInstance(), new Parameters());
@@ -138,6 +201,11 @@ public class FciRunner extends AbstractAlgorithmRunner
         setResultGraph(graph);
     }
 
+    /**
+     * <p>getIndependenceTest.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     */
     public IndependenceTest getIndependenceTest() {
         Object dataModel = getDataModel();
 
@@ -153,31 +221,42 @@ public class FciRunner extends AbstractAlgorithmRunner
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return getResultGraph();
     }
 
 
     /**
+     * <p>getTriplesClassificationTypes.</p>
+     *
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
         return new ArrayList<>();
     }
 
-    /**
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
-     */
+    /** {@inheritDoc} */
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
         return triplesList;
     }
 
+    /**
+     * <p>supportsKnowledge.</p>
+     *
+     * @return a boolean
+     */
     public boolean supportsKnowledge() {
         return true;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getAlgorithmName() {
         return "FCI";

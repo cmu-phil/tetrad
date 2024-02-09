@@ -35,6 +35,7 @@ import java.util.List;
  * were done so that the user doesn't have to keep typing in information over and over again.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SplitCasesSpec implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -56,6 +57,13 @@ public final class SplitCasesSpec implements TetradSerializable {
      */
     private final int sampleSize;
 
+    /**
+     * <p>Constructor for SplitCasesSpec.</p>
+     *
+     * @param sampleSize a int
+     * @param breakpoints an array of {@link int} objects
+     * @param splits a {@link java.util.List} object
+     */
     public SplitCasesSpec(int sampleSize, int[] breakpoints,
                           List<String> splits) {
         this.sampleSize = sampleSize;
@@ -65,15 +73,27 @@ public final class SplitCasesSpec implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.SplitCasesSpec} object
      */
     public static SplitCasesSpec serializableInstance() {
         return new SplitCasesSpec(0, new int[0], new ArrayList<>());
     }
 
+    /**
+     * <p>Getter for the field <code>splitNames</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getSplitNames() {
         return this.splitNames;
     }
 
+    /**
+     * <p>Getter for the field <code>breakpoints</code>.</p>
+     *
+     * @return an array of {@link int} objects
+     */
     public int[] getBreakpoints() {
         return this.breakpoints;
     }
@@ -99,6 +119,11 @@ public final class SplitCasesSpec implements TetradSerializable {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>sampleSize</code>.</p>
+     *
+     * @return a int
+     */
     public int getSampleSize() {
         return this.sampleSize;
     }

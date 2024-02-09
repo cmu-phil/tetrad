@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.Node;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CommonAncestorTruePositiveBidirected implements Statistic {
     private static final long serialVersionUID = 23L;
@@ -35,9 +36,9 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
     }
 
     /**
-     * Returns the name of the statistic.
+     * {@inheritDoc}
      *
-     * @return the name of the statistic.
+     * Returns the name of the statistic.
      */
     @Override
     public String getAbbreviation() {
@@ -45,9 +46,9 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
     }
 
     /**
-     * Returns the description of the statistic.
+     * {@inheritDoc}
      *
-     * @return the description of the statistic.
+     * Returns the description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -55,12 +56,9 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
     }
 
     /**
-     * Returns the value of the statistic.
+     * {@inheritDoc}
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
-     * @return the value of the statistic.
+     * Returns the value of the statistic.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -76,9 +74,9 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the normed value of the statistic.
-     * @param value The value of the statistic.
-     * @return the normed value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

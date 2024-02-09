@@ -31,6 +31,7 @@ import java.util.*;
  * Provides some useful utilities for dealing with Markov blankets and Markov blanket DAGs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MbUtils {
 
@@ -222,6 +223,10 @@ public class MbUtils {
      *
      * @param orientBidirectedEdges True iff bidirected edges should be oriented as if they were undirected.
      * @return a list of Dag's.
+     * @param mbCPDAG a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param depth a int
+     * @param target a {@link edu.cmu.tetrad.graph.Node} object
      */
     public static List<Graph> generateMbDags(Graph mbCPDAG,
                                              boolean orientBidirectedEdges,

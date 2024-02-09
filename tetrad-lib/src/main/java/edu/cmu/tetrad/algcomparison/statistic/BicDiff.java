@@ -11,15 +11,16 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  * Difference between the true and estiamted BIC scores.  The BIC is calculated as 2L - k ln N, so "higher is better."
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BicDiff implements Statistic {
     private static final long serialVersionUID = 23L;
     private boolean precomputeCovariances = true;
 
     /**
-     * Returns the name of the statistic.
+     * {@inheritDoc}
      *
-     * @return the name of the statistic.
+     * Returns the name of the statistic.
      */
     @Override
     public String getAbbreviation() {
@@ -27,9 +28,9 @@ public class BicDiff implements Statistic {
     }
 
     /**
-     * Returns the description of the statistic.
+     * {@inheritDoc}
      *
-     * @return the description of the statistic.
+     * Returns the description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -37,12 +38,9 @@ public class BicDiff implements Statistic {
     }
 
     /**
-     * Returns the value of the statistic.
+     * {@inheritDoc}
      *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
-     * @return The value of the statistic.
+     * Returns the value of the statistic.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -52,10 +50,9 @@ public class BicDiff implements Statistic {
     }
 
     /**
-     * Returns the normalized value of the statistic.
+     * {@inheritDoc}
      *
-     * @param value The value of the statistic.
-     * @return The normalized value of the statistic.
+     * Returns the normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

@@ -22,6 +22,7 @@ package edu.pitt.dbmi.data.reader;
  * Nov 5, 2018 2:27:47 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public enum Delimiter {
 

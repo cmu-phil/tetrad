@@ -44,8 +44,8 @@ import java.util.*;
  * Improves the P value of a SEM IM by adding, removing, or reversing single edges.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
-
 public final class HbsmsBeam implements Hbsms {
     private final CovarianceMatrix cov;
     private final Graph externalGraph;
@@ -60,6 +60,13 @@ public final class HbsmsBeam implements Hbsms {
     private SemIm newSemIm;
     private int beamWidth = 1;
 
+    /**
+     * <p>Constructor for HbsmsBeam.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public HbsmsBeam(Graph graph, DataSet data, Knowledge knowledge) {
         if (graph == null) graph = new EdgeListGraph(data.getVariables());
 
@@ -70,6 +77,13 @@ public final class HbsmsBeam implements Hbsms {
         this.scorer = new DagScorer(this.cov);
     }
 
+    /**
+     * <p>Constructor for HbsmsBeam.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param cov a {@link edu.cmu.tetrad.data.CovarianceMatrix} object
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public HbsmsBeam(Graph graph, CovarianceMatrix cov, Knowledge knowledge) {
         if (graph == null) graph = new EdgeListGraph(cov.getVariables());
 
@@ -80,6 +94,11 @@ public final class HbsmsBeam implements Hbsms {
         this.scorer = new DagScorer(cov);
     }
 
+    /**
+     * <p>search.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph search() {
         EdgeListGraph _graph = new EdgeListGraph(this.externalGraph);
         addRequiredEdges(_graph);
@@ -236,6 +255,12 @@ public final class HbsmsBeam implements Hbsms {
         s.remove(minGraph);
     }
 
+    /**
+     * <p>removeZeroEdges.</p>
+     *
+     * @param bestGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph removeZeroEdges(Graph bestGraph) {
         boolean changed = true;
         Graph graph = new EdgeListGraph(bestGraph);
@@ -398,30 +423,62 @@ public final class HbsmsBeam implements Hbsms {
         return moves;
     }
 
+    /**
+     * <p>Getter for the field <code>graph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.graph;
     }
 
+    /**
+     * <p>Getter for the field <code>originalSemIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getOriginalSemIm() {
         return this.originalSemIm;
     }
 
+    /**
+     * <p>Getter for the field <code>newSemIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getNewSemIm() {
         return this.newSemIm;
     }
 
+    /**
+     * <p>Getter for the field <code>highPValueAlpha</code>.</p>
+     *
+     * @return a double
+     */
     public double getHighPValueAlpha() {
         return this.highPValueAlpha;
     }
 
+    /** {@inheritDoc} */
     public void setHighPValueAlpha(double highPValueAlpha) {
         this.highPValueAlpha = highPValueAlpha;
     }
 
+    /**
+     * <p>isCheckingCycles.</p>
+     *
+     * @return a boolean
+     */
     public boolean isCheckingCycles() {
         return true;
     }
 
+    /**
+     * <p>scoreGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.search.work_in_progress.HbsmsBeam.Score} object
+     */
     public Score scoreGraph(Graph graph) {
         if (graph == null) {
             return Score.negativeInfinity();
@@ -431,23 +488,36 @@ public final class HbsmsBeam implements Hbsms {
         return new Score(this.scorer);
     }
 
+    /**
+     * <p>Getter for the field <code>alpha</code>.</p>
+     *
+     * @return a double
+     */
     public double getAlpha() {
         return this.alpha;
     }
 
+    /** {@inheritDoc} */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
+    /** {@inheritDoc} */
     public void setBeamWidth(int beamWidth) {
         if (beamWidth < 1) throw new IllegalArgumentException();
         this.beamWidth = beamWidth;
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
 

@@ -9,20 +9,24 @@ import edu.cmu.tetrad.graph.GraphTransforms;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BidirectedTP implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "BTP";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Number of true positive bidirected edges";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = GraphTransforms.dagToPag(trueGraph);
@@ -30,6 +34,7 @@ public class BidirectedTP implements Statistic {
         return confusion.getTp();
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

@@ -39,6 +39,7 @@ import java.util.Set;
  * Checks conditional independence against a list of conditional independence facts, manually entered.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndTestIndependenceFacts implements IndependenceTest {
 
@@ -55,17 +56,15 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         this.facts = facts;
     }
 
-    /**
-     * @throws UnsupportedOperationException Not implemented.
-     */
+    /** {@inheritDoc} */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Checks independence by looking up facts in the list of facts supplied in the constructor.
+     * {@inheritDoc}
      *
-     * @return the independence result.
+     * Checks independence by looking up facts in the list of facts supplied in the constructor.
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> __z) {
@@ -109,10 +108,9 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     /**
-     * Returns the node with the given name.
+     * {@inheritDoc}
      *
-     * @param name The name of the node,
-     * @return The node.
+     * Returns the node with the given name.
      */
     public Node getVariable(String name) {
         if (name == null) throw new NullPointerException();
@@ -128,23 +126,22 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         return null;
     }
 
-    /**
-     * @throws UnsupportedOperationException Method not implemented.
-     */
+    /** {@inheritDoc} */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Method not implmeented.");
     }
 
     /**
+     * <p>getAlpha.</p>
+     *
      * @throws java.lang.UnsupportedOperationException Method not implemented.
+     * @return a double
      */
     public double getAlpha() {
         throw new java.lang.UnsupportedOperationException("Method not implemented");
     }
 
-    /**
-     * @throws java.lang.UnsupportedOperationException Method not implemented.
-     */
+    /** {@inheritDoc} */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
@@ -168,9 +165,9 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     /**
-     * Sets whether verbose output is to be printed.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets whether verbose output is to be printed.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

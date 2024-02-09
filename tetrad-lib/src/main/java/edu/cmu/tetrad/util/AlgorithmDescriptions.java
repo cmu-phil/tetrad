@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
  *
  * @author Zhou Yuan zhy19@pitt.edu
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class AlgorithmDescriptions {
 
@@ -66,6 +67,7 @@ public class AlgorithmDescriptions {
 
     /**
      * Gets the instance of this class.
+     *
      * @return instance of this class
      */
     public static AlgorithmDescriptions getInstance() {
@@ -74,6 +76,7 @@ public class AlgorithmDescriptions {
 
     /**
      * Gets the description of the algorithm.
+     *
      * @param shortName short name of the algorithm
      * @return description of the algorithm
      */

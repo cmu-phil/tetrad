@@ -60,6 +60,7 @@ import java.util.Set;
  * @see GFci
  * @see Knowledge
  * @see SvarFci
+ * @version $Id: $Id
  */
 public final class SvarGfci implements IGraphSearch {
     // The logger to use.

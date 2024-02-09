@@ -33,12 +33,16 @@ import edu.cmu.tetradapp.model.PcRunner;
  * Add description
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class RemoveMissingValueCasesWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
      * Constructs the missing value cases wrapper.
+     *
+     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveMissingValueCasesWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
@@ -61,6 +65,7 @@ public class RemoveMissingValueCasesWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

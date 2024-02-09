@@ -64,6 +64,7 @@ import java.util.Set;
  * @see SessionListener
  * @see SessionAdapter
  * @see SessionEvent
+ * @version $Id: $Id
  */
 public final class Session implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -103,6 +104,8 @@ public final class Session implements TetradSerializable {
 
     /**
      * Constructs a new session with the given name. (The name cannot be null.)
+     *
+     * @param name a {@link java.lang.String} object
      */
     public Session(String name) {
         setName(name);
@@ -110,6 +113,8 @@ public final class Session implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.session.Session} object
      */
     public static Session serializableInstance() {
         return new Session("X");
@@ -119,6 +124,8 @@ public final class Session implements TetradSerializable {
 
     /**
      * Gets the name.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String getName() {
         return this.name;
@@ -126,6 +133,8 @@ public final class Session implements TetradSerializable {
 
     /**
      * Sets the name.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public void setName(String name) {
         if (name == null) {
@@ -139,13 +148,14 @@ public final class Session implements TetradSerializable {
      * <p>Adds the given node to the session, provided the node is in a freshly
      * created state.&gt; 0
      *
-     * @throws NullPointerException     if the node is null.
-     * @throws IllegalArgumentException if the node is not in a freshly created state. There are two ways to put a
+     * @throws java.lang.NullPointerException     if the node is null.
+     * @throws java.lang.IllegalArgumentException if the node is not in a freshly created state. There are two ways to put a
      *                                  SessionNode into a freshly created state. One is to freshly create it, using one
      *                                  of the constructors. The other was is to call the <code>reset</code> method on
      *                                  the SessionNode.
      * @see edu.cmu.tetrad.session.SessionNode#isFreshlyCreated
      * @see edu.cmu.tetrad.session.SessionNode#resetToFreshlyCreated
+     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void addNode(SessionNode node) {
         if (node == null) {
@@ -170,6 +180,8 @@ public final class Session implements TetradSerializable {
      * the list, the parent is removed, the node's model is destroyed, and any models downstream are destroyed as well.
      * Any children not in the list are removed. Also, any listeners that are not SessionNodes are removed from each
      * node.
+     *
+     * @param nodes a {@link java.util.List} object
      */
     public void addNodeList(List<SessionNode> nodes) {
 
@@ -213,7 +225,7 @@ public final class Session implements TetradSerializable {
      * node might have to other objects.&gt; 0
      *
      * @param node the SessionNode to be removed.
-     * @throws IllegalArgumentException if the specified node is not in the session.
+     * @throws java.lang.IllegalArgumentException if the specified node is not in the session.
      * @see edu.cmu.tetrad.session.SessionNode#resetToFreshlyCreated
      */
     public void removeNode(SessionNode node) {
@@ -229,6 +241,8 @@ public final class Session implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>nodes</code>.</p>
+     *
      * @return the getModel set of session nodes.
      */
     public Set<SessionNode> getNodes() {
@@ -248,12 +262,20 @@ public final class Session implements TetradSerializable {
         }
     }
 
+    /**
+     * <p>contains.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return a boolean
+     */
     public boolean contains(SessionNode node) {
         return this.nodes.contains(node);
     }
 
     /**
      * Adds a session listener.
+     *
+     * @param l a {@link edu.cmu.tetrad.session.SessionListener} object
      */
     public void addSessionListener(SessionListener l) {
         getSessionSupport().addSessionListener(l);
@@ -261,6 +283,8 @@ public final class Session implements TetradSerializable {
 
     /**
      * Removes a session listener.
+     *
+     * @param l a {@link edu.cmu.tetrad.session.SessionListener} object
      */
     public void removeSessionListener(SessionListener l) {
         getSessionSupport().removeSessionListener(l);
@@ -313,24 +337,49 @@ public final class Session implements TetradSerializable {
         return false;
     }
 
+    /**
+     * <p>isSessionChanged.</p>
+     *
+     * @return a boolean
+     */
     public boolean isSessionChanged() {
         return this.sessionChanged;
     }
 
+    /**
+     * <p>Setter for the field <code>sessionChanged</code>.</p>
+     *
+     * @param sessionChanged a boolean
+     */
     public void setSessionChanged(boolean sessionChanged) {
         this.sessionChanged = sessionChanged;
     }
 
+    /**
+     * <p>isNewSession.</p>
+     *
+     * @return a boolean
+     */
     public boolean isNewSession() {
         return this.newSession;
     }
 
+    /**
+     * <p>Setter for the field <code>newSession</code>.</p>
+     *
+     * @param newSession a boolean
+     */
     public void setNewSession(boolean newSession) {
         this.newSession = newSession;
     }
 
     //=========================== MEMBER CLASSES =========================//
 
+    /**
+     * <p>isEmpty.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEmpty() {
         return this.nodes.isEmpty();
     }

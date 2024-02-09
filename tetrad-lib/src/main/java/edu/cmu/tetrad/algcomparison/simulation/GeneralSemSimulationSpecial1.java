@@ -21,6 +21,7 @@ import java.util.*;
  *
  * @author ekummerfeld@gmail.com
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GeneralSemSimulationSpecial1 implements Simulation {
     private static final long serialVersionUID = 23L;
@@ -28,10 +29,16 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     private List<Graph> graphs = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
 
+    /**
+     * <p>Constructor for GeneralSemSimulationSpecial1.</p>
+     *
+     * @param randomGraph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public GeneralSemSimulationSpecial1(RandomGraph randomGraph) {
         this.randomGraph = randomGraph;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -69,30 +76,40 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
         return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return "Nonlinear, non-Gaussian SEM simulation using " + this.randomGraph.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();

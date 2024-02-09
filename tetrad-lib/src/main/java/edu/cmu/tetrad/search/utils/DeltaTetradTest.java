@@ -34,6 +34,7 @@ import java.util.*;
  * Analysis.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DeltaTetradTest {
     private final int N;
@@ -116,6 +117,7 @@ public class DeltaTetradTest {
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
      *
      * @param tetrads The tetrads for which a chi-square is needed.
+     * @return a double
      */
     public double calcChiSquare(Tetrad... tetrads) {
         this.df = tetrads.length;
@@ -223,6 +225,8 @@ public class DeltaTetradTest {
     }
 
     /**
+     * <p>getPValue.</p>
+     *
      * @return the p value for the most recent test.
      */
     public double getPValue() {

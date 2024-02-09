@@ -23,6 +23,7 @@ import java.util.Set;
  * Significance of these models is returned.</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ClusterSignificance {
     // The variables in the model.

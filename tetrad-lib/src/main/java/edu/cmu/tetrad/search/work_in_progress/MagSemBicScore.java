@@ -42,6 +42,7 @@ import java.util.*;
  * scores indicate independence.</p>
  *
  * @author Bryan Andrews
+ * @version $Id: $Id
  */
 @Experimental
 public class MagSemBicScore implements Score {
@@ -71,6 +72,7 @@ public class MagSemBicScore implements Score {
      * Constructor.
      *
      * @param dataSet The continuous dataset to analyze.
+     * @param precomputeCovariances a boolean
      */
     public MagSemBicScore(DataSet dataSet, boolean precomputeCovariances) {
         if (dataSet == null) {
@@ -133,11 +135,9 @@ public class MagSemBicScore implements Score {
     }
 
     /**
-     * Return the BIC score for a node given its parents.
+     * {@inheritDoc}
      *
-     * @param i  The index of the node.
-     * @param js The indices of the node's parents.
-     * @return The BIC score.
+     * Return the BIC score for a node given its parents.
      */
     @Override
     public double localScore(int i, int... js) {
@@ -198,6 +198,8 @@ public class MagSemBicScore implements Score {
     }
 
     /**
+     * <p>getPenaltyDiscount.</p>
+     *
      * @return The penalty discount, a multiplier on the penalty term of BIC.
      */
     public double getPenaltyDiscount() {
@@ -213,18 +215,16 @@ public class MagSemBicScore implements Score {
         this.score.setPenaltyDiscount(penaltyDiscount);
     }
 
-    /**
-     * @return localScore(y | z, x) - localScore(y | z).
-     */
+    /** {@inheritDoc} */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
     /**
-     * Returns the sample size.
+     * {@inheritDoc}
      *
-     * @return This size.
+     * Returns the sample size.
      */
     @Override
     public int getSampleSize() {
@@ -232,9 +232,9 @@ public class MagSemBicScore implements Score {
     }
 
     /**
-     * Returns the list of variables.
+     * {@inheritDoc}
      *
-     * @return This list.
+     * Returns the list of variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -242,10 +242,9 @@ public class MagSemBicScore implements Score {
     }
 
     /**
-     * Returns a judgment for FGES as to whether an edges with this bump (for this score) counts as an effect edge.
+     * {@inheritDoc}
      *
-     * @param bump Ths bump.
-     * @return The judgment.
+     * Returns a judgment for FGES as to whether an edges with this bump (for this score) counts as an effect edge.
      * @see Fges
      */
     @Override
@@ -254,9 +253,9 @@ public class MagSemBicScore implements Score {
     }
 
     /**
-     * Returns a judgment of the max degree needed for this score.
+     * {@inheritDoc}
      *
-     * @return This max.
+     * Returns a judgment of the max degree needed for this score.
      * @see Fges
      */
     @Override
@@ -316,6 +315,11 @@ public class MagSemBicScore implements Score {
         }
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "MAG(" + this.score + ")";
     }

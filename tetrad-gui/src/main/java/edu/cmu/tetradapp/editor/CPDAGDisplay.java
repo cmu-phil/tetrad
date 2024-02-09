@@ -44,10 +44,16 @@ import java.util.List;
  * with correlation information over the variables.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CPDAGDisplay extends JPanel implements GraphEditable {
     private GraphWorkbench workbench;
 
+    /**
+     * <p>Constructor for CPDAGDisplay.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public CPDAGDisplay(Graph graph) {
         List<Graph> dags = GraphTransforms.generateCpdagDags(graph, false);
 
@@ -144,6 +150,11 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
         add(b, BorderLayout.CENTER);
     }
 
+    /**
+     * <p>getSelectedModelComponents.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List getSelectedModelComponents() {
         Component[] components = getWorkbench().getComponents();
         List<TetradSerializable> selectedModelComponents =
@@ -162,6 +173,7 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
         return selectedModelComponents;
     }
 
+    /** {@inheritDoc} */
     public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
@@ -177,14 +189,25 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
         getWorkbench().selectConnectingEdges();
     }
 
+    /**
+     * <p>Getter for the field <code>workbench</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public GraphWorkbench getWorkbench() {
         return this.workbench;
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.workbench.getGraph();
     }
 
+    /** {@inheritDoc} */
     public void setGraph(Graph graph) {
         this.workbench.setGraph(graph);
     }

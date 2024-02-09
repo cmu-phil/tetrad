@@ -77,6 +77,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Boss
  * @see Sp
  * @see Knowledge
+ * @version $Id: $Id
  */
 public final class FgesMb implements DagScorer {
     //===internal===//
@@ -154,6 +155,11 @@ public final class FgesMb implements DagScorer {
         this.graph = new EdgeListGraph(getVariables());
     }
 
+    /**
+     * <p>Setter for the field <code>trimmingStyle</code>.</p>
+     *
+     * @param trimmingStyle a int
+     */
     public void setTrimmingStyle(int trimmingStyle) {
         this.trimmingStyle = trimmingStyle;
     }
@@ -164,6 +170,7 @@ public final class FgesMb implements DagScorer {
      * deleting edges till a minimum is achieved.
      *
      * @return the resulting Pattern.
+     * @param targets a {@link java.util.List} object
      */
     public Graph search(List<Node> targets) {
         if (targets == null || targets.isEmpty()) {
@@ -292,9 +299,7 @@ public final class FgesMb implements DagScorer {
         return elapsedTime;
     }
 
-    /**
-     * @return the score of the given DAG, up to a constant.
-     */
+    /** {@inheritDoc} */
     public double scoreDag(Graph dag) {
         return scoreDag(dag, false);
     }
@@ -320,6 +325,8 @@ public final class FgesMb implements DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>out</code>.</p>
+     *
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
@@ -1072,14 +1079,29 @@ public final class FgesMb implements DagScorer {
         return variables;
     }
 
+    /**
+     * <p>Setter for the field <code>parallelized</code>.</p>
+     *
+     * @param parallelized a boolean
+     */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
     }
 
+    /**
+     * <p>Setter for the field <code>initialGraph</code>.</p>
+     *
+     * @param initialGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setInitialGraph(Graph initialGraph) {
         this.initialGraph = initialGraph;
     }
 
+    /**
+     * <p>Setter for the field <code>numExpansions</code>.</p>
+     *
+     * @param numExpansions a int
+     */
     public void setNumExpansions(int numExpansions) {
         if (numExpansions < 1) throw new IllegalArgumentException("Number of expansions must be at least 1.");
         this.numExpansions = numExpansions;

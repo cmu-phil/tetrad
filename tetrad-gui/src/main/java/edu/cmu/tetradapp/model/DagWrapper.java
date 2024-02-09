@@ -41,6 +41,7 @@ import java.util.Map;
  * Holds a tetrad dag with all the constructors necessary for it to serve as a model for the tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProducer,
         SimulationParamsSource, MultipleGraphSource {
@@ -64,6 +65,11 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
     private Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
+    /**
+     * <p>Constructor for DagWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Dag} object
+     */
     public DagWrapper(Dag graph) {
         if (graph == null) {
             throw new NullPointerException("Tetrad dag must not be null.");
@@ -74,6 +80,11 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
     }
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
+    /**
+     * <p>Constructor for DagWrapper.</p>
+     *
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public DagWrapper(Parameters params) {
         this.parameters = params;
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
@@ -85,6 +96,12 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         log();
     }
 
+    /**
+     * <p>Constructor for DagWrapper.</p>
+     *
+     * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public DagWrapper(GraphSource graphSource, Parameters parameters) {
         this.parameters = new Parameters(parameters);
 
@@ -107,10 +124,20 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         log();
     }
 
+    /**
+     * <p>Constructor for DagWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.AbstractAlgorithmRunner} object
+     */
     public DagWrapper(AbstractAlgorithmRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
+    /**
+     * <p>Constructor for DagWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     */
     public DagWrapper(DataWrapper wrapper) {
         if (wrapper instanceof Simulation simulation) {
             List<Graph> graphs = simulation.getGraphs();
@@ -131,35 +158,75 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         LayoutUtil.defaultLayout(getGraph());
     }
 
+    /**
+     * <p>Constructor for DagWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     */
     public DagWrapper(BayesPmWrapper wrapper) {
         this(new Dag(wrapper.getBayesPm().getDag()));
     }
 
+    /**
+     * <p>Constructor for DagWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
+     */
     public DagWrapper(BayesImWrapper wrapper) {
         this(new Dag(wrapper.getBayesIm().getBayesPm().getDag()));
     }
 
+    /**
+     * <p>Constructor for DagWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
+     */
     public DagWrapper(BayesEstimatorWrapper wrapper) {
         this(new Dag(wrapper.getEstimatedBayesIm().getBayesPm().getDag()));
     }
 
+    /**
+     * <p>Constructor for DagWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper} object
+     */
     public DagWrapper(CptInvariantUpdaterWrapper wrapper) {
         this(new Dag(wrapper.getBayesUpdater().getManipulatedGraph()));
     }
 
+    /**
+     * <p>Constructor for DagWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
+     */
     public DagWrapper(SemPmWrapper wrapper) {
         this(new Dag(wrapper.getSemPm().getGraph()));
     }
 
+    /**
+     * <p>Constructor for DagWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     */
     public DagWrapper(SemImWrapper wrapper) {
         this(new Dag(wrapper.getSemIm().getSemPm().getGraph()));
     }
 
+    /**
+     * <p>Constructor for DagWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     */
     public DagWrapper(SemEstimatorWrapper wrapper) {
         this(new Dag(wrapper.getSemEstimator().getEstimatedSem().getSemPm()
                 .getGraph()));
     }
 
+    /**
+     * <p>Constructor for DagWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.RegressionRunner} object
+     */
     public DagWrapper(RegressionRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
@@ -168,16 +235,27 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.DagWrapper} object
      */
     public static DagWrapper serializableInstance() {
         return new DagWrapper(Dag.serializableInstance());
     }
 
     //================================PUBLIC METHODS=======================//
+    /**
+     * <p>getDag.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getDag() {
         return this.dags.get(getModelIndex());
     }
 
+    /**
+     * <p>setDag.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Dag} object
+     */
     public void setDag(Dag graph) {
         this.dags = new ArrayList<>();
         this.dags.add(graph);
@@ -203,44 +281,82 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         s.defaultReadObject();
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return getDag();
     }
 
+    /**
+     * <p>setGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setGraph(Graph graph) {
         this.dags = new ArrayList<>();
         this.dags.add(new Dag(graph));
     }
 
+    /** {@inheritDoc} */
     @Override
     public IndependenceTest getIndependenceTest() {
         return new MsepTest(getGraph());
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getGraph().getNodeNames();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getGraph().getNodes();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, String> getParamSettings() {
         Map<String, String> paramSettings = new HashMap<>();
@@ -249,36 +365,68 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         return paramSettings;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, String> getAllParamSettings() {
         return this.allParamSettings;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamSettings = paramSettings;
     }
 
+    /**
+     * <p>Getter for the field <code>parameters</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParameters() {
         return this.parameters;
     }
 
+    /**
+     * <p>Getter for the field <code>numModels</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumModels() {
         return this.numModels;
     }
 
+    /**
+     * <p>Getter for the field <code>modelIndex</code>.</p>
+     *
+     * @return a int
+     */
     public int getModelIndex() {
         return this.modelIndex;
     }
 
+    /**
+     * <p>Setter for the field <code>modelIndex</code>.</p>
+     *
+     * @param modelIndex a int
+     */
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
+    /**
+     * <p>Getter for the field <code>modelSourceName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getModelSourceName() {
         return this.modelSourceName;
     }
 
+    /**
+     * <p>getGraphs.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Graph> getGraphs() {
         return new ArrayList<>(this.dags);
     }

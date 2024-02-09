@@ -35,6 +35,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Fges
  * @see Bes
  * @see Boss
+ * @version $Id: $Id
  */
 public class BesPermutation {
     // The variables.

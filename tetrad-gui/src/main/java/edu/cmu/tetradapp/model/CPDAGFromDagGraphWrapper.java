@@ -30,17 +30,31 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
+ * <p>CPDAGFromDagGraphWrapper class.</p>
+ *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 
 
+    /**
+     * <p>Constructor for CPDAGFromDagGraphWrapper.</p>
+     *
+     * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public CPDAGFromDagGraphWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
+    /**
+     * <p>Constructor for CPDAGFromDagGraphWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public CPDAGFromDagGraphWrapper(Graph graph) {
         super(new EdgeListGraph());
 
@@ -58,6 +72,11 @@ public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
         TetradLogger.getInstance().log("CPDAG", CPDAG + "");
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.CPDAGFromDagGraphWrapper} object
+     */
     public static CPDAGFromDagGraphWrapper serializableInstance() {
         return new CPDAGFromDagGraphWrapper(EdgeListGraph.serializableInstance());
     }
@@ -69,6 +88,7 @@ public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
         return GraphTransforms.cpdagForDag(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean allowRandomGraph() {
         return false;

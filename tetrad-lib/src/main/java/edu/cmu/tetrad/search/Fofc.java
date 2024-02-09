@@ -55,6 +55,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author josephramsey
  * @see Ftfc
  * @see Bpc
+ * @version $Id: $Id
  */
 public class Fofc {
 
@@ -175,11 +176,18 @@ public class Fofc {
 
     /**
      * The clusters that are output by the algorithm from the last call to search().
+     *
+     * @return a {@link java.util.List} object
      */
     public List<List<Node>> getClusters() {
         return this.clusters;
     }
 
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbose a boolean
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

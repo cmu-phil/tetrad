@@ -36,6 +36,7 @@ import java.util.Arrays;
  *
  * @author josephramsey
  * @author Frank Wimberly based on similar class by Ramsey
+ * @version $Id: $Id
  */
 public class MissingDataInjectorWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
@@ -47,6 +48,12 @@ public class MissingDataInjectorWrapper extends DataWrapper {
 
     //============================CONSTRUCTORS=============================//
 
+    /**
+     * <p>Constructor for MissingDataInjectorWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public MissingDataInjectorWrapper(DataWrapper wrapper,
                                       Parameters params) {
         DataSet dataSet =
@@ -71,6 +78,7 @@ public class MissingDataInjectorWrapper extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -78,6 +86,11 @@ public class MissingDataInjectorWrapper extends DataWrapper {
 
     //==========================PUBLIC METHODS============================//
 
+    /**
+     * <p>getOutputDataset.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getOutputDataset() {
         return this.outputDataSet;
     }

@@ -33,15 +33,23 @@ import java.io.ObjectStreamClass;
  *
  * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class DecompressibleInputStream extends ObjectInputStream {
 
 //    private static final Logger LOGGER = LoggerFactory.getLogger(DecompressibleInputStream.class);
 
+    /**
+     * <p>Constructor for DecompressibleInputStream.</p>
+     *
+     * @param in a {@link java.io.InputStream} object
+     * @throws java.io.IOException if any.
+     */
     public DecompressibleInputStream(InputStream in) throws IOException {
         super(in);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
         ObjectStreamClass resultClassDescriptor = super.readClassDescriptor(); // initially streams descriptor

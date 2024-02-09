@@ -32,8 +32,8 @@ import org.apache.commons.math3.util.FastMath;
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul
  * Saavedra</a> (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * @version $Id: $Id
  */
-
 public class Biolingua {
     private static final float ALMOST_ZERO = (float) 0.00001;
     private static final float SIGNIF_LEVEL = (float) 0.05;

@@ -61,6 +61,7 @@ import java.util.concurrent.ForkJoinPool;
  *
  * @author josephramsey
  * @author danielmalinsky
+ * @version $Id: $Id
  */
 public class Comparison {
 
@@ -80,10 +81,23 @@ public class Comparison {
     private boolean savePags = false;
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
 
+    /**
+     * <p>Setter for the field <code>parallelized</code>.</p>
+     *
+     * @param parallelized a boolean
+     */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
     }
 
+    /**
+     * <p>compareFromFiles.</p>
+     *
+     * @param filePath a {@link java.lang.String} object
+     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public void compareFromFiles(String filePath, Algorithms algorithms, Statistics statistics, Parameters parameters) {
         compareFromFiles(filePath, filePath, algorithms, statistics, parameters);
     }
@@ -94,6 +108,8 @@ public class Comparison {
      * @param dataPath    Path to the directory where data and graph files have been saved.
      * @param resultsPath Path to the file where the results should be stored.
      * @param algorithms  The list of algorithms to be compared.
+     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters) {
@@ -132,12 +148,31 @@ public class Comparison {
         compareFromSimulations(resultsPath, simulations, algorithms, statistics, parameters);
     }
 
+    /**
+     * <p>generateReportFromExternalAlgorithms.</p>
+     *
+     * @param dataPath a {@link java.lang.String} object
+     * @param resultsPath a {@link java.lang.String} object
+     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters) {
         generateReportFromExternalAlgorithms(dataPath, resultsPath, "Comparison.txt", algorithms,
                 statistics, parameters);
     }
 
+    /**
+     * <p>generateReportFromExternalAlgorithms.</p>
+     *
+     * @param dataPath a {@link java.lang.String} object
+     * @param resultsPath a {@link java.lang.String} object
+     * @param outputFileName a {@link java.lang.String} object
+     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, String outputFileName, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters) {
 
@@ -178,6 +213,15 @@ public class Comparison {
         compareFromSimulations(this.resultsPath, simulations, outputFileName, algorithms, statistics, parameters);
     }
 
+    /**
+     * <p>compareFromSimulations.</p>
+     *
+     * @param resultsPath a {@link java.lang.String} object
+     * @param simulations a {@link edu.cmu.tetrad.algcomparison.simulation.Simulations} object
+     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters) {
         compareFromSimulations(resultsPath, simulations, "Comparison.txt", algorithms, statistics, parameters);
@@ -190,6 +234,8 @@ public class Comparison {
      * @param simulations The list of simulationWrapper that is used to generate graphs and data for the comparison.
      * @param algorithms  The list of algorithms to be compared.
      * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
+     * @param outputFileName a {@link java.lang.String} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters) {
@@ -654,7 +700,9 @@ public class Comparison {
     }
 
     /**
+     * <p>configuration.</p>
      *
+     * @param path a {@link java.lang.String} object
      */
     public void configuration(String path) {
         try {
@@ -925,23 +973,45 @@ public class Comparison {
         return allStats;
     }
 
+    /**
+     * <p>isShowSimulationIndices.</p>
+     *
+     * @return a boolean
+     */
     public boolean isShowSimulationIndices() {
         return this.showSimulationIndices;
     }
 
+    /**
+     * <p>Setter for the field <code>showSimulationIndices</code>.</p>
+     *
+     * @param showSimulationIndices a boolean
+     */
     public void setShowSimulationIndices(boolean showSimulationIndices) {
         this.showSimulationIndices = showSimulationIndices;
     }
 
+    /**
+     * <p>isShowAlgorithmIndices.</p>
+     *
+     * @return a boolean
+     */
     public boolean isShowAlgorithmIndices() {
         return this.showAlgorithmIndices;
     }
 
+    /**
+     * <p>Setter for the field <code>showAlgorithmIndices</code>.</p>
+     *
+     * @param showAlgorithmIndices a boolean
+     */
     public void setShowAlgorithmIndices(boolean showAlgorithmIndices) {
         this.showAlgorithmIndices = showAlgorithmIndices;
     }
 
     /**
+     * <p>isShowUtilities.</p>
+     *
      * @return True iff a column of utilities marked "W" should be shown in the output.
      */
     public boolean isShowUtilities() {
@@ -949,6 +1019,8 @@ public class Comparison {
     }
 
     /**
+     * <p>Setter for the field <code>showUtilities</code>.</p>
+     *
      * @param showUtilities True iff a column of utilities marked "W" should be shown in the output.
      */
     public void setShowUtilities(boolean showUtilities) {
@@ -956,6 +1028,8 @@ public class Comparison {
     }
 
     /**
+     * <p>isSortByUtility.</p>
+     *
      * @return True iff the output should be sorted by utility.
      */
     public boolean isSortByUtility() {
@@ -963,6 +1037,8 @@ public class Comparison {
     }
 
     /**
+     * <p>Setter for the field <code>sortByUtility</code>.</p>
+     *
      * @param sortByUtility true iff the output should be sorted by utility.
      */
     public void setSortByUtility(boolean sortByUtility) {
@@ -970,6 +1046,8 @@ public class Comparison {
     }
 
     /**
+     * <p>isSaveCPDAGs.</p>
+     *
      * @return True if CPDAGs should be saved out.
      */
     public boolean isSaveCPDAGs() {
@@ -977,6 +1055,8 @@ public class Comparison {
     }
 
     /**
+     * <p>Setter for the field <code>saveCPDAGs</code>.</p>
+     *
      * @param saveCPDAGs True if CPDAGs should be saved out.
      */
     public void setSaveCPDAGs(boolean saveCPDAGs) {
@@ -984,28 +1064,44 @@ public class Comparison {
     }
 
     /**
+     * <p>isSavePags.</p>
+     *
      * @return True if CPDAGs should be saved out.
      */
     public boolean isSavePags() {
         return this.savePags;
     }
 
+    /**
+     * <p>Setter for the field <code>savePags</code>.</p>
+     *
+     * @param savePags a boolean
+     */
     public void setSavePags(boolean savePags) {
         this.savePags = savePags;
     }
 
     /**
+     * <p>isSaveData.</p>
+     *
      * @return True if CPDAGs should be saved out.
      */
     public boolean isSaveData() {
         return saveData;
     }
 
+    /**
+     * <p>Setter for the field <code>saveData</code>.</p>
+     *
+     * @param saveData a boolean
+     */
     public void setSaveData(boolean saveData) {
         this.saveData = saveData;
     }
 
     /**
+     * <p>isTabDelimitedTables.</p>
+     *
      * @return True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public boolean isTabDelimitedTables() {
@@ -1013,6 +1109,8 @@ public class Comparison {
     }
 
     /**
+     * <p>Setter for the field <code>tabDelimitedTables</code>.</p>
+     *
      * @param tabDelimitedTables True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public void setTabDelimitedTables(boolean tabDelimitedTables) {
@@ -1020,6 +1118,8 @@ public class Comparison {
     }
 
     /**
+     * <p>isSaveGraphs.</p>
+     *
      * @return True if all graphs should be saved to files.
      */
     public boolean isSaveGraphs() {
@@ -1027,6 +1127,8 @@ public class Comparison {
     }
 
     /**
+     * <p>Setter for the field <code>saveGraphs</code>.</p>
+     *
      * @param saveGraphs True if all graphs should be saved to files.
      */
     public void setSaveGraphs(boolean saveGraphs) {
@@ -1035,6 +1137,8 @@ public class Comparison {
 
     /**
      * The type of graph the results are compared to.
+     *
+     * @return a {@link edu.cmu.tetrad.algcomparison.Comparison.ComparisonGraph} object
      */
     public ComparisonGraph getComparisonGraph() {
         return this.comparisonGraph;
@@ -1042,6 +1146,8 @@ public class Comparison {
 
     /**
      * The type of graph the results are compared to.
+     *
+     * @param comparisonGraph a {@link edu.cmu.tetrad.algcomparison.Comparison.ComparisonGraph} object
      */
     public void setComparisonGraph(ComparisonGraph comparisonGraph) {
         if (comparisonGraph == null) {

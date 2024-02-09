@@ -9,20 +9,24 @@ import java.util.List;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DefiniteDirectedPathPrecision implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "DDPP";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Proportion of DP(X, Y) in est for which DD(X, Y) in CPDAG(true)";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0, fp = 0;
@@ -54,6 +58,7 @@ public class DefiniteDirectedPathPrecision implements Statistic {
         return tp / (double) (tp + fp);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

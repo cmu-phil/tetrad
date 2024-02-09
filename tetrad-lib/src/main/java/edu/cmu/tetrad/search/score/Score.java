@@ -30,6 +30,7 @@ import java.util.List;
  * JPype.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface Score {
 
@@ -124,6 +125,7 @@ public interface Score {
 
     /**
      * Returns the variable with the given name.
+     *
      * @param targetName The name.
      * @return The variable.
      */

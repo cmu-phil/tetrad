@@ -29,6 +29,7 @@ import java.nio.file.Path;
  * Dec 18, 2018 2:05:46 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class MetadataFileReader implements MetadataReader {
 
@@ -47,10 +48,9 @@ public class MetadataFileReader implements MetadataReader {
     }
 
     /**
-     * Reads in the metadata.
+     * {@inheritDoc}
      *
-     * @return the metadata.
-     * @throws IOException if an I/O error occurs.
+     * Reads in the metadata.
      */
     @Override
     public Metadata read() throws IOException {

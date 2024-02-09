@@ -11,6 +11,7 @@ import java.util.Set;
  * A confusion matrix for bidireced edges--i.e. TP, FP, TN, FN for counts of bidirected edges.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BidirectedConfusion {
     private final int tn;

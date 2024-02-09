@@ -28,12 +28,16 @@ import java.util.List;
  * merely the events that the model supports.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public interface TetradLoggerConfig extends TetradSerializable {
 
 
     /**
      * States whether the event associated with the given id is active, that is whether it should be logged or not.
+     *
+     * @param id a {@link java.lang.String} object
+     * @return a boolean
      */
     boolean isEventActive(String id);
 
@@ -48,6 +52,8 @@ public interface TetradLoggerConfig extends TetradSerializable {
 
 
     /**
+     * <p>getSupportedEvents.</p>
+     *
      * @return - events
      */
     List<Event> getSupportedEvents();
@@ -55,15 +61,22 @@ public interface TetradLoggerConfig extends TetradSerializable {
 
     /**
      * Sets whether the event associated with the given id is active or not.
+     *
+     * @param id a {@link java.lang.String} object
+     * @param active a boolean
      */
     void setEventActive(String id, boolean active);
 
     /**
+     * <p>copy.</p>
+     *
      * @return a copy of this configuration.
      */
     TetradLoggerConfig copy();
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation.
      */
     String toString();

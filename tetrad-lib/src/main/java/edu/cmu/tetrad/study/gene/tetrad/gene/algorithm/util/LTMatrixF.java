@@ -28,12 +28,16 @@ import java.io.IOException;
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * @version $Id: $Id
  */
 public class LTMatrixF extends BasicLTMatrix {
     protected float[] A;
 
     /**
      * Creates a lower triangular matrix with <code>nrows</code> rows.
+     *
+     * @param mname a {@link java.lang.String} object
+     * @param nrows a int
      */
     public LTMatrixF(String mname, int nrows) {
         super(mname, nrows);
@@ -42,6 +46,9 @@ public class LTMatrixF extends BasicLTMatrix {
     /**
      * Creates a lower triangular matrix reading it from file
      * <code>fname</code>.
+     *
+     * @param fname a {@link java.lang.String} object
+     * @throws java.io.IOException if any.
      */
     public LTMatrixF(String fname) throws IOException {
         super(fname);
@@ -55,6 +62,8 @@ public class LTMatrixF extends BasicLTMatrix {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Casts double value x to float and assigns it to element (r,c) This method checks that x can be converted to a
      * float without causing overflow.
      */
@@ -65,6 +74,10 @@ public class LTMatrixF extends BasicLTMatrix {
     /**
      * Assigns double x to matrix element (r, c).  This method checks that x can be converted to a float without causing
      * overflow.
+     *
+     * @param r a int
+     * @param c a int
+     * @param x a double
      */
     public void setValue(int r, int c, double x) {
         if ((x < BasicMatrix.MIN_FLOAT) || (x > BasicMatrix.MAX_FLOAT)) {
@@ -76,6 +89,10 @@ public class LTMatrixF extends BasicLTMatrix {
 
     /**
      * Assigns float x to matrix element (r, c)
+     *
+     * @param r a int
+     * @param c a int
+     * @param x a float
      */
     public void setValue(int r, int c, float x) {
         if (r < c) {
@@ -88,6 +105,8 @@ public class LTMatrixF extends BasicLTMatrix {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns element (r,c) as a double
      */
     public double getDoubleValue(int r, int c) {
@@ -99,6 +118,10 @@ public class LTMatrixF extends BasicLTMatrix {
 
     /**
      * Returns element (r,c)
+     *
+     * @param r a int
+     * @param c a int
+     * @return a float
      */
     public float getValue(int r, int c) {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {

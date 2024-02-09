@@ -30,6 +30,7 @@ import java.util.List;
  * Jan 21, 2020 11:03:09 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     private static final long serialVersionUID = 23L;
@@ -65,10 +66,21 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
 //    private BayesImProbs bayesImProbs;
     private JunctionTreeAlgorithm jta;
 
+    /**
+     * <p>Constructor for JunctionTreeUpdater.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public JunctionTreeUpdater(BayesIm bayesIm) {
         this(bayesIm, Evidence.tautology(bayesIm));
     }
 
+    /**
+     * <p>Constructor for JunctionTreeUpdater.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
+     */
     public JunctionTreeUpdater(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -78,21 +90,25 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         setEvidence(evidence);
     }
 
+    /** {@inheritDoc} */
     @Override
     public BayesIm getManipulatedBayesIm() {
         return this.manipulatedBayesIm;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getManipulatedGraph() {
         return getManipulatedBayesIm().getDag();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Evidence getEvidence() {
         return new Evidence(this.evidence);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setEvidence(Evidence evidence) {
         if (evidence == null) {
@@ -119,6 +135,7 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         this.jta = new JunctionTreeAlgorithm(this.updatedBayesIm);
     }
 
+    /** {@inheritDoc} */
     @Override
     public BayesIm getUpdatedBayesIm() {
         if (this.updatedBayesIm == null) {
@@ -128,6 +145,7 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         return this.updatedBayesIm;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getMarginal(int variable, int category) {
         Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
@@ -142,11 +160,13 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isJointMarginalSupported() {
         return true;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getJointMarginal(int[] variables, int[] values) {
         if (variables.length != values.length) {
@@ -173,11 +193,13 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public BayesIm getBayesIm() {
         return this.bayesIm;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double[] calculatePriorMarginals(int nodeIndex) {
         Evidence evidence = getEvidence();
@@ -194,6 +216,7 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double[] calculateUpdatedMarginals(int nodeIndex) {
         double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
@@ -205,6 +228,7 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return "Junction tree updater, evidence = " + this.evidence;

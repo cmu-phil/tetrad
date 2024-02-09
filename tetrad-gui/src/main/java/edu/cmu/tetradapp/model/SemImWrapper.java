@@ -40,6 +40,7 @@ import java.util.List;
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemImWrapper implements SessionModel {
 
@@ -56,10 +57,20 @@ public class SemImWrapper implements SessionModel {
     private String modelSourceName;
 
     //============================CONSTRUCTORS==========================//
+    /**
+     * <p>Constructor for SemImWrapper.</p>
+     *
+     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemImWrapper(SemIm semIm) {
         setSemIm(semIm);
     }
 
+    /**
+     * <p>Constructor for SemImWrapper.</p>
+     *
+     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
+     */
     public SemImWrapper(Simulation simulation) {
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
@@ -91,6 +102,12 @@ public class SemImWrapper implements SessionModel {
         this.modelSourceName = simulation.getName();
     }
 
+    /**
+     * <p>Constructor for SemImWrapper.</p>
+     *
+     * @param semPmWrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SemImWrapper(SemPmWrapper semPmWrapper, Parameters params) {
         if (semPmWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
@@ -99,6 +116,13 @@ public class SemImWrapper implements SessionModel {
         setSemIm(new SemIm(semPmWrapper.getSemPms().get(semPmWrapper.getModelIndex()), params));
     }
 
+    /**
+     * <p>Constructor for SemImWrapper.</p>
+     *
+     * @param semPmWrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
+     * @param oldSemImWrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public SemImWrapper(SemPmWrapper semPmWrapper, SemImWrapper oldSemImWrapper,
                         Parameters params) {
         if (semPmWrapper == null) {
@@ -119,6 +143,11 @@ public class SemImWrapper implements SessionModel {
         }
     }
 
+    /**
+     * <p>Constructor for SemImWrapper.</p>
+     *
+     * @param semUpdaterWrapper a {@link edu.cmu.tetradapp.model.SemUpdaterWrapper} object
+     */
     public SemImWrapper(SemUpdaterWrapper semUpdaterWrapper) {
         if (semUpdaterWrapper == null) {
             throw new NullPointerException("SemPmWrapper must not be null.");
@@ -127,6 +156,11 @@ public class SemImWrapper implements SessionModel {
         setSemIm(semUpdaterWrapper.getSemUpdater().getUpdatedSemIm());
     }
 
+    /**
+     * <p>Constructor for SemImWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.PValueImproverWrapper} object
+     */
     public SemImWrapper(PValueImproverWrapper wrapper) {
         SemIm oldSemIm = wrapper.getNewSemIm();
         setSemIm(oldSemIm);
@@ -136,12 +170,18 @@ public class SemImWrapper implements SessionModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
 
     //===========================PUBLIC METHODS=========================//
+    /**
+     * <p>getSemIm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getSemIm() {
         return this.semIms.get(getModelIndex());
     }
@@ -155,14 +195,25 @@ public class SemImWrapper implements SessionModel {
         }
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return getSemIm().getSemPm().getGraph();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
@@ -187,34 +238,74 @@ public class SemImWrapper implements SessionModel {
         s.defaultReadObject();
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getGraph().getNodeNames();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getGraph().getNodes();
     }
 
+    /**
+     * <p>Getter for the field <code>numModels</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumModels() {
         return this.numModels;
     }
 
+    /**
+     * <p>Getter for the field <code>modelIndex</code>.</p>
+     *
+     * @return a int
+     */
     public int getModelIndex() {
         return this.modelIndex;
     }
 
+    /**
+     * <p>Setter for the field <code>modelIndex</code>.</p>
+     *
+     * @param modelIndex a int
+     */
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
+    /**
+     * <p>Getter for the field <code>modelSourceName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getModelSourceName() {
         return this.modelSourceName;
     }

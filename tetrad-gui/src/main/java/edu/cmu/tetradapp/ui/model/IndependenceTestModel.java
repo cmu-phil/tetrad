@@ -28,6 +28,7 @@ import java.io.Serializable;
  * Dec 1, 2017 11:46:06 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class IndependenceTestModel implements Serializable, Comparable<IndependenceTestModel> {
 
@@ -37,30 +38,52 @@ public class IndependenceTestModel implements Serializable, Comparable<Independe
     private final String name;
     private final String description;
 
+    /**
+     * <p>Constructor for IndependenceTestModel.</p>
+     *
+     * @param independenceTest a {@link edu.cmu.tetrad.annotation.AnnotatedClass} object
+     */
     public IndependenceTestModel(AnnotatedClass<TestOfIndependence> independenceTest) {
         this.independenceTest = independenceTest;
         this.name = independenceTest.annotation().name();
         this.description = IndependenceTestDescriptions.getInstance().get(independenceTest.annotation().command());
     }
 
+    /** {@inheritDoc} */
     @Override
     public int compareTo(IndependenceTestModel other) {
         return this.independenceTest.annotation().name().compareTo(other.independenceTest.annotation().name());
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return this.name;
     }
 
+    /**
+     * <p>Getter for the field <code>independenceTest</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.annotation.AnnotatedClass} object
+     */
     public AnnotatedClass<TestOfIndependence> getIndependenceTest() {
         return this.independenceTest;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * <p>Getter for the field <code>description</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return this.description;
     }

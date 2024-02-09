@@ -17,6 +17,7 @@ import java.util.List;
  * methods. Sorted lists of edges violating knowledge are returned.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CheckKnowledge {
 

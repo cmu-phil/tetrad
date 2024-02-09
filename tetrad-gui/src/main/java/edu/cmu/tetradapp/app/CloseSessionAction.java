@@ -33,6 +33,7 @@ import java.awt.event.ActionEvent;
  * Closes the frontmost session of the given desktop.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class CloseSessionAction extends AbstractAction {
 
@@ -44,6 +45,8 @@ public final class CloseSessionAction extends AbstractAction {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Closes the frontmost session of this action's desktop.
      */
     public void actionPerformed(ActionEvent e) {
@@ -82,6 +85,8 @@ public final class CloseSessionAction extends AbstractAction {
 
     /**
      * Prints out a string representation of this object.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return "Close session action.";

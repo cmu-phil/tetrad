@@ -34,12 +34,14 @@ import java.util.*;
  * Immutable.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public final class KnowledgeGroup implements TetradSerializable {
     /**
      * The types of groups (Can an enum be used instead?)
      */
     public static final int REQUIRED = 1;
+    /** Constant <code>FORBIDDEN=2</code> */
     public static final int FORBIDDEN = 2;
     private static final long serialVersionUID = 23L;
     /**
@@ -64,6 +66,8 @@ public final class KnowledgeGroup implements TetradSerializable {
      * Constructs a group given the type.
      *
      * @param type - the type
+     * @param from a {@link java.util.Set} object
+     * @param to a {@link java.util.Set} object
      */
     public KnowledgeGroup(int type, Set<String> from, Set<String> to) {
         if (type != KnowledgeGroup.REQUIRED && type != KnowledgeGroup.FORBIDDEN) {
@@ -86,6 +90,8 @@ public final class KnowledgeGroup implements TetradSerializable {
 
     /**
      * Constructs an empty instance of a knowledge group.
+     *
+     * @param type a int
      */
     public KnowledgeGroup(int type) {
         if (type != KnowledgeGroup.REQUIRED && type != KnowledgeGroup.FORBIDDEN) {
@@ -99,6 +105,8 @@ public final class KnowledgeGroup implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.KnowledgeGroup} object
      */
     public static KnowledgeGroup serializableInstance() {
         return new KnowledgeGroup(KnowledgeGroup.REQUIRED, new HashSet<>(0), new HashSet<>(0));
@@ -116,6 +124,11 @@ public final class KnowledgeGroup implements TetradSerializable {
         return false;
     }
 
+    /**
+     * <p>Getter for the field <code>type</code>.</p>
+     *
+     * @return a int
+     */
     public int getType() {
         return this.type;
     }
@@ -123,20 +136,34 @@ public final class KnowledgeGroup implements TetradSerializable {
     /**
      * States whether this group is empty, that is there is no edges in it (Note there may be some partial information
      * though).
+     *
+     * @return a boolean
      */
     public boolean isEmpty() {
         return this.fromGroup.isEmpty() || this.toGroup.isEmpty();
     }
 
+    /**
+     * <p>getFromVariables.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<String> getFromVariables() {
         return Collections.unmodifiableSet(this.fromGroup);
     }
 
+    /**
+     * <p>getToVariables.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<String> getToVariables() {
         return Collections.unmodifiableSet(this.toGroup);
     }
 
     /**
+     * <p>getEdges.</p>
+     *
      * @return - edges.
      */
     public List<KnowledgeEdge> getEdges() {
@@ -149,12 +176,20 @@ public final class KnowledgeGroup implements TetradSerializable {
         return edges;
     }
 
+    /**
+     * <p>containsEdge.</p>
+     *
+     * @param edge a {@link edu.cmu.tetrad.data.KnowledgeEdge} object
+     * @return a boolean
+     */
     public boolean containsEdge(KnowledgeEdge edge) {
         return this.fromGroup.contains(edge.getFrom()) && this.toGroup.contains(edge.getTo());
     }
 
     /**
      * Computes a hashcode.
+     *
+     * @return a int
      */
     public int hashCode() {
         int hash = 37;
@@ -165,6 +200,8 @@ public final class KnowledgeGroup implements TetradSerializable {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Equals when they are the same type and have the same edges.
      */
     public boolean equals(Object o) {

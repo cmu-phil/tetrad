@@ -51,6 +51,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ConditionalGaussianLikelihood {
 
@@ -117,6 +118,7 @@ public class ConditionalGaussianLikelihood {
 
     /**
      * Sets the rows to use for the likelihood calculation. If not set, all rows will be used.
+     *
      * @param rows The rows to use.
      */
     public void setRows(List<Integer> rows) {

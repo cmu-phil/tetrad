@@ -42,6 +42,7 @@ import java.util.prefs.Preferences;
  * order or in a shuffled order. The other set of parameters is what the breakpoints should be.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
@@ -124,6 +125,9 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         Preferences.userRoot().putInt("latestNumCategories", numSplits);
     }
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         this.numSplitsField = new IntTextField(this.params.getInt("numSplits", 2), 2);
         this.numSplitsField.setFilter((value, oldValue) -> {
@@ -182,12 +186,18 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         this.add(b1, BorderLayout.CENTER);
     }
 
+    /** {@inheritDoc} */
     public void setParams(Parameters params) {
         this.params = params;
     }
 
     //==============================PRIVATE METHODS=======================//
 
+    /**
+     * <p>setParentModels.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
         if (parentModels == null || parentModels.length == 0) {
             throw new IllegalArgumentException("There must be parent model");
@@ -208,6 +218,11 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         dataSet = (DataSet) model;
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return true;
     }

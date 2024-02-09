@@ -10,6 +10,7 @@ package edu.cmu.tetrad.search;
  * independence test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public enum ConditioningSetType {
 

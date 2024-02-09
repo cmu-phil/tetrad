@@ -34,6 +34,7 @@ import java.util.List;
  * Nov 19, 2018 11:04:51 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class LowerCovarianceDataFileReader extends DataFileReader implements CovarianceDataReader {
 
@@ -48,10 +49,9 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
     }
 
     /**
-     * Reads in the covariance data.
+     * {@inheritDoc}
      *
-     * @return the covariance data.
-     * @throws IOException if an I/O error occurs.
+     * Reads in the covariance data.
      */
     @Override
     public CovarianceData readInData() throws IOException {

@@ -33,6 +33,7 @@ import java.awt.event.FocusEvent;
  * functions like keeping the text box the right size and handling focus events.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class StringTextField extends JTextField {
 
@@ -48,6 +49,9 @@ public final class StringTextField extends JTextField {
 
     /**
      * Constructs a new text field displaying the given default value.
+     *
+     * @param value a {@link java.lang.String} object
+     * @param size a int
      */
     public StringTextField(String value, int size) {
         super(size);
@@ -102,6 +106,8 @@ public final class StringTextField extends JTextField {
 
     /**
      * Accesses the int value currently displayed.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String getValue() {
         return this.value;
@@ -109,6 +115,8 @@ public final class StringTextField extends JTextField {
 
     /**
      * Sets the value of the text field to the given String value.
+     *
+     * @param value a {@link java.lang.String} object
      */
     public void setValue(String value) {
         if (value.equals(this.value)) {
@@ -126,6 +134,8 @@ public final class StringTextField extends JTextField {
 
     /**
      * Sets whether the given value should be accepted.
+     *
+     * @param filter a {@link edu.cmu.tetradapp.util.StringTextField.Filter} object
      */
     public void setFilter(Filter filter) {
         this.filter = filter;
@@ -134,6 +144,8 @@ public final class StringTextField extends JTextField {
     /**
      * Convinces the text field to stay the right size in layouts that are trying to expand it like a balloon by
      * returning the preferred size.
+     *
+     * @return a {@link java.awt.Dimension} object
      */
     public Dimension getMaximumSize() {
         return getPreferredSize();

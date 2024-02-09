@@ -25,12 +25,16 @@ import java.util.List;
  * Does a comparison of algorithm results across algorithm type, sample sizes, etc.
  *
  * @author josephramsey 2016.03.24
+ * @version $Id: $Id
  */
 public class Comparison {
 
     /**
      * Simulates data from model paramerizing the given DAG, and runs the algorithm on that data, printing out error
      * statistics.
+     *
+     * @param params a {@link edu.cmu.tetrad.study.performance.ComparisonParameters} object
+     * @return a {@link edu.cmu.tetrad.study.performance.ComparisonResult} object
      */
     public static ComparisonResult compare(ComparisonParameters params) {
         DataSet dataSet;
@@ -242,6 +246,13 @@ public class Comparison {
         return null;
     }
 
+    /**
+     * <p>summarize.</p>
+     *
+     * @param results a {@link java.util.List} object
+     * @param tableColumns a {@link java.util.List} object
+     * @return a {@link java.lang.String} object
+     */
     public static String summarize(List<ComparisonResult> results, List<TableColumn> tableColumns) {
 
         List<Node> variables = new ArrayList<>();

@@ -27,32 +27,46 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * Represents a definition for some expression.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public interface ExpressionDescriptor extends TetradSerializable {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**
+     * <p>getName.</p>
+     *
      * @return the name that the expressions is known under.
      */
     String getName();
 
     /**
+     * <p>getToken.</p>
+     *
      * @return the token that represents the expression, such as "+".
      */
     String getToken();
 
     /**
+     * <p>getSignature.</p>
+     *
      * @return the signature that should be used.
      */
     ExpressionSignature getSignature();
 
     /**
+     * <p>getPosition.</p>
+     *
      * @return the position that the expression can occur in.
      */
     Position getPosition();
 
     /**
      * Creates the actual expression that can be used to evaluate matters from the given expressions.
+     *
+     * @param expressions a {@link edu.cmu.tetrad.calculator.expression.Expression} object
+     * @return a {@link edu.cmu.tetrad.calculator.expression.Expression} object
+     * @throws edu.cmu.tetrad.calculator.expression.ExpressionInitializationException if any.
      */
     Expression createExpression(Expression... expressions) throws ExpressionInitializationException;
 

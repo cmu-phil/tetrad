@@ -34,6 +34,9 @@ import org.apache.commons.math3.util.FastMath;
  * with step size scaling from Becker et all 2011
  * <p>
  * Created by ajsedgewick on 7/29/15.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class ProximalGradient {
 
@@ -52,7 +55,7 @@ public class ProximalGradient {
      *
      * @param beta         (0,1) factor to increase L when Lipshitz violated, L = L_old/beta
      * @param alpha        (0,1) factor to decrease L otherwise, L = L_old*alpha
-     * @param edgeConverge
+     * @param edgeConverge a boolean
      */
     public ProximalGradient(double beta, double alpha, boolean edgeConverge) {
         if (beta <= 0 || beta >= 1)
@@ -75,6 +78,12 @@ public class ProximalGradient {
         this.edgeConverge = false;
     }
 
+    /**
+     * <p>norm2.</p>
+     *
+     * @param vec a {@link cern.colt.matrix.DoubleMatrix1D} object
+     * @return a double
+     */
     public static double norm2(DoubleMatrix1D vec) {
         //return FastMath.sqrt(vec.copy().assign(Functions.pow(2)).zSum());
         return FastMath.sqrt(new Algebra().norm2(vec));
@@ -84,12 +93,23 @@ public class ProximalGradient {
      * Positive edge change tolerance is the number of iterations with 0 edge changes needed to converge. Negative edge
      * change tolerance means convergence happens when number of difference edges &lt;= |edge change tol|. Default is
      * 3.
+     *
+     * @param t a int
      */
     public void setEdgeChangeTol(int t) {
         this.noEdgeChangeTol = t;
     }
 
     //run FISTA with step size backtracking attempt to speed up
+    /**
+     * <p>learnBackTrack.</p>
+     *
+     * @param cp a {@link edu.pitt.csb.mgm.ConvexProximal} object
+     * @param Xin a {@link cern.colt.matrix.DoubleMatrix1D} object
+     * @param epsilon a double
+     * @param iterLimit a int
+     * @return a {@link cern.colt.matrix.DoubleMatrix1D} object
+     */
     public DoubleMatrix1D learnBackTrack(ConvexProximal cp, DoubleMatrix1D Xin, double epsilon, int iterLimit) {
         DoubleMatrix1D X = cp.proximalOperator(1.0, Xin.copy());
         DoubleMatrix1D Y = X.copy();

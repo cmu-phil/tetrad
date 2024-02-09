@@ -11,10 +11,12 @@ import java.util.List;
  * Creates a random graph by adding forward edges.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class RandomSingleFactorMim implements RandomGraph {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public Graph createGraph(Parameters parameters) {
         int numStructuralNodes = parameters.getInt("numStructuralNodes", 3);
@@ -29,11 +31,13 @@ public class RandomSingleFactorMim implements RandomGraph {
                 numMeasuredMeasuredImpureAssociations);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Random single-factor MIM (Multiple Indicator Model)";
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

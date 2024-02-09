@@ -38,6 +38,7 @@ import java.util.Map;
  * the data set,
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class Transformation {
 
@@ -56,7 +57,7 @@ public class Transformation {
      *
      * @param data      - The data that is being transformed.
      * @param equations - The equations used to transform the data.
-     * @throws ParseException - Throws a parse exception if any of the given equations isn't "valid".
+     * @throws java.text.ParseException - Throws a parse exception if any of the given equations isn't "valid".
      */
     public static void transform(DataSet data, String... equations) throws ParseException {
         if (equations.length == 0) {

@@ -37,6 +37,7 @@ import java.util.List;
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DirichletBayesImWrapper implements KnowledgeBoxInput {
 
@@ -51,10 +52,21 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
     private String name;
 
     //===========================CONSTRUCTORS=============================//
+    /**
+     * <p>Constructor for DirichletBayesImWrapper.</p>
+     *
+     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
+     */
     public DirichletBayesImWrapper(Simulation simulation) {
         throw new NullPointerException("Sorry, that was not a Dirichlet Bayes IM simulation.");
     }
 
+    /**
+     * <p>Constructor for DirichletBayesImWrapper.</p>
+     *
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
                                    Parameters params) {
         if (bayesPmWrapper == null) {
@@ -80,6 +92,11 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
 
     }
 
+    /**
+     * <p>Constructor for DirichletBayesImWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletEstimatorWrapper} object
+     */
     public DirichletBayesImWrapper(DirichletEstimatorWrapper wrapper) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -92,6 +109,7 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
      */
     public static DirichletBayesImWrapper serializableInstance() {
         return new DirichletBayesImWrapper(
@@ -100,6 +118,11 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
     }
 
     //================================PUBLIC METHODS=======================//
+    /**
+     * <p>Getter for the field <code>dirichletBayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
+     */
     public DirichletBayesIm getDirichletBayesIm() {
         return this.dirichletBayesIm;
     }
@@ -121,30 +144,61 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
         }
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.dirichletBayesIm.getBayesPm().getDag();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getGraph().getNodeNames();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getGraph().getNodes();
     }

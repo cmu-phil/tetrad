@@ -48,6 +48,7 @@ import java.util.prefs.Preferences;
  *
  * @author Donald Crimbchin
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class GeneralizedSemImEditor extends JPanel implements DelegatesEditing,
         LayoutEditable {
@@ -74,6 +75,11 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
     private GeneralizedSemImListEditor listEditor;
 
     //========================CONSTRUCTORS===========================//
+    /**
+     * <p>Constructor for GeneralizedSemImEditor.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemEstimatorWrapper} object
+     */
     public GeneralizedSemImEditor(GeneralizedSemEstimatorWrapper wrapper) {
         GeneralizedSemIm semIm = wrapper.getSemIm();
 
@@ -202,6 +208,11 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
         });
     }
 
+    /**
+     * <p>Constructor for GeneralizedSemImEditor.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemImWrapper} object
+     */
     public GeneralizedSemImEditor(GeneralizedSemImWrapper wrapper) {
         if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
             throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
@@ -333,31 +344,58 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
         });
     }
 
+    /**
+     * <p>getEditDelegate.</p>
+     *
+     * @return a {@link javax.swing.JComponent} object
+     */
     public JComponent getEditDelegate() {
         return graphicalEditor();
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return graphicalEditor().getWorkbench().getGraph();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map getModelEdgesToDisplay() {
         return graphicalEditor().getWorkbench().getModelEdgesToDisplay();
     }
 
+    /**
+     * <p>getModelNodesToDisplay.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public Map getModelNodesToDisplay() {
         return graphicalEditor().getWorkbench().getModelNodesToDisplay();
     }
 
+    /**
+     * <p>getKnowledge.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return graphicalEditor().getWorkbench().getKnowledge();
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return graphicalEditor().getWorkbench().getSourceGraph();
     }
 
+    /** {@inheritDoc} */
     public void layoutByGraph(Graph graph) {
         SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);
@@ -367,6 +405,9 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
         this.errorTerms.setText("Show Error Terms");
     }
 
+    /**
+     * <p>layoutByKnowledge.</p>
+     */
     public void layoutByKnowledge() {
         SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);

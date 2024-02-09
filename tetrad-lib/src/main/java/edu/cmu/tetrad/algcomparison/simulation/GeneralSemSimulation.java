@@ -22,6 +22,7 @@ import java.util.List;
  * General SEM simulation.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GeneralSemSimulation implements Simulation {
     private static final long serialVersionUID = 23L;
@@ -32,10 +33,20 @@ public class GeneralSemSimulation implements Simulation {
     private List<Graph> graphs = new ArrayList<>();
     private List<GeneralizedSemIm> ims = new ArrayList<>();
 
+    /**
+     * <p>Constructor for GeneralSemSimulation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public GeneralSemSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
+    /**
+     * <p>Constructor for GeneralSemSimulation.</p>
+     *
+     * @param pm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     */
     public GeneralSemSimulation(GeneralizedSemPm pm) {
         SemGraph graph = pm.getGraph();
         graph.setShowErrorTerms(false);
@@ -43,6 +54,11 @@ public class GeneralSemSimulation implements Simulation {
         this.pm = pm;
     }
 
+    /**
+     * <p>Constructor for GeneralSemSimulation.</p>
+     *
+     * @param im a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
+     */
     public GeneralSemSimulation(GeneralizedSemIm im) {
         SemGraph graph = im.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
@@ -53,6 +69,7 @@ public class GeneralSemSimulation implements Simulation {
         this.pm = im.getGeneralizedSemPm();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -120,30 +137,40 @@ public class GeneralSemSimulation implements Simulation {
         return this.im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), true);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return "Nonlinear, non-Gaussian SEM simulation using " + this.randomGraph.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -201,6 +228,11 @@ public class GeneralSemSimulation implements Simulation {
         return pm;
     }
 
+    /**
+     * <p>Getter for the field <code>ims</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<GeneralizedSemIm> getIms() {
         return this.ims;
     }

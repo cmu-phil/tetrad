@@ -53,6 +53,7 @@ import java.util.List;
  * the false value must be less than the true value.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BooleanGlassFunction implements UpdateFunction {
 
@@ -169,6 +170,8 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
+     * <p>getIndexedLagGraph.</p>
+     *
      * @return the indexed connectivity.
      */
     public IndexedLagGraph getIndexedLagGraph() {
@@ -176,6 +179,8 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
+     * <p>Getter for the field <code>basalExpression</code>.</p>
+     *
      * @return the basalExpression.
      */
     public double getBasalExpression() {
@@ -265,6 +270,8 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
+     * <p>getSubFunction.</p>
+     *
      * @param factor the index of the factor to calculate a new value for.
      * @return the boolean function for the given factor.
      */
@@ -273,6 +280,8 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
+     * <p>Getter for the field <code>decayRate</code>.</p>
+     *
      * @return the rate at which expression levels tend to return to equilibrium.
      */
     public double getDecayRate() {
@@ -296,6 +305,8 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
+     * <p>Getter for the field <code>booleanInfluenceRate</code>.</p>
+     *
      * @return the rate at which Boolean Glass subfunctions tend to affect the update.
      */
     public double getBooleanInfluenceRate() {
@@ -354,6 +365,8 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
+     * <p>getNumFactors.</p>
+     *
      * @return the number of factors in the history. This is used to set up the initial history array.
      */
     public int getNumFactors() {
@@ -361,6 +374,8 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
+     * <p>getMaxLag.</p>
+     *
      * @return the max lag of the history. This is used to set up the initial history array.
      */
     public int getMaxLag() {

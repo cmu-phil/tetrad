@@ -43,6 +43,13 @@ class TierList extends JScrollPane {
 
     private final Tier[] tiers;
 
+    /**
+     * <p>Constructor for TierList.</p>
+     *
+     * @param know a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param varNames a {@link java.util.List} object
+     * @param tierListEditor a {@link edu.cmu.tetradapp.editor.TemporalTierEditor} object
+     */
     public TierList(Knowledge know, List<String> varNames,
                     TemporalTierEditor tierListEditor) {
 
@@ -113,6 +120,9 @@ class TierList extends JScrollPane {
     }
 
     //load background knowledge info into constraint list
+    /**
+     * <p>refreshInfo.</p>
+     */
     public void refreshInfo() {
         this.tiers[this.tiers.length - 1].setUnspecified(this.vNames);
         this.tiers[this.tiers.length - 1].repaint();
@@ -133,6 +143,8 @@ class TierList extends JScrollPane {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return modified knowledge allowing saving.
      */
     public Knowledge getKnowledge() {

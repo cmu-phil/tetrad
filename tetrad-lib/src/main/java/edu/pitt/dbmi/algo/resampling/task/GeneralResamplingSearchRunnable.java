@@ -21,6 +21,7 @@ import java.util.concurrent.Callable;
  * Mar 19, 2017 9:45:44 PM
  *
  * @author Chirayu (Kong) Wongchokprasitti, PhD
+ * @version $Id: $Id
  */
 public class GeneralResamplingSearchRunnable implements Callable<Graph> {
 
@@ -45,6 +46,15 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     private ScoreWrapper scoreWrapper = null;
     private IndependenceWrapper independenceWrapper = null;
 
+    /**
+     * <p>Constructor for GeneralResamplingSearchRunnable.</p>
+     *
+     * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
+     * @param algorithm a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param resamplingAlgorithmSearch a {@link edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch} object
+     * @param verbose a boolean
+     */
     public GeneralResamplingSearchRunnable(DataModel dataModel, Algorithm algorithm, Parameters parameters,
                                            GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
         if (dataModel == null) throw new NullPointerException("Data model null.");
@@ -59,6 +69,15 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
         this.verbose = verbose;
     }
 
+    /**
+     * <p>Constructor for GeneralResamplingSearchRunnable.</p>
+     *
+     * @param dataModel a {@link java.util.List} object
+     * @param algorithm a {@link edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param resamplingAlgorithmSearch a {@link edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch} object
+     * @param verbose a boolean
+     */
     public GeneralResamplingSearchRunnable(List<DataModel> dataModel, MultiDataSetAlgorithm algorithm, Parameters parameters,
                                            GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
         if (dataModel == null) throw new NullPointerException("Data model null.");
@@ -74,9 +93,10 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the background knowledge.
      */
-
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
@@ -90,15 +110,27 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /**
+     * <p>Getter for the field <code>externalGraph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getExternalGraph() {
         return this.externalGraph;
     }
 
+    /**
+     * <p>Setter for the field <code>externalGraph</code>.</p>
+     *
+     * @param externalGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
     /**
+     * <p>Getter for the field <code>out</code>.</p>
+     *
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
@@ -107,11 +139,14 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
 
     /**
      * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
+     *
+     * @param out a {@link java.io.PrintStream} object
      */
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph call() {
         long start;
@@ -168,6 +203,11 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
         }
     }
 
+    /**
+     * <p>Setter for the field <code>scoreWrapper</code>.</p>
+     *
+     * @param scoreWrapper a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public void setScoreWrapper(ScoreWrapper scoreWrapper) {
         this.scoreWrapper = scoreWrapper;
     }

@@ -31,6 +31,7 @@ import java.io.ObjectStreamException;
  * COVAR freeParameters are (non-variance) covariances among the error terms.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ParamType implements TetradSerializable {
     /**
@@ -72,6 +73,8 @@ public class ParamType implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.ParamType} object
      */
     public static ParamType serializableInstance() {
         return ParamType.COEF;
@@ -79,6 +82,8 @@ public class ParamType implements TetradSerializable {
 
     /**
      * Prints out the name of the type.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return this.name;

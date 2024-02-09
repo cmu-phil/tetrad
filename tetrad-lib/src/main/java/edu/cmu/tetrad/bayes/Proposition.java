@@ -40,6 +40,7 @@ import java.util.List;
  * all variables--i.e. it is a tautology.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class Proposition implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -90,6 +91,9 @@ public final class Proposition implements TetradSerializable {
 
     /**
      * Copies the info out of the old proposition into a new proposition for the new BayesIm.
+     *
+     * @param variableSource a {@link edu.cmu.tetrad.data.VariableSource} object
+     * @param proposition a {@link edu.cmu.tetrad.bayes.Proposition} object
      */
     public Proposition(VariableSource variableSource, Proposition proposition) {
         this(variableSource);
@@ -126,6 +130,8 @@ public final class Proposition implements TetradSerializable {
 
     /**
      * Copies the info out of the old proposition into a new proposition for the new BayesIm.
+     *
+     * @param proposition a {@link edu.cmu.tetrad.bayes.Proposition} object
      */
     public Proposition(Proposition proposition) {
         this.variableSource = proposition.variableSource;
@@ -141,12 +147,20 @@ public final class Proposition implements TetradSerializable {
         }
     }
 
+    /**
+     * <p>tautology.</p>
+     *
+     * @param variableSource a {@link edu.cmu.tetrad.data.VariableSource} object
+     * @return a {@link edu.cmu.tetrad.bayes.Proposition} object
+     */
     public static Proposition tautology(VariableSource variableSource) {
         return new Proposition(variableSource);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.Proposition} object
      */
     public static Proposition serializableInstance() {
         return new Proposition(MlBayesIm.serializableInstance());
@@ -154,6 +168,12 @@ public final class Proposition implements TetradSerializable {
 
     //===========================PUBLIC METHODS=========================//
 
+    /**
+     * <p>getNumAllowedCategories.</p>
+     *
+     * @param i a int
+     * @return a int
+     */
     public int getNumAllowedCategories(int i) {
         int numAllowed = 0;
 
@@ -166,12 +186,21 @@ public final class Proposition implements TetradSerializable {
         return numAllowed;
     }
 
+    /**
+     * <p>removeCategory.</p>
+     *
+     * @param variable a int
+     * @param category a int
+     */
     public void removeCategory(int variable, int category) {
         this.allowedCategories[variable][category] = false;
     }
 
     /**
      * Without changing the status of the specified category, disallows all other categories for the given variable.
+     *
+     * @param variable a int
+     * @param category a int
      */
     public void disallowComplement(int variable, int category) {
         for (int i = 0; i < this.allowedCategories[variable].length; i++) {
@@ -183,6 +212,9 @@ public final class Proposition implements TetradSerializable {
 
     /**
      * Sets the given value to true and all other values to false for the given variable.
+     *
+     * @param variable a int
+     * @param category a int
      */
     public void setCategory(int variable, int category) {
         setVariable(variable, false);
@@ -190,7 +222,10 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
+     * <p>isPermissibleCombination.</p>
+     *
      * @return true iff the given point is true for this proposition.
+     * @param point an array of {@link int} objects
      */
     public boolean isPermissibleCombination(int[] point) {
         for (int i = 0; i < this.allowedCategories.length; i++) {
@@ -203,6 +238,8 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
+     * <p>existsCombination.</p>
+     *
      * @return true iff there is some combination of categories for all the variables of the proposition that is
      * allowed.
      */
@@ -221,6 +258,12 @@ public final class Proposition implements TetradSerializable {
         return true;
     }
 
+    /**
+     * <p>getNumAllowed.</p>
+     *
+     * @param variable a int
+     * @return a int
+     */
     public int getNumAllowed(int variable) {
         int sum = 0;
 
@@ -234,8 +277,11 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
+     * <p>getSingleCategory.</p>
+     *
      * @return the single category selected for the given variable, or -1 if it is not the case that a single value is
      * selected.
+     * @param variable a int
      */
     public int getSingleCategory(int variable) {
         int count = 0;
@@ -257,6 +303,8 @@ public final class Proposition implements TetradSerializable {
 
     /**
      * Restricts this proposition to the categories for each variable that are true in the given proposition.
+     *
+     * @param proposition a {@link edu.cmu.tetrad.bayes.Proposition} object
      */
     public void restrictToProposition(Proposition proposition) {
         if (proposition.getVariableSource() != this.variableSource) {
@@ -274,7 +322,10 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
+     * <p>getNodeIndex.</p>
+     *
      * @return the index of the variable with the given name, or -1 if such a variable does not exist.
+     * @param name a {@link java.lang.String} object
      */
     public int getNodeIndex(String name) {
         List<Node> variables = getVariableSource().getVariables();
@@ -289,17 +340,32 @@ public final class Proposition implements TetradSerializable {
         return -1;
     }
 
+    /**
+     * <p>getCategoryIndex.</p>
+     *
+     * @param nodeName a {@link java.lang.String} object
+     * @param category a {@link java.lang.String} object
+     * @return a int
+     */
     public int getCategoryIndex(String nodeName, String category) {
         int index = getVariableSource().getVariableNames().indexOf(nodeName);
         DiscreteVariable variable = (DiscreteVariable) getVariableSource().getVariables().get(index);
         return variable.getCategories().indexOf(category);
     }
 
+    /**
+     * <p>addCategory.</p>
+     *
+     * @param variable a int
+     * @param category a int
+     */
     public void addCategory(int variable, int category) {
         this.allowedCategories[variable][category] = true;
     }
 
     /**
+     * <p>Getter for the field <code>variableSource</code>.</p>
+     *
      * @return the Bayes IM that this is a proposition for.
      */
     public VariableSource getVariableSource() {
@@ -307,6 +373,8 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
+     * <p>getNumVariables.</p>
+     *
      * @return the number of variables for the proposition.
      */
     public int getNumVariables() {
@@ -314,7 +382,10 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
+     * <p>getNumCategories.</p>
+     *
      * @return the number of categories for the given variable.
+     * @param variable a int
      */
     public int getNumCategories(int variable) {
         return this.allowedCategories[variable].length;
@@ -322,6 +393,9 @@ public final class Proposition implements TetradSerializable {
 
     /**
      * Specifies that all categories for the given variable are either all allowed (true) or all disallowed (false).
+     *
+     * @param variable a int
+     * @param allowed a boolean
      */
     public void setVariable(int variable, boolean allowed) {
         Arrays.fill(this.allowedCategories[variable], allowed);
@@ -338,14 +412,21 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
+     * <p>isAllowed.</p>
+     *
      * @return true iff the given category for the given variable is allowed.
+     * @param variable a int
+     * @param category a int
      */
     public boolean isAllowed(int variable, int category) {
         return this.allowedCategories[variable][category];
     }
 
     /**
+     * <p>isConditioned.</p>
+     *
      * @return true iff some category for the given variable is disallowed.
+     * @param variable a int
      */
     public boolean isConditioned(int variable) {
         for (int j = 0; j < getNumCategories(variable); j++) {
@@ -357,6 +438,7 @@ public final class Proposition implements TetradSerializable {
         return false;
     }
 
+    /** {@inheritDoc} */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
@@ -384,6 +466,11 @@ public final class Proposition implements TetradSerializable {
         return true;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + this.variableSource.hashCode();
@@ -391,6 +478,11 @@ public final class Proposition implements TetradSerializable {
         return hashCode;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         StringBuilder buf = new StringBuilder();
         List<Node> variables = getVariableSource().getVariables();

@@ -36,6 +36,7 @@ import java.util.Date;
  * without disturbing serialization. It must be the case that metadata can load even if the SessionWrapper cannot load.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TetradMetadata
         implements TetradSerializable, TetradMetadataIndirectRef {
@@ -58,7 +59,7 @@ public class TetradMetadata
     //===========================CONSTRUCTORS=============================//
 
     /**
-     *
+     * <p>Constructor for TetradMetadata.</p>
      */
     public TetradMetadata() {
         try {
@@ -74,6 +75,7 @@ public class TetradMetadata
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.TetradMetadata} object
      */
     public static TetradMetadata serializableInstance() {
         return new TetradMetadata();
@@ -81,10 +83,20 @@ public class TetradMetadata
 
     //==========================PUBLIC METHODS===========================//
 
+    /**
+     * <p>Getter for the field <code>version</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Version} object
+     */
     public Version getVersion() {
         return this.version;
     }
 
+    /**
+     * <p>Getter for the field <code>date</code>.</p>
+     *
+     * @return a {@link java.util.Date} object
+     */
     public Date getDate() {
         return this.date;
     }

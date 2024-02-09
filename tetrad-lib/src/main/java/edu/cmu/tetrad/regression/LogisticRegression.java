@@ -46,6 +46,7 @@ import java.util.List;
  * Pezzullo references.  In particular see pages 27-29.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class LogisticRegression implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -67,6 +68,8 @@ public class LogisticRegression implements TetradSerializable {
     /**
      * A mixed data set. The targets of regresson must be binary. Regressors must be continuous or binary. Other
      * variables don't matter.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public LogisticRegression(DataSet dataSet) {
         this.dataSet = dataSet;
@@ -77,6 +80,8 @@ public class LogisticRegression implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.regression.LogisticRegression} object
      */
     public static LogisticRegression serializableInstance() {
         return new LogisticRegression(BoxDataSet.serializableInstance());
@@ -84,6 +89,10 @@ public class LogisticRegression implements TetradSerializable {
 
     /**
      * x must be binary; regressors must be continuous or binary.
+     *
+     * @param x a {@link edu.cmu.tetrad.data.DiscreteVariable} object
+     * @param regressors a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.regression.LogisticRegression.Result} object
      */
     public Result regress(DiscreteVariable x, List<Node> regressors) {
         if (!binary(x)) {
@@ -347,6 +356,8 @@ public class LogisticRegression implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>alpha</code>.</p>
+     *
      * @return the alpha level.
      */
     public double getAlpha() {
@@ -355,6 +366,8 @@ public class LogisticRegression implements TetradSerializable {
 
     /**
      * Sets the alpha level.
+     *
+     * @param alpha a double
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -367,6 +380,11 @@ public class LogisticRegression implements TetradSerializable {
         return this.rows;
     }
 
+    /**
+     * <p>Setter for the field <code>rows</code>.</p>
+     *
+     * @param rows an array of {@link int} objects
+     */
     public void setRows(int[] rows) {
         this.rows = rows;
     }

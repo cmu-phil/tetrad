@@ -49,6 +49,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  *
  * @author robertillman
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndTestFisherZFisherPValue implements IndependenceTest {
     // The variables of the covariance data, in order. (Unmodifiable list.)
@@ -97,21 +98,15 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         this.dataSets = dataSets;
     }
 
-    /**
-     * @throws UnsupportedOperationException Not implemented.
-     */
+    /** {@inheritDoc} */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     * {@inheritDoc}
      *
-     * @param x  the one variable being compared.
-     * @param y  the second variable being compared.
-     * @param _z the list of conditioning variables.
-     * @return True iff x _||_ y | z.
-     * @throws RuntimeException if a matrix singularity is encountered.
+     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (facts.containsKey(new IndependenceFact(x, y, _z))) {
@@ -196,10 +191,10 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
-     *
-     * @param alpha This alpha.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -219,9 +214,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         return this.variables;
     }
 
-    /**
-     * @throws UnsupportedOperationException Not implemented.
-     */
+    /** {@inheritDoc} */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
@@ -269,9 +262,9 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * Sets whether verbose output is printed.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets whether verbose output is printed.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

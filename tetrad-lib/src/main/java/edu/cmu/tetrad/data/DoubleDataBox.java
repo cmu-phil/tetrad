@@ -28,6 +28,9 @@ import java.util.List;
 
 /**
  * Stores a 2D array of double data. Note that the missing value marker for this box is -99.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class DoubleDataBox implements DataBox {
     private static final long serialVersionUID = 23L;
@@ -50,6 +53,9 @@ public class DoubleDataBox implements DataBox {
 
     /**
      * Constructs an 2D double array consisting entirely of missing values (Double.NaN).
+     *
+     * @param rows a int
+     * @param cols a int
      */
     public DoubleDataBox(int rows, int cols) {
         this.data = new double[rows][cols];
@@ -66,6 +72,8 @@ public class DoubleDataBox implements DataBox {
 
     /**
      * Constructs a new data box using the given 2D double data array as data.
+     *
+     * @param data an array of {@link double} objects
      */
     public DoubleDataBox(double[][] data) {
         int length = data[0].length;
@@ -84,6 +92,8 @@ public class DoubleDataBox implements DataBox {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.BoxDataSet} object
      */
     public static BoxDataSet serializableInstance() {
         List<Node> vars = new ArrayList<>();
@@ -92,6 +102,8 @@ public class DoubleDataBox implements DataBox {
     }
 
     /**
+     * <p>numRows.</p>
+     *
      * @return the number of rows in this data box.
      */
     public int numRows() {
@@ -99,6 +111,8 @@ public class DoubleDataBox implements DataBox {
     }
 
     /**
+     * <p>numCols.</p>
+     *
      * @return the number of columns in this data box.
      */
     public int numCols() {
@@ -106,6 +120,8 @@ public class DoubleDataBox implements DataBox {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the value at the given row/column to the given Number value. The value used is number.doubleValue().
      */
     public void set(int row, int col, Number value) {
@@ -120,9 +136,7 @@ public class DoubleDataBox implements DataBox {
         }
     }
 
-    /**
-     * @return the Number value at the given row and column. If the value is missing (-99), null, is returned.
-     */
+    /** {@inheritDoc} */
     public Number get(int row, int col) {
         double datum = this.data[row][col];
 
@@ -134,6 +148,8 @@ public class DoubleDataBox implements DataBox {
     }
 
     /**
+     * <p>copy.</p>
+     *
      * @return a copy of this data box.
      */
     public DataBox copy() {
@@ -149,6 +165,8 @@ public class DoubleDataBox implements DataBox {
     }
 
     /**
+     * <p>like.</p>
+     *
      * @return a DataBox of type DoubleDataBox, but with the given dimensions.
      */
     public DataBox like() {
@@ -161,6 +179,7 @@ public class DoubleDataBox implements DataBox {
         return viewSelection(rows, cols);
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataBox viewSelection(int[] rows, int[] cols) {
         DataBox _dataBox = new DoubleDataBox(rows.length, cols.length);
@@ -174,6 +193,11 @@ public class DoubleDataBox implements DataBox {
         return _dataBox;
     }
 
+    /**
+     * <p>Getter for the field <code>data</code>.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[][] getData() {
         return this.data;
     }

@@ -35,6 +35,7 @@ import java.io.IOException;
  * Saves out a PNG image for a component.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SaveComponentImage extends AbstractAction {
 
@@ -48,6 +49,12 @@ public class SaveComponentImage extends AbstractAction {
      */
     private final String actionName;
 
+    /**
+     * <p>Constructor for SaveComponentImage.</p>
+     *
+     * @param comp a {@link javax.swing.JComponent} object
+     * @param actionName a {@link java.lang.String} object
+     */
     public SaveComponentImage(JComponent comp, String actionName) {
         super(actionName);
         this.actionName = actionName;
@@ -60,6 +67,8 @@ public class SaveComponentImage extends AbstractAction {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {

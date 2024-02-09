@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * independence in models ideally should be.&gt; 0
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SepsetMap implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -67,6 +68,8 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
      */
     public static SepsetMap serializableInstance() {
         return new SepsetMap();
@@ -75,6 +78,10 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Sets the sepset for {x, y} to be z. Note that {x, y} is unordered.
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
      */
     public void set(Node x, Node y, Set<Node> z) {
         Set<Node> pair = new HashSet<>(2);
@@ -89,6 +96,10 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Retrieves the sepset previously set for {a, b}, or null if no such set was previously set.
+     *
+     * @param a a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.Set} object
      */
     public Set<Node> get(Node a, Node b) {
         Set<Node> pair = new HashSet<>(2);
@@ -100,6 +111,10 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Looks up the p-value for {x, y}
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a double
      */
     public double getPValue(Node x, Node y) {
         Set<Node> pair = new HashSet<>(2);
@@ -111,6 +126,9 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Sets the parents of x to the (ordered) set z.
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.LinkedHashSet} object
      */
     public void set(Node x, LinkedHashSet<Node> z) {
         if (this.parents.get(x) != null) {
@@ -122,12 +140,17 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Returns the parents of the node x.
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.HashSet} object
      */
     public HashSet<Node> get(Node x) {
         return this.parents.get(x) == null ? new HashSet<>() : this.parents.get(x);
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Checks equality of this to another sepset map.
      */
     public boolean equals(Object o) {
@@ -162,6 +185,8 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Returns the number of {x, y} in the key set of the map.
+     *
+     * @return a int
      */
     public int size() {
         return this.sepsets.keySet().size();
@@ -169,6 +194,8 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Returns a string representation of this sepset map.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return this.sepsets.toString();
@@ -176,6 +203,8 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Adds all entries in the given sepset map to the current one.
+     *
+     * @param newSepsets a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
      */
     public void addAll(SepsetMap newSepsets) {
         this.sepsets.putAll(newSepsets.sepsets);

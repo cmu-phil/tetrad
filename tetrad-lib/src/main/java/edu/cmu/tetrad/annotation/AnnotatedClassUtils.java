@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
  * Sep 6, 2017 11:11:38 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class AnnotatedClassUtils {
 
@@ -38,6 +39,7 @@ public class AnnotatedClassUtils {
 
     /**
      * Gets a list of annotated classes in the given package.
+     *
      * @param packageName package name
      * @param type annotation type
      * @return list of annotated classes
@@ -54,6 +56,7 @@ public class AnnotatedClassUtils {
 
     /**
      * Filters a list of annotated classes by the given annotation.
+     *
      * @param annotation annotation
      * @param annotatedClasses list of annotated classes
      * @return list of annotated classes

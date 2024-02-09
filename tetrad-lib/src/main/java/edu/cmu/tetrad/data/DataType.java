@@ -5,6 +5,7 @@ package edu.cmu.tetrad.data;
  * mixed.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public enum DataType {
     Continuous, Discrete, Mixed, Graph, Covariance, All

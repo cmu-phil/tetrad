@@ -7,20 +7,24 @@ import edu.cmu.tetrad.graph.*;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumCorrectDDAncestors implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "#CDDA";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Number definitely direct X-->Y where X~~>Y in true";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         GraphUtils.addPagColoring(estGraph);
@@ -44,6 +48,7 @@ public class NumCorrectDDAncestors implements Statistic {
         return tp;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

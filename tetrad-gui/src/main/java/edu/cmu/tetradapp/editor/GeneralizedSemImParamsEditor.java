@@ -59,6 +59,9 @@ class GeneralizedSemImParamsEditor extends JPanel {
 
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
+     *
+     * @param semIm a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
+     * @param launchedEditors a {@link java.util.Map} object
      */
     public GeneralizedSemImParamsEditor(GeneralizedSemIm semIm, Map<Object, EditorWindow> launchedEditors) {
         this.semIm = semIm;

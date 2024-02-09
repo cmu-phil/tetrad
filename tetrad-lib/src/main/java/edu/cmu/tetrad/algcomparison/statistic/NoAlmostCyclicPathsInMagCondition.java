@@ -7,20 +7,24 @@ import edu.cmu.tetrad.graph.*;
  * No almost cyclic paths condition in MAG.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NoAlmostCyclicPathsInMagCondition implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "NoAlmostCyclicInMag";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "1 if the no almost cyclic paths condition passes in MAG, 0 if not";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph mag = GraphTransforms.pagToMag(estGraph);
@@ -41,6 +45,7 @@ public class NoAlmostCyclicPathsInMagCondition implements Statistic {
         return 1;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

@@ -39,22 +39,32 @@ import java.util.Set;
  * defaults so that such a test will be easy to implement in Python using JPype.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface IndependenceTest {
 
     /**
+     * <p>checkIndependence.</p>
+     *
      * @return an IndependenceResult (see).
      * @see IndependenceResult
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
      */
     IndependenceResult checkIndependence(Node x, Node y, Set<Node> z);
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the list of variables over which this independence checker is capable of determining independence
      * relations.
      */
     List<Node> getVariables();
 
     /**
+     * <p>getData.</p>
+     *
      * @return The data model for the independence test, either a DataSet or a CovarianceMatrix.
      * @see DataSet
      * @see ICovarianceMatrix
@@ -88,6 +98,7 @@ public interface IndependenceTest {
      * Returns an Independence test for a sublist of the variables.
      *
      * @param vars The sublist of variables.
+     * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     default IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("Independence subset feature is not implemented.");
@@ -98,6 +109,9 @@ public interface IndependenceTest {
      *
      * @return The independence result.
      * @see IndependenceResult
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
      */
     default IndependenceResult checkIndependence(Node x, Node y, Node... z) {
         Set<Node> zList = GraphUtils.asSet(z);
@@ -124,6 +138,7 @@ public interface IndependenceTest {
      * Returns The variable by the given name.
      *
      * @return This variable.
+     * @param name a {@link java.lang.String} object
      */
     default Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
@@ -154,6 +169,8 @@ public interface IndependenceTest {
      * Returns true if y is determined the variable in z.
      *
      * @return True, if so.
+     * @param z a {@link java.util.Set} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
      */
     default boolean determines(Set<Node> z, Node y) {
         throw new UnsupportedOperationException("Determines method is not implemented.");
@@ -163,7 +180,7 @@ public interface IndependenceTest {
      * Returns the significance level of the independence test.
      *
      * @return This level.
-     * @throws UnsupportedOperationException if there is no significance level.
+     * @throws java.lang.UnsupportedOperationException if there is no significance level.
      */
     default double getAlpha() {
         throw new UnsupportedOperationException("The getAlpha() method is not implemented for this test.");
@@ -182,7 +199,7 @@ public interface IndependenceTest {
      * Returns the covariance matrix.
      *
      * @return This matrix.
-     * @throws UnsupportedOperationException If this method is not supported for a particular test.
+     * @throws java.lang.UnsupportedOperationException If this method is not supported for a particular test.
      */
     default ICovarianceMatrix getCov() {
         throw new UnsupportedOperationException("The getCov() method is not implemented for this test.");

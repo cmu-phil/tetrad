@@ -42,8 +42,14 @@ import org.apache.commons.math3.linear.RealMatrix;
  * Test the degenerate Gaussian score.
  *
  * @author bandrews
+ * @version $Id: $Id
  */
 public class TestBoss {
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         if (true) {
             testGigaflops();
@@ -104,6 +110,9 @@ public class TestBoss {
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 
+    /**
+     * <p>testGigaflops.</p>
+     */
     public static void testGigaflops() {
 
         final long start = MillisecondTimes.timeMillis();// System.currentTimeMillis();

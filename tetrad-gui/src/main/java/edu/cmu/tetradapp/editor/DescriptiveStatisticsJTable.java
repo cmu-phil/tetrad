@@ -42,12 +42,15 @@ import java.beans.PropertyChangeListener;
  * Displays a DataSet object as a JTable.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DescriptiveStatisticsJTable extends JTable implements DataModelContainer,
         PropertyChangeListener {
 
     /**
      * Constructor. Takes a DataSet as a model.
+     *
+     * @param model a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DescriptiveStatisticsJTable(DataSet model) {
         DescriptiveStatsModel dataModel = new DescriptiveStatsModel(model);
@@ -127,6 +130,7 @@ public class DescriptiveStatisticsJTable extends JTable implements DataModelCont
         });
     }
 
+    /** {@inheritDoc} */
     public void setValueAt(Object aValue, int row, int column) {
         try {
             super.setValueAt(aValue, row, column);
@@ -137,6 +141,8 @@ public class DescriptiveStatisticsJTable extends JTable implements DataModelCont
     }
 
     /**
+     * <p>getDataSet.</p>
+     *
      * @return the underlying DataSet model.
      */
     public DataSet getDataSet() {
@@ -144,15 +150,26 @@ public class DescriptiveStatisticsJTable extends JTable implements DataModelCont
         return tableModelTabularData.getDataSet();
     }
 
+    /**
+     * <p>setDataSet.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public void setDataSet(DataSet data) {
         TabularDataTable tableModelTabularData = (TabularDataTable) getModel();
         tableModelTabularData.setDataSet(data);
     }
 
+    /**
+     * <p>getDataModel.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public DataModel getDataModel() {
         return getDataSet();
     }
 
+    /** {@inheritDoc} */
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
     }

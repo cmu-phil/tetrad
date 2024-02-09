@@ -35,6 +35,7 @@ import java.util.List;
  * @author josephramsey
  * @author Willie Wheeler
  * @see edu.cmu.tetradapp.workbench.AbstractWorkbench
+ * @version $Id: $Id
  */
 public class TimeLagGraphWorkbench extends GraphWorkbench {
 
@@ -62,6 +63,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     /**
      * Constructs a new workbench workbench for the given workbench model.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.TimeLagGraph} object
      */
     public TimeLagGraphWorkbench(TimeLagGraph graph) {
         super(graph);
@@ -192,6 +195,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the edge mode to the given mode.
      */
     public void setEdgeMode(int edgeMode) {
@@ -212,6 +217,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     /**
      * Creates a new model node for the workbench.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
      */
     public Node getNewModelNode() {
 
@@ -240,10 +247,9 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
-     * Creates a new display node for the workbench based on the given model node.
+     * {@inheritDoc}
      *
-     * @param modelNode the model node.
-     * @return the new display node.
+     * Creates a new display node for the workbench based on the given model node.
      */
     public DisplayNode getNewDisplayNode(Node modelNode) {
         DisplayNode displayNode;
@@ -272,10 +278,9 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
-     * Creates a new display edge for the workbench based on the given model edge.
+     * {@inheritDoc}
      *
-     * @param modelEdge the model edge.
-     * @return the new display edge.
+     * Creates a new display edge for the workbench based on the given model edge.
      */
     public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
         Node node1 = modelEdge.getNode1();
@@ -296,12 +301,10 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Creates a new model edge for the workbench connecting the two given model nodes and using the edge type from
      * #getEdgeType().
-     *
-     * @param node1 the one model node.
-     * @param node2 the other model node.
-     * @return the new model edge.
      */
     public Edge getNewModelEdge(Node node1, Node node2) {
         switch (this.edgeMode) {
@@ -323,12 +326,10 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Gets a new "tracking edge"--that is, an edge which is anchored at one end to a node but tracks the mouse at the
      * other end.  Used for drawing new edges.
-     *
-     * @param node     the node to anchor to.
-     * @param mouseLoc the location of the mouse.
-     * @return the new tracking edge (a display edge).
      */
     public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
         switch (this.edgeMode) {
@@ -362,11 +363,10 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Given base b (a String), returns the first node in the sequence "b1", "b2", "b3", etc., which is not already the
      * name of a node in the workbench.
-     *
-     * @param base the base string.
-     * @return the first string in the sequence not already being used.
      */
     public String nextVariableName(String base) {
 
@@ -395,6 +395,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the type of this node to the given type.
      */
     public void setNodeType(int nodeType) {
@@ -410,6 +412,9 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     /**
      * Pastes a list of session elements (SessionNodeWrappers and SessionEdges) into the workbench.
+     *
+     * @param graphElements a {@link java.util.List} object
+     * @param upperLeft a {@link java.awt.Point} object
      */
     public void pasteSubgraph(List graphElements, Point upperLeft) {
 

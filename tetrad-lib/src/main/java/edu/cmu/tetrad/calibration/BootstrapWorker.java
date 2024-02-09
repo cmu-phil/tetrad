@@ -14,12 +14,19 @@ class BootstrapWorker extends Thread {
     //MP: Class variables declaration
     private static final int nprocessor = FastMath.max(Runtime.getRuntime().availableProcessors() - 1, 1); // Retain one processor for the current process
 
+    /** Constant <code>alpha=// Retain one processor for the current process</code> */
     public static double alpha;
+    /** Constant <code>BootstrapNum=-1</code> */
     public static int BootstrapNum = -1; // total number of bootstrap instances that must be executed
+    /** Constant <code>DFC</code> */
     public static DataForCalibrationRfci DFC;
+    /** Constant <code>truePag</code> */
     public static Graph truePag;
+    /** Constant <code>BNfromBootstrap</code> */
     public static List<Graph> BNfromBootstrap;
+    /** Constant <code>waitingList</code> */
     public static List<BootstrapWorker> waitingList = new ArrayList<BootstrapWorker>(); //MP: List of processes that are waiting to run
+    /** Constant <code>runningList</code> */
     public static List<BootstrapWorker> runningList = new ArrayList<BootstrapWorker>(); //MP: List of processes that are running
 
     //MP: Instance variables' declaration'
@@ -27,6 +34,12 @@ class BootstrapWorker extends Thread {
     public double start_time, end_time;
 
 
+    /**
+     * <p>Constructor for BootstrapWorker.</p>
+     *
+     * @param bootstrapSample a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param BNfromBootstrap a {@link java.util.List} object
+     */
     public BootstrapWorker(DataSet bootstrapSample, List<Graph> BNfromBootstrap) {
         this.start_time = -1;
         this.end_time = -1;
@@ -34,6 +47,11 @@ class BootstrapWorker extends Thread {
         BootstrapWorker.BNfromBootstrap = BNfromBootstrap;
     }
 
+    /**
+     * <p>addToWaitingList.</p>
+     *
+     * @param worker a {@link edu.cmu.tetrad.calibration.BootstrapWorker} object
+     */
     public static void addToWaitingList(BootstrapWorker worker) {
         waitingList.add(worker);
     }
@@ -52,6 +70,11 @@ class BootstrapWorker extends Thread {
         return false;
     }
 
+    /**
+     * <p>executeThreads_and_wait.</p>
+     *
+     * @throws java.lang.InterruptedException if any.
+     */
     public static void executeThreads_and_wait() throws InterruptedException {
         for (BootstrapWorker t : waitingList) {
             while (!BootstrapWorker.check_resource_availability()) {
@@ -72,6 +95,7 @@ class BootstrapWorker extends Thread {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void run() {
         this.start_time = MillisecondTimes.timeMillis();
@@ -80,6 +104,11 @@ class BootstrapWorker extends Thread {
         this.end_time = MillisecondTimes.timeMillis();
     }
 
+    /**
+     * <p>addToList.</p>
+     *
+     * @param outGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public synchronized void addToList(Graph outGraph) {
         BootstrapWorker.BNfromBootstrap.add(outGraph);
     }

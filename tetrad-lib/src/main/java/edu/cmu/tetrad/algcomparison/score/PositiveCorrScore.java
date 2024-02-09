@@ -16,12 +16,14 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PositiveCorrScore implements ScoreWrapper {
     private static final long serialVersionUID = 23L;
     double alpha = 0.001;
     private DataModel dataSet;
 
+    /** {@inheritDoc} */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
@@ -31,16 +33,19 @@ public class PositiveCorrScore implements ScoreWrapper {
         return new IndTestScore(test);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Fisher Z Score";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -48,6 +53,7 @@ public class PositiveCorrScore implements ScoreWrapper {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);

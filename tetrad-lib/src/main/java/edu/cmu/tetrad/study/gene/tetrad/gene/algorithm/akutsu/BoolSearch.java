@@ -31,6 +31,7 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.akutsu;
  * Symposium on Biocomputing (2000).
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class BoolSearch {
     private final int[][] cases;
@@ -201,6 +202,7 @@ public class BoolSearch {
      *
      * @param ind The integer to be converted to a byte vector.
      * @param n   The length of the byte vector.
+     * @return an array of {@link byte} objects
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];

@@ -28,6 +28,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * FGES (the heuristic version).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @Bootstrapping
 @Experimental
@@ -39,14 +40,23 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
 
+    /**
+     * <p>Constructor for GesMe.</p>
+     */
     public GesMe() {
         setCompareToTrue(false);
     }
 
+    /**
+     * <p>Constructor for GesMe.</p>
+     *
+     * @param compareToTrueGraph a boolean
+     */
     public GesMe(boolean compareToTrueGraph) {
         setCompareToTrue(compareToTrueGraph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -186,6 +196,7 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         if (this.compareToTrue) {
@@ -196,16 +207,19 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "FGES (Fast Greedy Equivalence Search) using " + this.score.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.score.getDataType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -224,6 +238,11 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
         return parameters;
     }
 
+    /**
+     * <p>Setter for the field <code>compareToTrue</code>.</p>
+     *
+     * @param compareToTrue a boolean
+     */
     public void setCompareToTrue(boolean compareToTrue) {
         this.compareToTrue = compareToTrue;
     }
@@ -250,6 +269,7 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

@@ -33,6 +33,7 @@ import java.util.*;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  * @see <a
  * href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
+ * @version $Id: $Id
  */
 public final class GraphTools {
 
@@ -40,6 +41,8 @@ public final class GraphTools {
     }
 
     /**
+     * <p>getCliqueTree.</p>
+     *
      * @param ordering   maximum cardinality ordering
      * @param cliques    set of cliques
      * @param separators set of separator sets

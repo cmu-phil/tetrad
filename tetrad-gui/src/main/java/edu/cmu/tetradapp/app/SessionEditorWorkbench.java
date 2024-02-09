@@ -39,6 +39,7 @@ import java.util.List;
  * Adds the functionality needed to turn an abstract workbench into a workbench usable for editing sessions.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SessionEditorWorkbench extends AbstractWorkbench {
 
@@ -54,6 +55,8 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
 
     /**
      * Constructs a new workbench for the given SessionWrapper.
+     *
+     * @param sessionWrapper a {@link edu.cmu.tetradapp.model.SessionWrapper} object
      */
     public SessionEditorWorkbench(SessionWrapper sessionWrapper) {
         super(sessionWrapper);
@@ -148,6 +151,8 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     /**
+     * <p>getNewModelNode.</p>
+     *
      * @return a SessionNodeWrapper for a new SessionNode, the type of which is determined by the next button type, and
      * the name of which is the next button type (a String) appended with the next available positive integer.
      */
@@ -168,9 +173,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         return nodeWrapper;
     }
 
-    /**
-     * @return a new SessionEditorNode for the given SessionNodeWrapper (cast as indicated).
-     */
+    /** {@inheritDoc} */
     public DisplayNode getNewDisplayNode(Node modelNode) {
         SessionNodeWrapper wrapper = (SessionNodeWrapper) modelNode;
         SessionEditorNode displayNode = new SessionEditorNode(wrapper, getSimulationStudy());
@@ -179,23 +182,17 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         return displayNode;
     }
 
-    /**
-     * @return a new edge from node1 to node2 (directed).
-     */
+    /** {@inheritDoc} */
     public Edge getNewModelEdge(Node node1, Node node2) {
         return new Edge(node1, node2, Endpoint.TAIL, Endpoint.ARROW);
     }
 
-    /**
-     * @return a new tracking edge from a node to some mouse location.
-     */
+    /** {@inheritDoc} */
     public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
         return new SessionEditorEdge((SessionEditorNode) node, mouseLoc);
     }
 
-    /**
-     * @return a new SessionEditorEdge for the given given edge (cast as indicated).
-     */
+    /** {@inheritDoc} */
     public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
         Node modelNodeA = modelEdge.getNode1();
         Node modelNodeB = modelEdge.getNode2();
@@ -215,6 +212,11 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
                 SessionEditorEdge.UNRANDOMIZED);
     }
 
+    /**
+     * <p>Getter for the field <code>simulationStudy</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.session.SimulationStudy} object
+     */
     public SimulationStudy getSimulationStudy() {
         if (this.simulationStudy == null) {
             Session session = ((SessionWrapper) getGraph()).getSession();
@@ -234,6 +236,8 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * Sets the String label of the next node to be created by the
      * <code>getNewModelNode</code> method. This label must be in the key set of
      * the <code>modelClassesMap</code> map and must be mapped there to a Class[] array.
+     *
+     * @param nextButtonType a {@link java.lang.String} object
      */
     public void setNextButtonType(String nextButtonType) {
         this.nextButtonType = nextButtonType;
@@ -241,6 +245,9 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
 
     /**
      * Pastes list of session elements into the workbench.
+     *
+     * @param sessionElements a {@link java.util.List} object
+     * @param point a {@link java.awt.Point} object
      */
     public void pasteSubsession(List sessionElements, Point point) {
         SessionWrapper sessionWrapper = (SessionWrapper) getGraph();
@@ -257,12 +264,19 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         selectConnectingEdges();
     }
 
+    /**
+     * <p>getSessionWrapper.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.SessionWrapper} object
+     */
     public SessionWrapper getSessionWrapper() {
         return (SessionWrapper) getGraph();
     }
 
     /**
      * Resets the session wrapper that this editor is editing to the given session wrapper.
+     *
+     * @param sessionWrapper a {@link edu.cmu.tetradapp.model.SessionWrapper} object
      */
     public void setSessionWrapper(SessionWrapper sessionWrapper) {
         this.setGraph(sessionWrapper);
@@ -280,6 +294,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         });
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         getSimulationStudy().getSession().setName(name);
     }

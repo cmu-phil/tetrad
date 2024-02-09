@@ -28,12 +28,16 @@ import java.io.IOException;
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * @version $Id: $Id
  */
 public class MatrixF extends BasicMatrix {
     protected float[][] A;
 
     /**
      * Creates a matrix with name <code>mname</code>, and <code>nrows</code> rows.
+     *
+     * @param mname a {@link java.lang.String} object
+     * @param nrows a int
      */
     public MatrixF(String mname, int nrows) {
         super(mname, nrows);
@@ -51,6 +55,9 @@ public class MatrixF extends BasicMatrix {
      * examples above they appear in different lines for more readability of the file. The file may have less elements
      * than the total needed to fill the matrix.  If it has more elements an illegal argument exception will be
      * generated.
+     *
+     * @param fname a {@link java.lang.String} object
+     * @throws java.io.IOException if any.
      */
     public MatrixF(String fname) throws IOException {
         super(fname);
@@ -64,6 +71,8 @@ public class MatrixF extends BasicMatrix {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Casts double value x to float and assigns it to element (r,c)
      */
     public void setDoubleValue(int r, int c, double x) {
@@ -78,6 +87,8 @@ public class MatrixF extends BasicMatrix {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the value stored at element (r,c) as a double
      */
     public double getDoubleValue(int r, int c) {
@@ -89,6 +100,10 @@ public class MatrixF extends BasicMatrix {
 
     /**
      * Assigns float x to matrix element at (r, c)
+     *
+     * @param r a int
+     * @param c a int
+     * @param x a float
      */
     public void setValue(int r, int c, float x) {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
@@ -100,6 +115,10 @@ public class MatrixF extends BasicMatrix {
     /**
      * Assigns double x to matrix element at (r, c).  This method checks that the double x can be converted to a float
      * without causing overflow.
+     *
+     * @param r a int
+     * @param c a int
+     * @param x a double
      */
     public void setValue(int r, int c, double x) {
         if ((x < MIN_FLOAT) || (x > MAX_FLOAT)) {
@@ -114,6 +133,10 @@ public class MatrixF extends BasicMatrix {
 
     /**
      * Returns the value stored at element (r,c)
+     *
+     * @param r a int
+     * @param c a int
+     * @return a float
      */
     public float getValue(int r, int c) {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {

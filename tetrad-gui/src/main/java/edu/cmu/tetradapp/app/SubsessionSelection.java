@@ -57,6 +57,8 @@ final class SubsessionSelection implements Transferable {
 
     /**
      * Constructs a new selection with the given list of session nodes.
+     *
+     * @param sessionElements a {@link java.util.List} object
      */
     public SubsessionSelection(List sessionElements) {
         if (sessionElements == null) {
@@ -82,14 +84,7 @@ final class SubsessionSelection implements Transferable {
         }
     }
 
-    /**
-     * @param flavor the requested flavor for the data
-     * @return an object which represents the data to be transferred.  The class of the object returned is defined by
-     * the representation class of the flavor.
-     * @throws IOException                if the data is no longer available in the requested flavor.
-     * @throws UnsupportedFlavorException if the requested data flavor is not supported.
-     * @see DataFlavor#getRepresentationClass
-     */
+    /** {@inheritDoc} */
     public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
         if (!isDataFlavorSupported(flavor)) {
@@ -108,15 +103,14 @@ final class SubsessionSelection implements Transferable {
         }
     }
 
-    /**
-     * @param flavor the requested flavor for the data
-     * @return whether or not the specified data flavor is supported for this object.
-     */
+    /** {@inheritDoc} */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);
     }
 
     /**
+     * <p>getTransferDataFlavors.</p>
+     *
      * @return an array of DataFlavor objects indicating the flavors the data can be provided in.  The array should be
      * ordered according to preference for providing the data (from most richly descriptive to least descriptive).
      */
@@ -124,6 +118,11 @@ final class SubsessionSelection implements Transferable {
         return this.dataFlavors;
     }
 
+    /**
+     * <p>Getter for the field <code>numPastes</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumPastes() {
         return this.numPastes;
     }

@@ -50,6 +50,7 @@ import java.util.*;
  *
  * @author Frank Wimberly
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ClassifierMbDiscrete implements ClassifierDiscrete {
     private DataSet train;
@@ -387,6 +388,8 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
     }
 
     /**
+     * <p>crossTabulation.</p>
+     *
      * @return the cross-tabulation from the classify method. The classify method must be run first.
      */
     public int[][] crossTabulation() {
@@ -394,6 +397,8 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
     }
 
     /**
+     * <p>Getter for the field <code>percentCorrect</code>.</p>
+     *
      * @return the percent correct from the classify method. The classify method must be run first.
      */
     public double getPercentCorrect() {

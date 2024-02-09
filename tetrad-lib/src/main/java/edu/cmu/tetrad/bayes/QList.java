@@ -43,6 +43,11 @@ final class QList {
 
     /////////////////////////////////////////////////////////////////
     // intialize an empty QList: Q(emptyset) = 1
+    /**
+     * <p>Constructor for QList.</p>
+     *
+     * @param nVariables a int
+     */
     public QList(int nVariables) {
         this.nVariables = nVariables;
         initialize();
@@ -50,6 +55,12 @@ final class QList {
 
     /////////////////////////////////////////////////////////////////
     // initialize with a probability term
+    /**
+     * <p>Constructor for QList.</p>
+     *
+     * @param nVariables a int
+     * @param probTerm an array of {@link int} objects
+     */
     public QList(int nVariables, int[] probTerm) {
         this.nVariables = nVariables;
         initialize();
@@ -89,6 +100,13 @@ final class QList {
     /////////////////////////////////////////////////////////////////
     // append a term to the end
     //
+    /**
+     * <p>add.</p>
+     *
+     * @param q a {@link edu.cmu.tetrad.bayes.QList} object
+     * @param sumOverVariables an array of {@link int} objects
+     * @param inNumerator a boolean
+     */
     public void add(QList q, int[] sumOverVariables, boolean inNumerator) {
         QList qAdd = new QList(this.nVariables);
 
@@ -115,6 +133,12 @@ final class QList {
     // index1: the numbering of terms in the linked list
     // index2: the depth of recursive sublists
     //
+    /**
+     * <p>printQList.</p>
+     *
+     * @param index1 a int
+     * @param index2 a int
+     */
     public void printQList(int index1, int index2) {
         System.out.println("======= " + index1 + "  " + index2 +
                 ": printQList");
@@ -156,6 +180,13 @@ final class QList {
     // compute the numeric value of the expression in qPTS
     // by using the RowSummingExactUpdater
     //
+    /**
+     * <p>computeValue.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param fixedVarValues an array of {@link int} objects
+     * @return a double
+     */
     public double computeValue(BayesIm bayesIm, int[] fixedVarValues) {
         double resultAll = 0.0;
         double resultOneConfig;

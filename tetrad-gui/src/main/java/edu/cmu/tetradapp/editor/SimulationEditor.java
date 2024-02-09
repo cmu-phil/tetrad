@@ -51,6 +51,7 @@ import java.util.prefs.Preferences;
  *
  * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class SimulationEditor extends JPanel implements KnowledgeEditable, PropertyChangeListener {
 
@@ -65,6 +66,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
 
     /**
      * Constructs the data editor with an empty list of data displays.
+     *
+     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
      */
     public SimulationEditor(Simulation simulation) {
         this.simulation = simulation;
@@ -176,6 +179,7 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         };
     }
 
+    /** {@inheritDoc} */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         switch (evt.getPropertyName()) {
@@ -199,21 +203,25 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getSourceGraph() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getVarNames() {
         return null;

@@ -13,25 +13,34 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
  * local Markov check is uniform, so is only applicable to continuous data and really strictly only for Gaussian data.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PvalueUniformityUnderNull implements Statistic {
     private static final long serialVersionUID = 23L;
     private double alpha = 0.01;
 
+    /**
+     * <p>Constructor for PvalueUniformityUnderNull.</p>
+     *
+     * @param alpha a double
+     */
     public PvalueUniformityUnderNull(double alpha) {
         this.alpha = alpha;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "PUN";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "P-value Uniformity Under the Null (depends only on the estimated DAG and the data)";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha), ConditioningSetType.LOCAL_MARKOV);
@@ -39,6 +48,7 @@ public class PvalueUniformityUnderNull implements Statistic {
         return markovCheck.getKsPValue(true);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

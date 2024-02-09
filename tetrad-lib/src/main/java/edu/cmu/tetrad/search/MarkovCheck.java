@@ -41,6 +41,7 @@ import java.util.concurrent.Future;
  * previous tiers. Additional forbidden or required edges are not allowed.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MarkovCheck {
     // The graph.
@@ -162,6 +163,9 @@ public class MarkovCheck {
      * Returns the variables of the independence test.
      *
      * @return The variables of the independence test.
+     * @param graphNodes a {@link java.util.List} object
+     * @param independenceNodes a {@link java.util.List} object
+     * @param conditioningNodes a {@link java.util.List} object
      */
     public List<Node> getVariables(List<Node> graphNodes, List<Node> independenceNodes, List<Node> conditioningNodes) {
         List<Node> vars = new ArrayList<>(graphNodes);

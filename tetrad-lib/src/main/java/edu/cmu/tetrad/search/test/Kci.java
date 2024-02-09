@@ -26,7 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static org.apache.commons.math3.util.FastMath.*;
 
-/***
+/**
+ *
  * Gives an implementation of the Kernal Independence Test (KCI) by Kun Zhang, which is a
  * general test of conditional independence. The reference is here:
  * <p>
@@ -43,6 +44,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author kunzhang
  * @author Vineet Raghu on 7/3/2016
  * @author josephramsey refactoring 7/4/2018
+ * @version $Id: $Id
  */
 public class Kci implements IndependenceTest {
 
@@ -105,19 +107,17 @@ public class Kci implements IndependenceTest {
     }
 
 
-    /**
-     * @throws javax.help.UnsupportedOperationException Method not implemented.
-     */
+    /** {@inheritDoc} */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns True if the given independence question is judged true, false if not. The independence question is of the
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
-     *
-     * @return The independence result.
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
@@ -247,18 +247,18 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * Returns the variable by the given name.
+     * {@inheritDoc}
      *
-     * @return This variable.
+     * Returns the variable by the given name.
      */
     public Node getVariable(String name) {
         return this.data.getVariable(name);
     }
 
     /**
-     * Returns true if y is determined the variable in z.
+     * {@inheritDoc}
      *
-     * @return True, if so.
+     * Returns true if y is determined the variable in z.
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException();
@@ -274,9 +274,9 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * Sets the significance level.
+     * {@inheritDoc}
      *
-     * @param alpha This alpha.
+     * Sets the significance level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -302,7 +302,10 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Method not implemented.
+     * <p>getCov.</p>
+     *
+     * @throws java.lang.UnsupportedOperationException Method not implemented.
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
     public ICovarianceMatrix getCov() {
         throw new UnsupportedOperationException("Method not implemented.");
@@ -332,6 +335,7 @@ public class Kci implements IndependenceTest {
      * Returns alpha - p.
      *
      * @return This number.
+     * @param result a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public double getScore(IndependenceResult result) {
         return getAlpha() - result.getPValue();
@@ -386,9 +390,9 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * Returns true if verbose output is printed.
+     * {@inheritDoc}
      *
-     * @return True, if so.
+     * Returns true if verbose output is printed.
      */
     @Override
     public boolean isVerbose() {
@@ -396,9 +400,9 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * Sets whether verbose output is printed.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets whether verbose output is printed.
      */
     @Override
     public void setVerbose(boolean verbose) {

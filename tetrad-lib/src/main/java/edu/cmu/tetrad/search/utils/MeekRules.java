@@ -38,6 +38,7 @@ import java.util.*;
  * Rule R4 is only performed if knowledge is nonempty.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MeekRules {
 

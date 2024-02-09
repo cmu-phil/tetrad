@@ -57,6 +57,8 @@ final class SaveDataAction extends AbstractAction {
 
     /**
      * Creates a new action to save data.
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
     public SaveDataAction(DataEditor editor) {
         super("Save Data...");
@@ -69,6 +71,11 @@ final class SaveDataAction extends AbstractAction {
     }
 
 
+    /**
+     * <p>Constructor for SaveDataAction.</p>
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.MarkovBlanketSearchEditor} object
+     */
     public SaveDataAction(MarkovBlanketSearchEditor editor) {
         super("Save Data...");
         if (editor == null) {
@@ -79,6 +86,8 @@ final class SaveDataAction extends AbstractAction {
 
 
     /**
+     * {@inheritDoc}
+     *
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {

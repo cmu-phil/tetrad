@@ -50,6 +50,7 @@ import java.util.Set;
  * due to Kun Zhang.</p>
  *
  * @author Robert Tillman.
+ * @version $Id: $Id
  */
 public class Kpc implements IGraphSearch {
 
@@ -113,6 +114,7 @@ public class Kpc implements IGraphSearch {
      *
      * @param dataset The oracle for conditional independence facts. This does not make a copy of the independence test,
      *                for fear of duplicating the data set!
+     * @param alpha a double
      */
     public Kpc(DataSet dataset, double alpha) {
         if (dataset == null) {
@@ -126,6 +128,8 @@ public class Kpc implements IGraphSearch {
     //==============================PUBLIC METHODS========================//
 
     /**
+     * <p>isMeekPreventCycles.</p>
+     *
      * @return true iff edges will not be added if they would create cycles.
      */
     public boolean isMeekPreventCycles() {
@@ -133,6 +137,8 @@ public class Kpc implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>meekPreventCycles</code>.</p>
+     *
      * @param meekPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
@@ -140,6 +146,8 @@ public class Kpc implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>independenceTest</code>.</p>
+     *
      * @return the independence test being used in the search.
      */
     public IndependenceTest getIndependenceTest() {
@@ -147,6 +155,8 @@ public class Kpc implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the knowledge specification used in the search. Non-null.
      */
     public Knowledge getKnowledge() {
@@ -155,6 +165,8 @@ public class Kpc implements IGraphSearch {
 
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -165,6 +177,8 @@ public class Kpc implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>sepset</code>.</p>
+     *
      * @return the sepset map from the most recent search. Non-null after the first call to <code>search()</code>.
      */
     public SepsetMap getSepset() {
@@ -172,6 +186,8 @@ public class Kpc implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
      * @return the getModel depth of search--that is, the maximum number of conditioning nodes for any conditional
      * independence checked.
      */
@@ -205,6 +221,8 @@ public class Kpc implements IGraphSearch {
      * independence information is consistent with the hypothesis that there are no latent common causes. It may,
      * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
      * of latent common causes, or due to statistical errors in conditional independence judgments.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search() {
         return search(this.independenceTest.getVariables());
@@ -218,6 +236,9 @@ public class Kpc implements IGraphSearch {
      * or due to statistical errors in conditional independence judgments.
      * <p>
      * All of the given nodes must be in the domain of the given conditional independence test.
+     *
+     * @param nodes a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
@@ -267,6 +288,8 @@ public class Kpc implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>elapsedTime</code>.</p>
+     *
      * @return the elapsed time of the search, in milliseconds.
      */
     public long getElapsedTime() {
@@ -274,6 +297,8 @@ public class Kpc implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>unshieldedColliders</code>.</p>
+     *
      * @return the set of unshielded colliders in the graph returned by <code>search()</code>. Non-null after
      * <code>search</code> is called.
      */
@@ -282,6 +307,8 @@ public class Kpc implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>unshieldedNoncolliders</code>.</p>
+     *
      * @return the set of unshielded noncolliders in the graph returned by <code>search()</code>. Non-null after
      * <code>search</code> is called.
      */
@@ -303,6 +330,8 @@ public class Kpc implements IGraphSearch {
 
     /**
      * Gets the getModel significance level.
+     *
+     * @return a double
      */
     public double getAlpha() {
         return this.alpha;
@@ -310,6 +339,8 @@ public class Kpc implements IGraphSearch {
 
     /**
      * Sets the significance level at which independence judgments should be made.
+     *
+     * @param alpha a double
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -322,6 +353,8 @@ public class Kpc implements IGraphSearch {
 
     /**
      * Gets the getModel precision for the Incomplete Cholesky
+     *
+     * @return a double
      */
     public double getPrecision() {
         return 1e-18;
@@ -329,6 +362,8 @@ public class Kpc implements IGraphSearch {
 
     /**
      * Gets the getModel number of bootstrap samples used
+     *
+     * @return a int
      */
     public int getPerms() {
         return this.perms;
@@ -336,6 +371,8 @@ public class Kpc implements IGraphSearch {
 
     /**
      * Set the number of bootstrap samples to use
+     *
+     * @param perms a int
      */
     public void setPerms(int perms) {
         this.perms = perms;

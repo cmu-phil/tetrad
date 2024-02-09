@@ -27,6 +27,7 @@ import java.nio.file.Path;
  * Dec 18, 2018 2:39:39 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public interface MetadataWriter {
 
@@ -35,7 +36,7 @@ public interface MetadataWriter {
      *
      * @param metadata The metadata.
      * @return the metadata as a string.
-     * @throws JsonProcessingException if an error occurs while processing the JSON.
+     * @throws com.fasterxml.jackson.core.JsonProcessingException if an error occurs while processing the JSON.
      */
     String writeAsString(Metadata metadata) throws JsonProcessingException;
 
@@ -44,7 +45,7 @@ public interface MetadataWriter {
      *
      * @param metadata   The metadata.
      * @param outputFile The output file.
-     * @throws IOException if an error occurs while writing the metadata.
+     * @throws java.io.IOException if an error occurs while writing the metadata.
      */
     void write(Metadata metadata, Path outputFile) throws IOException;
 

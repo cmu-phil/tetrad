@@ -18,6 +18,7 @@ import java.util.Map;
  * A simulation method based on the mixed variable polynomial assumption.
  *
  * @author Bryan Andrews
+ * @version $Id: $Id
  */
 @Experimental
 public class LinearSineSimulation implements Simulation {
@@ -39,6 +40,11 @@ public class LinearSineSimulation implements Simulation {
     private double gammaLow = 0.5;
     private double gammaHigh = 1.5;
 
+    /**
+     * <p>Constructor for LinearSineSimulation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public LinearSineSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
@@ -69,6 +75,7 @@ public class LinearSineSimulation implements Simulation {
         return outG;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -113,21 +120,25 @@ public class LinearSineSimulation implements Simulation {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Linear-sine simulation using " + this.randomGraph.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
@@ -149,11 +160,13 @@ public class LinearSineSimulation implements Simulation {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.dataType;
@@ -290,42 +303,92 @@ public class LinearSineSimulation implements Simulation {
         return mixedData;
     }
 
+    /**
+     * <p>Setter for the field <code>interceptLow</code>.</p>
+     *
+     * @param interceptLow a double
+     */
     public void setInterceptLow(double interceptLow) {
         this.interceptLow = interceptLow;
     }
 
+    /**
+     * <p>Setter for the field <code>interceptHigh</code>.</p>
+     *
+     * @param interceptHigh a double
+     */
     public void setInterceptHigh(double interceptHigh) {
         this.interceptHigh = interceptHigh;
     }
 
+    /**
+     * <p>Setter for the field <code>linearLow</code>.</p>
+     *
+     * @param linearLow a double
+     */
     public void setLinearLow(double linearLow) {
         this.linearLow = linearLow;
     }
 
+    /**
+     * <p>Setter for the field <code>linearHigh</code>.</p>
+     *
+     * @param linearHigh a double
+     */
     public void setLinearHigh(double linearHigh) {
         this.linearHigh = linearHigh;
     }
 
+    /**
+     * <p>Setter for the field <code>varLow</code>.</p>
+     *
+     * @param varLow a double
+     */
     public void setVarLow(double varLow) {
         this.varLow = varLow;
     }
 
+    /**
+     * <p>Setter for the field <code>varHigh</code>.</p>
+     *
+     * @param varHigh a double
+     */
     public void setVarHigh(double varHigh) {
         this.varHigh = varHigh;
     }
 
+    /**
+     * <p>Setter for the field <code>betaLow</code>.</p>
+     *
+     * @param betaLow a double
+     */
     public void setBetaLow(double betaLow) {
         this.betaLow = betaLow;
     }
 
+    /**
+     * <p>Setter for the field <code>betaHigh</code>.</p>
+     *
+     * @param betaHigh a double
+     */
     public void setBetaHigh(double betaHigh) {
         this.betaHigh = betaHigh;
     }
 
+    /**
+     * <p>Setter for the field <code>gammaLow</code>.</p>
+     *
+     * @param gammaLow a double
+     */
     public void setGammaLow(double gammaLow) {
         this.gammaLow = gammaLow;
     }
 
+    /**
+     * <p>Setter for the field <code>gammaHigh</code>.</p>
+     *
+     * @param gammaHigh a double
+     */
     public void setGammaHigh(double gammaHigh) {
         this.gammaHigh = gammaHigh;
     }

@@ -39,18 +39,35 @@ import java.util.prefs.Preferences;
  * Utils, for layouts.
  *
  * @author Tyler
+ * @version $Id: $Id
  */
 public class LayoutUtils {
     static Layout layout = Layout.topToBottom;
 
+    /**
+     * <p>Getter for the field <code>layout</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.workbench.LayoutUtils.Layout} object
+     */
     public static Layout getLayout() {
         return LayoutUtils.layout;
     }
 
+    /**
+     * <p>Setter for the field <code>layout</code>.</p>
+     *
+     * @param _layout a {@link edu.cmu.tetradapp.workbench.LayoutUtils.Layout} object
+     */
     public static void setLayout(Layout _layout) {
         LayoutUtils.layout = _layout;
     }
 
+    /**
+     * <p>setAllSizes.</p>
+     *
+     * @param comp a {@link java.awt.Component} object
+     * @param dim a {@link java.awt.Dimension} object
+     */
     public static void setAllSizes(Component comp, Dimension dim) {
         comp.setPreferredSize(dim);
         comp.setMaximumSize(dim);
@@ -58,6 +75,12 @@ public class LayoutUtils {
         comp.setSize(dim);
     }
 
+    /**
+     * <p>leftAlignJLabel.</p>
+     *
+     * @param label a {@link javax.swing.JLabel} object
+     * @return a {@link javax.swing.Box} object
+     */
     public static Box leftAlignJLabel(JLabel label) {
         Box box = Box.createHorizontalBox();
         box.add(label);
@@ -65,6 +88,11 @@ public class LayoutUtils {
         return box;
     }
 
+    /**
+     * <p>copyLag0LayoutTopToBottom.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void copyLag0LayoutTopToBottom(LayoutEditable layoutEditable) {
         TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
 
@@ -122,6 +150,11 @@ public class LayoutUtils {
         layout = Layout.lag0TopToBottom;
     }
 
+    /**
+     * <p>copyLag0LayoutBottomToTop.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void copyLag0LayoutBottomToTop(LayoutEditable layoutEditable) {
         TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
 
@@ -179,6 +212,11 @@ public class LayoutUtils {
         layout = Layout.lag0BottomToTop;
     }
 
+    /**
+     * <p>copyLag0LayoutLeftToRight.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void copyLag0LayoutLeftToRight(LayoutEditable layoutEditable) {
         TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
 
@@ -236,6 +274,11 @@ public class LayoutUtils {
         layout = Layout.lag0LeftToRight;
     }
 
+    /**
+     * <p>copyLag0LayoutRightToLeft.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void copyLag0LayoutRightToLeft(LayoutEditable layoutEditable) {
         TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
 
@@ -293,6 +336,11 @@ public class LayoutUtils {
         layout = Layout.lag0RightToLeft;
     }
 
+    /**
+     * <p>topToBottomLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void topToBottomLayout(LayoutEditable layoutEditable) {
         TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
 
@@ -329,6 +377,11 @@ public class LayoutUtils {
         layout = Layout.topToBottom;
     }
 
+    /**
+     * <p>leftToRightLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void leftToRightLayout(LayoutEditable layoutEditable) {
         TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
 
@@ -365,6 +418,11 @@ public class LayoutUtils {
         layout = Layout.leftToRight;
     }
 
+    /**
+     * <p>bottomToTopLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void bottomToTopLayout(LayoutEditable layoutEditable) {
         TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
 
@@ -401,6 +459,11 @@ public class LayoutUtils {
         layout = Layout.bottomToTop;
     }
 
+    /**
+     * <p>rightToLeftLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void rightToLeftLayout(LayoutEditable layoutEditable) {
         TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
 
@@ -437,6 +500,11 @@ public class LayoutUtils {
         LayoutUtils.layout = Layout.rightToLeft;
     }
 
+    /**
+     * <p>layeredDrawingLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void layeredDrawingLayout(LayoutEditable layoutEditable) {
         Graph graph = layoutEditable.getGraph();
 
@@ -466,6 +534,11 @@ public class LayoutUtils {
         LayoutUtils.layout = Layout.source;
     }
 
+    /**
+     * <p>knowledgeLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void knowledgeLayout(LayoutEditable layoutEditable) {
         Graph graph = new EdgeListGraph(layoutEditable.getGraph());
 
@@ -486,6 +559,11 @@ public class LayoutUtils {
         LayoutUtils.layout = Layout.knowledge;
     }
 
+    /**
+     * <p>circleLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void circleLayout(LayoutEditable layoutEditable) {
         Graph graph = layoutEditable.getGraph();
 
@@ -504,6 +582,11 @@ public class LayoutUtils {
         LayoutUtils.layout = Layout.circle;
     }
 
+    /**
+     * <p>squareLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void squareLayout(LayoutEditable layoutEditable) {
         Graph graph = layoutEditable.getGraph();
 
@@ -520,6 +603,11 @@ public class LayoutUtils {
         LayoutUtils.layout = Layout.circle;
     }
 
+    /**
+     * <p>kamadaKawaiLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void kamadaKawaiLayout(LayoutEditable layoutEditable) {
         Graph graph = layoutEditable.getGraph();
 
@@ -557,6 +645,11 @@ public class LayoutUtils {
         thread.start();
     }
 
+    /**
+     * <p>fruchtermanReingoldLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void fruchtermanReingoldLayout(LayoutEditable layoutEditable) {
         Graph graph = layoutEditable.getGraph();
 
@@ -571,6 +664,11 @@ public class LayoutUtils {
         LayoutUtils.layout = Layout.fruchtermReingold;
     }
 
+    /**
+     * <p>distanceFromSelectedLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void distanceFromSelectedLayout(LayoutEditable layoutEditable) {
         Graph graph = layoutEditable.getGraph();
 
@@ -586,6 +684,11 @@ public class LayoutUtils {
         LayoutUtils.layout = Layout.distanceFromSelected;
     }
 
+    /**
+     * <p>lastLayout.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void lastLayout(LayoutEditable layoutEditable) {
         switch (LayoutUtils.layout) {
             case lag0TopToBottom:
@@ -634,6 +737,11 @@ public class LayoutUtils {
         }
     }
 
+    /**
+     * <p>layoutByCausalOrder.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public static void layoutByCausalOrder(LayoutEditable layoutEditable) {
         Graph graph = layoutEditable.getGraph();
 

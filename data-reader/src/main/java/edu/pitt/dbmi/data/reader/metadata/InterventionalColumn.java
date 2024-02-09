@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Dec 20, 2018 11:42:01 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class InterventionalColumn {
 
@@ -51,9 +52,9 @@ public class InterventionalColumn {
     }
 
     /**
-     * Returns a string representation of this object.
+     * {@inheritDoc}
      *
-     * @return a string representation of this object.
+     * Returns a string representation of this object.
      */
     @Override
     public String toString() {

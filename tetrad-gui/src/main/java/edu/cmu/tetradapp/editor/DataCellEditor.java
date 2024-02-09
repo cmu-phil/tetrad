@@ -84,9 +84,10 @@ class DataCellEditor extends DefaultCellEditor {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Forwards the message from the <code>CellEditor</code> to the
      * <code>delegate</code>.
-     *
      * @see javax.swing.DefaultCellEditor.EditorDelegate#shouldSelectCell(java.util.EventObject)
      */
     public boolean shouldSelectCell(EventObject anEvent) {

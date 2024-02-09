@@ -24,6 +24,7 @@ import java.util.List;
  * GLASSO.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 //@edu.cmu.tetrad.annotation.Algorithm(
 //        name = "GLASSO",
@@ -37,6 +38,7 @@ public class Glasso implements Algorithm {
 
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     public Graph search(DataModel ds, Parameters parameters) {
         DataSet _data = (DataSet) ds;
 
@@ -88,19 +90,27 @@ public class Glasso implements Algorithm {
         }
     }
 
+    /** {@inheritDoc} */
     public Graph getComparisonGraph(Graph graph) {
         return GraphUtils.undirectedGraph(graph);
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return "GLASSO (Graphical LASSO)";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

@@ -39,6 +39,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Note that in the calculation, points x such that log(1 - dist.get(x))) is infinite are ignored.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GeneralAndersonDarlingTest {
 
@@ -65,6 +66,9 @@ public class GeneralAndersonDarlingTest {
 
     /**
      * Constructs an Anderson-Darling test for the given column of data.
+     *
+     * @param data a {@link java.util.List} object
+     * @param dist a {@link org.apache.commons.math3.distribution.RealDistribution} object
      */
     public GeneralAndersonDarlingTest(List<Double> data, RealDistribution dist) {
         if (dist == null) {
@@ -81,6 +85,8 @@ public class GeneralAndersonDarlingTest {
     }
 
     /**
+     * <p>Getter for the field <code>aSquared</code>.</p>
+     *
      * @return the A^2 statistic.
      */
     public double getASquared() {
@@ -88,6 +94,8 @@ public class GeneralAndersonDarlingTest {
     }
 
     /**
+     * <p>Getter for the field <code>aSquaredStar</code>.</p>
+     *
      * @return the A^2* statistic, which is the A^2 statistic adjusted heuristically for sample size.
      */
     public double getASquaredStar() {
@@ -95,6 +103,8 @@ public class GeneralAndersonDarlingTest {
     }
 
     /**
+     * <p>Getter for the field <code>p</code>.</p>
+     *
      * @return the p value of the A^2* statistic, which is interpolated using exponential functions.
      */
     public double getP() {
@@ -177,10 +187,22 @@ public class GeneralAndersonDarlingTest {
         }
     }
 
+    /**
+     * <p>getProbTail.</p>
+     *
+     * @param n a double
+     * @param z a double
+     * @return a double
+     */
     public double getProbTail(double n, double z) {
         return adinf(z) + errfix(n, adinf(z));
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         List<Double> data = new ArrayList<>();
 

@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
  * function just like StringTokenizer, with more control over what counts as a tokenization delimiter.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class RegexTokenizer {
 
@@ -66,6 +67,10 @@ public final class RegexTokenizer {
 
     /**
      * Constructs a tokenizer for the given input line, using the given Pattern as delimiter.
+     *
+     * @param line a {@link java.lang.CharSequence} object
+     * @param delimiterPattern a {@link java.util.regex.Pattern} object
+     * @param quoteChar a char
      */
     public RegexTokenizer(CharSequence line, Pattern delimiterPattern,
                           char quoteChar) {
@@ -83,6 +88,8 @@ public final class RegexTokenizer {
     }
 
     /**
+     * <p>hasMoreTokens.</p>
+     *
      * @return true iff more tokens exist in the line.
      */
     public boolean hasMoreTokens() {
@@ -90,6 +97,8 @@ public final class RegexTokenizer {
     }
 
     /**
+     * <p>nextToken.</p>
+     *
      * @return the next token in the line.
      */
     public String nextToken() {
@@ -124,6 +133,8 @@ public final class RegexTokenizer {
 
     /**
      * True iff the parser should be aware of quotation marks and remove them from returned strings.
+     *
+     * @param quoteSensitive a boolean
      */
     public void setQuoteSensitive(boolean quoteSensitive) {
         this.quoteSensitive = quoteSensitive;

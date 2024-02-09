@@ -42,6 +42,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DiscreteBicScore implements DiscreteScore {
     // The discrete dataset.
@@ -110,11 +111,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * Returns the score of the given nodes given its parents.
+     * {@inheritDoc}
      *
-     * @param node    The index of the node.
-     * @param parents The indices of the node's parents.
-     * @return The score.
+     * Returns the score of the given nodes given its parents.
      */
     @Override
     public double localScore(int node, int[] parents) {
@@ -215,6 +214,7 @@ public class DiscreteBicScore implements DiscreteScore {
      *
      * @param node    The index of the node.
      * @param parents The indices of the node's parents.
+     * @return a int
      */
     public int numParameters(int node, int[] parents) {
         if (!(this.variables.get(node) instanceof DiscreteVariable)) {
@@ -282,9 +282,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * Returns localScore(y | z, x) - localScore(y | z).
+     * {@inheritDoc}
      *
-     * @return This score.
+     * Returns localScore(y | z, x) - localScore(y | z).
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -292,9 +292,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * Returns the variables.
+     * {@inheritDoc}
      *
-     * @return This list.
+     * Returns the variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -327,9 +327,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * Must be called directly after the corresponding scoring call. Used in FGES.
+     * {@inheritDoc}
      *
-     * @param bump The score bump.
+     * Must be called directly after the corresponding scoring call. Used in FGES.
      * @see Fges
      */
     public boolean isEffectEdge(double bump) {
@@ -337,9 +337,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * Returns the dataset being analyzed.
+     * {@inheritDoc}
      *
-     * @return this dataset.
+     * Returns the dataset being analyzed.
      */
     @Override
     public DataSet getDataSet() {
@@ -347,9 +347,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * Sets the structure prior.
+     * {@inheritDoc}
      *
-     * @param structurePrior This prior.
+     * Sets the structure prior.
      */
     @Override
     public void setStructurePrior(double structurePrior) {
@@ -357,9 +357,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * This method is not used for this score.
+     * {@inheritDoc}
      *
-     * @throws UnsupportedOperationException Since this method is not used.
+     * This method is not used for this score.
      */
     @Override
     public void setSamplePrior(double samplePrior) {
@@ -376,9 +376,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * Returns the maximum degree for some algorithms.
+     * {@inheritDoc}
      *
-     * @return 1000.
+     * Returns the maximum degree for some algorithms.
      */
     @Override
     public int getMaxDegree() {
@@ -386,9 +386,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * Returns a string representation of this score.
+     * {@inheritDoc}
      *
-     * @return This string.
+     * Returns a string representation of this score.
      */
     @Override
     public String toString() {

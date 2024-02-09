@@ -31,6 +31,7 @@ import java.io.Serial;
  * Extracts a single dataset from a data box containing multiple datasets.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SelectedDataset extends DataWrapper {
     @Serial
@@ -59,6 +60,7 @@ public class SelectedDataset extends DataWrapper {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

@@ -94,6 +94,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author patrickhoyer
  * @author josephramsey
  * @see IcaLingam
+ * @version $Id: $Id
  */
 public class IcaLingD {
     // The threshold for the spine of the W matrix.
@@ -111,6 +112,7 @@ public class IcaLingD {
      * Determines whether a BHat matrix parses to an acyclic graph.
      *
      * @param scaledBHat The BHat matrix..
+     * @return a boolean
      */
     public static boolean isAcyclic(Matrix scaledBHat) {
         List<Node> dummyVars = new ArrayList<>();

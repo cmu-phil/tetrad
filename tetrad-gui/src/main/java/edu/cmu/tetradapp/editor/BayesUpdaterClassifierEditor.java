@@ -47,6 +47,7 @@ import java.util.List;
  * Allows the user to do classifications using the Bayes Updater Classifier.
  *
  * @author Jossph Ramsey
+ * @version $Id: $Id
  */
 public class BayesUpdaterClassifierEditor extends JPanel {
     private final ClassifierBayesUpdaterDiscrete classifier;
@@ -99,6 +100,8 @@ public class BayesUpdaterClassifierEditor extends JPanel {
 
     /**
      * Constructs a new instanted model editor from a Bayes IM wrapper.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesUpdaterClassifierWrapper} object
      */
     public BayesUpdaterClassifierEditor(BayesUpdaterClassifierWrapper wrapper) {
         this(wrapper.getClassifier());

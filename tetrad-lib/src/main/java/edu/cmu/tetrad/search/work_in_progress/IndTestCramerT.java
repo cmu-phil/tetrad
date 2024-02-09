@@ -45,6 +45,7 @@ import java.util.Set;
  * of Statistics (1951), page 413).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndTestCramerT implements IndependenceTest {
 
@@ -107,6 +108,9 @@ public final class IndTestCramerT implements IndependenceTest {
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
+     *
+     * @param covMatrix a {@link edu.cmu.tetrad.data.CorrelationMatrix} object
+     * @param alpha a double
      */
     public IndTestCramerT(CorrelationMatrix covMatrix, double alpha) {
         this.covMatrix = covMatrix;
@@ -119,6 +123,9 @@ public final class IndTestCramerT implements IndependenceTest {
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
+     *
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param alpha a double
      */
     public IndTestCramerT(ICovarianceMatrix covMatrix, double alpha) {
         CorrelationMatrix corrMatrix = new CorrelationMatrix(covMatrix);
@@ -131,6 +138,8 @@ public final class IndTestCramerT implements IndependenceTest {
     //==========================PUBLIC METHODS=============================//
 
     /**
+     * {@inheritDoc}
+     *
      * Creates a new IndTestCramerT instance for a subset of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -158,13 +167,9 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     /**
-     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     * {@inheritDoc}
      *
-     * @param x  the one variable being compared.
-     * @param y  the second variable being compared.
-     * @param _z the list of conditioning variables.
-     * @return true iff x _||_ y | z.
-     * @throws RuntimeException if a matrix singularity is encountered.
+     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (_z == null) {
@@ -260,6 +265,8 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     /**
+     * <p>getPValue.</p>
+     *
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
@@ -267,6 +274,8 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     /**
+     * <p>Getter for the field <code>alpha</code>.</p>
+     *
      * @return the getModel significance level.
      */
     public double getAlpha() {
@@ -274,6 +283,8 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the significance level for future tests.
      */
     public void setAlpha(double alpha) {
@@ -289,6 +300,8 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
      * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
@@ -296,11 +309,7 @@ public final class IndTestCramerT implements IndependenceTest {
         return this.variables;
     }
 
-    /**
-     * @return the variable with the given name, or null if there is no such variable.
-     */
-
-
+    /** {@inheritDoc} */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[z.size()];
 
@@ -336,11 +345,18 @@ public final class IndTestCramerT implements IndependenceTest {
         return variance < 0.01;
     }
 
+    /**
+     * <p>getData.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getData() {
         return this.dataSet;
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of this test.
      */
     public String toString() {
@@ -381,10 +397,16 @@ public final class IndTestCramerT implements IndependenceTest {
         return this.pdf;
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /** {@inheritDoc} */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

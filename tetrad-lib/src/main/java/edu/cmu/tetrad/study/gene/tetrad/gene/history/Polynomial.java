@@ -33,6 +33,7 @@ import java.util.List;
  * ...}.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class Polynomial implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -48,6 +49,8 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Constructs a polynomial from a list of terms.
+     *
+     * @param terms a {@link java.util.List} object
      */
     public Polynomial(List<PolynomialTerm> terms) {
 
@@ -60,6 +63,8 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.Polynomial} object
      */
     public static Polynomial serializableInstance() {
         return new Polynomial(new ArrayList<>());
@@ -69,6 +74,8 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Returns the number of terms.
+     *
+     * @return a int
      */
     public int getNumTerms() {
         return this.terms.size();
@@ -76,6 +83,9 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Returns the coefficient.
+     *
+     * @param index a int
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.PolynomialTerm} object
      */
     public PolynomialTerm getTerm(int index) {
         return this.terms.get(index);
@@ -83,6 +93,9 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Finds the first term matching the given profile.
+     *
+     * @param variables an array of {@link int} objects
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.PolynomialTerm} object
      */
     public PolynomialTerm findTerm(int[] variables) {
         for (PolynomialTerm term1 : this.terms) {
@@ -96,6 +109,8 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Returns the highest variable index in any term.
+     *
+     * @return a int
      */
     public int getMaxIndex() {
         int max = 0;
@@ -110,6 +125,9 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Evaluates the term.
+     *
+     * @param values an array of {@link double} objects
+     * @return a double
      */
     public double evaluate(double[] values) {
         double sum = 0.0;
@@ -121,6 +139,8 @@ public final class Polynomial implements TetradSerializable {
 
     /**
      * Prints out a representation of the term.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();

@@ -33,6 +33,7 @@ import java.util.Arrays;
  * has been manipulated.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class Manipulation implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -50,6 +51,8 @@ public final class Manipulation implements TetradSerializable {
 
     /**
      * Constructs a container for evidence for the given Bayes IM.
+     *
+     * @param variableSource a {@link edu.cmu.tetrad.data.VariableSource} object
      */
     public Manipulation(VariableSource variableSource) {
         if (variableSource == null) {
@@ -62,6 +65,8 @@ public final class Manipulation implements TetradSerializable {
 
     /**
      * Copy constructor.
+     *
+     * @param manipulation a {@link edu.cmu.tetrad.bayes.Manipulation} object
      */
     public Manipulation(Manipulation manipulation) {
         if (manipulation == null) {
@@ -84,6 +89,8 @@ public final class Manipulation implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.Manipulation} object
      */
     public static Manipulation serializableInstance() {
         return new Manipulation(MlBayesIm.serializableInstance());
@@ -91,10 +98,21 @@ public final class Manipulation implements TetradSerializable {
 
     //===========================PUBLIC METHODS=========================//
 
+    /**
+     * <p>Setter for the field <code>manipulated</code>.</p>
+     *
+     * @param nodeIndex a int
+     * @param manipulated a boolean
+     */
     public void setManipulated(int nodeIndex, boolean manipulated) {
         this.manipulated[nodeIndex] = manipulated;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         StringBuilder buf = new StringBuilder();
 
@@ -109,6 +127,7 @@ public final class Manipulation implements TetradSerializable {
         return buf.toString();
     }
 
+    /** {@inheritDoc} */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
@@ -133,6 +152,11 @@ public final class Manipulation implements TetradSerializable {
         return true;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + getVariableSource().hashCode();
@@ -146,6 +170,12 @@ public final class Manipulation implements TetradSerializable {
         return getVariableSource().getVariables().size();
     }
 
+    /**
+     * <p>isManipulated.</p>
+     *
+     * @param nodeIndex a int
+     * @return a boolean
+     */
     public boolean isManipulated(int nodeIndex) {
         return this.manipulated[nodeIndex];
     }

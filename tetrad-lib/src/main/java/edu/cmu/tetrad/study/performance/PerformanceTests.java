@@ -49,10 +49,19 @@ import java.util.*;
  * Runs some basic performance tests of various algorithm.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PerformanceTests {
     private PrintStream out = System.out;
 
+    /**
+     * <p>endpointMisclassification.</p>
+     *
+     * @param _nodes a {@link java.util.List} object
+     * @param estGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param refGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.lang.String} object
+     */
     public static String endpointMisclassification(List<Node> _nodes, Graph estGraph, Graph refGraph) {
         int[][] counts = new int[4][4];
 
@@ -108,6 +117,11 @@ public class PerformanceTests {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         System.out.println("Start ");
 
@@ -211,6 +225,14 @@ public class PerformanceTests {
         performanceTests.testPc(5000, 1, 1000, .0001);
     }
 
+    /**
+     * <p>testPc.</p>
+     *
+     * @param numVars a int
+     * @param edgeFactor a double
+     * @param numCases a int
+     * @param alpha a double
+     */
     public void testPc(int numVars, double edgeFactor, int numCases, double alpha) {
         final int depth = -1;
 
@@ -293,6 +315,9 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>printStuffForKlea.</p>
+     */
     public void printStuffForKlea() {
 
         try {
@@ -340,6 +365,14 @@ public class PerformanceTests {
 
     }
 
+    /**
+     * <p>testPcStable.</p>
+     *
+     * @param numVars a int
+     * @param edgeFactor a double
+     * @param numCases a int
+     * @param alpha a double
+     */
     public void testPcStable(int numVars, double edgeFactor, int numCases, double alpha) {
         final int depth = -1;
 
@@ -409,6 +442,14 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>testFges.</p>
+     *
+     * @param numVars a int
+     * @param edgeFactor a double
+     * @param numCases a int
+     * @param penaltyDiscount a double
+     */
     public void testFges(int numVars, double edgeFactor, int numCases, double penaltyDiscount) {
         init(new File("long.fges." + numVars + "." + edgeFactor + "." + penaltyDiscount + ".txt"), "Tests performance of the FGES algorithm");
 
@@ -472,6 +513,13 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>testCpc.</p>
+     *
+     * @param numVars a int
+     * @param edgeFactor a double
+     * @param numCases a int
+     */
     public void testCpc(int numVars, double edgeFactor, int numCases) {
         final double alpha = 0.0001;
         final int depth = -1;
@@ -555,6 +603,14 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>testCpcStable.</p>
+     *
+     * @param numVars a int
+     * @param edgeFactor a double
+     * @param numCases a int
+     * @param alpha a double
+     */
     public void testCpcStable(int numVars, double edgeFactor, int numCases, double alpha) {
         final int depth = 3;
 
@@ -630,6 +686,13 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>testFci.</p>
+     *
+     * @param numVars a int
+     * @param edgeFactor a double
+     * @param numCases a int
+     */
     public void testFci(int numVars, double edgeFactor, int numCases) {
         final double alpha = 0.001;
         final int depth = 3;
@@ -707,6 +770,12 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>testGfci.</p>
+     *
+     * @param numVars a int
+     * @param edgeFactor a double
+     */
     public void testGfci(int numVars, double edgeFactor) {
         final double alpha = .1;
         final int depth = -1;
@@ -800,10 +869,26 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>testFgesComparisonContinuous.</p>
+     *
+     * @param numVars a int
+     * @param edgeFactor a double
+     * @param numCases a int
+     * @param numRuns a int
+     */
     public void testFgesComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
         testFges(numVars, edgeFactor, numCases, numRuns, true);
     }
 
+    /**
+     * <p>testFgesComparisonDiscrete.</p>
+     *
+     * @param numVars a int
+     * @param edgeFactor a double
+     * @param numCases a int
+     * @param numRuns a int
+     */
     public void testFgesComparisonDiscrete(int numVars, double edgeFactor, int numCases, int numRuns) {
         testFges(numVars, edgeFactor, numCases, numRuns, false);
     }
@@ -1035,10 +1120,26 @@ public class PerformanceTests {
         this.out.close();
     }
 
+    /**
+     * <p>testFgesMbComparisonContinuous.</p>
+     *
+     * @param numVars a int
+     * @param edgeFactor a double
+     * @param numCases a int
+     * @param numRuns a int
+     */
     public void testFgesMbComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
         testFgesMb(numVars, edgeFactor, numCases, numRuns, true);
     }
 
+    /**
+     * <p>testFgesMbComparisonDiscrete.</p>
+     *
+     * @param numVars a int
+     * @param edgeFactor a double
+     * @param numCases a int
+     * @param numRuns a int
+     */
     public void testFgesMbComparisonDiscrete(int numVars, double edgeFactor, int numCases, int numRuns) {
         testFgesMb(numVars, edgeFactor, numCases, numRuns, false);
     }
@@ -1296,6 +1397,9 @@ public class PerformanceTests {
         return b.toString();
     }
 
+    /**
+     * <p>testGFciComparison.</p>
+     */
     public void testGFciComparison() {
         int numVars = 1000;
         double edgeFactor = 1.0;
@@ -1444,6 +1548,11 @@ public class PerformanceTests {
     }
 
     // Compares two different ways of calculating a PAG_of_the_true_DAG from a DAG, to see if they match up
+    /**
+     * <p>testCompareDagToCPDAG.</p>
+     *
+     * @param numLatents a int
+     */
     public void testCompareDagToCPDAG(int numLatents) {
         System.out.println("Making list of vars");
 
@@ -1508,6 +1617,13 @@ public class PerformanceTests {
     }
 
     // Fas is calibrated; we need to calibrate other FAS versions to it.
+    /**
+     * <p>testComparePcVersions.</p>
+     *
+     * @param numVars a int
+     * @param edgeFactor a double
+     * @param numLatents a int
+     */
     public void testComparePcVersions(int numVars, double edgeFactor, int numLatents) {
         System.out.println("Making list of vars");
 
@@ -2004,6 +2120,9 @@ public class PerformanceTests {
                 numLatents, numEdges, 3, 3, 3, false);
     }
 
+    /**
+     * <p>printGraphDegrees.</p>
+     */
     @Test
     public void printGraphDegrees() {
         final int numVars = 30000;

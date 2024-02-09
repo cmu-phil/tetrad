@@ -47,12 +47,24 @@ import java.util.*;
  * library.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Ricf {
 
+    /**
+     * <p>Constructor for Ricf.</p>
+     */
     public Ricf() {
     }
 
+    /**
+     * <p>ricf.</p>
+     *
+     * @param mag a {@link edu.cmu.tetrad.graph.SemGraph} object
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param tolerance a double
+     * @return a {@link edu.cmu.tetrad.sem.Ricf.RicfResult} object
+     */
     public RicfResult ricf(SemGraph mag, ICovarianceMatrix covMatrix, double tolerance) {
         mag.setShowErrorTerms(false);
 
@@ -294,7 +306,12 @@ public class Ricf {
 
     /**
      * same as above but takes a Graph instead of a SemGraph
-     **/
+     *
+     * @param mag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param tolerance a double
+     * @return a {@link edu.cmu.tetrad.sem.Ricf.RicfResult} object
+     */
     public RicfResult ricf2(Graph mag, ICovarianceMatrix covMatrix, double tolerance) {
 //        mag.setShowErrorTerms(false);
 
@@ -535,7 +552,10 @@ public class Ricf {
     }
 
     /**
+     * <p>cliques.</p>
+     *
      * @return an enumeration of the cliques of the given graph considered as undirected.
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public List<List<Node>> cliques(Graph graph) {
         List<Node> nodes = graph.getNodes();

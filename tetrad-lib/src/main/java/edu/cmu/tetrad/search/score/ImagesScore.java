@@ -44,6 +44,7 @@ import java.util.List;
  * @see Fges
  * @see Grasp
  * @see Boss
+ * @version $Id: $Id
  */
 public class ImagesScore implements Score {
 
@@ -69,10 +70,10 @@ public class ImagesScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the average of the individual scores returned from each component score from their localScoreDiff
      * methods. Score differences that are returned as undefined (NaN) are excluded from the average.
-     *
-     * @return This average score.
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -98,6 +99,7 @@ public class ImagesScore implements Score {
      *
      * @param i The variable whose score is needed.
      * @return This score.
+     * @param parents an array of {@link int} objects
      */
     public double localScore(int i, int[] parents) {
         double sum = 0.0;
@@ -142,6 +144,7 @@ public class ImagesScore implements Score {
      *
      * @param i The variable whose score is needed.
      * @return This score.
+     * @param parent a int
      */
     public double localScore(int i, int parent) {
         double sum = 0.0;
@@ -160,12 +163,11 @@ public class ImagesScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the (aggregate) local node score, which is obtained by averaging the local scores obtained from each
      * individual score provided in the constructor, excluding scores that are returned as undefined (which are left out
      * of the average).
-     *
-     * @param i The variable whose score is needed.
-     * @return This score.
      */
     public double localScore(int i) {
         double sum = 0.0;
@@ -184,10 +186,9 @@ public class ImagesScore implements Score {
     }
 
     /**
-     * Returns a judgment for FGES whether a score with the bump is for an effect edge.
+     * {@inheritDoc}
      *
-     * @param bump The bump.
-     * @return True if so.
+     * Returns a judgment for FGES whether a score with the bump is for an effect edge.
      */
     @Override
     public boolean isEffectEdge(double bump) {
@@ -195,9 +196,9 @@ public class ImagesScore implements Score {
     }
 
     /**
-     * Returns the variables.
+     * {@inheritDoc}
      *
-     * @return This list.
+     * Returns the variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -205,9 +206,9 @@ public class ImagesScore implements Score {
     }
 
     /**
-     * Returns the sample size from the first score.
+     * {@inheritDoc}
      *
-     * @return This size.
+     * Returns the sample size from the first score.
      */
     @Override
     public int getSampleSize() {
@@ -215,9 +216,9 @@ public class ImagesScore implements Score {
     }
 
     /**
-     * Returns the max degree from teh first score.
+     * {@inheritDoc}
      *
-     * @return This maximum.
+     * Returns the max degree from teh first score.
      */
     @Override
     public int getMaxDegree() {
@@ -225,11 +226,9 @@ public class ImagesScore implements Score {
     }
 
     /**
-     * Returns the 'determines' judgment from the first score.
+     * {@inheritDoc}
      *
-     * @param z The set of variables.
-     * @param y The variable.
-     * @return This judgment, true if the 'determine' relations holds.
+     * Returns the 'determines' judgment from the first score.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {

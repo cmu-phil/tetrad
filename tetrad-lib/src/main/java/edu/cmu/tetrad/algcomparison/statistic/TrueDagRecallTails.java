@@ -12,20 +12,24 @@ import java.util.List;
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TrueDagRecallTails implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "--*-Rec";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Proportion of X~~>Y in true, with X*-*T in est, for which X-->Y in est";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -54,6 +58,7 @@ public class TrueDagRecallTails implements Statistic {
         return tp / (double) (tp + fn);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

@@ -34,6 +34,7 @@ import java.util.List;
  * journal of data science and analytics, 6, 3-18.
  *
  * @author Bryan Andrews
+ * @version $Id: $Id
  */
 public class MvpScore implements Score {
     // The mixed variables of the original dataset.
@@ -51,6 +52,7 @@ public class MvpScore implements Score {
      * @param dataSet        The mixed dataset being analyzed.
      * @param structurePrior The structure prior
      * @param fDegree        The f degree.
+     * @param discretize a boolean
      */
     public MvpScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 
@@ -112,10 +114,9 @@ public class MvpScore implements Score {
     }
 
     /**
-     * A method for FGES returning a judgment of whether an edge with a given bump counts as a effect edge.
+     * {@inheritDoc}
      *
-     * @param bump The bump.
-     * @return True, if so.
+     * A method for FGES returning a judgment of whether an edge with a given bump counts as a effect edge.
      * @see edu.cmu.tetrad.search.Fges
      */
     @Override
@@ -124,9 +125,9 @@ public class MvpScore implements Score {
     }
 
     /**
-     * Returns the list of variables.
+     * {@inheritDoc}
      *
-     * @return This list.
+     * Returns the list of variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -134,9 +135,9 @@ public class MvpScore implements Score {
     }
 
     /**
-     * Returns an estimate of the maximum degree of the graph for some algorithms.
+     * {@inheritDoc}
      *
-     * @return This maximum.
+     * Returns an estimate of the maximum degree of the graph for some algorithms.
      */
     @Override
     public int getMaxDegree() {
@@ -144,10 +145,9 @@ public class MvpScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns a judgment of whether the variable in z determine y exactly.
-     * @param z The set of nodes.
-     * @param y The node.
-     * @return This judgment.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {

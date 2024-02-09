@@ -20,6 +20,7 @@ import static java.util.Collections.sort;
  * misclassification comparison. Each returns a String, which can be printed.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CompareTwoGraphs {
 
@@ -189,6 +190,7 @@ public class CompareTwoGraphs {
      * @param targetGraph The target graph.
      * @param dataModel   The data model; some statistics (like BIC) may use this.
      * @return The comparison string.
+     * @param elapsedTime a long
      */
     public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel, long elapsedTime) {
         Graph _targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());

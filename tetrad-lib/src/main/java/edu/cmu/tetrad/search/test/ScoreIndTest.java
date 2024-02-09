@@ -44,6 +44,7 @@ import java.util.Set;
  * for independence and positive for dependence; this simply reports these differences.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ScoreIndTest implements IndependenceTest {
     private final Score score;
@@ -52,10 +53,21 @@ public class ScoreIndTest implements IndependenceTest {
     private double bump = Double.NaN;
     private boolean verbose;
 
+    /**
+     * <p>Constructor for ScoreIndTest.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
+     */
     public ScoreIndTest(Score score) {
         this(score, null);
     }
 
+    /**
+     * <p>Constructor for ScoreIndTest.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
+     * @param data a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public ScoreIndTest(Score score, DataModel data) {
         if (score == null) throw new NullPointerException();
         this.score = score;
@@ -63,18 +75,15 @@ public class ScoreIndTest implements IndependenceTest {
         this.data = data;
     }
 
-    /**
-     * @return an Independence test for a subset of the variables.
-     */
+    /** {@inheritDoc} */
     public ScoreIndTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Determines whether x _||_ y | z
+     * {@inheritDoc}
      *
-     * @return The independence result.
-     * @throws RuntimeException if a matrix singularity is encountered.
+     * Determines whether x _||_ y | z
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
@@ -116,9 +125,9 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * Returns the variable by the given name.
+     * {@inheritDoc}
      *
-     * @return This variable.
+     * Returns the variable by the given name.
      */
     public Node getVariable(String name) {
         for (Node node : this.variables) {
@@ -131,9 +140,9 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * Returns true if y is determined the variable in z.
+     * {@inheritDoc}
      *
-     * @return True is so.
+     * Returns true if y is determined the variable in z.
      */
     public boolean determines(List<Node> z, Node y) {
         return this.score.determines(z, y);
@@ -143,21 +152,23 @@ public class ScoreIndTest implements IndependenceTest {
      * Returns the significance level of the independence test.
      *
      * @return This level.
-     * @throws UnsupportedOperationException if there is no significance level.
+     * @throws java.lang.UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
         return -1;
     }
 
     /**
-     * Sets the significance level.
+     * {@inheritDoc}
      *
-     * @param alpha This level.
+     * Sets the significance level.
      */
     public void setAlpha(double alpha) {
     }
 
     /**
+     * <p>Getter for the field <code>data</code>.</p>
+     *
      * @return The data model for the independence test.
      */
     public DataModel getData() {
@@ -174,7 +185,10 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Not implemented.
+     * <p>getDataSets.</p>
+     *
+     * @throws java.lang.UnsupportedOperationException Not implemented.
+     * @return a {@link java.util.List} object
      */
     public List<DataSet> getDataSets() {
         throw new UnsupportedOperationException("Method not implemented");
@@ -200,9 +214,9 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * Returns true if verbose ouput should be printed.
+     * {@inheritDoc}
      *
-     * @return True, if so.
+     * Returns true if verbose ouput should be printed.
      */
     @Override
     public boolean isVerbose() {
@@ -210,9 +224,9 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * Sets whether verbose output should be printed.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets whether verbose output should be printed.
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -220,9 +234,9 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * Returns a String representation of this test.
+     * {@inheritDoc}
      *
-     * @return This string.
+     * Returns a String representation of this test.
      */
     @Override
     public String toString() {

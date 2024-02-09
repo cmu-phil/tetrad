@@ -42,6 +42,7 @@ import java.beans.PropertyChangeListener;
  * @author Donald Crimbchin
  * @author josephramsey
  * @see GraphEditor
+ * @version $Id: $Id
  */
 public class GraphToolbar extends JPanel implements PropertyChangeListener {
 
@@ -72,6 +73,8 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
 
     /**
      * Constructs a new Graph toolbar governing the modes of the given GraphWorkbench.
+     *
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public GraphToolbar(GraphWorkbench workbench) {
         if (workbench == null) {
@@ -222,6 +225,8 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Responds to property change events.
      */
     public void propertyChange(PropertyChangeEvent e) {

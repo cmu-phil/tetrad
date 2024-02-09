@@ -34,6 +34,7 @@ import java.awt.*;
  *
  * @author josephramsey
  * @author Frank Wimberly based on similar classes by Joe Ramsey
+ * @version $Id: $Id
  */
 public class LogParamsEditor extends JPanel implements ParameterEditor {
 
@@ -43,17 +44,31 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
     private Parameters params;
 
 
+    /** {@inheritDoc} */
     public void setParams(Parameters params) {
         this.params = params;
     }
 
+    /**
+     * <p>setParentModels.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
     }
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         buildGui();
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return true;
     }

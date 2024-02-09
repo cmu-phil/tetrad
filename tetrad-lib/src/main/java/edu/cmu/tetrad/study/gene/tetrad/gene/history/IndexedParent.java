@@ -31,6 +31,7 @@ import java.io.ObjectInputStream;
  * independently known.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndexedParent implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -53,6 +54,9 @@ public final class IndexedParent implements TetradSerializable {
 
     /**
      * Constructs a new index parent.
+     *
+     * @param index a int
+     * @param lag a int
      */
     public IndexedParent(int index, int lag) {
 
@@ -70,6 +74,8 @@ public final class IndexedParent implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.IndexedParent} object
      */
     public static IndexedParent serializableInstance() {
         return new IndexedParent(0, 1);
@@ -79,6 +85,8 @@ public final class IndexedParent implements TetradSerializable {
 
     /**
      * Returns the index of the parent.
+     *
+     * @return a int
      */
     public int getIndex() {
         return this.index;
@@ -86,12 +94,16 @@ public final class IndexedParent implements TetradSerializable {
 
     /**
      * Returns the lag of the parent.
+     *
+     * @return a int
      */
     public int getLag() {
         return this.lag;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns true iff the lags and indices are equal.
      */
     public boolean equals(Object o) {
@@ -107,6 +119,8 @@ public final class IndexedParent implements TetradSerializable {
 
     /**
      * Prints out the factor index and lag.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return "IndexedParent, index = " + getIndex() + ", lag = " + getLag();

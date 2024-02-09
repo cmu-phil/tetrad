@@ -21,16 +21,23 @@ import java.util.concurrent.RecursiveAction;
  * Stability selection.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class StabilitySelection implements Algorithm {
 
     private static final long serialVersionUID = 23L;
     private final Algorithm algorithm;
 
+    /**
+     * <p>Constructor for StabilitySelection.</p>
+     *
+     * @param algorithm a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
+     */
     public StabilitySelection(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         DataSet _dataSet = (DataSet) dataSet;
@@ -106,21 +113,25 @@ public class StabilitySelection implements Algorithm {
         counts.put(edge, counts.get(edge) + 1);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return this.algorithm.getComparisonGraph(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Stability selection for " + this.algorithm.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.algorithm.getDataType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.algorithm.getParameters();

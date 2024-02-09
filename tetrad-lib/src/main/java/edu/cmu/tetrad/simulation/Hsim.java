@@ -15,6 +15,12 @@ import java.util.Set;
 /*
  * Created by Erich on 3/27/2016.
  */
+/**
+ * <p>Hsim class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class Hsim {
     //Dag mydag, Set<Node> simnodes, DataSet data
     private boolean verbose;
@@ -24,6 +30,13 @@ public class Hsim {
 
     /// **********Constructors***************//
 
+    /**
+     * <p>Constructor for Hsim.</p>
+     *
+     * @param thedag a {@link edu.cmu.tetrad.graph.Dag} object
+     * @param thesimnodes a {@link java.util.Set} object
+     * @param thedata a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public Hsim(Dag thedag, Set<Node> thesimnodes, DataSet thedata) {
         if (thedata.isContinuous()) {
             throw new IllegalArgumentException(
@@ -65,6 +78,11 @@ public class Hsim {
 
 //========================================PRIVATE METHODS====================================//
 
+    /**
+     * <p>hybridsimulate.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet hybridsimulate() {
         // Find Markov Blankets for resimulated variables**/
         // this needs to be made general, rather than only for two specific names nodes**/

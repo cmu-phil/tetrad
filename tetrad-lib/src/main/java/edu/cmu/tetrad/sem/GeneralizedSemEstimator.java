@@ -45,6 +45,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * Estimates a Generalized SEM I'M given a Generalized SEM PM and a data set.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GeneralizedSemEstimator {
 
@@ -136,6 +137,10 @@ public class GeneralizedSemEstimator {
     /**
      * Maximizes likelihood equation by equation. Assumes the equations are recursive and that each has exactly one
      * error term.
+     *
+     * @param pm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
      */
     public GeneralizedSemIm estimate(GeneralizedSemPm pm, DataSet data) {
         StringBuilder builder = new StringBuilder();
@@ -201,10 +206,20 @@ public class GeneralizedSemEstimator {
         return estIm;
     }
 
+    /**
+     * <p>Getter for the field <code>report</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getReport() {
         return this.report;
     }
 
+    /**
+     * <p>Getter for the field <code>aSquaredStar</code>.</p>
+     *
+     * @return a double
+     */
     public double getaSquaredStar() {
         return this.aSquaredStar;
     }

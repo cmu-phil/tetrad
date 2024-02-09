@@ -122,19 +122,24 @@ import static org.apache.commons.math3.util.FastMath.*;
  * *13(4-5)*:411-430
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class FastIca {
 
     // The algorithm type where all components are extracted simultaneously.
+    /** Constant <code>PARALLEL</code> */
     public static int PARALLEL;
 
     // The algorithm type where the components are extracted one at a time.
+    /** Constant <code>DEFLATION=1</code> */
     public static int DEFLATION = 1;
 
     // One of the function types that can be used to approximate negative entropy.
+    /** Constant <code>LOGCOSH=2</code> */
     public static int LOGCOSH = 2;
 
     // The other function type that can be used to approximate negative entropy.
+    /** Constant <code>EXP=3</code> */
     public static int EXP = 3;
 
     // A data matrix with n rows representing observations and p columns representing variables.
@@ -176,6 +181,7 @@ public class FastIca {
      * the data matrix itself and the number of components to be extracted.
      *
      * @param X A 2D matrix, rows being cases, columns being variables. It is assumed that there are no missing values.
+     * @param numComponents a int
      */
     public FastIca(Matrix X, int numComponents) {
         this.X = X;

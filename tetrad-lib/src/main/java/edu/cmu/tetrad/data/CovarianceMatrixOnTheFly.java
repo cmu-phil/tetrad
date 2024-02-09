@@ -43,6 +43,7 @@ import java.util.concurrent.RecursiveTask;
  *
  * @author josephramsey
  * @see CorrelationMatrix
+ * @version $Id: $Id
  */
 public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     private static final long serialVersionUID = 23L;
@@ -96,12 +97,19 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * VerticalDoubleDataBox, the data will be mean-centered by the constructor; is non-mean-centered version of the
      * data is needed, the data should be copied before being send into the constructor.
      *
-     * @throws IllegalArgumentException if this is not a continuous data set.
+     * @throws java.lang.IllegalArgumentException if this is not a continuous data set.
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public CovarianceMatrixOnTheFly(DataSet dataSet) {
         this(dataSet, false);
     }
 
+    /**
+     * <p>Constructor for CovarianceMatrixOnTheFly.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param verbose a boolean
+     */
     public CovarianceMatrixOnTheFly(DataSet dataSet, boolean verbose) {
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("Not a continuous data set.");
@@ -276,6 +284,12 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
     }
 
+    /**
+     * <p>demean.</p>
+     *
+     * @param data an array of {@link double} objects
+     * @param means a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public static void demean(double[][] data, Vector means) {
         for (int j = 0; j < data.length; j++) {
             for (int i = 0; i < data[j].length; i++) {
@@ -286,6 +300,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
     public static ICovarianceMatrix serializableInstance() {
         List<Node> variables = new ArrayList<>();
@@ -296,18 +312,23 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
      * @return the list of variables (unmodifiable).
      */
     public final List<Node> getVariables() {
         return this.variables;
     }
 
+    /** {@inheritDoc} */
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = variables;
     }
 
     /**
+     * <p>getVariableNames.</p>
+     *
      * @return the variable names, in order.
      */
     public final List<String> getVariableNames() {
@@ -321,9 +342,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return names;
     }
 
-    /**
-     * @return the variable name at the given index.
-     */
+    /** {@inheritDoc} */
     public final String getVariableName(int index) {
         if (index >= getVariables().size()) {
             throw new IllegalArgumentException("Index out of range: " + index);
@@ -334,6 +353,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
+     * <p>getDimension.</p>
+     *
      * @return the dimension of the covariance matrix.
      */
     public final int getDimension() {
@@ -349,6 +370,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return this.sampleSize;
     }
 
+    /** {@inheritDoc} */
     public final void setSampleSize(int sampleSize) {
         if (sampleSize <= 0) {
             throw new IllegalArgumentException("Sample size must be > 0.");
@@ -359,12 +381,16 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
     /**
      * Gets the name of the covariance matrix.
+     *
+     * @return a {@link java.lang.String} object
      */
     public final String getName() {
         return this.name;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of the covariance matrix.
      */
     public final void setName(String name) {
@@ -372,6 +398,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the knowledge associated with this data.
      */
     public final Knowledge getKnowledge() {
@@ -379,6 +407,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Associates knowledge with this data.
      */
     public final void setKnowledge(Knowledge knowledge) {
@@ -390,7 +420,10 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
+     * <p>getSubmatrix.</p>
+     *
      * @return a submatrix of the covariance matrix with variables in the given order.
+     * @param indices an array of {@link int} objects
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {
         List<Node> submatrixVars = new LinkedList<>();
@@ -412,6 +445,13 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
     }
 
+    /**
+     * <p>getSubmatrix.</p>
+     *
+     * @param indices an array of {@link int} objects
+     * @param dataRows an array of {@link int} objects
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public final ICovarianceMatrix getSubmatrix(int[] indices, int[] dataRows) {
         List<Node> submatrixVars = new LinkedList<>();
 
@@ -432,20 +472,27 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
     }
 
+    /**
+     * <p>getSubmatrix.</p>
+     *
+     * @param submatrixVarNames a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public final ICovarianceMatrix getSubmatrix(List<String> submatrixVarNames) {
         throw new UnsupportedOperationException();
     }
 
     /**
+     * <p>getSubmatrix.</p>
+     *
      * @return a submatrix of this matrix, with variables in the given order.
+     * @param submatrixVarNames an array of {@link java.lang.String} objects
      */
     public final CovarianceMatrixOnTheFly getSubmatrix(String[] submatrixVarNames) {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * @return the value of element (i,j) in the matrix
-     */
+    /** {@inheritDoc} */
     public final double getValue(int i, int j) {
         if (i == j) {
             return variances[i];
@@ -471,6 +518,14 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return v;
     }
 
+    /**
+     * <p>getValue.</p>
+     *
+     * @param i a int
+     * @param j a int
+     * @param rows an array of {@link int} objects
+     * @return a double
+     */
     public final double getValue(int i, int j, int[] rows) {
         double d = 0.0D;
 
@@ -494,6 +549,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
+     * <p>getSize.</p>
+     *
      * @return the size of the square matrix.
      */
     public final int getSize() {
@@ -501,6 +558,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
+     * <p>Getter for the field <code>matrix</code>.</p>
+     *
      * @return a copy of the covariance matrix.
      */
     public final Matrix getMatrix() {
@@ -515,11 +574,18 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return matrix;
     }
 
+    /** {@inheritDoc} */
     public void setMatrix(Matrix matrix) {
         this.matrix = matrix;
         checkMatrix();
     }
 
+    /**
+     * <p>Getter for the field <code>matrix</code>.</p>
+     *
+     * @param rows an array of {@link int} objects
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public final Matrix getMatrix(int[] rows) {
         Matrix matrix = new Matrix(getDimension(), getDimension());
 
@@ -532,16 +598,21 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return matrix;
     }
 
+    /** {@inheritDoc} */
     public final void select(Node variable) {
         if (variables.contains(variable)) {
             getSelectedVariables().add(variable);
         }
     }
 
+    /**
+     * <p>clearSelection.</p>
+     */
     public final void clearSelection() {
         getSelectedVariables().clear();
     }
 
+    /** {@inheritDoc} */
     public final boolean isSelected(Node variable) {
         if (variable == null) {
             throw new NullPointerException("Null variable. Try again.");
@@ -550,6 +621,11 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return getSelectedVariables().contains(variable);
     }
 
+    /**
+     * <p>getSelectedVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public final List<String> getSelectedVariableNames() {
         List<String> selectedVariableNames = new LinkedList<>();
 
@@ -562,6 +638,8 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
     /**
      * Prints out the matrix
+     *
+     * @return a {@link java.lang.String} object
      */
     public final String toString() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -588,29 +666,43 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return buf.toString();
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isContinuous() {
         return true;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isDiscrete() {
         return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isMixed() {
         return false;
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbose a boolean
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Matrix getSelection(int[] rows, int[] cols) {
         Matrix m = new Matrix(rows.length, cols.length);
@@ -635,6 +727,14 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return m;
     }
 
+    /**
+     * <p>getSelection.</p>
+     *
+     * @param rows an array of {@link int} objects
+     * @param cols an array of {@link int} objects
+     * @param dataRows an array of {@link int} objects
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public Matrix getSelection(int[] rows, int[] cols, int[] dataRows) {
         Matrix m = new Matrix(rows.length, cols.length);
 
@@ -658,6 +758,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return m;
     }
 
+    /** {@inheritDoc} */
     public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
             Node variable = getVariables().get(i);
@@ -669,16 +770,19 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataModel copy() {
         return this;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setValue(int i, int j, double v) {
         throw new IllegalArgumentException();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void removeVariables(List<String> remaining) {
         ICovarianceMatrix cov = getSubmatrix(remaining);

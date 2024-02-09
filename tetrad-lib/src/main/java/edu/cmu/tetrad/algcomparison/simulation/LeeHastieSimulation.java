@@ -19,6 +19,7 @@ import java.util.List;
  * A version of the Lee and Hastic simulation which is guaranteed ot generate a discrete data set.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LeeHastieSimulation implements Simulation {
 
@@ -29,10 +30,16 @@ public class LeeHastieSimulation implements Simulation {
     private DataType dataType;
     private List<Node> shuffledOrder;
 
+    /**
+     * <p>Constructor for LeeHastieSimulation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public LeeHastieSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
 //        if (parameters.getLong(Params.SEED) != -1L) {
@@ -87,21 +94,25 @@ public class LeeHastieSimulation implements Simulation {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Lee & Hastie simulation using " + this.randomGraph.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
@@ -121,11 +132,13 @@ public class LeeHastieSimulation implements Simulation {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.dataType;

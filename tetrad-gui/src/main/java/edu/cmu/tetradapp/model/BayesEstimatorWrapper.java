@@ -43,6 +43,7 @@ import java.util.List;
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesEstimatorWrapper implements SessionModel {
 
@@ -65,6 +66,12 @@ public class BayesEstimatorWrapper implements SessionModel {
     private int modelIndex;
 
     //=================================CONSTRUCTORS========================//
+    /**
+     * <p>Constructor for BayesEstimatorWrapper.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     */
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
                                  BayesPmWrapper bayesPmWrapper) {
 
@@ -107,6 +114,12 @@ public class BayesEstimatorWrapper implements SessionModel {
         this.dataSet = (DataSet) model;
     }
 
+    /**
+     * <p>Constructor for BayesEstimatorWrapper.</p>
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param bayesImWrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
+     */
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
                                  BayesImWrapper bayesImWrapper) {
         this(dataWrapper, new BayesPmWrapper(bayesImWrapper));
@@ -116,49 +129,96 @@ public class BayesEstimatorWrapper implements SessionModel {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
 
     //==============================PUBLIC METHODS========================//
+    /**
+     * <p>getEstimatedBayesIm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getEstimatedBayesIm() {
         return this.bayesIm;
     }
 
+    /**
+     * <p>Setter for the field <code>bayesIm</code>.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public void setBayesIm(BayesIm bayesIm) {
         this.bayesIms.clear();
         this.bayesIms.add(bayesIm);
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.bayesIm.getBayesPm().getDag();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /** {@inheritDoc} */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>Getter for the field <code>numModels</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumModels() {
         return this.numModels;
     }
 
+    /**
+     * <p>Setter for the field <code>numModels</code>.</p>
+     *
+     * @param numModels a int
+     */
     public void setNumModels(int numModels) {
         this.numModels = numModels;
     }
 
+    /**
+     * <p>Getter for the field <code>modelIndex</code>.</p>
+     *
+     * @return a int
+     */
     public int getModelIndex() {
         return this.modelIndex;
     }
 
+    /**
+     * <p>Setter for the field <code>modelIndex</code>.</p>
+     *
+     * @param modelIndex a int
+     */
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
         this.bayesIm = this.bayesIms.get(modelIndex);

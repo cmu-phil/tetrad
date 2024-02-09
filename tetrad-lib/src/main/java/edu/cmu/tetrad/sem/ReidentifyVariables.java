@@ -33,10 +33,20 @@ import static org.apache.commons.math3.util.FastMath.abs;
 
 /**
  * Utility for reidentifying variables for multiple indicator structure searches.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class ReidentifyVariables {
     // This reidentifies a variable if all of its members belong to one of the clusters
     // in the original graph.
+    /**
+     * <p>reidentifyVariables1.</p>
+     *
+     * @param partition a {@link java.util.List} object
+     * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.util.List} object
+     */
     public static List<String> reidentifyVariables1(List<List<Node>> partition, Graph trueGraph) {
         List<String> names = new ArrayList<>();
         Node latent;
@@ -111,6 +121,14 @@ public class ReidentifyVariables {
     // This reidentifies a variable in the output with a variable in the input if the sum of the
     // factor loadings for the output clusters on the input's loadings is greater than for
     // any other input latent.
+    /**
+     * <p>reidentifyVariables2.</p>
+     *
+     * @param clusters a {@link java.util.List} object
+     * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link java.util.List} object
+     */
     public static List<String> reidentifyVariables2(List<List<Node>> clusters, Graph trueGraph, DataSet data) {
         trueGraph = GraphUtils.replaceNodes(trueGraph, data.getVariables());
         Map<Node, SemIm> ims = new HashMap<>();
@@ -221,6 +239,12 @@ public class ReidentifyVariables {
         return sum;
     }
 
+    /**
+     * <p>getLatents.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.util.List} object
+     */
     public static List<Node> getLatents(Graph graph) {
         List<Node> latents = new ArrayList<>();
         for (Node node : graph.getNodes()) if (node.getNodeType() == NodeType.LATENT) latents.add(node);

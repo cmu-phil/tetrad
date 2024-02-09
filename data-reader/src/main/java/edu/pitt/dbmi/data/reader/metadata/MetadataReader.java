@@ -24,6 +24,7 @@ import java.io.IOException;
  * Dec 18, 2018 2:05:55 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public interface MetadataReader {
 
@@ -31,7 +32,7 @@ public interface MetadataReader {
      * Reads in the metadata.
      *
      * @return the metadata.
-     * @throws IOException if an I/O error occurs.
+     * @throws java.io.IOException if an I/O error occurs.
      */
     Metadata read() throws IOException;
 

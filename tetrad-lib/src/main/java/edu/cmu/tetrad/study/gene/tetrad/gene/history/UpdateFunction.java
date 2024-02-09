@@ -35,11 +35,15 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * implemented.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface UpdateFunction extends TetradSerializable {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**
+     * <p>getIndexedLagGraph.</p>
+     *
      * @return the indexed lag graph, if one is available.
      */
     IndexedLagGraph getIndexedLagGraph();
@@ -54,11 +58,15 @@ public interface UpdateFunction extends TetradSerializable {
     double getValue(int factorIndex, double[][] history);
 
     /**
+     * <p>getNumFactors.</p>
+     *
      * @return the number of factors in the history. This is used to set up the initial history array.
      */
     int getNumFactors();
 
     /**
+     * <p>getMaxLag.</p>
+     *
      * @return the max lag of the gene history. This is used to set up the initial history array.
      */
     int getMaxLag();

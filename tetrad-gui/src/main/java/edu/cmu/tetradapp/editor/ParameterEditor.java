@@ -30,16 +30,21 @@ import edu.cmu.tetrad.util.Parameters;
  * that the implementing class will implement JComponent.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface ParameterEditor {
 
     /**
      * Sets the parameter object to be edited.
+     *
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     void setParams(Parameters params);
 
     /**
      * Sets the parent models that can be exploited for information in the editing process.
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
      */
     void setParentModels(Object[] parentModels);
 
@@ -51,6 +56,8 @@ public interface ParameterEditor {
 
     /**
      * True if this parameter editor must be shown when available.
+     *
+     * @return a boolean
      */
     boolean mustBeShown();
 }

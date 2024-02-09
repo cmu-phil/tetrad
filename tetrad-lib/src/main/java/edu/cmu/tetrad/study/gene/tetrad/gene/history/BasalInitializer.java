@@ -34,6 +34,7 @@ import java.io.ObjectInputStream;
  * than itself one time step back) and to a random value chosen from a N(basal, initStDev) distribution otherwise.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BasalInitializer implements Initializer {
     private static final long serialVersionUID = 23L;
@@ -90,6 +91,7 @@ public class BasalInitializer implements Initializer {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
      * @return a simple exemplar of this class to test serialization.
      */
     public static BasalInitializer serializableInstance() {

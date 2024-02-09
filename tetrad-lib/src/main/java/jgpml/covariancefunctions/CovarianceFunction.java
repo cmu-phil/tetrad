@@ -32,6 +32,9 @@ import Jama.Matrix;
 
 /**
  * Interface for covariance functions
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public interface CovarianceFunction {
 

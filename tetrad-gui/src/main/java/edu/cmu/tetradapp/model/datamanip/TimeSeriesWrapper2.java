@@ -29,7 +29,10 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
 
 /**
+ * <p>TimeSeriesWrapper2 class.</p>
+ *
  * @author Tyler
+ * @version $Id: $Id
  */
 public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransferable {
     private static final long serialVersionUID = 23L;
@@ -69,6 +72,7 @@ public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransfer
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

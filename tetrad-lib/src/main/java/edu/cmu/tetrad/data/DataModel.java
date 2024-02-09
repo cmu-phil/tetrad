@@ -32,49 +32,67 @@ import edu.cmu.tetrad.graph.Node;
  * data models. So this is primarily a taqging interface.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface DataModel
         extends KnowledgeTransferable, VariableSource {
 
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**
+     * <p>getName.</p>
+     *
      * @return the name of the data model (may be null).
      */
     String getName();
 
     /**
      * Sets the name of the data model (may be null).
+     *
      * @param name the name to set
      */
     void setName(String name);
 
     /**
      * Renders the data model as as String.
+     *
+     * @return a {@link java.lang.String} object
      */
     String toString();
 
     /**
+     * <p>isContinuous.</p>
+     *
      * @return true if the data model is continuous, false otherwise.
      */
     boolean isContinuous();
 
     /**
+     * <p>isDiscrete.</p>
+     *
      * @return true if the data model is discrete, false otherwise.
      */
     boolean isDiscrete();
 
     /**
+     * <p>isMixed.</p>
+     *
      * @return true if the data model is mixed continuous/discrete, false otherwise.
      */
     boolean isMixed();
 
     /**
+     * <p>getVariable.</p>
+     *
      * @return the variable with the given name, or null if no such variable exists.
+     * @param name a {@link java.lang.String} object
      */
     Node getVariable(String name);
 
     /**
+     * <p>copy.</p>
+     *
      * @return a copy of the data model.
      */
     DataModel copy();

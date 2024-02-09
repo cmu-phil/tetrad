@@ -35,12 +35,19 @@ import java.util.stream.Stream;
  * May 24, 2019 11:37:33 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class ParameterComponents {
 
     private ParameterComponents() {
     }
 
+    /**
+     * <p>toArray.</p>
+     *
+     * @param parameterComponents a {@link java.util.Map} object
+     * @return an array of {@link javax.swing.Box} objects
+     */
     public static Box[] toArray(Map<String, Box> parameterComponents) {
         ParamDescriptions paramDescs = ParamDescriptions.getInstance();
 
@@ -58,6 +65,13 @@ public final class ParameterComponents {
                 .toArray(Box[]::new);
     }
 
+    /**
+     * <p>createParameterComponents.</p>
+     *
+     * @param params a {@link java.util.Set} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @return a {@link java.util.Map} object
+     */
     public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
         ParamDescriptions paramDescs = ParamDescriptions.getInstance();
         return params.stream()
@@ -70,6 +84,16 @@ public final class ParameterComponents {
                         TreeMap::new));
     }
 
+    /**
+     * <p>getDoubleField.</p>
+     *
+     * @param parameter a {@link java.lang.String} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a double
+     * @param lowerBound a double
+     * @param upperBound a double
+     * @return a {@link edu.cmu.tetradapp.util.DoubleTextField} object
+     */
     public static DoubleTextField getDoubleField(String parameter, Parameters parameters,
                                                  double defaultValue, double lowerBound, double upperBound) {
         DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
@@ -100,6 +124,16 @@ public final class ParameterComponents {
         return field;
     }
 
+    /**
+     * <p>getIntTextField.</p>
+     *
+     * @param parameter a {@link java.lang.String} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a int
+     * @param lowerBound a double
+     * @param upperBound a double
+     * @return a {@link edu.cmu.tetradapp.util.IntTextField} object
+     */
     public static IntTextField getIntTextField(String parameter, Parameters parameters,
                                                int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
@@ -129,6 +163,16 @@ public final class ParameterComponents {
         return field;
     }
 
+    /**
+     * <p>getLongTextField.</p>
+     *
+     * @param parameter a {@link java.lang.String} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a long
+     * @param lowerBound a double
+     * @param upperBound a double
+     * @return a {@link edu.cmu.tetradapp.util.LongTextField} object
+     */
     public static LongTextField getLongTextField(String parameter, Parameters parameters,
                                                  long defaultValue, double lowerBound, double upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 10);
@@ -158,6 +202,14 @@ public final class ParameterComponents {
         return field;
     }
 
+    /**
+     * <p>getBooleanSelectionBox.</p>
+     *
+     * @param parameter a {@link java.lang.String} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a boolean
+     * @return a {@link javax.swing.Box} object
+     */
     public static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
 
@@ -201,6 +253,14 @@ public final class ParameterComponents {
         return selectionBox;
     }
 
+    /**
+     * <p>getStringField.</p>
+     *
+     * @param parameter a {@link java.lang.String} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetradapp.util.StringTextField} object
+     */
     public static StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
         StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 

@@ -29,6 +29,7 @@ import javax.swing.*;
  * Edits the parameters for generating random graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SimulationParamsEditor extends JPanel implements ParameterEditor {
     private Parameters params = new Parameters();
@@ -39,12 +40,25 @@ public class SimulationParamsEditor extends JPanel implements ParameterEditor {
     public SimulationParamsEditor() {
     }
 
+    /**
+     * <p>setParentModels.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
     }
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return false;
     }
@@ -57,6 +71,7 @@ public class SimulationParamsEditor extends JPanel implements ParameterEditor {
         return this.params;
     }
 
+    /** {@inheritDoc} */
     public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();

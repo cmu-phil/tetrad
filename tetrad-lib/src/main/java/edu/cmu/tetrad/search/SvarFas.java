@@ -56,6 +56,7 @@ import java.util.*;
  * @see Fas
  * @see Knowledge
  * @see SvarFci
+ * @version $Id: $Id
  */
 public class SvarFas implements IFas {
 
@@ -152,9 +153,9 @@ public class SvarFas implements IFas {
     }
 
     /**
-     * Sets the depth--i.e., the maximum number of variables conditioned on in any test, -1 for unlimited.
+     * {@inheritDoc}
      *
-     * @param depth This depth.
+     * Sets the depth--i.e., the maximum number of variables conditioned on in any test, -1 for unlimited.
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -166,9 +167,9 @@ public class SvarFas implements IFas {
     }
 
     /**
-     * Sets the knowledge used in the search.
+     * {@inheritDoc}
      *
-     * @param knowledge This knowledge.
+     * Sets the knowledge used in the search.
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
@@ -202,44 +203,40 @@ public class SvarFas implements IFas {
     }
 
     /**
-     * Sets whether verbose output should be printed.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets whether verbose output should be printed.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    /**
-     * @throws UnsupportedOperationException This method is not used.
-     */
+    /** {@inheritDoc} */
     @Override
     public long getElapsedTime() {
         throw new UnsupportedOperationException("This method is not used.");
     }
 
     /**
-     * Returns the nodes of the test.
+     * {@inheritDoc}
      *
-     * @return This list.
+     * Returns the nodes of the test.
      */
     @Override
     public List<Node> getNodes() {
         return this.test.getVariables();
     }
 
-    /**
-     * @throws UnsupportedOperationException This method is not used.
-     */
+    /** {@inheritDoc} */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
         throw new UnsupportedOperationException("This method is not used.");
     }
 
     /**
-     * Sets the output stream for printing, default is System.out.
+     * {@inheritDoc}
      *
-     * @param out The print stream.
+     * Sets the output stream for printing, default is System.out.
      * @see PrintStream
      */
     @Override

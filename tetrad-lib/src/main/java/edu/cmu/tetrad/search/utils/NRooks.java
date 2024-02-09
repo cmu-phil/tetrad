@@ -11,6 +11,7 @@ import java.util.Stack;
  *
  * @author josephramsey
  * @author ChatGPT
+ * @version $Id: $Id
  */
 public class NRooks {
 

@@ -23,6 +23,12 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.reveal;
 
 import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.OutputGraph;
 
+/**
+ * <p>RevealOutputGraph class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class RevealOutputGraph implements OutputGraph {
     private final int ngenes;
     private final int[][] parents;
@@ -30,6 +36,15 @@ public class RevealOutputGraph implements OutputGraph {
     String[] names;
     String graphName;
 
+    /**
+     * <p>Constructor for RevealOutputGraph.</p>
+     *
+     * @param ngenes a int
+     * @param parents an array of {@link int} objects
+     * @param lags an array of {@link int} objects
+     * @param names an array of {@link java.lang.String} objects
+     * @param graphName a {@link java.lang.String} object
+     */
     public RevealOutputGraph(int ngenes, int[][] parents, int[][] lags,
                              String[] names, String graphName) {
         this.ngenes = ngenes;
@@ -39,22 +54,35 @@ public class RevealOutputGraph implements OutputGraph {
         this.graphName = graphName;
     }
 
+    /**
+     * <p>getSize.</p>
+     *
+     * @return a int
+     */
     public int getSize() {
         return this.ngenes;
     }
 
+    /** {@inheritDoc} */
     public int[] getParents(int index) {
         return this.parents[index];
     }
 
+    /** {@inheritDoc} */
     public int[] getLags(int index) {
         return this.lags[index];
     }
 
+    /** {@inheritDoc} */
     public String getNodeName(int index) {
         return this.names[index];
     }
 
+    /**
+     * <p>Getter for the field <code>graphName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getGraphName() {
         return this.graphName;
     }

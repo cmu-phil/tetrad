@@ -33,6 +33,7 @@ import java.util.*;
  * Implments a sextad-based Purify method.
  *
  * @author ricardosilva
+ * @version $Id: $Id
  */
 public class PurifySextadBased {
     private final DeltaSextadTest sextadTest;
@@ -40,6 +41,12 @@ public class PurifySextadBased {
     private final List<Integer> nodes;
     private final double alpha;
 
+    /**
+     * <p>Constructor for PurifySextadBased.</p>
+     *
+     * @param sextadTest a {@link edu.cmu.tetrad.search.utils.DeltaSextadTest} object
+     * @param alpha a double
+     */
     public PurifySextadBased(DeltaSextadTest sextadTest, double alpha) {
         this.sextadTest = sextadTest;
 
@@ -52,6 +59,12 @@ public class PurifySextadBased {
     }
 
     // The input nodes may not be object-identical to the ones from the IntSextad test.
+    /**
+     * <p>purify.</p>
+     *
+     * @param clustering a {@link java.util.List} object
+     * @return a {@link java.util.List} object
+     */
     public List<List<Integer>> purify(List<List<Integer>> clustering) {
 
         if (clustering.isEmpty()) {

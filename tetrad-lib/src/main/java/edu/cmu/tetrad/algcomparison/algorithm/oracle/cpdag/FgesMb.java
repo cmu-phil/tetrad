@@ -28,6 +28,7 @@ import java.util.List;
  * FGES-MB (the heuristic version).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FGES-MB",
@@ -45,13 +46,22 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
 
+    /**
+     * <p>Constructor for FgesMb.</p>
+     */
     public FgesMb() {
     }
 
+    /**
+     * <p>Constructor for FgesMb.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public FgesMb(ScoreWrapper score) {
         this.score = score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -108,22 +118,26 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Node target = graph.getNode(this.targetName);
         return GraphUtils.markovBlanketSubgraph(target, new EdgeListGraph(graph));
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "FGES-MB (Fast Greedy Search MB) using " + this.score.getDescription();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return this.score.getDataType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -137,26 +151,31 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

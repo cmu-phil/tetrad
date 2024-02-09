@@ -52,6 +52,12 @@ final class DirichletBayesImProbsWizard extends JPanel {
     private DirichletBayesImNodeProbsTable editingTable;
     private boolean enableEditing = true;
 
+    /**
+     * <p>Constructor for DirichletBayesImProbsWizard.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public DirichletBayesImProbsWizard(DirichletBayesIm bayesIm, GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -206,10 +212,20 @@ final class DirichletBayesImProbsWizard extends JPanel {
         return this.workbench;
     }
 
+    /**
+     * <p>isEnableEditing.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEnableEditing() {
         return this.enableEditing;
     }
 
+    /**
+     * <p>enableEditing.</p>
+     *
+     * @param enableEditing a boolean
+     */
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {

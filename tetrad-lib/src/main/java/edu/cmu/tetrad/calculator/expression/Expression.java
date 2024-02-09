@@ -33,37 +33,54 @@ import java.util.List;
  * Note that expressions form trees. Each expression has a (possibly empty) list of children.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public interface Expression extends TetradSerializable {
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**
      * Evaluates the expression using the given context
+     *
+     * @param context a {@link edu.cmu.tetrad.calculator.expression.Context} object
+     * @return a double
      */
     double evaluate(Context context);
 
     /**
+     * <p>getToken.</p>
+     *
      * @return the token for this expression=="+".
      */
     String getToken();
 
     /**
+     * <p>getPosition.</p>
+     *
      * @return the position, infix or not.
      */
     ExpressionDescriptor.Position getPosition();
 
     /**
+     * <p>getExpressions.</p>
+     *
      * @return the sub expressions of this expression.
      */
     List<Expression> getExpressions();
 
     /**
+     * <p>getRealDistribution.</p>
      *
+     * @param context a {@link edu.cmu.tetrad.calculator.expression.Context} object
+     * @return a {@link org.apache.commons.math3.distribution.RealDistribution} object
      */
     RealDistribution getRealDistribution(Context context);
 
     /**
+     * <p>getIntegerDistribution.</p>
      *
+     * @param context a {@link edu.cmu.tetrad.calculator.expression.Context} object
+     * @return a {@link org.apache.commons.math3.distribution.IntegerDistribution} object
      */
     IntegerDistribution getIntegerDistribution(Context context);
 

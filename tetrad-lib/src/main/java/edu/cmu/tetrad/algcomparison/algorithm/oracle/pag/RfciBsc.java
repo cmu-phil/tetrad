@@ -23,6 +23,7 @@ import java.util.List;
  * Runs RFCI-BSC, which is RFCI with bootstrap sampling of PAGs.
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ * @version $Id: $Id
  */
 
 // Taking this out for now until we can get a good description for it.
@@ -43,9 +44,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * Returns the knowledge.
+     * {@inheritDoc}
      *
-     * @return the knowledge
+     * Returns the knowledge.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -53,9 +54,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
-     * Sets the knowledge.
+     * {@inheritDoc}
      *
-     * @param knowledge a knowledge object.
+     * Sets the knowledge.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -63,11 +64,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
-     * Performs the RFCI-BSC search.
+     * {@inheritDoc}
      *
-     * @param dataSet    The data set to run to the search on.
-     * @param parameters The paramters of the search.
-     * @return the graph
+     * Performs the RFCI-BSC search.
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -94,10 +93,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
-     * Returns the comparison graph.
+     * {@inheritDoc}
      *
-     * @param graph The true directed graph, if there is one.
-     * @return the comparison graph
+     * Returns the comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -106,9 +104,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
-     * Returns the description of the algorithm.
+     * {@inheritDoc}
      *
-     * @return the description of the algorithm
+     * Returns the description of the algorithm.
      */
     @Override
     public String getDescription() {
@@ -116,9 +114,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
-     * Returns the data type that the algorithm can handle, which is discrete.
+     * {@inheritDoc}
      *
-     * @return the data type that the algorithm can handle, which is discrete.
+     * Returns the data type that the algorithm can handle, which is discrete.
      */
     @Override
     public DataType getDataType() {
@@ -126,9 +124,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
-     * Returns the parameters of the algorithm.
+     * {@inheritDoc}
      *
-     * @return the parameters of the algorithm
+     * Returns the parameters of the algorithm.
      */
     @Override
     public List<String> getParameters() {

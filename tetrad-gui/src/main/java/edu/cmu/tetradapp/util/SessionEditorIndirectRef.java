@@ -26,6 +26,7 @@ package edu.cmu.tetradapp.util;
  *
  * @author josephramsey
  * @see DesktopController
+ * @version $Id: $Id
  */
 public interface SessionEditorIndirectRef {
 }

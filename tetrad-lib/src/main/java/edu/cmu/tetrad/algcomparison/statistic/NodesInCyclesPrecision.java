@@ -12,20 +12,24 @@ import java.util.Set;
  * The adjacency precision. The true positives are the number of adjacencies in both the true and estimated graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NodesInCyclesPrecision implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "NICP";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Node in cycle precision";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         trueGraph = GraphUtils.replaceNodes(trueGraph, estGraph.getNodes());
@@ -54,6 +58,7 @@ public class NodesInCyclesPrecision implements Statistic {
         return inCycle;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

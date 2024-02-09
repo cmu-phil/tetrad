@@ -36,6 +36,7 @@ import java.util.List;
  * table. (To force the entire table to be constructed, use StoredCellProbs.)
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -54,6 +55,7 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
 
     /**
      * Constructs a BayesImProbs object from the given BayesIm.
+     *
      * @param bayesIm Ibid.
      */
     public BayesImProbs(BayesIm bayesIm) {
@@ -117,6 +119,7 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
      * probabilities being multiplied together is undefined.
      *
      * @return the cell probability, or NaN if this probability is undefined.
+     * @param variableValues an array of {@link int} objects
      */
     public double getCellProb(int[] variableValues) {
         double p = 1.0;
@@ -148,6 +151,7 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
         return p;
     }
 
+    /** {@inheritDoc} */
     public double getProb(Proposition assertion) {
 
         // Initialize to 0's.
@@ -192,6 +196,7 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
         return p;
     }
 
+    /** {@inheritDoc} */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
@@ -255,6 +260,11 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
         return assertionTrue / conditionTrue;
     }
 
+    /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return this.variables;
     }

@@ -47,6 +47,7 @@ import java.util.prefs.Preferences;
  *
  * @author Donald Crimbchin
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class GeneralizedSemEstimatorEditor extends JPanel implements DelegatesEditing, LayoutEditable {
 
@@ -66,6 +67,11 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     private GeneralizedSemImGraphicalEditor graphicalEditor;
 
     //========================CONSTRUCTORS===========================//
+    /**
+     * <p>Constructor for GeneralizedSemEstimatorEditor.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemEstimatorWrapper} object
+     */
     public GeneralizedSemEstimatorEditor(GeneralizedSemEstimatorWrapper wrapper) {
         setLayout(new BorderLayout());
 
@@ -203,31 +209,58 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
         });
     }
 
+    /**
+     * <p>getEditDelegate.</p>
+     *
+     * @return a {@link javax.swing.JComponent} object
+     */
     public JComponent getEditDelegate() {
         return graphicalEditor();
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return graphicalEditor().getWorkbench().getGraph();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map getModelEdgesToDisplay() {
         return graphicalEditor().getWorkbench().getModelEdgesToDisplay();
     }
 
+    /**
+     * <p>getModelNodesToDisplay.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public Map getModelNodesToDisplay() {
         return graphicalEditor().getWorkbench().getModelNodesToDisplay();
     }
 
+    /**
+     * <p>getKnowledge.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return graphicalEditor().getWorkbench().getKnowledge();
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return graphicalEditor().getWorkbench().getSourceGraph();
     }
 
+    /** {@inheritDoc} */
     public void layoutByGraph(Graph graph) {
         SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);
@@ -237,6 +270,9 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
         this.errorTerms.setText("Show Error Terms");
     }
 
+    /**
+     * <p>layoutByKnowledge.</p>
+     */
     public void layoutByKnowledge() {
         SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);

@@ -33,6 +33,7 @@ import java.awt.*;
  *
  * @author josephramsey
  * @author Frank Wimberly based on similar classes by Joe Ramsey
+ * @version $Id: $Id
  */
 public class MissingDataInjectorParamsEditor extends JPanel implements ParameterEditor {
 
@@ -43,18 +44,32 @@ public class MissingDataInjectorParamsEditor extends JPanel implements Parameter
 
     //========================= Public Methods =======================================//
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         buildGui();
     }
 
+    /** {@inheritDoc} */
     public void setParams(Parameters params) {
         this.params = params;
     }
 
+    /**
+     * <p>setParentModels.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
 
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return true;
     }

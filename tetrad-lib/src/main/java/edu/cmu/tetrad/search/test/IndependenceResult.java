@@ -11,6 +11,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * of the test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndependenceResult implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -59,6 +60,7 @@ public final class IndependenceResult implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      *
      * @see TetradSerializableUtils
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public static IndependenceResult serializableInstance() {
         return new IndependenceResult(new IndependenceFact(

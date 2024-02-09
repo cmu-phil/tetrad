@@ -32,6 +32,7 @@ import java.util.*;
  * Manager for expressions, this includes all implementations of expression descriptors for the calculator.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class ExpressionManager {
 
@@ -67,6 +68,8 @@ public class ExpressionManager {
 
 
     /**
+     * <p>getInstance.</p>
+     *
      * @return an instanceo of the manager.
      */
     public static ExpressionManager getInstance() {
@@ -172,6 +175,8 @@ public class ExpressionManager {
     }
 
     /**
+     * <p>Getter for the field <code>descriptors</code>.</p>
+     *
      * @return a list of all the descriptions.
      */
     public List<ExpressionDescriptor> getDescriptors() {
@@ -181,7 +186,10 @@ public class ExpressionManager {
     //======================================= Private methods ===============================//
 
     /**
+     * <p>getDescriptorFromToken.</p>
+     *
      * @return the descriptor to use for the given token.
+     * @param token a {@link java.lang.String} object
      */
     public ExpressionDescriptor getDescriptorFromToken(String token) {
         return this.tokenMap.get(token);

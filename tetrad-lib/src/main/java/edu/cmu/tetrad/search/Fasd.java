@@ -46,6 +46,7 @@ import java.util.*;
  * @author josephramsey.
  * @see Fas
  * @see Knowledge
+ * @version $Id: $Id
  */
 public class Fasd implements IFas {
 
@@ -145,9 +146,9 @@ public class Fasd implements IFas {
 
 
     /**
-     * Sets the maximum number of variables conditioned on in any test.
+     * {@inheritDoc}
      *
-     * @param depth This maximum.
+     * Sets the maximum number of variables conditioned on in any test.
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -159,9 +160,9 @@ public class Fasd implements IFas {
     }
 
     /**
-     * Sets the knowledge to be used in the search.
+     * {@inheritDoc}
      *
-     * @param knowledge This knowledge.
+     * Sets the knowledge to be used in the search.
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -198,23 +199,28 @@ public class Fasd implements IFas {
         this.externalGraph = externalGraph;
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
     /**
-     * Sets whether verbose output will be printed.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets whether verbose output will be printed.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Returns the elapsed time.
+     * {@inheritDoc}
      *
-     * @return This time.
+     * Returns the elapsed time.
      */
     @Override
     public long getElapsedTime() {
@@ -222,9 +228,9 @@ public class Fasd implements IFas {
     }
 
     /**
-     * Returns the nodes being searched over.
+     * {@inheritDoc}
      *
-     * @return This list.
+     * Returns the nodes being searched over.
      */
     @Override
     public List<Node> getNodes() {
@@ -232,10 +238,9 @@ public class Fasd implements IFas {
     }
 
     /**
-     * Returns an empty list. Not used.
+     * {@inheritDoc}
      *
-     * @param node Whichever node.
-     * @return An empty list.
+     * Returns an empty list. Not used.
      */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
@@ -243,9 +248,9 @@ public class Fasd implements IFas {
     }
 
     /**
-     * Sets the output to send prints to.
+     * {@inheritDoc}
      *
-     * @param out This print stream.
+     * Sets the output to send prints to.
      */
     @Override
     public void setOut(PrintStream out) {

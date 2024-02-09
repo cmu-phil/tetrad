@@ -81,25 +81,50 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
         this.display = true;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
 
+    /**
+     * <p>Getter for the field <code>token</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getToken() {
         return this.token;
     }
 
 
+    /**
+     * <p>Getter for the field <code>signature</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.calculator.expression.ExpressionSignature} object
+     */
     public ExpressionSignature getSignature() {
         return this.signature;
     }
 
 
+    /**
+     * <p>Getter for the field <code>position</code>.</p>
+     *
+     * @return a Position object
+     */
     public Position getPosition() {
         return this.position;
     }
 
+    /**
+     * <p>isDisplay.</p>
+     *
+     * @return a boolean
+     */
     public boolean isDisplay() {
         return this.display;
     }

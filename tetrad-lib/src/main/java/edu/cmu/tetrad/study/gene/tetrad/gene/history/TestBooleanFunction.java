@@ -33,11 +33,14 @@ import java.util.List;
  * Tests the BooleanFunction class.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TestBooleanFunction extends TestCase {
 
     /**
      * Standard constructor for JUnit test cases.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public TestBooleanFunction(String name) {
         super(name);
@@ -46,6 +49,8 @@ public class TestBooleanFunction extends TestCase {
     /**
      * This method uses reflection to collect up all of the test methods from this class and return them to the test
      * runner.
+     *
+     * @return a {@link junit.framework.Test} object
      */
     public static Test suite() {
 

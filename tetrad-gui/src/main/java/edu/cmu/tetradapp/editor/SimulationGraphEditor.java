@@ -34,6 +34,7 @@ import java.util.List;
  * simulations.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SimulationGraphEditor extends JPanel {
 
@@ -53,6 +54,8 @@ public final class SimulationGraphEditor extends JPanel {
 
     /**
      * Constructs the editor. Edited by Zhou on 8/20/18
+     *
+     * @param graphs a {@link java.util.List} object
      */
     public SimulationGraphEditor(List<Graph> graphs) {
         this.tabbedPane = new JTabbedPane(SwingConstants.LEFT);
@@ -124,6 +127,11 @@ public final class SimulationGraphEditor extends JPanel {
         validate();
     }
 
+    /**
+     * <p>getSelectedDataModel.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public DataModel getSelectedDataModel() {
         Component selectedComponent = tabbedPane().getSelectedComponent();
         DataModelContainer scrollPane = (DataModelContainer) selectedComponent;
@@ -135,10 +143,18 @@ public final class SimulationGraphEditor extends JPanel {
         return scrollPane.getDataModel();
     }
 
+    /**
+     * <p>selectFirstTab.</p>
+     */
     public void selectFirstTab() {
         tabbedPane().setSelectedIndex(0);
     }
 
+    /**
+     * <p>propertyChange.</p>
+     *
+     * @param evt a {@link java.beans.PropertyChangeEvent} object
+     */
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
     }

@@ -49,6 +49,11 @@ final class CausalOrder {
 
     //==============================CONSTRUCTORS===========================//
 
+    /**
+     * <p>Constructor for CausalOrder.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public CausalOrder(LayoutEditable layoutEditable) {
         this.graph = layoutEditable.getGraph();
 
@@ -57,6 +62,9 @@ final class CausalOrder {
 
     //============================PUBLIC METHODS==========================//
 
+    /**
+     * <p>doLayout.</p>
+     */
     public void doLayout() {
         List<List<Node>> tiers = getTiers();
 

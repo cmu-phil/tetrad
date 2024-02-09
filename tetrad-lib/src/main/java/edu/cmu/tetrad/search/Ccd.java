@@ -47,6 +47,7 @@ import java.util.*;
  *
  * @author Frank C. Wimberly
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class Ccd implements IGraphSearch {
     // The independence test to be used.

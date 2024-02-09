@@ -43,6 +43,7 @@ import java.util.*;
  * <p>Improves the P value of a SEM IM by adding, removing, or reversing single edges.</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class HbsmsGes implements Hbsms {
     private final Graph graph;
@@ -54,6 +55,12 @@ public final class HbsmsGes implements Hbsms {
     private SemIm originalSemIm;
     private SemIm newSemIm;
 
+    /**
+     * <p>Constructor for HbsmsGes.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public HbsmsGes(Graph graph, DataSet data) {
         if (graph == null) throw new NullPointerException("Graph not specified.");
 
@@ -165,6 +172,12 @@ public final class HbsmsGes implements Hbsms {
         }
     }
 
+    /**
+     * <p>scoreGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.search.work_in_progress.HbsmsGes.Score} object
+     */
     public Score scoreGraph(Graph graph) {
         Graph dag = GraphTransforms.dagFromCpdag(graph, getKnowledge());
 
@@ -172,18 +185,34 @@ public final class HbsmsGes implements Hbsms {
         return new Score(this.scorer);
     }
 
+    /**
+     * <p>Getter for the field <code>graph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.graph;
     }
 
+    /**
+     * <p>Getter for the field <code>originalSemIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getOriginalSemIm() {
         return this.originalSemIm;
     }
 
+    /**
+     * <p>Getter for the field <code>newSemIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getNewSemIm() {
         return this.newSemIm;
     }
 
+    /** {@inheritDoc} */
     public void setHighPValueAlpha(double highPValueAlpha) {
     }
 
@@ -193,12 +222,23 @@ public final class HbsmsGes implements Hbsms {
      * (Definition 12 from Chickering, 2002).
      **/
 
+    /**
+     * <p>scoreDag.</p>
+     *
+     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.search.work_in_progress.HbsmsGes.Score} object
+     */
     public Score scoreDag(Graph dag) {
 
         this.scorer.score(dag);
         return new Score(this.scorer);
     }
 
+    /**
+     * <p>search.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph search() {
         Score score1 = scoreGraph(getGraph());
         double score = score1.getScore();
@@ -588,27 +628,45 @@ public final class HbsmsGes implements Hbsms {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>alpha</code>.</p>
+     *
+     * @return a double
+     */
     public double getAlpha() {
         return this.alpha;
     }
 
+    /** {@inheritDoc} */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
+    /** {@inheritDoc} */
     public void setBeamWidth(int beamWidth) {
 //        if (beamWidth < 1) throw new IllegalArgumentException();
         // Do nothing. We don't care about beam width.
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /**
+     * <p>Getter for the field <code>significantModels</code>.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<GraphWithPValue> getSignificantModels() {
         return this.significantModels;
     }

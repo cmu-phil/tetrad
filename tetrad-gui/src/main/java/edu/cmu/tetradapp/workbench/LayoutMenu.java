@@ -37,11 +37,17 @@ import java.util.ArrayList;
  * Builds a menu for layout operations on graphs. Interacts with classes that implement the LayoutEditable interface.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LayoutMenu extends JMenu {
     private final LayoutEditable layoutEditable;
     private final CopyLayoutAction copyLayoutAction;
 
+    /**
+     * <p>Constructor for LayoutMenu.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public LayoutMenu(LayoutEditable layoutEditable) {
         super("Layout");
         this.layoutEditable = layoutEditable;

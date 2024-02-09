@@ -27,6 +27,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * Implements various permutation algorithms, including BOSS and GASP.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class OtherPermAlgs {
     private final List<Node> variables;
@@ -47,24 +48,46 @@ public class OtherPermAlgs {
     private boolean useDataOrder = false;
     private int numVars;
 
+    /**
+     * <p>Constructor for OtherPermAlgs.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
+     */
     public OtherPermAlgs(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
     }
 
+    /**
+     * <p>Constructor for OtherPermAlgs.</p>
+     *
+     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     */
     public OtherPermAlgs(@NotNull IndependenceTest test) {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
     }
 
+    /**
+     * <p>Constructor for OtherPermAlgs.</p>
+     *
+     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
+     */
     public OtherPermAlgs(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
     }
 
+    /**
+     * <p>bestOrder.</p>
+     *
+     * @param _order a {@link java.util.List} object
+     * @return a {@link java.util.List} object
+     */
     public List<Node> bestOrder(@NotNull List<Node> _order) {
         List<Node> order = new ArrayList<>(_order);
         long start = MillisecondTimes.timeMillis();
@@ -140,6 +163,11 @@ public class OtherPermAlgs {
         return bestPerm;
     }
 
+    /**
+     * <p>getNumEdges.</p>
+     *
+     * @return a int
+     */
     public int getNumEdges() {
         return scorer.getNumEdges();
     }
@@ -164,6 +192,12 @@ public class OtherPermAlgs {
         }
     }
 
+    /**
+     * <p>esp.</p>
+     *
+     * @param scorer a {@link edu.cmu.tetrad.search.utils.TeyssierScorer} object
+     * @return a {@link java.util.List} object
+     */
     public List<Node> esp(@NotNull TeyssierScorer scorer) {
         if (depth <= 0) throw new IllegalArgumentException("Form ESP, max depth should be > 0");
 
@@ -186,6 +220,12 @@ public class OtherPermAlgs {
         return scorer.getPi();
     }
 
+    /**
+     * <p>gasp.</p>
+     *
+     * @param scorer a {@link edu.cmu.tetrad.search.utils.TeyssierScorer} object
+     * @return a {@link java.util.List} object
+     */
     public List<Node> gasp(@NotNull TeyssierScorer scorer) {
         if (depth < 0) throw new IllegalArgumentException("Form GRASP, max depth should be >= 0");
         scorer.clearBookmarks();
@@ -210,6 +250,12 @@ public class OtherPermAlgs {
 
     }
 
+    /**
+     * <p>rcg.</p>
+     *
+     * @param scorer a {@link edu.cmu.tetrad.search.utils.TeyssierScorer} object
+     * @return a {@link java.util.List} object
+     */
     public List<Node> rcg(@NotNull TeyssierScorer scorer) {
         if (numRounds <= 0) throw new IllegalArgumentException("For RCG, #rounds should be > 0");
         scorer.clearBookmarks();
@@ -358,6 +404,12 @@ public class OtherPermAlgs {
         return scorer.getPi();
     }
 
+    /**
+     * <p>sp.</p>
+     *
+     * @param scorer a {@link edu.cmu.tetrad.search.utils.TeyssierScorer} object
+     * @return a {@link java.util.List} object
+     */
     public List<Node> sp(@NotNull TeyssierScorer scorer) {
 //        System.out.println("\t\t\t\tIN SP PI = " + scorer.getPi());
 
@@ -430,6 +482,12 @@ public class OtherPermAlgs {
         return maxP;
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @param cpDag a boolean
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     @NotNull
     public Graph getGraph(boolean cpDag) {
         if (scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
@@ -438,43 +496,93 @@ public class OtherPermAlgs {
         return graph;
     }
 
+    /**
+     * <p>Setter for the field <code>numStarts</code>.</p>
+     *
+     * @param numStarts a int
+     */
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
     }
 
+    /**
+     * <p>Getter for the field <code>method</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.work_in_progress.OtherPermAlgs.Method} object
+     */
     public Method getMethod() {
         return method;
     }
 
+    /**
+     * <p>Setter for the field <code>method</code>.</p>
+     *
+     * @param method a {@link edu.cmu.tetrad.search.work_in_progress.OtherPermAlgs.Method} object
+     */
     public void setMethod(Method method) {
         this.method = method;
     }
 
+    /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbose a boolean
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /**
+     * <p>Setter for the field <code>useDataOrder</code>.</p>
+     *
+     * @param useDataOrder a boolean
+     */
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
     }
 
+    /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
+     * @param depth a int
+     */
     public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
         this.depth = depth;
     }
 
+    /**
+     * <p>Setter for the field <code>useScore</code>.</p>
+     *
+     * @param useScore a boolean
+     */
     public void setUseScore(boolean useScore) {
         this.useScore = useScore;
     }
@@ -549,14 +657,29 @@ public class OtherPermAlgs {
         }
     }
 
+    /**
+     * <p>Setter for the field <code>numRounds</code>.</p>
+     *
+     * @param numRounds a int
+     */
     public void setNumRounds(int numRounds) {
         this.numRounds = numRounds;
     }
 
+    /**
+     * <p>Setter for the field <code>usePearl</code>.</p>
+     *
+     * @param usePearl a boolean
+     */
     public void setUsePearl(boolean usePearl) {
         this.usePearl = usePearl;
     }
 
+    /**
+     * <p>setNumVariables.</p>
+     *
+     * @param numVars a int
+     */
     public void setNumVariables(int numVars) {
         this.numVars = numVars;
     }

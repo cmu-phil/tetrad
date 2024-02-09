@@ -34,12 +34,17 @@ import java.util.List;
 interface DiscreteProbs {
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the variables over which probabilities and conditional probabilities will be calculated.
      */
     List<Node> getVariables();
 
     /**
+     * <p>getCellProb.</p>
+     *
      * @return the probability in a given cell.
+     * @param cell an array of {@link int} objects
      */
     double getCellProb(int[] cell);
 
@@ -47,6 +52,9 @@ interface DiscreteProbs {
      * Calculates the probability P(a), where a is a two dimensional boolean array, with a[i] representing particular
      * combinations of values for bayesIm.getNode(i) as boolean arrays of length bayesim.getNumSplits(i), with a[i][j] =
      * true iff the condition includes the j'th value of bayesIm.getNode(i).
+     *
+     * @param assertion a {@link edu.cmu.tetrad.bayes.Proposition} object
+     * @return a double
      */
     double getProb(Proposition assertion);
 
@@ -58,6 +66,10 @@ interface DiscreteProbs {
      * possible conditional probabilities to be calculated, since for instance the condition X1 = 1 or X2 = 2 cannot be
      * represented this way directly, but it does capture all conditions for which this type of method would generally
      * be of interest.&gt; 0
+     *
+     * @param assertion a {@link edu.cmu.tetrad.bayes.Proposition} object
+     * @param condition a {@link edu.cmu.tetrad.bayes.Proposition} object
+     * @return a double
      */
     double getConditionalProb(Proposition assertion, Proposition condition);
 

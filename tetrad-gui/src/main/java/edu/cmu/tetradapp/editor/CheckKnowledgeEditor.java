@@ -33,6 +33,7 @@ import java.awt.*;
  * marked up text.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CheckKnowledgeEditor extends JPanel {
 
@@ -47,6 +48,8 @@ public class CheckKnowledgeEditor extends JPanel {
 
     /**
      * Constructs the editor given the model
+     *
+     * @param comparison a {@link edu.cmu.tetradapp.model.CheckKnowledgeModel} object
      */
     public CheckKnowledgeEditor(CheckKnowledgeModel comparison) {
         this.comparison = comparison;

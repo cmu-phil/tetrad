@@ -28,6 +28,14 @@ import java.util.List;
  */
 class ExpressionUtils {
 
+    /**
+     * <p>renderExpression.</p>
+     *
+     * @param expression a {@link edu.cmu.tetrad.calculator.expression.Expression} object
+     * @param position a {@link edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position} object
+     * @param token a {@link java.lang.String} object
+     * @return a {@link java.lang.String} object
+     */
     public static String renderExpression(Expression expression, ExpressionDescriptor.Position position, String token) {
 
         List<Expression> expressions = expression.getExpressions();

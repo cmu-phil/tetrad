@@ -24,6 +24,11 @@ package edu.cmu.tetradapp.editor.datamanip;
 import edu.cmu.tetrad.data.DiscretizationSpec;
 
 interface DiscretizationEditor {
+    /**
+     * <p>getDiscretizationSpec.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DiscretizationSpec} object
+     */
     DiscretizationSpec getDiscretizationSpec();
 }
 

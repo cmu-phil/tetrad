@@ -25,6 +25,7 @@ import edu.pitt.dbmi.data.reader.DataColumn;
  * Dec 29, 2018 5:18:32 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class ContinuousTabularData implements ContinuousData {
 
@@ -43,9 +44,9 @@ public class ContinuousTabularData implements ContinuousData {
     }
 
     /**
-     * Get the data columns.
+     * {@inheritDoc}
      *
-     * @return the data columns.
+     * Get the data columns.
      */
     @Override
     public DataColumn[] getDataColumns() {
@@ -53,9 +54,9 @@ public class ContinuousTabularData implements ContinuousData {
     }
 
     /**
-     * Get the data.
+     * {@inheritDoc}
      *
-     * @return the data.
+     * Get the data.
      */
     @Override
     public double[][] getData() {

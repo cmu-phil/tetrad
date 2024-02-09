@@ -31,13 +31,18 @@ import java.util.regex.Pattern;
  *
  * @author josephramsey
  * @see NodeType
+ * @version $Id: $Id
  */
 public interface Node extends TetradSerializable, Comparable<Node> {
 
+    /** Constant <code>ALPHA</code> */
     Pattern ALPHA = Pattern.compile("^[a-zA-Z]+$");
+    /** Constant <code>ALPHA_NUM</code> */
     Pattern ALPHA_NUM = Pattern.compile("^[a-zA-Z]+[0-9]+$");
+    /** Constant <code>LAG</code> */
     Pattern LAG = Pattern.compile("^.+:[0-9]+$");
 
+    /** Constant <code>serialVersionUID=23L</code> */
     long serialVersionUID = 23L;
 
     /**
@@ -143,6 +148,7 @@ public interface Node extends TetradSerializable, Comparable<Node> {
      * Tests whether this variable is equal to the given variable.
      *
      * @return true iff this variable is equal to the given variable.
+     * @param o a {@link java.lang.Object} object
      */
     boolean equals(Object o);
 
@@ -212,12 +218,34 @@ public interface Node extends TetradSerializable, Comparable<Node> {
         return node1.compareTo(node2);
     }
 
+    /**
+     * <p>getAllAttributes.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     Map<String, Object> getAllAttributes();
 
+    /**
+     * <p>getAttribute.</p>
+     *
+     * @param key a {@link java.lang.String} object
+     * @return a {@link java.lang.Object} object
+     */
     Object getAttribute(String key);
 
+    /**
+     * <p>removeAttribute.</p>
+     *
+     * @param key a {@link java.lang.String} object
+     */
     void removeAttribute(String key);
 
+    /**
+     * <p>addAttribute.</p>
+     *
+     * @param key a {@link java.lang.String} object
+     * @param value a {@link java.lang.Object} object
+     */
     void addAttribute(String key, Object value);
 
 }

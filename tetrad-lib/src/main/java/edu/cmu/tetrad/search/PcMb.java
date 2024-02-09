@@ -45,6 +45,7 @@ import java.util.*;
  * @author josephramsey
  * @see FgesMb
  * @see Knowledge
+ * @version $Id: $Id
  */
 public final class PcMb implements IMbSearch, IGraphSearch {
 
@@ -116,6 +117,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * Searches for the MB CPDAG for the given targets.
      *
      * @param targets The targets variable.
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search(List<Node> targets) {
         long start = MillisecondTimes.timeMillis();
@@ -430,10 +432,9 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * Returns the Markov blanket variables (not the Markov blanket DAG).
+     * {@inheritDoc}
      *
-     * @param target The target variable.
-     * @return This list.
+     * Returns the Markov blanket variables (not the Markov blanket DAG).
      */
     public Set<Node> findMb(Node target) {
         Graph graph = search(Collections.singletonList(target));
@@ -802,10 +803,20 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                 PcMb.isArrowheadAllowed1(z, y, knowledge);
     }
 
+    /**
+     * <p>Setter for the field <code>variables</code>.</p>
+     *
+     * @param variables a {@link java.util.List} object
+     */
     public void setVariables(List<Node> variables) {
         this.variables = variables;
     }
 
+    /**
+     * <p>Setter for the field <code>findMb</code>.</p>
+     *
+     * @param findMb a boolean
+     */
     public void setFindMb(boolean findMb) {
         this.findMb = findMb;
     }

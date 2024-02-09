@@ -39,6 +39,7 @@ import java.util.List;
  *
  * @author Ricardo Silva
  * @author josephramsey Cleanup, modernization.
+ * @version $Id: $Id
  */
 public class SemOptimizerEm implements SemOptimizer {
     private static final long serialVersionUID = 23L;
@@ -61,16 +62,22 @@ public class SemOptimizerEm implements SemOptimizer {
     private double[][][] parentsCov;
     private int numRestarts = 1;
 
+    /**
+     * <p>Constructor for SemOptimizerEm.</p>
+     */
     public SemOptimizerEm() {
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemOptimizerEm} object
      */
     public static SemOptimizerEm serializableInstance() {
         return new SemOptimizerEm();
     }
 
+    /** {@inheritDoc} */
     public void optimize(SemIm semIm) {
         if (this.numRestarts < 1) this.numRestarts = 1;
 
@@ -156,11 +163,13 @@ public class SemOptimizerEm implements SemOptimizer {
         semIm.getSemPm().getGraph().setShowErrorTerms(showErrors);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;
@@ -249,6 +258,11 @@ public class SemOptimizerEm implements SemOptimizer {
         }
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Sem Optimizer EM";
     }

@@ -9,9 +9,15 @@ import java.util.List;
  * Runs algorithm on data set (simulation is OK), printing out error statistics.
  *
  * @author josephramsey 2016.03.24
+ * @version $Id: $Id
  */
 public class ExploreComparison {
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         new ExploreComparison().runFromSimulation();
     }

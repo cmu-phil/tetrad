@@ -47,6 +47,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  *
  * @author josephramsey
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     // A hash from variable names to indices.
@@ -177,9 +178,9 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Creates a new independence test instance for a subset of the variables.
+     * {@inheritDoc}
      *
-     * @return a new independence test.
+     * Creates a new independence test instance for a subset of the variables.
      * @see IndependenceTest
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -207,10 +208,9 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Determines whether variable x _||_ y | z given a list of conditioning variables z.
+     * {@inheritDoc}
      *
-     * @return Independence result for x _||_ y | z.
-     * @throws RuntimeException if a matrix singularity is encountered.
+     * Determines whether variable x _||_ y | z given a list of conditioning variables z.
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
@@ -391,10 +391,10 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
-     *
-     * @param alpha This alpha.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -427,9 +427,9 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns the variable with the given name.
+     * {@inheritDoc}
      *
-     * @return This variable.
+     * Returns the variable with the given name.
      */
     public Node getVariable(String name) {
         return this.nameMap.get(name);
@@ -454,9 +454,9 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns the (singleton) list of datasets being analyzed.
+     * {@inheritDoc}
      *
-     * @return This list (length 1).
+     * Returns the (singleton) list of datasets being analyzed.
      */
     @Override
     public List<DataSet> getDataSets() {
@@ -466,9 +466,9 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns the sample size.
+     * {@inheritDoc}
      *
-     * @return This size.
+     * Returns the sample size.
      */
     @Override
     public int getSampleSize() {
@@ -486,15 +486,17 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Sets whether verbose output should be printed.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets whether verbose output should be printed.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return A string representation of this test.
      */
     public String toString() {
@@ -502,10 +504,9 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Returns true in case the variable in Z jointly determine x.
+     * {@inheritDoc}
      *
-     * @param z The contitioning variables.
-     * @param x The conditioned variable.
+     * Returns true in case the variable in Z jointly determine x.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         if (usePseudoinverse) {
@@ -736,10 +737,10 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
      * values.
-     *
-     * @param rows The rows to use.
      */
     public void setRows(List<Integer> rows) {
         if (dataSet == null) {
@@ -756,6 +757,11 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
         cor = null;
     }
 
+    /**
+     * <p>Setter for the field <code>usePseudoinverse</code>.</p>
+     *
+     * @param usePseudoinverse a boolean
+     */
     public void setUsePseudoinverse(boolean usePseudoinverse) {
         this.usePseudoinverse = usePseudoinverse;
     }

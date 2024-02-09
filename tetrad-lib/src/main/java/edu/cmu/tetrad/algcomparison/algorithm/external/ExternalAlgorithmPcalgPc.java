@@ -35,22 +35,40 @@ import java.util.List;
  * write.matrix(A, file=name, sep="\t") }
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
     private static final long serialVersionUID = 23L;
     private final String extDir;
     private final String shortDescription;
 
+    /**
+     * <p>Constructor for ExternalAlgorithmPcalgPc.</p>
+     *
+     * @param extDir a {@link java.lang.String} object
+     */
     public ExternalAlgorithmPcalgPc(String extDir) {
         this.extDir = extDir;
         this.shortDescription = new File(extDir).getName().replace("_", " ");
     }
 
+    /**
+     * <p>Constructor for ExternalAlgorithmPcalgPc.</p>
+     *
+     * @param extDir a {@link java.lang.String} object
+     * @param shortDecription a {@link java.lang.String} object
+     */
     public ExternalAlgorithmPcalgPc(String extDir, String shortDecription) {
         this.extDir = extDir;
         this.shortDescription = shortDecription;
     }
 
+    /**
+     * <p>loadGraphPcAlgMatrix.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph loadGraphPcAlgMatrix(DataSet dataSet) {
         List<Node> vars = dataSet.getVariables();
 
@@ -75,6 +93,8 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Reads in the relevant graph from the file (see above) and returns it.
      */
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -99,12 +119,19 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         if (this.shortDescription == null) {
             return "Load data from " + this.path + "/" + this.extDir;
@@ -113,11 +140,13 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);

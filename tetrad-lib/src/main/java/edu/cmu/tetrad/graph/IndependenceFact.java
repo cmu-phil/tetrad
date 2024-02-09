@@ -32,6 +32,7 @@ import java.util.*;
  * Stores a triple (x, y, z) of nodes. Note that (x, y, z) = (z, y, x). Useful for marking graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndependenceFact implements Comparable<IndependenceFact>,
         TetradSerializable {
@@ -41,6 +42,13 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
     private final Node y;
     private final Set<Node> _z;
 
+    /**
+     * <p>Constructor for IndependenceFact.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     */
     public IndependenceFact(Node x, Node y, Set<Node> z) {
         if (x == null || y == null || z == null) {
             throw new NullPointerException();
@@ -51,6 +59,13 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
         this._z = z;
     }
 
+    /**
+     * <p>Constructor for IndependenceFact.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public IndependenceFact(Node x, Node y, Node... z) {
         if (x == null || y == null || z == null) {
             throw new NullPointerException();
@@ -69,27 +84,50 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.IndependenceFact} object
      */
     public static IndependenceFact serializableInstance() {
         return new IndependenceFact(new GraphNode("X"), new GraphNode("Y"));
     }
 
+    /**
+     * <p>Getter for the field <code>x</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getX() {
         return this.x;
     }
 
+    /**
+     * <p>Getter for the field <code>y</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getY() {
         return this.y;
     }
 
+    /**
+     * <p>getZ.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Node> getZ() {
         return new HashSet<>(this._z);
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         return 1;
     }
 
+    /** {@inheritDoc} */
     public boolean equals(Object obj) {
         if (!(obj instanceof IndependenceFact)) {
             return false;
@@ -120,6 +158,11 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
 //        return _z.equals(fact._z) && ((x.equals(fact.x) && (y.equals(fact.y))) || (x.equals(fact.y) && (y.equals(fact.x))));
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
@@ -147,6 +190,9 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
      * Note that this compareTo method gives a lexical ordering for independence facts and doesn't reflect independence
      * fact equality. So sorted sets should not be used to check for independence fact existence, for instance.
      * -jdramsey.
+     *
+     * @param fact a {@link edu.cmu.tetrad.graph.IndependenceFact} object
+     * @return a int
      */
     public int compareTo(IndependenceFact fact) {
         int c = getX().getName().compareTo(fact.getX().getName());

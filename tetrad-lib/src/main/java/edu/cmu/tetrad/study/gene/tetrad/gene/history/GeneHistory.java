@@ -30,6 +30,7 @@ import java.io.ObjectInputStream;
  * Implements the basic machinery used by all history objects.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GeneHistory implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -105,6 +106,9 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Constructs a new history with the given initializer and the given update function.
+     *
+     * @param initializer a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.Initializer} object
+     * @param updateFunction a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.UpdateFunction} object
      */
     public GeneHistory(Initializer initializer, UpdateFunction updateFunction) {
         if (initializer == null) {
@@ -125,6 +129,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.GeneHistory} object
      */
     public static GeneHistory serializableInstance() {
         return new GeneHistory(BasalInitializer.serializableInstance(),
@@ -136,6 +142,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Returns the initializer.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.Initializer} object
      */
     public Initializer getInitializer() {
         return this.initializer;
@@ -143,6 +151,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Returns the update function.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.UpdateFunction} object
      */
     public UpdateFunction getUpdateFunction() {
         return this.updateFunction;
@@ -150,6 +160,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Returns the getModel step.
+     *
+     * @return a int
      */
     public int getStep() {
         return this.step;
@@ -177,6 +189,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Sets whether initialization should be synchronized.
+     *
+     * @param initSync a boolean
      */
     public void setInitSync(boolean initSync) {
         this.initSync = initSync;
@@ -191,6 +205,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Gets the dish model.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.DishModel} object
      */
     public DishModel getDishModel() {
         return this.dishModel;
@@ -198,6 +214,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Sets the dish model.
+     *
+     * @param dishModel a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.DishModel} object
      */
     public void setDishModel(DishModel dishModel) {
         this.dishModel = dishModel;

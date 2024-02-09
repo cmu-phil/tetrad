@@ -39,6 +39,7 @@ import java.util.*;
  * @param <A> Attribute type
  * @param <V> Value type
  * @author jdramsey
+ * @version $Id: $Id
  */
 public class AdTree<A, V> extends AdTreeHelper {
 
@@ -160,7 +161,7 @@ public class AdTree<A, V> extends AdTreeHelper {
      * Converts to XML.
      *
      * @return The XML document.
-     * @throws ParserConfigurationException if something goes wrong
+     * @throws javax.xml.parsers.ParserConfigurationException if something goes wrong
      */
     public Document toXML() throws ParserConfigurationException {
         return toXML(DocumentBuilderFactory.newInstance().newDocumentBuilder());

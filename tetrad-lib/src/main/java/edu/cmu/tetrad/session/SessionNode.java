@@ -59,6 +59,7 @@ import java.util.*;
  * @see SessionListener
  * @see SessionAdapter
  * @see SessionEvent
+ * @version $Id: $Id
  */
 public class SessionNode implements Node {
 
@@ -164,6 +165,8 @@ public class SessionNode implements Node {
 
     /**
      * Creates a new session node capable of implementing the given model class.
+     *
+     * @param modelClass a {@link java.lang.Class} object
      */
     public SessionNode(Class modelClass) {
         this("???", modelClass.getName(), new Class[]{modelClass});
@@ -182,6 +185,8 @@ public class SessionNode implements Node {
 
     /**
      * Creates a new session node with the given name capable of implementing the given model classes.
+     *
+     * @param modelClasses an array of {@link java.lang.Class} objects
      */
     public SessionNode(Class[] modelClasses) {
         this("???", "???", modelClasses);
@@ -227,6 +232,8 @@ public class SessionNode implements Node {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public static SessionNode serializableInstance() {
         return new SessionNode(Type1.class);
@@ -237,6 +244,9 @@ public class SessionNode implements Node {
     /**
      * Adds a parent to this node provided the resulting set of parents taken together provides some combination of
      * possible model classes that can be used as a constructor to some one of the model classes for this node.
+     *
+     * @param parent a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return a boolean
      */
     public boolean addParent(SessionNode parent) {
         if (this.parents.contains(parent)) {
@@ -280,10 +290,23 @@ public class SessionNode implements Node {
         return false;
     }
 
+    /**
+     * <p>isConsistentParent.</p>
+     *
+     * @param parent a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return a boolean
+     */
     public boolean isConsistentParent(SessionNode parent) {
         return isConsistentParent(parent, null);
     }
 
+    /**
+     * <p>isConsistentParent.</p>
+     *
+     * @param parent a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param existingNodes a {@link java.util.List} object
+     * @return a boolean
+     */
     public boolean isConsistentParent(SessionNode parent, List<SessionNode> existingNodes) {
         if (this.parents.contains(parent)) {
             return false;
@@ -329,6 +352,9 @@ public class SessionNode implements Node {
     /**
      * Same as addParent except tests if this has already been created. If so the user is asked whether to add parent
      * and update parent's desendents or to cancel the operation.
+     *
+     * @param parent a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return a boolean
      */
     public boolean addParent2(SessionNode parent) {
         if (this.parents.contains(parent)) {
@@ -397,6 +423,9 @@ public class SessionNode implements Node {
 
     /**
      * Removes a parent from the node.
+     *
+     * @param parent a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return a boolean
      */
     public boolean removeParent(SessionNode parent) {
         if (this.parents.contains(parent)) {
@@ -412,6 +441,8 @@ public class SessionNode implements Node {
     }
 
     /**
+     * <p>Getter for the field <code>parents</code>.</p>
+     *
      * @return the set of parents.
      */
     public Set<SessionNode> getParents() {
@@ -419,6 +450,8 @@ public class SessionNode implements Node {
     }
 
     /**
+     * <p>getNumParents.</p>
+     *
      * @return the number of parents.
      */
     public int getNumParents() {
@@ -427,6 +460,9 @@ public class SessionNode implements Node {
 
     /**
      * Adds a child to the node, provided this node can be added as a parent to the child node.
+     *
+     * @param child a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return a boolean
      */
     public boolean addChild(SessionNode child) {
         if (!this.children.contains(child)) {
@@ -442,7 +478,10 @@ public class SessionNode implements Node {
     }
 
     /**
+     * <p>containsChild.</p>
+     *
      * @return true iff the given node is child of this node.
+     * @param child a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public boolean containsChild(SessionNode child) {
         return this.children.contains(child);
@@ -450,6 +489,9 @@ public class SessionNode implements Node {
 
     /**
      * Removes a child from the node.
+     *
+     * @param child a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return a boolean
      */
     public boolean removeChild(SessionNode child) {
         if (this.children.contains(child)) {
@@ -466,6 +508,8 @@ public class SessionNode implements Node {
     }
 
     /**
+     * <p>Getter for the field <code>children</code>.</p>
+     *
      * @return the set of children.
      */
     public Set<SessionNode> getChildren() {
@@ -473,6 +517,8 @@ public class SessionNode implements Node {
     }
 
     /**
+     * <p>getNumChildren.</p>
+     *
      * @return the number of children.
      */
     public int getNumChildren() {
@@ -485,7 +531,8 @@ public class SessionNode implements Node {
      * model class is used. Otherwise, an exception is thrown.
      *
      * @return true iff this node contains a model when this method completes.
-     * @throws RuntimeException if the model could not be created.
+     * @throws java.lang.RuntimeException if the model could not be created.
+     * @param simulation a boolean
      */
     public boolean createModel(boolean simulation) {
         if (getModel() == null) {
@@ -512,9 +559,12 @@ public class SessionNode implements Node {
      * construct a model using reflection fails, the stack trace is printed to System.err and an
      * IllegalArgumentException is thrown. t
      *
-     * @throws RuntimeException if the attempt to construct the model throws either an IllegalAccessException, an
+     * @throws java.lang.RuntimeException if the attempt to construct the model throws either an IllegalAccessException, an
      *                          InstantiationException, or an InvocationTargetException. In this case, a stack trace is
      *                          printed to System.err.
+     * @param modelClass a {@link java.lang.Class} object
+     * @param simulation a boolean
+     * @throws java.lang.Exception if any.
      */
     public void createModel(Class modelClass, boolean simulation)
             throws Exception {
@@ -584,10 +634,21 @@ public class SessionNode implements Node {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>loggerConfig</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.TetradLoggerConfig} object
+     */
     public TetradLoggerConfig getLoggerConfig() {
         return this.loggerConfig;
     }
 
+    /**
+     * <p>Getter for the field <code>loggerConfig</code>.</p>
+     *
+     * @param modelClass a {@link java.lang.Class} object
+     * @return a {@link edu.cmu.tetrad.util.TetradLoggerConfig} object
+     */
     public TetradLoggerConfig getLoggerConfig(Class modelClass) {
         TetradLoggerConfig oldConfig = this.loggerConfig;
         TetradLoggerConfig newConfig = TetradLogger.getInstance().getLoggerForClass(modelClass);
@@ -632,6 +693,8 @@ public class SessionNode implements Node {
     }
 
     /**
+     * <p>Getter for the field <code>modelClasses</code>.</p>
+     *
      * @return the class of the model.
      */
     public Class[] getModelClasses() {
@@ -640,6 +703,8 @@ public class SessionNode implements Node {
 
     /**
      * Sets the model classes to the new array of model classes.
+     *
+     * @param modelClasses an array of {@link java.lang.Class} objects
      */
     public final void setModelClasses(Class[] modelClasses) {
         for (int i = 0; i < modelClasses.length; i++) {
@@ -653,7 +718,9 @@ public class SessionNode implements Node {
     }
 
     /**
-     * @param exact
+     * <p>getConsistentModelClasses.</p>
+     *
+     * @param exact a boolean
      * @return those model classes among the possible model classes that are at least consistent with the model class of
      * the parent session nodes, in the sense that possibly with the addition of more parent session nodes, and assuming
      * that the models of the parent session nodes are non-null, it is possible to construct a model in one of the legal
@@ -693,6 +760,8 @@ public class SessionNode implements Node {
     }
 
     /**
+     * <p>Getter for the field <code>model</code>.</p>
+     *
      * @return the model, or null if no model has been created yet.
      */
     public SessionModel getModel() {
@@ -700,6 +769,8 @@ public class SessionNode implements Node {
     }
 
     /**
+     * <p>Getter for the field <code>lastModelClass</code>.</p>
+     *
      * @return the class of the last model that was created, or null if no model has been created yet.
      */
     public Class getLastModelClass() {
@@ -708,6 +779,8 @@ public class SessionNode implements Node {
 
     /**
      * Adds a session listener.
+     *
+     * @param l a {@link edu.cmu.tetrad.session.SessionListener} object
      */
     public void addSessionListener(SessionListener l) {
         getSessionSupport().addSessionListener(l);
@@ -715,12 +788,16 @@ public class SessionNode implements Node {
 
     /**
      * Removes a session listener.
+     *
+     * @param l a {@link edu.cmu.tetrad.session.SessionListener} object
      */
     public void removeSessionListener(SessionListener l) {
         getSessionSupport().removeSessionListener(l);
     }
 
     /**
+     * <p>isFreshlyCreated.</p>
+     *
      * @return true iff this node is in a freshly created state. A node that is in a freshly created state has no model,
      * no parents, no children, and no listeners. It does, however, have the array of possible model classes that it was
      * constructed with, and it may or may not have a name.
@@ -760,6 +837,8 @@ public class SessionNode implements Node {
 
     /**
      * Removes any parents or children of the node that are not in the given list.
+     *
+     * @param sessionNodes a {@link java.util.List} object
      */
     public void restrictConnectionsToList(List sessionNodes) {
 
@@ -798,6 +877,9 @@ public class SessionNode implements Node {
      * type arrays used to construct their models are equal, their models themselves are equal, and the model classes of
      * the parent and child SessionNodes are equal. We dare not check equality of parents and children outright for fear
      * of circularity.&gt; 0
+     *
+     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return a boolean
      */
     public boolean isStructurallyIdentical(SessionNode node) {
         if (node == null) {
@@ -897,6 +979,8 @@ public class SessionNode implements Node {
 
     /**
      * Gets the (optional) name of this node. May be null.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String getBoxType() {
         return this.boxType;
@@ -904,6 +988,8 @@ public class SessionNode implements Node {
 
     /**
      * Sets the (optional) name for this node. May be null.
+     *
+     * @param boxType a {@link java.lang.String} object
      */
     public final void setBoxType(String boxType) {
         if (boxType == null) {
@@ -915,6 +1001,9 @@ public class SessionNode implements Node {
 
     /**
      * Sets the parameter object for the given model class to the given object.
+     *
+     * @param modelClass a {@link java.lang.Class} object
+     * @param param a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public void putParam(Class modelClass, Parameters param) {
         if (param instanceof SessionListener) {
@@ -927,6 +1016,9 @@ public class SessionNode implements Node {
 
     /**
      * Gets the parameter object for the givem model class.
+     *
+     * @param modelClass a {@link java.lang.Class} object
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Parameters getParam(Class modelClass) {
         return this.paramMap.get(modelClass);
@@ -934,6 +1026,8 @@ public class SessionNode implements Node {
 
     /**
      * Removes the parameter object for the given model class.
+     *
+     * @param modelClass a {@link java.lang.Class} object
      */
     public void removeParam(Class modelClass) {
         Object param = this.paramMap.get(modelClass);
@@ -946,6 +1040,12 @@ public class SessionNode implements Node {
         this.paramMap.remove(modelClass);
     }
 
+    /**
+     * <p>getModelConstructorArguments.</p>
+     *
+     * @param modelClass a {@link java.lang.Class} object
+     * @return an array of {@link java.lang.Object} objects
+     */
     public Object[] getModelConstructorArguments(Class modelClass) {
         List<Object> parentModels = getParentModels();
         parentModels.add(getParam(modelClass));
@@ -963,21 +1063,25 @@ public class SessionNode implements Node {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getName() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setName(String name) {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public NodeType getNodeType() {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setNodeType(NodeType nodeType) {
 
@@ -985,51 +1089,67 @@ public class SessionNode implements Node {
 
     /**
      * Prints out the name of the session node.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return this.getBoxType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getCenterX() {
         return 0;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setCenterX(int centerX) {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getCenterY() {
         return 0;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setCenterY(int centerY) {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setCenter(int centerX, int centerY) {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public Node like(String name) {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int compareTo(Node node) {
         return 0;
     }
 
+    /**
+     * <p>existsParameterizedConstructor.</p>
+     *
+     * @param modelClass a {@link java.lang.Class} object
+     * @return a boolean
+     */
     public boolean existsParameterizedConstructor(Class modelClass) {
         Object param = getParam(modelClass);
         List parentModels = listParentModels();
@@ -1055,10 +1175,20 @@ public class SessionNode implements Node {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>repetition</code>.</p>
+     *
+     * @return a int
+     */
     public int getRepetition() {
         return this.repetition;
     }
 
+    /**
+     * <p>Setter for the field <code>repetition</code>.</p>
+     *
+     * @param repetition a int
+     */
     public void setRepetition(int repetition) {
         if (repetition < 1) {
             throw new IllegalArgumentException("Repetition must be >= 1.");
@@ -1068,6 +1198,8 @@ public class SessionNode implements Node {
     }
 
     /**
+     * <p>useClonedModel.</p>
+     *
      * @return true if the cloning operation was successful, false if not. If the cloning operation was not successful,
      * the model will not have been altered.
      */
@@ -1102,10 +1234,16 @@ public class SessionNode implements Node {
 
     }
 
+    /**
+     * <p>forgetSavedModel.</p>
+     */
     public void forgetSavedModel() {
         this.savedModel = null;
     }
 
+    /**
+     * <p>restoreOriginalModel.</p>
+     */
     public void restoreOriginalModel() {
         this.model = this.savedModel;
         this.model.setName(getDisplayName());
@@ -1115,6 +1253,11 @@ public class SessionNode implements Node {
     /**
      * Determines whether a given model class is consistent with the models contained in the given List of nodes, in the
      * sense that the model class has a constructor that can take the models of the nodes as arguments.
+     *
+     * @param modelClass a {@link java.lang.Class} object
+     * @param nodes a {@link java.util.List} object
+     * @param exact a boolean
+     * @return a boolean
      */
     public boolean isConsistentModelClass(Class<Type1> modelClass, List nodes, boolean exact) {
 
@@ -1143,6 +1286,10 @@ public class SessionNode implements Node {
      * Tests whether the model class has an argument that takes all of the given argument classes (or more) as
      * arguments. The purpose of this is to allow parent nodes to be added one at a time to this node, whether or not
      * any of the nodes in question have non-null models.&gt; 0
+     *
+     * @param modelClass a {@link java.lang.Class} object
+     * @param argumentTypes an array of {@link java.lang.Class} objects
+     * @return a boolean
      */
     public boolean existsConstructor(Class modelClass, Class[] argumentTypes) {
         for (Class argumentType1 : argumentTypes) {
@@ -1180,6 +1327,10 @@ public class SessionNode implements Node {
     /**
      * <p>
      * Returns the first class c in <code>classes</code> that <code>clazz</code> is assignable to.&gt; 0
+     *
+     * @param classes a {@link java.util.List} object
+     * @param clazz a {@link java.lang.Class} object
+     * @return a {@link java.lang.Class} object
      */
     public Class getAssignableClass(List classes, Class clazz) {
         for (Object aClass : classes) {
@@ -1199,6 +1350,8 @@ public class SessionNode implements Node {
      *
      * @param parameterTypes a list of classes; if any of them is null, a NullPointerException will be thrown.
      * @param objects        a List of objects. (The nulls will be automatically thrown out for this one.)
+     * @return an array of {@link java.lang.Object} objects
+     * @throws java.lang.RuntimeException if any.
      */
     public Object[] assignParameters(Class[] parameterTypes, List objects)
             throws RuntimeException {
@@ -1258,6 +1411,16 @@ public class SessionNode implements Node {
         }
     }
 
+    /**
+     * <p>assignClasses.</p>
+     *
+     * @param constructorTypes an array of {@link java.lang.Class} objects
+     * @param modelTypes an array of {@link java.lang.Class} objects
+     * @param exact a boolean
+     * @param existingNodes a {@link java.util.List} object
+     * @return a boolean
+     * @throws java.lang.RuntimeException if any.
+     */
     public boolean assignClasses(Class[] constructorTypes, Class[] modelTypes, boolean exact, List<SessionNode> existingNodes)
             throws RuntimeException {
         for (Class parameterType1 : constructorTypes) {
@@ -1349,8 +1512,12 @@ public class SessionNode implements Node {
     }
 
     /**
+     * <p>getValueCombination.</p>
+     *
      * @return an array with a combination of particular values for variables given an array indicating the number of
      * values for each variable.
+     * @param index a int
+     * @param numValues an array of {@link int} objects
      */
     public int[] getValueCombination(int index, int[] numValues) {
 
@@ -1365,7 +1532,10 @@ public class SessionNode implements Node {
     }
 
     /**
+     * <p>getProduct.</p>
+     *
      * @return the product of the entries in the given array.
+     * @param arr an array of {@link int} objects
      */
     public int getProduct(int[] arr) {
         int n = 1;
@@ -1415,6 +1585,8 @@ public class SessionNode implements Node {
     /**
      * True iff the next edge should not be added. (Included for GUI user control.) Reset to true every time an edge is
      * added; edge adds must be disallowed individually. To disallow the next edge add, set to false.
+     *
+     * @param nextEdgeAddAllowed a boolean
      */
     public void setNextEdgeAddAllowed(boolean nextEdgeAddAllowed) {
         this.nextEdgeAddAllowed = nextEdgeAddAllowed;
@@ -1748,10 +1920,20 @@ public class SessionNode implements Node {
         return this.sessionSupport;
     }
 
+    /**
+     * <p>Getter for the field <code>displayName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDisplayName() {
         return this.displayName;
     }
 
+    /**
+     * <p>Setter for the field <code>displayName</code>.</p>
+     *
+     * @param displayName a {@link java.lang.String} object
+     */
     public final void setDisplayName(String displayName) {
         if (displayName == null) {
             throw new NullPointerException();
@@ -1765,15 +1947,22 @@ public class SessionNode implements Node {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>parameters</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParameters() {
         return this.parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public NodeVariableType getNodeVariableType() {
         return this.nodeVariableType;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
@@ -1820,21 +2009,25 @@ public class SessionNode implements Node {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);

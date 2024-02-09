@@ -15,20 +15,24 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CommonMeasuredAncestorRecallBidirected implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "#X<-M->Y,adj(X,Y),X<->Y";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "Number of X<~~M->...>Y for X*-*Y in est marked as bidirected";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -59,6 +63,7 @@ public class CommonMeasuredAncestorRecallBidirected implements Statistic {
         return tp;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

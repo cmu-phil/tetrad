@@ -24,6 +24,7 @@ import java.util.Arrays;
  * Dec 11, 2018 2:08:19 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class Columns {
 

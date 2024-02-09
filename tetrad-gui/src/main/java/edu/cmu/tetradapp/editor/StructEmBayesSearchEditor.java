@@ -135,6 +135,8 @@ class StructEmBayesSearchEditor extends JPanel {
 
     /**
      * Constructs a new Bayes IM Editor from a Bayes estimator wrapper.
+     *
+     * @param semBayesEstWrapper a {@link edu.cmu.tetradapp.model.StructEmBayesSearchRunner} object
      */
     public StructEmBayesSearchEditor(
             StructEmBayesSearchRunner semBayesEstWrapper) {
@@ -143,6 +145,8 @@ class StructEmBayesSearchEditor extends JPanel {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of this editor.
      */
     public void setName(String name) {

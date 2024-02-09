@@ -40,6 +40,7 @@ import java.util.*;
  * locally.
  *
  * @author josephramsey (this version).
+ * @version $Id: $Id
  */
 public final class VcPcAlt implements IGraphSearch {
 
@@ -88,6 +89,8 @@ public final class VcPcAlt implements IGraphSearch {
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
      * independence test, for fear of duplicating the data set!
+     *
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public VcPcAlt(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -120,6 +123,14 @@ public final class VcPcAlt implements IGraphSearch {
 
     //    Takes a triple n1-n2-child and adds child to futureNodes set if satisfies constraints for future.
 //    Uses traverseFuturePath to add nodes to set.
+    /**
+     * <p>futureNodeVisit.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param b a {@link edu.cmu.tetrad.graph.Node} object
+     * @param path a {@link java.util.LinkedList} object
+     * @param futureNodes a {@link java.util.Set} object
+     */
     public static void futureNodeVisit(Graph graph, Node b, LinkedList<Node> path, Set<Node> futureNodes) {
         path.addLast(b);
         futureNodes.add(b);
@@ -146,6 +157,8 @@ public final class VcPcAlt implements IGraphSearch {
     }
 
     /**
+     * <p>isMeekPreventCycles.</p>
+     *
      * @return true just in case edges will not be added if they would create cycles.
      */
     public boolean isMeekPreventCycles() {
@@ -154,12 +167,16 @@ public final class VcPcAlt implements IGraphSearch {
 
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
+     *
+     * @param meekPreventCycles a boolean
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
         this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
+     * <p>Getter for the field <code>elapsedTime</code>.</p>
+     *
      * @return the elapsed time of search in milliseconds, after <code>search()</code> has been run.
      */
     public long getElapsedTime() {
@@ -167,6 +184,8 @@ public final class VcPcAlt implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the knowledge specification used in the search. Non-null.
      */
     public Knowledge getKnowledge() {
@@ -175,12 +194,16 @@ public final class VcPcAlt implements IGraphSearch {
 
     /**
      * Sets the knowledge specification used in the search. Non-null.
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     /**
+     * <p>Getter for the field <code>independenceTest</code>.</p>
+     *
      * @return the independence test used in the search, set in the constructor. This is not returning a copy, for fear
      * of duplicating the data set!
      */
@@ -189,6 +212,8 @@ public final class VcPcAlt implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
      * @return the depth of the search--that is, the maximum number of variables conditioned on in any conditional
      * independence test.
      */
@@ -199,6 +224,8 @@ public final class VcPcAlt implements IGraphSearch {
     /**
      * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
      * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
+     *
+     * @param depth a int
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -214,6 +241,8 @@ public final class VcPcAlt implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>ambiguousTriples</code>.</p>
+     *
      * @return the set of ambiguous triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
@@ -222,6 +251,8 @@ public final class VcPcAlt implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>colliderTriples</code>.</p>
+     *
      * @return the set of collider triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
@@ -232,6 +263,8 @@ public final class VcPcAlt implements IGraphSearch {
     //==========================PRIVATE METHODS===========================//
 
     /**
+     * <p>Getter for the field <code>noncolliderTriples</code>.</p>
+     *
      * @return the set of noncollider triples found during the most recent run of the algorithm. Non-null after a call
      * to <code>search()</code>.
      */
@@ -240,6 +273,11 @@ public final class VcPcAlt implements IGraphSearch {
     }
 
     //  modified FAS into VCFAS; added in definitelyNonadjacencies set of edges.
+    /**
+     * <p>search.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph search() {
         this.logger.log("info", "Starting VCCPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
@@ -578,21 +616,38 @@ public final class VcPcAlt implements IGraphSearch {
         return GraphSearchUtils.isArrowheadAllowed(z, y, knowledge);
     }
 
+    /**
+     * <p>isDoOrientation.</p>
+     *
+     * @return a boolean
+     */
     public boolean isDoOrientation() {
         return true;
     }
 
     /**
      * The graph that's constructed during the search.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph getGraph() {
         return this.graph;
     }
 
+    /**
+     * <p>Setter for the field <code>graph</code>.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setGraph(Graph graph) {
         this.graph = graph;
     }
 
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbose a boolean
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

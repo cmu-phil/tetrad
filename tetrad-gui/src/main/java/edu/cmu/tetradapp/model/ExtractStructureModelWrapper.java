@@ -31,17 +31,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * <p>ExtractStructureModelWrapper class.</p>
+ *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 
 
+    /**
+     * <p>Constructor for ExtractStructureModelWrapper.</p>
+     *
+     * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ExtractStructureModelWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
+    /**
+     * <p>Constructor for ExtractStructureModelWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public ExtractStructureModelWrapper(Graph graph) {
         super(new EdgeListGraph());
 
@@ -71,6 +85,11 @@ public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotA
         TetradLogger.getInstance().log("info", "\nGenerating CPDAG from DAG.");
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.model.ExtractStructureModelWrapper} object
+     */
     public static ExtractStructureModelWrapper serializableInstance() {
         return new ExtractStructureModelWrapper(EdgeListGraph.serializableInstance());
     }
@@ -82,6 +101,7 @@ public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotA
         return GraphTransforms.cpdagForDag(dag);
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean allowRandomGraph() {
         return false;

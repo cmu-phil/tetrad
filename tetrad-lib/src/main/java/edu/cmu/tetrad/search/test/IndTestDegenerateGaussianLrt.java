@@ -48,6 +48,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * mixed data-types. In The 2019 ACM SIGKDD Workshop on Causal Discovery (pp. 4-21). PMLR.
  *
  * @author Bryan Andrews
+ * @version $Id: $Id
  */
 public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
@@ -168,17 +169,15 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         this._ddata = this.ddata.getDoubleData().toArray();
     }
 
-    /**
-     * @throws UnsupportedOperationException This method is not implemented.
-     */
+    /** {@inheritDoc} */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
-     * Returns an independence result specifying whether x _||_ y | Z and what its p-values are.
+     * {@inheritDoc}
      *
-     * @return This result
+     * Returns an independence result specifying whether x _||_ y | Z and what its p-values are.
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
@@ -274,9 +273,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Returns true if y is determined the variable in z.
+     * {@inheritDoc}
      *
-     * @return True, if so.
+     * Returns true if y is determined the variable in z.
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
@@ -292,9 +291,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Sets the significance level.
+     * {@inheritDoc}
      *
-     * @param alpha This level.
+     * Sets the significance level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -320,9 +319,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Returns true iff verbose output should be printed.
+     * {@inheritDoc}
      *
-     * @return True, if so.
+     * Returns true iff verbose output should be printed.
      */
     @Override
     public boolean isVerbose() {
@@ -330,9 +329,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Sets whether verbose output should be printed.
+     * {@inheritDoc}
      *
-     * @param verbose True, if so.
+     * Sets whether verbose output should be printed.
      */
     @Override
     public void setVerbose(boolean verbose) {

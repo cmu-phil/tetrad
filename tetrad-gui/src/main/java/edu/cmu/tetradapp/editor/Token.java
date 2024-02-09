@@ -26,6 +26,11 @@ package edu.cmu.tetradapp.editor;
  * Settings | File Templates.
  */
 interface Token {
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String toString();
 }
 

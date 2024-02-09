@@ -34,6 +34,7 @@ import java.util.List;
 class RemoveMissingCasesDataFilter implements DataFilter {
 
 
+    /** {@inheritDoc} */
     public DataSet filter(DataSet data) {
         List<Node> variables = data.getVariables();
         int numRows = 0;

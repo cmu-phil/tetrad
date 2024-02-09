@@ -25,6 +25,7 @@ import java.util.List;
  * Find One Factor Clusters.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FOFC",
@@ -37,9 +38,13 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     private static final long serialVersionUID = 23L;
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * <p>Constructor for Fofc.</p>
+     */
     public Fofc() {
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -135,21 +140,25 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return GraphTransforms.cpdagForDag(graph);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "FOFC (Find One Factor Clusters)";
     }
 
+    /** {@inheritDoc} */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -166,11 +175,13 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         return parameters;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);

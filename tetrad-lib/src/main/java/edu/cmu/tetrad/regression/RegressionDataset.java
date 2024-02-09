@@ -35,6 +35,7 @@ import java.util.List;
  * Implements a regression model from tabular continuous data.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class RegressionDataset implements Regression {
 
@@ -76,6 +77,12 @@ public class RegressionDataset implements Regression {
         for (int i = 0; i < getRows().length; i++) getRows()[i] = i;
     }
 
+    /**
+     * <p>Constructor for RegressionDataset.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param variables a {@link java.util.List} object
+     */
     public RegressionDataset(Matrix data, List<Node> variables) {
         this.data = data;
         this.variables = variables;
@@ -86,6 +93,13 @@ public class RegressionDataset implements Regression {
 
     //===========================PUBLIC METHODS========================//
 
+    /**
+     * <p>regress.</p>
+     *
+     * @param target an array of {@link double} objects
+     * @param regressors an array of {@link double} objects
+     * @return a {@link edu.cmu.tetrad.regression.RegressionResult} object
+     */
     public static RegressionResult regress(double[] target, double[][] regressors) {
         int n = target.length;
         int k = regressors.length + 1;
@@ -196,6 +210,8 @@ public class RegressionDataset implements Regression {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the alpha level for deciding which regressors are significant based on their p values.
      */
     public void setAlpha(double alpha) {
@@ -203,6 +219,8 @@ public class RegressionDataset implements Regression {
     }
 
     /**
+     * <p>Getter for the field <code>graph</code>.</p>
+     *
      * @return This graph.
      */
     public Graph getGraph() {
@@ -323,6 +341,13 @@ public class RegressionDataset implements Regression {
                 bArray, tArray, pArray, seArray, r2, rss, this.alpha, _res);
     }
 
+    /**
+     * <p>regress.</p>
+     *
+     * @param target a {@link edu.cmu.tetrad.graph.Node} object
+     * @param regressors a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.regression.RegressionResult} object
+     */
     public RegressionResult regress(Node target, Node... regressors) {
         List<Node> _regressors = Arrays.asList(regressors);
         return regress(target, _regressors);
@@ -359,10 +384,20 @@ public class RegressionDataset implements Regression {
         return this.rows;
     }
 
+    /**
+     * <p>Setter for the field <code>rows</code>.</p>
+     *
+     * @param rows an array of {@link int} objects
+     */
     public void setRows(int[] rows) {
         this.rows = rows;
     }
 
+    /**
+     * <p>getResidualsWithoutFirstRegressor.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public Vector getResidualsWithoutFirstRegressor() {
         return this.res2;
     }

@@ -35,6 +35,7 @@ import java.util.List;
  * were done so that the user doesn't have to keep typing in information over and over again.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class DiscreteDiscretizationSpec implements TetradSerializable, DiscretizationSpec {
     private static final long serialVersionUID = 23L;
@@ -51,6 +52,12 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
      */
     private final List<String> categories;
 
+    /**
+     * <p>Constructor for DiscreteDiscretizationSpec.</p>
+     *
+     * @param remap an array of {@link int} objects
+     * @param categories a {@link java.util.List} object
+     */
     public DiscreteDiscretizationSpec(int[] remap, List<String> categories) {
         if (remap == null) {
             throw new NullPointerException();
@@ -66,16 +73,28 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.DiscreteDiscretizationSpec} object
      */
     public static DiscreteDiscretizationSpec serializableInstance() {
         return new DiscreteDiscretizationSpec(new int[0],
                 new ArrayList<>());
     }
 
+    /**
+     * <p>Getter for the field <code>categories</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getCategories() {
         return this.categories;
     }
 
+    /**
+     * <p>Getter for the field <code>remap</code>.</p>
+     *
+     * @return an array of {@link int} objects
+     */
     public int[] getRemap() {
         return this.remap;
     }

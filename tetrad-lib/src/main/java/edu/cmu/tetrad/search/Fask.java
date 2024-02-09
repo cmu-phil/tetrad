@@ -131,6 +131,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author rubensanchez
  * @see Knowledge
  * @see Lofs
+ * @version $Id: $Id
  */
 public final class Fask implements IGraphSearch {
 
@@ -181,6 +182,7 @@ public final class Fask implements IGraphSearch {
      *
      * @param dataSet A continuous dataset over variables V.
      * @param test    An independence test over variables V. (Used for FAS.)
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
      */
     public Fask(DataSet dataSet, Score score, IndependenceTest test) {
         if (dataSet == null) {
@@ -201,6 +203,15 @@ public final class Fask implements IGraphSearch {
     }
 
 
+    /**
+     * <p>faskLeftRightV2.</p>
+     *
+     * @param x an array of {@link double} objects
+     * @param y an array of {@link double} objects
+     * @param empirical a boolean
+     * @param delta a double
+     * @return a double
+     */
     public static double faskLeftRightV2(double[] x, double[] y, boolean empirical, double delta) {
         double sx = skewness(x);
         double sy = skewness(y);
@@ -218,6 +229,15 @@ public final class Fask implements IGraphSearch {
         return lr;
     }
 
+    /**
+     * <p>faskLeftRightV1.</p>
+     *
+     * @param x an array of {@link double} objects
+     * @param y an array of {@link double} objects
+     * @param empirical a boolean
+     * @param delta a double
+     * @return a double
+     */
     public static double faskLeftRightV1(double[] x, double[] y, boolean empirical, double delta) {
         double left = Fask.cu(x, y, x) / (sqrt(Fask.cu(x, x, x) * Fask.cu(y, y, x)));
         double right = Fask.cu(x, y, y) / (sqrt(Fask.cu(x, x, y) * Fask.cu(y, y, y)));
@@ -237,6 +257,14 @@ public final class Fask implements IGraphSearch {
         return lr;
     }
 
+    /**
+     * <p>robustSkew.</p>
+     *
+     * @param x an array of {@link double} objects
+     * @param y an array of {@link double} objects
+     * @param empirical a boolean
+     * @return a double
+     */
     public static double robustSkew(double[] x, double[] y, boolean empirical) {
 
         if (empirical) {
@@ -253,6 +281,14 @@ public final class Fask implements IGraphSearch {
         return correlation(x, y) * mean(lr);
     }
 
+    /**
+     * <p>skew.</p>
+     *
+     * @param x an array of {@link double} objects
+     * @param y an array of {@link double} objects
+     * @param empirical a boolean
+     * @return a double
+     */
     public static double skew(double[] x, double[] y, boolean empirical) {
 
         if (empirical) {
@@ -269,10 +305,23 @@ public final class Fask implements IGraphSearch {
         return correlation(x, y) * mean(lr);
     }
 
+    /**
+     * <p>g.</p>
+     *
+     * @param x a double
+     * @return a double
+     */
     public static double g(double x) {
         return log(cosh(FastMath.max(x, 0)));
     }
 
+    /**
+     * <p>correctSkewness.</p>
+     *
+     * @param data an array of {@link double} objects
+     * @param sk a double
+     * @return an array of {@link double} objects
+     */
     public static double[] correctSkewness(double[] data, double sk) {
         double[] data2 = new double[data.length];
         for (int i = 0; i < data.length; i++) data2[i] = data[i] * signum(sk);
@@ -536,6 +585,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
      * @return The depth of search for the Fast Adjacency Search (FAS).
      */
     public int getDepth() {
@@ -543,6 +594,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
      * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1. Unlimited. Making this too
      *              high may result in statistical errors.
      */
@@ -551,6 +604,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>getElapsedTime.</p>
+     *
      * @return The elapsed time in milliseconds.
      */
     public long getElapsedTime() {
@@ -558,6 +613,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the current knowledge.
      */
     public Knowledge getKnowledge() {
@@ -565,6 +622,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
      * @param knowledge Knowledge of forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -856,6 +915,11 @@ public final class Fask implements IGraphSearch {
         );
     }
 
+    /**
+     * <p>Setter for the field <code>seed</code>.</p>
+     *
+     * @param seed a long
+     */
     public void setSeed(long seed) {
         this.seed = seed;
     }

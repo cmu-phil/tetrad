@@ -32,6 +32,7 @@ import java.util.Map;
  *
  * @author josephramsey
  * @author Willie Wheeler
+ * @version $Id: $Id
  */
 public class GraphNode implements Node {
 
@@ -75,6 +76,8 @@ public class GraphNode implements Node {
 
     /**
      * Constructs a new Tetrad node with the given (non-null) string.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public GraphNode(String name) {
         setName(name);
@@ -82,6 +85,8 @@ public class GraphNode implements Node {
 
     /**
      * Copy constructor.
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.GraphNode} object
      */
     public GraphNode(GraphNode node) {
         this.name = node.name;
@@ -92,6 +97,8 @@ public class GraphNode implements Node {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.GraphNode} object
      */
     public static GraphNode serializableInstance() {
         return new GraphNode("X");
@@ -100,6 +107,8 @@ public class GraphNode implements Node {
     //============================PUBLIC METHODS========================//
 
     /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
      * @return the name of the variable.
      */
     public final String getName() {
@@ -107,6 +116,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of this variable.
      */
     public final void setName(String name) {
@@ -120,6 +131,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * <p>Getter for the field <code>nodeType</code>.</p>
+     *
      * @return the node type.
      * @see edu.cmu.tetrad.graph.NodeType
      */
@@ -128,8 +141,9 @@ public class GraphNode implements Node {
     }
 
     /**
-     * Sets the node type.
+     * {@inheritDoc}
      *
+     * Sets the node type.
      * @see edu.cmu.tetrad.graph.NodeType
      */
     public final void setNodeType(NodeType nodeType) {
@@ -140,6 +154,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * <p>Getter for the field <code>centerX</code>.</p>
+     *
      * @return the x coordinate of the center of the node.
      */
     public final int getCenterX() {
@@ -147,6 +163,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the x coordinate of the center of this node.
      */
     public final void setCenterX(int centerX) {
@@ -154,6 +172,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * <p>Getter for the field <code>centerY</code>.</p>
+     *
      * @return the y coordinate of the center of the node.
      */
     public final int getCenterY() {
@@ -161,6 +181,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the y coordinate of the center of this node.
      */
     public final void setCenterY(int centerY) {
@@ -168,6 +190,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the (x, y) coordinates of the center of this node.
      */
     public final void setCenter(int centerX, int centerY) {
@@ -187,6 +211,8 @@ public class GraphNode implements Node {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Adds a property change listener.
      */
     public final void addPropertyChangeListener(PropertyChangeListener l) {
@@ -194,17 +220,26 @@ public class GraphNode implements Node {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return the name of the node as its string representation.
      */
     public String toString() {
         return this.name;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         return this.getName().hashCode();
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Two continuous variables are equal if they have the same name and the same missing value marker.
      */
     public boolean equals(Object o) {
@@ -213,6 +248,7 @@ public class GraphNode implements Node {
         return getName().equals(((Node) o).getName());
     }
 
+    /** {@inheritDoc} */
     public Node like(String name) {
         GraphNode node = new GraphNode(name);
         node.setNodeType(getNodeType());
@@ -293,31 +329,37 @@ public class GraphNode implements Node {
 //        return node1.compareTo(node2);
 //    }
 
+    /** {@inheritDoc} */
     @Override
     public NodeVariableType getNodeVariableType() {
         return this.nodeVariableType;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);

@@ -40,6 +40,7 @@ import java.util.List;
  * Wraps the MeasurementSimulator class as an instantiated model.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BooleanGlassGeneIm implements SessionModel {
     private static final long serialVersionUID = 23L;
@@ -189,6 +190,7 @@ public class BooleanGlassGeneIm implements SessionModel {
      *
      * @param factor the factor.
      * @param row    the row.
+     * @param value a boolean
      */
     public void setRowValueAt(int factor, int row, boolean value) {
         getBooleanGlassFunction().getSubFunction(factor).setValue(row, value);
@@ -196,6 +198,7 @@ public class BooleanGlassGeneIm implements SessionModel {
 
     /**
      * Sets the simulation parameters for the MeasurementSimulator.
+     *
      * @param simulator the simulation parameters for the MeasurementSimulator.
      */
     public void setSimulator(MeasurementSimulatorParams simulator) {
@@ -354,6 +357,7 @@ public class BooleanGlassGeneIm implements SessionModel {
 
     /**
      * Returns the Glass function case to BooleanGlassFunction for convenience.
+     *
      * @return the Glass function case to BooleanGlassFunction for convenience.
      */
     public BooleanGlassFunction getBooleanGlassFunction() {
@@ -362,6 +366,7 @@ public class BooleanGlassGeneIm implements SessionModel {
 
     /**
      * Returns the Glass history case to GlassHistory for convenience.
+     *
      * @return the Glass history case to GlassHistory for convenience.
      */
     public GeneHistory getHistory() {
@@ -371,6 +376,7 @@ public class BooleanGlassGeneIm implements SessionModel {
     /**
      * Sets the error distribution for the given factor to the given distribution. Values for the transcription error
      * for this factor will be drawn from this distribution.
+     *
      * @param factor the factor.
      * @param distribution the distribution.
      */
@@ -423,6 +429,7 @@ public class BooleanGlassGeneIm implements SessionModel {
 
     /**
      * Returns the name of the session model.
+     *
      * @return the name of the session model.
      */
     public String getName() {
@@ -430,8 +437,9 @@ public class BooleanGlassGeneIm implements SessionModel {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Sets the name of the session model.
-     * @param name the name of the session model.
      */
     public void setName(String name) {
         this.name = name;

@@ -12,20 +12,24 @@ import edu.cmu.tetrad.graph.Graph;
  * We use what's on this page called the "traditional" F1 statistic.
  *
  * @author Joseh Ramsey
+ * @version $Id: $Id
  */
 public class F1Adj implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /** {@inheritDoc} */
     @Override
     public String getAbbreviation() {
         return "F1Adj";
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getDescription() {
         return "F1 statistic for adjacencies";
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
@@ -38,6 +42,7 @@ public class F1Adj implements Statistic {
         return 2 * (adjPrecision * adjRecall) / (adjPrecision + adjRecall);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNormValue(double value) {
         return value;

@@ -34,6 +34,7 @@ import java.util.List;
  * Dec 12, 2018 11:04:58 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class LowerCovarianceDataFileValidation extends AbstractDataFileValidation implements CovarianceValidation {
 
@@ -48,9 +49,9 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
     }
 
     /**
-     * Validate the covariance.
+     * {@inheritDoc}
      *
-     * @return the validation results.
+     * Validate the covariance.
      */
     @Override
     public List<ValidationResult> validate() {
