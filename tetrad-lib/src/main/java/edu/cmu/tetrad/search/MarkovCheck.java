@@ -451,6 +451,127 @@ public class MarkovCheck {
     }
 
     /**
+     * Returns the knowledge object for the Markov checker. This knowledge object should contain the tier knowledge for
+     * the Markov checker. The last tier contains the possible X and Y for X _||_ Y | Z1,...,Zn, and the previous tiers
+     * contain the possible Z1,...,Zn for X _||_ Y | Z1,...,Zn. Additional forbidden or required edges are ignored.
+     *
+     * @return The knowledge object.
+     */
+    public Knowledge getKnowledge() {
+        return knowledge;
+    }
+
+    /**
+     * Sets the knowledge object for the Markov checker. The knowledge object should contain the tier knowledge for the
+     * Markov checker. The last tier contains the possible X and Y for X _||_ Y | Z1,...,Zn, and the previous tiers
+     * contain the possible Z1,...,Zn for X _||_ Y | Z1,...,Zn. Additional forbidden or required edges are ignored.
+     *
+     * @param knowledge The knowledge object.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        if (!(knowledge.getListOfExplicitlyForbiddenEdges().isEmpty() && knowledge.getListOfRequiredEdges().isEmpty())) {
+            throw new IllegalArgumentException("Knowledge object for the Markov checker cannot contain required of " +
+                    "explicitly forbidden edges; only tier knowledge is used. The last tier contains the possible X " +
+                    "and Y for X _||_ Y | Z1,..,Zn, and the previous tiers contain the possible Z1,..,Zn for X _||_ Y " +
+                    "| Z1,..,Zn.");
+        }
+
+        int lastTier = 0;
+
+        for (int t = 0; t < knowledge.getNumTiers(); t++) {
+            if (!knowledge.getTier(t).isEmpty()) {
+                lastTier = t;
+            }
+        }
+
+        List<String> independenceNames = knowledge.getTier(lastTier);
+
+        List<String> conditioningNames = new ArrayList<>();
+
+        // Assuming all named nodes go into thd conditioning set.
+        for (int i = 0; i <= lastTier; i++) {
+            conditioningNames.addAll(knowledge.getTier(i));
+        }
+
+        List<Node> independenceNodes = new ArrayList<>();
+        for (String name : independenceNames) {
+            Node variable = getVariable(name);
+            if (variable != null) {
+                independenceNodes.add(variable);
+            }
+        }
+
+        List<Node> conditioningNodes = new ArrayList<>();
+        for (String name : conditioningNames) {
+            Node variable = getVariable(name);
+            if (variable != null) {
+                conditioningNodes.add(variable);
+            }
+        }
+
+        this.independenceNodes = independenceNodes;
+        this.conditioningNodes = conditioningNodes;
+
+        this.knowledge = knowledge.copy();
+    }
+
+    /**
+     * Generates the results for the given set of independence facts as a single record.
+     *
+     * @return The Markov check record.
+     * @see MarkovCheckRecord
+     */
+    public MarkovCheckRecord getMarkovCheckRecord() {
+        setPercentResample(percentResample);
+        generateResults();
+        double adInd = getAndersonDarlingP(true);
+        double adDep = getAndersonDarlingP(false);
+        double binIndep = getBinomialP(true);
+        double binDep = getBinomialP(false);
+        double fracDepInd = getFractionDependent(true);
+        double fracDepDep = getFractionDependent(false);
+        int numTestsInd = getNumTests(true);
+        int numTestsDep = getNumTests(false);
+        return new MarkovCheckRecord(adInd, adDep, binIndep, binDep, fracDepInd, fracDepDep, numTestsInd, numTestsDep);
+    }
+
+    /**
+     * Returns the Markov check record as a string.
+     *
+     * @return The Markov check record as a string.
+     * @see MarkovCheckRecord
+     */
+    public String getMarkovCheckRecordString() {
+        MarkovCheckRecord record = getMarkovCheckRecord();
+        return "Anderson-Darling p-value (indep): " + record.adInd + "\n" +
+                "Anderson-Darling p-value (dep): " + record.adDep + "\n" +
+                "Binomial p-value (indep): " + record.binIndep + "\n" +
+                "Binomial p-value (dep): " + record.binDep + "\n" +
+                "Fraction of dependent judgments (indep): " + record.fracDepInd + "\n" +
+                "Fraction of dependent judgments (dep): " + record.fracDepDep + "\n" +
+                "Number of tests (indep): " + record.numTestsInd + "\n" +
+                "Number of tests (dep): " + record.numTestsDep;
+    }
+
+    /**
+     * Returns the nodes that are possible X and Y for X _||_ Y | Z1,...,Zn.
+     *
+     * @return The nodes that are possible X and Y for X _||_ Y | Z1,...,Zn.
+     */
+    public List<Node> getIndependenceNodes() {
+        return independenceNodes;
+    }
+
+    /**
+     * Returns the nodes that are possible Z1,...,Zn for X _||_ Y | Z1,...,Zn.
+     *
+     * @return The nodes that are possible Z1,...,Zn for X _||_ Y | Z1,...,Zn.
+     */
+    public List<Node> getConditioningNodes() {
+        return conditioningNodes;
+    }
+
+    /**
      * Generates the m-separation sets for the given list of independence facts. The m-separation sets are stored in the
      * msep and mconn sets.
      *
@@ -738,80 +859,20 @@ public class MarkovCheck {
         }
     }
 
-    public Knowledge getKnowledge() {
-        return knowledge;
-    }
-
     /**
-     * Sets the knowledge object for the Markov checker. The knowledge object should contain the tier knowledge for the
-     * Markov checker. The last tier contains the possible X and Y for X _||_ Y | Z1,...,Zn, and the previous tiers
-     * contain the possible Z1,...,Zn for X _||_ Y | Z1,...,Zn. Additional forbidden or required edges are ignored.
+     * A single record of the results of the Markov check.
      *
-     * @param knowledge The knowledge object.
+     * @param adInd       The Anderson-Darling p-value for the independent case.
+     * @param adDep       The Anderson-Darling p-value for the dependent case.
+     * @param binIndep    The Binomial p-value for the independent case.
+     * @param binDep      The Binomial p-value for the dependent case.
+     * @param fracDepInd  The fraction of dependent judgments for the independent case.
+     * @param fracDepDep  The fraction of dependent judgments for the dependent case.
+     * @param numTestsInd The number of tests for the independent case.
+     * @param numTestsDep The number of tests for the dependent case.
      */
-    public void setKnowledge(Knowledge knowledge) {
-        if (!(knowledge.getListOfExplicitlyForbiddenEdges().isEmpty() && knowledge.getListOfRequiredEdges().isEmpty())) {
-            throw new IllegalArgumentException("Knowledge object for the Markov checker cannot contain required of " +
-                    "explicitly forbidden edges; only tier knowledge is used. The last tier contains the possible X " +
-                    "and Y for X _||_ Y | Z1,..,Zn, and the previous tiers contain the possible Z1,..,Zn for X _||_ Y " +
-                    "| Z1,..,Zn.");
-        }
-
-        int lastTier = 0;
-
-        for (int t = 0; t < knowledge.getNumTiers(); t++) {
-            if (!knowledge.getTier(t).isEmpty()) {
-                lastTier = t;
-            }
-        }
-
-        List<String> independenceNames = knowledge.getTier(lastTier);
-
-        List<String> conditioningNames = new ArrayList<>();
-
-        // Assuming all named nodes go into thd conditioning set.
-        for (int i = 0; i <= lastTier; i++) {
-            conditioningNames.addAll(knowledge.getTier(i));
-        }
-
-        List<Node> independenceNodes = new ArrayList<>();
-        for (String name : independenceNames) {
-            Node variable = getVariable(name);
-            if (variable != null) {
-                independenceNodes.add(variable);
-            }
-        }
-
-        List<Node> conditioningNodes = new ArrayList<>();
-        for (String name : conditioningNames) {
-            Node variable = getVariable(name);
-            if (variable != null) {
-                conditioningNodes.add(variable);
-            }
-        }
-
-        this.independenceNodes = independenceNodes;
-        this.conditioningNodes = conditioningNodes;
-
-        this.knowledge = knowledge.copy();
-    }
-
-    /**
-     * Returns the nodes that are possible X and Y for X _||_ Y | Z1,...,Zn.
-     *
-     * @return The nodes that are possible X and Y for X _||_ Y | Z1,...,Zn.
-     */
-    public List<Node> getIndependenceNodes() {
-        return independenceNodes;
-    }
-
-    /**
-     * Returns the nodes that are possible Z1,...,Zn for X _||_ Y | Z1,...,Zn.
-     *
-     * @return The nodes that are possible Z1,...,Zn for X _||_ Y | Z1,...,Zn.
-     */
-    public List<Node> getConditioningNodes() {
-        return conditioningNodes;
+    public record MarkovCheckRecord(double adInd, double adDep, double binIndep, double binDep, double fracDepInd,
+                                    double fracDepDep, int numTestsInd, int numTestsDep) {
     }
 
     /**
