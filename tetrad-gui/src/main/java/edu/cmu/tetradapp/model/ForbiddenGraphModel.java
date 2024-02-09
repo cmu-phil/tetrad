@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -44,8 +45,12 @@ import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirecte
  */
 public class ForbiddenGraphModel extends KnowledgeBoxModel {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The graph to which the forbidden edges are to be added.
+     */
     private Graph resultGraph = new EdgeListGraph();
 
     /**

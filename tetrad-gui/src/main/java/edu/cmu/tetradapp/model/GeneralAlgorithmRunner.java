@@ -60,18 +60,62 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         Unmarshallable, IndTestProducer,
         KnowledgeBoxInput {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The name of the model.
+     */
     private final Map<String, Object> userAlgoSelections = new HashMap<>();
+
+    /**
+     * The data model.
+     */
     private DataWrapper dataWrapper;
+
+    /**
+     * The name of the model.
+     */
     private String name;
+
+    /**
+     * The wrapped algorithm.
+     */
     private Algorithm algorithm;
+
+    /**
+     * The params object, so the GUI can remember stuff for logging.
+     */
     private Parameters parameters;
+
+    /**
+     * The graph source.
+     */
     private Graph sourceGraph;
+
+    /**
+     * The external graph.
+     */
     private Graph externalGraph;
+
+    /**
+     * The graph list.
+     */
     private List<Graph> graphList = new ArrayList<>();
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge;
+
+    /**
+     * The independence tests.
+     */
     private transient List<IndependenceTest> independenceTests;
-    // The elapsed time for the algorithm to run.
+
+    /**
+     * The elapsed time for the algorithm to run.
+     */
     private long elapsedTime = -1L;
 
     //===========================CONSTRUCTORS===========================//
@@ -650,6 +694,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException If any.
+     * @throws ClassNotFoundException If any.
      */
     @Serial
     private void readObject(ObjectInputStream s)

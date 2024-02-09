@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,10 +43,11 @@ import java.util.List;
  */
 public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
@@ -152,7 +154,7 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

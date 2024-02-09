@@ -32,6 +32,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -41,9 +42,17 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class IndependenceFactsModel implements KnowledgeBoxInput {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The independence facts.
+     */
     private IndependenceFacts facts = new IndependenceFacts();
+
+    /**
+     * The name of the model.
+     */
     private String name = "";
 
     /**

@@ -32,6 +32,7 @@ import edu.cmu.tetrad.session.SessionAdapter;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,6 +45,7 @@ import java.util.List;
  */
 public class GraphComparisonParams extends SessionAdapter
         implements ExecutionRestarter {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -229,10 +231,11 @@ public class GraphComparisonParams extends SessionAdapter
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s The object input stream.
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

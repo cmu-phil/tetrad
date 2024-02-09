@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IndTestType;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +43,12 @@ import java.util.List;
  */
 public class FasRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The graph to use as a starting point for the search.
+     */
     private Graph externalGraph;
 
     //============================CONSTRUCTORS============================//

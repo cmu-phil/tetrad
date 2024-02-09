@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 
 /**
@@ -43,15 +44,16 @@ import java.text.NumberFormat;
 // based on RowSummingExactWrapper
 ///////////////////////////////////////
 public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unmarshallable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial
+     * The Bayes updater.
      */
     private ManipulatingBayesUpdater bayesUpdater;
 
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
@@ -180,7 +182,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

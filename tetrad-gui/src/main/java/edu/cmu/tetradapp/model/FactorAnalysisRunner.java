@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.FactorAnalysis;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +41,22 @@ import java.util.Vector;
  * @version $Id: $Id
  */
 public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The output of the algorithm.
+     */
     private String output;
 
+    /**
+     * The rotated solution.
+     */
     private Matrix rotatedSolution;
 
+    /**
+     * The threshold for the rotated solution.
+     */
     private double threshold;
 
     //============================CONSTRUCTORS============================//

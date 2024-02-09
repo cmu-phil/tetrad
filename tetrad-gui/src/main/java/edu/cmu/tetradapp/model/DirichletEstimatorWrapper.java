@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps a DirichletEstimator.
@@ -41,13 +42,16 @@ import java.io.ObjectInputStream;
  */
 public class DirichletEstimatorWrapper implements SessionModel {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
     /**
-     * @serial Cannot be null.
+     * The Dirichlet Bayes IM.
      */
     private final DirichletBayesIm dirichletBayesIm;
+
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
@@ -167,7 +171,7 @@ public class DirichletEstimatorWrapper implements SessionModel {
      * <p>
      * LogUtils.getInstance().finer("Estimated Bayes IM:");
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

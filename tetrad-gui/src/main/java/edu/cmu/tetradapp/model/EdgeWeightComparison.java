@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
 import java.text.NumberFormat;
 
 /**
@@ -37,9 +38,22 @@ import java.text.NumberFormat;
  * @version $Id: $Id
  */
 public class EdgeWeightComparison implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The reference SEM IM.
+     */
     private final SemIm reference;
+
+    /**
+     * The target SEM IM.
+     */
     private final SemIm target;
+
+    /**
+     * The name of the model.
+     */
     private String name;
 
     /**

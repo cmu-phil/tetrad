@@ -45,23 +45,26 @@ import java.util.*;
 public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         DoNotAddOldModel, SimulationParamsSource, MultipleDataSource {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * Maps columns to discretization specs so that user's work is not forgotten from one editing of the same data set
      * to the next.
-     *
-     * @serial Cannot be null.
      */
     private final Map discretizationSpecs = new HashMap();
+
     /**
-     * @serial Can be null.
+     * The name of the data wrapper.
      */
     private String name;
+
+    /**
+     * The data model list.
+     */
     private DataModelList dataModelList;
+
     /**
      * Stores a reference to the source workbench, if there is one.
-     *
-     * @serial Can be null.
      */
     private Graph sourceGraph;
 
@@ -69,6 +72,10 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
      * The parameters being edited.
      */
     private Parameters parameters;
+
+    /**
+     * The parameter setting map.
+     */
     private Map<String, String> allParamSettings;
 
     //==============================CONSTRUCTORS===========================//
@@ -488,7 +495,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

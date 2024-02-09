@@ -47,19 +47,17 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
     /**
-     * @serial Cannot be null.
+     * The data model.
      */
     private DataSet dataSet;
 
     /**
      * Contains the estimated BayesIm, or null if it hasn't been estimated yet.
-     *
-     * @serial Can be null.
      */
     private BayesIm estimateBayesIm;
 
@@ -155,7 +153,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

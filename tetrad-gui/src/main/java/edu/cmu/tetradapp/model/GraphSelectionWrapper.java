@@ -32,6 +32,7 @@ import edu.cmu.tetradapp.util.IonInput;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -42,9 +43,22 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The graph.
+     */
     private final Parameters params;
+
+    /**
+     * The selected nodes.
+     */
     private List<Node> selectedNodes;
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs = new ArrayList<>();
 
     /**
@@ -975,7 +989,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s The object input stream.
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

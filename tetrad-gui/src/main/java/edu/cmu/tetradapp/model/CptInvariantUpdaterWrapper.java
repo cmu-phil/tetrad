@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps a Bayes Updater for use in the Tetrad application.
@@ -39,15 +40,16 @@ import java.io.ObjectInputStream;
  * @version $Id: $Id
  */
 public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper, Unmarshallable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
     /**
-     * @serial Cannot be null.
+     * The Bayes Updater.
      */
     private ManipulatingBayesUpdater bayesUpdater;
 
@@ -198,10 +200,11 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

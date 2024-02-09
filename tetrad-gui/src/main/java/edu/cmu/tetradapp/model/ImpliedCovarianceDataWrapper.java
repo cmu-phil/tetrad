@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
 import java.util.List;
 
 
@@ -41,7 +42,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class ImpliedCovarianceDataWrapper extends DataWrapper {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The SEM IM.
+     */
     private SemIm semIm;
 
     //==============================CONSTRUCTORS=============================//

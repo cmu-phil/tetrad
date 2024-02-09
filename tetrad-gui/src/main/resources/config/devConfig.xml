@@ -1154,7 +1154,7 @@
             </model>
             <model name="Model Fit" acronym="Model Fit"
                    help="Model Fit" category="Simulation-Algorithm Comparisons">
-                <model-class>edu.cmu.tetradapp.model.CPDAGFitModel
+                <model-class>edu.cmu.tetradapp.model.CpdagFitModel
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.CPDAGFitEditor</editor-class>
             </model>

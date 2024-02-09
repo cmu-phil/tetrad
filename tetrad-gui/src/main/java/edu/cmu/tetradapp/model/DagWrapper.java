@@ -48,20 +48,40 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The number of models.
+     */
     private int numModels = 1;
+
+    /**
+     * The index of the current model.
+     */
     private int modelIndex;
+
+    /**
+     * The name of the model source.
+     */
     private String modelSourceName;
 
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
     /**
-     * @serial Cannot be null.
+     * The graph.
      */
     private List<Dag> dags;
+
+    /**
+     * The parameters.
+     */
     private Map<String, String> allParamSettings;
+
+    /**
+     * The parameters.
+     */
     private Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
@@ -279,7 +299,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

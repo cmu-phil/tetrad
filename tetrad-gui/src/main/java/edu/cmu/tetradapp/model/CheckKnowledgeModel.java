@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 
 
@@ -42,11 +43,32 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class CheckKnowledgeModel implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The graph to be checked.
+     */
     private final Graph graph;
+
+    /**
+     * The knowledge to be checked against.
+     */
     private final Knowledge knowledge;
+
+    /**
+     * The parameters for the check.
+     */
     private final Parameters params;
+
+    /**
+     * The name of the model.
+     */
     private final String modelName;
+
+    /**
+     * The name of the model.
+     */
     private String name = "Check Knowledge";
 
     /**

@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,14 +47,43 @@ import java.util.List;
  * @author Erin Korber (added remove latents functionality July 2004)
  * @version $Id: $Id
  */
-public final class CPDAGFitModel implements SessionModel {
+public final class CpdagFitModel implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The parameters for the check.
+     */
     private final Parameters parameters;
+
+    /**
+     * The data models to be checked.
+     */
     private final DataModelList dataModelList;
+
+    /**
+     * The name of the model.
+     */
     private String name;
+
+    /**
+     * The Bayes IMs to be checked.
+     */
     private List<BayesIm> bayesIms;
+
+    /**
+     * The Bayes PMs to be checked.
+     */
     private List<BayesPm> bayesPms;
+
+    /**
+     * The SEM PMs to be checked.
+     */
     private List<Graph> referenceGraphs;
+
+    /**
+     * The SEM PMs to be checked.
+     */
     private List<SemPm> semPms;
 
     //=============================CONSTRUCTORS==========================//
@@ -68,7 +98,7 @@ public final class CPDAGFitModel implements SessionModel {
      * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
      * @param params          a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public CPDAGFitModel(Simulation simulation, GeneralAlgorithmRunner algorithmRunner, Parameters params) {
+    public CpdagFitModel(Simulation simulation, GeneralAlgorithmRunner algorithmRunner, Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
         }

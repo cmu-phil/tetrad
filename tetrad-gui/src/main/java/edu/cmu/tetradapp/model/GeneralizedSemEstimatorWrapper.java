@@ -33,6 +33,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 
 
@@ -43,18 +44,36 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource {
+    @Serial
     private static final long serialVersionUID = 23L;
-    private final DataSet data;
+
     /**
-     * @serial Can be null.
+     * The data model.
+     */
+    private final DataSet data;
+
+    /**
+     * The name of the model.
      */
     private String name;
+
+    /**
+     * The wrapped SemPm.
+     */
     private GeneralizedSemPm semPm;
     /**
      * True just in case errors should be shown in the interface.
      */
     private boolean showErrors;
+
+    /**
+     * The estimated SEM IM.
+     */
     private GeneralizedSemIm estIm;
+
+    /**
+     * The report.
+     */
     private String report = "";
 
     //==============================CONSTRUCTORS==========================//
@@ -114,7 +133,7 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
