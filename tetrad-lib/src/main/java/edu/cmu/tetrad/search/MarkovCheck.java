@@ -17,6 +17,8 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -542,13 +544,15 @@ public class MarkovCheck {
      * @see MarkovCheckRecord
      */
     public String getMarkovCheckRecordString() {
+        NumberFormat nf = new DecimalFormat("0.000");
+
         MarkovCheckRecord record = getMarkovCheckRecord();
-        return "Anderson-Darling p-value (indep): " + record.adInd + "\n" +
-                "Anderson-Darling p-value (dep): " + record.adDep + "\n" +
-                "Binomial p-value (indep): " + record.binIndep + "\n" +
-                "Binomial p-value (dep): " + record.binDep + "\n" +
-                "Fraction of dependent judgments (indep): " + record.fracDepInd + "\n" +
-                "Fraction of dependent judgments (dep): " + record.fracDepDep + "\n" +
+        return "Anderson-Darling p-value (indep): " + nf.format(record.adInd) + "\n" +
+                "Anderson-Darling p-value (dep): " + nf.format(record.adDep) + "\n" +
+                "Binomial p-value (indep): " + nf.format(record.binIndep) + "\n" +
+                "Binomial p-value (dep): " + nf.format(record.binDep) + "\n" +
+                "Fraction of dependent judgments (indep): " + nf.format(record.fracDepInd) + "\n" +
+                "Fraction of dependent judgments (dep): " + nf.format(record.fracDepDep) + "\n" +
                 "Number of tests (indep): " + record.numTestsInd + "\n" +
                 "Number of tests (dep): " + record.numTestsDep;
     }
