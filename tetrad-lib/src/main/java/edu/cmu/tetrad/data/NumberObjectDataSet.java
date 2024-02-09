@@ -465,10 +465,9 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * <p>getVariable.</p>
+     * {@inheritDoc}
      *
-     * @return the variable at the given column.
-     * @param col a int
+     * <p>getVariable.</p>
      */
     public Node getVariable(int col) {
         return this.variables.get(col);
@@ -669,9 +668,9 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Removes the column for the variable at the given index, reducing the number of columns by one.
+     * {@inheritDoc}
      *
-     * @param index a int
+     * Removes the column for the variable at the given index, reducing the number of columns by one.
      */
     public void removeColumn(int index) {
         if (index < 0 || index >= this.variables.size()) {
@@ -715,6 +714,8 @@ public final class NumberObjectDataSet
      * {@inheritDoc}
      *
      * Removes the columns for the given variable from the dataset, reducing the number of columns by one.
+     *
+     * @param variable a {@link edu.cmu.tetrad.graph.Node} object
      */
     public void removeColumn(Node variable) {
         int index = this.variables.indexOf(variable);

@@ -100,6 +100,11 @@ public final class IndTestRegression implements IndependenceTest {
      * {@inheritDoc}
      *
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     *
+     * @param xVar a {@link edu.cmu.tetrad.graph.Node} object
+     * @param yVar a {@link edu.cmu.tetrad.graph.Node} object
+     * @param zList a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node xVar, Node yVar, Set<Node> zList) {
         if (facts.containsKey(new IndependenceFact(xVar, yVar, zList))) {

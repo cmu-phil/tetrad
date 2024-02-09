@@ -84,7 +84,12 @@ public class ScoreIndTest implements IndependenceTest {
      * {@inheritDoc}
      *
      * Determines whether x _||_ y | z
+     *
      * @see IndependenceResult
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         List<Node> z1 = new ArrayList<>(z);

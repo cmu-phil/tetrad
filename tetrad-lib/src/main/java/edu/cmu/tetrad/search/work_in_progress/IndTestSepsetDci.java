@@ -111,6 +111,11 @@ public class IndTestSepsetDci implements IndependenceTest {
      * {@inheritDoc}
      *
      * Checks the indicated independence fact.
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (z == null) {

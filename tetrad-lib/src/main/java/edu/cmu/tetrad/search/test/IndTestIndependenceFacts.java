@@ -65,7 +65,12 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
      * {@inheritDoc}
      *
      * Checks independence by looking up facts in the list of facts supplied in the constructor.
+     *
      * @see IndependenceResult
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param __z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> __z) {
         List<Node> z = new ArrayList<Node>(__z);

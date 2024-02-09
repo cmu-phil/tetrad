@@ -178,7 +178,12 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      * {@inheritDoc}
      *
      * Returns an independence result specifying whether x _||_ y | Z and what its p-values are.
+     *
      * @see IndependenceResult
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (facts.containsKey(new IndependenceFact(x, y, _z))) {

@@ -576,8 +576,8 @@ class DoNothingEditor extends DefaultCellEditor {
         return false;
     }
 }
-/** {@inheritDoc} */
 
+/** {@inheritDoc} */
 class VariableNameEditor extends DefaultCellEditor {
 
     private final JTextField textField;
@@ -589,7 +589,6 @@ class VariableNameEditor extends DefaultCellEditor {
         super(new JTextField());
 
         this.textField = (JTextField) this.editorComponent;
-/** {@inheritDoc} */
 
         this.delegate = new EditorDelegate() {
 

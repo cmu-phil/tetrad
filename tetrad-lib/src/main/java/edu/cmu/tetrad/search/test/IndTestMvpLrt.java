@@ -95,7 +95,12 @@ public class IndTestMvpLrt implements IndependenceTest {
      * {@inheritDoc}
      *
      * Returns an independence result for x _||_ y | z.
+     *
      * @see IndependenceResult
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (facts.containsKey(new IndependenceFact(x, y, _z))) {

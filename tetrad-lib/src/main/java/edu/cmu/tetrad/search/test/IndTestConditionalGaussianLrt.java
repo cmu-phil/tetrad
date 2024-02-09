@@ -93,7 +93,12 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
      * {@inheritDoc}
      *
      * Returns and independence result that states whether x _||_y | z and what the p-value of the test is.
+     *
      * @see IndependenceResult
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (this.facts.containsKey(new IndependenceFact(x, y, _z))) {

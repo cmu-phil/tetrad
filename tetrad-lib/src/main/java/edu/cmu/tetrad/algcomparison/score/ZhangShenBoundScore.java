@@ -35,7 +35,6 @@ public class ZhangShenBoundScore implements ScoreWrapper {
 
     /** {@inheritDoc} */
     @Override
-
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);

@@ -211,7 +211,12 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
      * {@inheritDoc}
      *
      * Determines whether variable x _||_ y | z given a list of conditioning variables z.
+     *
      * @see IndependenceResult
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (facts.containsKey(new IndependenceFact(x, y, z))) {

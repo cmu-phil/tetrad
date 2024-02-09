@@ -435,10 +435,9 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * <p>getVariable.</p>
+     * {@inheritDoc}
      *
-     * @return the variable at the given column.
-     * @param col a int
+     * <p>getVariable.</p>
      */
     public Node getVariable(int col) {
         return this.variables.get(col);
@@ -640,9 +639,9 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Removes the column for the variable at the given index, reducing the number of columns by one.
+     * {@inheritDoc}
      *
-     * @param index a int
+     * Removes the column for the variable at the given index, reducing the number of columns by one.
      */
     public void removeColumn(int index) {
         if (index < 0 || index >= this.variables.size()) {

@@ -42,7 +42,12 @@ import java.util.Map;
 public class DisplayNode extends JComponent implements Node, TetradSerializableExcluded {
 
     private final int uniqueId = AbstractVariable.LAST_ID++;
+
+    /**
+     * The attributes of this node.
+     */
     private final Map<String, Object> attributes = new HashMap<>();
+
     /**
      * The model node which this display node depicts.
      */

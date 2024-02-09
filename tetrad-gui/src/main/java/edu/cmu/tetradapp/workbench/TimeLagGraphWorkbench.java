@@ -411,10 +411,9 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     //===========================PRIVATE METHODS==========================//
 
     /**
-     * Pastes a list of session elements (SessionNodeWrappers and SessionEdges) into the workbench.
+     * {@inheritDoc}
      *
-     * @param graphElements a {@link java.util.List} object
-     * @param upperLeft a {@link java.awt.Point} object
+     * Pastes a list of session elements (SessionNodeWrappers and SessionEdges) into the workbench.
      */
     public void pasteSubgraph(List graphElements, Point upperLeft) {
 

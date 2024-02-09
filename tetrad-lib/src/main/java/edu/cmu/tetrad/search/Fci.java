@@ -64,8 +64,20 @@ import java.util.Set;
  * @author josephramsey
  * @see FciOrient
  * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
  * @see Pc
  * @see Fas
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
  * @see FciOrient
  * @see FciOrient
  * @see Knowledge

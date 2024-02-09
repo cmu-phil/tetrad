@@ -35,7 +35,19 @@ import java.util.*;
  * @see PermutationSearch
  * @see Knowledge
  * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
  * @see SpFci
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
  * @see Knowledge
  * @see Knowledge
  * @version $Id: $Id

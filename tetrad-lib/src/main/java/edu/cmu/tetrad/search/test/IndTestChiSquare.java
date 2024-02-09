@@ -158,6 +158,11 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
      * {@inheritDoc}
      *
      * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (_z == null) {
