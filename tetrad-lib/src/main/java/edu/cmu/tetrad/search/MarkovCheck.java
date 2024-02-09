@@ -545,8 +545,8 @@ public class MarkovCheck {
      */
     public String getMarkovCheckRecordString() {
         NumberFormat nf = new DecimalFormat("0.000");
-
         MarkovCheckRecord record = getMarkovCheckRecord();
+
         return "Anderson-Darling p-value (indep): " + nf.format(record.adInd) + "\n" +
                 "Anderson-Darling p-value (dep): " + nf.format(record.adDep) + "\n" +
                 "Binomial p-value (indep): " + nf.format(record.binIndep) + "\n" +
