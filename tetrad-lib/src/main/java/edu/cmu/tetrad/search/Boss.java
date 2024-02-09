@@ -127,6 +127,7 @@ public class Boss implements SuborderSearch {
      * suborder is the set of variables to be ordered. The gsts is a map from variables to GrowShrinkTrees, which are
      * used to cache scores for the variables. The searchSuborder method will update the suborder to be the best
      * ordering found.
+     *
      * @param prefix   The prefix of the suborder.
      * @param suborder The suborder.
      * @param gsts     The GrowShrinkTree being used to do caching of scores.
@@ -145,10 +146,8 @@ public class Boss implements SuborderSearch {
         double score, bestScore = Double.NEGATIVE_INFINITY;
         boolean improved;
 
-        this.pool = new ForkJoinPool(this.numThreads);
-//
-//        if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
-//        else if (this.numThreads != 1) this.pool = ForkJoinPool.commonPool();
+        if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
+        else this.pool = ForkJoinPool.commonPool();
 
         for (int i = 0; i < this.numStarts; i++) {
 
@@ -228,6 +227,7 @@ public class Boss implements SuborderSearch {
 
     /**
      * Sets the knowledge to be used for the search.
+     *
      * @param knowledge This knowledge. If null, no knowledge will be used.
      */
     @Override
@@ -250,6 +250,7 @@ public class Boss implements SuborderSearch {
 
     /**
      * Sets whether the grow-shrink trees should be reset after each best-mutation step.
+     *
      * @param reset True if so.
      */
     public void setResetAfterBM(boolean reset) {
@@ -258,39 +259,76 @@ public class Boss implements SuborderSearch {
 
     /**
      * Sets whether the grow-shrink trees should be reset after each restart.
+     *
      * @param reset True if so.
      */
     public void setResetAfterRS(boolean reset) {
         this.resetAfterRS = reset;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the number of threads to use.
+     *
+     * @param numThreads The number of threads to use. Must be at least 1.
+     */
     public void setNumThreads(int numThreads) {
+        if (numThreads < 1) throw new IllegalArgumentException("The number of threads must be at least 1.");
         this.numThreads = numThreads;
     }
 
+    /**
+     * Returns the variables.
+     *
+     * @return This list.
+     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * Returns the map from nodes to the sets of their parents.
+     *
+     * @return This map.
+     */
     @Override
     public Map<Node, Set<Node>> getParents() {
         return this.parents;
     }
 
+    /**
+     * Returns the score being used for the search.
+     *
+     * @return This score.
+     */
     @Override
     public Score getScore() {
         return this.score;
     }
 
+    /**
+     * Returns the BIC scores.
+     *
+     * @return This list.
+     */
     public List<Double> getBics() {
         return this.bics;
     }
 
+    /**
+     * Returns the times.
+     *
+     * @return This list.
+     */
     public List<Double> getTimes() {
         return this.times;
     }
@@ -504,6 +542,11 @@ public class Boss implements SuborderSearch {
             this.index = index;
         }
 
+        /**
+         * Computes the score for the given set of variables.
+         *
+         * @return The score.
+         */
         @Override
         public Void call() {
             if (!Thread.currentThread().isInterrupted()) {
