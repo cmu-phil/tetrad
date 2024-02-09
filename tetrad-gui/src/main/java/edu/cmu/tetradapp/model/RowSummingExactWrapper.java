@@ -41,12 +41,12 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial
+     * The Bayes updater.
      */
     private ManipulatingBayesUpdater bayesUpdater;
 
     /**
-     * @serial Can be null.
+     * The name of the Bayes updater.
      */
     private String name;
 
@@ -61,7 +61,7 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
      * <p>Constructor for RowSummingExactWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RowSummingExactWrapper(BayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
@@ -76,7 +76,7 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
      * <p>Constructor for RowSummingExactWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RowSummingExactWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
@@ -90,7 +90,7 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
      * <p>Constructor for RowSummingExactWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RowSummingExactWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
@@ -105,7 +105,7 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
      * <p>Constructor for RowSummingExactWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletEstimatorWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RowSummingExactWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
@@ -119,7 +119,7 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
      * <p>Constructor for RowSummingExactWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.EmBayesEstimatorWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RowSummingExactWrapper(EmBayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
@@ -132,8 +132,8 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.RowSummingExactWrapper} object
+     * @see TetradSerializableUtils
      */
     public static RowSummingExactWrapper serializableInstance() {
         return new RowSummingExactWrapper(
@@ -160,7 +160,9 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -230,6 +232,10 @@ public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unm
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

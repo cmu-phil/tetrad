@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
 import java.text.NumberFormat;
 
 /**
@@ -34,19 +35,33 @@ import java.text.NumberFormat;
  * @version $Id: $Id
  */
 public final class IndependenceResultIndFacts implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
+
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    /**
+     * The index of the result.
+     */
     private final int index;
+    /**
+     * The fact.
+     */
     private final String fact;
+    /**
+     * The type of independence.
+     */
     private final Type indep;
+    /**
+     * The p-value.
+     */
     private final double pValue;
 
     /**
      * <p>Constructor for IndependenceResultIndFacts.</p>
      *
-     * @param index a int
-     * @param fact a {@link java.lang.String} object
-     * @param indep a {@link edu.cmu.tetradapp.model.IndependenceResultIndFacts.Type} object
+     * @param index  a int
+     * @param fact   a {@link java.lang.String} object
+     * @param indep  a {@link edu.cmu.tetradapp.model.IndependenceResultIndFacts.Type} object
      * @param pValue a double
      */
     public IndependenceResultIndFacts(int index, String fact, Type indep, double pValue) {
@@ -59,8 +74,8 @@ public final class IndependenceResultIndFacts implements TetradSerializable {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.IndependenceResultIndFacts} object
+     * @see TetradSerializableUtils
      */
     public static IndependenceResultIndFacts serializableInstance() {
         return new IndependenceResultIndFacts(1, "X _||_ Y", Type.DEPENDENT, 0.0001);

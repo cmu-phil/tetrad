@@ -60,9 +60,9 @@ public final class SplitCasesSpec implements TetradSerializable {
     /**
      * <p>Constructor for SplitCasesSpec.</p>
      *
-     * @param sampleSize a int
+     * @param sampleSize  a int
      * @param breakpoints an array of {@link int} objects
-     * @param splits a {@link java.util.List} object
+     * @param splits      a {@link java.util.List} object
      */
     public SplitCasesSpec(int sampleSize, int[] breakpoints,
                           List<String> splits) {
@@ -105,6 +105,10 @@ public final class SplitCasesSpec implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -40,8 +40,8 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * number of variables, the positive definiteness is "spot-checked"--that is, checked for various submatrices.
  *
  * @author josephramsey
- * @see CorrelationMatrix
  * @version $Id: $Id
+ * @see CorrelationMatrix
  */
 public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     private static final long serialVersionUID = 23L;
@@ -71,8 +71,8 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      * VerticalDoubleDataBox, the data will be mean-centered by the constructor; is non-mean-centered version of the
      * data is needed, the data should be copied before being send into the constructor.
      *
-     * @throws java.lang.IllegalArgumentException if this is not a continuous data set.
      * @param cov a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @throws java.lang.IllegalArgumentException if this is not a continuous data set.
      */
     public CorrelationMatrixOnTheFly(ICovarianceMatrix cov) {
         this.cov = cov;
@@ -100,7 +100,9 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         return this.cov.getVariables();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = variables;
@@ -115,7 +117,9 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         return this.cov.getVariableNames();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public final String getVariableName(int index) {
         return this.cov.getVariableName(index);
     }
@@ -138,7 +142,9 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         return this.cov.getSampleSize();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public final void setSampleSize(int sampleSize) {
         this.cov.setSampleSize(sampleSize);
     }
@@ -154,7 +160,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the covariance matrix.
      */
     public final void setName(String name) {
@@ -172,7 +178,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Associates knowledge with this data.
      */
     public final void setKnowledge(Knowledge knowledge) {
@@ -182,8 +188,8 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     /**
      * <p>getSubmatrix.</p>
      *
-     * @return a submatrix of the covariance matrix with variables in the given order.
      * @param indices an array of {@link int} objects
+     * @return a submatrix of the covariance matrix with variables in the given order.
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {
         List<Node> submatrixVars = new LinkedList<>();
@@ -218,14 +224,16 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     /**
      * <p>getSubmatrix.</p>
      *
-     * @return a submatrix of this matrix, with variables in the given order.
      * @param submatrixVarNames an array of {@link java.lang.String} objects
+     * @return a submatrix of this matrix, with variables in the given order.
      */
     public final CorrelationMatrixOnTheFly getSubmatrix(String[] submatrixVarNames) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public final double getValue(int i, int j) {
         double v = this.cov.getValue(i, j);
         v /= sqrt(this.cov.getValue(i, i) * this.cov.getValue(j, j));
@@ -258,12 +266,16 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         return matrix;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setMatrix(Matrix matrix) {
         this.cov.setMatrix(matrix);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public final void select(Node variable) {
         this.cov.select(variable);
     }
@@ -275,7 +287,9 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         this.cov.clearSelection();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public final boolean isSelected(Node variable) {
         return this.cov.isSelected(variable);
     }
@@ -319,19 +333,25 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         return buf.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isContinuous() {
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isDiscrete() {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isMixed() {
         return false;
@@ -355,7 +375,9 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         this.verbose = verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Matrix getSelection(int[] rows, int[] cols) {
         Matrix m = new Matrix(rows.length, cols.length);
@@ -380,24 +402,32 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         return m;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node getVariable(String name) {
         return this.cov.getVariable(name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel copy() {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setValue(int i, int j, double v) {
         throw new IllegalArgumentException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeVariables(List<String> remaining) {
         this.cov.removeVariables(remaining);
@@ -410,6 +440,10 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

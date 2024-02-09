@@ -94,7 +94,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     /**
      * Constructs a new updater for the given Bayes net.
      *
-     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param bayesIm  a {@link edu.cmu.tetrad.bayes.BayesIm} object
      * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
      */
     public RowSummingExactUpdater(BayesIm bayesIm, Evidence evidence) {
@@ -148,8 +148,8 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     /**
      * The updated BayesIm. This is a different object from the source BayesIm.
      *
-     * @see #getBayesIm
      * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @see #getBayesIm
      */
     public BayesIm getUpdatedBayesIm() {
         if (this.updatedBayesIm == null) {
@@ -168,7 +168,9 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         return new Evidence(this.evidence);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setEvidence(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
@@ -218,7 +220,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
      * <p>getJointMarginal.</p>
      *
      * @param variables an array of {@link int} objects
-     * @param values an array of {@link int} objects
+     * @param values    an array of {@link int} objects
      * @return a double
      */
     public double getJointMarginal(int[] variables, int[] values) {
@@ -241,7 +243,9 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getMarginal(int variable, int value) {
         Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
         Proposition condition =
@@ -255,7 +259,9 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculatePriorMarginals(int nodeIndex) {
         Evidence evidence = getEvidence();
         setEvidence(Evidence.tautology(evidence.getVariableSource()));
@@ -270,7 +276,9 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculateUpdatedMarginals(int nodeIndex) {
         double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
 
@@ -378,6 +386,10 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

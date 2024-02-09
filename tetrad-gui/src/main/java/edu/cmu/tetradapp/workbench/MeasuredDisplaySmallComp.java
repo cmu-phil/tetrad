@@ -32,6 +32,10 @@ import java.awt.geom.Ellipse2D;
  * @version $Id: $Id
  */
 public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp {
+
+    /**
+     * True iff this display node is selected.
+     */
     private boolean selected;
 
     /**

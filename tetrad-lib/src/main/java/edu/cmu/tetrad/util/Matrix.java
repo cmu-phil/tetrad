@@ -381,7 +381,7 @@ public class Matrix implements TetradSerializable {
     /**
      * <p>assignRow.</p>
      *
-     * @param row a int
+     * @param row     a int
      * @param doubles a {@link edu.cmu.tetrad.util.Vector} object
      */
     public void assignRow(int row, Vector doubles) {
@@ -391,7 +391,7 @@ public class Matrix implements TetradSerializable {
     /**
      * <p>assignColumn.</p>
      *
-     * @param col a int
+     * @param col     a int
      * @param doubles a {@link edu.cmu.tetrad.util.Vector} object
      */
     public void assignColumn(int col, Vector doubles) {
@@ -429,7 +429,7 @@ public class Matrix implements TetradSerializable {
     /**
      * <p>equals.</p>
      *
-     * @param m a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param m         a {@link edu.cmu.tetrad.util.Matrix} object
      * @param tolerance a double
      * @return a boolean
      */
@@ -621,6 +621,10 @@ public class Matrix implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

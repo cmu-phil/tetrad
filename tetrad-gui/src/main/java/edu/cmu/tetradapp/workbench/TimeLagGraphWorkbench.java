@@ -48,8 +48,20 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     private static final int BIDIRECTED_EDGE = 4;
 
     //====================PRIVATE FIELDS=================================//
+
+    /**
+     * The type of node to be drawn next.
+     */
     private int nodeType = TimeLagGraphWorkbench.MEASURED_NODE;
+
+    /**
+     * The type of edge to be drawn next.
+     */
     private int edgeMode = TimeLagGraphWorkbench.DIRECTED_EDGE;
+
+    /**
+     * The nodes remembered from the last layout.
+     */
     private List<Node> rememberedNodes = new ArrayList<>();
 
     //========================CONSTRUCTORS===============================//

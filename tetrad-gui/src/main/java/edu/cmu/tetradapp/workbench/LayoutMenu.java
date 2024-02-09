@@ -40,7 +40,15 @@ import java.util.ArrayList;
  * @version $Id: $Id
  */
 public class LayoutMenu extends JMenu {
+
+    /**
+     * The layout editable object.
+     */
     private final LayoutEditable layoutEditable;
+
+    /**
+     * The copy layout action.
+     */
     private final CopyLayoutAction copyLayoutAction;
 
     /**

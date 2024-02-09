@@ -33,8 +33,8 @@ import java.util.List;
  * Stores a list of data models and keeps track of which one is selected.
  *
  * @author josephramsey
- * @see DataModel
  * @version $Id: $Id
+ * @see DataModel
  */
 public final class DataModelList extends AbstractList<DataModel>
         implements DataModel {
@@ -103,12 +103,16 @@ public final class DataModelList extends AbstractList<DataModel>
         return new DataModelList();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public DataModel get(int index) {
         return this.modelList.get(index);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int size() {
         return this.modelList.size();
@@ -135,7 +139,9 @@ public final class DataModelList extends AbstractList<DataModel>
         return this.knowledge.copy();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -168,7 +174,7 @@ public final class DataModelList extends AbstractList<DataModel>
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Check if the modeList is empty Need to override this since this class is extending AbstractList.
      */
     @Override
@@ -201,7 +207,7 @@ public final class DataModelList extends AbstractList<DataModel>
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Removes the DataModel at the given index. Required for AbstractList. Required for AbstractList.
      */
     public DataModel remove(int index) {
@@ -256,7 +262,7 @@ public final class DataModelList extends AbstractList<DataModel>
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the data model list..
      */
     public void setName(String name) {
@@ -278,31 +284,41 @@ public final class DataModelList extends AbstractList<DataModel>
         return buf.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isContinuous() {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isDiscrete() {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isMixed() {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Node getVariable(String name) {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel copy() {
         return null;
@@ -319,7 +335,9 @@ public final class DataModelList extends AbstractList<DataModel>
         return hashcode;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
@@ -342,6 +360,10 @@ public final class DataModelList extends AbstractList<DataModel>
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

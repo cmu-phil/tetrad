@@ -192,8 +192,8 @@ public final class SemGraph implements Graph {
     /**
      * <p>isErrorEdge.</p>
      *
-     * @return true iff either node associated with edge is an error term.
      * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return true iff either node associated with edge is an error term.
      */
     public static boolean isErrorEdge(Edge edge) {
         return (edge.getNode1().getNodeType() == NodeType.ERROR ||
@@ -203,14 +203,16 @@ public final class SemGraph implements Graph {
     /**
      * <p>getErrorNode.</p>
      *
-     * @return the error node associated with the given node, or null if the node has no associated error node.
      * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return the error node associated with the given node, or null if the node has no associated error node.
      */
     public Node getErrorNode(Node node) {
         return this.errorNodes.get(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isParameterizable(Node node) {
         return getGraph().isParameterizable(node);
     }
@@ -249,9 +251,9 @@ public final class SemGraph implements Graph {
     /**
      * <p>getVarNode.</p>
      *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      * @return the variable node for this node--that is, the associated node, if this is an error node, or the node
      * itself, if it is not.
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     public Node getVarNode(Node node) {
         boolean isError = node.getNodeType() == NodeType.ERROR;
@@ -277,19 +279,25 @@ public final class SemGraph implements Graph {
         return isExogenous(node) ? node : this.errorNodes.get(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void transferNodesAndEdges(Graph graph)
             throws IllegalArgumentException {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void transferAttributes(Graph graph)
             throws IllegalArgumentException {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Paths paths() {
         return this.paths;
@@ -304,27 +312,37 @@ public final class SemGraph implements Graph {
         return getGraph().getNodeNames();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void fullyConnect(Endpoint endpoint) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void reorientAllWith(Endpoint endpoint) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
         return getGraph().getNodesInTo(node, endpoint);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getNodesOutTo(Node node, Endpoint n) {
         return getGraph().getNodesOutTo(node, n);
     }
@@ -338,13 +356,17 @@ public final class SemGraph implements Graph {
         return getGraph().getNodes();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNodes(List<Node> nodes) {
         this.graph.setNodes(nodes);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeEdge(Node node1, Node node2) {
         List<Edge> edges = getEdges(node1, node2);
 
@@ -357,62 +379,86 @@ public final class SemGraph implements Graph {
         return removeEdges(edges);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeEdges(Node node1, Node node2) {
         return removeEdges(getEdges(node1, node2));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isAdjacentTo(Node nodeX, Node nodeY) {
         return getGraph().isAdjacentTo(nodeX, nodeY);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean setEndpoint(Node node1, Node node2, Endpoint endpoint) {
         return getGraph().setEndpoint(node1, node2, endpoint);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Endpoint getEndpoint(Node node1, Node node2) {
         return getGraph().getEndpoint(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         return (o instanceof SemGraph) && getGraph().equals(o);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Graph subgraph(List<Node> nodes) {
         return getGraph().subgraph(nodes);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addDirectedEdge(Node nodeA, Node nodeB) {
         return addEdge(Edges.directedEdge(nodeA, nodeB));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addUndirectedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addNondirectedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addPartiallyOrientedEdge(Node nodeA, Node nodeB) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addBidirectedEdge(Node nodeA, Node nodeB) {
         return addEdge(Edges.bidirectedEdge(nodeA, nodeB));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addEdge(Edge edge) {
         Node node1 = edge.getNode1();
         Node node2 = edge.getNode2();
@@ -453,7 +499,9 @@ public final class SemGraph implements Graph {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addNode(Node node) {
         if (node.getNodeType() == NodeType.ERROR) {
             throw new IllegalArgumentException("Error nodes cannot be added " +
@@ -463,17 +511,23 @@ public final class SemGraph implements Graph {
         return getGraph().addNode(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addPropertyChangeListener(PropertyChangeListener l) {
         getGraph().addPropertyChangeListener(l);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean containsEdge(Edge edge) {
         return getGraph().containsEdge(edge);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean containsNode(Node node) {
         return getGraph().containsNode(node);
     }
@@ -487,17 +541,23 @@ public final class SemGraph implements Graph {
         return getGraph().getEdges();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Edge> getEdges(Node node) {
         return getGraph().getEdges(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Edge> getEdges(Node node1, Node node2) {
         return getGraph().getEdges(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node getNode(String name) {
         return getGraph().getNode(name);
     }
@@ -520,12 +580,16 @@ public final class SemGraph implements Graph {
         return getGraph().getNumNodes();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getNumEdges(Node node) {
         return getGraph().getNumEdges(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeEdge(Edge edge) {
         if (!getGraph().containsEdge(edge)) {
             throw new IllegalArgumentException(
@@ -552,7 +616,9 @@ public final class SemGraph implements Graph {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeEdges(Collection<Edge> edges) {
         boolean change = false;
 
@@ -564,7 +630,9 @@ public final class SemGraph implements Graph {
         return change;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeNode(Node node) {
         if (!getGraph().containsNode(node)) {
             throw new IllegalArgumentException(
@@ -602,22 +670,30 @@ public final class SemGraph implements Graph {
         getGraph().clear();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeNodes(List<Node> nodes) {
         return getGraph().removeNodes(nodes);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
         return getGraph().isDefNoncollider(node1, node2, node3);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isDefCollider(Node node1, Node node2, Node node3) {
         return getGraph().isDefCollider(node1, node2, node3);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getChildren(Node node) {
         return getGraph().getChildren(node);
     }
@@ -631,49 +707,67 @@ public final class SemGraph implements Graph {
         return getGraph().getDegree();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Edge getEdge(Node node1, Node node2) {
         return getGraph().getEdge(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Edge getDirectedEdge(Node node1, Node node2) {
         return graph.getDirectedEdge(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getParents(Node node) {
         return getGraph().getParents(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getIndegree(Node node) {
         return getGraph().getIndegree(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getDegree(Node node) {
         return getGraph().getDegree(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getOutdegree(Node node) {
         return getGraph().getOutdegree(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isChildOf(Node node1, Node node2) {
         return getGraph().isChildOf(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isParentOf(Node node1, Node node2) {
         return getGraph().isParentOf(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isExogenous(Node node) {
         return getGraph().isExogenous(node) || isShowErrorTerms() && getErrorNode(node) == null;
     }
@@ -739,7 +833,9 @@ public final class SemGraph implements Graph {
         return new TimeLagGraph((TimeLagGraph) this.graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<Node> getSepset(Node n1, Node n2) {
         return this.graph.getSepset(n1, n2);
@@ -851,6 +947,10 @@ public final class SemGraph implements Graph {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -878,25 +978,33 @@ public final class SemGraph implements Graph {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);
@@ -911,7 +1019,9 @@ public final class SemGraph implements Graph {
         return new HashSet<>(this.ambiguousTriples);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setAmbiguousTriples(Set<Triple> triples) {
         this.ambiguousTriples.clear();
 
@@ -940,7 +1050,7 @@ public final class SemGraph implements Graph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * States whether r-s-r is an underline triple or not.
      */
     public boolean isAmbiguousTriple(Node x, Node y, Node z) {
@@ -949,19 +1059,23 @@ public final class SemGraph implements Graph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * States whether r-s-r is an underline triple or not.
      */
     public boolean isUnderlineTriple(Node x, Node y, Node z) {
         return this.underLineTriples.contains(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addAmbiguousTriple(Node x, Node y, Node z) {
         this.ambiguousTriples.add(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addUnderlineTriple(Node x, Node y, Node z) {
         Triple triple = new Triple(x, y, z);
 
@@ -972,7 +1086,9 @@ public final class SemGraph implements Graph {
         this.underLineTriples.add(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addDottedUnderlineTriple(Node x, Node y, Node z) {
         Triple triple = new Triple(x, y, z);
 
@@ -983,22 +1099,30 @@ public final class SemGraph implements Graph {
         this.dottedUnderLineTriples.add(triple);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeAmbiguousTriple(Node x, Node y, Node z) {
         this.ambiguousTriples.remove(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeUnderlineTriple(Node x, Node y, Node z) {
         this.underLineTriples.remove(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
         this.dottedUnderLineTriples.remove(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setUnderLineTriples(Set<Triple> triples) {
         this.underLineTriples.clear();
 
@@ -1007,7 +1131,9 @@ public final class SemGraph implements Graph {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setDottedUnderLineTriples(Set<Triple> triples) {
         this.dottedUnderLineTriples.clear();
 

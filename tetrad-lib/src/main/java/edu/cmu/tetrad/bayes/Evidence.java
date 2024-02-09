@@ -100,7 +100,7 @@ public final class Evidence implements TetradSerializable {
     /**
      * <p>Constructor for Evidence.</p>
      *
-     * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
+     * @param evidence       a {@link edu.cmu.tetrad.bayes.Evidence} object
      * @param variableSource a {@link edu.cmu.tetrad.data.VariableSource} object
      */
     public Evidence(Evidence evidence, VariableSource variableSource) {
@@ -229,7 +229,7 @@ public final class Evidence implements TetradSerializable {
     /**
      * <p>setManipulated.</p>
      *
-     * @param nodeIndex a int
+     * @param nodeIndex   a int
      * @param manipulated a boolean
      */
     public void setManipulated(int nodeIndex, boolean manipulated) {
@@ -292,7 +292,7 @@ public final class Evidence implements TetradSerializable {
      * <p>getCategory.</p>
      *
      * @param node a {@link edu.cmu.tetrad.graph.Node} object
-     * @param j a int
+     * @param j    a int
      * @return a {@link java.lang.String} object
      */
     public String getCategory(Node node, int j) {
@@ -313,7 +313,9 @@ public final class Evidence implements TetradSerializable {
         return !variables1.equals(variables2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
@@ -348,6 +350,10 @@ public final class Evidence implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

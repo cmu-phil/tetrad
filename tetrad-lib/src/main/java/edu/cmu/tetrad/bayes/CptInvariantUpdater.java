@@ -94,7 +94,7 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
     /**
      * Constructs a new updater for the given Bayes net.
      *
-     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param bayesIm  a {@link edu.cmu.tetrad.bayes.BayesIm} object
      * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
      */
     public CptInvariantUpdater(BayesIm bayesIm, Evidence evidence) {
@@ -162,7 +162,9 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
         return new Evidence(this.evidence);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setEvidence(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
@@ -191,7 +193,9 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
                         evidence2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getMarginal(int variable, int value) {
         return this.cptInvariantMarginalCalculator.getMarginal(variable, value);
     }
@@ -209,14 +213,16 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
      * <p>getJointMarginal.</p>
      *
      * @param variables an array of {@link int} objects
-     * @param values an array of {@link int} objects
+     * @param values    an array of {@link int} objects
      * @return a double
      */
     public double getJointMarginal(int[] variables, int[] values) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculatePriorMarginals(int nodeIndex) {
         Evidence evidence = getEvidence();
         setEvidence(Evidence.tautology(evidence.getVariableSource()));
@@ -232,7 +238,9 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculateUpdatedMarginals(int nodeIndex) {
         double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
 
@@ -288,6 +296,10 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

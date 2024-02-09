@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IndTestType;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,15 +46,37 @@ import java.util.Set;
  */
 public class VcpcFastRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The graph to be searched.
+     */
     private Graph dag;
+
+    /**
+     * The independence facts model.
+     */
     private IndependenceFactsModel independenceFactsModel;
+
+    /**
+     * The true graph, if any.
+     */
     private Graph trueGraph;
-//    private Vcpc vcpc = null;
 
-
+    /**
+     * The adjacent triples.
+     */
     private Set<Edge> fvcpcAdjacent;
+
+    /**
+     * The apparent nonadjacent triples.
+     */
     private Set<Edge> fvcpcApparent;
+
+    /**
+     * The definite nonadjacent triples.
+     */
     private Set<Edge> fvcpcDefinite;
 
     //============================CONSTRUCTORS============================//

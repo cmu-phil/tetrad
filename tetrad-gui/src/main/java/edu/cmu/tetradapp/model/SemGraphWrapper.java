@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,29 +45,51 @@ import java.util.Map;
 public class SemGraphWrapper implements GraphSource,
         KnowledgeBoxInput, SimulationParamsSource, DoNotAddOldModel, MultipleGraphSource {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The number of models in this wrapper.
+     */
     private int numModels = 1;
+
+    /**
+     * The index of the current model.
+     */
     private int modelIndex;
+
+    /**
+     * The name of the model source.
+     */
     private String modelSourceName;
 
     /**
-     * @serial Can be null.
+     * The name of the wrapper.
      */
     private String name;
 
     /**
-     * @serial Cannot be null.
+     * The graphs in the wrapper.
      */
     private List<Graph> graphs;
+
+    /**
+     * The parameter settings for the wrapper.
+     */
     private Map<String, String> allParamSettings;
+
+    /**
+     * The parameters for the wrapper.
+     */
     private Parameters parameters = new Parameters();
 
     // =============================CONSTRUCTORS==========================//
+
     /**
      * <p>Constructor for SemGraphWrapper.</p>
      *
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemGraphWrapper(GraphSource graphSource, Parameters parameters) {
         if (graphSource instanceof Simulation) {
@@ -103,6 +126,7 @@ public class SemGraphWrapper implements GraphSource,
     }
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
+
     /**
      * <p>Constructor for SemGraphWrapper.</p>
      *
@@ -129,7 +153,7 @@ public class SemGraphWrapper implements GraphSource,
      * <p>Constructor for SemGraphWrapper.</p>
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemGraphWrapper(SemGraphWrapper graphWrapper, Parameters params) {
         this.parameters = params;
@@ -155,7 +179,7 @@ public class SemGraphWrapper implements GraphSource,
      * <p>Constructor for SemGraphWrapper.</p>
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemGraphWrapper(DagWrapper graphWrapper, Parameters params) {
         this.parameters = params;
@@ -174,7 +198,7 @@ public class SemGraphWrapper implements GraphSource,
      * <p>Constructor for SemGraphWrapper.</p>
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemGraphWrapper(GraphWrapper graphWrapper, Parameters params) {
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
@@ -318,14 +342,15 @@ public class SemGraphWrapper implements GraphSource,
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     * @see TetradSerializableUtils
      */
     public static SemGraphWrapper serializableInstance() {
         return new SemGraphWrapper(SemGraph.serializableInstance());
     }
 
     // ================================PUBLIC METHODS=======================//
+
     /**
      * <p>getSemGraph.</p>
      *
@@ -360,6 +385,10 @@ public class SemGraphWrapper implements GraphSource,
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s) throws IOException,
             ClassNotFoundException {
@@ -395,7 +424,9 @@ public class SemGraphWrapper implements GraphSource,
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -436,7 +467,9 @@ public class SemGraphWrapper implements GraphSource,
         return getGraph().getNodes();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getParamSettings() {
         Map<String, String> paramSettings = new HashMap<>();
@@ -450,13 +483,17 @@ public class SemGraphWrapper implements GraphSource,
         return paramSettings;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getAllParamSettings() {
         return this.allParamSettings;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamSettings = paramSettings;

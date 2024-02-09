@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -42,8 +43,12 @@ import static edu.cmu.tetrad.graph.GraphUtils.removeNonSkeletonEdges;
  */
 public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The graph with non-skeleton edges removed.
+     */
     private Graph resultGraph = new EdgeListGraph();
 
     /**

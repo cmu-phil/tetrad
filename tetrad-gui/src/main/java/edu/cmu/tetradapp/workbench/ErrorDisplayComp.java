@@ -33,6 +33,10 @@ import java.awt.geom.Rectangle2D;
  */
 public class ErrorDisplayComp extends JComponent
         implements DisplayComp {
+
+    /**
+     * True iff this display node is selected.
+     */
     private boolean selected;
 
     /**

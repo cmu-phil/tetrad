@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,9 +46,22 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The data set.
+     */
     private final DataSet dataSet;
+
+    /**
+     * The full graph.
+     */
     private Graph fullGraph;
+
+    /**
+     * The covariance matrix.
+     */
     private ICovarianceMatrix covMatrix;
 
     //============================CONSTRUCTORS===========================//
@@ -262,7 +276,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
             builder.append(latent.getName()).append(": ");
 
             for (Node child : children) {
-                builder.append(child + " ");
+                builder.append(child).append(" ");
             }
 
             builder.append("\n");

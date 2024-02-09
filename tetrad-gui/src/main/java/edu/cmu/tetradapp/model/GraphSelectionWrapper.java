@@ -51,7 +51,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      * <p>Constructor for GraphSelectionWrapper.</p>
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GraphSelectionWrapper(GraphSource graphWrapper, Parameters parameters) {
         this(graphWrapper.getGraph(), parameters);
@@ -79,7 +79,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     /**
      * <p>Constructor for GraphSelectionWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GraphSelectionWrapper(Graph graph, Parameters params) {
@@ -98,8 +98,8 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     /**
      * <p>Constructor for GraphSelectionWrapper.</p>
      *
-     * @param graphs a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param graphs  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      * @param message a {@link java.lang.String} object
      */
     public GraphSelectionWrapper(Graph graphs, Parameters params, String message) {
@@ -110,8 +110,8 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.GraphSelectionWrapper} object
+     * @see TetradSerializableUtils
      */
     public static GraphSelectionWrapper serializableInstance() {
         return new GraphSelectionWrapper(Dag.serializableInstance(), new Parameters());
@@ -685,6 +685,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     }
 
     // Sorry, this has to return the selection graph since its used downstream in the interface.
+
     /**
      * <p>getGraph.</p>
      *
@@ -776,7 +777,9 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         return this.params.getString("name", null);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.params.set("name", name);
     }
@@ -971,13 +974,19 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getIndependenceTest() {
         return new MsepTest(getGraph());

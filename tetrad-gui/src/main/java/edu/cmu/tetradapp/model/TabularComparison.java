@@ -49,16 +49,60 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The target graph.
+     */
     private final Graph targetGraph;
+
+    /**
+     * The reference graph.
+     */
     private final Graph referenceGraph;
+
+    /**
+     * The parameters for the comparison.
+     */
     private final Parameters params;
+
+    /**
+     * The data model.
+     */
     private final DataModel dataModel = null;
+
+    /**
+     * The elapsed time in milliseconds.
+     */
     private long elapsedTime = 0L;
+
+    /**
+     * The name of the comparison.
+     */
     private String name;
+
+    /**
+     * The parameters for the comparison.
+     */
     private Map<String, String> allParamSettings;
+
+    /**
+     * The data set.
+     */
     private DataSet dataSet;
+
+    /**
+     * The statistics.
+     */
     private ArrayList<Statistic> statistics;
+
+    /**
+     * The name of the target graph.
+     */
     private String targetName;
+
+    /**
+     * The name of the reference graph.
+     */
     private String referenceName;
 
     //=============================CONSTRUCTORS==========================//
@@ -78,10 +122,10 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     /**
      * Compares the results an algorithm run using various statistics.
      *
-     * @param model1 the first model to compare; its graph is used.
-     * @param model2 the second model to compare; its graph is used.
+     * @param model1      the first model to compare; its graph is used.
+     * @param model2      the second model to compare; its graph is used.
      * @param dataWrapper the data wrapper to use for the comparison. (Unused here.)
-     * @param params the parameters for the comparison.
+     * @param params      the parameters for the comparison.
      */
     public TabularComparison(GraphSource model1, GraphSource model2,
                              DataWrapper dataWrapper, Parameters params) {
@@ -154,6 +198,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     }
 
     //==============================PUBLIC METHODS========================//
+
     /**
      * <p>Getter for the field <code>dataSet</code>.</p>
      *
@@ -172,7 +217,9 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -186,25 +233,36 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getParamSettings() {
         return new HashMap<>();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getAllParamSettings() {
         return this.allParamSettings;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamSettings = new LinkedHashMap<>(paramSettings);

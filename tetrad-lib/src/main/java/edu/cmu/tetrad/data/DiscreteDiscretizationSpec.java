@@ -55,7 +55,7 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
     /**
      * <p>Constructor for DiscreteDiscretizationSpec.</p>
      *
-     * @param remap an array of {@link int} objects
+     * @param remap      an array of {@link int} objects
      * @param categories a {@link java.util.List} object
      */
     public DiscreteDiscretizationSpec(int[] remap, List<String> categories) {
@@ -106,6 +106,10 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

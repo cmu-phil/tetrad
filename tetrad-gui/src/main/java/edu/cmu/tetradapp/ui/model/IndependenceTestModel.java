@@ -22,6 +22,7 @@ import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.util.IndependenceTestDescriptions;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -32,10 +33,22 @@ import java.io.Serializable;
  */
 public class IndependenceTestModel implements Serializable, Comparable<IndependenceTestModel> {
 
+    @Serial
     private static final long serialVersionUID = -6802442235695595011L;
 
+    /**
+     * The annotated class of the independence test.
+     */
     private final AnnotatedClass<TestOfIndependence> independenceTest;
+
+    /**
+     * The name and description of the independence test.
+     */
     private final String name;
+
+    /**
+     * The description of the independence test.
+     */
     private final String description;
 
     /**

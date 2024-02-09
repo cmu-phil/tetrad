@@ -72,6 +72,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     private Map<String, String> allParamSettings;
 
     //==============================CONSTRUCTORS===========================//
+
     /**
      * <p>Constructor for DataWrapper.</p>
      */
@@ -93,7 +94,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     /**
      * <p>Constructor for DataWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.Simulation} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.Simulation} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public DataWrapper(Simulation wrapper, Parameters parameters) {
@@ -427,7 +428,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets knowledge to a copy of the given object.
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -486,6 +487,10 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     @Serial
     private void readObject(ObjectInputStream s)
@@ -504,7 +509,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the data wrapper.
      */
     public void setName(String name) {
@@ -544,7 +549,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the parameter setting map.
      */
     @Override
@@ -574,7 +579,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the parameter setting map.
      */
     @Override
@@ -584,7 +589,7 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the parameter setting map.
      */
     @Override

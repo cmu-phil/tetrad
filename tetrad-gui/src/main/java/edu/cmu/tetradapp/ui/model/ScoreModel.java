@@ -22,6 +22,7 @@ import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.util.ScoreDescriptions;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -32,10 +33,22 @@ import java.io.Serializable;
  */
 public class ScoreModel implements Serializable, Comparable<ScoreModel> {
 
+    @Serial
     private static final long serialVersionUID = 2755370016466432455L;
 
+    /**
+     * The annotated class of the score.
+     */
     private final AnnotatedClass<Score> score;
+
+    /**
+     * The name and description of the score.
+     */
     private final String name;
+
+    /**
+     * The description of the score.
+     */
     private final String description;
 
     /**

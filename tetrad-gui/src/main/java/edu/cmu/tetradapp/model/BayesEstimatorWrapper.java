@@ -66,10 +66,11 @@ public class BayesEstimatorWrapper implements SessionModel {
     private int modelIndex;
 
     //=================================CONSTRUCTORS========================//
+
     /**
      * <p>Constructor for BayesEstimatorWrapper.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
      */
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
@@ -117,7 +118,7 @@ public class BayesEstimatorWrapper implements SessionModel {
     /**
      * <p>Constructor for BayesEstimatorWrapper.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param bayesImWrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
      */
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
@@ -128,14 +129,15 @@ public class BayesEstimatorWrapper implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
 
     //==============================PUBLIC METHODS========================//
+
     /**
      * <p>getEstimatedBayesIm.</p>
      *
@@ -182,7 +184,9 @@ public class BayesEstimatorWrapper implements SessionModel {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -238,6 +242,10 @@ public class BayesEstimatorWrapper implements SessionModel {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -481,7 +481,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     /**
      * <p>setNodeExpression.</p>
      *
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node             a {@link edu.cmu.tetrad.graph.Node} object
      * @param expressionString a {@link java.lang.String} object
      * @throws java.text.ParseException if any.
      */
@@ -657,7 +657,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     /**
      * <p>setParameterEstimationInitializationExpression.</p>
      *
-     * @param parameter a {@link java.lang.String} object
+     * @param parameter        a {@link java.lang.String} object
      * @param expressionString a {@link java.lang.String} object
      * @throws java.text.ParseException if any.
      */
@@ -692,8 +692,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      *
      * @param parameter        The parameter whose initial value needs to be computed.
      * @param expressionString The formula for picking initial values.
+     * @param startsWith       a {@link java.lang.String} object
      * @throws java.text.ParseException If the formula cannot be parsed or contains variable names.
-     * @param startsWith a {@link java.lang.String} object
      */
     public void setParameterExpression(String startsWith, String parameter, String expressionString)
             throws ParseException {
@@ -735,8 +735,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      *
      * @param parameter        The parameter whose initial value needs to be computed.
      * @param expressionString The formula for picking initial values.
+     * @param startsWith       a {@link java.lang.String} object
      * @throws java.text.ParseException If the formula cannot be parsed or contains variable names.
-     * @param startsWith a {@link java.lang.String} object
      */
     public void setParameterEstimationInitializationExpression(String startsWith, String parameter, String expressionString)
             throws ParseException {
@@ -1070,6 +1070,10 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help).
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -1194,7 +1198,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     /**
      * <p>setStartsWithParametersTemplate.</p>
      *
-     * @param startsWith a {@link java.lang.String} object
+     * @param startsWith         a {@link java.lang.String} object
      * @param parametersTemplate a {@link java.lang.String} object
      * @throws java.text.ParseException if any.
      */
@@ -1223,7 +1227,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     /**
      * <p>setStartsWithParametersEstimationInitializaationTemplate.</p>
      *
-     * @param startsWith a {@link java.lang.String} object
+     * @param startsWith                                 a {@link java.lang.String} object
      * @param parametersEstimationInitializationTemplate a {@link java.lang.String} object
      * @throws java.text.ParseException if any.
      */

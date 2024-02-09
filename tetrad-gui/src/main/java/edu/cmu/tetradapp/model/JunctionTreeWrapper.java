@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Unmarshallable;
 
+import java.io.Serial;
 import java.text.NumberFormat;
 
 /**
@@ -37,12 +38,22 @@ import java.text.NumberFormat;
  */
 public class JunctionTreeWrapper implements SessionModel, UpdaterWrapper, Unmarshallable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The updater.
+     */
     private JunctionTreeUpdater bayesUpdater;
 
+    /**
+     * The name of the model.
+     */
     private String name;
 
+    /**
+     * The parameters.
+     */
     private Parameters params;
 
     /**

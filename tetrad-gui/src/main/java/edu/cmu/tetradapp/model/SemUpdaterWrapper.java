@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps a Bayes Updater for use in the Tetrad application.
@@ -35,6 +36,7 @@ import java.io.ObjectInputStream;
  * @version $Id: $Id
  */
 public class SemUpdaterWrapper implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -77,8 +79,8 @@ public class SemUpdaterWrapper implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -103,6 +105,10 @@ public class SemUpdaterWrapper implements SessionModel {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -122,7 +128,9 @@ public class SemUpdaterWrapper implements SessionModel {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

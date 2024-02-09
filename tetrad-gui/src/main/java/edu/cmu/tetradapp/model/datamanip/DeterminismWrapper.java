@@ -13,6 +13,7 @@ import edu.cmu.tetradapp.model.PcRunner;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Feb 11, 2019 4:19:04 PM
@@ -20,7 +21,8 @@ import java.io.ObjectInputStream;
  * @author Zhou Yuan zhy19@pitt.edu
  * @version $Id: $Id
  */
-public class DeterminismWraper extends DataWrapper {
+public class DeterminismWrapper extends DataWrapper {
+    @Serial
     private static final long serialVersionUID = -5573234622763285581L;
 
     /**
@@ -29,7 +31,7 @@ public class DeterminismWraper extends DataWrapper {
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public DeterminismWraper(DataWrapper dataWrapper, Parameters params) {
+    public DeterminismWrapper(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
@@ -68,7 +70,12 @@ public class DeterminismWraper extends DataWrapper {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

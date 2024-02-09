@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,19 +46,36 @@ import java.util.List;
  */
 public class SemPmWrapper implements SessionModel {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The wrapped SemPm.
+     */
     private int numModels = 1;
+
+    /**
+     * The index of the model to display.
+     */
     private int modelIndex;
+
+    /**
+     * The name of the source of the model.
+     */
     private String modelSourceName;
 
     /**
-     * @serial Can be null.
+     * The name of the wrapper.
      */
     private String name;
 
+    /**
+     * The wrapped SemPm.
+     */
     private List<SemPm> semPms;
 
     //==============================CONSTRUCTORS==========================//
+
     /**
      * <p>Constructor for SemPmWrapper.</p>
      *
@@ -125,7 +143,7 @@ public class SemPmWrapper implements SessionModel {
      * Creates a new SemPm from the given workbench and uses it to construct a new BayesPm.
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemPmWrapper(GraphSource graphWrapper, Parameters parameters) {
         this(graphWrapper.getGraph() instanceof TimeLagGraph
@@ -138,7 +156,7 @@ public class SemPmWrapper implements SessionModel {
      *
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemPmWrapper(GraphSource graphSource, DataWrapper dataWrapper, Parameters parameters) {
         this(new EdgeListGraph(graphSource.getGraph()));
@@ -147,7 +165,7 @@ public class SemPmWrapper implements SessionModel {
     /**
      * <p>Constructor for SemPmWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemPmWrapper(SemEstimatorWrapper wrapper, Parameters parameters) {
@@ -249,14 +267,15 @@ public class SemPmWrapper implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
+     * @see TetradSerializableUtils
      */
     public static SemPmWrapper serializableInstance() {
         return new SemPmWrapper(Dag.serializableInstance());
     }
 
     //============================PUBLIC METHODS=========================//
+
     /**
      * <p>getSemPm.</p>
      *
@@ -282,6 +301,10 @@ public class SemPmWrapper implements SessionModel {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -306,7 +329,9 @@ public class SemPmWrapper implements SessionModel {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -393,8 +418,8 @@ public class SemPmWrapper implements SessionModel {
     /**
      * The wrapped SemPm.
      *
-     * @serial Cannot be null.
      * @return a {@link java.util.List} object
+     * @serial Cannot be null.
      */
     public List<SemPm> getSemPms() {
         return this.semPms;

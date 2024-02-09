@@ -40,9 +40,9 @@ import java.util.*;
  * to actual values of parameters. Specific values for the Bayes net are stored in a BayesIM object (see).
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.graph.Dag
  * @see BayesIm
- * @version $Id: $Id
  */
 public final class BayesPm implements Pm, VariableSource {
     private static final long serialVersionUID = 23L;
@@ -323,7 +323,7 @@ public final class BayesPm implements Pm, VariableSource {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Will return true if the argument is a BayesPm with the same graph and variables.
      */
     public boolean equals(Object o) {
@@ -581,6 +581,10 @@ public final class BayesPm implements Pm, VariableSource {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

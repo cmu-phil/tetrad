@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.StyledDocument;
+import java.io.Serial;
 
 /**
  * Provides a simple model for notes that the user may want to add to the session. Notes are stored as styled documents,
@@ -37,9 +38,17 @@ import javax.swing.text.StyledDocument;
  * @version $Id: $Id
  */
 public class NoteModel implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The note.
+     */
     private StyledDocument note = new DefaultStyledDocument();
+
+    /**
+     * The name of the note.
+     */
     private String name;
 
     /**

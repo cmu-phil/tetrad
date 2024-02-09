@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.workbench;
 
-import edu.cmu.tetrad.data.AbstractVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -40,8 +39,6 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public class DisplayNode extends JComponent implements Node, TetradSerializableExcluded {
-
-    private final int uniqueId = AbstractVariable.LAST_ID++;
 
     /**
      * The attributes of this node.
@@ -66,6 +63,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     private DisplayComp displayComp;
 
     //===========================CONSTRUCTORS==============================//
+
     /**
      * <p>Constructor for DisplayNode.</p>
      */
@@ -83,6 +81,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     }
 
     //===========================PUBLIC METHODS============================//
+
     /**
      * <p>Setter for the field <code>modelNode</code>.</p>
      *
@@ -105,7 +104,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the node.
      */
     public final void setName(String name) {
@@ -148,7 +147,9 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         repaint();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public final void setLocation(int x, int y) {
         super.setLocation(x, y);
 
@@ -169,7 +170,9 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         return new Point(centerX, centerY);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean contains(int x, int y) {
         if (getDisplayComp() != null) {
             return getDisplayComp().contains(x, y);
@@ -223,7 +226,9 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setNodeType(NodeType nodeType) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -237,7 +242,9 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setCenterX(int centerX) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -251,17 +258,23 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setCenterY(int centerY) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setCenter(int centerX, int centerY) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node like(String name) {
         DisplayNode node = new DisplayNode();
         node.setName(name);
@@ -269,7 +282,9 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         return node;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int compareTo(Node node) {
         String name = getName();
@@ -295,37 +310,49 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public NodeVariableType getNodeVariableType() {
         return this.nodeVariableType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);

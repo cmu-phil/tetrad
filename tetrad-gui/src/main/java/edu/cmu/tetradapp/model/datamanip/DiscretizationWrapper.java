@@ -65,11 +65,9 @@ public class DiscretizationWrapper extends DataWrapper {
         DataModelList discretizedDataSets = new DataModelList();
 
         for (DataModel dataModel : dataSets) {
-            if (!(dataModel instanceof DataSet)) {
+            if (!(dataModel instanceof DataSet originalData)) {
                 throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
             }
-
-            DataSet originalData = (DataSet) dataModel;
 
             Map<Node, DiscretizationSpec> discretizationSpecs = (Map<Node, DiscretizationSpec>) params.get("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
             Discretizer discretizer = new Discretizer(originalData, discretizationSpecs);
@@ -104,7 +102,12 @@ public class DiscretizationWrapper extends DataWrapper {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

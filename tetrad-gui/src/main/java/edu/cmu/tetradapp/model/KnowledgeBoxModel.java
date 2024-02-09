@@ -33,6 +33,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -43,13 +44,42 @@ import java.util.*;
  */
 public class KnowledgeBoxModel implements SessionModel, ParamsResettable, KnowledgeEditable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The source graph.
+     */
     private final Graph sourceGraph = new EdgeListGraph();
+
+    /**
+     * The name of the model.
+     */
     private String name;
+
+    /**
+     * The parameters.
+     */
     private Parameters params;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * The variables.
+     */
     private List<Node> variables = new ArrayList<>();
+
+    /**
+     * The variable names.
+     */
     private List<String> variableNames = new ArrayList<>();
+
+    /**
+     * The number of tiers.
+     */
     private int numTiers = 3;
 
     /**

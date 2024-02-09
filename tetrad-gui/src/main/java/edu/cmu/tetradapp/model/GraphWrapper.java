@@ -77,7 +77,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      * <p>Constructor for GraphWrapper.</p>
      *
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GraphWrapper(GraphSource graphSource, Parameters parameters) {
         this.parameters = parameters;
@@ -92,7 +92,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             setGraph(new EdgeListGraph(graphSource.getGraph()));
         }
 
- //       log();
+        //       log();
     }
 
     /**
@@ -105,13 +105,13 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             throw new NullPointerException("Graph must not be null.");
         }
         setGraph(graph);
- //       log();
+        //       log();
     }
 
     /**
      * <p>Constructor for GraphWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph   a {@link edu.cmu.tetrad.graph.Graph} object
      * @param message a {@link java.lang.String} object
      */
     public GraphWrapper(Graph graph, String message) {
@@ -185,8 +185,8 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @see TetradSerializableUtils
      */
     public static GraphWrapper serializableInstance() {
         return new GraphWrapper(Dag.serializableInstance());
@@ -283,11 +283,13 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         return this.graphs.get(getModelIndex());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setGraph(Graph graph) {
         this.graphs = new ArrayList<>();
         this.graphs.add(new EdgeListGraph(graph));
- //       log();
+        //       log();
     }
 
     /**
@@ -299,7 +301,9 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getIndependenceTest() {
         return new MsepTest(getGraph());
@@ -314,7 +318,9 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -355,7 +361,9 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         return getGraph().getNodes();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getParamSettings() {
         Map<String, String> paramSettings = new HashMap<>();
@@ -365,7 +373,9 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         return paramSettings;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getAllParamSettings() {
         return this.allParamSettings;
@@ -373,7 +383,9 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
 
     //==========================PRIVATE METaHODS===========================//
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamSettings = paramSettings;
@@ -400,6 +412,10 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -424,7 +440,9 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         return this.modelIndex;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
@@ -438,7 +456,9 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         return this.modelSourceName;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Graph> getGraphs() {
         return this.graphs;

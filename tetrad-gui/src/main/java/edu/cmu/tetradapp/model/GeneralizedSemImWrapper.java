@@ -60,6 +60,7 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
     private boolean showErrors;
 
     //==============================CONSTRUCTORS==========================//
+
     /**
      * <p>Constructor for GeneralizedSemImWrapper.</p>
      *
@@ -115,7 +116,7 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
     /**
      * <p>Constructor for GeneralizedSemImWrapper.</p>
      *
-     * @param genSemPm a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
+     * @param genSemPm  a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
      * @param imWrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
      */
     public GeneralizedSemImWrapper(GeneralizedSemPmWrapper genSemPm, SemImWrapper imWrapper) {
@@ -125,14 +126,15 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.GeneralizedSemImWrapper} object
+     * @see TetradSerializableUtils
      */
     public static GeneralizedSemImWrapper serializableInstance() {
         return new GeneralizedSemImWrapper(GeneralizedSemPmWrapper.serializableInstance());
     }
 
     //============================PUBLIC METHODS=========================//
+
     /**
      * <p>Getter for the field <code>semIms</code>.</p>
      *
@@ -149,6 +151,10 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -177,7 +183,9 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

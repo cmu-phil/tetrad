@@ -36,6 +36,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 import java.util.*;
 
@@ -43,44 +44,43 @@ import java.util.*;
  * Wraps a Session as a Graph so that an AbstractWorkbench can be used to edit it.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.session.Session
  * @see edu.cmu.tetrad.graph.Graph
- * @version $Id: $Id
  */
 public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndirectRef {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The session being wrapped.
-     *
-     * @serial Cannot be null.
      */
     private final Session session;
 
     /**
      * The set of SessionNodeWrappers.
-     *
-     * @serial Cannot be null.
      */
     private final Set<Node> sessionNodeWrappers = new HashSet<>();
 
     /**
      * The set of SessionEdges.
-     *
-     * @serial Cannot be null.
      */
     private final Set<Edge> sessionEdges = new HashSet<>();
+
+    /**
+     * True just in case the session is highlighted.
+     */
     private final boolean highlighted = false;
     /**
+     *
      * The property change support.
      */
     private transient PropertyChangeSupport propertyChangeSupport;
+
     /**
      * Handles incoming session events, basically by redirecting to any listeners of this session.
      */
     private transient SessionHandler sessionHandler;
-    private boolean pag;
-    private boolean CPDAG;
 
     //==========================CONSTRUCTORS=======================//
 
@@ -100,8 +100,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.SessionWrapper} object
+     * @see TetradSerializableUtils
      */
     public static SessionWrapper serializableInstance() {
         return new SessionWrapper(Session.serializableInstance());
@@ -111,7 +111,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Adds an edge to the workbench (cast as indicated) and fires a PropertyChangeEvent, property "edgeAdded," with the
      * new edge as the newValue. The nodes connected by the edge must both be SessionNodeWrappers that already lie in
      * the workbench.
@@ -139,7 +139,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Adds a PropertyChangeListener to the workbench.
      */
     public void addPropertyChangeListener(PropertyChangeListener e) {
@@ -148,7 +148,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Adds a node to the workbench and fires a PropertyChangeEvent for property "nodeAdded" with the new node as the
      * new value.
      */
@@ -172,7 +172,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * Pastes a list of session elements (SessionNodeWrappers and SessionEdges) into the workbench.
      *
      * @param sessionElements a {@link java.util.List} object
-     * @param upperLeft a {@link java.awt.Point} object
+     * @param upperLeft       a {@link java.awt.Point} object
      */
     public void pasteSubsession(List sessionElements, Point upperLeft) {
 
@@ -330,7 +330,9 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         return base + i;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
@@ -348,19 +350,23 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         return new HashSet<>(this.sessionEdges);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Edge getEdge(Node node1, Node node2) {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Edge getDirectedEdge(Node node1, Node node2) {
         return null;
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether this workbench contains the given edge.
      */
     public boolean containsEdge(Edge edge) {
@@ -369,14 +375,16 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether this workbench contains the given node.
      */
     public boolean containsNode(Node node) {
         return this.sessionNodeWrappers.contains(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Edge> getEdges(Node node) {
         List<Edge> edgeList = new ArrayList<>();
 
@@ -389,7 +397,9 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         return edgeList;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node getNode(String name) {
         for (Node sessionNodeWrapper : this.sessionNodeWrappers) {
             SessionNodeWrapper wrapper =
@@ -421,7 +431,9 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         return this.sessionEdges.size();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getNumEdges(Node node) {
 
         Set<Edge> edgeSet = new HashSet<>();
@@ -446,7 +458,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Removes an edge from the workbench.
      */
     public boolean removeEdge(Edge edge) {
@@ -473,7 +485,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Removes the edge connecting the two given nodes, provided there is exactly one such edge.
      */
     public boolean removeEdge(Node node1, Node node2) {
@@ -498,7 +510,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Removes a node from the workbench.
      */
     public boolean removeNode(Node node) {
@@ -527,7 +539,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Iterates through the collection and removes any permissible nodes found. The order in which nodes are removed is
      * the order in which they are presented in the iterator.
      */
@@ -537,7 +549,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Iterates through the collection and removes any permissible edges found. The order in which edges are added is
      * the order in which they are presented in the iterator.
      */
@@ -554,7 +566,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Removes all edges connecting node A to node B.  In most cases, this will remove at most one edge, but since
      * multiple edges are permitted in some workbench implementations, the number will in some cases be greater than
      * one.
@@ -571,14 +583,16 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Endpoint getEndpoint(Node node1, Node node2) {
         return getEdge(node1, node2).getProximalEndpoint(node2);
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the endpoint type at the 'to' end of the edge from 'from' to 'to' to the given endpoint.
      */
     public boolean setEndpoint(Node from, Node to, Endpoint endPoint) {
@@ -594,7 +608,9 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         return "Wrapper for " + this.session.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void transferNodesAndEdges(Graph graph)
             throws IllegalArgumentException {
         throw new UnsupportedOperationException();
@@ -620,7 +636,9 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Graph subgraph(List nodes) {
         throw new UnsupportedOperationException();
     }
@@ -670,12 +688,16 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         return this.propertyChangeSupport;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Edge> getEdges(Node node1, Node node2) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getParents(Node node) {
         return new ArrayList<>(((SessionNode) node).getParents());
     }
@@ -723,7 +745,12 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

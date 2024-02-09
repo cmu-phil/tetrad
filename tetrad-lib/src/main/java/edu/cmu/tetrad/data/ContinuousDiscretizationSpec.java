@@ -42,9 +42,13 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
      * The types of discretization
      */
     public static final int EVENLY_DISTRIBUTED_VALUES = 1;
-    /** Constant <code>EVENLY_DISTRIBUTED_INTERVALS=2</code> */
+    /**
+     * Constant <code>EVENLY_DISTRIBUTED_INTERVALS=2</code>
+     */
     public static final int EVENLY_DISTRIBUTED_INTERVALS = 2;
-    /** Constant <code>NONE=3</code> */
+    /**
+     * Constant <code>NONE=3</code>
+     */
     public static final int NONE = 3;
     private static final long serialVersionUID = 23L;
     /**
@@ -66,7 +70,7 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
      * <p>Constructor for ContinuousDiscretizationSpec.</p>
      *
      * @param breakpoints an array of {@link double} objects
-     * @param categories a {@link java.util.List} object
+     * @param categories  a {@link java.util.List} object
      */
     public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories) {
         this(breakpoints, categories, ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS);
@@ -150,6 +154,10 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

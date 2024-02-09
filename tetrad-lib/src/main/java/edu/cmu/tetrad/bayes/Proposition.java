@@ -93,7 +93,7 @@ public final class Proposition implements TetradSerializable {
      * Copies the info out of the old proposition into a new proposition for the new BayesIm.
      *
      * @param variableSource a {@link edu.cmu.tetrad.data.VariableSource} object
-     * @param proposition a {@link edu.cmu.tetrad.bayes.Proposition} object
+     * @param proposition    a {@link edu.cmu.tetrad.bayes.Proposition} object
      */
     public Proposition(VariableSource variableSource, Proposition proposition) {
         this(variableSource);
@@ -224,8 +224,8 @@ public final class Proposition implements TetradSerializable {
     /**
      * <p>isPermissibleCombination.</p>
      *
-     * @return true iff the given point is true for this proposition.
      * @param point an array of {@link int} objects
+     * @return true iff the given point is true for this proposition.
      */
     public boolean isPermissibleCombination(int[] point) {
         for (int i = 0; i < this.allowedCategories.length; i++) {
@@ -279,9 +279,9 @@ public final class Proposition implements TetradSerializable {
     /**
      * <p>getSingleCategory.</p>
      *
+     * @param variable a int
      * @return the single category selected for the given variable, or -1 if it is not the case that a single value is
      * selected.
-     * @param variable a int
      */
     public int getSingleCategory(int variable) {
         int count = 0;
@@ -324,8 +324,8 @@ public final class Proposition implements TetradSerializable {
     /**
      * <p>getNodeIndex.</p>
      *
-     * @return the index of the variable with the given name, or -1 if such a variable does not exist.
      * @param name a {@link java.lang.String} object
+     * @return the index of the variable with the given name, or -1 if such a variable does not exist.
      */
     public int getNodeIndex(String name) {
         List<Node> variables = getVariableSource().getVariables();
@@ -384,8 +384,8 @@ public final class Proposition implements TetradSerializable {
     /**
      * <p>getNumCategories.</p>
      *
-     * @return the number of categories for the given variable.
      * @param variable a int
+     * @return the number of categories for the given variable.
      */
     public int getNumCategories(int variable) {
         return this.allowedCategories[variable].length;
@@ -395,7 +395,7 @@ public final class Proposition implements TetradSerializable {
      * Specifies that all categories for the given variable are either all allowed (true) or all disallowed (false).
      *
      * @param variable a int
-     * @param allowed a boolean
+     * @param allowed  a boolean
      */
     public void setVariable(int variable, boolean allowed) {
         Arrays.fill(this.allowedCategories[variable], allowed);
@@ -414,9 +414,9 @@ public final class Proposition implements TetradSerializable {
     /**
      * <p>isAllowed.</p>
      *
-     * @return true iff the given category for the given variable is allowed.
      * @param variable a int
      * @param category a int
+     * @return true iff the given category for the given variable is allowed.
      */
     public boolean isAllowed(int variable, int category) {
         return this.allowedCategories[variable][category];
@@ -425,8 +425,8 @@ public final class Proposition implements TetradSerializable {
     /**
      * <p>isConditioned.</p>
      *
-     * @return true iff some category for the given variable is disallowed.
      * @param variable a int
+     * @return true iff some category for the given variable is disallowed.
      */
     public boolean isConditioned(int variable) {
         for (int j = 0; j < getNumCategories(variable); j++) {
@@ -438,7 +438,9 @@ public final class Proposition implements TetradSerializable {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
@@ -538,6 +540,10 @@ public final class Proposition implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

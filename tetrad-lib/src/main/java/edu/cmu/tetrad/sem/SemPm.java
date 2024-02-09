@@ -273,8 +273,8 @@ public final class SemPm implements Pm, TetradSerializable {
     /**
      * <p>getParameter.</p>
      *
-     * @return the first parameter encountered with the given name, or null if there is no such parameter.
      * @param name a {@link java.lang.String} object
+     * @return the first parameter encountered with the given name, or null if there is no such parameter.
      */
     public Parameter getParameter(String name) {
         for (Parameter parameter1 : getParameters()) {
@@ -431,9 +431,9 @@ public final class SemPm implements Pm, TetradSerializable {
     /**
      * <p>getParamComparison.</p>
      *
-     * @return the comparison of parameter a to parameter b.
      * @param a a {@link edu.cmu.tetrad.sem.Parameter} object
      * @param b a {@link edu.cmu.tetrad.sem.Parameter} object
+     * @return the comparison of parameter a to parameter b.
      */
     public ParamComparison getParamComparison(Parameter a, Parameter b) {
         if (a == null || b == null) {
@@ -451,8 +451,8 @@ public final class SemPm implements Pm, TetradSerializable {
     /**
      * Sets the comparison of parameter a to parameter b.
      *
-     * @param a a {@link edu.cmu.tetrad.sem.Parameter} object
-     * @param b a {@link edu.cmu.tetrad.sem.Parameter} object
+     * @param a          a {@link edu.cmu.tetrad.sem.Parameter} object
+     * @param b          a {@link edu.cmu.tetrad.sem.Parameter} object
      * @param comparison a {@link edu.cmu.tetrad.sem.ParamComparison} object
      */
     public void setParamComparison(Parameter a, Parameter b,
@@ -671,6 +671,10 @@ public final class SemPm implements Pm, TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

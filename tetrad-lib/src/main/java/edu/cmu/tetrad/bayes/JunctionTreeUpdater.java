@@ -78,7 +78,7 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     /**
      * <p>Constructor for JunctionTreeUpdater.</p>
      *
-     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param bayesIm  a {@link edu.cmu.tetrad.bayes.BayesIm} object
      * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
      */
     public JunctionTreeUpdater(BayesIm bayesIm, Evidence evidence) {
@@ -90,25 +90,33 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         setEvidence(evidence);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BayesIm getManipulatedBayesIm() {
         return this.manipulatedBayesIm;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getManipulatedGraph() {
         return getManipulatedBayesIm().getDag();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Evidence getEvidence() {
         return new Evidence(this.evidence);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setEvidence(Evidence evidence) {
         if (evidence == null) {
@@ -135,7 +143,9 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         this.jta = new JunctionTreeAlgorithm(this.updatedBayesIm);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BayesIm getUpdatedBayesIm() {
         if (this.updatedBayesIm == null) {
@@ -145,7 +155,9 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         return this.updatedBayesIm;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getMarginal(int variable, int category) {
         Proposition assertion = Proposition.tautology(this.manipulatedBayesIm);
@@ -160,13 +172,17 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isJointMarginalSupported() {
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getJointMarginal(int[] variables, int[] values) {
         if (variables.length != values.length) {
@@ -193,13 +209,17 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BayesIm getBayesIm() {
         return this.bayesIm;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[] calculatePriorMarginals(int nodeIndex) {
         Evidence evidence = getEvidence();
@@ -216,7 +236,9 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[] calculateUpdatedMarginals(int nodeIndex) {
         double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
@@ -228,7 +250,9 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "Junction tree updater, evidence = " + this.evidence;
@@ -317,6 +341,10 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

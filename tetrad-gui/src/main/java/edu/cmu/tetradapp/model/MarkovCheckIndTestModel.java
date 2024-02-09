@@ -51,20 +51,34 @@ import java.util.List;
 public class MarkovCheckIndTestModel implements SessionModel, GraphSource, KnowledgeBoxInput {
     @Serial
     private static final long serialVersionUID = 23L;
-    // The data model to check.
+    /**
+     * The data model to check.
+     */
     private final DataModel dataModel;
-    // The graph to check.
+    /**
+     * The graph to check.
+     */
     private final Graph graph;
-    // The parameters.
+    /**
+     * The parameters.
+     */
     private final Parameters parameters;
-    // The name of this model.
+    /**
+     * The name of this model.
+     */
     private String name = "";
-    // The variables to check.
+    /**
+     * The variables to check.
+     */
     private List<String> vars = new LinkedList<>();
-    // The Markov check object.
+    /**
+     * The Markov check object.
+     */
     private transient MarkovCheck markovCheck = null;
-    // The knowledge to use. This will be passed to the underlying Markov check object. For facts odf the form
-    // X _||_ Y | Z, X and Y should be in the last tier, and Z should be in previous tiers.
+    /**
+     * The knowledge to use. This will be passed to the underlying Markov check object. For facts odf the form
+     * X _||_ Y | Z, X and Y should be in the last tier, and Z should be in previous tiers.
+     */
     private Knowledge knowledge;
 
     /**

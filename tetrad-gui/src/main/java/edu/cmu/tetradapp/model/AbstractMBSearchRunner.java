@@ -154,7 +154,9 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
 
     //============== Protected methods ===============================//
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setSearchName(String n) {
         this.searchName = n;
     }
@@ -227,6 +229,10 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     @SuppressWarnings("UnusedDeclaration")
     private void readObject(ObjectInputStream s)

@@ -63,7 +63,7 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
      * <p>Constructor for GeneralizedSemEstimatorWrapper.</p>
      *
      * @param semPm a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
-     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param data  a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public GeneralizedSemEstimatorWrapper(GeneralizedSemPmWrapper semPm, DataWrapper data) {
         if (semPm == null) {
@@ -113,6 +113,10 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -137,7 +141,9 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

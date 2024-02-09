@@ -90,7 +90,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     /**
      * Constructs a new updater for the given Bayes net.
      *
-     * @param bayesIm the Bayes net to be updated.
+     * @param bayesIm  the Bayes net to be updated.
      * @param evidence the evidence for the update.
      */
     public ApproximateUpdater(BayesIm bayesIm, Evidence evidence) {
@@ -197,7 +197,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets new evidence for the next update operation.
      */
     public void setEvidence(Evidence evidence) {
@@ -220,7 +220,9 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         this.counts = null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getMarginal(int variable, int value) {
         doUpdate();
         int sum = 0;
@@ -244,15 +246,17 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     /**
      * <p>getJointMarginal.</p>
      *
-     * @return the joint marginal.
      * @param variables an array of {@link int} objects
-     * @param values an array of {@link int} objects
+     * @param values    an array of {@link int} objects
+     * @return the joint marginal.
      */
     public double getJointMarginal(int[] variables, int[] values) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculatePriorMarginals(int nodeIndex) {
         Evidence evidence = getEvidence();
         setEvidence(Evidence.tautology(evidence.getVariableSource()));
@@ -268,7 +272,9 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculateUpdatedMarginals(int nodeIndex) {
         double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
 
@@ -369,6 +375,10 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

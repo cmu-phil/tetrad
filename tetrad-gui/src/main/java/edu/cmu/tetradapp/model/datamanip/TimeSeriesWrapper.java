@@ -28,6 +28,8 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
 
+import java.io.Serial;
+
 /**
  * <p>TimeSeriesWrapper class.</p>
  *
@@ -35,8 +37,12 @@ import edu.cmu.tetradapp.model.PcRunner;
  * @version $Id: $Id
  */
 public class TimeSeriesWrapper extends DataWrapper implements KnowledgeTransferable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The knowledge.
+     */
     @SuppressWarnings("FieldCanBeLocal")
     private Knowledge knowledge = new Knowledge();
 

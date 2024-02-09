@@ -62,6 +62,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
     private boolean showErrors;
 
     //==============================CONSTRUCTORS==========================//
+
     /**
      * <p>Constructor for GeneralizedSemPmWrapper.</p>
      *
@@ -237,7 +238,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
      * <p>Constructor for GeneralizedSemPmWrapper.</p>
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public GeneralizedSemPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()));
@@ -247,7 +248,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
      * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
+     * @param wrapper      a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
      */
     public GeneralizedSemPmWrapper(GraphSource graphWrapper, GeneralizedSemPmWrapper wrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()), wrapper.getSemPm());
@@ -257,7 +258,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
      * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
      *
      * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
-     * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
      */
     public GeneralizedSemPmWrapper(DagWrapper dagWrapper, GeneralizedSemPmWrapper wrapper) {
         this(new EdgeListGraph(dagWrapper.getDag()), wrapper.getSemPm());
@@ -267,7 +268,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
      * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
      *
      * @param semGraphWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
-     * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
+     * @param wrapper         a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
      */
     public GeneralizedSemPmWrapper(SemGraphWrapper semGraphWrapper, GeneralizedSemPmWrapper wrapper) {
         this(semGraphWrapper.getSemGraph(), wrapper.getSemPm());
@@ -356,8 +357,8 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
+     * @see TetradSerializableUtils
      */
     public static GeneralizedSemPmWrapper serializableInstance() {
         return new GeneralizedSemPmWrapper(Dag.serializableInstance());
@@ -366,7 +367,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
     /**
      * <p>setReferencedParameters.</p>
      *
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
      * @param oldPm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
      * @param newPm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
      */
@@ -379,6 +380,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
     }
 
     //============================PUBLIC METHODS=========================//
+
     /**
      * <p>Getter for the field <code>semPm</code>.</p>
      *
@@ -395,6 +397,10 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -423,7 +429,9 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

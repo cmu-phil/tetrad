@@ -126,7 +126,9 @@ public final class SemProposition implements TetradSerializable {
         return -1;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
@@ -190,6 +192,10 @@ public final class SemProposition implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -209,7 +215,7 @@ public final class SemProposition implements TetradSerializable {
     /**
      * <p>setValue.</p>
      *
-     * @param i a int
+     * @param i     a int
      * @param value a double
      */
     public void setValue(int i, double value) {
@@ -230,7 +236,7 @@ public final class SemProposition implements TetradSerializable {
     /**
      * <p>setValue.</p>
      *
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
      * @param value a double
      */
     public void setValue(Node node, double value) {

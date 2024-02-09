@@ -173,9 +173,9 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     /**
      * <p>getProximalEndpoint.</p>
      *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      * @return the endpoint nearest to the given node.
      * @throws java.lang.IllegalArgumentException if the given node is not along the edge.
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     public final Endpoint getProximalEndpoint(Node node) {
         if (this.node1 == node) {
@@ -190,9 +190,9 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     /**
      * <p>getDistalEndpoint.</p>
      *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      * @return the endpoint furthest from the given node.
      * @throws java.lang.IllegalArgumentException if the given node is not along the edge.
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      */
     public final Endpoint getDistalEndpoint(Node node) {
         if (this.node1 == node) {
@@ -235,8 +235,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     /**
      * <p>pointsTowards.</p>
      *
-     * @return true just in case the edge is pointing toward the given node-- that is, x --&gt; node or x o--&gt; node.
      * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return true just in case the edge is pointing toward the given node-- that is, x --&gt; node or x o--&gt; node.
      */
     public boolean pointsTowards(Node node) {
         Endpoint proximal = getProximalEndpoint(node);
@@ -373,7 +373,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Two edges are equal just in case they connect the same nodes and have the same endpoints proximal to each node.
      */
     public final boolean equals(Object o) {
@@ -429,6 +429,10 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();

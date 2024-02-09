@@ -127,7 +127,9 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
         return 1;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object obj) {
         if (!(obj instanceof IndependenceFact)) {
             return false;
@@ -237,6 +239,10 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

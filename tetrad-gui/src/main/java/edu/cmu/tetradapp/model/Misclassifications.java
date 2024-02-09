@@ -33,6 +33,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 
 /**
@@ -44,11 +45,27 @@ import java.io.ObjectInputStream;
  * @version $Id: $Id
  */
 public final class Misclassifications implements SessionModel, DoNotAddOldModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The target graph.
+     */
     private final Graph targetGraph;
+
+    /**
+     * The reference graph.
+     */
     private final Graph referenceGraph;
+
+    /**
+     * The parameters object, so the GUI can remember stuff for logging.
+     */
     private final Parameters params;
+
+    /**
+     * The name of the model.
+     */
     private String name;
 
 
@@ -99,7 +116,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
     /**
      * <p>getComparisonGraph.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
@@ -139,7 +156,9 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -168,6 +187,10 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

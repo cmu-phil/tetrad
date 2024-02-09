@@ -66,7 +66,7 @@ public class BayesPmWrapper implements SessionModel {
     /**
      * Creates a new BayesPm from the given DAG and uses it to construct a new BayesPm.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public BayesPmWrapper(Graph graph, Parameters params) {
@@ -133,9 +133,9 @@ public class BayesPmWrapper implements SessionModel {
     /**
      * <p>Constructor for BayesPmWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Dag} object
+     * @param graph   a {@link edu.cmu.tetrad.graph.Dag} object
      * @param bayesPm a {@link edu.cmu.tetrad.bayes.BayesPm} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public BayesPmWrapper(Dag graph, BayesPm bayesPm, Parameters params) {
         if (graph == null) {
@@ -165,9 +165,9 @@ public class BayesPmWrapper implements SessionModel {
     /**
      * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
      *
-     * @throws java.lang.RuntimeException If the parent graph cannot be converted into a DAG.
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws java.lang.RuntimeException If the parent graph cannot be converted into a DAG.
      */
     public BayesPmWrapper(GraphWrapper graphWrapper, Parameters params) {
         if (graphWrapper == null) {
@@ -227,7 +227,7 @@ public class BayesPmWrapper implements SessionModel {
      * <p>Constructor for BayesPmWrapper.</p>
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public BayesPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
         this(new Dag(graphWrapper.getGraph()), dataWrapper);
@@ -236,7 +236,7 @@ public class BayesPmWrapper implements SessionModel {
     /**
      * <p>Constructor for BayesPmWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph       a {@link edu.cmu.tetrad.graph.Graph} object
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public BayesPmWrapper(Graph graph, DataWrapper dataWrapper) {
@@ -277,7 +277,7 @@ public class BayesPmWrapper implements SessionModel {
      * <p>Constructor for BayesPmWrapper.</p>
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
+     * @param simulation   a {@link edu.cmu.tetradapp.model.Simulation} object
      */
     public BayesPmWrapper(GraphWrapper graphWrapper,
                           Simulation simulation) {
@@ -288,7 +288,7 @@ public class BayesPmWrapper implements SessionModel {
      * <p>Constructor for BayesPmWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.AlgorithmRunner} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public BayesPmWrapper(AlgorithmRunner wrapper, Parameters params) {
         this(new Dag(wrapper.getGraph()), params);
@@ -297,7 +297,7 @@ public class BayesPmWrapper implements SessionModel {
     /**
      * <p>Constructor for BayesPmWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.AlgorithmRunner} object
+     * @param wrapper     a {@link edu.cmu.tetradapp.model.AlgorithmRunner} object
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public BayesPmWrapper(AlgorithmRunner wrapper, DataWrapper dataWrapper) {
@@ -307,7 +307,7 @@ public class BayesPmWrapper implements SessionModel {
     /**
      * <p>Constructor for BayesPmWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.AlgorithmRunner} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.AlgorithmRunner} object
      * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
      */
     public BayesPmWrapper(AlgorithmRunner wrapper, Simulation simulation) {
@@ -317,7 +317,7 @@ public class BayesPmWrapper implements SessionModel {
     /**
      * <p>Constructor for BayesPmWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
      * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
      */
     public BayesPmWrapper(BayesEstimatorWrapper wrapper, Simulation simulation) {
@@ -327,7 +327,7 @@ public class BayesPmWrapper implements SessionModel {
     /**
      * <p>Constructor for BayesPmWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
+     * @param wrapper     a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public BayesPmWrapper(BayesEstimatorWrapper wrapper,
@@ -338,9 +338,9 @@ public class BayesPmWrapper implements SessionModel {
     /**
      * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
      *
-     * @throws java.lang.RuntimeException If the parent graph cannot be converted into a DAG.
      * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws java.lang.RuntimeException If the parent graph cannot be converted into a DAG.
      */
     public BayesPmWrapper(DagWrapper dagWrapper, Parameters params) {
         if (dagWrapper == null) {
@@ -374,9 +374,9 @@ public class BayesPmWrapper implements SessionModel {
     /**
      * <p>Constructor for BayesPmWrapper.</p>
      *
-     * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param dagWrapper        a {@link edu.cmu.tetradapp.model.DagWrapper} object
      * @param oldBayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public BayesPmWrapper(DagWrapper dagWrapper,
                           BayesPmWrapper oldBayesPmWrapper, Parameters params) {
@@ -416,7 +416,7 @@ public class BayesPmWrapper implements SessionModel {
     /**
      * <p>Constructor for BayesPmWrapper.</p>
      *
-     * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param dagWrapper  a {@link edu.cmu.tetradapp.model.DagWrapper} object
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public BayesPmWrapper(DagWrapper dagWrapper, DataWrapper dataWrapper) {
@@ -456,7 +456,7 @@ public class BayesPmWrapper implements SessionModel {
     /**
      * <p>Constructor for BayesPmWrapper.</p>
      *
-     * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param dagWrapper  a {@link edu.cmu.tetradapp.model.DagWrapper} object
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.Simulation} object
      */
     public BayesPmWrapper(DagWrapper dagWrapper, Simulation dataWrapper) {
@@ -466,8 +466,8 @@ public class BayesPmWrapper implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @see TetradSerializableUtils
      */
     public static BayesPmWrapper serializableInstance() {
         return new BayesPmWrapper(Dag.serializableInstance(), new Parameters());
@@ -479,6 +479,7 @@ public class BayesPmWrapper implements SessionModel {
     }
 
     //=============================PUBLIC METHODS========================//
+
     /**
      * <p>getBayesPm.</p>
      *
@@ -500,6 +501,10 @@ public class BayesPmWrapper implements SessionModel {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -524,7 +529,9 @@ public class BayesPmWrapper implements SessionModel {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

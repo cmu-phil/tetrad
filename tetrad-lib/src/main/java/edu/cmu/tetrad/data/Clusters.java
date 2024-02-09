@@ -209,7 +209,7 @@ public final class Clusters implements TetradSerializable {
      * <p>setClusterName.</p>
      *
      * @param index a int
-     * @param name a {@link java.lang.String} object
+     * @param name  a {@link java.lang.String} object
      */
     public synchronized void setClusterName(int index, String name) {
         if (name == null) {
@@ -257,7 +257,7 @@ public final class Clusters implements TetradSerializable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Compares this object to another.
      */
     public boolean equals(Object o) {
@@ -329,6 +329,10 @@ public final class Clusters implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     @Serial
     private void readObject(ObjectInputStream s)

@@ -64,9 +64,9 @@ public final class CPDAGFitModel implements SessionModel {
      * can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      *
-     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
+     * @param simulation      a {@link edu.cmu.tetradapp.model.Simulation} object
      * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params          a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public CPDAGFitModel(Simulation simulation, GeneralAlgorithmRunner algorithmRunner, Parameters params) {
         if (params == null) {
@@ -209,7 +209,9 @@ public final class CPDAGFitModel implements SessionModel {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -231,6 +233,10 @@ public final class CPDAGFitModel implements SessionModel {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

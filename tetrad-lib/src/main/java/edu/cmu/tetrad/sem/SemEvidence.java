@@ -185,7 +185,7 @@ public final class SemEvidence implements TetradSerializable {
     /**
      * <p>setManipulated.</p>
      *
-     * @param nodeIndex a int
+     * @param nodeIndex   a int
      * @param manipulated a boolean
      */
     public void setManipulated(int nodeIndex, boolean manipulated) {
@@ -233,7 +233,9 @@ public final class SemEvidence implements TetradSerializable {
         return nodesInEvidence;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
@@ -269,6 +271,10 @@ public final class SemEvidence implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

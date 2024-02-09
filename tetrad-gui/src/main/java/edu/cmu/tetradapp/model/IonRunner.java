@@ -33,6 +33,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,7 +48,12 @@ import java.util.List;
  */
 public class IonRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, DoNotAddOldModel, IonInput {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The list of graphs.
+     */
     private List<Graph> graphs;
 
     //=========================CONSTRUCTORS================================//

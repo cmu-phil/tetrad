@@ -61,7 +61,7 @@ public final class TimeSeriesData implements DataModel {
      * Each row of the data, data[i], contains a measured for each variable (in order) for a particular time. The series
      * of times is in increasing order.
      *
-     * @param matrix a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param matrix   a {@link edu.cmu.tetrad.util.Matrix} object
      * @param varNames a {@link java.util.List} object
      */
     public TimeSeriesData(Matrix matrix, List<String> varNames) {
@@ -109,7 +109,9 @@ public final class TimeSeriesData implements DataModel {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
@@ -117,31 +119,41 @@ public final class TimeSeriesData implements DataModel {
         this.name = name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isContinuous() {
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isDiscrete() {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isMixed() {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Node getVariable(String name) {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel copy() {
         return null;
@@ -174,7 +186,9 @@ public final class TimeSeriesData implements DataModel {
         return this.knowledge.copy();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -237,6 +251,10 @@ public final class TimeSeriesData implements DataModel {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

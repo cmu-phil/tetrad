@@ -36,10 +36,29 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
 
     private static final long serialVersionUID = 8599854464475682558L;
 
+    /**
+     * The annotated class of the algorithm.
+     */
     private final AnnotatedClass<Algorithm> algorithm;
+
+    /**
+     * The name and description of the algorithm.
+     */
     private final String name;
+
+    /**
+     * The description of the algorithm.
+     */
     private final String description;
+
+    /**
+     * Whether the algorithm requires a score.
+     */
     private final boolean requiredScore;
+
+    /**
+     * Whether the algorithm requires an independence test.
+     */
     private final boolean requiredTest;
 
     /**

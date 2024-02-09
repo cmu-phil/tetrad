@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -158,7 +159,12 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

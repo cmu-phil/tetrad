@@ -49,7 +49,7 @@ public final class KnowledgeEdge implements TetradSerializable {
      * Constructs a knowledge edge for from--&gt;to.
      *
      * @param from a {@link java.lang.String} object
-     * @param to a {@link java.lang.String} object
+     * @param to   a {@link java.lang.String} object
      */
     public KnowledgeEdge(String from, String to) {
         if (from == null || to == null) {
@@ -89,7 +89,7 @@ public final class KnowledgeEdge implements TetradSerializable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reteurns true if (from1, to1) == (from2, to2).
      */
     public boolean equals(Object object) {
@@ -131,6 +131,10 @@ public final class KnowledgeEdge implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

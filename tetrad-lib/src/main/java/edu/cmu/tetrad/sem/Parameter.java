@@ -164,8 +164,8 @@ public final class Parameter implements TetradSerializable {
     /**
      * Sets the name for this parameter.
      *
-     * @throws java.lang.IllegalArgumentException if the name does not begin with a letter.
      * @param name a {@link java.lang.String} object
+     * @throws java.lang.IllegalArgumentException if the name does not begin with a letter.
      */
     public void setName(String name) {
         if (name == null) {
@@ -230,8 +230,8 @@ public final class Parameter implements TetradSerializable {
      * Sets the distribution that initial values should be drawn from for this parameter. To set the parameter to always
      * use the same initial value, use tetrad.util.SingleValue.
      *
-     * @see edu.cmu.tetrad.util.dist.SingleValue
      * @param distribution a {@link edu.cmu.tetrad.util.dist.Distribution} object
+     * @see edu.cmu.tetrad.util.dist.SingleValue
      */
     public void setDistribution(Distribution distribution) {
         if (distribution == null) {
@@ -303,6 +303,10 @@ public final class Parameter implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

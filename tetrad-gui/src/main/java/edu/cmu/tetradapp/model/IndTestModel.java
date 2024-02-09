@@ -26,6 +26,7 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -38,11 +39,27 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class IndTestModel implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The independence test producers.
+     */
     private final List<IndTestProducer> indTestProducers;
+
+    /**
+     * The name of the model.
+     */
     private String name = "";
+
+    /**
+     * The variables.
+     */
     private LinkedList<String> vars = new LinkedList<>();
+
+    /**
+     * The results.
+     */
     private List<List<IndependenceResultIndFacts>> results;
 
     /**

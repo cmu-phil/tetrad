@@ -151,7 +151,7 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
      * Builds a qualitative variable with the given name and number of categories. The categories have the form
      * 'category'.
      *
-     * @param name a {@link java.lang.String} object
+     * @param name          a {@link java.lang.String} object
      * @param numCategories a int
      */
     public DiscreteVariable(String name, int numCategories) {
@@ -226,8 +226,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     /**
      * <p>getIndex.</p>
      *
-     * @return the index of the given String category, or -1 if the category is not a category for this variable.
      * @param category a {@link java.lang.String} object
+     * @return the index of the given String category, or -1 if the category is not a category for this variable.
      */
     public int getIndex(String category) {
         return getCategories().indexOf(category);
@@ -255,8 +255,8 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
     /**
      * <p>getCategory.</p>
      *
-     * @return the variable category specified by the given category.
      * @param category a int
+     * @return the variable category specified by the given category.
      */
     public String getCategory(int category) {
         if (category == DiscreteVariable.MISSING_VALUE) {
@@ -329,7 +329,7 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether the given value is the missing value marker.
      */
     public boolean isMissingValue(Object value) {
@@ -371,7 +371,9 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
         return this.getName().hashCode();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == null) return false;
         if (!(o instanceof DiscreteVariable)) return false;
@@ -401,7 +403,9 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
         return this.nodeType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setNodeType(NodeType nodeType) {
         this.nodeType = nodeType;
     }
@@ -426,7 +430,7 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the x coordinate of the center of this node.
      */
     public void setCenterX(int centerX) {
@@ -444,7 +448,7 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the y coordinate of the center of this node.
      */
     public void setCenterY(int centerY) {
@@ -453,7 +457,7 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the (x, y) coordinates of the center of this node.
      */
     public void setCenter(int centerX, int centerY) {
@@ -463,7 +467,7 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Adds a property change listener.
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -479,7 +483,9 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
         return getName();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node like(String name) {
         DiscreteVariable variable = new DiscreteVariable(name);
         variable.setNodeType(getNodeType());
@@ -501,6 +507,10 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -519,37 +529,49 @@ public final class DiscreteVariable extends AbstractVariable implements Node {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public NodeVariableType getNodeVariableType() {
         return this.nodeVariableType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);

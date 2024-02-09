@@ -33,6 +33,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +45,12 @@ import java.util.List;
  */
 public class SemImWrapper implements SessionModel {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The wrapped SemIms.
+     */
     private List<SemIm> semIms;
 
     /**
@@ -52,11 +58,23 @@ public class SemImWrapper implements SessionModel {
      */
     private String name;
 
+    /**
+     * The number of models in the list.
+     */
     private int numModels = 1;
+
+    /**
+     * The index of the current model.
+     */
     private int modelIndex;
+
+    /**
+     * The name of the source of the models.
+     */
     private String modelSourceName;
 
     //============================CONSTRUCTORS==========================//
+
     /**
      * <p>Constructor for SemImWrapper.</p>
      *
@@ -106,7 +124,7 @@ public class SemImWrapper implements SessionModel {
      * <p>Constructor for SemImWrapper.</p>
      *
      * @param semPmWrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemImWrapper(SemPmWrapper semPmWrapper, Parameters params) {
         if (semPmWrapper == null) {
@@ -119,9 +137,9 @@ public class SemImWrapper implements SessionModel {
     /**
      * <p>Constructor for SemImWrapper.</p>
      *
-     * @param semPmWrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
+     * @param semPmWrapper    a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
      * @param oldSemImWrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params          a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemImWrapper(SemPmWrapper semPmWrapper, SemImWrapper oldSemImWrapper,
                         Parameters params) {
@@ -169,14 +187,15 @@ public class SemImWrapper implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
 
     //===========================PUBLIC METHODS=========================//
+
     /**
      * <p>getSemIm.</p>
      *
@@ -213,7 +232,9 @@ public class SemImWrapper implements SessionModel {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -232,6 +253,10 @@ public class SemImWrapper implements SessionModel {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

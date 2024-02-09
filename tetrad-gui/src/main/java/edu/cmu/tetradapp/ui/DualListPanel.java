@@ -35,13 +35,44 @@ public class DualListPanel extends JPanel {
 
     private static final long serialVersionUID = -5301381955599984479L;
 
+    /**
+     * The panel for the buttons.
+     */
     private JPanel buttonPanel;
+
+    /**
+     * The panel for the buttons parents.
+     */
     private JPanel buttonParentPanel;
+
+    /**
+     * The button to move to source.
+     */
     private JButton moveToSource;
+
+    /**
+     * The button to move to selector.
+     */
     private JButton moveToselector;
+
+    /**
+     * The list of selected nodes.
+     */
     private JList<Node> selectedList;
+
+    /**
+     * The scroll pane for the selected list.
+     */
     private JScrollPane selectedScrollPane;
+
+    /**
+     * The list of source nodes.
+     */
     private JList<Node> sourceList;
+
+    /**
+     * The scroll pane for the source list.
+     */
     private JScrollPane unselectedScrollPane;
 
     /**

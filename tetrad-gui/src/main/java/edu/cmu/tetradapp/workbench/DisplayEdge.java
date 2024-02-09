@@ -141,30 +141,40 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * The pair of points that this edge connects, from the edge of one component to the edge of the other.
      */
     private PointPair connectedPoints;
-    /**
-     * The color that unselected edges will be drawn in.
-     */
-//    private Color lineColor = new Color(78, 117, 175);
 
+    /**
+     * The color of the line.
+     */
     private Color lineColor = new Color(26, 113, 169, 255);// DisplayNodeUtils.getNodeFillColor().darker().darker();
+
     /**
-     * The color that selected edges will be drawn in.
+     * The color of the line when selected.
      */
-
-
-//    private Color selectedColor = new Color(221, 66, 32);   // this one
     private Color selectedColor = new Color(244, 0, 20);//DisplayNodeUtils.getNodeSelectedFillColor();   // this one
-    //    private Color highlightedColor = Color.red.darker().darker();
+
+    /**
+     * The color of the line when highlighted.
+     */
     private Color highlightedColor = new Color(238, 180, 34);
+
     /**
      * The width of the stroke.
      */
     private float strokeWidth = 1.2f;
+
     /**
      * True iff this edge is highlighted.
      */
     private boolean highlighted;
+
+    /**
+     * True iff this edge is solid.
+     */
     private boolean solid = true;
+
+    /**
+     * True iff this edge is thick.
+     */
     private boolean thick = false;
 
     //==========================CONSTRUCTORS============================//

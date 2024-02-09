@@ -316,7 +316,7 @@ public abstract class AbstractAlgorithmRunner
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the external graph for the algorithm.
      */
     public void setExternalGraph(Graph graph) {
@@ -325,7 +325,7 @@ public abstract class AbstractAlgorithmRunner
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the algorithm's name.
      */
     @Override
@@ -393,7 +393,7 @@ public abstract class AbstractAlgorithmRunner
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Resets the parameters.
      */
     public void resetParams(Object params) {
@@ -458,6 +458,10 @@ public abstract class AbstractAlgorithmRunner
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -476,7 +480,7 @@ public abstract class AbstractAlgorithmRunner
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the algorithm.
      */
     public void setName(String name) {
@@ -495,7 +499,7 @@ public abstract class AbstractAlgorithmRunner
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the param settings.
      */
     @Override
@@ -515,7 +519,7 @@ public abstract class AbstractAlgorithmRunner
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets all param settings.
      */
     public void setAllParamSettings(Map<String, String> allParamSettings) {

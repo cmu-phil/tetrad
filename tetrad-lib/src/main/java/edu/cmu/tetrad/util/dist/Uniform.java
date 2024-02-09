@@ -77,7 +77,7 @@ public class Uniform implements Distribution {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the value of the i'th parameter.
      */
     public void setParameter(int index, double value) {
@@ -91,7 +91,9 @@ public class Uniform implements Distribution {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.a;
@@ -102,7 +104,9 @@ public class Uniform implements Distribution {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Lower Bound";
@@ -160,6 +164,10 @@ public class Uniform implements Distribution {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

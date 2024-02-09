@@ -62,7 +62,7 @@ public final class CptInvariantMarginalCalculator
      * encountered on calling the getParentIm() method recursively is the Bayes IM with respect to which conjunctions of
      * the form P(V1=v1' and V2=v2' and ... and Vn=vn') should be calculated.
      *
-     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param bayesIm  a {@link edu.cmu.tetrad.bayes.BayesIm} object
      * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
      */
     public CptInvariantMarginalCalculator(BayesIm bayesIm, Evidence evidence) {
@@ -101,9 +101,9 @@ public final class CptInvariantMarginalCalculator
     /**
      * <p>getMarginal.</p>
      *
-     * @return P(variable = category).
      * @param variable a int
      * @param category a int
+     * @return P(variable = category).
      */
     public double getMarginal(int variable, int category) {
         if (this.storedMarginals[variable][category] != -99.0) {
@@ -218,6 +218,10 @@ public final class CptInvariantMarginalCalculator
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

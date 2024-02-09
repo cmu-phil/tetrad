@@ -32,7 +32,14 @@ public class PaddingPanel extends JPanel {
 
     private static final long serialVersionUID = 6075091842307611079L;
 
+    /**
+     * Inner component.
+     */
     private final JComponent innerComponent;
+
+    /**
+     * Layered pane.
+     */
     private final JLayeredPane layeredPane;
 
     /**

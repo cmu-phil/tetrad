@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,14 +48,20 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshallable, DoNotAddOldModel {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The graphs and their scores.
+     */
     private final Map<Graph, Double> graphsToScores;
+
     /**
      * Transient graph scorer, null if non exists (or needs to be refreshed).
      */
     private final transient DagScorer graphScorer;
     /**
-     * @serial Can be null.
+     * The name of the set of graphs.
      */
     private String name;
     /**
@@ -72,7 +79,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     /**
      * <p>Constructor for ScoredGraphsWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param scorer a {@link edu.cmu.tetrad.search.utils.DagScorer} object
      */
     public ScoredGraphsWrapper(Graph graph, DagScorer scorer) {
@@ -104,7 +111,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     /**
      * <p>Constructor for ScoredGraphsWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.DagWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ScoredGraphsWrapper(DagWrapper wrapper, Parameters parameters) {
@@ -114,7 +121,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     /**
      * <p>Constructor for ScoredGraphsWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.GraphWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ScoredGraphsWrapper(GraphWrapper wrapper, Parameters parameters) {
@@ -124,7 +131,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     /**
      * <p>Constructor for ScoredGraphsWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ScoredGraphsWrapper(SemGraphWrapper wrapper, Parameters parameters) {
@@ -134,7 +141,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     /**
      * <p>Constructor for ScoredGraphsWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ScoredGraphsWrapper(PcRunner wrapper, Parameters parameters) {
@@ -144,8 +151,8 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.ScoredGraphsWrapper} object
+     * @see TetradSerializableUtils
      */
     public static ScoredGraphsWrapper serializableInstance() {
         return new ScoredGraphsWrapper(PcRunner.serializableInstance(), new Parameters());
@@ -178,7 +185,9 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -207,7 +216,12 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -40,8 +41,12 @@ import java.util.List;
  */
 public class RequiredGraphModel extends KnowledgeBoxModel {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The graph that is the result of the analysis.
+     */
     private final Graph resultGraph;
 
     /**

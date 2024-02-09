@@ -99,38 +99,54 @@ public final class Dag implements Graph {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addBidirectedEdge(Node node1, Node node2) {
         return this.graph.addBidirectedEdge(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addDirectedEdge(Node node1, Node node2) {
         return addEdge(Edges.directedEdge(node1, node2));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addUndirectedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException("Disallowed for a DAG.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addNondirectedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException("Disallowed for a DAG.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException("Disallowed for a DAG.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addEdge(Edge edge) {
         if (!Edges.isDirectedEdge(edge)) {
             throw new IllegalArgumentException("Only directed edges may be added to a DAG.");
@@ -146,12 +162,16 @@ public final class Dag implements Graph {
         return this.graph.addEdge(edge);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addNode(Node node) {
         return this.graph.addNode(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addPropertyChangeListener(PropertyChangeListener e) {
         this.graph.addPropertyChangeListener(e);
     }
@@ -163,38 +183,52 @@ public final class Dag implements Graph {
         this.graph.clear();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean containsEdge(Edge edge) {
         return this.graph.containsEdge(edge);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean containsNode(Node node) {
         return this.graph.containsNode(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (!(o instanceof Graph)) return false;
         return this.graph.equals(o);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void fullyConnect(Endpoint endpoint) {
         throw new UnsupportedOperationException("Cannot fully connect a DAG with a single endpoint type.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void reorientAllWith(Endpoint endpoint) {
         throw new UnsupportedOperationException("Cannot reorient all edges in a DAG with a single endpoint type.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getAdjacentNodes(Node node) {
         return this.graph.getAdjacentNodes(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getChildren(Node node) {
         return this.graph.getChildren(node);
     }
@@ -208,22 +242,30 @@ public final class Dag implements Graph {
         return this.graph.getDegree();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Edge getEdge(Node node1, Node node2) {
         return this.graph.getEdge(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Edge getDirectedEdge(Node node1, Node node2) {
         return this.graph.getDirectedEdge(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Edge> getEdges(Node node) {
         return this.graph.getEdges(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Edge> getEdges(Node node1, Node node2) {
         return this.graph.getEdges(node1, node2);
     }
@@ -237,22 +279,30 @@ public final class Dag implements Graph {
         return this.graph.getEdges();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Endpoint getEndpoint(Node node1, Node node2) {
         return this.graph.getEndpoint(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getIndegree(Node node) {
         return this.graph.getIndegree(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getDegree(Node node) {
         return this.graph.getDegree(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node getNode(String name) {
         return this.graph.getNode(name);
     }
@@ -266,7 +316,9 @@ public final class Dag implements Graph {
         return this.graph.getNodes();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setNodes(List<Node> nodes) {
         this.graph.setNodes(nodes);
     }
@@ -289,7 +341,9 @@ public final class Dag implements Graph {
         return this.graph.getNumEdges();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getNumEdges(Node node) {
         return this.graph.getNumEdges(node);
     }
@@ -303,92 +357,128 @@ public final class Dag implements Graph {
         return this.graph.getNumNodes();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getOutdegree(Node node) {
         return this.graph.getOutdegree(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getParents(Node node) {
         return this.graph.getParents(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isAdjacentTo(Node node1, Node node2) {
         return this.graph.isAdjacentTo(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isChildOf(Node node1, Node node2) {
         return this.graph.isChildOf(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isParentOf(Node node1, Node node2) {
         return this.graph.isParentOf(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
         return this.graph.isDefNoncollider(node1, node2, node3);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isDefCollider(Node node1, Node node2, Node node3) {
         return this.graph.isDefCollider(node1, node2, node3);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isExogenous(Node node) {
         return this.graph.isExogenous(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getNodesInTo(Node node, Endpoint n) {
         return this.graph.getNodesInTo(node, n);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getNodesOutTo(Node node, Endpoint n) {
         return this.graph.getNodesOutTo(node, n);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeEdge(Edge edge) {
         return this.graph.removeEdge(edge);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeEdge(Node node1, Node node2) {
         return this.graph.removeEdge(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeEdges(Node node1, Node node2) {
         return this.graph.removeEdges(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeEdges(Collection<Edge> edges) {
         return this.graph.removeEdges(edges);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeNode(Node node) {
         return this.graph.removeNode(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeNodes(List<Node> nodes) {
         return this.graph.removeNodes(nodes);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean setEndpoint(Node from, Node to, Endpoint endPoint) {
         throw new UnsupportedOperationException("Setting a single endpoint for a DAG is disallowed.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Graph subgraph(List<Node> nodes) {
         return this.graph.subgraph(nodes);
     }
@@ -402,7 +492,9 @@ public final class Dag implements Graph {
         return this.graph.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void transferNodesAndEdges(Graph graph) throws IllegalArgumentException {
         if (graph == null) {
             throw new NullPointerException("No graph was provided.");
@@ -421,7 +513,9 @@ public final class Dag implements Graph {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void transferAttributes(Graph graph) throws IllegalArgumentException {
         this.graph.transferAttributes(graph);
     }
@@ -435,7 +529,9 @@ public final class Dag implements Graph {
         return this.graph.paths();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isParameterizable(Node node) {
         return this.graph.isParameterizable(node);
     }
@@ -458,7 +554,9 @@ public final class Dag implements Graph {
         return this.graph.getTimeLagGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Set<Node> getSepset(Node n1, Node n2) {
         return this.graph.getSepset(n1, n2);
     }
@@ -472,17 +570,23 @@ public final class Dag implements Graph {
         return this.graph.getAllAttributes();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object getAttribute(String key) {
         return this.graph.getAttribute(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeAttribute(String key) {
         this.graph.removeAttribute(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addAttribute(String key, Object value) {
         this.graph.addAttribute(key, value);
     }
@@ -496,7 +600,9 @@ public final class Dag implements Graph {
         return new HashSet<>(this.ambiguousTriples);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setAmbiguousTriples(Set<Triple> triples) {
         this.ambiguousTriples.clear();
 
@@ -525,7 +631,7 @@ public final class Dag implements Graph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * States whether r-s-r is an underline triple or not.
      */
     public boolean isAmbiguousTriple(Node x, Node y, Node z) {
@@ -534,19 +640,23 @@ public final class Dag implements Graph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * States whether r-s-r is an underline triple or not.
      */
     public boolean isUnderlineTriple(Node x, Node y, Node z) {
         return this.underLineTriples.contains(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addAmbiguousTriple(Node x, Node y, Node z) {
         this.ambiguousTriples.add(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addUnderlineTriple(Node x, Node y, Node z) {
         Triple triple = new Triple(x, y, z);
 
@@ -557,7 +667,9 @@ public final class Dag implements Graph {
         this.underLineTriples.add(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addDottedUnderlineTriple(Node x, Node y, Node z) {
         Triple triple = new Triple(x, y, z);
 
@@ -568,22 +680,30 @@ public final class Dag implements Graph {
         this.dottedUnderLineTriples.add(triple);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeAmbiguousTriple(Node x, Node y, Node z) {
         this.ambiguousTriples.remove(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeUnderlineTriple(Node x, Node y, Node z) {
         this.underLineTriples.remove(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
         this.dottedUnderLineTriples.remove(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setUnderLineTriples(Set<Triple> triples) {
         this.underLineTriples.clear();
 
@@ -592,7 +712,9 @@ public final class Dag implements Graph {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setDottedUnderLineTriples(Set<Triple> triples) {
         this.dottedUnderLineTriples.clear();
 

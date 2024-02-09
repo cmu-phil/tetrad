@@ -33,10 +33,10 @@ import java.io.ObjectInputStream;
  * A node in a SessionWrapper; wraps a SessionNode and presents it as a GraphNode.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.session.SessionNode
  * @see edu.cmu.tetrad.graph.GraphNode
  * @see SessionWrapper
- * @version $Id: $Id
  */
 public class SessionNodeWrapper extends GraphNode {
     private static final long serialVersionUID = 23L;
@@ -73,8 +73,8 @@ public class SessionNodeWrapper extends GraphNode {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetrad.graph.GraphNode} object
+     * @see TetradSerializableUtils
      */
     public static GraphNode serializableInstance() {
         return new SessionNodeWrapper(SessionNode.serializableInstance());
@@ -174,7 +174,7 @@ public class SessionNodeWrapper extends GraphNode {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Must override equals in GraphNode to make sure equality is object identity. In particular, change of name does
      * not constitute change of identity.
      */
@@ -199,6 +199,10 @@ public class SessionNodeWrapper extends GraphNode {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -42,7 +42,7 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
 
     private static final long serialVersionUID = 23L;
 
-/**
+    /**
      * This is the value which represents missing data in data columns for this variable.
      */
     private static final double MISSING_VALUE = Double.NaN;
@@ -126,7 +126,7 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Checks the value to make sure it's a legitimate value for this column.
      */
     public boolean checkValue(Object value) {
@@ -144,7 +144,9 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node like(String name) {
         ContinuousVariable continuousVariable = new ContinuousVariable(name);
         continuousVariable.setNodeType(getNodeType());
@@ -162,7 +164,7 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether the argument is equal to the missing value marker.
      */
     public boolean isMissingValue(Object value) {
@@ -185,7 +187,7 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Two continuous variables are equal if they have the same name and the same missing value marker.
      */
     // The identity of a node can't be changed by changing its name.
@@ -204,7 +206,9 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
         return this.nodeType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setNodeType(NodeType nodeType) {
         this.nodeType = nodeType;
     }
@@ -220,7 +224,7 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the x coordinate of the center of this node.
      */
     public void setCenterX(int centerX) {
@@ -238,7 +242,7 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the y coordinate of the center of this node.
      */
     public void setCenterY(int centerY) {
@@ -247,7 +251,7 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the (x, y) coordinates of the center of this node.
      */
     public void setCenter(int centerX, int centerY) {
@@ -257,7 +261,7 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Adds a property change listener.
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -279,6 +283,10 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -289,37 +297,49 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public NodeVariableType getNodeVariableType() {
         return this.nodeVariableType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);

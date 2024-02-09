@@ -38,6 +38,9 @@ import java.util.prefs.Preferences;
  */
 public class EnsembleMenu extends JMenu {
 
+    /**
+     * The workbench graph.
+     */
     private final GraphWorkbench graphWorkbench;
 
     /**

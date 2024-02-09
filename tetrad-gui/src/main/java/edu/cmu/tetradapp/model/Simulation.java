@@ -46,11 +46,34 @@ public class Simulation extends DataWrapper implements
 
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The simulation.
+     */
     private edu.cmu.tetrad.algcomparison.simulation.Simulation simulation;
+
+    /**
+     * The parameters.
+     */
     private Parameters parameters;
+
+    /**
+     * The name.
+     */
     private String name;
+
+    /**
+     * The fixed graph.
+     */
     private boolean fixedGraph = true;
+
+    /**
+     * The fixed simulation.
+     */
     private boolean fixedSimulation = true;
+
+    /**
+     * The input data model list.
+     */
     private List<DataModel> inputDataModelList;
 
     //============================CONSTRUCTORS=========================//

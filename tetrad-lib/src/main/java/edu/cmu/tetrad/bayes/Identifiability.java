@@ -77,10 +77,11 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     // Constructs a new updater with misc tests.
     // debug indicates debug information is to be generated
     //
+
     /**
      * <p>Constructor for Identifiability.</p>
      *
-     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param bayesIm  a {@link edu.cmu.tetrad.bayes.BayesIm} object
      * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
      */
     public Identifiability(BayesIm bayesIm, Evidence evidence) {
@@ -134,6 +135,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
+
     /**
      * <p>getManipulatedGraph.</p>
      *
@@ -148,8 +150,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /**
      * The updated BayesIm. This is a different object from the source BayesIm.
      *
-     * @see #getBayesIm
      * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @see #getBayesIm
      */
     public BayesIm getUpdatedBayesIm() {
         return null;
@@ -167,7 +169,10 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public void setEvidence(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
@@ -193,6 +198,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
+
     /**
      * <p>isJointMarginalSupported.</p>
      *
@@ -211,11 +217,12 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     // (i.e., no disjunctions of values of a variable even those they
     // are allowed in Proposition)
     //
+
     /**
      * <p>getJointMarginal.</p>
      *
      * @param sVariables an array of {@link int} objects
-     * @param sValues an array of {@link int} objects
+     * @param sValues    an array of {@link int} objects
      * @return a double
      */
     public double getJointMarginal(int[] sVariables, int[] sValues) {
@@ -541,7 +548,9 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     // The following methods are for here for compatibility with ManipulatingBayesUpdater
     //
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getMarginal(int variable, int value) {
         int[] sVariables = {variable};
         int[] sValues = {value};
@@ -549,7 +558,10 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculatePriorMarginals(int nodeIndex) {
         Evidence evidence = getEvidence();
         setEvidence(Evidence.tautology(evidence.getVariableSource()));
@@ -570,7 +582,10 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculateUpdatedMarginals(int nodeIndex) {
         //double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
         double[] marginals = new double[getBayesIm().getNumColumns(nodeIndex)];
@@ -584,6 +599,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
 
     /////////////////////////////////////////////////////////////////
+
     /**
      * <p>toString.</p>
      *
@@ -985,6 +1001,10 @@ public final class Identifiability implements ManipulatingBayesUpdater {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

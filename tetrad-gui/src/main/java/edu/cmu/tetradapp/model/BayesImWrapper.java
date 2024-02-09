@@ -152,7 +152,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
     /**
      * <p>Constructor for BayesImWrapper.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.ApproximateUpdaterWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.ApproximateUpdaterWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public BayesImWrapper(ApproximateUpdaterWrapper wrapper, Parameters parameters) {
@@ -166,7 +166,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * <p>Constructor for BayesImWrapper.</p>
      *
      * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public BayesImWrapper(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
@@ -203,8 +203,8 @@ public class BayesImWrapper implements SessionModel, Memorable {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
+     * @see TetradSerializableUtils
      */
     public static BayesImWrapper serializableInstance() {
         return new BayesImWrapper(BayesPmWrapper.serializableInstance(),
@@ -250,7 +250,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the BayesIm.
      */
     public void setName(String name) {
@@ -343,6 +343,10 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     @Serial
     private void readObject(ObjectInputStream s)

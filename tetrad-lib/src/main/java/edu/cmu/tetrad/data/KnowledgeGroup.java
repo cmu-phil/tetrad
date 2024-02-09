@@ -41,7 +41,9 @@ public final class KnowledgeGroup implements TetradSerializable {
      * The types of groups (Can an enum be used instead?)
      */
     public static final int REQUIRED = 1;
-    /** Constant <code>FORBIDDEN=2</code> */
+    /**
+     * Constant <code>FORBIDDEN=2</code>
+     */
     public static final int FORBIDDEN = 2;
     private static final long serialVersionUID = 23L;
     /**
@@ -67,7 +69,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      *
      * @param type - the type
      * @param from a {@link java.util.Set} object
-     * @param to a {@link java.util.Set} object
+     * @param to   a {@link java.util.Set} object
      */
     public KnowledgeGroup(int type, Set<String> from, Set<String> to) {
         if (type != KnowledgeGroup.REQUIRED && type != KnowledgeGroup.FORBIDDEN) {
@@ -201,7 +203,7 @@ public final class KnowledgeGroup implements TetradSerializable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Equals when they are the same type and have the same edges.
      */
     public boolean equals(Object o) {
@@ -227,6 +229,10 @@ public final class KnowledgeGroup implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

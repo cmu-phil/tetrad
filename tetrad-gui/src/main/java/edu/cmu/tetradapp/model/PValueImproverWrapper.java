@@ -49,15 +49,55 @@ import java.util.List;
 public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The data wrapper.
+     */
     private final DataWrapper dataWrapper;
+
+    /**
+     * The parameters object, so the GUI can remember stuff for logging.
+     */
     private final Parameters params = new Parameters();
+
+    /**
+     * The algorithm type.
+     */
     private AlgorithmType algorithmType = AlgorithmType.BEAM;
+
+    /**
+     * The name of the algorithm.
+     */
     private String name;
+
+    /**
+     * The external graph.
+     */
     private Graph externalGraph;
+
+    /**
+     * The graph.
+     */
     private Graph graph;
+
+    /**
+     * The list of property change listeners.
+     */
     private transient List<PropertyChangeListener> listeners;
+
+    /**
+     * The parameters object, so the GUI can remember stuff for logging.
+     */
     private Parameters params2;
+
+    /**
+     * The original SEM IM.
+     */
     private SemIm originalSemIm;
+
+    /**
+     * The new SEM IM.
+     */
     private SemIm newSemIm;
 
     /**
@@ -493,8 +533,9 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
+     * @param s The object input stream.
+     * @throws IOException If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

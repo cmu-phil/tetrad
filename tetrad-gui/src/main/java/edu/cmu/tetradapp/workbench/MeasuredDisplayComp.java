@@ -32,6 +32,10 @@ import java.awt.geom.RoundRectangle2D;
  * @version $Id: $Id
  */
 public class MeasuredDisplayComp extends JComponent implements DisplayComp {
+
+    /**
+     * True iff this display node is selected.
+     */
     private boolean selected;
 
     /**

@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetradapp.model.EditorUtils;
 
 import java.awt.*;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,9 +53,18 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public static final int BIDIRECTED_EDGE = 4;
     /** Constant <code>UNDIRECTED_EDGE=5</code> */
     public static final int UNDIRECTED_EDGE = 5;
+    @Serial
     private static final long serialVersionUID = 938742592547332849L;
     //====================PRIVATE FIELDS=================================//
+
+    /**
+     * The type of node to be drawn next.
+     */
     private int nodeType = GraphWorkbench.MEASURED_NODE;
+
+    /**
+     * The type of edge to be drawn next.
+     */
     private int edgeMode = GraphWorkbench.DIRECTED_EDGE;
 
     //========================CONSTRUCTORS===============================//

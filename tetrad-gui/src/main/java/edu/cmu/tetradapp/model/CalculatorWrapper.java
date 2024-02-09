@@ -47,7 +47,7 @@ public class CalculatorWrapper extends DataWrapper {
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
      *
-     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param data   a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public CalculatorWrapper(DataWrapper data, Parameters params) {
@@ -101,8 +101,8 @@ public class CalculatorWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -131,6 +131,10 @@ public class CalculatorWrapper extends DataWrapper {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     @SuppressWarnings("MethodMayBeStatic")
     private void readObject(ObjectInputStream s)

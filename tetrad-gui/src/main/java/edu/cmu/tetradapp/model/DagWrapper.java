@@ -65,6 +65,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
     private Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
+
     /**
      * <p>Constructor for DagWrapper.</p>
      *
@@ -80,6 +81,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
     }
 
     // Do not, repeat not, get rid of these params. -jdramsey 7/4/2010
+
     /**
      * <p>Constructor for DagWrapper.</p>
      *
@@ -100,7 +102,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
      * <p>Constructor for DagWrapper.</p>
      *
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public DagWrapper(GraphSource graphSource, Parameters parameters) {
         this.parameters = new Parameters(parameters);
@@ -234,14 +236,15 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @see TetradSerializableUtils
      */
     public static DagWrapper serializableInstance() {
         return new DagWrapper(Dag.serializableInstance());
     }
 
     //================================PUBLIC METHODS=======================//
+
     /**
      * <p>getDag.</p>
      *
@@ -275,6 +278,10 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     @Serial
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
@@ -300,7 +307,9 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         this.dags.add(new Dag(graph));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getIndependenceTest() {
         return new MsepTest(getGraph());
@@ -315,7 +324,9 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -356,7 +367,9 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         return getGraph().getNodes();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getParamSettings() {
         Map<String, String> paramSettings = new HashMap<>();
@@ -365,13 +378,17 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         return paramSettings;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getAllParamSettings() {
         return this.allParamSettings;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamSettings = paramSettings;

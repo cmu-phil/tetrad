@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,17 +43,22 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Can be null.
+     * The name of the wrapper.
      */
     private String name;
 
     /**
-     * @serial Cannot be null.
+     * The graph.
      */
     private TimeLagGraph graph;
+
+    /**
+     * The parameters.
+     */
     private Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
@@ -187,7 +193,12 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

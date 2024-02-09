@@ -33,6 +33,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.util.List;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -64,6 +65,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * The mode in which the user is permitted to select workbench items or move nodes.
      */
     public static final int ADD_EDGE = 2;
+    @Serial
     private static final long serialVersionUID = 6718395673225983249L;
 
     // =========================PRIVATE FIELDS=============================//
@@ -170,6 +172,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private KeyEventDispatcher controlDispatcher;
 
+    /**
+     * The current displayed mouseover equation label. Null if none is displayed. Used for removing the label.
+     */
     private Point currentMouseLocation;
 
     /**
@@ -178,10 +183,19 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private boolean enableEditing = true;
 
+    /**
+     * Whether to do pag coloring.
+     */
     private boolean doPagColoring = false;
 
+    /**
+     * The graph to be used for sampling.
+     */
     private Graph samplingGraph;
 
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
 
     // ==============================CONSTRUCTOR============================//

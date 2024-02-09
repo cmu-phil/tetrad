@@ -49,7 +49,15 @@ public class LagWorkbench extends AbstractWorkbench {
     private static final int BIDIRECTED_EDGE = 4;
 
     //====================PRIVATE FIELDS=================================//
+
+    /**
+     * The type of node to be drawn next.
+     */
     private int nodeType = LagWorkbench.MEASURED_NODE;
+
+    /**
+     * The type of edge to be drawn next.
+     */
     private int edgeMode = LagWorkbench.DIRECTED_EDGE;
 
     //========================CONSTRUCTORS===============================//

@@ -34,50 +34,80 @@ import java.io.Serial;
  * @version $Id: $Id
  */
 public final class IndTestType implements TetradSerializable {
-    /** Constant <code>DEFAULT</code> */
+    /**
+     * Constant <code>DEFAULT</code>
+     */
     public static final IndTestType DEFAULT = new IndTestType("Default", null);
-    /** Constant <code>CORRELATION_T</code> */
+    /**
+     * Constant <code>CORRELATION_T</code>
+     */
     public static final IndTestType CORRELATION_T =
             new IndTestType("Correlation T Test", DataType.Continuous);
-    /** Constant <code>FISHER_Z</code> */
+    /**
+     * Constant <code>FISHER_Z</code>
+     */
     public static final IndTestType FISHER_Z = new IndTestType("Fisher's Z", DataType.Continuous);
-    /** Constant <code>LINEAR_REGRESSION</code> */
+    /**
+     * Constant <code>LINEAR_REGRESSION</code>
+     */
     public static final IndTestType LINEAR_REGRESSION =
             new IndTestType("Linear Regression", DataType.Continuous);
-    /** Constant <code>CONDITIONAL_CORRELATION</code> */
+    /**
+     * Constant <code>CONDITIONAL_CORRELATION</code>
+     */
     public static final IndTestType CONDITIONAL_CORRELATION =
             new IndTestType("Conditional Correlation Test", DataType.Continuous);
-    /** Constant <code>SEM_BIC</code> */
+    /**
+     * Constant <code>SEM_BIC</code>
+     */
     public static final IndTestType SEM_BIC =
             new IndTestType("SEM BIC used as a Test", DataType.Continuous);
-    /** Constant <code>LOGISTIC_REGRESSION</code> */
+    /**
+     * Constant <code>LOGISTIC_REGRESSION</code>
+     */
     public static final IndTestType LOGISTIC_REGRESSION =
             new IndTestType("Logistic Regression", DataType.Continuous);
-    /** Constant <code>MIXED_MLR</code> */
+    /**
+     * Constant <code>MIXED_MLR</code>
+     */
     public static final IndTestType MIXED_MLR =
             new IndTestType("Multinomial Logistic Regression", DataType.Mixed);
-    /** Constant <code>FISHER_ZD</code> */
-    public static final IndTestType FISHER_ZD =
-            new IndTestType("Fisher's Z (Deterministic)", DataType.Continuous);
-    /** Constant <code>G_SQUARE</code> */
+
+    /**
+     * Constant <code>G_SQUARE</code>
+     */
     public static final IndTestType G_SQUARE = new IndTestType("G Square", DataType.Discrete);
-    /** Constant <code>CHI_SQUARE</code> */
+    /**
+     * Constant <code>CHI_SQUARE</code>
+     */
     public static final IndTestType CHI_SQUARE = new IndTestType("Chi Square", DataType.Discrete);
-    /** Constant <code>M_SEPARATION</code> */
+    /**
+     * Constant <code>M_SEPARATION</code>
+     */
     public static final IndTestType M_SEPARATION =
             new IndTestType("M-Separation", DataType.Graph);
-    /** Constant <code>TIME_SERIES</code> */
+    /**
+     * Constant <code>TIME_SERIES</code>
+     */
     public static final IndTestType TIME_SERIES =
             new IndTestType("Time Series", DataType.Continuous);
-    /** Constant <code>INDEPENDENCE_FACTS</code> */
+    /**
+     * Constant <code>INDEPENDENCE_FACTS</code>
+     */
     public static final IndTestType INDEPENDENCE_FACTS =
             new IndTestType("Independence Facts", DataType.Graph);
-    /** Constant <code>POOL_RESIDUALS_FISHER_Z</code> */
+    /**
+     * Constant <code>POOL_RESIDUALS_FISHER_Z</code>
+     */
     public static final IndTestType POOL_RESIDUALS_FISHER_Z =
             new IndTestType("Fisher Z Pooled Residuals", DataType.Continuous);
-    /** Constant <code>FISHER</code> */
+    /**
+     * Constant <code>FISHER</code>
+     */
     public static final IndTestType FISHER = new IndTestType("Fisher (Fisher Z)", DataType.Continuous);
-    /** Constant <code>TIPPETT</code> */
+    /**
+     * Constant <code>TIPPETT</code>
+     */
     public static final IndTestType TIPPETT = new IndTestType("Tippett (Fisher Z)", DataType.Continuous);
     @Serial
     private static final long serialVersionUID = 23L;
@@ -92,11 +122,20 @@ public final class IndTestType implements TetradSerializable {
     };
     // Declarations required for serialization.
     private static int nextOrdinal;
+
     /**
      * The name of this dataType.
      */
     private final transient String name;
+
+    /**
+     * The dataType of this test.
+     */
     private final DataType dataType;
+
+    /**
+     * The ordinal of this dataType.
+     */
     private final int ordinal = IndTestType.nextOrdinal++;
 
     /**
@@ -125,6 +164,13 @@ public final class IndTestType implements TetradSerializable {
         return this.name;
     }
 
+    /**
+     * Resolves types.
+     *
+     * @return The resolved type.
+     * @throws ObjectStreamException If the type cannot be resolved.
+     */
+    @Serial
     Object readResolve() throws ObjectStreamException {
         return IndTestType.TYPES[this.ordinal]; // Canonicalize.
     }

@@ -208,7 +208,7 @@ public final class DirichletBayesIm implements BayesIm {
     /**
      * <p>symmetricDirichletIm.</p>
      *
-     * @param bayesPm a {@link edu.cmu.tetrad.bayes.BayesPm} object
+     * @param bayesPm        a {@link edu.cmu.tetrad.bayes.BayesPm} object
      * @param symmetricAlpha a double
      * @return a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
      */
@@ -264,7 +264,9 @@ public final class DirichletBayesIm implements BayesIm {
         return this.bayesPm;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getCorrespondingNodeIndex(int nodeIndex, BayesIm otherBayesIm) {
         String nodeName = getNode(nodeIndex).getName();
         Node oldNode = otherBayesIm.getNode(nodeName);
@@ -296,7 +298,9 @@ public final class DirichletBayesIm implements BayesIm {
         this.nextRowTotal = nextRowTotal;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node getNode(int nodeIndex) {
         return this.nodes[nodeIndex];
     }
@@ -311,7 +315,9 @@ public final class DirichletBayesIm implements BayesIm {
         return getDag().getNode(name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getNodeIndex(Node node) {
         for (int i = 0; i < this.nodes.length; i++) {
             if (node == this.nodes[i]) {
@@ -322,7 +328,9 @@ public final class DirichletBayesIm implements BayesIm {
         return -1;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getNumColumns(int nodeIndex) {
         return this.pseudocounts[nodeIndex][0].length;
     }
@@ -336,27 +344,37 @@ public final class DirichletBayesIm implements BayesIm {
         return this.nodes.length;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getNumParents(int nodeIndex) {
         return this.parents[nodeIndex].length;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getNumRows(int nodeIndex) {
         return this.pseudocounts[nodeIndex].length;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getParent(int nodeIndex, int parentIndex) {
         return this.parents[nodeIndex][parentIndex];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getParentDim(int nodeIndex, int parentIndex) {
         return this.parentDims[nodeIndex][parentIndex];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int[] getParentDims(int nodeIndex) {
         int[] dims = this.parentDims[nodeIndex];
         int[] copy = new int[dims.length];
@@ -364,7 +382,9 @@ public final class DirichletBayesIm implements BayesIm {
         return copy;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int[] getParents(int nodeIndex) {
         int[] nodeParents = this.parents[nodeIndex];
         int[] copy = new int[nodeParents.length];
@@ -372,12 +392,16 @@ public final class DirichletBayesIm implements BayesIm {
         return copy;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getParentValue(int nodeIndex, int rowIndex, int colIndex) {
         return getParentValues(nodeIndex, rowIndex)[colIndex];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int[] getParentValues(int nodeIndex, int rowIndex) {
         int[] dims = getParentDims(nodeIndex);
         int[] values = new int[dims.length];
@@ -390,7 +414,9 @@ public final class DirichletBayesIm implements BayesIm {
         return values;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getProbability(int nodeIndex, int rowIndex, int colIndex) {
         double parameterPseudocount
                 = getPseudocount(nodeIndex, rowIndex, colIndex);
@@ -407,8 +433,8 @@ public final class DirichletBayesIm implements BayesIm {
      * <p>getPseudocount.</p>
      *
      * @param nodeIndex a int
-     * @param rowIndex a int
-     * @param colIndex a int
+     * @param rowIndex  a int
+     * @param colIndex  a int
      * @return a double
      */
     public double getPseudocount(int nodeIndex, int rowIndex, int colIndex) {
@@ -418,10 +444,10 @@ public final class DirichletBayesIm implements BayesIm {
     /**
      * <p>getRowIndex.</p>
      *
+     * @param nodeIndex a int
+     * @param values    an array of {@link int} objects
      * @return the row in the table for the given node and combination of parent values.
      * @see #getParentValues
-     * @param nodeIndex a int
-     * @param values an array of {@link int} objects
      */
     public int getRowIndex(int nodeIndex, int[] values) {
         int[] dim = getParentDims(nodeIndex);
@@ -439,7 +465,7 @@ public final class DirichletBayesIm implements BayesIm {
      * <p>getRowPseudocount.</p>
      *
      * @param nodeIndex a int
-     * @param rowIndex a int
+     * @param rowIndex  a int
      * @return a double
      */
     public double getRowPseudocount(int nodeIndex, int rowIndex) {
@@ -580,7 +606,9 @@ public final class DirichletBayesIm implements BayesIm {
         this.pseudocounts[nodeIndex][rowIndex] = row;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isIncomplete(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
             if (isIncomplete(nodeIndex, rowIndex)) {
@@ -591,7 +619,9 @@ public final class DirichletBayesIm implements BayesIm {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isIncomplete(int nodeIndex, int rowIndex) {
         for (int colIndex = 0; colIndex < getNumColumns(nodeIndex); colIndex++) {
             double p = getProbability(nodeIndex, rowIndex, colIndex);
@@ -615,7 +645,7 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Normalizes all rows in the table associated with a given node.
      */
     public void normalizeNode(int nodeIndex) {
@@ -626,7 +656,7 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Normalizes the given row.
      */
     public void normalizeRow(int nodeIndex, int rowIndex) {
@@ -666,7 +696,7 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Randomizes any row in the table for the given node index that has a Double.NaN value in it.
      */
     public void randomizeIncompleteRows(int nodeIndex) {
@@ -679,7 +709,7 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Assigns random probability values to the child values of this row that add to 1.
      */
     public void randomizeRow(int nodeIndex, int rowIndex) {
@@ -690,7 +720,7 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Randomizes every row in the table for the given node index.
      */
     public void randomizeTable(int nodeIndex) {
@@ -725,7 +755,7 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the probability for the given node. The matrix row represent row index, the row in the table for this for
      * node which represents the combination of parent values in question. of the CPT. The matrix column represent
      * column index, the column in the table for this node which represents the value of the node in question.
@@ -738,12 +768,13 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the probability for the given node at a given row and column in the table for that node. To get the node
      * index, use getNodeIndex(). To get the row index, use getRowIndex(). To get the column index, use
      * getCategoryIndex() from the underlying BayesPm(). The value returned will represent a conditional probability of
      * the form P(N=v0 | P1=v1, P2=v2, ... , Pn=vn), where N is the node referenced by nodeIndex, v0 is the value
      * referenced by colIndex, and the combination of parent values indicated is the combination indicated by rowIndex.
+     *
      * @see #getProbability
      */
     public void setProbability(int nodeIndex, int rowIndex, int colIndex,
@@ -755,9 +786,9 @@ public final class DirichletBayesIm implements BayesIm {
     /**
      * <p>setPseudocount.</p>
      *
-     * @param nodeIndex a int
-     * @param rowIndex a int
-     * @param colIndex a int
+     * @param nodeIndex   a int
+     * @param rowIndex    a int
+     * @param colIndex    a int
      * @param pseudocount a double
      */
     public void setPseudocount(int nodeIndex, int rowIndex, int colIndex,
@@ -772,7 +803,7 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Simulates and returns a dataset with number of cases equal to
      * <code>sampleSize</code>. if <code>latentDataSaved</code> is true, data
      * for latent variables is included in the simulated dataset.
@@ -803,7 +834,7 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Would be nice to have this method supported, but no one's using it, so it's not.
      */
     public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
@@ -906,7 +937,7 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Assigns random probability values to the child values of this row that add to 1.
      */
     public void clearRow(int nodeIndex, int rowIndex) {
@@ -917,7 +948,7 @@ public final class DirichletBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Randomizes every row in the table for the given node index.
      */
     public void clearTable(int nodeIndex) {
@@ -926,7 +957,9 @@ public final class DirichletBayesIm implements BayesIm {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == this) {
             return true;
@@ -1141,6 +1174,10 @@ public final class DirichletBayesIm implements BayesIm {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

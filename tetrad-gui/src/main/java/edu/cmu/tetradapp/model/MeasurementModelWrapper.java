@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,19 +46,37 @@ import java.util.List;
  */
 public final class MeasurementModelWrapper implements ParamsResettable,
         KnowledgeBoxInput {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * Clusters resulting from the last run of the algorithm.
-     *
-     * @serial Cannot be null.
      */
-
     private Clusters clusters;
+
+    /**
+     * The names of the variables.
+     */
     private List<String> varNames;
+
+    /**
+     * The data.
+     */
     private String name;
+
+    /**
+     * The source graph.
+     */
     private DataSet data;
+
+    /**
+     * The source graph.
+     */
     private Graph sourceGraph;
+
+    /**
+     * The parameters object, so the GUI can remember stuff for logging.
+     */
     private Parameters params;
 
     //=============================CONSTRUCTORS==========================//
@@ -79,7 +98,7 @@ public final class MeasurementModelWrapper implements ParamsResettable,
      * <p>Constructor for MeasurementModelWrapper.</p>
      *
      * @param knowledgeInput a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public MeasurementModelWrapper(KnowledgeBoxInput knowledgeInput, Parameters params) {
         if (knowledgeInput instanceof GraphSource) {
@@ -112,7 +131,7 @@ public final class MeasurementModelWrapper implements ParamsResettable,
      * <p>Constructor for MeasurementModelWrapper.</p>
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public MeasurementModelWrapper(DataWrapper dataWrapper, Parameters params) {
         this.setVarNames(dataWrapper.getVarNames());
@@ -146,7 +165,9 @@ public final class MeasurementModelWrapper implements ParamsResettable,
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -158,6 +179,10 @@ public final class MeasurementModelWrapper implements ParamsResettable,
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -222,7 +247,9 @@ public final class MeasurementModelWrapper implements ParamsResettable,
         return this.params;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void resetParams(Object params) {
         this.params = (Parameters) params;
     }

@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IndTestType;
 
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -41,9 +42,22 @@ import java.util.*;
  */
 public class PcRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The external graph, if any, to use as a starting point for the search.
+     */
     private Graph externalGraph;
+
+    /**
+     * The set of edges that are adjacent in the PC graph.
+     */
     private Set<Edge> pcAdjacent;
+
+    /**
+     * The set of edges that are non-adjacent in the PC graph.
+     */
     private Set<Edge> pcNonadjacent;
 
 

@@ -4,6 +4,7 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Map;
@@ -16,8 +17,12 @@ import java.util.Map;
  */
 public class DisplayLegend extends JComponent implements TetradSerializableExcluded {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The attributes of this node.
+     */
     private final Map<String, Object> attributes;
 
     /**
