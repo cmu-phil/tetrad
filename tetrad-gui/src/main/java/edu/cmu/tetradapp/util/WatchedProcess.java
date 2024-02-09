@@ -8,6 +8,7 @@ import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Runs a long process, watching it with a thread and popping up a Stop button that the user can click to stop the
@@ -112,7 +113,11 @@ public abstract class WatchedProcess {
 
         stopButton.addActionListener(e -> {
             if (longRunningThread != null) {
-                SwingUtilities.invokeLater(() -> longRunningThread.interrupt());
+                SwingUtilities.invokeLater(
+                        () -> {
+                            longRunningThread.interrupt();
+                        }
+                );
             }
 
             if (dialog != null) {

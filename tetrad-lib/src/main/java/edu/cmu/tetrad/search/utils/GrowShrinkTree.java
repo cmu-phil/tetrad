@@ -30,7 +30,7 @@ public class GrowShrinkTree {
     public double trace(Set<Node> prefix, Set<Node> all) {
         Set<Node> available = new HashSet<>(all);
         available.remove(this.node);
-        available.removeAll(this.forbidden);
+        this.forbidden.forEach(available::remove);
         Set<Node> parents = new HashSet<>();
         return this.root.trace(prefix, available, parents);
     }
@@ -38,7 +38,7 @@ public class GrowShrinkTree {
     public double trace(Set<Node> prefix, Set<Node> all, Set<Node> parents) {
         Set<Node> available = new HashSet<>(all);
         available.remove(this.node);
-        available.removeAll(this.forbidden);
+        this.forbidden.forEach(available::remove);
         return this.root.trace(prefix, available, parents);
     }
 

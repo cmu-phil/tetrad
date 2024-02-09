@@ -47,6 +47,7 @@ import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -233,7 +234,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     //============================PUBLIC METHODS==========================//
     @Override
     public void execute() {
-        long start = MillisecondTimes.cpuTimeMillis();
+        long start = System.currentTimeMillis();
 
         List<Graph> graphList = new ArrayList<>();
 
@@ -405,7 +406,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 }
             }
 
-            long stop = MillisecondTimes.cpuTimeMillis();
+            long stop = System.currentTimeMillis();
 
             this.elapsedTime = stop - start;
         }
@@ -532,6 +533,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -549,7 +551,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         Algorithm algo = getAlgorithm();
 
-        if (getDataModelList().size() == 0 && getSourceGraph() != null) {
+        if (getDataModelList().isEmpty() && getSourceGraph() != null) {
             // We inject the graph to the test to satisfy the tests like MSeparationTest - Zhou
             IndependenceWrapper test = new MSeparationTest(getSourceGraph());
 

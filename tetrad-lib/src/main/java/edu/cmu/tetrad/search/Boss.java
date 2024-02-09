@@ -145,8 +145,10 @@ public class Boss implements SuborderSearch {
         double score, bestScore = Double.NEGATIVE_INFINITY;
         boolean improved;
 
-        if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
-        else if (this.numThreads != 1) this.pool = ForkJoinPool.commonPool();
+        this.pool = new ForkJoinPool(this.numThreads);
+//
+//        if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
+//        else if (this.numThreads != 1) this.pool = ForkJoinPool.commonPool();
 
         for (int i = 0; i < this.numStarts; i++) {
 
@@ -318,6 +320,10 @@ public class Boss implements SuborderSearch {
         tasks.add(new Trace(this.gsts.get(x), this.all, Z, scores, i));
 
         for (Node z : suborder) {
+            if (Thread.currentThread().isInterrupted()) {
+                pool.shutdownNow();
+                return false;
+            }
             if (this.knowledge.isRequired(x.getName(), z.getName())) break;
             if (x == z) {
                 curr = i;
@@ -373,7 +379,10 @@ public class Boss implements SuborderSearch {
         int curr = 0;
 
         while (itr.hasNext()) {
-            if (Thread.currentThread().isInterrupted()) return false;
+            if (Thread.currentThread().isInterrupted()) {
+                pool.shutdownNow();
+                return false;
+            }
 
             Node z = itr.next();
 

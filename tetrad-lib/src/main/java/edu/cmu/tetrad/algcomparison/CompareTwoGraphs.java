@@ -213,7 +213,7 @@ public class CompareTwoGraphs {
 
         if (elapsedTime >= 0) {
             abbr.add("Elapsed");
-            desc.add("Elapsed time (s)");
+            desc.add("Wall time (s)");
             values.add((double) elapsedTime / 1000.0);
         }
 
