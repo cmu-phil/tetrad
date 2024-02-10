@@ -43,8 +43,20 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
     private IndependenceWrapper test;
+
+    /**
+     *
+     */
     private Knowledge knowledge;
+
+    /**
+     * The bootstrap graphs.
+     */
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
 

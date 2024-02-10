@@ -17,6 +17,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,8 +36,17 @@ import java.util.List;
 @Bootstrapping
 public class FaskPw implements Algorithm, TakesExternalGraph {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The algorithm to use for the initial graph.
+     */
     private Algorithm algorithm;
+
+    /**
+     * The external graph.
+     */
     private Graph externalGraph;
 
     /**

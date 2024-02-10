@@ -10,6 +10,10 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class Algorithms {
+
+    /**
+     * The list of algorithm.
+     */
     private final List<Algorithm> algorithms = new ArrayList<>();
 
     /**

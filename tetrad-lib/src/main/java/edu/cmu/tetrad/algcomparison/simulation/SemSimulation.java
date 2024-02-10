@@ -16,6 +16,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,13 +28,42 @@ import java.util.List;
  */
 public class SemSimulation implements Simulation {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The SEM PM.
+     */
     private SemPm pm;
+
+    /**
+     * The SEM IM.
+     */
     private SemIm im;
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The SEM IMs.
+     */
     private List<SemIm> ims = new ArrayList<>();
+
+    /**
+     * The seed.
+     */
     private long seed = -1L;
 
     /**

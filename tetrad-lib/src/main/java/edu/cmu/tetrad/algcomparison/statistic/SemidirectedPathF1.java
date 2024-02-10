@@ -3,6 +3,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * Calculates the F1 statistic for adjacencies. See
  * <p>
@@ -14,6 +16,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @version $Id: $Id
  */
 public class SemidirectedPathF1 implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

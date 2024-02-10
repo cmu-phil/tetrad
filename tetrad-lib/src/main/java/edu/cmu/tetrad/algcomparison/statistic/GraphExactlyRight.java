@@ -4,6 +4,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
+import java.io.Serial;
+
 /**
  * Return a 1 if the graph is exactly right, 0 otherwise.
  *
@@ -11,6 +13,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
  * @version $Id: $Id
  */
 public class GraphExactlyRight implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

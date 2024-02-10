@@ -20,6 +20,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,9 +41,22 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
 public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     *
+     */
     private IndependenceWrapper test;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * The bootstrap graphs.
+     */
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
 

@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +21,12 @@ import java.util.List;
  */
 public class SingleGraphAlg implements Algorithm, HasKnowledge {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The graph.
+     */
     private final Graph graph;
 
     /**

@@ -5,6 +5,8 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * Number of X---Y in est.
  *
@@ -12,6 +14,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @version $Id: $Id
  */
 public class NumUndirectedEdges implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

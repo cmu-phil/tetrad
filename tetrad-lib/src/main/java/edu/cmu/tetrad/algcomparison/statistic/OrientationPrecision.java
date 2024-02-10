@@ -4,6 +4,8 @@ import edu.cmu.tetrad.algcomparison.statistic.utils.OrientationConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * The orientation precision.
  *
@@ -11,6 +13,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @version $Id: $Id
  */
 public class OrientationPrecision implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

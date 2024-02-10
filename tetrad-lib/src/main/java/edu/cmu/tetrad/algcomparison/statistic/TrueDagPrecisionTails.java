@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -15,6 +16,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class TrueDagPrecisionTails implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

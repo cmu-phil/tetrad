@@ -9,6 +9,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,22 +23,82 @@ import java.util.Map;
  */
 @Experimental
 public class LinearSineSimulation implements Simulation {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The data type.
+     */
     private DataType dataType;
+
+    /**
+     * The shuffled order.
+     */
     private List<Node> shuffledOrder;
 
+    /**
+     * The intercept low.
+     */
     private double interceptLow;
+
+    /**
+     * The intercept high.
+     */
     private double interceptHigh = 1;
+
+    /**
+     * The linear low.
+     */
     private double linearLow = 0.5;
+
+    /**
+     * The linear high.
+     */
     private double linearHigh = 1;
+
+    /**
+     * The var low.
+     */
     private double varLow = 0.5;
+
+    /**
+     * The var high.
+     */
     private double varHigh = 0.5;
+
+    /**
+     * The beta low.
+     */
     private double betaLow = 1;
+
+    /**
+     * The beta high.
+     */
     private double betaHigh = 3;
+
+    /**
+     * The gamma low.
+     */
     private double gammaLow = 0.5;
+
+    /**
+     * The gamma high.
+     */
     private double gammaHigh = 1.5;
 
     /**

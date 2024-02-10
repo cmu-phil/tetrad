@@ -5,6 +5,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 
+import java.io.Serial;
+
 /**
  * The adjacency recall. The true positives are the number of adjacencies in both the true and estimated graphs.
  *
@@ -12,6 +14,7 @@ import edu.cmu.tetrad.graph.GraphTransforms;
  * @version $Id: $Id
  */
 public class PagAdjacencyRecall implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

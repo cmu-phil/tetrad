@@ -3403,7 +3403,7 @@ public final class TestGrasp {
             parameters.set(Params.SAMPLE_STYLE, 1);
 
 //            RestrictedBoss alg = new RestrictedBoss(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
-            edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+            Cstar alg = new Cstar(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore());
             Graph graph = alg.search(data, parameters);
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -10,6 +10,7 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +27,17 @@ import java.util.List;
 //)
 public class FisherZScore implements ScoreWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The data set.
+     */
     double alpha = 0.001;
+
+    /**
+     * The data set.
+     */
     private DataModel dataSet;
 
     /**

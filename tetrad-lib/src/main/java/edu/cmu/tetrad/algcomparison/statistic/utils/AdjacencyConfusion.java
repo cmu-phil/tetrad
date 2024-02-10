@@ -14,9 +14,23 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public class AdjacencyConfusion {
+
+    /**
+     * The true negative count.
+     */
     private final int tn;
+
+    /**
+     * The true positive count.
+     */
     private int tp;
+
+    /**
+     * The false positive count.
+     */
     private int fp;
+
+
     private int fn;
 
     /**

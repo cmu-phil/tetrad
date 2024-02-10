@@ -4,6 +4,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
+import java.io.Serial;
+
 /**
  * Outputs 1 if the skeleton is correct, 0 if not..
  *
@@ -11,6 +13,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
  * @version $Id: $Id
  */
 public class CorrectSkeleton implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

@@ -34,7 +34,15 @@ import java.util.List;
 public class Ccd implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs {
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
     private IndependenceWrapper test;
+
+    /**
+     * The bootstrap graphs.
+     */
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
 

@@ -15,6 +15,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
 import java.text.ParseException;
 import java.util.*;
 
@@ -27,9 +28,22 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class GeneralSemSimulationSpecial1 implements Simulation {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The data sets.
+     */
     private List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The graphs.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
 
     /**

@@ -16,6 +16,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,10 +28,27 @@ import java.util.List;
  */
 public class LinearFisherModel implements Simulation, TakesData {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The shocks.
+     */
     private final List<DataModel> shocks;
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs = new ArrayList<>();
 
     /**

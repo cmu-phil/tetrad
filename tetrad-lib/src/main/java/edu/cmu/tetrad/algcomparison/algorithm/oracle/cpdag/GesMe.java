@@ -17,6 +17,7 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -34,9 +35,22 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 @Experimental
 public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The score to use.
+     */
     private final ScoreWrapper score = new SemBicScoreDeterministic();
+
+    /**
+     * The bootstrap graphs.
+     */
     private boolean compareToTrue;
+
+    /**
+     * The bootstrap graphs.
+     */
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
 

@@ -16,6 +16,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -26,9 +27,22 @@ import java.util.*;
  */
 @Experimental
 public class BooleanGlassSimulation implements Simulation {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The graph.
+     */
     private Graph graph = new EdgeListGraph();
 
     /**

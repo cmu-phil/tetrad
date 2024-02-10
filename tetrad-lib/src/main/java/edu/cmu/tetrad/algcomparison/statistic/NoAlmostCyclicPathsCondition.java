@@ -6,6 +6,8 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
+
 /**
  * No almost cyclic paths condition.
  *
@@ -13,6 +15,7 @@ import edu.cmu.tetrad.graph.Node;
  * @version $Id: $Id
  */
 public class NoAlmostCyclicPathsCondition implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

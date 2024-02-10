@@ -14,9 +14,25 @@ import java.util.List;
  * @version $Id: $Id
  */
 public abstract class ExternalAlgorithm implements Algorithm {
+
+    /**
+     * The path to the external graph.
+     */
     protected String path;
+
+    /**
+     * The simulation.
+     */
     protected Simulation simulation;
+
+    /**
+     * The index of the simulation.
+     */
     protected int simIndex = -1;
+
+    /**
+     * The parameters used in the search.
+     */
     protected List<String> usedParameters = new ArrayList<>();
 
     /**

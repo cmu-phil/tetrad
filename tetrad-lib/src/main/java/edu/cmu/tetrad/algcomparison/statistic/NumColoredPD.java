@@ -6,6 +6,8 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
+import java.io.Serial;
+
 /**
  * The bidirected true positives.
  *
@@ -13,6 +15,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
  * @version $Id: $Id
  */
 public class NumColoredPD implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

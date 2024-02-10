@@ -6,6 +6,8 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
+
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 
 /**
@@ -15,6 +17,7 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
  * @version $Id: $Id
  */
 public class NumDirectedShouldBePartiallyDirected implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

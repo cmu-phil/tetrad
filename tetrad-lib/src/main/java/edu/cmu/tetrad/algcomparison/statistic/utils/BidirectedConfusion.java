@@ -14,9 +14,25 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public class BidirectedConfusion {
+
+    /**
+     * The true negative count.
+     */
     private final int tn;
+
+    /**
+     * The true positive count.
+     */
     private int tp;
+
+    /**
+     * The false positive count.
+     */
     private int fp;
+
+    /**
+     * The false negative count.
+     */
     private int fn;
 
     /**

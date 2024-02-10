@@ -4,6 +4,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
+
 /**
  * Prints the number of edges in the estimated graph.
  *
@@ -11,6 +13,7 @@ import org.apache.commons.math3.util.FastMath;
  * @version $Id: $Id
  */
 public class NumberOfEdgesEst implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

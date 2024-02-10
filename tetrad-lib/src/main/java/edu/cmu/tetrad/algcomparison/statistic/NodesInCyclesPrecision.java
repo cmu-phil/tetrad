@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,6 +16,7 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public class NodesInCyclesPrecision implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

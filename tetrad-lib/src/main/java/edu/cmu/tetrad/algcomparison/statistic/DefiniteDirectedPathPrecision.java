@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -12,6 +13,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class DefiniteDirectedPathPrecision implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

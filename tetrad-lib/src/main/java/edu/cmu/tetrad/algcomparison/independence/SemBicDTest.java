@@ -9,6 +9,7 @@ import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.work_in_progress.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import java.util.List;
  */
 public class SemBicDTest implements IndependenceWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

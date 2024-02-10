@@ -5,6 +5,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
+
 /**
  * No cyclic paths condition.
  *
@@ -12,6 +14,7 @@ import edu.cmu.tetrad.graph.Node;
  * @version $Id: $Id
  */
 public class NoCyclicPathsInMagCondition implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

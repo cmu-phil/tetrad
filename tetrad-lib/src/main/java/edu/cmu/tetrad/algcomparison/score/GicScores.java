@@ -30,6 +30,10 @@ public class GicScores implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The data set.
+     */
     private DataModel dataSet;
 
     /**

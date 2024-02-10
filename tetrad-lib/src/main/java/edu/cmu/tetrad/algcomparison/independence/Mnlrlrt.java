@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.work_in_progress.IndTestMnlrLr;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import java.util.List;
 //)
 public class Mnlrlrt implements IndependenceWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

@@ -5,6 +5,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 
+import java.io.Serial;
+
 /**
  * The bidirected false negatives.
  *
@@ -12,6 +14,7 @@ import edu.cmu.tetrad.graph.GraphTransforms;
  * @version $Id: $Id
  */
 public class BidirectedFP implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

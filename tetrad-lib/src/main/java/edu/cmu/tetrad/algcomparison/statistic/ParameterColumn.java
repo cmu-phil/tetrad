@@ -3,6 +3,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * Adds a column to the output table in which values for the given parameter are listed. The parameter must have
  * numerical values, and these will be represented as continuous.
@@ -11,6 +13,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @version $Id: $Id
  */
 public class ParameterColumn implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     private final String parameter;

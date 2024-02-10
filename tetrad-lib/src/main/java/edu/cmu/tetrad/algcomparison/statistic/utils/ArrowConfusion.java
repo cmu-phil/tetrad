@@ -16,19 +16,64 @@ import java.util.List;
  */
 public class ArrowConfusion {
 
-    // For arrowhead FP's, don't count an error unless the variables are adj in the true graph.
+    /**
+     * For arrowhead FP's, don't count an error unless the variables are adj in the true graph.
+     */
     private final boolean truthAdj;
 
+    /**
+     * The true positive count.
+     */
     private int tp;
+
+    /**
+     * The true positive count for common edges.
+     */
     private int tpc;
+
+    /**
+     * The false positive count.
+     */
     private int fp;
+
+    /**
+     * The false positive count for common edges.
+     */
     private int fpc;
+
+    /**
+     * The false negative count.
+     */
     private int fn;
+
+    /**
+     * The false negative count for common edges.
+     */
     private int fnc;
+
+    /**
+     * The true negative count.
+     */
     private int tn;
+
+    /**
+     * The true negative count for common edges.
+     */
     private int tnc;
+
+    /**
+     * The true positive count for two-cycles.
+     */
     private int TCtp;
+
+    /**
+     * The false negative count for two-cycles.
+     */
     private int TCfn;
+
+    /**
+     * The false positive count for two-cycles.
+     */
     private int TCfp;
 
     /**

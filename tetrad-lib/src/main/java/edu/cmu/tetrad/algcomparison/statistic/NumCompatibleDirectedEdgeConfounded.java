@@ -3,6 +3,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 
+import java.io.Serial;
+
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 import static edu.cmu.tetrad.graph.GraphUtils.compatible;
 
@@ -13,6 +15,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.compatible;
  * @version $Id: $Id
  */
 public class NumCompatibleDirectedEdgeConfounded implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

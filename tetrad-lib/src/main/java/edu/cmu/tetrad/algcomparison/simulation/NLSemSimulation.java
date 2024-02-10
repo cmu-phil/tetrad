@@ -13,6 +13,7 @@ import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,9 +30,22 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public class NLSemSimulation implements Simulation {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs = new ArrayList<>();
 
     /**

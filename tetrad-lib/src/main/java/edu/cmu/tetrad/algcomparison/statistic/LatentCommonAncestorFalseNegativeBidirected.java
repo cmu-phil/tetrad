@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 
+import java.io.Serial;
 import java.util.List;
 
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
@@ -14,6 +15,7 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
  * @version $Id: $Id
  */
 public class LatentCommonAncestorFalseNegativeBidirected implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

@@ -21,6 +21,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.PrintStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,11 +40,28 @@ import java.util.List;
 public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
         ReturnsBootstrapGraphs {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The score to use.
+     */
     private ScoreWrapper score;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    private String targetName;
+
+    /**
+     * The bootstrap graphs.
+     */
     private List<Graph> bootstrapGraphs = new ArrayList<>();
+
+    /**
+     * The targets.
+     */
+    private List<Node> targets = null;
 
 
     /**
@@ -104,6 +122,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
                 targets.add(variable);
             }
 
+            this.targets = targets;
 
             return search.search(targets);
         } else {
@@ -125,8 +144,11 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        Node target = graph.getNode(this.targetName);
-        return GraphUtils.markovBlanketSubgraph(target, new EdgeListGraph(graph));
+        if (targets == null) {
+            throw new IllegalArgumentException("Targets not set.");
+        }
+
+        return GraphUtils.markovBlanketSubgraph(targets.get(0), new EdgeListGraph(graph));
     }
 
     /**

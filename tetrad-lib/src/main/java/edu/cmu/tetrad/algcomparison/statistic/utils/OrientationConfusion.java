@@ -12,9 +12,25 @@ import edu.cmu.tetrad.graph.Node;
  * @version $Id: $Id
  */
 public class OrientationConfusion {
+
+    /**
+     * The true positive count.
+     */
     private int tp;
+
+    /**
+     * The false positive count.
+     */
     private int fp;
+
+    /**
+     * The false negative count.
+     */
     private int fn;
+
+    /**
+     * The true negative count.
+     */
     private int tn;
 
     /**

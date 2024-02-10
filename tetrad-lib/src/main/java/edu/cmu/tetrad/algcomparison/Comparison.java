@@ -65,20 +65,79 @@ import java.util.concurrent.ForkJoinPool;
  */
 public class Comparison {
 
+    /**
+     * Whether to parallelize the comparison.
+     */
     private boolean parallelized = false;
+
+    /**
+     * The graph type used.
+     */
     private boolean[] graphTypeUsed;
+
+    /**
+     * The output stream.
+     */
     private PrintStream out;
+
+    /**
+     * Whether the tables should be tab-delimited.
+     */
     private boolean tabDelimitedTables;
+
+    /**
+     * Whether to save the graphs.
+     */
     private boolean saveGraphs;
+
+    /**
+     * Whether to show the simulation indices.
+     */
     private boolean showSimulationIndices;
+
+    /**
+     * Whether to show the algorithm indices.
+     */
     private boolean showAlgorithmIndices;
+
+    /**
+     * Whether to show the utility calculations.
+     */
     private boolean showUtilities;
+
+    /**
+     * Whether to sort by utility.
+     */
     private boolean sortByUtility;
+
+    /**
+     * The data path.
+     */
     private String dataPath;
+
+    /**
+     * The results path.
+     */
     private String resultsPath;
+
+    /**
+     * Whether to save the data.
+     */
     private boolean saveData = false;
+
+    /**
+     * Whether to save the CPDAGs.
+     */
     private boolean saveCPDAGs = false;
+
+    /**
+     * Whether to save the PAGs.
+     */
     private boolean savePags = false;
+
+    /**
+     * The comparison graph type.
+     */
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
 
     /**

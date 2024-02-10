@@ -6,6 +6,8 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
+
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 import static edu.cmu.tetrad.algcomparison.statistic.NumCommonMeasuredAncestorBidirected.existsCommonAncestor;
 
@@ -16,6 +18,7 @@ import static edu.cmu.tetrad.algcomparison.statistic.NumCommonMeasuredAncestorBi
  * @version $Id: $Id
  */
 public class NumDirectedEdgeBnaMeasuredCounfounded implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

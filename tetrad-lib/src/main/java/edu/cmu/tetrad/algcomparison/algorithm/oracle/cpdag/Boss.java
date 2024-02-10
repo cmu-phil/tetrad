@@ -21,6 +21,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,11 +40,23 @@ import java.util.List;
 @Bootstrapping
 public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         ReturnsBootstrapGraphs {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The score to use.
+     */
     private ScoreWrapper score;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * The bootstrap graphs.
+     */
     private List<Graph> bootstrapGraphs = new ArrayList<>();
-    private long seed = 01;
 
     /**
      * Constructs a new BOSS algorithm.
@@ -68,7 +81,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
      */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-        this.seed = parameters.getLong(Params.SEED);
+        long seed = parameters.getLong(Params.SEED);
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (parameters.getInt(Params.TIME_LAG) > 0) {

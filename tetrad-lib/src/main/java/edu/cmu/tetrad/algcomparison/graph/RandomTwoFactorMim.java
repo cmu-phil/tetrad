@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class RandomTwoFactorMim implements RandomGraph {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

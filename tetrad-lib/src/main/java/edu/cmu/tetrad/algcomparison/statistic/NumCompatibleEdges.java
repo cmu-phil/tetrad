@@ -6,6 +6,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.GraphUtils;
 
+import java.io.Serial;
+
 import static edu.cmu.tetrad.graph.GraphUtils.compatible;
 
 /**
@@ -15,6 +17,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.compatible;
  * @version $Id: $Id
  */
 public class NumCompatibleEdges implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

@@ -4,6 +4,8 @@ import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * The arrow precision. This counts arrowheads maniacally, wherever they occur in the graphs. The true positives are the
  * number of arrowheads in both the true and estimated graphs. Thus, if the true contains X*-&gt;Y and estimated graph
@@ -14,6 +16,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @version $Id: $Id
  */
 public class ArrowheadTn implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

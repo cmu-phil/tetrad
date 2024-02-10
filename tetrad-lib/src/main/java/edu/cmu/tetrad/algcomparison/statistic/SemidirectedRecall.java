@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 
+import java.io.Serial;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class SemidirectedRecall implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

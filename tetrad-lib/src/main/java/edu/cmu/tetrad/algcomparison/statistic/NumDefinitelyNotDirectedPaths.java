@@ -3,6 +3,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 
+import java.io.Serial;
+
 /**
  * The bidirected true positives.
  *
@@ -10,6 +12,7 @@ import edu.cmu.tetrad.graph.*;
  * @version $Id: $Id
  */
 public class NumDefinitelyNotDirectedPaths implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

@@ -11,6 +11,7 @@ import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.Vector;
  */
 @Bootstrapping
 public class FactorAnalysis implements Algorithm {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

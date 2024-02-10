@@ -9,6 +9,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.work_in_progress.IndTestPositiveCorr;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,8 +20,17 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class PositiveCorrScore implements ScoreWrapper {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The alpha level.
+     */
     double alpha = 0.001;
+
+    /**
+     * The data set.
+     */
     private DataModel dataSet;
 
     /**

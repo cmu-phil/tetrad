@@ -4,10 +4,12 @@ import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * Calculates the F1 statistic for arrowheads. See
  * <p>
- * https://en.wikipedia.org/wiki/F1_score
+ * <a href="https://en.wikipedia.org/wiki/F1_score">...</a>
  * <p>
  * We use what's on this page called the "traditional" F1 statistic. If the true contains X*-&gt;Y and estimated graph
  * either does not contain an edge from X to Y or else does not contain an arrowhead at X for an edge from X to Y, one
@@ -17,6 +19,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @version $Id: $Id
  */
 public class F1Arrow implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

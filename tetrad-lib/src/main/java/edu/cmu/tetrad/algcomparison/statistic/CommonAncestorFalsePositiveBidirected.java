@@ -5,6 +5,8 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 import static edu.cmu.tetrad.algcomparison.statistic.CommonAncestorTruePositiveBidirected.existsCommonAncestor;
 
 /**
@@ -14,6 +16,7 @@ import static edu.cmu.tetrad.algcomparison.statistic.CommonAncestorTruePositiveB
  * @version $Id: $Id
  */
 public class CommonAncestorFalsePositiveBidirected implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

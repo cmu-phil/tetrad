@@ -7,6 +7,8 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 
+import java.io.Serial;
+
 import static org.apache.commons.math3.util.FastMath.abs;
 
 /**
@@ -18,6 +20,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * @version $Id: $Id
  */
 public class PvalueDistanceToAlpha implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
     private double alpha = 0.01;
 

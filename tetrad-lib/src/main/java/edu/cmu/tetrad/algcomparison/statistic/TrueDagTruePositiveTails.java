@@ -5,6 +5,8 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * The bidirected true positives.
  *
@@ -12,6 +14,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @version $Id: $Id
  */
 public class TrueDagTruePositiveTails implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

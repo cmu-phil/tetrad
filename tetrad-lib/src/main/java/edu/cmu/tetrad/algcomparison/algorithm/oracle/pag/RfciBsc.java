@@ -37,9 +37,13 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
     @Serial
     private static final long serialVersionUID = 23L;
-    // Independence test; must the ProbabilisticTest.
+    /**
+     * Independence test; must the ProbabilisticTest.
+     */
     private final IndependenceWrapper test = new ProbabilisticTest();
-    // Knowledge
+    /**
+     * Knowledge
+     */
     private Knowledge knowledge = new Knowledge();
 
     /**

@@ -19,6 +19,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -36,8 +37,17 @@ import java.util.*;
 @Bootstrapping
 public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
         ReturnsBootstrapGraphs {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The score to use.
+     */
     private ScoreWrapper score;
+
+    /**
+     * The bootstrap graphs.
+     */
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     // Don't delete.

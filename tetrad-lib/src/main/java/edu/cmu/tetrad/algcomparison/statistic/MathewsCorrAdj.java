@@ -5,10 +5,12 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
+
 /**
  * Calculates the Matthew's correlation coefficient for adjacencies. See this page in Wikipedia:
  * <p>
- * https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
+ * <a href="https://en.wikipedia.org/wiki/Matthews_correlation_coefficient">...</a>
  * <p>
  * We calculate the correlation directly from the confusion matrix.
  *
@@ -16,6 +18,7 @@ import org.apache.commons.math3.util.FastMath;
  * @version $Id: $Id
  */
 public class MathewsCorrAdj implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

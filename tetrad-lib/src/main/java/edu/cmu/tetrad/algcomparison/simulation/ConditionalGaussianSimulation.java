@@ -13,6 +13,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -23,18 +24,67 @@ import java.util.*;
  */
 public class ConditionalGaussianSimulation implements Simulation {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The data type.
+     */
     private DataType dataType;
+
+    /**
+     * The shuffled order.
+     */
     private List<Node> shuffledOrder;
+
+    /**
+     * The low variance.
+     */
     private double varLow = 1;
+
+    /**
+     * The high variance.
+     */
     private double varHigh = 3;
+
+    /**
+     * The low coefficient.
+     */
     private double coefLow = 0.05;
+
+    /**
+     * The high coefficient.
+     */
     private double coefHigh = 1.5;
+
+    /**
+     * Whether coefficients should be drawn equally from positive or negative values.
+     */
     private boolean coefSymmetric = true;
+
+    /**
+     * The low mean for variables.
+     */
     private double meanLow = -1;
+
+    /**
+     * The high mean for variables.
+     */
     private double meanHigh = 1;
 
     /**

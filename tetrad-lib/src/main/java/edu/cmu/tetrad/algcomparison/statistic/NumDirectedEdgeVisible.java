@@ -5,6 +5,8 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 
+import java.io.Serial;
+
 /**
  * Number of X-->Y for which X-->Y visible in true PAG.
  *
@@ -12,6 +14,7 @@ import edu.cmu.tetrad.graph.GraphTransforms;
  * @version $Id: $Id
  */
 public class NumDirectedEdgeVisible implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

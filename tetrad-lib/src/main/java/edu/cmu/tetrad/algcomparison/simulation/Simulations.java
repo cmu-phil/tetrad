@@ -10,7 +10,10 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class Simulations {
-    private static final long serialVersionUID = 23L;
+
+    /**
+     * The simulations.
+     */
     private final List<Simulation> simulations = new ArrayList<>();
 
     /**

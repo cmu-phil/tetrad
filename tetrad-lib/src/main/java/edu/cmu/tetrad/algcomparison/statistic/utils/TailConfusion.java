@@ -16,12 +16,39 @@ import java.util.List;
  */
 public class TailConfusion {
 
+    /**
+     * The true positive count for tails.
+     */
     private int tailsTp;
+
+    /**
+     * The false positive count for tails.
+     */
     private int tailsFp;
+
+    /**
+     * The false negative count for tails.
+     */
     private int tailsFn;
+
+    /**
+     * The true negative count for tails.
+     */
     private int tailsTn;
+
+    /**
+     * The true positive count for 2-cycles.
+     */
     private int TCtp;
+
+    /**
+     * The false negative count for 2-cycles.
+     */
     private int TCfn;
+
+    /**
+     * The false positive count for 2-cycles.
+     */
     private int TCfp;
 
     /**

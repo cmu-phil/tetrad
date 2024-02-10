@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.List;
 import java.util.Set;
 
@@ -19,11 +20,32 @@ import java.util.Set;
  */
 public class FirstInflection implements Algorithm {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The low value for the parameter.
+     */
     private final double low;
+
+    /**
+     * The high value for the parameter.
+     */
     private final double high;
+
+    /**
+     * The increment for the parameter.
+     */
     private final double increment;
+
+    /**
+     * The parameter to vary.
+     */
     private final String parameter;
+
+    /**
+     * The algorithm to use for the initial graph.
+     */
     private final Algorithm algorithm;
 
     /**

@@ -7,6 +7,7 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,7 @@ import java.util.List;
 //)
 public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

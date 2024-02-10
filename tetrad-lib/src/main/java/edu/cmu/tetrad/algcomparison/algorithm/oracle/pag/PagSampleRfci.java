@@ -15,6 +15,7 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,6 +46,7 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
      * Constant <code>PROBABILISTIC_TEST_PARAMETERS</code>
      */
     public static final List<String> PROBABILISTIC_TEST_PARAMETERS = new LinkedList<>();
+    @Serial
     private static final long serialVersionUID = 23L;
 
     static {

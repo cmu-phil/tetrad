@@ -6,6 +6,8 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
+
 /**
  * Calculates the structural Hamming distance (SHD) between the estimated graph and the true graph.
  *
@@ -13,6 +15,7 @@ import org.apache.commons.math3.util.FastMath;
  * @version $Id: $Id
  */
 public class StructuralHammingDistance implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

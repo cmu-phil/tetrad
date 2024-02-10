@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.graph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,8 +14,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class SingleGraph implements RandomGraph {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The graph to be used.
+     */
     private final Graph graph;
 
     /**

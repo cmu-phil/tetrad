@@ -13,6 +13,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -26,10 +27,27 @@ import java.util.List;
  */
 public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The data sets.
+     */
     private List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge;
 
     /**

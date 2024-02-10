@@ -7,6 +7,8 @@ import edu.cmu.tetrad.search.ConditioningSetType;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 
+import java.io.Serial;
+
 /**
  * Estimates whether the p-values under the null are Uniform usign the Markov Checker. This estimate the fraction of
  * dependent judgements from the local Fraithfulness check, under the alternative hypothesis of dependence. This is only
@@ -16,6 +18,7 @@ import edu.cmu.tetrad.search.test.IndTestFisherZ;
  * @version $Id: $Id
  */
 public class FractionDependentUnderAlternative implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
     private double alpha = 0.01;
 

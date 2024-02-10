@@ -4,6 +4,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
+import java.io.Serial;
+
 /**
  * Legal PAG
  *
@@ -11,6 +13,7 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
  * @version $Id: $Id
  */
 public class LegalPag implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

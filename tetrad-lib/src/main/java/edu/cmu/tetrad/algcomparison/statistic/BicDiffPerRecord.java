@@ -6,6 +6,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.SemBicScorer;
 
+import java.io.Serial;
+
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.tanh;
 
@@ -16,6 +18,7 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  * @version $Id: $Id
  */
 public class BicDiffPerRecord implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
     private boolean precomputeCovariances = true;
 

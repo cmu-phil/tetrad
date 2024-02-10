@@ -4,6 +4,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
+
 /**
  * Records the elapsed time of the algorithm in seconds. This is a placeholder, really; the elapsed time is calculated
  * by the comparison class and recorded if this statistic is used.
@@ -12,6 +14,7 @@ import org.apache.commons.math3.util.FastMath;
  * @version $Id: $Id
  */
 public class ElapsedCpuTime implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

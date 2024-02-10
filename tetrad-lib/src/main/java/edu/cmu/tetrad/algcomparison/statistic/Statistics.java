@@ -12,7 +12,15 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public class Statistics {
+
+    /**
+     * The list of statistics.
+     */
     private final List<Statistic> statistics = new ArrayList<>();
+
+    /**
+     * The utility weights for the statistics.
+     */
     private final Map<Statistic, Double> weights = new HashMap<>();
 
     /**

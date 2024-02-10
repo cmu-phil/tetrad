@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
+package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -21,6 +21,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,9 +38,22 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
     private IndependenceWrapper test;
+
+    /**
+     * The score to use.
+     */
     private ScoreWrapper score;
+
+    /**
+     * The records.
+     */
     private LinkedList<edu.cmu.tetrad.search.Cstar.Record> records;
 
     // Don't delete.

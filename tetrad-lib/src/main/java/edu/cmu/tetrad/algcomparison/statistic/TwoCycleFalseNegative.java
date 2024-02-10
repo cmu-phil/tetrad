@@ -4,6 +4,8 @@ import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * The 2-cycle precision. This counts 2-cycles manually, wherever they occur in the graphs. The true positives are the
  * number of 2-cycles in both the true and estimated graphs. Thus, if the true does not contains X-&gt;Y,Y-&gt;X and
@@ -13,6 +15,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @version $Id: $Id
  */
 public class TwoCycleFalseNegative implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

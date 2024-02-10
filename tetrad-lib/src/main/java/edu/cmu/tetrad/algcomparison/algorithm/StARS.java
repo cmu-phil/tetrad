@@ -11,6 +11,7 @@ import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -24,10 +25,27 @@ import java.util.concurrent.RecursiveAction;
  */
 public class StARS implements Algorithm {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The low value for the parameter.
+     */
     private final double low;
+
+    /**
+     * The high value for the parameter.
+     */
     private final double high;
+
+    /**
+     * The parameter to vary.
+     */
     private final String parameter;
+
+    /**
+     * The algorithm to use for the initial graph.
+     */
     private final Algorithm algorithm;
 
     /**

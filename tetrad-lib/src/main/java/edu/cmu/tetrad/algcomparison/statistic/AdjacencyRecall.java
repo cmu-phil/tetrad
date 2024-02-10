@@ -4,6 +4,8 @@ import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * The adjacency recall. The true positives are the number of adjacencies in both the true and estimated graphs.
  *
@@ -11,6 +13,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @version $Id: $Id
  */
 public class AdjacencyRecall implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

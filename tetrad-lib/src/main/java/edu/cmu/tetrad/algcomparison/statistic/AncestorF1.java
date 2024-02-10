@@ -3,10 +3,12 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * Calculates the F1 statistic for adjacencies. See
  * <p>
- * https://en.wikipedia.org/wiki/F1_score
+ * <a href="https://en.wikipedia.org/wiki/F1_score">...</a>
  * <p>
  * We use what's on this page called the "traditional" F1 statistic.
  *
@@ -14,6 +16,7 @@ import edu.cmu.tetrad.graph.Graph;
  * @version $Id: $Id
  */
 public class AncestorF1 implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

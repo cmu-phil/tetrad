@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,8 +25,17 @@ import java.util.List;
 )
 public class MSeparationScore implements ScoreWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The graph.
+     */
     private Graph graph;
+
+    /**
+     * The data set.
+     */
     private DataModel dataSet;
 
     /**

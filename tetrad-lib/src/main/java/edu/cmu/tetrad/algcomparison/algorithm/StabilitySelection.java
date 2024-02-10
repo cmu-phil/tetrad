@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +26,12 @@ import java.util.concurrent.RecursiveAction;
  */
 public class StabilitySelection implements Algorithm {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The algorithm to use for the initial graph.
+     */
     private final Algorithm algorithm;
 
     /**
