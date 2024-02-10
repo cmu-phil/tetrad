@@ -856,12 +856,40 @@ public class Ricf {
     }
 
     public static class RicfResult {
+
+        /**
+         * The covariance matrix.
+         */
         private final ICovarianceMatrix covMatrix;
+
+        /**
+         * The shat matrix.
+         */
         private final DoubleMatrix2D shat;
+
+        /**
+         * The lhat matrix.
+         */
         private final DoubleMatrix2D lhat;
+
+        /**
+         * The bhat matrix.
+         */
         private final DoubleMatrix2D bhat;
+
+        /**
+         * The ohat matrix.
+         */
         private final DoubleMatrix2D ohat;
+
+        /**
+         * The number of iterations.
+         */
         private final int iterations;
+
+        /**
+         * The diff.
+         */
         private final double diff;
 
         public RicfResult(DoubleMatrix2D shat, DoubleMatrix2D lhat, DoubleMatrix2D bhat,

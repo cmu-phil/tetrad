@@ -23,6 +23,9 @@ public class BicEst implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Whether to precompute covariances.
+     */
     private boolean precomputeCovariances = true;
 
     /**

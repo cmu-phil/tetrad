@@ -46,8 +46,20 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class TetradTestDiscrete implements TetradTest {
+
+    /**
+     * Max number of distinct values for a discrete variable.
+     */
     private static final int MAX_VALUES = 50;
+
+    /**
+     * Grid size for optimizing the polychoric correlation.
+     */
     private static final int RHO_GRID_SIZE = 1000;
+
+    /**
+     * Coefficients for Gaussian quadrature.
+     */
     private static final double[] GHY = {5.55503518732646782452296868771,
             4.77399234341121942970150957712, 4.12199554749184002081690067728,
             3.53197287713767773917138228262, 2.97999120770459800253772781753,
@@ -60,35 +72,123 @@ public final class TetradTestDiscrete implements TetradTest {
             -1.94496294918625384190191671547, -1.44893425065073196265729314868,
             -0.961499634418369064279422271352,
             -0.479450707079107576294598103513};
+
+    /**
+     * Whether to print out verbose information.
+     */
     public boolean verbose;
-    DataSet dataSet;
-    //    int rawdata[][];
-    int[][][][] counts; //bivariate coefs only
-    int[][] values;
-    int[] valueIndices;
-    double[][] thresholds;
-    int[] indices;
-    int[][][][] currentCounts;
-    int currentVar1, currentVar2;
-    double[][] currentFiBuffer;
-    double[][] currentPi;
-    double currentRho;
-    double[] rhoGrid;
-    double[][] polyCorr;
+
     /**
-     * @serial
+     * The dataset.
      */
-    int[][][][] oneFactor4Tests;
+    private DataSet dataSet;
     /**
-     * @serial
+     * the counts.
      */
-    int[][][][] twoFactor4Tests;
+    private int[][][][] counts; //bivariate coefs only
+
+    /**
+     * The values.
+     */
+    private int[][] values;
+
+    /**
+     * The value indices.
+     */
+    private int[] valueIndices;
+
+    /**
+     * The thresholds.
+     */
+    private double[][] thresholds;
+
+    /**
+     * The indices.
+     */
+    private int[] indices;
+
+    /**
+     * The current counts.
+     */
+    private int[][][][] currentCounts;
+
+    /**
+     * First variable in the current tetrad.
+     */
+    private int currentVar1;
+
+    /**
+     * Second variable in the current tetrad.
+     */
+    private int currentVar2;
+
+    /**
+     * The current fi buffer.
+     */
+    private double[][] currentFiBuffer;
+
+    /**
+     * The current pi.
+     */
+    private double[][] currentPi;
+
+    /**
+     * The current rho.
+     */
+    private double currentRho;
+
+    /**
+     * The rho grid.
+     */
+    private double[] rhoGrid;
+
+    /**
+     * The poly corr.
+     */
+    private double[][] polyCorr;
+
+    /**
+     * The one factor4 tests.
+     */
+    private int[][][][] oneFactor4Tests;
+
+    /**
+     * The two factor4 tests.
+     */
+    private int[][][][] twoFactor4Tests;
+
+    /**
+     * The probs.
+     */
     private double[] prob;
+    /**
+     * The temp prob.
+     */
     private double tempProb;
+
+    /**
+     * The sig1.
+     */
     private double sig1;
+
+    /**
+     * The sig2.
+     */
     private double sig2;
+
+    /**
+     * The sig3.
+     */
     private double sig3;
+
+    /**
+     * The sig.
+     */
     private double sig;
+
+    /**
+     * The bvalues.
+     */
     private boolean[] bvalues;
 
     /**

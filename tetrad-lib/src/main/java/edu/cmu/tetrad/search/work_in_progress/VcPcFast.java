@@ -789,8 +789,23 @@ public final class VcPcFast implements IGraphSearch {
         this.facts = facts;
     }
 
+    /** An enum of the types of triples that can be found in a graph. */
     public enum CpcTripleType {
-        COLLIDER, NONCOLLIDER, AMBIGUOUS
+
+        /**
+         * Constant <code>COLLIDER</code>
+         */
+        COLLIDER,
+
+        /**
+         * Constant <code>NONCOLLIDER</code>
+         */
+        NONCOLLIDER,
+
+        /**
+         * Constant <code>AMBIGUOUS</code>
+         */
+        AMBIGUOUS
     }
 
 

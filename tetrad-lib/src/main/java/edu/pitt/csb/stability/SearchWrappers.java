@@ -38,6 +38,10 @@ import edu.pitt.csb.mgm.MixedUtils;
  * @version $Id: $Id
  */
 public class SearchWrappers {
+
+    /**
+     * Abstract class for search algorithm wrappers.
+     */
     public static class PcStableWrapper extends DataGraphSearch {
         //should be one param for the alpha level of the independance test
         public PcStableWrapper(double... params) {
@@ -56,31 +60,56 @@ public class SearchWrappers {
         }
     }
 
+    /**
+     * Abstract class for search algorithm wrappers.
+     */
     public static class MGMWrapper extends DataGraphSearch {
-        //should be array three parameters for lambdas of each edge type
+        /**
+         * should be array three parameters for lambdas of each edge type
+         * @param params parameters
+         */
         public MGMWrapper(double... params) {
             super(params);
         }
 
+        /**
+         * Copy constructor.
+         */
         public MGMWrapper copy() {
             return new MGMWrapper(this.searchParams);
         }
 
+        /**
+         * Search method.
+         */
         public Graph search(DataSet ds) {
             Mgm m = new Mgm(ds, this.searchParams);
             return m.search();
         }
     }
 
+    /**
+     * Wrapper for the Fges search algorithm.
+     */
     public static class FgesWrapper extends DataGraphSearch {
+
+        /**
+         * Constructor.
+         */
         public FgesWrapper(double... params) {
             super(params);
         }
 
+        /**
+         * Copy constructor.
+         */
         public FgesWrapper copy() {
             return new FgesWrapper(this.searchParams);
         }
 
+        /**
+         * Search method.
+         */
         public Graph search(DataSet ds) {
             SemBicScore score = new SemBicScore(new CovarianceMatrix(MixedUtils.makeContinuousData(ds)));
             score.setPenaltyDiscount(this.searchParams[0]);

@@ -785,8 +785,25 @@ public final class VcPc implements IGraphSearch {
         this.facts = facts;
     }
 
+    /**
+     * An enum of triple types.
+     */
     public enum CpcTripleType {
-        COLLIDER, NONCOLLIDER, AMBIGUOUS
+
+        /**
+         * The triple is a collider.
+         */
+        COLLIDER,
+
+        /**
+         * The triple is a noncollider.
+         */
+        NONCOLLIDER,
+
+        /**
+         * The triple is ambiguous.
+         */
+        AMBIGUOUS
     }
 }
 

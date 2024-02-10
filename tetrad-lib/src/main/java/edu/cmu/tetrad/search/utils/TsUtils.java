@@ -713,18 +713,41 @@ public class TsUtils {
      */
     public static class VarResult {
 
+        /**
+         * Residuals from the VAR model.
+         */
         private final DataSet residuals;
+
+        /**
+         * Collapsed var graph.
+         */
         private final Graph collapsedVarGraph;
 
+        /**
+         * Constructs a new result.
+         *
+         * @param dataSet          a {@link edu.cmu.tetrad.data.DataSet} object
+         * @param collapsedVarGraph a {@link edu.cmu.tetrad.graph.Graph} object
+         */
         public VarResult(DataSet dataSet, Graph collapsedVarGraph) {
             this.residuals = dataSet;
             this.collapsedVarGraph = collapsedVarGraph;
         }
 
+        /**
+         * <p>Getter for the field <code>residuals</code>.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.data.DataSet} object
+         */
         public DataSet getResiduals() {
             return this.residuals;
         }
 
+        /**
+         * <p>Getter for the field <code>collapsedVarGraph</code>.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Graph} object
+         */
         public Graph getCollapsedVarGraph() {
             return this.collapsedVarGraph;
         }

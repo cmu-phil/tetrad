@@ -719,8 +719,22 @@ public class SemBicScore implements Score {
     /**
      * Gives two options for calculating the BIC score, one describe by Chickering and the other due to Nandy et al.
      */
-    public enum RuleType {CHICKERING, NANDY}
+    public enum RuleType {
 
+        /**
+         * The standard linear, Gaussian BIC score.
+         */
+        CHICKERING,
+
+        /**
+         * The formulation of the standard BIC score given in Nandy et al.
+         */
+        NANDY
+    }
+
+    /**
+     * A record for the covariance matrix and the regression coefficients.
+     */
     public record CovAndCoefs(Matrix cov, Matrix b) {
     }
 }

@@ -695,6 +695,11 @@ public class TetradLogger {
         private final boolean active;
 
 
+        /**
+         * <p>Constructor for EmptyConfig.</p>
+         *
+         * @param active a boolean
+         */
         @SuppressWarnings("SameParameterValue")
         public EmptyConfig(boolean active) {
             this.active = active;
@@ -703,24 +708,45 @@ public class TetradLogger {
 
         /**
          * Generates a simple exemplar of this class to test serialization.
+         * @return a simple exemplar of this class to test serialization.
          */
         public static EmptyConfig serializableInstance() {
             return new EmptyConfig(true);
         }
 
-
+        /**
+         * <p>isEventActive.</p>
+         *
+         * @param id a {@link java.lang.String} object
+         * @return a boolean
+         */
         public boolean isEventActive(String id) {
             return this.active;
         }
 
+        /**
+         * <p>isActive.</p>
+         *
+         * @return a boolean
+         */
         public boolean isActive() {
             return this.active;
         }
 
+        /**
+         * <p>copy.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.util.TetradLoggerConfig} object
+         */
         public TetradLoggerConfig copy() {
             return new EmptyConfig(this.active);
         }
 
+        /**
+         * <p>getSupportedEvents.</p>
+         *
+         * @return a {@link java.util.List} object
+         */
         public List<Event> getSupportedEvents() {
             if (!this.active) {
                 return Collections.emptyList();
@@ -728,6 +754,12 @@ public class TetradLogger {
             throw new UnsupportedOperationException("Not supported if active is true");
         }
 
+        /**
+         * <p>setEventActive.</p>
+         *
+         * @param id     a {@link java.lang.String} object
+         * @param active a boolean
+         */
         public void setEventActive(String id, boolean active) {
             throw new UnsupportedOperationException("Can't modify the logger config");
         }

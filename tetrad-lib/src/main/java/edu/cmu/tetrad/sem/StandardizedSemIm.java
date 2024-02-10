@@ -922,8 +922,16 @@ public class StandardizedSemIm implements Simulator {
 
     //-------------------------------------------PRIVATE METHODS-------------------------------------------//
 
+    /**
+     * The initialization method for the model.
+     */
     public enum Initialization {
-        CALCULATE_FROM_SEM, INITIALIZE_FROM_DATA
+
+        /** Calculate from SEM. */
+        CALCULATE_FROM_SEM,
+
+        /** Initialize the SEM from data */
+        INITIALIZE_FROM_DATA
     }
 
     /**
@@ -970,22 +978,47 @@ public class StandardizedSemIm implements Simulator {
             return new ParameterRange(Edge.serializableInstance(), 1.0, 1.0, 1.0);
         }
 
+        /**
+         * <p>Getter for the field <code>edge</code>.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Edge} object
+         */
         public Edge getEdge() {
             return this.edge;
         }
 
+        /**
+         * <p>Getter for the field <code>coef</code>.</p>
+         *
+         * @return a double
+         */
         public double getCoef() {
             return this.coef;
         }
 
+        /**
+         * <p>Getter for the field <code>low</code>.</p>
+         *
+         * @return a double
+         */
         public double getLow() {
             return this.low;
         }
 
+        /**
+         * <p>Getter for the field <code>high</code>.</p>
+         *
+         * @return a double
+         */
         public double getHigh() {
             return this.high;
         }
 
+        /**
+         * <p>toString.</p>
+         *
+         * @return a string representation of the range of the parameter.
+         */
         public String toString() {
 
             return "\n\nRange for " + this.edge +

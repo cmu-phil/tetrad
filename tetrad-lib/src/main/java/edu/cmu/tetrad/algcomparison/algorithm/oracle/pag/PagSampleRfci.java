@@ -64,8 +64,17 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
         PROBABILISTIC_TEST_PARAMETERS.add(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE);
     }
 
+    /**
+     * The probabilistic test
+     */
     private final IndependenceWrapper test = new ProbabilisticTest();
+    /**
+     * The bootstrap graphs
+     */
     private final List<Graph> bootstrapGraphs = new ArrayList<>();
+    /**
+     * The knowledge
+     */
     private Knowledge knowledge;
 
     /**

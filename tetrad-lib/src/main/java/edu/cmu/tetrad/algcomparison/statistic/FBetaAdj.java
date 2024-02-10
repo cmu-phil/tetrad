@@ -20,6 +20,9 @@ public class FBetaAdj implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The beta parameter.
+     */
     private double beta = 1;
 
     /**

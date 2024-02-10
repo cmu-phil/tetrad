@@ -1704,8 +1704,23 @@ public class TimeoutComparison {
         }
     }
 
+    /**
+     * An enum of graph types to compare.
+     */
     public enum ComparisonGraph {
-        true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
+
+        /**
+         * The true dag.
+         */
+        true_DAG,
+        /**
+         * The cpdag of the true dag.
+         */
+        CPDAG_of_the_true_DAG,
+        /**
+         * The pag of the true dag.
+         */
+        PAG_of_the_true_DAG
     }
 
     private enum Mode {
@@ -1714,9 +1729,22 @@ public class TimeoutComparison {
 
     private static class AlgorithmWrapper implements Algorithm {
 
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The algorithm to be wrapped.
+         */
         private final Algorithm algorithm;
+
+        /**
+         * The parameters for the algorithm.
+         */
         private final Parameters parameters;
+
+        /**
+         * The parameters that have been overridden.
+         */
         private final List<String> overriddenParameters = new ArrayList<>();
 
         public AlgorithmWrapper(Algorithm algorithm, Parameters parameters) {
@@ -1776,11 +1804,27 @@ public class TimeoutComparison {
         }
     }
 
+    /**
+     * A wrapper for an algorithm and a simulation.
+     */
     private static class AlgorithmSimulationWrapper implements Algorithm {
 
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The simulation to be wrapped.
+         */
         private final SimulationWrapper simulationWrapper;
+
+        /**
+         * The algorithm to be wrapped.
+         */
         private final AlgorithmWrapper algorithmWrapper;
+
+        /**
+         * The parameters for the algorithm and simulation.
+         */
         List<String> parameters = new ArrayList<>();
 
         public AlgorithmSimulationWrapper(AlgorithmWrapper algorithm, SimulationWrapper simulation) {
@@ -1826,12 +1870,32 @@ public class TimeoutComparison {
         }
     }
 
+    /**
+     * A wrapper for a simulation.
+     */
     private static class SimulationWrapper implements Simulation {
 
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The simulation to be wrapped.
+         */
         private final Simulation simulation;
+
+        /**
+         * The list of graphs.
+         */
         private List<Graph> graphs;
+
+        /**
+         * The list of data models.
+         */
         private List<DataModel> dataModels;
+
+        /**
+         * The parameters for the simulation.
+         */
         private Parameters parameters;
 
         public SimulationWrapper(Simulation simulation, Parameters parameters) {
@@ -1918,14 +1982,43 @@ public class TimeoutComparison {
         }
     }
 
+    /**
+     * A wrapper for a simulation and an algorithm.
+     */
     private class AlgorithmTask implements Callable<Void> {
-
+        /**
+         * The algorithm-simulation wrappers to be used.
+         */
         private final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
+
+        /**
+         * The algorithm wrappers to be used.
+         */
         private final List<AlgorithmWrapper> algorithmWrappers;
+
+        /**
+         * The simulation wrappers to be used.
+         */
         private final List<SimulationWrapper> simulationWrappers;
+
+        /**
+         * The statistics to be used.
+         */
         private final Statistics statistics;
+
+        /**
+         * The number of graph types to be used.
+         */
         private final int numGraphTypes;
+
+        /**
+         * The array of statistics to be used.
+         */
         private final double[][][][] allStats;
+
+        /**
+         * The run to be used.
+         */
         private final Run run;
 
         public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
@@ -1949,11 +2042,29 @@ public class TimeoutComparison {
 
     }
 
-    private class Run {
+    /**
+     * A wrapper for a run.
+     */
+    private static class Run {
 
+        /**
+         * The index of the algorithm-simulation wrapper to be used.
+         */
         private final int algSimIndex;
+
+        /**
+         * The index of the run to be used.
+         */
         private final int runIndex;
+
+        /**
+         * The index to be used.
+         */
         private final int index;
+
+        /**
+         * The algorithm-simulation wrapper to be used.
+         */
         private final AlgorithmSimulationWrapper wrapper;
 
         public Run(int algSimIndex, int runIndex, int index, AlgorithmSimulationWrapper wrapper) {

@@ -1121,19 +1121,44 @@ public class TimeLagGraph implements Graph {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public static class NodeId {
+        /**
+         * The name of the node.
+         */
         private final String name;
+        /**
+         * The lag of the node.
+         */
         private final int lag;
 
+        /**
+         * <p>Constructor for NodeId.</p>
+         *
+         * @param name a {@link java.lang.String} object
+         * @param lag  a int
+         */
         public NodeId(String name, int lag) {
             this.name = name;
             this.lag = lag;
         }
 
+        /**
+         * <p>Getter for the field <code>name</code>.</p>
+         *
+         * @return a {@link java.lang.String} object
+         */
         public String getName() {
             return this.name;
         }
 
+        /**
+         * <p>Getter for the field <code>lag</code>.</p>
+         *
+         * @return a int
+         */
         public int getLag() {
             return this.lag;
         }

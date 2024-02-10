@@ -25,7 +25,8 @@ import java.lang.annotation.Annotation;
 /**
  * Annotated class.
  *
- * @param <T> annotation
+ * @param clazz class
+ * @param <T>   annotation type
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public record AnnotatedClass<T extends Annotation>(Class clazz, T annotation) implements Serializable {

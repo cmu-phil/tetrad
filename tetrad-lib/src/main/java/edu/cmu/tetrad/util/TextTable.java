@@ -54,6 +54,10 @@ public class TextTable {
      * The number of spaces between columns. By default, 2.
      */
     private int columnSpacing = 2;
+
+    /**
+     * The delimiter to use when printing the table.
+     */
     private Delimiter delimiter = Delimiter.JUSTIFIED;
 
     /**
@@ -248,7 +252,17 @@ public class TextTable {
         this.delimiter = delimiter;
     }
 
-    public enum Delimiter {JUSTIFIED, COMMA, TAB, SPACE}
+    /** An enum of delimiters. */
+    public enum Delimiter {
+        /** Constant <code>JUSTIFIED</code> */
+        JUSTIFIED,
+        /** Constant <code>COMMA</code> */
+        COMMA,
+        /** Constant <code>TAB</code> */
+        TAB,
+        /** Constant <code>SPACE</code> */
+        SPACE}
+
 }
 
 

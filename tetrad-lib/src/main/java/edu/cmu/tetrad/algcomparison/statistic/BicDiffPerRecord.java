@@ -20,6 +20,10 @@ import static org.apache.commons.math3.util.FastMath.tanh;
 public class BicDiffPerRecord implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * Whether to precompute covariances.
+     */
     private boolean precomputeCovariances = true;
 
     /**

@@ -35,7 +35,6 @@ import java.util.List;
  * @version $Id: $Id
  */
 public interface VariableSource extends TetradSerializable {
-    long serialVersionUID = 23L;
 
     /**
      * Returns the list of variables associated with this object.

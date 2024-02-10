@@ -38,7 +38,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @version $Id: $Id
  */
 public interface UpdateFunction extends TetradSerializable {
-    long serialVersionUID = 23L;
+
 
     /**
      * <p>getIndexedLagGraph.</p>
