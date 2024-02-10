@@ -50,8 +50,8 @@ import java.util.zip.ZipOutputStream;
  * later "stable" versions of Tetrad.
  *
  * @author josephramsey
- * @see #safelySerializableTypes
  * @version $Id: $Id
+ * @see #safelySerializableTypes
  */
 public class TetradSerializableUtils {
 
@@ -94,8 +94,8 @@ public class TetradSerializableUtils {
      * before calling test methods.
      *
      * @param serializableScope a {@link java.lang.String} object
-     * @param currentDirectory a {@link java.lang.String} object
-     * @param archiveDirectory a {@link java.lang.String} object
+     * @param currentDirectory  a {@link java.lang.String} object
+     * @param archiveDirectory  a {@link java.lang.String} object
      */
     public TetradSerializableUtils(String serializableScope,
                                    String currentDirectory, String archiveDirectory) {
@@ -212,8 +212,8 @@ public class TetradSerializableUtils {
      * point is to make sure that instances serialized out with earlier versions load with the currentDirectory
      * version.
      *
-     * @throws java.lang.RuntimeException if clazz cannot be serialized. This exception has an informative message and wraps the
-     *                          originally thrown exception as root cause.
+     * @throws java.lang.RuntimeException if clazz cannot be serialized. This exception has an informative message and
+     *                                    wraps the originally thrown exception as root cause.
      */
     public void serializeCurrentDirectory() throws RuntimeException {
         clearCurrentDirectory();
@@ -426,8 +426,8 @@ public class TetradSerializableUtils {
     /**
      * Deserializes all files in the given directory, as a test to make sure they can all be deserialized.
      *
-     * @throws java.lang.RuntimeException if clazz cannot be serialized. This exception has an informative message and wraps the
-     *                          originally thrown exception as root cause.
+     * @throws java.lang.RuntimeException if clazz cannot be serialized. This exception has an informative message and
+     *                                    wraps the originally thrown exception as root cause.
      */
     public void deserializeCurrentDirectory() throws RuntimeException {
         System.out.println("Deserializing files in " + getCurrentDirectory());
@@ -483,8 +483,8 @@ public class TetradSerializableUtils {
      * Creates a zip archive of the currently serialized files in getCurrentDirectory(), placing the archive in
      * getArchiveDirectory().
      *
-     * @throws java.lang.RuntimeException if clazz cannot be serialized. This exception has an informative message and wraps the
-     *                          originally thrown exception as root cause.
+     * @throws java.lang.RuntimeException if clazz cannot be serialized. This exception has an informative message and
+     *                                    wraps the originally thrown exception as root cause.
      * @see #getCurrentDirectory()
      * @see #getArchiveDirectory()
      */
@@ -568,8 +568,8 @@ public class TetradSerializableUtils {
     /**
      * Deserializes examplars stored in archives in getArchiveDirectory().
      *
-     * @throws java.lang.RuntimeException if clazz cannot be serialized. This exception has an informative message and wraps the
-     *                          originally thrown exception as root cause.
+     * @throws java.lang.RuntimeException if clazz cannot be serialized. This exception has an informative message and
+     *                                    wraps the originally thrown exception as root cause.
      * @see #getArchiveDirectory()
      */
     public void deserializeArchivedVersions() throws RuntimeException {

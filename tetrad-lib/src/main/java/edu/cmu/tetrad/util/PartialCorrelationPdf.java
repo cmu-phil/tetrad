@@ -96,7 +96,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Calculates the value of the function at the given domain point.
      */
     public double valueAt(double x) {

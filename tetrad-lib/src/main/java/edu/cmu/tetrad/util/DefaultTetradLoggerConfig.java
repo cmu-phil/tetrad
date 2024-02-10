@@ -96,7 +96,9 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
     //=========================== public methods ================================//
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isEventActive(String id) {
         return active.contains(id);
     }
@@ -119,7 +121,9 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
         return Collections.unmodifiableList(events);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setEventActive(String id, boolean active) {
         if (!this.contains(id)) {
             throw new IllegalArgumentException("There is no event known under the given id: " + id);

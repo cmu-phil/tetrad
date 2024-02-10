@@ -149,7 +149,7 @@ public final class ParamDescriptions {
     /**
      * <p>put.</p>
      *
-     * @param name a {@link java.lang.String} object
+     * @param name             a {@link java.lang.String} object
      * @param paramDescription a {@link edu.cmu.tetrad.util.ParamDescription} object
      */
     public void put(String name, ParamDescription paramDescription) {

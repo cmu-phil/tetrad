@@ -98,9 +98,11 @@ public class PointXy implements TetradSerializable {
         return this.y;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
-        if (!(o instanceof PointXy)) {
+        if (!(o instanceof PointXy c)) {
             throw new IllegalArgumentException("Not a Point object.");
         }
 
@@ -108,7 +110,6 @@ public class PointXy implements TetradSerializable {
             return true;
         }
 
-        PointXy c = (PointXy) o;
         return c.x == this.x && c.y == this.y;
     }
 

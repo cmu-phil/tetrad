@@ -65,7 +65,9 @@ public class GaussianPower implements Distribution {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.power = value;
@@ -74,7 +76,9 @@ public class GaussianPower implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.sd;
@@ -85,7 +89,9 @@ public class GaussianPower implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Standard Deviation";

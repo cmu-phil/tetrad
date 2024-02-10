@@ -71,7 +71,9 @@ public class Exponential implements Distribution {
         return "Exponential";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.lambda = value;
@@ -80,7 +82,9 @@ public class Exponential implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.lambda;
@@ -89,7 +93,9 @@ public class Exponential implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Lambda";

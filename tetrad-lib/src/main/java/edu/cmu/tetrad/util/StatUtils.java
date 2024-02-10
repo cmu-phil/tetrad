@@ -1528,7 +1528,7 @@ public final class StatUtils {
      * <p>standardizedFifthMoment.</p>
      *
      * @param array an array of {@link double} objects
-     * @param N a int
+     * @param N     a int
      * @return a double
      */
     public static double standardizedFifthMoment(double[] array, int N) {
@@ -1565,7 +1565,7 @@ public final class StatUtils {
      * <p>standardizedSixthMoment.</p>
      *
      * @param array an array of {@link double} objects
-     * @param N a int
+     * @param N     a int
      * @return a double
      */
     public static double standardizedSixthMoment(double[] array, int N) {
@@ -1741,9 +1741,9 @@ public final class StatUtils {
     /**
      * Calculates the one-tail probability of the Chi-squared distribution for doubles
      *
-     * @return value of Chi at x with the stated degrees of freedom.
-     * @param x a double
+     * @param x                a double
      * @param degreesOfFreedom a int
+     * @return value of Chi at x with the stated degrees of freedom.
      */
     public static double chidist(double x, int degreesOfFreedom) {
         if ((x < 0.0) || (degreesOfFreedom < 0)) {
@@ -1755,6 +1755,7 @@ public final class StatUtils {
     }
 
     //returns the value of a toss of an n-sided die
+
     /**
      * <p>dieToss.</p>
      *
@@ -1778,9 +1779,9 @@ public final class StatUtils {
      *                             yes, false if no). If they are uncorrelated, or positively correlated, a level of
      *                             alpha is used; if they are not correlated, a level of alpha / SUM_i=1_n(1 / i) is
      *                             used.
+     * @param pSorted              a boolean
      * @return the FDR alpha, which is the first p-value sorted high to low to fall below a line from (1.0, level) to
      * (0.0, 0.0). Hypotheses less than or equal to this p-value should be rejected.
-     * @param pSorted a boolean
      */
     public static double fdrCutoff(double alpha, List<Double> pValues, boolean negativelyCorrelated, boolean pSorted) {
         return StatUtils.fdrCutoff(alpha, pValues, new int[1], negativelyCorrelated, pSorted);
@@ -1789,8 +1790,8 @@ public final class StatUtils {
     /**
      * <p>fdrCutoff.</p>
      *
-     * @param alpha a double
-     * @param pValues a {@link java.util.List} object
+     * @param alpha                a double
+     * @param pValues              a {@link java.util.List} object
      * @param negativelyCorrelated a boolean
      * @return a double
      */
@@ -1801,11 +1802,11 @@ public final class StatUtils {
     /**
      * <p>fdrCutoff.</p>
      *
-     * @param alpha a double
-     * @param pValues a {@link java.util.List} object
-     * @param _k an array of {@link int} objects
+     * @param alpha                a double
+     * @param pValues              a {@link java.util.List} object
+     * @param _k                   an array of {@link int} objects
      * @param negativelyCorrelated a boolean
-     * @param pSorted a boolean
+     * @param pSorted              a boolean
      * @return a double
      */
     public static double fdrCutoff(double alpha, List<Double> pValues, int[] _k, boolean negativelyCorrelated, boolean pSorted) {
@@ -1825,10 +1826,10 @@ public final class StatUtils {
     /**
      * <p>fdr.</p>
      *
+     * @param alpha   a double
+     * @param pValues a {@link java.util.List} object
      * @return the index, &gt;=, in the sorted list of p values of which all p values are rejected. It the index is -1,
      * all p values are rejected.
-     * @param alpha a double
-     * @param pValues a {@link java.util.List} object
      */
     public static int fdr(double alpha, List<Double> pValues) {
         return StatUtils.fdr(alpha, pValues, true, false);
@@ -1837,10 +1838,10 @@ public final class StatUtils {
     /**
      * <p>fdr.</p>
      *
-     * @param alpha a double
-     * @param pValues a {@link java.util.List} object
+     * @param alpha                a double
+     * @param pValues              a {@link java.util.List} object
      * @param negativelyCorrelated a boolean
-     * @param pSorted a boolean
+     * @param pSorted              a boolean
      * @return a int
      */
     public static int fdr(double alpha, List<Double> pValues, boolean negativelyCorrelated, boolean pSorted) {
@@ -1891,7 +1892,7 @@ public final class StatUtils {
      * <p>fdrQ.</p>
      *
      * @param pValues a {@link java.util.List} object
-     * @param k a int
+     * @param k       a int
      * @return a double
      */
     public static double fdrQ(List<Double> pValues, int k) {
@@ -1925,8 +1926,8 @@ public final class StatUtils {
      * direction) is X, Y, Z1, ..., Zn, where the partial covariance one wants is covariance(X, Y | Z1,...,Zn). This may
      * be extracted using DataUtils.submatrix().
      *
-     * @return the given partial covariance.
      * @param submatrix a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return the given partial covariance.
      */
     public static double partialCovarianceWhittaker(Matrix submatrix) {
 
@@ -1953,12 +1954,12 @@ public final class StatUtils {
     /**
      * <p>partialCovarianceWhittaker.</p>
      *
+     * @param covariance a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param x          a int
+     * @param y          a int
+     * @param z          a int
      * @return the partial covariance(x, y | z) where these represent the column/row indices of the desired variables in
      * <code>covariance</code>
-     * @param covariance a {@link edu.cmu.tetrad.util.Matrix} object
-     * @param x a int
-     * @param y a int
-     * @param z a int
      */
     public static double partialCovarianceWhittaker(Matrix covariance, int x, int y, int... z) {
 //        submatrix = TetradAlgebra.in                                                                                                                                 verse(submatrix);
@@ -1981,8 +1982,8 @@ public final class StatUtils {
      * <p>partialVariance.</p>
      *
      * @param covariance a {@link edu.cmu.tetrad.util.Matrix} object
-     * @param x a int
-     * @param z a int
+     * @param x          a int
+     * @param z          a int
      * @return a double
      */
     public static double partialVariance(Matrix covariance, int x, int... z) {
@@ -1993,8 +1994,8 @@ public final class StatUtils {
      * <p>partialStandardDeviation.</p>
      *
      * @param covariance a {@link edu.cmu.tetrad.util.Matrix} object
-     * @param x a int
-     * @param z a int
+     * @param x          a int
+     * @param z          a int
      * @return a double
      */
     public static double partialStandardDeviation(Matrix covariance, int x, int... z) {
@@ -2007,8 +2008,8 @@ public final class StatUtils {
      * direction) is X, Y, Z1, ..., Zn, where the partial correlation one wants is correlation(X, Y | Z1,...,Zn). This
      * may be extracted using DataUtils.submatrix().
      *
-     * @return the given partial correlation.
      * @param submatrix a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return the given partial correlation.
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
     public static synchronized double partialCorrelation(Matrix submatrix) throws SingularMatrixException {
@@ -2034,12 +2035,12 @@ public final class StatUtils {
     /**
      * <p>partialCorrelation.</p>
      *
+     * @param covariance a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param x          a int
+     * @param y          a int
+     * @param z          a int
      * @return the partial correlation(x, y | z) where these represent the column/row indices of the desired variables
      * in <code>covariance</code>
-     * @param covariance a {@link edu.cmu.tetrad.util.Matrix} object
-     * @param x a int
-     * @param y a int
-     * @param z a int
      */
     public static double partialCorrelation(Matrix covariance, int x, int y, int... z) {
         if (x > covariance.getNumRows()) throw new IllegalArgumentException();
@@ -2144,7 +2145,7 @@ public final class StatUtils {
      * <p>entropy.</p>
      *
      * @param numBins a int
-     * @param _f an array of {@link double} objects
+     * @param _f      an array of {@link double} objects
      * @return a double
      */
     public static double entropy(int numBins, double[] _f) {
@@ -2274,6 +2275,7 @@ public final class StatUtils {
     }
 
     // Calculates the log of a list of terms, where the argument consists of the logs of the terms.
+
     /**
      * <p>logsum.</p>
      *
@@ -2312,8 +2314,8 @@ public final class StatUtils {
     /**
      * <p>cov.</p>
      *
-     * @param x an array of {@link double} objects
-     * @param y an array of {@link double} objects
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
      * @param condition an array of {@link double} objects
      * @param threshold a double
      * @param direction a double
@@ -2367,9 +2369,9 @@ public final class StatUtils {
     /**
      * <p>covMatrix.</p>
      *
-     * @param x an array of {@link double} objects
-     * @param y an array of {@link double} objects
-     * @param z an array of {@link double} objects
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
+     * @param z         an array of {@link double} objects
      * @param condition an array of {@link double} objects
      * @param threshold a double
      * @param direction a double
@@ -2414,7 +2416,7 @@ public final class StatUtils {
     /**
      * <p>getRows.</p>
      *
-     * @param x an array of {@link double} objects
+     * @param x         an array of {@link double} objects
      * @param threshold a double
      * @param direction a double
      * @return a {@link java.util.List} object
@@ -2444,7 +2446,7 @@ public final class StatUtils {
     /**
      * <p>getRows.</p>
      *
-     * @param x an array of {@link double} objects
+     * @param x         an array of {@link double} objects
      * @param condition an array of {@link double} objects
      * @param threshold a double
      * @param direction a double
@@ -2470,8 +2472,8 @@ public final class StatUtils {
     /**
      * <p>E.</p>
      *
-     * @param x an array of {@link double} objects
-     * @param y an array of {@link double} objects
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
      * @param condition an array of {@link double} objects
      * @param threshold a double
      * @param direction a double

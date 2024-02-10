@@ -195,9 +195,9 @@ public class RandomUtil {
      *
      * @param mean The mean of the Normal.
      * @param sd   The standard deviation of the Normal.
-     * @return Ibid.
-     * @param low a double
+     * @param low  a double
      * @param high a double
+     * @return Ibid.
      */
     public double nextTruncatedNormal(double mean, double sd, double low, double high) {
         if (sd < 0) {
@@ -295,9 +295,9 @@ public class RandomUtil {
     /**
      * <p>nextGumbel.</p>
      *
-     * @return Ibid.
-     * @param mu a double
+     * @param mu   a double
      * @param beta a double
+     * @return Ibid.
      */
     public double nextGumbel(double mu, double beta) {
         return new GumbelDistribution(this.randomGenerator, mu, beta).sample();

@@ -48,6 +48,7 @@ public class Parameters implements TetradSerializable {
     }
 
     // Includes all of the given parameters setting with the current parameter settings.
+
     /**
      * <p>putAll.</p>
      *
@@ -64,7 +65,7 @@ public class Parameters implements TetradSerializable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a list of the parameters whose values were actually used in the course of the simulation.
      */
     @Override
@@ -141,9 +142,9 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the integer value of the given parameter, looking up its default in the ParamDescriptions map.
      *
-     * @param name The name of the parameter.
-     * @return The integer value of this parameter.
+     * @param name         The name of the parameter.
      * @param defaultValue a int
+     * @return The integer value of this parameter.
      */
     public int getInt(String name, int defaultValue) {
         return ((Number) get(name, defaultValue)).intValue();
@@ -152,9 +153,9 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the long value of the given parameter, looking up its default in the ParamDescriptions map.
      *
-     * @param name The name of the parameter.
-     * @return The long value of this parameter.
+     * @param name         The name of the parameter.
      * @param defaultValue a long
+     * @return The long value of this parameter.
      */
     public long getLong(String name, long defaultValue) {
         return ((Number) get(name, defaultValue)).longValue();
@@ -163,9 +164,9 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the boolean value of the given parameter, using the given default.
      *
-     * @param name The name of the parameter.
-     * @return The boolean value of this parameter.
+     * @param name         The name of the parameter.
      * @param defaultValue a boolean
+     * @return The boolean value of this parameter.
      */
     public boolean getBoolean(String name, boolean defaultValue) {
         Object b = get(name, defaultValue);
@@ -180,9 +181,9 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the object value of the given parameter, using the given default.
      *
-     * @param name The name of the parameter.
-     * @return The double value of this parameter.
+     * @param name         The name of the parameter.
      * @param defaultValue a double
+     * @return The double value of this parameter.
      */
     public double getDouble(String name, double defaultValue) {
         return ((Number) get(name, defaultValue)).doubleValue();
@@ -191,9 +192,9 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the string value of the given parameter, using the given default.
      *
-     * @param name The name of the parameter.
-     * @return The string value of this parameter.
+     * @param name         The name of the parameter.
      * @param defaultValue a {@link java.lang.String} object
+     * @return The string value of this parameter.
      */
     public String getString(String name, String defaultValue) {
         return String.valueOf(get(name, defaultValue));
@@ -202,9 +203,9 @@ public class Parameters implements TetradSerializable {
     /**
      * Returns the object value of the given parameter, using the given default.
      *
-     * @param name The name of the parameter.
-     * @return The object value of this parameter.
+     * @param name         The name of the parameter.
      * @param defaultValue a {@link java.lang.Object} object
+     * @return The object value of this parameter.
      */
     public Object get(String name, Object defaultValue) {
         if (this.overriddenParameters.containsKey(name)) {

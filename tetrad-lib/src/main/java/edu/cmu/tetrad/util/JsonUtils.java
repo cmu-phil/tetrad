@@ -114,7 +114,7 @@ public class JsonUtils {
     /**
      * <p>parseJSONArrayToTetradEdges.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param jArray a {@link org.json.JSONArray} object
      * @return a {@link java.util.Set} object
      */
@@ -133,7 +133,7 @@ public class JsonUtils {
      * <p>parseJSONObjectToTetradEdge.</p>
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param jObj a {@link org.json.JSONObject} object
+     * @param jObj  a {@link org.json.JSONObject} object
      * @return a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public static Edge parseJSONObjectToTetradEdge(Graph graph, JSONObject jObj) {

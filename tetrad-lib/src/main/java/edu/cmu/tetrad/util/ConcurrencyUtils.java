@@ -14,7 +14,7 @@ public class ConcurrencyUtils {
     /**
      * <p>runCallables.</p>
      *
-     * @param tasks a {@link java.util.List} object
+     * @param tasks        a {@link java.util.List} object
      * @param parallelized a boolean
      */
     public static void runCallables(List<Callable<Boolean>> tasks, boolean parallelized) {

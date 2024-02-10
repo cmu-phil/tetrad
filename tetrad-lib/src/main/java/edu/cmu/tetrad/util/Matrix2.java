@@ -55,9 +55,9 @@ public class Matrix2 implements TetradSerializable {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
             if (m * n <= 4096) {
-                apacheData = (RealMatrix) new Array2DRowRealMatrix(data);
+                apacheData = new Array2DRowRealMatrix(data);
             } else {
-                apacheData = (RealMatrix) new BlockRealMatrix(data);
+                apacheData = new BlockRealMatrix(data);
             }
         }
     }
@@ -85,9 +85,9 @@ public class Matrix2 implements TetradSerializable {
             this.apacheData = new Array2DRowRealMatrix();
         } else {
             if (m * n <= 4096) {
-                apacheData = (RealMatrix) new Array2DRowRealMatrix(m, n);
+                apacheData = new Array2DRowRealMatrix(m, n);
             } else {
-                apacheData = (RealMatrix) new BlockRealMatrix(m, n);
+                apacheData = new BlockRealMatrix(m, n);
             }
         }
 

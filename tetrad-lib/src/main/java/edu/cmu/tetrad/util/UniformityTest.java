@@ -34,8 +34,8 @@ public class UniformityTest {
      * <p>getPValue.</p>
      *
      * @param points a {@link java.util.List} object
-     * @param min a double
-     * @param max a double
+     * @param min    a double
+     * @param max    a double
      * @return a double
      */
     public static double getPValue(List<Double> points, double min, double max) {

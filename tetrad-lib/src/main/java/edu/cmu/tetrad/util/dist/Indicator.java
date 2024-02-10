@@ -69,7 +69,9 @@ public class Indicator implements Distribution {
         return "Indicator";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.p = value;
@@ -78,7 +80,9 @@ public class Indicator implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.p;
@@ -87,7 +91,9 @@ public class Indicator implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Cutuff";

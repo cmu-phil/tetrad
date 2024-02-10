@@ -135,7 +135,9 @@ public class Split implements Distribution {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0 && value < this.b) {
             this.a = value;
@@ -146,7 +148,9 @@ public class Split implements Distribution {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.a;
@@ -157,7 +161,9 @@ public class Split implements Distribution {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Lower bound (> 0)";

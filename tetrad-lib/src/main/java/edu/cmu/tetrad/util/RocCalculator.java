@@ -34,7 +34,9 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class RocCalculator {
-    /** Constant <code>ASCENDING=0</code> */
+    /**
+     * Constant <code>ASCENDING=0</code>
+     */
     public static final int ASCENDING = 0;
     private static final int DESCENDING = 1;
 

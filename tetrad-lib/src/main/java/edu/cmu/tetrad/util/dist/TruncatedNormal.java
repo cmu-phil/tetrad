@@ -95,7 +95,9 @@ public class TruncatedNormal implements Distribution {
         return "TruncNormal";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.mean = value;
@@ -111,7 +113,9 @@ public class TruncatedNormal implements Distribution {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.mean;
@@ -122,7 +126,9 @@ public class TruncatedNormal implements Distribution {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Mean";

@@ -316,8 +316,8 @@ public class ProbUtils {
      * one.  It was created by cutting and pasting from the PDF version of the book and then converting C syntax to
      * Java. The static double array above goes with this. Converted to Java by Frank Wimberly
      *
-     * @return the value ln[?(xx)] for xx &gt; 0
      * @param xx a double
+     * @return the value ln[?(xx)] for xx &gt; 0
      */
     public static double lngamma(double xx) {
         //Returns the value ln[?(xx)] for xx > 0.
@@ -572,7 +572,7 @@ public class ProbUtils {
     /**
      * F CDF.
      *
-     * @param x a double
+     * @param x   a double
      * @param df1 a double
      * @param df2 a double
      * @return a double
@@ -697,7 +697,7 @@ public class ProbUtils {
     /**
      * <p>chisqCdf.</p>
      *
-     * @param x a double
+     * @param x  a double
      * @param df a double
      * @return a double
      */
@@ -735,7 +735,7 @@ public class ProbUtils {
     /**
      * CACM Algorithm 395, by G. W. Hill
      *
-     * @param x a double
+     * @param x  a double
      * @param df a double
      * @return a double
      */
@@ -837,8 +837,8 @@ public class ProbUtils {
      * <p>betaQuantile.</p>
      *
      * @param alpha a double
-     * @param p a double
-     * @param q a double
+     * @param p     a double
+     * @param q     a double
      * @return a double
      */
     @SuppressWarnings({"SameParameterValue", "WeakerAccess"})
@@ -1215,7 +1215,7 @@ public class ProbUtils {
     /**
      * <p>fQuantile.</p>
      *
-     * @param p a double
+     * @param p   a double
      * @param df1 a double
      * @param df2 a double
      * @return a double
@@ -1351,7 +1351,7 @@ public class ProbUtils {
      * CACM Algorithm 396, by G. W. Hill
      *
      * @param pp a double
-     * @param n a double
+     * @param n  a double
      * @return a double
      */
     public static double tQuantile(double pp, double n) {
@@ -1530,7 +1530,7 @@ public class ProbUtils {
     /**
      * <p>poissonPmf.</p>
      *
-     * @param k a int
+     * @param k      a int
      * @param lambda a double
      * @return a double
      */
@@ -1644,7 +1644,7 @@ public class ProbUtils {
     /**
      * Binomial random generator from Numerical Recipes
      *
-     * @param n a int
+     * @param n  a int
      * @param pp a double
      * @return a int
      */
@@ -1906,7 +1906,7 @@ public class ProbUtils {
      * @param ah upper bound 1
      * @param ak upper bound 1
      * @param r  correlatiohn
-     * @return Prob(x1 &amp; le ; ah, x2 &amp; le ; ak)
+     * @return Prob(x1 & amp ; le ; ah, x2 & amp ; le ; ak)
      */
     public static double biNormalCdf(double ah, double ak, double r) {
         return ProbUtils.biNormalCdf2(-ah, -ak, r);
@@ -2072,8 +2072,8 @@ public class ProbUtils {
      * (1992), pp. 141-149. http://www.math.wsu.edu/faculty/genz/homepage Warning: this method has the side effect of
      * changing the order of the elements in the arrays given as input. --November 3st 2003, Ricardo Silva
      *
-     * @param a lower bounds (use Double.NEGATIVE_INFINITY if necessary)
-     * @param b upper bounds (use Double.POSITIVE_INFINITY if necessary)
+     * @param a   lower bounds (use Double.NEGATIVE_INFINITY if necessary)
+     * @param b   upper bounds (use Double.POSITIVE_INFINITY if necessary)
      * @param cov an array of {@link double} objects
      * @return a double
      */

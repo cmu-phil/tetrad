@@ -131,10 +131,10 @@ public final class MultidataUtils {
     /**
      * <p>combineMixedDiscreteData.</p>
      *
-     * @param dataModels a {@link java.util.List} object
-     * @param variables a {@link java.util.List} object
+     * @param dataModels   a {@link java.util.List} object
+     * @param variables    a {@link java.util.List} object
      * @param combinedData an array of {@link int} objects
-     * @param numOfRows a int
+     * @param numOfRows    a int
      * @param numOfColumns a int
      */
     public static void combineMixedDiscreteData(List<DataModel> dataModels, List<Node> variables, int[][] combinedData, int numOfRows, int numOfColumns) {
@@ -189,10 +189,10 @@ public final class MultidataUtils {
     /**
      * <p>combineMixedContinuousData.</p>
      *
-     * @param dataModels a {@link java.util.List} object
-     * @param variables a {@link java.util.List} object
+     * @param dataModels   a {@link java.util.List} object
+     * @param variables    a {@link java.util.List} object
      * @param combinedData an array of {@link double} objects
-     * @param numOfRows a int
+     * @param numOfRows    a int
      * @param numOfColumns a int
      */
     public static void combineMixedContinuousData(List<DataModel> dataModels, List<Node> variables, double[][] combinedData, int numOfRows, int numOfColumns) {
@@ -206,10 +206,10 @@ public final class MultidataUtils {
     /**
      * <p>combineDiscreteDataToDiscreteVerticalData.</p>
      *
-     * @param dataModels a {@link java.util.List} object
-     * @param variables a {@link java.util.List} object
+     * @param dataModels   a {@link java.util.List} object
+     * @param variables    a {@link java.util.List} object
      * @param combinedData an array of {@link int} objects
-     * @param numOfRows a int
+     * @param numOfRows    a int
      * @param numOfColumns a int
      */
     public static void combineDiscreteDataToDiscreteVerticalData(List<DataModel> dataModels, List<Node> variables, int[][] combinedData, int numOfRows, int numOfColumns) {
@@ -242,7 +242,7 @@ public final class MultidataUtils {
     /**
      * <p>combineContinuousData.</p>
      *
-     * @param dataModels a {@link java.util.List} object
+     * @param dataModels   a {@link java.util.List} object
      * @param combinedData an array of {@link double} objects
      */
     public static void combineContinuousData(List<DataModel> dataModels, double[][] combinedData) {

@@ -62,7 +62,7 @@ public interface TetradLoggerConfig extends TetradSerializable {
     /**
      * Sets whether the event associated with the given id is active or not.
      *
-     * @param id a {@link java.lang.String} object
+     * @param id     a {@link java.lang.String} object
      * @param active a boolean
      */
     void setEventActive(String id, boolean active);

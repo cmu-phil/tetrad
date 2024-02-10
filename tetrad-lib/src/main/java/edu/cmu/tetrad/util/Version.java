@@ -264,11 +264,9 @@ public class Version implements TetradSerializable {
             return true;
         }
 
-        if (!(o instanceof Version)) {
+        if (!(o instanceof Version other)) {
             return false;
         }
-
-        Version other = (Version) o;
 
         if (!(this.majorVersion == other.majorVersion)) {
             return false;

@@ -59,7 +59,7 @@ public class TextTable {
     /**
      * Construct the text table; the table has a fixed number of rows and columns, each greater than zero.
      *
-     * @param rows a int
+     * @param rows    a int
      * @param columns a int
      */
     public TextTable(int rows, int columns) {
@@ -82,9 +82,9 @@ public class TextTable {
      * Sets the token at the given row and column, each of which must be &gt;= 0 and less than the number of rows or
      * columns, respectively.
      *
-     * @param row a int
+     * @param row    a int
      * @param column a int
-     * @param token a {@link java.lang.String} object
+     * @param token  a {@link java.lang.String} object
      */
     public void setToken(int row, int column, String token) {
         if (token == null) {
@@ -105,9 +105,9 @@ public class TextTable {
     /**
      * <p>getTokenAt.</p>
      *
-     * @return the token at the given row and column.
-     * @param row a int
+     * @param row    a int
      * @param column a int
+     * @return the token at the given row and column.
      */
     public String getTokenAt(int row, int column) {
         return this.tokens[row][column];

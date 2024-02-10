@@ -59,7 +59,9 @@ public class ChiSquare implements Distribution {
         return new ChiSquare();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0 && value >= 0.0) {
             this.df = value;
@@ -68,7 +70,9 @@ public class ChiSquare implements Distribution {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.df;
@@ -77,7 +81,9 @@ public class ChiSquare implements Distribution {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "DF";

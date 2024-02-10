@@ -40,7 +40,7 @@ public final class GraphSampling {
     /**
      * Create a graph for displaying and print out.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph    a {@link edu.cmu.tetrad.graph.Graph} object
      * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
@@ -75,7 +75,7 @@ public final class GraphSampling {
     /**
      * <p>createGraphWithHighProbabilityEdges.</p>
      *
-     * @param graphs a {@link java.util.List} object
+     * @param graphs   a {@link java.util.List} object
      * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */

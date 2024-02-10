@@ -71,7 +71,7 @@ public class Beta implements Distribution {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * The order of parameters is alpha = 0, beta = 1.
      */
     public void setParameter(int index, double value) {
@@ -86,7 +86,7 @@ public class Beta implements Distribution {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * The order of parameters is alpha = 0, beta = 1.
      */
     public double getParameter(int index) {
@@ -101,7 +101,7 @@ public class Beta implements Distribution {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * The order of parameters is alpha = 0, beta = 1.
      */
     public String getParameterName(int index) {

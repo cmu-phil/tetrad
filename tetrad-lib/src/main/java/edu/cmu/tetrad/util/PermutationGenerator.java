@@ -37,7 +37,7 @@ import java.util.LinkedList;
  * @author josephramsey
  * @version $Id: $Id
  */
-public final class  PermutationGenerator {
+public final class PermutationGenerator {
 
     /**
      * The number of objects being permuted.

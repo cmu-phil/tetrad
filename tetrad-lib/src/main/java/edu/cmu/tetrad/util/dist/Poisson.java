@@ -66,7 +66,9 @@ public class Poisson implements Distribution {
         return "Distibution";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.mean = value;
@@ -75,7 +77,9 @@ public class Poisson implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.mean;
@@ -84,7 +88,9 @@ public class Poisson implements Distribution {
         throw new IllegalArgumentException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Mean";

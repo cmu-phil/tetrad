@@ -225,13 +225,13 @@ public class Vector implements TetradSerializable {
         return new Vector(_selection);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == this) return true;
 
-        if (!(o instanceof Vector)) return false;
-
-        Vector v = (Vector) o;
+        if (!(o instanceof Vector v)) return false;
 
         return MatrixUtils.equals(v.toArray(), this.toArray());
     }

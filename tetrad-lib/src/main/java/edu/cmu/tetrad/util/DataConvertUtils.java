@@ -49,7 +49,7 @@ public class DataConvertUtils {
     /**
      * <p>toDataModel.</p>
      *
-     * @param data a {@link edu.pitt.dbmi.data.reader.Data} object
+     * @param data     a {@link edu.pitt.dbmi.data.reader.Data} object
      * @param metadata a {@link edu.pitt.dbmi.data.reader.metadata.Metadata} object
      * @return a {@link edu.cmu.tetrad.data.DataModel} object
      */
@@ -104,7 +104,7 @@ public class DataConvertUtils {
     /**
      * Converting using metadata
      *
-     * @param dataset a {@link edu.pitt.dbmi.data.reader.tabular.MixedTabularData} object
+     * @param dataset  a {@link edu.pitt.dbmi.data.reader.tabular.MixedTabularData} object
      * @param metadata a {@link edu.pitt.dbmi.data.reader.metadata.Metadata} object
      * @return a {@link edu.cmu.tetrad.data.DataModel} object
      */
@@ -160,7 +160,7 @@ public class DataConvertUtils {
     /**
      * Converting using metadata
      *
-     * @param dataset a {@link edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularData} object
+     * @param dataset   a {@link edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularData} object
      * @param metatdata a {@link edu.pitt.dbmi.data.reader.metadata.Metadata} object
      * @return a {@link edu.cmu.tetrad.data.DataModel} object
      */

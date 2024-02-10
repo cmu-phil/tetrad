@@ -56,7 +56,7 @@ public class Normal implements Distribution {
      * <p>Constructor for Normal.</p>
      *
      * @param mean a double
-     * @param sd a double
+     * @param sd   a double
      */
     public Normal(double mean, double sd) {
         setParameter(0, mean);
@@ -82,7 +82,9 @@ public class Normal implements Distribution {
         return "N";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.mean = value;
@@ -94,7 +96,9 @@ public class Normal implements Distribution {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.mean;
@@ -105,7 +109,9 @@ public class Normal implements Distribution {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Mean";

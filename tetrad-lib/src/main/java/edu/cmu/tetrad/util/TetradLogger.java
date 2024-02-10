@@ -200,7 +200,7 @@ public class TetradLogger {
      * Adds the given <code>TetradLoggerConfig</code> to the logger, so that it can be used throughout the life of the
      * application.
      *
-     * @param model a {@link java.lang.Class} object
+     * @param model  a {@link java.lang.Class} object
      * @param config a {@link edu.cmu.tetrad.util.TetradLoggerConfig} object
      */
     public void addTetradLoggerConfig(Class model, TetradLoggerConfig config) {
@@ -269,8 +269,7 @@ public class TetradLogger {
             }
         }
         for (OutputStream stream : this.writers.keySet()) {
-            if (stream instanceof LogDisplayOutputStream) {
-                LogDisplayOutputStream logStream = (LogDisplayOutputStream) stream;
+            if (stream instanceof LogDisplayOutputStream logStream) {
                 logStream.moveToEnd();
             }
         }
@@ -391,8 +390,8 @@ public class TetradLogger {
      * Sets the next output stream to use for logging, call <code>removeNextOutputStream</code> to remove it. This will
      * create the next output file in the output directory and form a stream from it and add it to the logger.
      *
-     * @throws java.lang.IllegalStateException - Thrown if there is an error setting the stream, the message will state the nature
-     *                               of the error.
+     * @throws java.lang.IllegalStateException - Thrown if there is an error setting the stream, the message will state
+     *                                         the nature of the error.
      */
     public void setNextOutputStream() {
         if (this.logging && this.isFileLoggingEnabled()) {

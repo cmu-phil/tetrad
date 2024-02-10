@@ -26,10 +26,10 @@ public class ParamDescription {
     /**
      * <p>Constructor for ParamDescription.</p>
      *
-     * @param paramName a {@link java.lang.String} object
+     * @param paramName        a {@link java.lang.String} object
      * @param shortDescription a {@link java.lang.String} object
-     * @param longDescription a {@link java.lang.String} object
-     * @param defaultValue a {@link java.io.Serializable} object
+     * @param longDescription  a {@link java.lang.String} object
+     * @param defaultValue     a {@link java.io.Serializable} object
      */
     public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue) {
         if (paramName == null) {
@@ -53,12 +53,12 @@ public class ParamDescription {
     /**
      * <p>Constructor for ParamDescription.</p>
      *
-     * @param paramName a {@link java.lang.String} object
+     * @param paramName        a {@link java.lang.String} object
      * @param shortDescription a {@link java.lang.String} object
-     * @param longDescription a {@link java.lang.String} object
-     * @param defaultValue a {@link java.io.Serializable} object
-     * @param lowerBound a int
-     * @param upperBound a int
+     * @param longDescription  a {@link java.lang.String} object
+     * @param defaultValue     a {@link java.io.Serializable} object
+     * @param lowerBound       a int
+     * @param upperBound       a int
      */
     public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, int lowerBound, int upperBound) {
         if (paramName == null) {
@@ -84,12 +84,12 @@ public class ParamDescription {
     /**
      * <p>Constructor for ParamDescription.</p>
      *
-     * @param paramName a {@link java.lang.String} object
+     * @param paramName        a {@link java.lang.String} object
      * @param shortDescription a {@link java.lang.String} object
-     * @param longDescription a {@link java.lang.String} object
-     * @param defaultValue a {@link java.io.Serializable} object
-     * @param lowerBound a double
-     * @param upperBound a double
+     * @param longDescription  a {@link java.lang.String} object
+     * @param defaultValue     a {@link java.io.Serializable} object
+     * @param lowerBound       a double
+     * @param upperBound       a double
      */
     public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue, double lowerBound, double upperBound) {
         if (paramName == null) {

@@ -55,7 +55,9 @@ public class SingleValue implements Distribution {
         return new SingleValue(0.5);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.value = value;
@@ -64,7 +66,9 @@ public class SingleValue implements Distribution {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.value;
@@ -73,7 +77,9 @@ public class SingleValue implements Distribution {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Value";
