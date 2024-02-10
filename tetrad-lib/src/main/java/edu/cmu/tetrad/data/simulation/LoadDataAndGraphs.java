@@ -25,13 +25,37 @@ import java.util.Objects;
  */
 public class LoadDataAndGraphs implements Simulation {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The path.
+     */
     private final String path;
+
+    /**
+     * The graphs.
+     */
     private final List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The used parameters.
+     */
     private final List<String> usedParameters = new ArrayList<>();
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The description.
+     */
     private String description = "";
 
+    /**
+     * The stdout.
+     */
     private transient PrintStream stdout = System.out;
 
     /**

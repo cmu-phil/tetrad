@@ -13,6 +13,7 @@ import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,9 +26,16 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath, ParameterValues {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /** The path. */
     private final String path;
+
+    /** The parameter values. */
     private final Map<String, Object> parameterValues = new HashMap<>();
+
+    /** The data set. */
     private DataSet dataSet;
 
     /**

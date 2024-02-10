@@ -12,10 +12,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -27,10 +24,27 @@ import java.util.Objects;
  * @version $Id: $Id
  */
 public class LoadContinuousDataAndGraphs implements Simulation {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The path.
+     */
     private final String path;
+
+    /**
+     * The graphs.
+     */
     private final List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The used parameters.
+     */
     private final List<String> usedParameters = new ArrayList<>();
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
 
     /**

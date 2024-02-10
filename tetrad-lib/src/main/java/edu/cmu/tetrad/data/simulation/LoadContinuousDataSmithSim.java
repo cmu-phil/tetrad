@@ -17,6 +17,7 @@ import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,11 +29,32 @@ import java.util.List;
  */
 @Experimental
 public class LoadContinuousDataSmithSim implements Simulation, HasParameterValues {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The path.
+     */
     private final String path;
+
+    /**
+     * The used parameters.
+     */
     private final List<String> usedParameters = new ArrayList<>();
+
+    /**
+     * The parameters values.
+     */
     private final Parameters parametersValues = new Parameters();
+
+    /**
+     * The graph.
+     */
     private Graph graph;
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
 
     /**
