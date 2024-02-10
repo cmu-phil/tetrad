@@ -43,10 +43,20 @@ class BootstrapWorker extends Thread {
      */
     public static List<BootstrapWorker> runningList = new ArrayList<BootstrapWorker>(); //MP: List of processes that are running
 
-    //MP: Instance variables' declaration'
+    /**
+     * MP: Instance variables' declaration'
+     */
     public DataSet bootstrapSample;
-    public double start_time, end_time;
 
+    /**
+     * MP: Instance variables' declaration'
+     */
+    public double start_time
+
+    /**
+     * MP: Instance variables' declaration'
+     */
+    public double end_time;
 
     /**
      * <p>Constructor for BootstrapWorker.</p>

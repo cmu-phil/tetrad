@@ -31,10 +31,29 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class DataForCalibrationRfci {
+    /**
+     * Constant <code>precomputeCovariances=false</code>
+     */
     private static boolean precomputeCovariances = false;
+
+    /**
+     * Constant <code>depth=5</code>
+     */
     public int depth = 5;
+
+    /**
+     * Constant <code>outProb</code>
+     */
     PrintWriter outProb;
+
+    /**
+     * Constant <code>outGraph</code>
+     */
     private PrintWriter outGraph;
+
+    /**
+     * Constant <code>outPag</code>
+     */
     private PrintWriter outPag;
 
     /**
