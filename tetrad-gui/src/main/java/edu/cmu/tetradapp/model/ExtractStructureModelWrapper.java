@@ -97,10 +97,6 @@ public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotA
     //======================== Private Method ======================//
 
 
-    private static Graph getCPDAG(Dag dag) {
-        return GraphTransforms.cpdagForDag(dag);
-    }
-
     /** {@inheritDoc} */
     @Override
     public boolean allowRandomGraph() {

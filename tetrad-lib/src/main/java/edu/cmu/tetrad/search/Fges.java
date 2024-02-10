@@ -463,7 +463,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
             insert(x, y, arrow.getHOrT(), arrow.getBump());
 
-            Set<Node> process = revertToCPDAG();
+            Set<Node> process = revertToCpdag();
 
             process.add(x);
             process.add(y);
@@ -979,7 +979,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     // Runs Meek rules on just the changed adj.
-    private Set<Node> revertToCPDAG() {
+    private Set<Node> revertToCpdag() {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
         rules.setMeekPreventCycles(true);

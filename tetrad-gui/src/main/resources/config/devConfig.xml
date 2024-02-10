@@ -78,7 +78,7 @@
                     <event id="info" description="Information" default="on"/>
                     <event id="graph" description="Graph" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.DagFromCPDAGWrapper
+                <model-class>edu.cmu.tetradapp.model.DagFromCpdagWrapper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.GraphEditor</editor-class>
             </model>
@@ -109,7 +109,7 @@
                     <event id="info" description="Information" default="on"/>
                     <event id="cpdag" description="CPDAG" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.CPDAGFromDagGraphWrapper
+                <model-class>edu.cmu.tetradapp.model.CpdagFromDagGraphWrapper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.GraphEditor
                 </editor-class>
@@ -1156,7 +1156,7 @@
                    help="Model Fit" category="Simulation-Algorithm Comparisons">
                 <model-class>edu.cmu.tetradapp.model.CpdagFitModel
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.CPDAGFitEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.CpdagFitEditor</editor-class>
             </model>
             <model name="Check Knowledge" acronym="Check Knowledge"
                    help="check_knowledge" category="Graph-Knowledge Comparisons">

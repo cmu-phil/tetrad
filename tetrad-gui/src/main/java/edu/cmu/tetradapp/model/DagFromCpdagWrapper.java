@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @author Tyler Gibson
  * @version $Id: $Id
  */
-public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldModel {
+public class DagFromCpdagWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 
     /**
@@ -43,7 +43,7 @@ public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldMode
      * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public DagFromCPDAGWrapper(GraphSource source, Parameters parameters) {
+    public DagFromCpdagWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
@@ -53,8 +53,8 @@ public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldMode
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public DagFromCPDAGWrapper(Graph graph) {
-        super(DagFromCPDAGWrapper.getGraph(graph), "Choose DAG in CPDAG.");
+    public DagFromCpdagWrapper(Graph graph) {
+        super(DagFromCpdagWrapper.getGraph(graph), "Choose DAG in CPDAG.");
         TetradLogger.getInstance().log("graph", getGraph() + "");
     }
 
@@ -66,10 +66,10 @@ public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldMode
     /**
      * <p>serializableInstance.</p>
      *
-     * @return a {@link edu.cmu.tetradapp.model.DagFromCPDAGWrapper} object
+     * @return a {@link DagFromCpdagWrapper} object
      */
-    public static DagFromCPDAGWrapper serializableInstance() {
-        return new DagFromCPDAGWrapper(EdgeListGraph.serializableInstance());
+    public static DagFromCpdagWrapper serializableInstance() {
+        return new DagFromCpdagWrapper(EdgeListGraph.serializableInstance());
     }
 
     /** {@inheritDoc} */

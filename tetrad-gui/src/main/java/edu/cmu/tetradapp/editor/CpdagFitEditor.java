@@ -38,7 +38,7 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class CPDAGFitEditor extends JPanel {
+public class CpdagFitEditor extends JPanel {
 
     /**
      * The model for the note.
@@ -51,7 +51,7 @@ public class CPDAGFitEditor extends JPanel {
      *
      * @param comparison a {@link CpdagFitModel} object
      */
-    public CPDAGFitEditor(CpdagFitModel comparison) {
+    public CpdagFitEditor(CpdagFitModel comparison) {
         this.comparison = comparison;
         setup();
     }
