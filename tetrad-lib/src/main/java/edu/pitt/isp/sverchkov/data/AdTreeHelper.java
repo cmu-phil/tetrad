@@ -87,13 +87,19 @@ class AdTreeHelper implements Serializable {
      */
     protected class CountNode implements Serializable {
 
-        /** The number of instances in the data set. */
+        /**
+         * The number of instances in the data set.
+         */
         protected final int count;
 
-        /** The children of this node. */
+        /**
+         * The children of this node.
+         */
         protected final VaryNode[] vary;
 
-        /** The attribute of this node. */
+        /**
+         * The attribute of this node.
+         */
         private final int attr;
 
         protected CountNode(int attribute, int[][] array) {
