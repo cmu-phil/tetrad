@@ -59,17 +59,50 @@ import java.util.List;
 // after updating an MlBayesIm.
 /////////////////////////////////////////////////////////////////////
 public class UpdatedBayesImWizardObs extends JPanel {
+
+    /**
+     * The evidence.
+     */
     private final Evidence evidence;
+
+    /**
+     * The workbench.
+     */
     private final GraphWorkbench workbench;
+
+    /**
+     * The updater wrapper.
+     */
     private final UpdaterWrapper updaterWrapper;
+
+    /**
+     * The variable names combo box.
+     */
     private final JComboBox varNamesComboBox;
+
+    /**
+     * The variable names combo box.
+     */
     private final JComboBox varNamesComboBox2;
+
+    /**
+     * The panel that displays the marginal probabilities.
+     */
     private final JPanel marginalsPanel;
+
     /**
      * Last node selected.
      */
     private Node selectedNode;
+
+    /**
+     * The table for editing conditional probabilities.
+     */
     private UpdaterEditingTableObs editingTable;
+
+    /**
+     * The panel that displays the conditional probabilities.
+     */
     private JPanel tablePanel;
 
     public UpdatedBayesImWizardObs(UpdaterWrapper updaterWrapper,

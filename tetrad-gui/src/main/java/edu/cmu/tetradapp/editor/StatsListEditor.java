@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.io.Serial;
 
 import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
 
@@ -21,13 +22,37 @@ import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
  */
 public class StatsListEditor extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 8455624852328328919L;
 
+    /**
+     * The comparison being edited.
+     */
     private final TabularComparison comparison;
+
+    /**
+     * The parameters for the comparison.
+     */
     private final Parameters params;
+
+    /**
+     * The data model for the comparison.
+     */
     private final DataModel dataModel;
+
+    /**
+     * The target graph for the comparison.
+     */
     private final Graph targetGraph;
+
+    /**
+     * The reference graph for the comparison.
+     */
     private Graph referenceGraph;
+
+    /**
+     * The text area for the table.
+     */
     private JTextArea area;
 
     /**

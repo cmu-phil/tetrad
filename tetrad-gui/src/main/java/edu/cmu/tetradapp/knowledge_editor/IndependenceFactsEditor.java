@@ -44,9 +44,15 @@ import java.util.prefs.Preferences;
  * @version $Id: $Id
  */
 public class IndependenceFactsEditor extends JPanel {
+
+    /**
+     * The knowledge to be edited.
+     */
     private final IndependenceFactsModel facts;
 
-
+    /**
+     * The text area in which the knowledge is displayed and edited.
+     */
     private JTextArea textArea;
 
     /**

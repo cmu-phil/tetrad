@@ -40,17 +40,17 @@ import java.beans.PropertyChangeListener;
  */
 public class KnowledgeWorkbench extends AbstractWorkbench {
 
-    //=================PUBLIC STATIC FINAL FIELDS=========================//
-    /** Constant <code>FORBIDDEN_EDGE=0</code> */
     public static final int FORBIDDEN_EDGE = 0;
     /** Constant <code>REQUIRED_EDGE=2</code> */
     public static final int REQUIRED_EDGE = 2;
 
-    //====================PRIVATE FIELDS=================================//
+    /**
+     * The type of edge to be drawn next.
+     */
     private int edgeMode = KnowledgeWorkbench.FORBIDDEN_EDGE;
 
     /**
-     * Constructs a new workbench workbench for the given workbench model.
+     * Constructs a new workbench for the given workbench model.
      *
      * @param graph a {@link edu.cmu.tetradapp.knowledge_editor.KnowledgeGraph} object
      */

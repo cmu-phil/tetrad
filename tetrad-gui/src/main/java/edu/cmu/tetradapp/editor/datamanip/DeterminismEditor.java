@@ -16,6 +16,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.io.Serial;
 import java.util.List;
 import java.util.*;
 
@@ -27,14 +28,27 @@ import java.util.*;
  */
 public class DeterminismEditor extends JPanel implements FinalizingParameterEditor {
 
+    @Serial
     private static final long serialVersionUID = 6513664419620810219L;
 
+    /**
+     * The source dataset
+     */
     private DataSet sourceDataSet;
 
+    /**
+     *
+     */
     private DataSet sourceDataSetCopy;
 
+    /**
+     * The merged dataset
+     */
     private DataSet mergedDataSet;
 
+    /**
+     * The parameters
+     */
     private Parameters parameters;
 
     //==========================CONSTUCTORS===============================//

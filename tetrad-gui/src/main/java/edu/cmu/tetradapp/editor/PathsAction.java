@@ -48,9 +48,30 @@ import java.util.prefs.Preferences;
  * @version $Id: $Id
  */
 public class PathsAction extends AbstractAction implements ClipboardOwner {
+
+    /**
+     * The workbench.
+     */
     private final GraphWorkbench workbench;
-    private List<Node> nodes1, nodes2;
+
+    /**
+     * The nodes to show paths from.
+     */
+    private List<Node> nodes1;
+
+    /**
+     * The nodes to show paths to.
+     */
+    private List<Node> nodes2;
+
+    /**
+     * The text area for the paths.
+     */
     private JTextArea textArea;
+
+    /**
+     * The method for showing paths.
+     */
     private String method;
 
     /**

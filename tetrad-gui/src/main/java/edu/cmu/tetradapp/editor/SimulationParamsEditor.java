@@ -32,6 +32,10 @@ import javax.swing.*;
  * @version $Id: $Id
  */
 public class SimulationParamsEditor extends JPanel implements ParameterEditor {
+
+    /**
+     * The parameters being edited.
+     */
     private Parameters params = new Parameters();
 
     /**

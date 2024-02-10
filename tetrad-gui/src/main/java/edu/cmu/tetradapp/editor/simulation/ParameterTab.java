@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -42,6 +43,7 @@ import java.util.Set;
  */
 public class ParameterTab extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 7074205549192562786L;
 
     private static final String[] GRAPH_ITEMS = {
@@ -65,12 +67,29 @@ public class ParameterTab extends JPanel {
 
     private static final JLabel NO_PARAM_LBL = new JLabel("No parameters to edit");
 
+    /**
+     * The graph type dropdown.
+     */
     private final JComboBox<String> graphsDropdown = new JComboBox<>();
+
+    /**
+     * The simulation type dropdown.
+     */
     private final JComboBox<String> simulationsDropdown = new JComboBox<>();
 
+    /**
+     * The parameter box.
+     */
     private final Box parameterBox = Box.createVerticalBox();
 
+    /**
+     * The simulation.
+     */
     private final Simulation simulation;
+
+    /**
+     * The initial flag.
+     */
     private boolean initial = true;
 
     /**

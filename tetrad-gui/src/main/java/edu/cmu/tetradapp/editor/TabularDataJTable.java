@@ -55,6 +55,9 @@ import java.util.Map;
 public class TabularDataJTable extends JTable implements DataModelContainer,
         PropertyChangeListener {
 
+    /**
+     * The underlying DataSet model.
+     */
     private Map<String, String> columnToTooltip;
 
     /**
@@ -70,7 +73,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
      */
     public TabularDataJTable(DataSet model, Map<String, String> columnToTooltip) {
         this(model);
-//		System.out.println("setting columnToTooltip " + columnToTooltip);
         this.columnToTooltip = columnToTooltip;
     }
 
@@ -86,7 +88,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         dataModel.addPropertyChangeListener(this);
         setModel(dataModel);
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-//		System.out.println("dataModel: "+model.getColumnToTooltip());
         this.columnToTooltip
                 = model.getColumnToTooltip() != null ? model.getColumnToTooltip() : new Hashtable<>();
         int rowCount = this.dataModel.getRowCount();
@@ -96,15 +97,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
             rowCount /= 10;
             max++;
         }
-
-        // add cell renderer for columns 2-7
-        // int vColIndex = 2;
-        // TableColumn col = this.getColumnModel().getColumn(vColIndex);
-        // Map<String, String> columnToTooltip = new Hashtable<String,
-        // String>();
-        // columnToTooltip.put("ADJ_COR", "This is a tooltip.");
-        // col.setCellRenderer(new
-        // GraphComparisonTableCellRenderer(columnToTooltip));
 
         // provide cell renderer the tooltip.
         addMouseListener(new MouseAdapter() {
@@ -128,7 +120,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         FontMetrics metrics = getFontMetrics(getFont());
 
         getColumnModel().getColumn(0).setMaxWidth(9 * max);
-//		getColumnModel().getColumn(1).setMaxWidth(9 * 4);
         setRowHeight(metrics.getHeight() + 3);
 
         setRowSelectionAllowed(true);

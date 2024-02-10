@@ -39,6 +39,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
 
+import java.io.Serial;
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -52,12 +53,17 @@ import java.util.List;
  */
 public class BuildPureClustersRunner extends AbstractMimRunner
         implements GraphSource, Unmarshallable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * To reidentify variables.
      */
     private SemIm semIm;
+
+    /**
+     * The true graph.
+     */
     private Graph trueGraph;
 
     //============================CONSTRUCTORS============================//

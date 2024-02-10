@@ -57,6 +57,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -72,9 +73,22 @@ import java.util.Map;
  */
 public final class SemImEditor extends JPanel implements LayoutEditable, DoNotScroll {
 
+    @Serial
     private static final long serialVersionUID = -1856607070184945405L;
+
+    /**
+     * The panel in which the graphical editor is displayed.
+     */
     private final JPanel targetPanel;
+
+    /**
+     * The graphical editor for the SEM IM.
+     */
     private OneEditor oneEditorPanel;
+
+    /**
+     * The SEM IM being edited.
+     */
     private SemImWrapper wrapper;
 
     /**

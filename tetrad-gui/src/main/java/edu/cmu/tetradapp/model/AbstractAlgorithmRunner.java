@@ -47,15 +47,55 @@ public abstract class AbstractAlgorithmRunner
         implements AlgorithmRunner, ParamsResettable, Unmarshallable {
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The parameters settings.
+     */
     final Map<String, String> paramSettings = new LinkedHashMap<>();
+
+    /**
+     * The data wrapper.
+     */
     private DataWrapper dataWrapper;
+
+    /**
+     * The name of the algorithm.
+     */
     private String name;
+
+    /**
+     * The parameters.
+     */
     private Parameters params;
+
+    /**
+     * The data model.
+     */
     private transient DataModel dataModel;
+
+    /**
+     * The source graph.
+     */
     private Graph sourceGraph;
+
+    /**
+     * The result graph.
+     */
     private Graph resultGraph = new EdgeListGraph();
+
+    /**
+     * The external graph.
+     */
     private Graph externalGraph;
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs;
+
+    /**
+     * The all param settings.
+     */
     private Map<String, String> allParamSettings;
 
     //===========================CONSTRUCTORS===========================//
@@ -459,7 +499,7 @@ public abstract class AbstractAlgorithmRunner
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

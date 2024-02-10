@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps a data model so that a random sample will automatically be drawn on construction from a BayesIm.
@@ -35,10 +36,11 @@ import java.io.ObjectInputStream;
  * @version $Id: $Id
  */
 public class BootstrapSamplerWrapper extends DataWrapper {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Cannot be null.
+     * The output data set.
      */
     private final DataSet outputDataSet;
 
@@ -114,7 +116,7 @@ public class BootstrapSamplerWrapper extends DataWrapper {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

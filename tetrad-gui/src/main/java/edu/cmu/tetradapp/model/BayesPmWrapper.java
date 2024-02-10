@@ -36,6 +36,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,17 +49,32 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public class BayesPmWrapper implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The number of models.
+     */
     private int numModels = 1;
+
+    /**
+     * The index of the model.
+     */
     private int modelIndex;
+
+    /**
+     * The name of the model source.
+     */
     private String modelSourceName;
 
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
+    /**
+     * The Bayes Pm.
+     */
     private List<BayesPm> bayesPms;
 
     //==============================CONSTRUCTORS=========================//
@@ -502,7 +518,7 @@ public class BayesPmWrapper implements SessionModel {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

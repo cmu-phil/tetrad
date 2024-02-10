@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps a DirichletEstimator.
@@ -37,15 +38,16 @@ import java.io.ObjectInputStream;
  * @version $Id: $Id
  */
 public class BayesUpdaterClassifierWrapper implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Cannot be null.
+     * The Bayes Updater.
      */
     private final ClassifierBayesUpdaterDiscrete classifier;
 
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
@@ -55,7 +57,7 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
      * <p>Constructor for BayesUpdaterClassifierWrapper.</p>
      *
      * @param bayesImWrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public BayesUpdaterClassifierWrapper(BayesImWrapper bayesImWrapper,
                                          DataWrapper dataWrapper) {
@@ -78,7 +80,7 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
      * <p>Constructor for BayesUpdaterClassifierWrapper.</p>
      *
      * @param bayesImWrapper a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public BayesUpdaterClassifierWrapper(DirichletBayesImWrapper bayesImWrapper,
                                          DataWrapper dataWrapper) {
@@ -100,8 +102,8 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -118,6 +120,19 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
         return this.classifier;
     }
 
+    /**
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help
+     *
+     * @param s a {@link java.lang.String} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
+     */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -136,7 +151,9 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

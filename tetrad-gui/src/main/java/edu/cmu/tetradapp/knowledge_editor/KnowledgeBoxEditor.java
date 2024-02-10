@@ -41,6 +41,7 @@ import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.List;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -53,28 +54,97 @@ import java.util.prefs.Preferences;
  */
 public class KnowledgeBoxEditor extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 959706288096545158L;
 
+    /**
+     * Edge limit for displaying edges in the edge panel
+     */
     private static final long EDGE_LIMIT = 100;
 
+    /**
+     * The background color for unselected labels.
+     */
     private final Color UNSELECTED_BG = new Color(153, 204, 204);
+
+    /**
+     * The background color for selected labels.
+     */
     private final Color SELECTED_BG = new Color(255, 204, 102);
 
+    /**
+     * Map from variable names to labels.
+     */
     private final Map<String, JLabel> labelMap = new HashMap<>();
 
+    /**
+     * The variables in the knowledge.
+     */
     private final List<Node> vars;
+
+    /**
+     * The variables in the first tier.
+     */
     private final List<String> firstTierVars = new LinkedList<>();
+
+    /**
+     * The variables in the second tier.
+     */
     private final List<String> secondTierVars = new LinkedList<>();
+
+    /**
+     * The knowledge box model.
+     */
     private final KnowledgeBoxModel knowledgeBoxModel;
+
+    /**
+     * The tabbed pane.
+     */
     private final JTabbedPane tabbedPane;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge;
+
+    /**
+     * The edge workbench.
+     */
     private KnowledgeWorkbench edgeWorkbench;
+
+    /**
+     * The number of tiers to display.
+     */
     private JPanel tiersPanel;
+
+    /**
+     * True if edges explicitly forbidden should be shown.
+     */
     private boolean showForbiddenExplicitly;
+
+    /**
+     * True if edges required by groups should be shown.
+     */
     private boolean showForbiddenByTiers;
+
+    /**
+     * True if edges required by groups should be shown.
+     */
     private boolean showRequired;
+
+    /**
+     * True if edges required by groups should be shown.
+     */
     private boolean showRequiredByGroups;
+
+    /**
+     * True if edges forbidden by groups should be shown.
+     */
     private boolean showForbiddenByGroups;
+
+    /**
+     * The number of tiers to display.
+     */
     private int numTiers = 3;
 
     /**

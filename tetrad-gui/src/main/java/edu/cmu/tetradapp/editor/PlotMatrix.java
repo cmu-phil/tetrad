@@ -47,15 +47,55 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public class PlotMatrix extends JPanel {
-    private JPanel charts;
-    private JList<Node> rowSelector;
-    private JList<Node> colSelector;
+
+    /**
+     * Charts
+     */
+    private final JPanel charts;
+
+    /**
+     * Row selector
+     */
+    private final JList<Node> rowSelector;
+
+    /**
+     * Column selector
+     */
+    private final JList<Node> colSelector;
+
+    /**
+     * Number of bins
+     */
     private int numBins = 9;
+
+    /**
+     * Add regression lines
+     */
     private boolean addRegressionLines = false;
+
+    /**
+     * Remove zero points per plot
+     */
     private boolean removeZeroPointsPerPlot = false;
+
+    /**
+     * Last rows
+     */
     private int[] lastRows = new int[]{0};
+
+    /**
+     * Last columns
+     */
     private int[] lastCols = new int[]{0};
+
+    /**
+     * Conditioning panel map
+     */
     private Map<Node, VariableConditioningEditor.ConditioningPanel> conditioningPanelMap = new HashMap<>();
+
+    /**
+     * Jitter style
+     */
     private ScatterPlot.JitterStyle jitterStyle = ScatterPlot.JitterStyle.None;
 
     /**

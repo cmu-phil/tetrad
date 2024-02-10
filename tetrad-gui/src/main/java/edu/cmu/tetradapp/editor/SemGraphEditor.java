@@ -52,6 +52,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
+import java.io.Serial;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
@@ -67,11 +68,32 @@ import java.util.*;
 public final class SemGraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, DelegatesEditing, IndTestProducer {
 
+    @Serial
     private static final long serialVersionUID = 6837233499169689575L;
+
+    /**
+     * The semGraphWrapper being edited.
+     */
     private final SemGraphWrapper semGraphWrapper;
+
+    /**
+     * The parameters for the graph.
+     */
     private final Parameters parameters;
+
+    /**
+     * The scroll pane for the graph editor.
+     */
     private final JScrollPane graphEditorScroll = new JScrollPane();
+
+    /**
+     * The edge type table.
+     */
     private final EdgeTypeTable edgeTypeTable;
+
+    /**
+     * The workbench for the graph editor.
+     */
     private GraphWorkbench workbench;
 
     //===========================CONSTRUCTOR========================//

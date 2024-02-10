@@ -35,6 +35,7 @@ import edu.cmu.tetradapp.util.DesktopController;
 import javax.swing.*;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import java.awt.*;
+import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -47,44 +48,152 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class AlgorithmCard extends JPanel {
-
+    @Serial
     private static final long serialVersionUID = -7552068626783685630L;
 
-//    private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmCard.class);
-
+    /**
+     * The algorithm runner.
+     */
     private final String ALGO_PARAM = "algo";
+
+    /**
+     * Independent test parameter.
+     */
     private final String IND_TEST_PARAM = "ind_test";
+
+    /**
+     * Score parameter.
+     */
     private final String SCORE_PARAM = "score";
+
+    /**
+     * Algorithm type parameter.
+     */
     private final String ALGO_TYPE_PARAM = "algo_type";
+
+    /**
+     * Dataset filter parameter.
+     */
     private final String DATASET_FILTER = "dataset_filter";
+
+    /**
+     * Knowledge parameter.
+     */
     private final String KNOWLEDGE_PARAM = "knowledge";
 
+    /**
+     * Algorithm type options.
+     */
     private final List<JRadioButton> algoTypeOpts = new ArrayList<>();
 
+    /**
+     * Algorithm models.
+     */
     private final DefaultListModel<AlgorithmModel> algoModels = new DefaultListModel<>();
 
+    /**
+     * Algorithm filter button group.
+     */
     private final ButtonGroup algoFilterBtnGrp = new ButtonGroup();
+
+    /**
+     * Dataset filter button group.
+     */
     private final ButtonGroup datasetFilterBtnGrp = new ButtonGroup();
 
+    /**
+     * Default independence test models.
+     */
     private final Map<AlgorithmModel, Map<DataType, IndependenceTestModel>> defaultIndTestModels = new HashMap<>();
+
+    /**
+     * Default score models.
+     */
     private final Map<AlgorithmModel, Map<DataType, ScoreModel>> defaultScoreModels = new HashMap<>();
+
+    /**
+     * Knowledge checkbox.
+     */
     private final JCheckBox knowledgeChkBox = new JCheckBox("accepts knowledge");
+
+    /**
+     * Linear, Gaussian radio button.
+     */
     private final JRadioButton linearGaussianRadBtn = new JRadioButton("Linear, Gaussian");
+
+    /**
+     * Mixed, discrete, Gaussian radio button.
+     */
     private final JRadioButton mixedRadBtn = new JRadioButton("Mixed Discrete/Gaussian");
+
+    /**
+     * General radio button.
+     */
     private final JRadioButton generalRadBtn = new JRadioButton("General");
+
+    /**
+     * All radio button.
+     */
     private final JRadioButton allRadBtn = new JRadioButton("All");
+
+    /**
+     * Independence test combo box.
+     */
     private final JComboBox<IndependenceTestModel> indTestComboBox = new JComboBox<>();
+
+    /**
+     * Score combo box.
+     */
     private final JComboBox<ScoreModel> scoreComboBox = new JComboBox<>();
+
+    /**
+     * Algorithm list.
+     */
     private final JList<AlgorithmModel> algorithmList = new JList<>(this.algoModels);
 
+    /**
+     * Algorithm description text area.
+     */
     private final JTextArea algoDescTextArea = new JTextArea();
+
+    /**
+     * Score description text area.
+     */
     private final JTextArea scoreDescTextArea = new JTextArea();
+
+    /**
+     * Test description text area.
+     */
     private final JTextArea testDescTextArea = new JTextArea();
+
+    /**
+     * The algorithm runner.
+     */
     private final GeneralAlgorithmRunner algorithmRunner;
+
+    /**
+     * The data type.
+     */
     private final DataType dataType;
+
+    /**
+     * The desktop.
+     */
     private final TetradDesktop desktop;
+
+    /**
+     * Multi-data algorithm.
+     */
     private final boolean multiDataAlgo;
+
+    /**
+     * Updating test models.
+     */
     private boolean updatingTestModels;
+
+    /**
+     * Updating score models.
+     */
     private boolean updatingScoreModels;
 
     /**
@@ -296,8 +405,6 @@ public class AlgorithmCard extends JPanel {
      * This restore mechanism won't restore user selections other than selected algo name when user changes the upstream
      * (after clicking the "Execute" button), because a new algo algorithmRunner is created and we lose the stored
      * models from the old algorithmRunner - Zhou
-     * <p>
-     * //     * @param models
      */
     private void restoreUserAlgoSelections(Map<String, Object> userAlgoSelections) {
         Object obj = userAlgoSelections.get(this.DATASET_FILTER);
@@ -397,9 +504,9 @@ public class AlgorithmCard extends JPanel {
     /**
      * Initialize algorithm
      *
-     * @param algoModel a {@link edu.cmu.tetradapp.ui.model.AlgorithmModel} object
+     * @param algoModel    a {@link edu.cmu.tetradapp.ui.model.AlgorithmModel} object
      * @param indTestModel a {@link edu.cmu.tetradapp.ui.model.IndependenceTestModel} object
-     * @param scoreModel a {@link edu.cmu.tetradapp.ui.model.ScoreModel} object
+     * @param scoreModel   a {@link edu.cmu.tetradapp.ui.model.ScoreModel} object
      * @return Algorithm
      */
     public Algorithm getAlgorithmFromInterface(AlgorithmModel algoModel, IndependenceTestModel indTestModel, ScoreModel scoreModel) {

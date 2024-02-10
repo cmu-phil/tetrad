@@ -37,66 +37,172 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
 import edu.cmu.tetradapp.util.*;
-import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
-import java.awt.*;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.*;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
-import org.jetbrains.annotations.NotNull;
+import java.awt.Point;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.lang.reflect.InvocationTargetException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 
 /**
- * A model for the Markov check. The Markov check for a given graph and dataset
- * checks whether the graph is Markov with respect to the dataset. The Markov
- * check can be used to check whether a graph is Markov with respect to a
- * dataset, or whether a graph is Markov with respect to a dataset and a set of
- * variables. The Markov check can also be used to check whether a graph is
- * Markov with respect to a dataset and a set of variables, given a set of
- * knowledge. For facts of the form X _||_ Y | Z, X and Y should be in the last
- * tier of the knowledge, and Z should be in previous tiers.
+ * A model for the Markov check. The Markov check for a given graph and dataset checks whether the graph is Markov with
+ * respect to the dataset. The Markov check can be used to check whether a graph is Markov with respect to a dataset, or
+ * whether a graph is Markov with respect to a dataset and a set of variables. The Markov check can also be used to
+ * check whether a graph is Markov with respect to a dataset and a set of variables, given a set of knowledge. For facts
+ * of the form X _||_ Y | Z, X and Y should be in the last tier of the knowledge, and Z should be in previous tiers.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 public class MarkovCheckEditor extends JPanel {
 
+    /**
+     * The model for the Markov check.
+     */
     private final MarkovCheckIndTestModel model;
+
+    /**
+     * The number format.
+     */
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+    /**
+     * The label for the fraction of p-values less than the alpha level.
+     */
     private final JLabel markovTestLabel = new JLabel("(Unspecified Test)");
+
+    /**
+     * The combo box for the independence test.
+     */
     private final JComboBox<IndependenceTestModel> indTestJComboBox = new JComboBox<>();
+
+    /**
+     * The combo box for the conditioning set type.
+     */
     private final JComboBox<String> conditioningSetTypeJComboBox = new JComboBox<>();
+
+    /**
+     * The label for the test.
+     */
     private final JLabel testLabel = new JLabel("(Unspecified Test)");
+
+    /**
+     * The label for the conditioning set.
+     */
     private final JLabel conditioningLabelDep = new JLabel("(Unspecified)");
+
+    /**
+     * The label for the conditioning set.
+     */
     private final JLabel conditioningLabelIndep = new JLabel("(Unspecified)");
+
+    /**
+     * The label for the fraction of p-values less than the alpha level.
+     */
     private final DoubleTextField percent;
+
+    /**
+     * The label for the fraction of p-values less than the alpha level.
+     */
     boolean updatingTestModels = true;
+
+    /**
+     * The table model for the independence test.
+     */
     private AbstractTableModel tableModelIndep;
+
+    /**
+     * The table model for the independence test.
+     */
     private AbstractTableModel tableModelDep;
+
+    /**
+     * The label for the fraction of p-values less than the alpha level.
+     */
     private JLabel fractionDepLabelIndep;
+
+    /**
+     * The label for the fraction of p-values less than the alpha level.
+     */
     private JLabel fractionDepLabelDep;
+
+    /**
+     * The label for the Kolmogorov-Smirnov test.
+     */
     private JLabel ksLabelDep;
+
+    /**
+     * The label for the Kolmogorov-Smirnov test.
+     */
     private JLabel ksLabelIndep;
+
+    /**
+     * The label for the binomial test.
+     */
     private JLabel binomialPLabelDep;
+
+    /**
+     * The label for the binomial test.
+     */
     private JLabel binomialPLabelIndep;
+
+    /**
+     * The label for the Anderson-Darling test.
+     */
     private JLabel andersonDarlingA2LabelDep;
+
+    /**
+     * The label for the Anderson-Darling test.
+     */
     private JLabel andersonDarlingA2LabelIndep;
+
+    /**
+     * The label for the Anderson-Darling test.
+     */
     private JLabel andersonDarlingPLabelDep;
+
+    /**
+     * The label for the Anderson-Darling test.
+     */
     private JLabel andersonDarlingPLabelIndep;
+
+    /**
+     * Sort direction.
+     */
     private int sortDir;
+
+    /**
+     * Last sort column.
+     */
     private int lastSortCol;
+
+    /**
+     * Independence test model.
+     */
     private IndependenceWrapper independenceWrapper;
+
+    /**
+     * The histogram panel.
+     */
     private JPanel histogramPanelIndep;
+
+    /**
+     * The histogram panel.
+     */
     private JPanel histogramPanelDep;
 
     /**
@@ -139,7 +245,7 @@ public class MarkovCheckEditor extends JPanel {
                     if (model.getMarkovCheck().getSetType() == ConditioningSetType.GLOBAL_MARKOV && model.getVars().size() > 12) {
                         int ret = JOptionPane.showOptionDialog(MarkovCheckEditor.this,
                                 "The all subsets option is exponential and can become extremely slow beyond 12"
-                                + "\nvariables. You may possibly be required to force quit Tetrad. Continue?", "Warning",
+                                        + "\nvariables. You may possibly be required to force quit Tetrad. Continue?", "Warning",
                                 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null
                         );
 
@@ -316,6 +422,53 @@ public class MarkovCheckEditor extends JPanel {
         initComponents(params, recalculate, pane, conditioningSetsLabel, percentSampleLabel);
     }
 
+    /**
+     * <p>getHelpMessage.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
+    @NotNull
+    public static String getHelpMessage() {
+        return """
+                This tool lets you plot statistics for independence tests of a pair of variables given some conditioning calculated for one of those variables, for a given graph and dataset. Two tables are made, one in which the independence facts predicted by the graph using these conditioning sets are tested in the data and the other in which the graph's predicted dependence facts are tested. The first of these sets is a check for "Markov" (a check for implied independence facts) for the chosen conditioning sets; the is a check of the "Dependent Distribution." (a check of implied dependence facts)”
+
+                Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a score bump, where this bump is negative for independent judgments and positive for dependent judgments.
+
+                If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we display the histogram of the p-values with equally sized bins; the bars in this histogram, for this case, should ideally all be of equal height.
+
+                If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being judged as dependent. For checking the dependent distribution, one hopes that this list is non-empty, in which case this first bar will be especially high since high p-values are examples where the graph is unfaithful to the distribution. These are possibly for cases where paths in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all of the other bars.
+
+                To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the user’s preferred alpha level if the distribution of p-values is Uniform and less than this alpha level if the distribution of p-values is non-uniform.
+
+                If the independence test yields a bump in the score, this score should be negative for independence judgments and positive for dependence judgments. The histogram will reflect this.
+
+                Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let you analyze the data yourself.
+
+                A note about Markov Blankets: The "Markov Blanket" conditioning set choice implements the Markov blanket calculation in a way that is correct for DAGs, CPDAGs, MAGs, and PAGs. For all of these graph types, the list of m-connecting facts in the Faithfulness tab should be empty, since the Markov blanket should screen off the target from any other variables in the dataset. It's possible that for some other graph types, this list may not be empty (i.e., the Markov blanket calculation may not be correct).
+
+                Knowledge may be supplied to the Markov Checker. This will be interpreted as follows. For X _||_ Y | Z checked, X and Y will be drawn from the last tier of the knowledge, and the variables in Z will be drawn from all variables in tiers. Additional forbidden or required edges are not allowed.
+                """;
+    }
+
+    @NotNull
+    private static HistogramPanel getHistogramPanel(List<IndependenceResult> results) {
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(results.size(), 1),
+                Collections.singletonList(new ContinuousVariable("P-Value or Bump")));
+
+        for (int i = 0; i < results.size(); i++) {
+            dataSet.setDouble(i, 0, results.get(i).getPValue());
+        }
+
+        Histogram histogram = new Histogram(dataSet, "P-Value or Bump", false);
+        HistogramPanel view = new HistogramPanel(histogram, true);
+
+        Color fillColor = new Color(113, 165, 210);
+        view.setBarColor(fillColor);
+
+        view.setMaximumSize(new Dimension(300, 200));
+        return view;
+    }
+
     private void initComponents(JButton params, JButton recalculate, JTabbedPane pane, JLabel conditioningSetsLabel, JLabel percentSampleLabel) {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -365,53 +518,6 @@ public class MarkovCheckEditor extends JPanel {
         );
     }
 
-    /**
-     * <p>getHelpMessage.</p>
-     *
-     * @return a {@link java.lang.String} object
-     */
-    @NotNull
-    public static String getHelpMessage() {
-        return """
-                This tool lets you plot statistics for independence tests of a pair of variables given some conditioning calculated for one of those variables, for a given graph and dataset. Two tables are made, one in which the independence facts predicted by the graph using these conditioning sets are tested in the data and the other in which the graph's predicted dependence facts are tested. The first of these sets is a check for "Markov" (a check for implied independence facts) for the chosen conditioning sets; the is a check of the "Dependent Distribution." (a check of implied dependence facts)”
-
-                Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a score bump, where this bump is negative for independent judgments and positive for dependent judgments.
-
-                If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we display the histogram of the p-values with equally sized bins; the bars in this histogram, for this case, should ideally all be of equal height.
-
-                If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being judged as dependent. For checking the dependent distribution, one hopes that this list is non-empty, in which case this first bar will be especially high since high p-values are examples where the graph is unfaithful to the distribution. These are possibly for cases where paths in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all of the other bars.
-
-                To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the user’s preferred alpha level if the distribution of p-values is Uniform and less than this alpha level if the distribution of p-values is non-uniform.
-
-                If the independence test yields a bump in the score, this score should be negative for independence judgments and positive for dependence judgments. The histogram will reflect this.
-
-                Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let you analyze the data yourself.
-
-                A note about Markov Blankets: The "Markov Blanket" conditioning set choice implements the Markov blanket calculation in a way that is correct for DAGs, CPDAGs, MAGs, and PAGs. For all of these graph types, the list of m-connecting facts in the Faithfulness tab should be empty, since the Markov blanket should screen off the target from any other variables in the dataset. It's possible that for some other graph types, this list may not be empty (i.e., the Markov blanket calculation may not be correct).
-
-                Knowledge may be supplied to the Markov Checker. This will be interpreted as follows. For X _||_ Y | Z checked, X and Y will be drawn from the last tier of the knowledge, and the variables in Z will be drawn from all variables in tiers. Additional forbidden or required edges are not allowed.
-                """;
-    }
-
-    @NotNull
-    private static HistogramPanel getHistogramPanel(List<IndependenceResult> results) {
-        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(results.size(), 1),
-                Collections.singletonList(new ContinuousVariable("P-Value or Bump")));
-
-        for (int i = 0; i < results.size(); i++) {
-            dataSet.setDouble(i, 0, results.get(i).getPValue());
-        }
-
-        Histogram histogram = new Histogram(dataSet, "P-Value or Bump", false);
-        HistogramPanel view = new HistogramPanel(histogram, true);
-
-        Color fillColor = new Color(113, 165, 210);
-        view.setBarColor(fillColor);
-
-        view.setMaximumSize(new Dimension(300, 200));
-        return view;
-    }
-
     //========================PUBLIC METHODS==========================//
     private void refreshResult(MarkovCheckIndTestModel model, DoubleTextField percent) {
         setTest();
@@ -446,7 +552,7 @@ public class MarkovCheckEditor extends JPanel {
                 invalidate();
                 repaint();
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                    | NoSuchMethodException e1) {
+                     | NoSuchMethodException e1) {
                 TetradLogger.getInstance().forceLogMessage("Error: " + e1.getMessage());
                 throw new RuntimeException(e1);
             }
@@ -1053,7 +1159,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private DoubleTextField getDoubleField(String parameter, Parameters parameters,
-            double defaultValue, double lowerBound, double upperBound) {
+                                           double defaultValue, double lowerBound, double upperBound) {
         DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
@@ -1083,7 +1189,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private IntTextField getIntTextField(String parameter, Parameters parameters,
-            int defaultValue, double lowerBound, double upperBound) {
+                                         int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {
@@ -1112,7 +1218,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private LongTextField getLongTextField(String parameter, Parameters parameters,
-            long defaultValue, long lowerBound, long upperBound) {
+                                           long defaultValue, long lowerBound, long upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {

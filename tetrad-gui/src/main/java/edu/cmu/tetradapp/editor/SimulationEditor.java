@@ -38,6 +38,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,13 +56,32 @@ import java.util.prefs.Preferences;
  */
 public final class SimulationEditor extends JPanel implements KnowledgeEditable, PropertyChangeListener {
 
+    @Serial
     private static final long serialVersionUID = -8424284512836439370L;
 
+    /**
+     * The tabbed pane containing the simulation editor's tabs.
+     */
     final JTabbedPane tabbedPane = new JTabbedPane();
 
+    /**
+     * The simulation being edited.
+     */
     private final Simulation simulation;
+
+    /**
+     * The data editor.
+     */
     private final DataEditor dataEditor;
+
+    /**
+     * The simulation graph editor.
+     */
     private final SimulationGraphEditor simulationGraphEditor;
+
+    /**
+     * The parameter tab.
+     */
     private final ParameterTab parameterTab;
 
     /**

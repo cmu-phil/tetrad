@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 
 ///////////////////////////////////////////////////////////
@@ -51,15 +52,16 @@ import java.util.List;
  */
 public class BayesImWrapperObs implements SessionModel, Memorable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
     /**
-     * @serial Cannot be null.
+     * The Bayes Im.
      */
     private BayesIm bayesIm;
 
@@ -97,6 +99,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
             this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
         }
 
+        assert this.bayesIm != null;
         log(this.bayesIm);
     }
 
@@ -170,10 +173,11 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

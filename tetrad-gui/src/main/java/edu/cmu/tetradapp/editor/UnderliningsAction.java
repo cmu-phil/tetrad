@@ -46,6 +46,10 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class UnderliningsAction extends AbstractAction implements ClipboardOwner {
+
+    /**
+     * The workbench.
+     */
     private final GraphWorkbench workbench;
 
     /**

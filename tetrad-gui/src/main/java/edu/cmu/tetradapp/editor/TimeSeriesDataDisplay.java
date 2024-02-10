@@ -35,6 +35,10 @@ import java.awt.*;
  */
 public class TimeSeriesDataDisplay extends JPanel
         implements DataModelContainer {
+
+    /**
+     * The JTable that displays the DataSet.
+     */
     private final TimeSeriesDataDisplayJTable timeSerieaDataDisplayJTable;
 
     /**

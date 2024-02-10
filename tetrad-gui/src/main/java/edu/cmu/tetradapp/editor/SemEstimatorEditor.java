@@ -51,6 +51,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -64,18 +65,48 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public final class SemEstimatorEditor extends JPanel {
-
+    @Serial
     private static final long serialVersionUID = 960988184083427499L;
 
+    /**
+     * The panel to which the editor is added.
+     */
     private final JPanel targetPanel;
-    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private final DataSet dataSet;
-    private final SemEstimatorWrapper wrapper;
-    private final String graphicalEditorTitle = "Graphical Editor";
-    private final String tabularEditorTitle = "Tabular Editor";
-    private final boolean editable = true;
-    private OneEditor oneEditorPanel;
 
+    /**
+     * The number format for displaying numbers.
+     */
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+    /**
+     * The data set for the SEM estimator.
+     */
+    private final DataSet dataSet;
+
+    /**
+     * The SEM estimator wrapper.
+     */
+    private final SemEstimatorWrapper wrapper;
+
+    /**
+     * The title for the graphical editor tab.
+     */
+    private final String graphicalEditorTitle = "Graphical Editor";
+
+    /**
+     * The title for the tabular editor tab.
+     */
+    private final String tabularEditorTitle = "Tabular Editor";
+
+    /**
+     * True iff the SEM estimator is editable.
+     */
+    private final boolean editable = true;
+
+    /**
+     * The SEM estimator being edited.
+     */
+    private OneEditor oneEditorPanel;
 
     /**
      * <p>Constructor for SemEstimatorEditor.</p>
@@ -86,7 +117,6 @@ public final class SemEstimatorEditor extends JPanel {
     public SemEstimatorEditor(SemIm semIm, DataSet dataSet) {
         this(new SemEstimatorWrapper(dataSet, semIm.getSemPm(), new Parameters()));
     }
-
 
     /**
      * <p>Constructor for SemEstimatorEditor.</p>

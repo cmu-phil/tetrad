@@ -56,15 +56,55 @@ import java.util.prefs.Preferences;
  * @version $Id: $Id
  */
 public class IndependenceFactsEditor extends JPanel {
+
+    /**
+     * The number format.
+     */
     private final NumberFormat nf = new DecimalFormat("0.0000");
+
+    /**
+     * The independence test model.
+     */
     private IndTestModel model;
+
+    /**
+     * The independence test producers.
+     */
     private LinkedList<String> vars;
+
+    /**
+     * The text field.
+     */
     private JTextField textField;
+
+    /**
+     * The independence test producers.
+     */
     private List<IndTestProducer> indTestProducers;
+
+    /**
+     * The results.
+     */
     private List<List<IndependenceResultIndFacts>> results = new ArrayList<>();
+
+    /**
+     * The table model.
+     */
     private AbstractTableModel tableModel;
+
+    /**
+     * The sort direction.
+     */
     private int sortDir;
+
+    /**
+     * The last sort column.
+     */
     private int lastSortCol;
+
+    /**
+     * Whether to show p values.
+     */
     private boolean showPs;
 
     /**

@@ -31,6 +31,7 @@ import edu.cmu.tetradapp.workbench.LayoutMenu;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -42,6 +43,7 @@ import java.util.Map;
  */
 public final class StandardizedSemImEditor extends JPanel implements LayoutEditable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -56,6 +58,10 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
      * The graphical editor for the SemIm.
      */
     private StandardizedSemImGraphicalEditor standardizedSemImGraphicalEditor;
+
+    /**
+     * The panel that displays the implied covariance and correlation matrices for the SemIm.
+     */
     private StandardizedSemImImpliedMatricesPanel impliedMatricesPanel;
 
     //========================CONSTRUCTORS===========================//

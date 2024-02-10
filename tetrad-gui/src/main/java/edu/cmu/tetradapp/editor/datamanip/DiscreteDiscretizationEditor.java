@@ -39,7 +39,15 @@ import java.util.Map;
  * @author josephramsey
  */
 class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEditor {
+
+    /**
+     * The variable.
+     */
     private final DiscreteVariable variable;
+
+    /**
+     * The remap editor.
+     */
     private RemapEditor remapEditor;
 
     /**

@@ -53,14 +53,41 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
+
+    /**
+     * The number format for displaying scores.
+     */
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+    /**
+     * The workbench for displaying the graphs.
+     */
     private GraphWorkbench workbench;
+
+    /**
+     * Whether to show only the highest scoring graph.
+     */
     private boolean showHighestScoreOnly;
+
+    /**
+     * The DAGs to scores.
+     */
     private Map<Graph, Double> dagsToScores;
+
+    /**
+     * The DAGs.
+     */
     private List<Graph> dags;
+
+    /**
+     * The label for the score.
+     */
     private JLabel scoreLabel;
+
+    /**
+     * The scored graphs wrapper.
+     */
     private ScoredGraphsWrapper scoredGraphsWrapper;
-//    private Indexable indexable;
 
     /**
      * <p>Constructor for ScoredGraphsDisplay.</p>

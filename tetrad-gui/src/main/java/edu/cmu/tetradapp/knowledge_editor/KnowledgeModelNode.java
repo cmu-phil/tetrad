@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,11 +39,15 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
-
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * Attributes of this node variable
+     */
     private final Map<String, Object> attributes = new HashMap<>();
     /**
-     * @serial
+     * Name of this node variable
      */
     private String name;
     /**
@@ -50,11 +55,11 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
     /**
-     * @serial
+     * Center x coordinate of this node variable
      */
     private int centerX;
     /**
-     * @serial
+     * Center y coordinate of this node variable
      */
     private int centerY;
 

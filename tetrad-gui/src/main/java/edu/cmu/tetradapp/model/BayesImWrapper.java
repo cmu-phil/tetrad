@@ -47,15 +47,25 @@ public class BayesImWrapper implements SessionModel, Memorable {
 
     @Serial
     private static final long serialVersionUID = 23L;
-    // The number of models in the simulation.
+    /**
+     * The number of models in the simulation.
+     */
     private int numModels = 1;
-    // The index of the model to be used.
+    /**
+     * The index of the model to be used.
+     */
     private int modelIndex;
-    // The name of the model source.
+    /**
+     * The name of the model source.
+     */
     private String modelSourceName;
-    // The name of the Bayes IM.
+    /**
+     * The name of the Bayes IM.
+     */
     private String name;
-    // The Bayes IM.
+    /**
+     * The Bayes IM.
+     */
     private List<BayesIm> bayesIms;
 
     //===========================CONSTRUCTORS===========================//
@@ -344,7 +354,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

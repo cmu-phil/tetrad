@@ -51,7 +51,15 @@ public class ShiftDataParamsEditor extends JPanel implements ParameterEditor {
      * The params.
      */
     private Parameters params;
+
+    /**
+     * The parent models.
+     */
     private Object[] parentModels;
+
+    /**
+     * The search.
+     */
     private ShiftSearch search;
 
 

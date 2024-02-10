@@ -36,6 +36,7 @@ import edu.cmu.tetradapp.util.IndTestType;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,41 +48,33 @@ import java.util.List;
  * @version $Id: $Id
  */
 public abstract class AbstractMBSearchRunner extends DataWrapper implements MarkovBlanketSearchRunner {
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * The source data model.
-     *
-     * @serial not null.
      */
     private final DataSet source;
     /**
      * The search params.
-     *
-     * @serial not null.
      */
     private final Parameters params;
     /**
      * Data model.
-     *
-     * @serial may be null.
      */
     private DataSet dataModel;
     /**
      * The variables in the markov blanket.
-     *
-     * @serial may be null.
      */
     private List<Node> variables;
     /**
      * The name of the search algorithm
-     *
-     * @serial may be null.
      */
     private String searchName;
 
     /**
      * Conctructs the abstract search runner.
      *
+     * @serial may be null.
      * @param source - The source data the search is acting on.
      * @param params - The params for the search.
      */
@@ -230,7 +223,7 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

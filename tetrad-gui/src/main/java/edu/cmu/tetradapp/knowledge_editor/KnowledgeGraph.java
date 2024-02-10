@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -38,6 +39,7 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -46,15 +48,33 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     private final Graph graph = new EdgeListGraph();
 
     /**
-     * @serial
+     * The knowledge.
      */
     private final Knowledge knowledge;
+
+    /**
+     * The attributes.
+     */
     private final Map<String, Object> attributes = new HashMap<>();
 
+    /**
+     * The paths.
+     */
     private final Paths paths;
 
+    /**
+     * The underline triples.
+     */
     private Set<Triple> underLineTriples;
+
+    /**
+     * The dotted underline triples.
+     */
     private Set<Triple> dottedUnderLineTriples;
+
+    /**
+     * The ambiguous triples.
+     */
     private Set<Triple> ambiguousTriples;
 
     //============================CONSTRUCTORS=============================//

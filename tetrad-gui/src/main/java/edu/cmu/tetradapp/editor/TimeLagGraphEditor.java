@@ -44,6 +44,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
+import java.io.Serial;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,10 +62,27 @@ import java.util.Map;
 public final class TimeLagGraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
 
+    @Serial
     private static final long serialVersionUID = -2425361202348129265L;
+
+    /**
+     * The layout editable.
+     */
     private final LayoutEditable layoutEditable;
+
+    /**
+     * The graph editor scroll.
+     */
     private final JScrollPane graphEditorScroll = new JScrollPane();
+
+    /**
+     * The edge type table.
+     */
     private final EdgeTypeTable edgeTypeTable;
+
+    /**
+     * The workbench.
+     */
     private TimeLagGraphWorkbench workbench;
 
     //===========================CONSTRUCTOR========================//

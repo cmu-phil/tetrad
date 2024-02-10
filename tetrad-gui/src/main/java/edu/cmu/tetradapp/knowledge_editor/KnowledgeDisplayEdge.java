@@ -84,24 +84,20 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      */
     private static final int REQUIRED_BY_GROUPS = 6;
 
-
     /**
      * Indicates a edge forbidden by a knowledge group.
      */
     private static final int FORBIDDEN_BY_GROUPS = 7;
-
 
     /**
      * The color that forbidden edges are drawn in.
      */
     private final Color forbiddenExplicitlyColor = Color.MAGENTA.darker().darker();
 
-
     /**
      * The color for forbidden group edges.
      */
     private final Color forbiddenGroupsColor = Color.MAGENTA.brighter();
-
 
     /**
      * The color for required group edges.
@@ -136,6 +132,10 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      */
     private final PropertyChangeHandler propertyChangeHandler =
             new PropertyChangeHandler();
+
+    /**
+     * The highlighted color.
+     */
     private Color highlightedColor = Color.red.darker().darker();
     /**
      * The model edge that this display is is portraying (if known).
@@ -165,6 +165,10 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * If the user clicks in this region, the edge will select.
      */
     private Polygon clickRegion;
+
+    /**
+     * True if only the adjacencies of the edge should be shown.
+     */
     private boolean showAdjacenciesOnly = false;
     /**
      * The offset of this edge for multiple edges between node pairs.
@@ -174,7 +178,15 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * The pair of points that this edge connects, from the edge of one component to the edge of the other.
      */
     private PointPair connectedPoints;
+
+    /**
+     * True if the edge is solid, false if it's dashed.
+     */
     private boolean solid = true;
+
+    /**
+     * True if the edge is thick, false if it's thin.
+     */
     private boolean thick = false;
 
     //==========================CONSTRUCTORS============================//

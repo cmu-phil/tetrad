@@ -22,6 +22,7 @@ import edu.cmu.tetradapp.editor.AlgorithmParameterPanel;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 
 import java.awt.*;
+import java.io.Serial;
 
 /**
  * Apr 15, 2019 3:35:36 PM
@@ -31,8 +32,12 @@ import java.awt.*;
  */
 public class ParameterCard extends AlgorithmParameterPanel {
 
+    @Serial
     private static final long serialVersionUID = 2684962776580724327L;
 
+    /**
+     * The algorithm runner.
+     */
     private final GeneralAlgorithmRunner algorithmRunner;
 
     /**

@@ -43,11 +43,21 @@ import java.net.URL;
  * @version $Id: $Id
  */
 public class GraphCard extends JPanel {
-
     private static final long serialVersionUID = -7654484444146823298L;
 
+    /**
+     * The algorithm runner.
+     */
     private final GeneralAlgorithmRunner algorithmRunner;
+
+    /**
+     * The workbench.
+     */
     private GraphWorkbench workbench;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
 
     /**

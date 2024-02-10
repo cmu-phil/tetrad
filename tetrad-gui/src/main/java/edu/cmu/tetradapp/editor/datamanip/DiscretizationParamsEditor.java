@@ -60,6 +60,9 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
      */
     private JTabbedPane editorPane;
 
+    /**
+     * The parameters that will be returned by this editor.
+     */
     private Parameters parameters;
 
 

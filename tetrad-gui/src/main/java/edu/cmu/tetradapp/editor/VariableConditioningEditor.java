@@ -22,9 +22,25 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class VariableConditioningEditor extends JPanel {
+
+    /**
+     * New conditioning variable selector.
+     */
     private final JComboBox<Node> newConditioningVariableSelector;
+
+    /**
+     * New conditioning variable button.
+     */
     private final JButton newConditioningVariableButton;
+
+    /**
+     * Remove conditioning variable button.
+     */
     private final JButton removeConditioningVariableButton;
+
+    /**
+     * Map of conditioning panels.
+     */
     private final Map<Node, ConditioningPanel> conditioningPanelMap = new HashMap<>();
 
     /**
