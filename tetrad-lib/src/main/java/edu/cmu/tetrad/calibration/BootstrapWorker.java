@@ -51,7 +51,7 @@ class BootstrapWorker extends Thread {
     /**
      * MP: Instance variables' declaration'
      */
-    public double start_time
+    public double start_time;
 
     /**
      * MP: Instance variables' declaration'
