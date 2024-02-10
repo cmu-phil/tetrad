@@ -35,7 +35,7 @@ public final class DirichletEstimator {
     /**
      * <p>estimate.</p>
      *
-     * @param prior a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
+     * @param prior   a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      * @return a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
      */

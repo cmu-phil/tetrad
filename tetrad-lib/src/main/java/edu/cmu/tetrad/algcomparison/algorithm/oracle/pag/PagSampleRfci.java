@@ -63,9 +63,8 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
     }
 
     private final IndependenceWrapper test = new ProbabilisticTest();
-    private Knowledge knowledge;
     private final List<Graph> bootstrapGraphs = new ArrayList<>();
-
+    private Knowledge knowledge;
 
     /**
      * {@inheritDoc}

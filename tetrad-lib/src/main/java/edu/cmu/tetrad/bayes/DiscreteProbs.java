@@ -43,8 +43,8 @@ interface DiscreteProbs {
     /**
      * <p>getCellProb.</p>
      *
-     * @return the probability in a given cell.
      * @param cell an array of {@link int} objects
+     * @return the probability in a given cell.
      */
     double getCellProb(int[] cell);
 

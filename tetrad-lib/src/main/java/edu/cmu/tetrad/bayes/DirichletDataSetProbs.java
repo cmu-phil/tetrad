@@ -72,7 +72,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     /**
      * Creates a cell count table for the given data set.
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dataSet   a {@link edu.cmu.tetrad.data.DataSet} object
      * @param symmValue a double
      */
     public DirichletDataSetProbs(DataSet dataSet, double symmValue) {
@@ -102,9 +102,9 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     /**
      * <p>getCellProb.</p>
      *
+     * @param variableValues an array of {@link int} objects
      * @return the estimated probability for the given cell. The order of the variable values is the order of the
      * variables in getVariable().
-     * @param variableValues an array of {@link int} objects
      */
     public double getCellProb(int[] variableValues) {
         int[] point = new int[this.dims.length];
@@ -123,7 +123,9 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
         return count / (double) this.numRows;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getProb(Proposition assertion) {
         int[] point = new int[this.dims.length];
         int count = 0;
@@ -141,7 +143,9 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
         return count / (double) this.numRows;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {

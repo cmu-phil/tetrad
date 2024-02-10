@@ -35,7 +35,9 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class ExtraCategoryInterpolator implements DataFilter {
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public DataSet filter(DataSet dataSet) {
 
         // Why does it have to be discrete? Why can't we simply expand
@@ -48,12 +50,10 @@ public final class ExtraCategoryInterpolator implements DataFilter {
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node _var = dataSet.getVariable(j);
 
-            if (!(_var instanceof DiscreteVariable)) {
+            if (!(_var instanceof DiscreteVariable variable)) {
                 variables.add(_var);
                 continue;
             }
-
-            DiscreteVariable variable = (DiscreteVariable) _var;
 
             String oldName = variable.getName();
             List<String> oldCategories = variable.getCategories();
@@ -84,8 +84,7 @@ public final class ExtraCategoryInterpolator implements DataFilter {
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     newDataSet.setDouble(i, j, dataSet.getDouble(i, j));
                 }
-            } else if (_var instanceof DiscreteVariable) {
-                DiscreteVariable variable = (DiscreteVariable) _var;
+            } else if (_var instanceof DiscreteVariable variable) {
                 int numCategories = variable.getNumCategories();
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {

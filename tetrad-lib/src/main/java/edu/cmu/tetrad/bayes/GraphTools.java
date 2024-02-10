@@ -31,9 +31,9 @@ import java.util.*;
  * Oct 7, 2019 2:56:07 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  * @see <a
  * href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
- * @version $Id: $Id
  */
 public final class GraphTools {
 

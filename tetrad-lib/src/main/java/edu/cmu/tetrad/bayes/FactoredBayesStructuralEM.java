@@ -70,7 +70,7 @@ public final class FactoredBayesStructuralEM {
     /**
      * <p>Constructor for FactoredBayesStructuralEM.</p>
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dataSet   a {@link edu.cmu.tetrad.data.DataSet} object
      * @param bayesPmM0 a {@link edu.cmu.tetrad.bayes.BayesPm} object
      */
     public FactoredBayesStructuralEM(DataSet dataSet,

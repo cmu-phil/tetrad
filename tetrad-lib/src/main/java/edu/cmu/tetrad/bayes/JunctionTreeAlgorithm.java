@@ -35,9 +35,9 @@ import java.util.stream.Collectors;
  * Nov 8, 2019 2:22:34 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  * @see <a
  * href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
- * @version $Id: $Id
  */
 public class JunctionTreeAlgorithm implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -55,7 +55,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     /**
      * <p>Constructor for JunctionTreeAlgorithm.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
      */
     public JunctionTreeAlgorithm(Graph graph, DataModel dataModel) {
@@ -422,7 +422,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     private boolean isAllNodes(int[] nodes) {
         if (nodes.length == this.graphNodes.length) {
             long sum = Arrays.stream(nodes).sum();
-            long total = ((this.graphNodes.length - 1) * this.graphNodes.length) / 2;
+            long total = ((long) (this.graphNodes.length - 1) * this.graphNodes.length) / 2;
 
             return sum == total;
         }
@@ -434,9 +434,9 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
      * Get the joint probability of the nodes given their parents. Example: given x &lt;-- z --&gt; y, we can find
      * P(x,y|z). Another example: given x &lt;-- z --&gt; y &lt;-- w, we can find P(x,y|z,w)
      *
-     * @param nodes an array of {@link int} objects
-     * @param values an array of {@link int} objects
-     * @param parents an array of {@link int} objects
+     * @param nodes        an array of {@link int} objects
+     * @param values       an array of {@link int} objects
+     * @param parents      an array of {@link int} objects
      * @param parentValues an array of {@link int} objects
      * @return a double
      */
@@ -468,8 +468,8 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     /**
      * Get the conditional probability of a node for all of its values.
      *
-     * @param iNode a int
-     * @param parents an array of {@link int} objects
+     * @param iNode        a int
+     * @param parents      an array of {@link int} objects
      * @param parentValues an array of {@link int} objects
      * @return an array of {@link double} objects
      */
@@ -498,9 +498,9 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     /**
      * <p>getConditionalProbability.</p>
      *
-     * @param iNode a int
-     * @param value a int
-     * @param parents an array of {@link int} objects
+     * @param iNode        a int
+     * @param value        a int
+     * @param parents      an array of {@link int} objects
      * @param parentValues an array of {@link int} objects
      * @return a double
      */
@@ -529,7 +529,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
     /**
      * <p>getJointProbability.</p>
      *
-     * @param nodes an array of {@link int} objects
+     * @param nodes  an array of {@link int} objects
      * @param values an array of {@link int} objects
      * @return a double
      */
@@ -608,7 +608,9 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         return this.graphNodes.length;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return this.root.toString().trim();

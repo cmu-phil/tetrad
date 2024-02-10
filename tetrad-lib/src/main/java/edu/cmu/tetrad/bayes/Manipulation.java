@@ -135,11 +135,9 @@ public final class Manipulation implements TetradSerializable {
             return false;
         }
 
-        if (!(o instanceof Manipulation)) {
+        if (!(o instanceof Manipulation evidence)) {
             return false;
         }
-
-        Manipulation evidence = (Manipulation) o;
 
         if (!(getVariableSource() == evidence.getVariableSource())) {
             return false;

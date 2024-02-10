@@ -127,8 +127,8 @@ public final class MlBayesIm implements BayesIm {
      * Constructs a new BayesIm from the given BayesPm, initializing all values as Double.NaN ("?").
      *
      * @param bayesPm the given Bayes PM. Carries with it the underlying graph model.
-     * @throws java.lang.IllegalArgumentException if the array of nodes provided is not a permutation of the nodes contained in
-     *                                  the bayes parametric model provided.
+     * @throws java.lang.IllegalArgumentException if the array of nodes provided is not a permutation of the nodes
+     *                                            contained in the bayes parametric model provided.
      */
     public MlBayesIm(BayesPm bayesPm) throws IllegalArgumentException {
         this(bayesPm, null, MlBayesIm.MANUAL);
@@ -141,8 +141,8 @@ public final class MlBayesIm implements BayesIm {
      *
      * @param bayesPm              the given Bayes PM. Carries with it the underlying graph model.
      * @param initializationMethod either MANUAL or RANDOM.
-     * @throws java.lang.IllegalArgumentException if the array of nodes provided is not a permutation of the nodes contained in
-     *                                  the bayes parametric model provided.
+     * @throws java.lang.IllegalArgumentException if the array of nodes provided is not a permutation of the nodes
+     *                                            contained in the bayes parametric model provided.
      */
     public MlBayesIm(BayesPm bayesPm, int initializationMethod)
             throws IllegalArgumentException {
@@ -159,8 +159,8 @@ public final class MlBayesIm implements BayesIm {
      * @param oldBayesIm           an already-constructed BayesIm whose values may be used where possible to initialize
      *                             this BayesIm. May be null.
      * @param initializationMethod either MANUAL or RANDOM.
-     * @throws java.lang.IllegalArgumentException if the array of nodes provided is not a permutation of the nodes contained in
-     *                                  the bayes parametric model provided.
+     * @throws java.lang.IllegalArgumentException if the array of nodes provided is not a permutation of the nodes
+     *                                            contained in the bayes parametric model provided.
      */
     public MlBayesIm(BayesPm bayesPm, BayesIm oldBayesIm,
                      int initializationMethod) throws IllegalArgumentException {
@@ -278,7 +278,9 @@ public final class MlBayesIm implements BayesIm {
         return this.nodes.length;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node getNode(int nodeIndex) {
         return this.nodes[nodeIndex];
     }
@@ -293,7 +295,9 @@ public final class MlBayesIm implements BayesIm {
         return getDag().getNode(name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getNodeIndex(Node node) {
         for (int i = 0; i < this.nodes.length; i++) {
             if (node == this.nodes[i]) {
@@ -345,32 +349,44 @@ public final class MlBayesIm implements BayesIm {
         return variableNames;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getNumColumns(int nodeIndex) {
         return this.probs[nodeIndex][0].length;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getNumRows(int nodeIndex) {
         return this.probs[nodeIndex].length;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getNumParents(int nodeIndex) {
         return this.parents[nodeIndex].length;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getParent(int nodeIndex, int parentIndex) {
         return this.parents[nodeIndex][parentIndex];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getParentDim(int nodeIndex, int parentIndex) {
         return this.parentDims[nodeIndex][parentIndex];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int[] getParentDims(int nodeIndex) {
         int[] dims = this.parentDims[nodeIndex];
         int[] copy = new int[dims.length];
@@ -378,7 +394,9 @@ public final class MlBayesIm implements BayesIm {
         return copy;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int[] getParents(int nodeIndex) {
         int[] nodeParents = this.parents[nodeIndex];
         int[] copy = new int[nodeParents.length];
@@ -386,7 +404,9 @@ public final class MlBayesIm implements BayesIm {
         return copy;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int[] getParentValues(int nodeIndex, int rowIndex) {
         int[] dims = getParentDims(nodeIndex);
         int[] values = new int[dims.length];
@@ -399,12 +419,16 @@ public final class MlBayesIm implements BayesIm {
         return values;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getParentValue(int nodeIndex, int rowIndex, int colIndex) {
         return getParentValues(nodeIndex, rowIndex)[colIndex];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getProbability(int nodeIndex, int rowIndex, int colIndex) {
         return this.probs[nodeIndex][rowIndex][colIndex];
     }
@@ -412,10 +436,10 @@ public final class MlBayesIm implements BayesIm {
     /**
      * <p>getRowIndex.</p>
      *
+     * @param nodeIndex a int
+     * @param values    an array of {@link int} objects
      * @return the row in the table for the given node and combination of parent values.
      * @see #getParentValues
-     * @param nodeIndex a int
-     * @param values an array of {@link int} objects
      */
     public int getRowIndex(int nodeIndex, int[] values) {
         int[] dim = getParentDims(nodeIndex);
@@ -440,7 +464,7 @@ public final class MlBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Normalizes all rows in the table associated with a given node.
      */
     public void normalizeNode(int nodeIndex) {
@@ -451,7 +475,7 @@ public final class MlBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Normalizes the given row.
      */
     public void normalizeRow(int nodeIndex, int rowIndex) {
@@ -480,7 +504,7 @@ public final class MlBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the probability for the given node. The matrix row represent row index, the row in the table for this for
      * node which represents the combination of parent values in question. of the CPT. The matrix column represent
      * column index, the column in the table for this node which represents the value of the node in question.
@@ -494,12 +518,13 @@ public final class MlBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the probability for the given node at a given row and column in the table for that node. To get the node
      * index, use getNodeIndex(). To get the row index, use getRowIndex(). To get the column index, use
      * getCategoryIndex() from the underlying BayesPm(). The value returned will represent a conditional probability of
      * the form P(N=v0 | P1=v1, P2=v2, ... , Pn=vn), where N is the node referenced by nodeIndex, v0 is the value
      * referenced by colIndex, and the combination of parent values indicated is the combination indicated by rowIndex.
+     *
      * @see #getProbability
      */
     public void setProbability(int nodeIndex, int rowIndex, int colIndex,
@@ -517,7 +542,9 @@ public final class MlBayesIm implements BayesIm {
         this.probs[nodeIndex][rowIndex][colIndex] = value;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getCorrespondingNodeIndex(int nodeIndex, BayesIm otherBayesIm) {
         String nodeName = getNode(nodeIndex).getName();
         Node oldNode = otherBayesIm.getNode(nodeName);
@@ -526,7 +553,7 @@ public final class MlBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Assigns random probability values to the child values of this row that add to 1.
      */
     public void clearRow(int nodeIndex, int rowIndex) {
@@ -537,7 +564,7 @@ public final class MlBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Assigns random probability values to the child values of this row that add to 1.
      */
     public void randomizeRow(int nodeIndex, int rowIndex) {
@@ -547,7 +574,7 @@ public final class MlBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Randomizes any row in the table for the given node index that has a Double.NaN value in it.
      */
     public void randomizeIncompleteRows(int nodeIndex) {
@@ -560,7 +587,7 @@ public final class MlBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Randomizes every row in the table for the given node index.
      */
     public void randomizeTable(int nodeIndex) {
@@ -660,7 +687,7 @@ public final class MlBayesIm implements BayesIm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Randomizes every row in the table for the given node index.
      */
     public void clearTable(int nodeIndex) {
@@ -669,7 +696,9 @@ public final class MlBayesIm implements BayesIm {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isIncomplete(int nodeIndex, int rowIndex) {
         for (int colIndex = 0; colIndex < getNumColumns(nodeIndex); colIndex++) {
             double p = getProbability(nodeIndex, rowIndex, colIndex);
@@ -682,7 +711,9 @@ public final class MlBayesIm implements BayesIm {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isIncomplete(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
             if (isIncomplete(nodeIndex, rowIndex)) {
@@ -696,10 +727,10 @@ public final class MlBayesIm implements BayesIm {
     /**
      * Simulates a sample with the given sample size.
      *
-     * @param sampleSize the sample size.
-     * @return the simulated sample as a DataSet.
+     * @param sampleSize      the sample size.
      * @param latentDataSaved a boolean
-     * @param tiers an array of {@link int} objects
+     * @param tiers           an array of {@link int} objects
+     * @return the simulated sample as a DataSet.
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved, int[] tiers) {
         if (getBayesPm().getDag().isTimeLagModel()) {
@@ -709,7 +740,9 @@ public final class MlBayesIm implements BayesIm {
         return simulateDataHelper(sampleSize, latentDataSaved, tiers);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         if (getBayesPm().getDag().isTimeLagModel()) {
             return simulateTimeSeries(sampleSize);
@@ -737,16 +770,18 @@ public final class MlBayesIm implements BayesIm {
     /**
      * <p>simulateData.</p>
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dataSet         a {@link edu.cmu.tetrad.data.DataSet} object
      * @param latentDataSaved a boolean
-     * @param tiers an array of {@link int} objects
+     * @param tiers           an array of {@link int} objects
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSet simulateData(DataSet dataSet, boolean latentDataSaved, int[] tiers) {
         return simulateDataHelper(dataSet, latentDataSaved, tiers);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
         // Get a tier ordering and convert it to an int array.
         Graph graph = getBayesPm().getDag();
@@ -1012,7 +1047,9 @@ public final class MlBayesIm implements BayesIm {
 //        System.out.println(dataSet);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == this) {
             return true;
@@ -1361,7 +1398,7 @@ public final class MlBayesIm implements BayesIm {
      * help.
      *
      * @param s The object input stream.
-     * @throws IOException If any.
+     * @throws IOException            If any.
      * @throws ClassNotFoundException If any. *
      */
     @Serial

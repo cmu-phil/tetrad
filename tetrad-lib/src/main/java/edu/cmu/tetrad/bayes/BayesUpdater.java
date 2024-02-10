@@ -31,10 +31,10 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * manipulation information into account. See implementations for details.)
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Evidence
  * @see Proposition
  * @see Manipulation
- * @version $Id: $Id
  */
 public interface BayesUpdater extends TetradSerializable {
     /**

@@ -43,6 +43,7 @@ final class QList {
 
     /////////////////////////////////////////////////////////////////
     // intialize an empty QList: Q(emptyset) = 1
+
     /**
      * <p>Constructor for QList.</p>
      *
@@ -55,11 +56,12 @@ final class QList {
 
     /////////////////////////////////////////////////////////////////
     // initialize with a probability term
+
     /**
      * <p>Constructor for QList.</p>
      *
      * @param nVariables a int
-     * @param probTerm an array of {@link int} objects
+     * @param probTerm   an array of {@link int} objects
      */
     public QList(int nVariables, int[] probTerm) {
         this.nVariables = nVariables;
@@ -100,12 +102,13 @@ final class QList {
     /////////////////////////////////////////////////////////////////
     // append a term to the end
     //
+
     /**
      * <p>add.</p>
      *
-     * @param q a {@link edu.cmu.tetrad.bayes.QList} object
+     * @param q                a {@link edu.cmu.tetrad.bayes.QList} object
      * @param sumOverVariables an array of {@link int} objects
-     * @param inNumerator a boolean
+     * @param inNumerator      a boolean
      */
     public void add(QList q, int[] sumOverVariables, boolean inNumerator) {
         QList qAdd = new QList(this.nVariables);
@@ -133,6 +136,7 @@ final class QList {
     // index1: the numbering of terms in the linked list
     // index2: the depth of recursive sublists
     //
+
     /**
      * <p>printQList.</p>
      *
@@ -180,10 +184,11 @@ final class QList {
     // compute the numeric value of the expression in qPTS
     // by using the RowSummingExactUpdater
     //
+
     /**
      * <p>computeValue.</p>
      *
-     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param bayesIm        a {@link edu.cmu.tetrad.bayes.BayesIm} object
      * @param fixedVarValues an array of {@link int} objects
      * @return a double
      */

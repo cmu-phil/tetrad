@@ -165,15 +165,17 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
     /**
      * <p>getCellProb.</p>
      *
+     * @param variableValues an array of {@link int} objects
      * @return the probability for the given cell, specified as a particular combination of variable values, for the
      * list of variables (in order) returned by get
-     * @param variableValues an array of {@link int} objects
      */
     public double getCellProb(int[] variableValues) {
         return this.probs[getOffset(variableValues)];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getProb(Proposition assertion) {
 
         // Initialize to 0's.
@@ -212,7 +214,9 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         return p;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {

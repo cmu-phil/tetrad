@@ -31,7 +31,9 @@ import edu.cmu.tetrad.graph.Graph;
  * @version $Id: $Id
  */
 public interface ManipulatingBayesUpdater extends BayesUpdater {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
@@ -59,7 +61,7 @@ public interface ManipulatingBayesUpdater extends BayesUpdater {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets new evidence for the updater. Once this is called, old updating results should not longer be available.
      */
     void setEvidence(Evidence evidence);
@@ -75,9 +77,9 @@ public interface ManipulatingBayesUpdater extends BayesUpdater {
 
     /**
      * {@inheritDoc}
-     *
-     * Returns the updated graph. This is the graph in which all probabilities of variables conditional on their
-     * parents have been updated.
+     * <p>
+     * Returns the updated graph. This is the graph in which all probabilities of variables conditional on their parents
+     * have been updated.
      */
     double getMarginal(int variable, int category);
 

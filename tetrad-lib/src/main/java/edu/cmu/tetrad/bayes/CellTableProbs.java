@@ -118,9 +118,9 @@ public final class CellTableProbs implements DiscreteProbs {
     /**
      * <p>getCellProb.</p>
      *
+     * @param variableValues an array of {@link int} objects
      * @return the estimated probability for the given cell. The order of the variable values is the order of the
      * variables in getVariable().
-     * @param variableValues an array of {@link int} objects
      */
     public double getCellProb(int[] variableValues) {
         int cellIndex = getCellIndex(variableValues);
@@ -128,7 +128,9 @@ public final class CellTableProbs implements DiscreteProbs {
         return cellCount / (double) this.numPoints;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getProb(Proposition assertion) {
 
         // Initialize to 0's.
@@ -168,7 +170,9 @@ public final class CellTableProbs implements DiscreteProbs {
         return p;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {

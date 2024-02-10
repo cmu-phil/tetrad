@@ -67,7 +67,7 @@ public final class EmBayesProperties {
      * <p>Constructor for EmBayesProperties.</p>
      *
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph   a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public EmBayesProperties(DataSet dataSet, Graph graph) {
         setDataSet(dataSet);

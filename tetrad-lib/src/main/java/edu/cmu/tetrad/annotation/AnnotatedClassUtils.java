@@ -41,9 +41,9 @@ public class AnnotatedClassUtils {
      * Gets a list of annotated classes in the given package.
      *
      * @param packageName package name
-     * @param type annotation type
+     * @param type        annotation type
+     * @param <T>         annotation type.
      * @return list of annotated classes
-     * @param <T> annotation type.
      */
     public static <T extends Annotation> List<AnnotatedClass<T>> getAnnotatedClasses(String packageName, Class<T> type) {
         Reflections reflections = new Reflections(packageName);
@@ -57,10 +57,10 @@ public class AnnotatedClassUtils {
     /**
      * Filters a list of annotated classes by the given annotation.
      *
-     * @param annotation annotation
+     * @param annotation       annotation
      * @param annotatedClasses list of annotated classes
+     * @param <T>              annotation type.
      * @return list of annotated classes
-     * @param <T> annotation type.
      */
     public static <T extends Annotation> List<AnnotatedClass<T>> filterByAnnotations(Class<? extends Annotation> annotation, List<AnnotatedClass<T>> annotatedClasses) {
         List<AnnotatedClass<T>> list = new LinkedList<>();

@@ -95,6 +95,15 @@ public final class BayesProperties {
         }
     }
 
+    private static int getRowIndex(int[] dim, int[] values) {
+        int rowIndex = 0;
+        for (int i = 0; i < dim.length; i++) {
+            rowIndex *= dim[i];
+            rowIndex += values[i];
+        }
+        return rowIndex;
+    }
+
     /**
      * Calculates the p-value of the graph with respect to the given data.
      *
@@ -209,15 +218,6 @@ public final class BayesProperties {
         }
 
         return null;
-    }
-
-    private static int getRowIndex(int[] dim, int[] values) {
-        int rowIndex = 0;
-        for (int i = 0; i < dim.length; i++) {
-            rowIndex *= dim[i];
-            rowIndex += values[i];
-        }
-        return rowIndex;
     }
 
     private int getDof(Graph graph) {

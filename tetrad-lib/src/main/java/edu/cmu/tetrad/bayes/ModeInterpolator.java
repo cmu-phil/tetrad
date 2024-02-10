@@ -38,14 +38,15 @@ import java.util.Arrays;
 public final class ModeInterpolator implements DataFilter {
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public DataSet filter(DataSet dataSet) {
         DataSet newDataSet = dataSet.copy();
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node var = dataSet.getVariable(j);
-            if (var instanceof DiscreteVariable) {
-                DiscreteVariable variable = (DiscreteVariable) var;
+            if (var instanceof DiscreteVariable variable) {
                 int numCategories = variable.getNumCategories();
                 int[] categoryCounts = new int[numCategories];
 

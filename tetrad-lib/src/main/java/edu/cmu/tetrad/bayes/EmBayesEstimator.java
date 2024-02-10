@@ -141,7 +141,7 @@ public final class EmBayesEstimator {
      * <p>Constructor for EmBayesEstimator.</p>
      *
      * @param inputBayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dataSet      a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public EmBayesEstimator(BayesIm inputBayesIm, DataSet dataSet) {
         this(inputBayesIm.getBayesPm(), dataSet);

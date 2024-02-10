@@ -28,7 +28,7 @@ import java.util.List;
 
 /**
  * Annotations for algorithms.
- *
+ * <p>
  * Sep 26, 2017 12:19:41 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

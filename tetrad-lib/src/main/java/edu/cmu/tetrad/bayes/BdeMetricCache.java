@@ -550,11 +550,9 @@ public final class BdeMetricCache {
                 return true;
             }
 
-            if (!(other instanceof NodeParentsPair)) {
+            if (!(other instanceof NodeParentsPair npp)) {
                 return false;
             }
-
-            NodeParentsPair npp = (NodeParentsPair) other;
 
             return npp.node.equals(this.node) && npp.parents.equals(this.parents);
 

@@ -39,11 +39,11 @@ final class BayesUtils {
      * same names. If a variable x in the list has a superlist of the categories for x in the data, the data variables
      * is changed.
      *
-     * @throws java.lang.IllegalArgumentException if a variable exists in the list for which no variable occurs in the data by the
-     *                                  same name or if the variable in the data by the same name does not have a subset
-     *                                  of its categories.
-     * @param pmVars a {@link java.util.List} object
+     * @param pmVars  a {@link java.util.List} object
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.lang.IllegalArgumentException if a variable exists in the list for which no variable occurs in the
+     *                                            data by the same name or if the variable in the data by the same name
+     *                                            does not have a subset of its categories.
      */
     public static void ensureVarsInData(List<Node> pmVars,
                                         DataSet dataSet) {
