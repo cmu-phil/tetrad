@@ -40,7 +40,7 @@ import java.util.List;
 public class CpdagFitEditor extends JPanel {
 
     /**
-     * The model for the note.
+     * The model to display.
      */
     private final CpdagFitModel comparison;
 
