@@ -15,19 +15,25 @@ import java.util.List;
 public class NonancestorPrecision implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "Nonanc-Prec";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Proportion of NOT X~~>Y in the estimated graph for which also NOT X~~>Y in true graph";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -51,7 +57,9 @@ public class NonancestorPrecision implements Statistic {
         return tp / (double) (tp + fp);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

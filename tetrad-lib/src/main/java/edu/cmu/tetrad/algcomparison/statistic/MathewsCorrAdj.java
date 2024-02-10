@@ -18,19 +18,25 @@ import org.apache.commons.math3.util.FastMath;
 public class MathewsCorrAdj implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "McAdj";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Matthew's correlation coefficient for adjacencies";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
@@ -41,7 +47,9 @@ public class MathewsCorrAdj implements Statistic {
         return mcc(adjTp, adjFp, adjTn, adjFn);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return 0.5 + 0.5 * value;

@@ -16,7 +16,9 @@ import java.util.List;
 public class ErdosRenyi implements RandomGraph {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph createGraph(Parameters parameters) {
         double p = parameters.getDouble(Params.PROBABILITY_OF_EDGE);
@@ -30,13 +32,17 @@ public class ErdosRenyi implements RandomGraph {
                 m + l, l, e, max, max, max, false);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Graph constructed the Erdos-Renyi method (p fixed, # edges not)";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

@@ -14,19 +14,25 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 public class PagAdjacencyPrecision implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "PAP";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Adjacency Precision compared to true PAG";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = GraphTransforms.dagToPag(trueGraph);
@@ -37,7 +43,9 @@ public class PagAdjacencyPrecision implements Statistic {
         return adjTp / (double) (adjTp + adjFp);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

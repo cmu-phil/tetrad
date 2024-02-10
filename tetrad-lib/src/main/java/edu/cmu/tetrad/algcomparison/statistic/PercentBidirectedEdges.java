@@ -14,19 +14,25 @@ import edu.cmu.tetrad.graph.Graph;
 public class PercentBidirectedEdges implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "BID";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Percent Bidirected Edges";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int numBidirected = 0;
@@ -43,7 +49,9 @@ public class PercentBidirectedEdges implements Statistic {
         return numBidirected / (double) numTotal;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return 1.0 - value;

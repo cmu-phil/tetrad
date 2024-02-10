@@ -82,12 +82,12 @@ public class TimeoutComparison {
     /**
      * <p>compareFromFiles.</p>
      *
-     * @param filePath a {@link java.lang.String} object
+     * @param filePath   a {@link java.lang.String} object
      * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
      * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param timeout a long
-     * @param unit a {@link java.util.concurrent.TimeUnit} object
+     * @param timeout    a long
+     * @param unit       a {@link java.util.concurrent.TimeUnit} object
      */
     public void compareFromFiles(String filePath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
@@ -102,8 +102,8 @@ public class TimeoutComparison {
      * @param algorithms  The list of algorithms to be compared.
      * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
      * @param parameters  The list of parameters and their values.
-     * @param timeout a long
-     * @param unit a {@link java.util.concurrent.TimeUnit} object
+     * @param timeout     a long
+     * @param unit        a {@link java.util.concurrent.TimeUnit} object
      */
     public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
@@ -148,13 +148,13 @@ public class TimeoutComparison {
     /**
      * <p>generateReportFromExternalAlgorithms.</p>
      *
-     * @param dataPath a {@link java.lang.String} object
+     * @param dataPath    a {@link java.lang.String} object
      * @param resultsPath a {@link java.lang.String} object
-     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
-     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param timeout a long
-     * @param unit a {@link java.util.concurrent.TimeUnit} object
+     * @param algorithms  a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics  a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout     a long
+     * @param unit        a {@link java.util.concurrent.TimeUnit} object
      */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
@@ -165,14 +165,14 @@ public class TimeoutComparison {
     /**
      * <p>generateReportFromExternalAlgorithms.</p>
      *
-     * @param dataPath a {@link java.lang.String} object
-     * @param resultsPath a {@link java.lang.String} object
+     * @param dataPath       a {@link java.lang.String} object
+     * @param resultsPath    a {@link java.lang.String} object
      * @param outputFileName a {@link java.lang.String} object
-     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
-     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param timeout a long
-     * @param unit a {@link java.util.concurrent.TimeUnit} object
+     * @param algorithms     a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics     a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout        a long
+     * @param unit           a {@link java.util.concurrent.TimeUnit} object
      */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, String outputFileName, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
@@ -222,11 +222,11 @@ public class TimeoutComparison {
      *
      * @param resultsPath a {@link java.lang.String} object
      * @param simulations a {@link edu.cmu.tetrad.algcomparison.simulation.Simulations} object
-     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
-     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param timeout a long
-     * @param unit a {@link java.util.concurrent.TimeUnit} object
+     * @param algorithms  a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics  a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout     a long
+     * @param unit        a {@link java.util.concurrent.TimeUnit} object
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
@@ -236,14 +236,14 @@ public class TimeoutComparison {
     /**
      * Compares algorithms.
      *
-     * @param resultsPath Path to the file where the output should be printed.
-     * @param simulations The list of simulationWrapper that is used to generate graphs and data for the comparison.
-     * @param algorithms  The list of algorithms to be compared.
-     * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
+     * @param resultsPath    Path to the file where the output should be printed.
+     * @param simulations    The list of simulationWrapper that is used to generate graphs and data for the comparison.
+     * @param algorithms     The list of algorithms to be compared.
+     * @param statistics     The list of statistics on which to compare the algorithm, and their utility weights.
      * @param outputFileName a {@link java.lang.String} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param timeout a long
-     * @param unit a {@link java.util.concurrent.TimeUnit} object
+     * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout        a long
+     * @param unit           a {@link java.util.concurrent.TimeUnit} object
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
@@ -332,8 +332,7 @@ public class TimeoutComparison {
                             + " / " + simulationWrapper.getDescription());
                 }
 
-                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
-                    ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
                     external.setSimIndex(simulationWrappers.indexOf(external.getSimulation()));
                 }
 
@@ -1152,8 +1151,7 @@ public class TimeoutComparison {
                 ((HasKnowledge) algorithm).setKnowledge(((HasKnowledge) simulation).getKnowledge());
             }
 
-            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
-                ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
                 external.setSimulation(simulationWrapper.getSimulation());
                 external.setPath(this.resultsPath);
                 external.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
@@ -1201,8 +1199,7 @@ public class TimeoutComparison {
             out = GraphUtils.replaceNodes(out, trueGraph.getNodes());
         }
 
-        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
-            ExternalAlgorithm extAlg = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm extAlg) {
             extAlg.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
             extAlg.setSimulation(simulationWrapper.getSimulation());
             extAlg.setPath(this.resultsPath);

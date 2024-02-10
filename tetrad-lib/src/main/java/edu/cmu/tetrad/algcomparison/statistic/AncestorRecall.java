@@ -24,7 +24,7 @@ public class AncestorRecall implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the name of the statistic.
      */
     @Override
@@ -34,7 +34,7 @@ public class AncestorRecall implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the description of the statistic.
      */
     @Override
@@ -44,7 +44,7 @@ public class AncestorRecall implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Calculates the statistic.
      */
     @Override
@@ -72,7 +72,7 @@ public class AncestorRecall implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the norm value of the statistic.
      */
     @Override

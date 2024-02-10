@@ -21,7 +21,7 @@ public class OrientationConfusion {
      * <p>Constructor for OrientationConfusion.</p>
      *
      * @param truth a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param est a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param est   a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public OrientationConfusion(Graph truth, Graph est) {
         this.tp = 0;

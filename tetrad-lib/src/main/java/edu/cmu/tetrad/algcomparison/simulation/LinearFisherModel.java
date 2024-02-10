@@ -2,7 +2,10 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesData;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
@@ -43,7 +46,7 @@ public class LinearFisherModel implements Simulation, TakesData {
     /**
      * <p>Constructor for LinearFisherModel.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     * @param graph  a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
      * @param shocks a {@link java.util.List} object
      */
     public LinearFisherModel(RandomGraph graph, List<DataModel> shocks) {
@@ -67,7 +70,9 @@ public class LinearFisherModel implements Simulation, TakesData {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
 //        if (parameters.getLong(Params.SEED) != -1L) {
@@ -170,25 +175,33 @@ public class LinearFisherModel implements Simulation, TakesData {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Linear Fisher model simulation";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>(this.randomGraph.getParameters());
@@ -224,13 +237,17 @@ public class LinearFisherModel implements Simulation, TakesData {
         return parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;

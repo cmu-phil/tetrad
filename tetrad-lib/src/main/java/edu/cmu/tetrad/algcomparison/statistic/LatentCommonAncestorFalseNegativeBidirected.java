@@ -16,19 +16,25 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
 public class LatentCommonAncestorFalseNegativeBidirected implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "LCAFNB";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Latent Common Ancestor False Negative Bidirected";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = GraphTransforms.dagToPag(trueGraph);
@@ -60,7 +66,9 @@ public class LatentCommonAncestorFalseNegativeBidirected implements Statistic {
         return fn;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

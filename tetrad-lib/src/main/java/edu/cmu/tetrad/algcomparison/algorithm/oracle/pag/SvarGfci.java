@@ -58,7 +58,7 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     /**
      * <p>Constructor for SvarGfci.</p>
      *
-     * @param type a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param type  a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
      * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
      */
     public SvarGfci(IndependenceWrapper type, ScoreWrapper score) {
@@ -66,7 +66,9 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
         this.score = score;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
 
@@ -104,7 +106,9 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new TsDagToPag(new EdgeListGraph(graph)).convert();
@@ -119,13 +123,17 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
         return "SavrGFCI (SVAR GFCI) using " + this.test.getDescription() + " and " + this.score.getDescription();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return this.test.getDataType();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -139,43 +147,57 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
         return parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

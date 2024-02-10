@@ -4,7 +4,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
@@ -45,7 +44,7 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the knowledge.
      */
     @Override
@@ -55,17 +54,17 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the knowledge.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Performs the RFCI-BSC search.
      */
     @Override
@@ -94,7 +93,7 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the comparison graph.
      */
     @Override
@@ -105,7 +104,7 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the description of the algorithm.
      */
     @Override
@@ -115,7 +114,7 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the data type that the algorithm can handle, which is discrete.
      */
     @Override
@@ -125,7 +124,7 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the parameters of the algorithm.
      */
     @Override

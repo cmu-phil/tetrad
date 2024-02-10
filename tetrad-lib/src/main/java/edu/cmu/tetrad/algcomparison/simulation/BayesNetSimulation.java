@@ -68,7 +68,7 @@ public class BayesNetSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates the data.
      */
     @Override
@@ -108,7 +108,7 @@ public class BayesNetSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the simulated data set.
      */
     @Override
@@ -118,7 +118,7 @@ public class BayesNetSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the true graph.
      */
     @Override
@@ -132,7 +132,7 @@ public class BayesNetSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the description.
      */
     @Override
@@ -142,7 +142,7 @@ public class BayesNetSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the parameters.
      */
     @Override
@@ -174,7 +174,7 @@ public class BayesNetSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the number of data sets.
      */
     @Override
@@ -184,7 +184,7 @@ public class BayesNetSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the data type.
      */
     @Override

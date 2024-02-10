@@ -25,7 +25,9 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
 
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         return new IndTestMultinomialLogisticRegressionWald(
@@ -34,19 +36,25 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
                 false);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Multinomial Logistic Retression Wald Test";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

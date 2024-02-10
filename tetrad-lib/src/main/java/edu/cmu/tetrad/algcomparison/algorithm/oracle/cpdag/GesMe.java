@@ -56,7 +56,9 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
         setCompareToTrue(compareToTrueGraph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -196,7 +198,9 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         if (this.compareToTrue) {
@@ -207,19 +211,25 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "FGES (Fast Greedy Equivalence Search) using " + this.score.getDescription();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return this.score.getDataType();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -269,7 +279,9 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
 
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

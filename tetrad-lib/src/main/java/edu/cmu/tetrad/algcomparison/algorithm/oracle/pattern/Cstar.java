@@ -43,6 +43,7 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     private LinkedList<edu.cmu.tetrad.search.Cstar.Record> records;
 
     // Don't delete.
+
     /**
      * <p>Constructor for Cstar.</p>
      */
@@ -52,7 +53,7 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     /**
      * <p>Constructor for Cstar.</p>
      *
-     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param test  a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
      * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
      */
     public Cstar(IndependenceWrapper test, ScoreWrapper score) {
@@ -60,7 +61,9 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         this.score = score;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
@@ -179,25 +182,33 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         return cStaR.makeGraph(this.getRecords());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "CStaR";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -214,13 +225,17 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         return parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
@@ -235,13 +250,17 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         return this.records;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;

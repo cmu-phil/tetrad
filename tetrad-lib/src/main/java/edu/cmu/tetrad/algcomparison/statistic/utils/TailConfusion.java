@@ -28,7 +28,7 @@ public class TailConfusion {
      * <p>Constructor for TailConfusion.</p>
      *
      * @param truth a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param est a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param est   a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public TailConfusion(Graph truth, Graph est) {
         Graph est1 = est;

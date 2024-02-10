@@ -189,8 +189,8 @@ public class CompareTwoGraphs {
      * @param trueGraph   The true graph.
      * @param targetGraph The target graph.
      * @param dataModel   The data model; some statistics (like BIC) may use this.
-     * @return The comparison string.
      * @param elapsedTime a long
+     * @return The comparison string.
      */
     public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel, long elapsedTime) {
         Graph _targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());

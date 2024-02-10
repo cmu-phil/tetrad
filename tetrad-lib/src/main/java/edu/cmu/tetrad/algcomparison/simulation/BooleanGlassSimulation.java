@@ -79,7 +79,7 @@ public class BooleanGlassSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new data set.
      */
     @Override
@@ -141,7 +141,7 @@ public class BooleanGlassSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the true graph.
      */
     @Override
@@ -151,7 +151,7 @@ public class BooleanGlassSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the simulated data set.
      */
     @Override
@@ -161,7 +161,7 @@ public class BooleanGlassSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the description of the simulation.
      */
     @Override
@@ -171,7 +171,7 @@ public class BooleanGlassSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the parameters for the simulation.
      */
     @Override
@@ -202,7 +202,7 @@ public class BooleanGlassSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the number of true graphs.
      */
     @Override
@@ -212,7 +212,7 @@ public class BooleanGlassSimulation implements Simulation {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the data type of the simulation.
      */
     @Override

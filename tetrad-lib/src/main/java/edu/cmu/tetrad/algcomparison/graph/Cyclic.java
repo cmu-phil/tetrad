@@ -15,7 +15,9 @@ import java.util.List;
 public class Cyclic implements RandomGraph {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph createGraph(Parameters parameters) {
         return edu.cmu.tetrad.graph.RandomGraph.randomCyclicGraph3(parameters.getInt("numMeasures"),
@@ -24,13 +26,17 @@ public class Cyclic implements RandomGraph {
                 parameters.getInt("probTwoCycle"));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Cyclic graph built from small cyclic components";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> paramDescriptions = new ArrayList<>();

@@ -57,7 +57,7 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Runs the BOSS-LiNGAM algorithm.
      */
     @Override
@@ -109,7 +109,7 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the comparison graph.
      */
     @Override
@@ -119,7 +119,7 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the description of the algorithm.
      */
     @Override
@@ -129,7 +129,7 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the data type that the algorithm can handle.
      */
     @Override
@@ -139,7 +139,7 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the parameters for the algorithm.
      */
     @Override
@@ -157,7 +157,7 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the knowledge.
      */
     @Override
@@ -167,7 +167,7 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the knowledge.
      */
     @Override
@@ -177,7 +177,7 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the score wrapper.
      */
     @Override
@@ -187,7 +187,7 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the score wrapper.
      */
     @Override
@@ -197,7 +197,7 @@ public class BossLingam implements Algorithm, HasKnowledge, UsesScoreWrapper, Re
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the bootstrap graphs.
      */
     @Override

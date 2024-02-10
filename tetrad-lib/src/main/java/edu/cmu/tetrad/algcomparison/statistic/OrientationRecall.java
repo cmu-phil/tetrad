@@ -13,19 +13,25 @@ import edu.cmu.tetrad.graph.Graph;
 public class OrientationRecall implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "OR";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Orientation Recall";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         OrientationConfusion oriConfusion = new OrientationConfusion(trueGraph, estGraph);
@@ -34,7 +40,9 @@ public class OrientationRecall implements Statistic {
         return oriTp / (double) (oriTp + oriFn);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

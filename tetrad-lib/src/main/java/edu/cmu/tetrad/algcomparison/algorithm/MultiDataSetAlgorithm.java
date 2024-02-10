@@ -18,7 +18,7 @@ public interface MultiDataSetAlgorithm extends Algorithm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Runs the search.
      */
     Graph search(List<DataModel> dataSets, Parameters parameters);

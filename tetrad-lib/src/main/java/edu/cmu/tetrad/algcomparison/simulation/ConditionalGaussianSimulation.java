@@ -74,7 +74,9 @@ public class ConditionalGaussianSimulation implements Simulation {
         return outG;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -137,25 +139,33 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Conditional Gaussian simulation using " + this.randomGraph.getDescription();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
@@ -180,13 +190,17 @@ public class ConditionalGaussianSimulation implements Simulation {
         return parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return this.dataType;
@@ -506,10 +520,9 @@ public class ConditionalGaussianSimulation implements Simulation {
             if (o == this) {
                 return true;
             }
-            if (!(o instanceof Combination)) {
+            if (!(o instanceof Combination v)) {
                 return false;
             }
-            Combination v = (Combination) o;
             return v.parameter == this.parameter && v.paramValues.equals(this.paramValues);
         }
 
@@ -544,10 +557,9 @@ public class ConditionalGaussianSimulation implements Simulation {
             if (o == this) {
                 return true;
             }
-            if (!(o instanceof VariableValues)) {
+            if (!(o instanceof VariableValues v)) {
                 return false;
             }
-            VariableValues v = (VariableValues) o;
             return v.variable.equals(this.variable) && v.value == this.value;
         }
     }

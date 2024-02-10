@@ -41,7 +41,9 @@ public class Tanh implements Algorithm, TakesExternalGraph {
         this.algorithm = algorithm;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -76,26 +78,34 @@ public class Tanh implements Algorithm, TakesExternalGraph {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Tahn" + (this.algorithm != null ? " with initial graph from "
                 + this.algorithm.getDescription() : "");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new LinkedList<>();
@@ -109,7 +119,9 @@ public class Tanh implements Algorithm, TakesExternalGraph {
         return parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {

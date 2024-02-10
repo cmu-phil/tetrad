@@ -15,19 +15,25 @@ import edu.cmu.tetrad.graph.Node;
 public class NoAlmostCyclicPathsCondition implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "NoAlmostCyclic";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "1 if the no almost cyclic paths condition passes, 0 if not";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = estGraph;
@@ -48,7 +54,9 @@ public class NoAlmostCyclicPathsCondition implements Statistic {
         return 1;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

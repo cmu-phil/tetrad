@@ -35,7 +35,7 @@ public class ArrowConfusion {
      * Constructs a new ArrowConfusion object.
      *
      * @param truth the true graph
-     * @param est the estimated graph
+     * @param est   the estimated graph
      */
     public ArrowConfusion(Graph truth, Graph est) {
         this(truth, est, false);
@@ -44,8 +44,8 @@ public class ArrowConfusion {
     /**
      * Constructs a new ArrowConfusion object.
      *
-     * @param truth the true graph
-     * @param est the estimated graph
+     * @param truth    the true graph
+     * @param est      the estimated graph
      * @param truthAdj if true, use the true graph to determine adjacency for arrowhead FP's
      */
     public ArrowConfusion(Graph truth, Graph est, boolean truthAdj) {

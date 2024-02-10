@@ -23,7 +23,7 @@ public class AdjacencyConfusion {
      * Constructs a new AdjacencyConfusion object from the given graphs.
      *
      * @param truth The true graph.
-     * @param est The estimated graph.
+     * @param est   The estimated graph.
      */
     public AdjacencyConfusion(Graph truth, Graph est) {
         this.tp = 0;

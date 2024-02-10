@@ -16,19 +16,25 @@ import static edu.cmu.tetrad.algcomparison.statistic.CommonAncestorTruePositiveB
 public class CommonAncestorFalsePositiveBidirected implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "CAFPB";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Common Ancestor False Positive Bidirected";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int fp = 0;
@@ -42,7 +48,9 @@ public class CommonAncestorFalsePositiveBidirected implements Statistic {
         return fp;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

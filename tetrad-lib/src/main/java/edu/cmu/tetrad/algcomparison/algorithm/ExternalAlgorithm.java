@@ -58,7 +58,7 @@ public abstract class ExternalAlgorithm implements Algorithm {
     /**
      * <p>getElapsedTime.</p>
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataModel} object
+     * @param dataSet    a {@link edu.cmu.tetrad.data.DataModel} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      * @return a long
      */

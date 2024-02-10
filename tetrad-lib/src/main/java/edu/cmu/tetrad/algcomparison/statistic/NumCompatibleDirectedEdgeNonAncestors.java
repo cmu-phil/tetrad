@@ -14,19 +14,25 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
 public class NumCompatibleDirectedEdgeNonAncestors implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "#CompDNA";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Number X-->Y for which not X<~~L->..->Y in true";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         GraphUtils.addPagColoring(estGraph);
@@ -54,7 +60,9 @@ public class NumCompatibleDirectedEdgeNonAncestors implements Statistic {
         return tp;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

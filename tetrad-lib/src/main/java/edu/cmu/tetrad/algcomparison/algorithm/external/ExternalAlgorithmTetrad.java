@@ -52,7 +52,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
     /**
      * <p>Constructor for ExternalAlgorithmTetrad.</p>
      *
-     * @param extDir a {@link java.lang.String} object
+     * @param extDir          a {@link java.lang.String} object
      * @param shortDecription a {@link java.lang.String} object
      */
     public ExternalAlgorithmTetrad(String extDir, String shortDecription) {
@@ -62,7 +62,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the relevant graph from the file and returns it.
      */
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -76,7 +76,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
@@ -105,7 +105,9 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
         return DataType.Continuous;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);
 

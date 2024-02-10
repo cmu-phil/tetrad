@@ -29,19 +29,25 @@ public class NumParametersEst implements Statistic {
     public NumParametersEst() {
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "NumParams";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Number of parameters for the estimated graph for a Bayes or SEM model";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         if (dataModel.isDiscrete()) {
@@ -73,7 +79,9 @@ public class NumParametersEst implements Statistic {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return tanh(value / 1e6);

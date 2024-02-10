@@ -24,7 +24,7 @@ public class NumCommonMeasuredAncestorBidirected implements Statistic {
      * <p>existsCommonAncestor.</p>
      *
      * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @param edge      a {@link edu.cmu.tetrad.graph.Edge} object
      * @return a boolean
      */
     public static boolean existsCommonAncestor(Graph trueGraph, Edge edge) {
@@ -33,19 +33,25 @@ public class NumCommonMeasuredAncestorBidirected implements Statistic {
         return !nodes.isEmpty();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "#X<->Y,X<~~MnotL~~>Y";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "# X<->Y where X<~~M~~>Y in true but not X<~~L~~>Y";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -64,7 +70,9 @@ public class NumCommonMeasuredAncestorBidirected implements Statistic {
         return tp;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

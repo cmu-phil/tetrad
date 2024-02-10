@@ -64,7 +64,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     /**
      * <p>Constructor for FaskVote.</p>
      *
-     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param test  a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
      * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
      */
     public FaskVote(IndependenceWrapper test, ScoreWrapper score) {
@@ -72,7 +72,9 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
         this.score = score;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
         for (DataModel d : dataSets) {
@@ -113,7 +115,9 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -138,25 +142,33 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "FASK-Vote";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new Images().getParameters();
@@ -165,43 +177,57 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
         return parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setIndTestWrapper(IndependenceWrapper test) {
         this.test = test;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;

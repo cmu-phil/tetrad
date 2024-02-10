@@ -16,19 +16,25 @@ import java.util.List;
 public class ProportionSemidirectedPathsNotReversedEst implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "semi(X,Y,est)==>!semi(Y,X,true)";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Proportion of semi(X, Y) in estimated graph for which there is no semi(Y, X) in true graph";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         List<Node> nodes = estGraph.getNodes();
@@ -54,7 +60,9 @@ public class ProportionSemidirectedPathsNotReversedEst implements Statistic {
         return tp / (double) (tp + fp);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

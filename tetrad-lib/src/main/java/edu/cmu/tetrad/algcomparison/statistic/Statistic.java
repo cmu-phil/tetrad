@@ -12,7 +12,9 @@ import java.io.Serializable;
  * @version $Id: $Id
  */
 public interface Statistic extends Serializable {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**

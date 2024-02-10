@@ -14,7 +14,9 @@ import java.util.List;
 public class ScaleFree implements RandomGraph {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public edu.cmu.tetrad.graph.Graph createGraph(Parameters parameters) {
         return edu.cmu.tetrad.graph.RandomGraph.randomScaleFreeGraph(
@@ -27,13 +29,17 @@ public class ScaleFree implements RandomGraph {
         );
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Scale-free graph using the Bollobas et al. algorithm";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

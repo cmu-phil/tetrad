@@ -35,7 +35,7 @@ public final class SimulationUtils {
      * <p>create.</p>
      *
      * @param simulationType a {@link java.lang.String} object
-     * @param randomGraph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     * @param randomGraph    a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
      * @return a {@link edu.cmu.tetrad.algcomparison.simulation.Simulation} object
      */
     public static Simulation create(String simulationType, RandomGraph randomGraph) {

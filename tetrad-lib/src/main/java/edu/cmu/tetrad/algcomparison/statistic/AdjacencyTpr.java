@@ -23,7 +23,7 @@ public class AdjacencyTpr implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the name of the statistic.
      */
     @Override
@@ -33,7 +33,7 @@ public class AdjacencyTpr implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the description of the statistic.
      */
     @Override
@@ -43,7 +43,7 @@ public class AdjacencyTpr implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the value of the statistic, given the true graph and the estimated graph.
      */
     @Override
@@ -57,7 +57,7 @@ public class AdjacencyTpr implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a mapping of the statistic to the interval [0, 1], with higher being better. This is used for a
      */
     @Override

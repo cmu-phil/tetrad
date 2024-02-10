@@ -20,7 +20,9 @@ public class PositiveCorr implements IndependenceWrapper {
     private static final long serialVersionUID = 23L;
     private double alpha = 0.001;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         double alpha = parameters.getDouble("alpha");
@@ -33,19 +35,25 @@ public class PositiveCorr implements IndependenceWrapper {
         throw new IllegalArgumentException("Expecting a data set.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Fisher Z test, alpha = " + this.alpha;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();

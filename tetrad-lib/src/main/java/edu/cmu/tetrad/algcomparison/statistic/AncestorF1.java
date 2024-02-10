@@ -25,7 +25,7 @@ public class AncestorF1 implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the name of the statistic.
      */
     @Override
@@ -35,7 +35,7 @@ public class AncestorF1 implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the name of the statistic.
      */
     @Override
@@ -45,7 +45,7 @@ public class AncestorF1 implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Calculates the F1 statistic for adjacencies.
      */
     @Override
@@ -57,7 +57,7 @@ public class AncestorF1 implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the norm value of the statistic.
      */
     @Override

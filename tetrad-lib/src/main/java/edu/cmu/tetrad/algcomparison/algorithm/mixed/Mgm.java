@@ -36,14 +36,14 @@ public class Mgm implements Algorithm {
     public Mgm() {
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel ds, Parameters parameters) {
-        if (!(ds instanceof DataSet)) {
+        if (!(ds instanceof DataSet _data)) {
             throw new IllegalArgumentException("Expecting tabular data for MGM.");
         }
-
-        DataSet _data = (DataSet) ds;
 
         for (int j = 0; j < _data.getNumColumns(); j++) {
             for (int i = 0; i < _data.getNumRows(); i++) {
@@ -107,25 +107,34 @@ public class Mgm implements Algorithm {
     }
 
     // Need to marry the parents on this.
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return GraphUtils.undirectedGraph(graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Returns the output of the MGM (Mixed Graphical Model) algorithm (a Markov random field)";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

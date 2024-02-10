@@ -31,8 +31,8 @@ public class FirstInflection implements Algorithm {
      *
      * @param algorithm a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
      * @param parameter a {@link java.lang.String} object
-     * @param low a double
-     * @param high a double
+     * @param low       a double
+     * @param high      a double
      * @param increment a double
      */
     public FirstInflection(Algorithm algorithm, String parameter, double low, double high, double increment) {
@@ -54,7 +54,9 @@ public class FirstInflection implements Algorithm {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         Parameters _parameters = new Parameters(parameters);
@@ -199,25 +201,33 @@ public class FirstInflection implements Algorithm {
 
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return this.algorithm.getComparisonGraph(graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "First inflection for " + this.algorithm.getDescription() + " parameter = " + this.parameter;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return this.algorithm.getDataType();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.algorithm.getParameters();

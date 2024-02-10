@@ -64,7 +64,7 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Runs the conservative FCI search.
      */
     @Override
@@ -106,7 +106,7 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the comparison graph.
      */
     @Override
@@ -126,7 +126,7 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the data type that the algorithm can handle.
      */
     @Override
@@ -136,7 +136,7 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the parameters of the algorithm.
      */
     @Override
@@ -155,7 +155,7 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the knowledge.
      */
     @Override
@@ -165,7 +165,7 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the knowledge.
      */
     @Override
@@ -175,7 +175,7 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the independence test.
      */
     @Override
@@ -185,7 +185,7 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the independence wrapper.
      */
     @Override
@@ -195,7 +195,7 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the bootstrap graphs.
      */
     @Override

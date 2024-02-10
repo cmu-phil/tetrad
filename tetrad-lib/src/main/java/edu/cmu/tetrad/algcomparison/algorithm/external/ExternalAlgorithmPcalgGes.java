@@ -53,7 +53,7 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
     /**
      * <p>Constructor for ExternalAlgorithmPcalgGes.</p>
      *
-     * @param extDir a {@link java.lang.String} object
+     * @param extDir          a {@link java.lang.String} object
      * @param shortDecription a {@link java.lang.String} object
      */
     public ExternalAlgorithmPcalgGes(String extDir, String shortDecription) {
@@ -63,7 +63,7 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the relevant graph from the file (see above) and returns it.
      */
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -122,7 +122,7 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
@@ -142,13 +142,17 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);

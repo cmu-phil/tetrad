@@ -35,8 +35,8 @@ public class StARS implements Algorithm {
      *
      * @param algorithm a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
      * @param parameter a {@link java.lang.String} object
-     * @param low a double
-     * @param high a double
+     * @param low       a double
+     * @param high      a double
      */
     public StARS(Algorithm algorithm, String parameter, double low, double high) {
         if (low >= high) {
@@ -133,7 +133,9 @@ public class StARS implements Algorithm {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         DataSet _dataSet;
@@ -175,25 +177,33 @@ public class StARS implements Algorithm {
         return this.algorithm.search(dataSet, _parameters);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return this.algorithm.getComparisonGraph(graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "StARS for " + this.algorithm.getDescription() + " parameter = " + this.parameter;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return this.algorithm.getDataType();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.algorithm.getParameters();

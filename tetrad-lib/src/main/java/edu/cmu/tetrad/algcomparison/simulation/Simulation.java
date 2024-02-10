@@ -16,14 +16,16 @@ import java.util.List;
  * @version $Id: $Id
  */
 public interface Simulation extends HasParameters, TetradSerializable {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
      * Creates a data set and simulates data.
      *
      * @param parameters The parameters to use in the simulation.
-     * @param newModel If true, a new model is created. If false, the model is reused.
+     * @param newModel   If true, a new model is created. If false, the model is reused.
      */
     void createData(Parameters parameters, boolean newModel);
 

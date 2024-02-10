@@ -57,7 +57,9 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
         this.score = score;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
@@ -84,9 +86,13 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Graph getComparisonGraph(Graph graph) { return new EdgeListGraph(graph); }
+    public Graph getComparisonGraph(Graph graph) {
+        return new EdgeListGraph(graph);
+    }
 
     /**
      * <p>getDescription.</p>
@@ -97,13 +103,17 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
         return "Direct-LiNGAM (Direct Linear Non-Gaussian Acyclic Model";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -111,19 +121,25 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
         return parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;

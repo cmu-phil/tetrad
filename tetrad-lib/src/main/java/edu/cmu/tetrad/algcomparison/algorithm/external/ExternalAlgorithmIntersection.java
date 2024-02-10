@@ -39,7 +39,7 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
      * <p>Constructor for ExternalAlgorithmIntersection.</p>
      *
      * @param shortDescription a {@link java.lang.String} object
-     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm} object
+     * @param algorithms       a {@link edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm} object
      */
     public ExternalAlgorithmIntersection(String shortDescription, ExternalAlgorithm... algorithms) {
         this.algorithms = algorithms;
@@ -48,7 +48,7 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the relevant graph from the file (see above) and returns it.
      */
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -79,7 +79,7 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
@@ -104,7 +104,9 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
         return DataType.Continuous;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         return this.elapsed;
     }

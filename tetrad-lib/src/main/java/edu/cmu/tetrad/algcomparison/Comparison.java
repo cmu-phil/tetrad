@@ -93,7 +93,7 @@ public class Comparison {
     /**
      * <p>compareFromFiles.</p>
      *
-     * @param filePath a {@link java.lang.String} object
+     * @param filePath   a {@link java.lang.String} object
      * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
      * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
@@ -108,8 +108,8 @@ public class Comparison {
      * @param dataPath    Path to the directory where data and graph files have been saved.
      * @param resultsPath Path to the file where the results should be stored.
      * @param algorithms  The list of algorithms to be compared.
-     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param statistics  a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters) {
@@ -151,11 +151,11 @@ public class Comparison {
     /**
      * <p>generateReportFromExternalAlgorithms.</p>
      *
-     * @param dataPath a {@link java.lang.String} object
+     * @param dataPath    a {@link java.lang.String} object
      * @param resultsPath a {@link java.lang.String} object
-     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
-     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param algorithms  a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics  a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters) {
@@ -166,12 +166,12 @@ public class Comparison {
     /**
      * <p>generateReportFromExternalAlgorithms.</p>
      *
-     * @param dataPath a {@link java.lang.String} object
-     * @param resultsPath a {@link java.lang.String} object
+     * @param dataPath       a {@link java.lang.String} object
+     * @param resultsPath    a {@link java.lang.String} object
      * @param outputFileName a {@link java.lang.String} object
-     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
-     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param algorithms     a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics     a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, String outputFileName, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters) {
@@ -218,9 +218,9 @@ public class Comparison {
      *
      * @param resultsPath a {@link java.lang.String} object
      * @param simulations a {@link edu.cmu.tetrad.algcomparison.simulation.Simulations} object
-     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
-     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param algorithms  a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics  a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters) {
@@ -230,12 +230,12 @@ public class Comparison {
     /**
      * Compares algorithms.
      *
-     * @param resultsPath Path to the file where the output should be printed.
-     * @param simulations The list of simulationWrapper that is used to generate graphs and data for the comparison.
-     * @param algorithms  The list of algorithms to be compared.
-     * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
+     * @param resultsPath    Path to the file where the output should be printed.
+     * @param simulations    The list of simulationWrapper that is used to generate graphs and data for the comparison.
+     * @param algorithms     The list of algorithms to be compared.
+     * @param statistics     The list of statistics on which to compare the algorithm, and their utility weights.
      * @param outputFileName a {@link java.lang.String} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters) {
@@ -328,8 +328,7 @@ public class Comparison {
                             + " / " + simulationWrapper.getDescription());
                 }
 
-                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
-                    ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
                     external.setSimIndex(simulationWrappers.indexOf(external.getSimulation()));
                 }
 
@@ -1230,8 +1229,7 @@ public class Comparison {
                 ((HasKnowledge) algorithm).setKnowledge(((HasKnowledge) simulation).getKnowledge());
             }
 
-            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
-                ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
                 external.setSimulation(simulationWrapper.getSimulation());
                 external.setPath(this.resultsPath);
                 external.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
@@ -1279,8 +1277,7 @@ public class Comparison {
             graphOut = GraphUtils.replaceNodes(graphOut, trueGraph.getNodes());
         }
 
-        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
-            ExternalAlgorithm extAlg = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm extAlg) {
             extAlg.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
             extAlg.setSimulation(simulationWrapper.getSimulation());
             extAlg.setPath(this.resultsPath);

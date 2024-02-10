@@ -19,19 +19,25 @@ import edu.cmu.tetrad.graph.Graph;
 public class F1Arrow implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "F1Arrow";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "F1 statistic for arrows";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion arrowConfusion = new ArrowConfusion(trueGraph, estGraph);
@@ -43,7 +49,9 @@ public class F1Arrow implements Statistic {
         return 2 * (arrowPrecision * arrowRecall) / (arrowPrecision + arrowRecall);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

@@ -37,7 +37,7 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the name of the statistic.
      */
     @Override
@@ -47,7 +47,7 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the description of the statistic.
      */
     @Override
@@ -57,7 +57,7 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the value of the statistic.
      */
     @Override
@@ -75,7 +75,7 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the normed value of the statistic.
      */
     @Override

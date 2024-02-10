@@ -32,7 +32,7 @@ public class Kci implements IndependenceWrapper {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a KCI test.
      */
     @Override
@@ -49,7 +49,7 @@ public class Kci implements IndependenceWrapper {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the name of the test.
      */
     @Override
@@ -59,8 +59,9 @@ public class Kci implements IndependenceWrapper {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the data type of the test, which is continuous.
+     *
      * @see DataType
      */
     @Override
@@ -70,7 +71,7 @@ public class Kci implements IndependenceWrapper {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the parameters of the test.
      */
     @Override

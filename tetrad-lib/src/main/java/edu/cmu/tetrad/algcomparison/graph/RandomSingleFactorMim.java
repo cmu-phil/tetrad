@@ -16,7 +16,9 @@ import java.util.List;
 public class RandomSingleFactorMim implements RandomGraph {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph createGraph(Parameters parameters) {
         int numStructuralNodes = parameters.getInt("numStructuralNodes", 3);
@@ -31,13 +33,17 @@ public class RandomSingleFactorMim implements RandomGraph {
                 numMeasuredMeasuredImpureAssociations);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Random single-factor MIM (Multiple Indicator Model)";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

@@ -19,13 +19,17 @@ public class BicDiffPerRecord implements Statistic {
     private static final long serialVersionUID = 23L;
     private boolean precomputeCovariances = true;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "BicDiffPerRecord";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Difference between the true and estimated BIC scores, " +
@@ -34,7 +38,7 @@ public class BicDiffPerRecord implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the difference between the true and estimated BIC scores, divided by the sample size.
      */
     @Override
@@ -48,7 +52,7 @@ public class BicDiffPerRecord implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the normalized value of the statistic.
      */
     @Override

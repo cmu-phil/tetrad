@@ -33,11 +33,17 @@ import java.util.List;
 //@Experimental
 public class PagSampleRfci implements Algorithm, HasKnowledge {
 
-    /** Constant <code>PAG_SAMPLING_RFCI_PARAMETERS</code> */
+    /**
+     * Constant <code>PAG_SAMPLING_RFCI_PARAMETERS</code>
+     */
     public static final List<String> PAG_SAMPLING_RFCI_PARAMETERS = new LinkedList<>();
-    /** Constant <code>RFCI_PARAMETERS</code> */
+    /**
+     * Constant <code>RFCI_PARAMETERS</code>
+     */
     public static final List<String> RFCI_PARAMETERS = new LinkedList<>();
-    /** Constant <code>PROBABILISTIC_TEST_PARAMETERS</code> */
+    /**
+     * Constant <code>PROBABILISTIC_TEST_PARAMETERS</code>
+     */
     public static final List<String> PROBABILISTIC_TEST_PARAMETERS = new LinkedList<>();
     private static final long serialVersionUID = 23L;
 
@@ -58,10 +64,12 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
 
     private final IndependenceWrapper test = new ProbabilisticTest();
     private Knowledge knowledge;
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
+    private final List<Graph> bootstrapGraphs = new ArrayList<>();
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.pitt.dbmi.algo.bayesian.constraint.search.PagSamplingRfci pagSamplingRfci = new edu.pitt.dbmi.algo.bayesian.constraint.search.PagSamplingRfci(SimpleDataLoader.getDiscreteDataSet(dataSet));
@@ -83,26 +91,34 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
         return pagSamplingRfci.search();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph trueGraph = new EdgeListGraph(graph);
         return GraphTransforms.dagToPag(trueGraph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "PAG-Sampling-RFCI " + this.test.getDescription();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Discrete;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new LinkedList<>();
@@ -114,13 +130,17 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
         return parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;

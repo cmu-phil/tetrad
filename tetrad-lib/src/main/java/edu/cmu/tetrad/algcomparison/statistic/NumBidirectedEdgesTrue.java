@@ -14,19 +14,25 @@ import edu.cmu.tetrad.graph.Graph;
 public class NumBidirectedEdgesTrue implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "BIDT";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Num Bidirected Edges in True";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int numBidirected = 0;
@@ -41,7 +47,9 @@ public class NumBidirectedEdgesTrue implements Statistic {
         return numBidirected;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return 1.0 - value;

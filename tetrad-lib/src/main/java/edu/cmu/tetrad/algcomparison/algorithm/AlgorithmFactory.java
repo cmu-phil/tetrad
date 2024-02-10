@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.graph.Graph;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -44,11 +45,11 @@ public class AlgorithmFactory {
      * Creates an algorithm.
      *
      * @param algoClass algorithm class
-     * @param test independence test
-     * @param score score
+     * @param test      independence test
+     * @param score     score
      * @return algorithm
-     * @throws java.lang.IllegalAccessException Reflection exception
-     * @throws java.lang.InstantiationException Reflection exception
+     * @throws java.lang.IllegalAccessException            Reflection exception
+     * @throws java.lang.InstantiationException            Reflection exception
      * @throws java.lang.reflect.InvocationTargetException Reflection exception
      */
     public static Algorithm create(Class<? extends Algorithm> algoClass, IndependenceWrapper test, ScoreWrapper score)
@@ -82,13 +83,13 @@ public class AlgorithmFactory {
     /**
      * Creates an algorithm.
      *
-     * @param algoClass algorithm class
-     * @param test independence test
-     * @param score score
+     * @param algoClass     algorithm class
+     * @param test          independence test
+     * @param score         score
      * @param externalGraph external graph
      * @return algorithm
-     * @throws java.lang.IllegalAccessException Reflection exception
-     * @throws java.lang.InstantiationException Reflection exception
+     * @throws java.lang.IllegalAccessException            Reflection exception
+     * @throws java.lang.InstantiationException            Reflection exception
      * @throws java.lang.reflect.InvocationTargetException Reflection exception
      */
     public static Algorithm create(
@@ -105,12 +106,12 @@ public class AlgorithmFactory {
     /**
      * Creates an algorithm.
      *
-     * @param algoClass algorithm class
+     * @param algoClass    algorithm class
      * @param indTestClass independence test class
-     * @param scoreClass score class
+     * @param scoreClass   score class
      * @return algorithm
-     * @throws java.lang.IllegalAccessException Reflection exception
-     * @throws java.lang.InstantiationException Reflection exception
+     * @throws java.lang.IllegalAccessException            Reflection exception
+     * @throws java.lang.InstantiationException            Reflection exception
      * @throws java.lang.reflect.InvocationTargetException Reflection exception
      */
     public static Algorithm create(
@@ -131,13 +132,13 @@ public class AlgorithmFactory {
     /**
      * Creates an algorithm.
      *
-     * @param algoClass algorithm class
-     * @param indTestClass independence test class
-     * @param scoreClass score class
+     * @param algoClass     algorithm class
+     * @param indTestClass  independence test class
+     * @param scoreClass    score class
      * @param externalGraph external graph
      * @return algorithm
-     * @throws java.lang.IllegalAccessException Reflection exception
-     * @throws java.lang.InstantiationException Reflection exception
+     * @throws java.lang.IllegalAccessException            Reflection exception
+     * @throws java.lang.InstantiationException            Reflection exception
      * @throws java.lang.reflect.InvocationTargetException Reflection exception
      */
     public static Algorithm create(

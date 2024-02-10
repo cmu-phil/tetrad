@@ -16,19 +16,25 @@ import edu.cmu.tetrad.graph.Graph;
 public class SemidirectedPathF1 implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "Semidirected-F1";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "F1 statistic for semidirected paths comparing the estimated graph to the true graph";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         double precision = new SemidirectedPrecision().getValue(trueGraph, estGraph, dataModel);
@@ -36,7 +42,9 @@ public class SemidirectedPathF1 implements Statistic {
         return 2 * (precision * recall) / (precision + recall);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

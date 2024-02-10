@@ -22,8 +22,8 @@ import java.util.List;
 /**
  * Implements the DAGMA algorithm. The reference is here:
  * <p>
- * Bello, K., Aragam, B., &amp; Ravikumar, P. (2022). Dagma: Learning dags via m-matrices and a log-determinant acyclicity
- * characterization. Advances in Neural Information Processing Systems, 35, 8226-8239.
+ * Bello, K., Aragam, B., &amp; Ravikumar, P. (2022). Dagma: Learning dags via m-matrices and a log-determinant
+ * acyclicity characterization. Advances in Neural Information Processing Systems, 35, 8226-8239.
  *
  * @author bryanandrews
  * @version $Id: $Id
@@ -46,7 +46,9 @@ public class Dagma implements Algorithm, ReturnsBootstrapGraphs {
     public Dagma() {
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
@@ -75,7 +77,9 @@ public class Dagma implements Algorithm, ReturnsBootstrapGraphs {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
@@ -90,13 +94,17 @@ public class Dagma implements Algorithm, ReturnsBootstrapGraphs {
         return "DAGMA (DAGs via M-matrices for Acyclicity)";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -107,7 +115,9 @@ public class Dagma implements Algorithm, ReturnsBootstrapGraphs {
         return parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

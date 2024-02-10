@@ -63,7 +63,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Runs the BOSS algorithm.
      */
     @Override
@@ -113,7 +113,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the true graph if there is one.
      */
     @Override
@@ -123,7 +123,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the description of the algorithm.
      */
     @Override
@@ -133,7 +133,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the name of the algorithm.
      */
     @Override
@@ -143,7 +143,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the parameters for the algorithm.
      */
     @Override
@@ -164,7 +164,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the score wrapper.
      */
     @Override
@@ -174,7 +174,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the score wrapper.
      */
     @Override
@@ -184,7 +184,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the knowledge.
      */
     @Override
@@ -194,7 +194,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the knowledge.
      */
     @Override
@@ -204,7 +204,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the bootstrap graphs.
      */
     @Override

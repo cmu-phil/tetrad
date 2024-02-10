@@ -34,7 +34,7 @@ public class MVPBicScore implements ScoreWrapper {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the MVP BIC score.
      */
     @Override
@@ -47,7 +47,7 @@ public class MVPBicScore implements ScoreWrapper {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the description of the MVP BIC score.
      */
     @Override
@@ -57,7 +57,7 @@ public class MVPBicScore implements ScoreWrapper {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the data type of the MVP BIC score.
      */
     @Override
@@ -67,7 +67,7 @@ public class MVPBicScore implements ScoreWrapper {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the parameters of the MVP BIC score.
      */
     @Override
@@ -81,7 +81,7 @@ public class MVPBicScore implements ScoreWrapper {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variable of the MVP BIC score by name.
      */
     @Override

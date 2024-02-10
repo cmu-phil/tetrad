@@ -13,19 +13,25 @@ import edu.cmu.tetrad.graph.Graph;
 public class OrientationPrecision implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "OP";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Orientation Precision";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         OrientationConfusion oriConfusion = new OrientationConfusion(trueGraph, estGraph);
@@ -34,7 +40,9 @@ public class OrientationPrecision implements Statistic {
         return oriTp / (double) (oriTp + oriFp);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

@@ -16,19 +16,25 @@ import edu.cmu.tetrad.graph.Graph;
 public class TailPrecision implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "TP";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Tail precision";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         TailConfusion adjConfusion = new TailConfusion(trueGraph, estGraph);
@@ -37,7 +43,9 @@ public class TailPrecision implements Statistic {
         return arrowsTp / (arrowsTp + arrowsFp);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

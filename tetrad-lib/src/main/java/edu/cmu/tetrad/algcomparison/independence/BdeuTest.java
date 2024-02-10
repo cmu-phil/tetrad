@@ -32,7 +32,7 @@ public class BdeuTest implements IndependenceWrapper {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the test.
      */
     @Override
@@ -45,7 +45,7 @@ public class BdeuTest implements IndependenceWrapper {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the description of the test.
      */
     @Override
@@ -55,7 +55,7 @@ public class BdeuTest implements IndependenceWrapper {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the data type of the test.
      */
     @Override
@@ -65,7 +65,7 @@ public class BdeuTest implements IndependenceWrapper {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the parameters of the test.
      */
     @Override

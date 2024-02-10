@@ -38,7 +38,9 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
 
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
@@ -87,7 +89,9 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
@@ -102,13 +106,17 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
         return "LiNG-D (Linear Non-Gaussian Discovery";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -121,7 +129,9 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
         return parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Graph> getBootstrapGraphs() {
         return this.bootstrapGraphs;

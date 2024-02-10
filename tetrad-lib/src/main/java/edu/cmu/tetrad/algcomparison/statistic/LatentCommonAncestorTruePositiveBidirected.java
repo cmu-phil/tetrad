@@ -19,7 +19,7 @@ public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
      * <p>existsLatentCommonAncestor.</p>
      *
      * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @param edge      a {@link edu.cmu.tetrad.graph.Edge} object
      * @return a boolean
      */
     public static boolean existsLatentCommonAncestor(Graph trueGraph, Edge edge) {
@@ -35,19 +35,25 @@ public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "#X<->Y,X<~~L~~>Y";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Latent Common Ancestor True Positive Bidirected";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -61,7 +67,9 @@ public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
         return tp;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

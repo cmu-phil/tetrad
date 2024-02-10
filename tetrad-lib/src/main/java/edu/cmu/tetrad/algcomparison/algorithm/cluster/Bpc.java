@@ -41,7 +41,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Runs the BPC algorithm.
      */
     @Override
@@ -128,7 +128,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the true graph if there is one.
      */
     @Override
@@ -139,7 +139,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the description of the algorithm.
      */
     @Override
@@ -149,7 +149,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the data type that the algorithm can handle.
      */
     @Override
@@ -159,7 +159,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the parameters for the algorithm.
      */
     @Override

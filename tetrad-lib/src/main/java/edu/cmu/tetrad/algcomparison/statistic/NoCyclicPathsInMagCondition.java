@@ -14,19 +14,25 @@ import edu.cmu.tetrad.graph.Node;
 public class NoCyclicPathsInMagCondition implements Statistic {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "NoCyclicInMag";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "1 if the no cyclic paths condition passes in MAG, 0 if not";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph mag = GraphTransforms.pagToMag(estGraph);
@@ -40,7 +46,9 @@ public class NoCyclicPathsInMagCondition implements Statistic {
         return 1;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

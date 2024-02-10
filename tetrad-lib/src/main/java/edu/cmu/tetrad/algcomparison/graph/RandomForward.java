@@ -15,7 +15,9 @@ import java.util.List;
 public class RandomForward implements RandomGraph {
     private static final long serialVersionUID = 23L;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph createGraph(Parameters parameters) {
         return edu.cmu.tetrad.graph.RandomGraph.randomGraphRandomForwardEdges(
@@ -28,13 +30,17 @@ public class RandomForward implements RandomGraph {
                 parameters.getBoolean("connected"));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Graph constructed by adding random forward edges";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

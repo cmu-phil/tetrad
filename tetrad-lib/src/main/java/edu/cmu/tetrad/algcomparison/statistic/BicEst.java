@@ -33,7 +33,7 @@ public class BicEst implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the name of the statistic.
      */
     @Override
@@ -43,7 +43,7 @@ public class BicEst implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the description of the statistic.
      */
     @Override
@@ -53,7 +53,7 @@ public class BicEst implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the value of the statistic.
      */
     @Override
@@ -89,7 +89,7 @@ public class BicEst implements Statistic {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the normalized value of the statistic.
      */
     @Override

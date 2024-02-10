@@ -26,17 +26,29 @@ package edu.cmu.tetrad.algcomparison.graph;
  */
 public final class GraphTypes {
 
-    /** Constant <code>RANDOM_FOWARD_DAG="Random Foward DAG (Fixed Average Degree"{trunked}</code> */
+    /**
+     * Constant <code>RANDOM_FOWARD_DAG="Random Foward DAG (Fixed Average Degree"{trunked}</code>
+     */
     public static final String RANDOM_FOWARD_DAG = "Random Foward DAG (Fixed Average Degree)";
-    /** Constant <code>ERDOS_RENYI_DAG="Erdos-Renyi DAG (Fixed Edge Probability"{trunked}</code> */
+    /**
+     * Constant <code>ERDOS_RENYI_DAG="Erdos-Renyi DAG (Fixed Edge Probability"{trunked}</code>
+     */
     public static final String ERDOS_RENYI_DAG = "Erdos-Renyi DAG (Fixed Edge Probability)";
-    /** Constant <code>SCALE_FREE_DAG="Scale Free DAG (Bollobas et al.)"</code> */
+    /**
+     * Constant <code>SCALE_FREE_DAG="Scale Free DAG (Bollobas et al.)"</code>
+     */
     public static final String SCALE_FREE_DAG = "Scale Free DAG (Bollobas et al.)";
-    /** Constant <code>CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS="Cyclic (Constructed From Small Loops)"</code> */
+    /**
+     * Constant <code>CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS="Cyclic (Constructed From Small Loops)"</code>
+     */
     public static final String CYCLIC_CONSTRUCTED_FROM_SMALL_LOOPS = "Cyclic (Constructed From Small Loops)";
-    /** Constant <code>RANDOM_ONE_FACTOR_MIM="Random One Factor MIM"</code> */
+    /**
+     * Constant <code>RANDOM_ONE_FACTOR_MIM="Random One Factor MIM"</code>
+     */
     public static final String RANDOM_ONE_FACTOR_MIM = "Random One Factor MIM";
-    /** Constant <code>RANDOM_TWO_FACTOR_MIM="Random Two Factor MIM"</code> */
+    /**
+     * Constant <code>RANDOM_TWO_FACTOR_MIM="Random Two Factor MIM"</code>
+     */
     public static final String RANDOM_TWO_FACTOR_MIM = "Random Two Factor MIM";
 
     private GraphTypes() {

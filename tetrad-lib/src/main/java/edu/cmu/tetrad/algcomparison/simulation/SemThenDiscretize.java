@@ -41,14 +41,16 @@ public class SemThenDiscretize implements Simulation {
      * <p>Constructor for SemThenDiscretize.</p>
      *
      * @param randomGraph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
-     * @param dataType a {@link edu.cmu.tetrad.data.DataType} object
+     * @param dataType    a {@link edu.cmu.tetrad.data.DataType} object
      */
     public SemThenDiscretize(RandomGraph randomGraph, DataType dataType) {
         this.randomGraph = randomGraph;
         this.dataType = dataType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -96,20 +98,26 @@ public class SemThenDiscretize implements Simulation {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Simulation SEM data then discretizing some variables, using " +
                 this.randomGraph.getDescription();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
@@ -123,19 +131,25 @@ public class SemThenDiscretize implements Simulation {
         return parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return this.dataType;
