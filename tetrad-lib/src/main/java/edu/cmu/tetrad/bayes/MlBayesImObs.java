@@ -126,20 +126,16 @@ public final class MlBayesImObs implements BayesIm {
     private StoredCellProbsObs jpd;
 
     /**
-     * a regular MlBayesIm used to create randomized CPDs
-     * so that the values can be marginalized to a consistent observed jpd
+     * a regular MlBayesIm used to create randomized CPDs so that the values can be marginalized to a consistent
+     * observed jpd
      */
     private BayesIm bayesImRandomize;
 
     /**
-     * BayesIm containing only the observed variables.  Only used to
-     * 1) construct propositions (mapped from the original allowUnfaithfulness bayesIm)
-     * in Identifiability
-     * 2) to avoid summing over rows in jpd when only the latent variables
-     * have changed values (only sum when all the latent variables have
-     * value 0)
-     * This is a MlBayesIm instead of a MlBayesImObs because otherwise
-     * there will be an infinite loop attempting to creating the MlBayesImObs
+     * BayesIm containing only the observed variables.  Only used to 1) construct propositions (mapped from the original
+     * allowUnfaithfulness bayesIm) in Identifiability 2) to avoid summing over rows in jpd when only the latent
+     * variables have changed values (only sum when all the latent variables have value 0) This is a MlBayesIm instead
+     * of a MlBayesImObs because otherwise there will be an infinite loop attempting to creating the MlBayesImObs
      */
     private BayesIm bayesImObs;
 

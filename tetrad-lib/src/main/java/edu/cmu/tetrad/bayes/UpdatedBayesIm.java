@@ -46,7 +46,9 @@ public final class UpdatedBayesIm implements BayesIm {
     @Serial
     private static final long serialVersionUID = 23L;
 
-    /** The tolerance. */
+    /**
+     * The tolerance.
+     */
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;
 
     /**

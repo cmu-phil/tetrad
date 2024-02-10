@@ -31,7 +31,9 @@ public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
     @Serial
     private static final long serialVersionUID = 23L;
 
-    /** External directory. */
+    /**
+     * External directory.
+     */
     private final String extDir;
 
     /**

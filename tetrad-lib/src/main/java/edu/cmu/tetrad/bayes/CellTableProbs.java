@@ -45,9 +45,9 @@ public final class CellTableProbs implements DiscreteProbs {
      */
     private final int[] dims;
     /**
-     * A single-dimension array containing all the cells of the table. Must be at least long enough to contain data
-     * for each cell allowed for by the given dimension array--in other words, the length must be greater than or equal
-     * to dims[0] & dims[1] ... * dims[dims.length - 1].
+     * A single-dimension array containing all the cells of the table. Must be at least long enough to contain data for
+     * each cell allowed for by the given dimension array--in other words, the length must be greater than or equal to
+     * dims[0] & dims[1] ... * dims[dims.length - 1].
      */
     private final int[] cells;
     /**

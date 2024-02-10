@@ -66,52 +66,84 @@ public class TimeoutComparison {
      */
     private static final DateFormat DF = new SimpleDateFormat("EEE, MMMM dd, yyyy hh:mm:ss a");
 
-    /** The graph type used. */
+    /**
+     * The graph type used.
+     */
     private boolean[] graphTypeUsed;
 
-    /** The out. */
+    /**
+     * The out.
+     */
     private PrintStream out;
 
-    /** Whether to output the tables in tab-delimited format. */
+    /**
+     * Whether to output the tables in tab-delimited format.
+     */
     private boolean tabDelimitedTables;
 
-    /** Whether to save the graphs. */
+    /**
+     * Whether to save the graphs.
+     */
     private boolean saveGraphs;
 
-    /** Whether to copy the data (or using the original). */
+    /**
+     * Whether to copy the data (or using the original).
+     */
     private boolean copyData;
 
-    /** Whether to show the simulation indices. */
+    /**
+     * Whether to show the simulation indices.
+     */
     private boolean showSimulationIndices;
 
-    /** Whether to show the algorithm indices. */
+    /**
+     * Whether to show the algorithm indices.
+     */
     private boolean showAlgorithmIndices;
 
-    /** Whether to show the utilities. */
+    /**
+     * Whether to show the utilities.
+     */
     private boolean showUtilities;
 
-    /** Whether to sort by utility. */
+    /**
+     * Whether to sort by utility.
+     */
     private boolean sortByUtility;
 
-    /** The data path. */
+    /**
+     * The data path.
+     */
     private String dataPath;
 
-    /** The results path. */
+    /**
+     * The results path.
+     */
     private String resultsPath;
 
-    /** Whether to parallelize the process. */
+    /**
+     * Whether to parallelize the process.
+     */
     private boolean parallelized = true;
 
-    /** Whether to save CPDAGs. */
+    /**
+     * Whether to save CPDAGs.
+     */
     private boolean saveCPDAGs;
 
-    /** Whether to save PAGs. */
+    /**
+     * Whether to save PAGs.
+     */
     private boolean savePags;
 
-    /** The directories for the saved graphs. */
+    /**
+     * The directories for the saved graphs.
+     */
     private ArrayList<String> dirs;
 
-    /** The comparison graph. */
+    /**
+     * The comparison graph.
+     */
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
 
     /**
