@@ -36,7 +36,7 @@ public class CovariancesDoubleForkJoin {
     /**
      * <p>Constructor for CovariancesDoubleForkJoin.</p>
      *
-     * @param data an array of {@link double} objects
+     * @param data          an array of {@link double} objects
      * @param biasCorrected a boolean
      */
     public CovariancesDoubleForkJoin(double[][] data, boolean biasCorrected) {

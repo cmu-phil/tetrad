@@ -30,7 +30,9 @@ import edu.cmu.tetrad.util.Vector;
  * @version $Id: $Id
  */
 public class SquaredErrorLoss implements Dissimilarity {
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double dissimilarity(Vector v1, Vector v2) {
         if (v1.size() != v2.size()) {
             throw new IllegalArgumentException("Vectors not the same length.");

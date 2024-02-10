@@ -164,7 +164,7 @@ public class KMeans implements ClusteringAlgorithm {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Runs the batch K-means clustering algorithm on the data, returning a result.
      */
     public void cluster(Matrix data) {
@@ -447,7 +447,9 @@ public class KMeans implements ClusteringAlgorithm {
         return this.verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

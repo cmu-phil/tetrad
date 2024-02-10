@@ -101,7 +101,7 @@ public class FloatDataBox implements DataBox {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the value at the given row/column to the given Number value. The value used is number.floatValue().
      */
     public void set(int row, int col, Number value) {
@@ -116,7 +116,9 @@ public class FloatDataBox implements DataBox {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Number get(int row, int col) {
         float datum = this.data[row][col];
 
@@ -159,7 +161,9 @@ public class FloatDataBox implements DataBox {
         return viewSelection(rows, cols);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataBox viewSelection(int[] rows, int[] cols) {
         DataBox _dataBox = new FloatDataBox(rows.length, cols.length);

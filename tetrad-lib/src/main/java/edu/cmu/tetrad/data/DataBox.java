@@ -31,7 +31,9 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @version $Id: $Id
  */
 public interface DataBox extends TetradSerializable {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
@@ -55,8 +57,8 @@ public interface DataBox extends TetradSerializable {
      * @param row   the row index.
      * @param col   the column index.
      * @param value the value to store.
-     * @throws java.lang.IllegalArgumentException if the given value cannot be stored (because it's out of range or cannot be
-     *                                  converted or whatever).
+     * @throws java.lang.IllegalArgumentException if the given value cannot be stored (because it's out of range or
+     *                                            cannot be converted or whatever).
      */
     void set(int row, int col, Number value) throws IllegalArgumentException;
 

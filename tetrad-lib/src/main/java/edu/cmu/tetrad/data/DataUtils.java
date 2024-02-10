@@ -23,13 +23,15 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 
 /**
@@ -104,8 +106,8 @@ public final class DataUtils {
     /**
      * <p>containsMissingValue.</p>
      *
-     * @return true iff the data sets contains a missing value.
      * @param data a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return true iff the data sets contains a missing value.
      */
     public static boolean containsMissingValue(Matrix data) {
         for (int i = 0; i < data.getNumRows(); i++) {
@@ -170,11 +172,11 @@ public final class DataUtils {
     /**
      * <p>subMatrix.</p>
      *
-     * @return the submatrix of m with variables in the order of the x variables.
      * @param m a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
      * @param y a {@link edu.cmu.tetrad.graph.Node} object
      * @param z a {@link java.util.List} object
+     * @return the submatrix of m with variables in the order of the x variables.
      */
     public static Matrix subMatrix(ICovarianceMatrix m, Node x, Node y, List<Node> z) {
         if (x == null) {
@@ -222,12 +224,12 @@ public final class DataUtils {
     /**
      * <p>subMatrix.</p>
      *
-     * @return the submatrix of m with variables in the order of the x variables.
-     * @param m a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param m         a {@link edu.cmu.tetrad.util.Matrix} object
      * @param variables a {@link java.util.List} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.List} object
+     * @param x         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z         a {@link java.util.List} object
+     * @return the submatrix of m with variables in the order of the x variables.
      */
     public static Matrix subMatrix(Matrix m, List<Node> variables, Node x, Node y, List<Node> z) {
         if (x == null) {
@@ -266,12 +268,12 @@ public final class DataUtils {
     /**
      * <p>subMatrix.</p>
      *
-     * @return the submatrix of m with variables in the order of the x variables.
-     * @param m a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param m        a {@link edu.cmu.tetrad.util.Matrix} object
      * @param indexMap a {@link java.util.Map} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.List} object
+     * @param x        a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y        a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z        a {@link java.util.List} object
+     * @return the submatrix of m with variables in the order of the x variables.
      */
     public static Matrix subMatrix(Matrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
         if (x == null) {
@@ -309,12 +311,12 @@ public final class DataUtils {
     /**
      * <p>subMatrix.</p>
      *
-     * @return the submatrix of m with variables in the order of the x variables.
-     * @param m a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param m        a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      * @param indexMap a {@link java.util.Map} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.List} object
+     * @param x        a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y        a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z        a {@link java.util.List} object
+     * @return the submatrix of m with variables in the order of the x variables.
      */
     public static Matrix subMatrix(ICovarianceMatrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
         int[] indices = new int[2 + z.size()];
@@ -577,7 +579,7 @@ public final class DataUtils {
      * <p>getExampleNonsingular.</p>
      *
      * @param covarianceMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
-     * @param depth a int
+     * @param depth            a int
      * @return a {@link java.util.List} object
      */
     public static List<Node> getExampleNonsingular(ICovarianceMatrix covarianceMatrix, int depth) {

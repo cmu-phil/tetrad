@@ -85,6 +85,27 @@ public class GeneralAndersonDarlingTest {
     }
 
     /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
+    public static void main(String[] args) {
+        List<Double> data = new ArrayList<>();
+
+        for (int i = 0; i < 500; i++) {
+//            data.add(RandomUtil.getInstance().nextUniform(0, 1));
+            data.add(RandomUtil.getInstance().nextBeta(2, 5));
+        }
+
+        GeneralAndersonDarlingTest test = new GeneralAndersonDarlingTest(data, new UniformRealDistribution(0, 1));
+
+        System.out.println(test.getASquared());
+        System.out.println(test.getASquaredStar());
+        System.out.println(test.getP());
+        System.out.println(test.getProbTail(data.size(), test.getASquaredStar()));
+    }
+
+    /**
      * <p>Getter for the field <code>aSquared</code>.</p>
      *
      * @return the A^2 statistic.
@@ -171,7 +192,7 @@ public class GeneralAndersonDarlingTest {
         if (x < c(n)) {
             return (.0037 / pow(n, 3) + .00078 / pow(n, 2) + .00006 / n) * g1(x / c(n));
         } else if (x < .8) {
-            return (.04213 / n + .01365 / pow(n , 2)) * g2((x - c(n)) / (.8 - c(n)));
+            return (.04213 / n + .01365 / pow(n, 2)) * g2((x - c(n)) / (.8 - c(n)));
         } else {
             return g3(x) / n;
         }
@@ -181,9 +202,9 @@ public class GeneralAndersonDarlingTest {
         if (0 < z && z < 2) {
             return pow(z, -0.5) * exp(-1.2337141 / z) * (2.00012 + (0.247105 - (.0649821 - (.0347962 - (.0116720 - .00168691 * z) * z) * z) * z) * z);
         } else if (z >= 2) {
-            return exp( -exp(1.0776 - (2.30695 - (.43424 - (.082433 - (.008056 - .0003146 * z) * z) * z) * z) * z));
+            return exp(-exp(1.0776 - (2.30695 - (.43424 - (.082433 - (.008056 - .0003146 * z) * z) * z) * z) * z));
         } else {
-           return 0;
+            return 0;
         }
     }
 
@@ -196,27 +217,6 @@ public class GeneralAndersonDarlingTest {
      */
     public double getProbTail(double n, double z) {
         return adinf(z) + errfix(n, adinf(z));
-    }
-
-    /**
-     * <p>main.</p>
-     *
-     * @param args an array of {@link java.lang.String} objects
-     */
-    public static void main(String[] args) {
-        List<Double> data = new ArrayList<>();
-
-        for (int i = 0; i < 500; i++) {
-//            data.add(RandomUtil.getInstance().nextUniform(0, 1));
-            data.add(RandomUtil.getInstance().nextBeta(2, 5));
-        }
-
-        GeneralAndersonDarlingTest test = new GeneralAndersonDarlingTest(data, new UniformRealDistribution(0, 1));
-
-        System.out.println(test.getASquared());
-        System.out.println(test.getASquaredStar());
-        System.out.println(test.getP());
-        System.out.println(test.getProbTail(data.size(), test.getASquaredStar()));
     }
 }
 

@@ -46,7 +46,7 @@ public class MixedDataBox implements DataBox {
      * checking is not done.
      *
      * @param variables a {@link java.util.List} object
-     * @param numRows a int
+     * @param numRows   a int
      */
     public MixedDataBox(List<Node> variables, int numRows) {
         this.variables = variables;
@@ -134,13 +134,17 @@ public class MixedDataBox implements DataBox {
         return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int numRows() {
         return this.numRows;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int numCols() {
         return this.variables.size();
@@ -148,7 +152,7 @@ public class MixedDataBox implements DataBox {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the value at the given row/column to the given Number value. The value used is number.doubleValue().
      */
     @Override
@@ -172,7 +176,9 @@ public class MixedDataBox implements DataBox {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Number get(int row, int col) {
         if (col >= this.continuousData.length || row >= numRows()) {
@@ -190,7 +196,9 @@ public class MixedDataBox implements DataBox {
         throw new IllegalArgumentException("Indices out of range.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataBox copy() {
         MixedDataBox box = new MixedDataBox(this.variables, numRows());
@@ -204,7 +212,9 @@ public class MixedDataBox implements DataBox {
         return box;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataBox like() {
         int[] rows = new int[numRows()];
@@ -240,7 +250,9 @@ public class MixedDataBox implements DataBox {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataBox viewSelection(int[] rows, int[] cols) {
         List<Node> newVars = new ArrayList<>();

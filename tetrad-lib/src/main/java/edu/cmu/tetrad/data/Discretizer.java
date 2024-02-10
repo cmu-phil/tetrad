@@ -57,7 +57,7 @@ public class Discretizer {
      * <p>Constructor for Discretizer.</p>
      *
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param specs a {@link java.util.Map} object
+     * @param specs   a {@link java.util.Map} object
      */
     public Discretizer(DataSet dataSet, Map<Node, DiscretizationSpec> specs) {
         this.sourceDataSet = dataSet;
@@ -67,7 +67,7 @@ public class Discretizer {
     /**
      * <p>getEqualFrequencyBreakPoints.</p>
      *
-     * @param _data an array of {@link double} objects
+     * @param _data              an array of {@link double} objects
      * @param numberOfCategories a int
      * @return an array of {@link double} objects
      */
@@ -101,8 +101,8 @@ public class Discretizer {
      *                     returned will use these category names. If this is non-null, it must have length c, where c
      *                     is the number of categories for the discretized data. If any category names are null, default
      *                     category names will be used for those.
+     * @param _data        an array of {@link double} objects
      * @return The discretized column.
-     * @param _data an array of {@link double} objects
      */
     public static Discretization discretize(double[] _data, double[] cutoffs,
                                             String variableName, List<String> categories) {
@@ -167,7 +167,7 @@ public class Discretizer {
     /**
      * Sets the given node to discretized using evenly distributed values using the given number of categories.
      *
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node          a {@link edu.cmu.tetrad.graph.Node} object
      * @param numCategories a int
      */
     public void equalCounts(Node node, int numCategories) {
@@ -189,7 +189,7 @@ public class Discretizer {
     /**
      * Sets the given node to discretized using evenly spaced intervals using the given number of categories.
      *
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node          a {@link edu.cmu.tetrad.graph.Node} object
      * @param numCategories a int
      */
     public void equalIntervals(Node node, int numCategories) {

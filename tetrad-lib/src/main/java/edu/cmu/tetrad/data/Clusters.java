@@ -265,11 +265,10 @@ public final class Clusters implements TetradSerializable {
             return true;
         }
 
-        if (!(o instanceof Clusters)) {
+        if (!(o instanceof Clusters clusters)) {
             return false;
         }
 
-        Clusters clusters = (Clusters) o;
         return this.clusters.equals(clusters.clusters);
     }
 

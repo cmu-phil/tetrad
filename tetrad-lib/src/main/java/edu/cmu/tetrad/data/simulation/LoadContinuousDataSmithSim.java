@@ -46,7 +46,9 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
         this.parametersValues.set("structure", structure);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (!this.dataSets.isEmpty()) return;
@@ -99,13 +101,17 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
         System.out.println();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graph;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
@@ -124,25 +130,33 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         return this.usedParameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Parameters getParameterValues() {
         return this.parametersValues;

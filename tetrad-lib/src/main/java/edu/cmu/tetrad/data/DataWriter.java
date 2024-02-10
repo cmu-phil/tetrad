@@ -109,9 +109,9 @@ public final class DataWriter {
      * <code>out</code> is not closed by this method, so the close method on
      * <code>out</code> will need to be called externally.
      *
-     * @param out The writer to write the output to.
+     * @param out       The writer to write the output to.
      * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
-     * @param nf a {@link java.text.NumberFormat} object
+     * @param nf        a {@link java.text.NumberFormat} object
      */
     public static void writeCovMatrix(ICovarianceMatrix covMatrix,
                                       PrintWriter out, NumberFormat nf) {
@@ -152,7 +152,7 @@ public final class DataWriter {
      * <p>saveKnowledge.</p>
      *
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
-     * @param out a {@link java.io.Writer} object
+     * @param out       a {@link java.io.Writer} object
      * @throws java.io.IOException if any.
      */
     public static void saveKnowledge(Knowledge knowledge, Writer out) throws IOException {

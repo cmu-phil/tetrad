@@ -37,7 +37,9 @@ import edu.cmu.tetrad.graph.Node;
 public interface DataModel
         extends KnowledgeTransferable, VariableSource {
 
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
@@ -85,8 +87,8 @@ public interface DataModel
     /**
      * <p>getVariable.</p>
      *
-     * @return the variable with the given name, or null if no such variable exists.
      * @param name a {@link java.lang.String} object
+     * @return the variable with the given name, or null if no such variable exists.
      */
     Node getVariable(String name);
 

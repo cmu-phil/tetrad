@@ -35,16 +35,24 @@ import java.util.regex.Pattern;
  */
 public final class DelimiterType implements TetradSerializable {
 
-    /** Constant <code>WHITESPACE</code> */
+    /**
+     * Constant <code>WHITESPACE</code>
+     */
     public static final DelimiterType WHITESPACE
             = new DelimiterType("Whitespace", "\\s+");
-    /** Constant <code>TAB</code> */
+    /**
+     * Constant <code>TAB</code>
+     */
     public static final DelimiterType TAB
             = new DelimiterType("Tab", "\t");
-    /** Constant <code>COMMA</code> */
+    /**
+     * Constant <code>COMMA</code>
+     */
     public static final DelimiterType COMMA
             = new DelimiterType("Comma", ",");
-    /** Constant <code>COLON</code> */
+    /**
+     * Constant <code>COLON</code>
+     */
     public static final DelimiterType COLON
             = new DelimiterType("Colon", ":");
     private static final long serialVersionUID = 23L;

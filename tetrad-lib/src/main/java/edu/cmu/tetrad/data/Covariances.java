@@ -7,7 +7,9 @@ package edu.cmu.tetrad.data;
  * @version $Id: $Id
  */
 public interface Covariances {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**

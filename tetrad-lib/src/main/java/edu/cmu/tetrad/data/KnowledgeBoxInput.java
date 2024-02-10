@@ -32,7 +32,9 @@ import edu.cmu.tetrad.session.SessionModel;
  * @version $Id: $Id
  */
 public interface KnowledgeBoxInput extends SessionModel, VariableSource {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**

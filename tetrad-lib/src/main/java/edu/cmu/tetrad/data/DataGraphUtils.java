@@ -37,11 +37,11 @@ public class DataGraphUtils {
     /**
      * <p>randomSingleFactorModel.</p>
      *
-     * @param numStructuralNodes a int
-     * @param numStructuralEdges a int
-     * @param numMeasurementsPerLatent a int
-     * @param numLatentMeasuredImpureParents a int
-     * @param numMeasuredMeasuredImpureParents a int
+     * @param numStructuralNodes                    a int
+     * @param numStructuralEdges                    a int
+     * @param numMeasurementsPerLatent              a int
+     * @param numLatentMeasuredImpureParents        a int
+     * @param numMeasuredMeasuredImpureParents      a int
      * @param numMeasuredMeasuredImpureAssociations a int
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
@@ -76,12 +76,12 @@ public class DataGraphUtils {
     /**
      * <p>randomMim.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param numMeasurementsPerLatent a int
-     * @param numLatentMeasuredImpureParents a int
-     * @param numMeasuredMeasuredImpureParents a int
+     * @param graph                                 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param numMeasurementsPerLatent              a int
+     * @param numLatentMeasuredImpureParents        a int
+     * @param numMeasuredMeasuredImpureParents      a int
      * @param numMeasuredMeasuredImpureAssociations a int
-     * @param arrangeGraph a boolean
+     * @param arrangeGraph                          a boolean
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph randomMim(Graph graph, int numMeasurementsPerLatent,
@@ -255,11 +255,11 @@ public class DataGraphUtils {
      * First a random single factor model is created with the specified number of latent nodes and latent edges, and
      * impurity structure. Then this is converted to a bifactor model by adding new latents and edges.
      *
-     * @param numStructuralNodes a int
-     * @param numStructuralEdges a int
-     * @param numMeasurementsPerLatent a int
-     * @param numLatentMeasuredImpureParents a int
-     * @param numMeasuredMeasuredImpureParents a int
+     * @param numStructuralNodes                    a int
+     * @param numStructuralEdges                    a int
+     * @param numMeasurementsPerLatent              a int
+     * @param numLatentMeasuredImpureParents        a int
+     * @param numMeasuredMeasuredImpureParents      a int
      * @param numMeasuredMeasuredImpureAssociations a int
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */

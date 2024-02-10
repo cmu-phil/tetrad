@@ -58,9 +58,9 @@ import java.util.*;
  * </p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.data.Variable
  * @see Knowledge
- * @version $Id: $Id
  */
 public final class BoxDataSet implements DataSet {
 
@@ -224,7 +224,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the data set.
      */
     public void setName(String name) {
@@ -256,7 +256,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the value at the given (row, column) to the given int value, assuming the variable for the column is
      * discrete.
      */
@@ -265,12 +265,10 @@ public final class BoxDataSet implements DataSet {
 
         Node variable = getVariable(column);
 
-        if (!(variable instanceof DiscreteVariable)) {
+        if (!(variable instanceof DiscreteVariable _variable)) {
             throw new IllegalArgumentException(
                     "Can only set ints for discrete columns.");
         }
-
-        DiscreteVariable _variable = (DiscreteVariable) variable;
 
         if (value < 0 && value != -99) {
             throw new IllegalArgumentException(
@@ -298,7 +296,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the value at the given (row, column) to the given double value, assuming the variable for the column is
      * continuous.
      */
@@ -315,14 +313,15 @@ public final class BoxDataSet implements DataSet {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object getObject(int row, int col) {
         Object variable = getVariable(col);
 
         if (variable instanceof ContinuousVariable) {
             return getDouble(row, col);
-        } else if (variable instanceof DiscreteVariable) {
-            DiscreteVariable _variable = (DiscreteVariable) variable;
+        } else if (variable instanceof DiscreteVariable _variable) {
 
             if (_variable.isCategoryNamesDisplayed()) {
                 return _variable.getCategory(getInt(row, col));
@@ -335,7 +334,9 @@ public final class BoxDataSet implements DataSet {
         throw new IllegalArgumentException("Not a row/col in this data set: " + row + ", " + col);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setObject(int row, int col, Object value) {
         Object variable = getVariable(col);
 
@@ -374,7 +375,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Adds the given variable to the data set, increasing the number of columns by one, moving columns i &gt;=
      * <code>index</code> to column i + 1, and inserting a column of missing values at column i.
      */
@@ -399,7 +400,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Adds the given variable to the dataset, increasing the number of columns by one, moving columns i &gt;=
      * <code>index</code> to column i + 1, and inserting a column of missing values at column i.
      */
@@ -443,26 +444,25 @@ public final class BoxDataSet implements DataSet {
         return this.variables.get(col);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getColumn(Node variable) {
         return this.variables.indexOf(variable);
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Changes the variable for the given column from <code>from</code> to
      * <code>to</code>. Supported currently only for discrete variables.
      */
     public void changeVariable(Node from, Node to) {
-        if (!(from instanceof DiscreteVariable
-                && to instanceof DiscreteVariable)) {
+        if (!(from instanceof DiscreteVariable _from
+                && to instanceof DiscreteVariable _to)) {
             throw new IllegalArgumentException(
                     "Only discrete variables supported.");
         }
-
-        DiscreteVariable _from = (DiscreteVariable) from;
-        DiscreteVariable _to = (DiscreteVariable) to;
 
         int col = this.variables.indexOf(_from);
 
@@ -498,7 +498,9 @@ public final class BoxDataSet implements DataSet {
         this.variables.set(col, _to);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node getVariable(String varName) {
         for (Node variable1 : this.variables) {
             if (variable1.getName().equals(varName)) {
@@ -529,7 +531,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets knowledge to be associated with this data set. May not be null.
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -559,7 +561,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Marks the given column as selected if 'selected' is true or deselected if 'selected' is false.
      */
     public void setSelected(Node variable, boolean selected) {
@@ -581,7 +583,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Ensures that the dataset has at least the number of rows, adding rows if necessary to make that the case. The new
      * rows will be filled with missing values.
      */
@@ -593,7 +595,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Ensures that the dataset has at least the given number of columns, adding continuous variables with unique names
      * until that is true. The new columns will be filled with missing values.
      */
@@ -615,7 +617,9 @@ public final class BoxDataSet implements DataSet {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean existsMissingValue() {
         for (int i = 0; i < getNumRows(); i++) {
@@ -633,14 +637,16 @@ public final class BoxDataSet implements DataSet {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isSelected(Node variable) {
         return getSelection().contains(variable);
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Removes the column for the variable at the given index, reducing the number of columns by one.
      */
     public void removeColumn(int index) {
@@ -676,7 +682,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Removes the columns for the given variable from the dataset, reducing the number of columns by one.
      */
     @Override
@@ -690,7 +696,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates and returns a dataset consisting of those variables in the list vars. Vars must be a subset of the
      * variables of this DataSet. The ordering of the elements of vars will be the same as in the list of variables in
      * this DataSet.
@@ -829,7 +835,9 @@ public final class BoxDataSet implements DataSet {
         return new CovarianceMatrix(this).getMatrix();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getInt(int row, int column) {
         Number value = this.dataBox.get(row, column);
 
@@ -840,7 +848,9 @@ public final class BoxDataSet implements DataSet {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getDouble(int row, int column) {
         Number value = this.dataBox.get(row, column);
 
@@ -892,8 +902,7 @@ public final class BoxDataSet implements DataSet {
                     if (j < getNumColumns() - 1) {
                         buf.append(this.outputDelimiter);
                     }
-                } else if (variable instanceof DiscreteVariable) {
-                    DiscreteVariable _variable = (DiscreteVariable) variable;
+                } else if (variable instanceof DiscreteVariable _variable) {
                     int value = getInt(i, j);
 
                     if (value == -99) {
@@ -964,9 +973,9 @@ public final class BoxDataSet implements DataSet {
     /**
      * <p>subsetColumns.</p>
      *
+     * @param indices an array of {@link int} objects
      * @return a new data set in which the the column at indices[i] is placed at index i, for i = 0 to indices.length -
      * 1. (Moved over from Purify.)
-     * @param indices an array of {@link int} objects
      */
     public DataSet subsetColumns(int[] indices) {
         List<Node> variables = getVariables();
@@ -1017,7 +1026,9 @@ public final class BoxDataSet implements DataSet {
         return _data;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataSet subsetRowsColumns(int[] rows, int[] columns) {
         List<Node> variables = getVariables();
@@ -1044,7 +1055,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Removes the given columns from the data set.
      */
     @Override
@@ -1105,7 +1116,9 @@ public final class BoxDataSet implements DataSet {
         this.knowledge = this.knowledge.copy(); // Might have to delete some knowledge.
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -1158,13 +1171,17 @@ public final class BoxDataSet implements DataSet {
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataSet copy() {
         return new BoxDataSet(this);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataSet like() {
         return new BoxDataSet(this.dataBox.like(), this.variables);
@@ -1172,9 +1189,10 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the character ('\t', ' ', ',', for instance) that is used to delimit tokens when the data set is printed out
      * using the toString() method.
+     *
      * @see #toString
      */
     public void setOutputDelimiter(Character character) {
@@ -1267,8 +1285,7 @@ public final class BoxDataSet implements DataSet {
                 }
 
                 return index;
-            } else if (element instanceof String) {
-                String label = (String) element;
+            } else if (element instanceof String label) {
 
                 variable = accomodateCategory(variable, label);
                 int index = variable.getIndex(label);
@@ -1292,8 +1309,7 @@ public final class BoxDataSet implements DataSet {
             }
 
             return index;
-        } else if (element instanceof String) {
-            String label = (String) element;
+        } else if (element instanceof String label) {
 
             int index = variable.getIndex(label);
 
@@ -1396,7 +1412,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the number format to be used when printing out the data set. The default is the one at
      */
     public void setNumberFormat(NumberFormat nf) {

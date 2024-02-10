@@ -44,7 +44,9 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
         this.parametersValues.set("structure", structure);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         this.dataSets = new ArrayList<>();
@@ -95,13 +97,17 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
         System.out.println();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graph;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
@@ -120,25 +126,33 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         return this.usedParameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Parameters getParameterValues() {
         return this.parametersValues;

@@ -68,9 +68,9 @@ public final class RegexTokenizer {
     /**
      * Constructs a tokenizer for the given input line, using the given Pattern as delimiter.
      *
-     * @param line a {@link java.lang.CharSequence} object
+     * @param line             a {@link java.lang.CharSequence} object
      * @param delimiterPattern a {@link java.util.regex.Pattern} object
-     * @param quoteChar a char
+     * @param quoteChar        a char
      */
     public RegexTokenizer(CharSequence line, Pattern delimiterPattern,
                           char quoteChar) {

@@ -9,13 +9,15 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @version $Id: $Id
  */
 public interface Simulator extends TetradSerializable {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
      * Simulates data from the model associated with this object.
      *
-     * @param sampleSize the number of rows to simulate.
+     * @param sampleSize      the number of rows to simulate.
      * @param latentDataSaved if true, latent variables are saved in the data set.
      * @return the simulated data set.
      */

@@ -14,19 +14,33 @@ class BootstrapWorker extends Thread {
     //MP: Class variables declaration
     private static final int nprocessor = FastMath.max(Runtime.getRuntime().availableProcessors() - 1, 1); // Retain one processor for the current process
 
-    /** Constant <code>alpha=// Retain one processor for the current process</code> */
+    /**
+     * Constant <code>alpha=// Retain one processor for the current process</code>
+     */
     public static double alpha;
-    /** Constant <code>BootstrapNum=-1</code> */
+    /**
+     * Constant <code>BootstrapNum=-1</code>
+     */
     public static int BootstrapNum = -1; // total number of bootstrap instances that must be executed
-    /** Constant <code>DFC</code> */
+    /**
+     * Constant <code>DFC</code>
+     */
     public static DataForCalibrationRfci DFC;
-    /** Constant <code>truePag</code> */
+    /**
+     * Constant <code>truePag</code>
+     */
     public static Graph truePag;
-    /** Constant <code>BNfromBootstrap</code> */
+    /**
+     * Constant <code>BNfromBootstrap</code>
+     */
     public static List<Graph> BNfromBootstrap;
-    /** Constant <code>waitingList</code> */
+    /**
+     * Constant <code>waitingList</code>
+     */
     public static List<BootstrapWorker> waitingList = new ArrayList<BootstrapWorker>(); //MP: List of processes that are waiting to run
-    /** Constant <code>runningList</code> */
+    /**
+     * Constant <code>runningList</code>
+     */
     public static List<BootstrapWorker> runningList = new ArrayList<BootstrapWorker>(); //MP: List of processes that are running
 
     //MP: Instance variables' declaration'
@@ -95,7 +109,9 @@ class BootstrapWorker extends Thread {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void run() {
         this.start_time = MillisecondTimes.timeMillis();

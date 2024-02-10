@@ -46,8 +46,8 @@ public class Histogram {
     /**
      * This histogram is for variables in a particular data set. These may be continuous or discrete.
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param target a {@link java.lang.String} object
+     * @param dataSet                 a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param target                  a {@link java.lang.String} object
      * @param removeZeroPointsPerPlot a boolean
      */
     public Histogram(DataSet dataSet, String target, boolean removeZeroPointsPerPlot) {
@@ -151,8 +151,7 @@ public class Histogram {
             }
 
             return counts;
-        } else if (this.target instanceof DiscreteVariable) {
-            DiscreteVariable _var = (DiscreteVariable) this.target;
+        } else if (this.target instanceof DiscreteVariable _var) {
             List<Integer> _data = getConditionedDataDiscrete();
 
             int[] counts = new int[_var.getNumCategories()];

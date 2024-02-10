@@ -1,14 +1,15 @@
 package edu.cmu.tetrad.data;
 
-import com.google.gson.Gson;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.pitt.dbmi.data.reader.ContinuousData;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.*;
+import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -141,7 +142,7 @@ public class SimpleDataLoader {
 
         Data data = dataReader.read(dataColumns, hasHeader);
 
-        if (data != null){
+        if (data != null) {
             DataModel dataModel = DataConvertUtils.toDataModel(data);
             dataModel.setName(file.getName());
             return (DataSet) dataModel;
@@ -166,10 +167,10 @@ public class SimpleDataLoader {
      *                           new FileReader(file), " \t", "//");
      * </pre> The initial "/covariance" is optional.
      *
-     * @param chars an array of {@link char} objects
-     * @param commentMarker a {@link java.lang.String} object
-     * @param delimiterType a {@link edu.cmu.tetrad.data.DelimiterType} object
-     * @param quoteChar a char
+     * @param chars              an array of {@link char} objects
+     * @param commentMarker      a {@link java.lang.String} object
+     * @param delimiterType      a {@link edu.cmu.tetrad.data.DelimiterType} object
+     * @param quoteChar          a char
      * @param missingValueMarker a {@link java.lang.String} object
      * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
@@ -199,8 +200,8 @@ public class SimpleDataLoader {
      * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
      * @param quoteCharacter     The quote character, e.g., '\"'.
      * @param missingValueMarker The missing value marker as a string--e.g., "NA".
-     * @throws java.io.IOException if the file cannot be read.
      * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @throws java.io.IOException if the file cannot be read.
      */
     public static ICovarianceMatrix loadCovarianceMatrix(File file, String commentMarker,
                                                          DelimiterType delimiter,
@@ -386,7 +387,7 @@ public class SimpleDataLoader {
      * Returns the model cast to ICovarianceMatrix if already a covariance matric, or else returns the covariance matrix
      * for a dataset.
      *
-     * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
+     * @param dataModel             a {@link edu.cmu.tetrad.data.DataModel} object
      * @param precomputeCovariances a boolean
      * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
@@ -408,7 +409,7 @@ public class SimpleDataLoader {
     /**
      * <p>getCovarianceMatrix.</p>
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dataSet               a {@link edu.cmu.tetrad.data.DataSet} object
      * @param precomputeCovariances a boolean
      * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */

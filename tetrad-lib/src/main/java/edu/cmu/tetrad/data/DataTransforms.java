@@ -32,9 +32,9 @@ public class DataTransforms {
      * Log or unlog data
      *
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param a a double
+     * @param a       a double
      * @param isUnlog a boolean
-     * @param base a int
+     * @param base    a int
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet logData(DataSet dataSet, double a, boolean isUnlog, int base) {
@@ -141,8 +141,8 @@ public class DataTransforms {
     /**
      * <p>discretize.</p>
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param numCategories a int
+     * @param dataSet         a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param numCategories   a int
      * @param variablesCopied a boolean
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
@@ -275,6 +275,7 @@ public class DataTransforms {
     }
 
     // Trying to optimize some.
+
     /**
      * <p>concatenate.</p>
      *
@@ -333,9 +334,9 @@ public class DataTransforms {
     /**
      * <p>getResamplingDataset.</p>
      *
-     * @return a sample without replacement with the given sample size from the given dataset.
-     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param data       a {@link edu.cmu.tetrad.data.DataSet} object
      * @param sampleSize a int
+     * @return a sample without replacement with the given sample size from the given dataset.
      */
     public static DataSet getResamplingDataset(DataSet data, int sampleSize) {
         int actualSampleSize = data.getNumRows();
@@ -418,9 +419,9 @@ public class DataTransforms {
     /**
      * <p>getBootstrapSample.</p>
      *
-     * @return a sample with replacement with the given sample size from the given dataset.
-     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param data       a {@link edu.cmu.tetrad.data.DataSet} object
      * @param sampleSize a int
+     * @return a sample with replacement with the given sample size from the given dataset.
      */
     public static DataSet getBootstrapSample(DataSet data, int sampleSize) {
         int actualSampleSize = data.getNumRows();
@@ -471,7 +472,7 @@ public class DataTransforms {
     /**
      * <p>split.</p>
      *
-     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param data        a {@link edu.cmu.tetrad.data.DataSet} object
      * @param percentTest a double
      * @return a {@link java.util.List} object
      */
@@ -1062,9 +1063,9 @@ public class DataTransforms {
     /**
      * <p>getBootstrapSample.</p>
      *
-     * @return a sample with replacement with the given sample size from the given dataset.
-     * @param data a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param data       a {@link edu.cmu.tetrad.util.Matrix} object
      * @param sampleSize a int
+     * @return a sample with replacement with the given sample size from the given dataset.
      */
     public static Matrix getBootstrapSample(Matrix data, int sampleSize) {
         int actualSampleSize = data.getNumRows();
@@ -1084,9 +1085,9 @@ public class DataTransforms {
     /**
      * <p>copyColumn.</p>
      *
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node   a {@link edu.cmu.tetrad.graph.Node} object
      * @param source a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param dest a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dest   a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static void copyColumn(Node node, DataSet source, DataSet dest) {
         int sourceColumn = source.getColumn(node);

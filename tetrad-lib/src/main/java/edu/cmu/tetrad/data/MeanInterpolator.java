@@ -28,7 +28,9 @@ package edu.cmu.tetrad.data;
  * @version $Id: $Id
  */
 public final class MeanInterpolator implements DataFilter {
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public DataSet filter(DataSet dataSet) {
         DataSet newDataSet = dataSet.copy();
 

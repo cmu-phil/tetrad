@@ -66,8 +66,8 @@ public final class CorrelationMatrix extends CovarianceMatrix {
      * Constructs a correlation matrix data set using the given information. The matrix matrix is internally converted
      * to a correlation matrix.
      *
-     * @param variables a {@link java.util.List} object
-     * @param matrix a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param variables  a {@link java.util.List} object
+     * @param matrix     a {@link edu.cmu.tetrad.util.Matrix} object
      * @param sampleSize a int
      */
     public CorrelationMatrix(List<Node> variables, Matrix matrix,
@@ -85,7 +85,9 @@ public final class CorrelationMatrix extends CovarianceMatrix {
                 new Matrix(0, 0), 1);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setMatrix(Matrix matrix) {
         if (!matrix.isSquare()) {
             throw new IllegalArgumentException("Matrix must be square.");
@@ -102,7 +104,9 @@ public final class CorrelationMatrix extends CovarianceMatrix {
         super.setMatrix(matrix);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Matrix getSelection(int[] rows, int[] cols) {
         return getMatrix().getSelection(rows, cols);
@@ -111,8 +115,8 @@ public final class CorrelationMatrix extends CovarianceMatrix {
     /**
      * <p>getSubCorrMatrix.</p>
      *
-     * @return a submatrix, returning as a correlation matrix, with variables in the given order.
      * @param submatrixVarNames an array of {@link java.lang.String} objects
+     * @return a submatrix, returning as a correlation matrix, with variables in the given order.
      */
     public CorrelationMatrix getSubCorrMatrix(String[] submatrixVarNames) {
         ICovarianceMatrix covarianceMatrix = getSubmatrix(submatrixVarNames);

@@ -90,7 +90,9 @@ public interface ICovarianceMatrix extends DataModel {
      */
     String getName();
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     void setName(String name);
 
     /**
@@ -100,7 +102,9 @@ public interface ICovarianceMatrix extends DataModel {
      */
     Knowledge getKnowledge();
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     void setKnowledge(Knowledge knowledge);
 
     /**
@@ -191,7 +195,9 @@ public interface ICovarianceMatrix extends DataModel {
      */
     String toString();
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     Node getVariable(String name);
 
     /**

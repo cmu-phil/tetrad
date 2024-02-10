@@ -56,7 +56,7 @@ public final class Knowledge implements TetradSerializable {
 //    private static final Pattern SPEC_PATTERN = Pattern.compile("[A-Za-z0-9:-_,\\-.*]+");
     private static final Pattern COMMAN_DELIM = Pattern.compile(",");
 
-     private final Set<String> variables;
+    private final Set<String> variables;
 
     // This needs to be a list for backward compatibility. Need to check when adding
     // a new spec whether it's already in the list.
@@ -764,7 +764,7 @@ public final class Knowledge implements TetradSerializable {
     /**
      * Forbids any variable from being parent of any other variable within the given tier, or cancels this forbidding.
      *
-     * @param tier a int
+     * @param tier      a int
      * @param forbidden a boolean
      */
     public void setTierForbiddenWithin(int tier, boolean forbidden) {
@@ -951,7 +951,7 @@ public final class Knowledge implements TetradSerializable {
     /**
      * <p>setOnlyCanCauseNextTier.</p>
      *
-     * @param tier a int
+     * @param tier           a int
      * @param onlyCausesNext a boolean
      */
     public void setOnlyCanCauseNextTier(int tier, boolean onlyCausesNext) {
@@ -987,15 +987,14 @@ public final class Knowledge implements TetradSerializable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Two Knowledge objects are equal just in case their forbidden and required edges are equal, and their tiers are
      * equal.
      */
     public boolean equals(Object o) {
-        if (!(o instanceof Knowledge)) {
+        if (!(o instanceof Knowledge that)) {
             return false;
         }
-        Knowledge that = (Knowledge) o;
 
         return this.forbiddenRulesSpecs.equals(that.forbiddenRulesSpecs)
                 && this.requiredRulesSpecs.equals(that.requiredRulesSpecs)

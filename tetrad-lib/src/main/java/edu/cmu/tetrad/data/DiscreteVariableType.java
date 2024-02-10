@@ -34,7 +34,9 @@ import java.io.ObjectStreamException;
  * @version $Id: $Id
  */
 public final class DiscreteVariableType implements TetradSerializable {
-    /** Constant <code>NOMINAL</code> */
+    /**
+     * Constant <code>NOMINAL</code>
+     */
     public static final DiscreteVariableType NOMINAL =
             new DiscreteVariableType("Nominal");
     private static final long serialVersionUID = 23L;

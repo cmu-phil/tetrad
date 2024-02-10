@@ -27,11 +27,13 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * Interface implemented by classes that are capable of participating in the transfer of knowledge objects.
  *
  * @author josephramsey
- * @see Knowledge
  * @version $Id: $Id
+ * @see Knowledge
  */
 public interface KnowledgeTransferable extends TetradSerializable {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**

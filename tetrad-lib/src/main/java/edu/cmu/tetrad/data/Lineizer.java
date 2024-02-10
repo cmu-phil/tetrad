@@ -51,7 +51,7 @@ final class Lineizer {
     /**
      * Constructs a tokenizer for the given input line, using the given Pattern as delimiter.
      *
-     * @param reader a {@link java.io.Reader} object
+     * @param reader        a {@link java.io.Reader} object
      * @param commentMarker a {@link java.lang.String} object
      */
     public Lineizer(Reader reader, String commentMarker) {

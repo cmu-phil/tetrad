@@ -72,7 +72,7 @@ public final class CaseExpander implements DataFilter {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Expands cases for the given dataset.
      */
     public DataSet filter(DataSet dataSet) {

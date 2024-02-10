@@ -62,7 +62,7 @@ public class MultiGeneralAndersonDarlingTest {
     /**
      * Constructs an Anderson-Darling test for the given column of data.
      *
-     * @param data a {@link java.util.List} object
+     * @param data          a {@link java.util.List} object
      * @param distributions a {@link java.util.List} object
      */
     public MultiGeneralAndersonDarlingTest(List<List<Double>> data, List<RealDistribution> distributions) {

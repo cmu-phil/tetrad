@@ -139,7 +139,7 @@ public class VerticalIntDataBox implements DataBox {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the value at the given row/column to the given Number value. The value used is number.intValue().
      */
     public void set(int row, int col, Number value) {
@@ -152,7 +152,9 @@ public class VerticalIntDataBox implements DataBox {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Number get(int row, int col) {
         int datum = this.data[col][row];
 
@@ -198,7 +200,9 @@ public class VerticalIntDataBox implements DataBox {
         return new VerticalIntDataBox(this.numRows, this.numCols);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataBox viewSelection(int[] rows, int[] cols) {
         DataBox _dataBox = new VerticalIntDataBox(rows.length, cols.length);

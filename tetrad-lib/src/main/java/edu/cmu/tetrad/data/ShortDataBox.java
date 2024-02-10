@@ -121,7 +121,7 @@ public class ShortDataBox implements DataBox {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the value at the given row/column to the given Number value. The value used is number.shortValue().
      */
     public void set(int row, int col, Number value) {
@@ -136,7 +136,9 @@ public class ShortDataBox implements DataBox {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Number get(int row, int col) {
         short datum = this.data[row][col];
 
@@ -179,7 +181,9 @@ public class ShortDataBox implements DataBox {
         return viewSelection(rows, cols);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataBox viewSelection(int[] rows, int[] cols) {
         DataBox _dataBox = new ShortDataBox(rows.length, cols.length);

@@ -137,7 +137,7 @@ public class VerticalDoubleDataBox implements DataBox {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the value at the given row/column to the given Number value. The value used is number.doubleValue().
      */
     public void set(int row, int col, Number value) {
@@ -152,7 +152,9 @@ public class VerticalDoubleDataBox implements DataBox {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Number get(int row, int col) {
         return this.data[col][row];
     }
@@ -200,7 +202,9 @@ public class VerticalDoubleDataBox implements DataBox {
         return viewSelection(rows, cols);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataBox viewSelection(int[] rows, int[] cols) {
         DataBox _dataBox = new VerticalDoubleDataBox(rows.length, cols.length);

@@ -71,7 +71,7 @@ public abstract class AbstractVariable implements Variable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Tests whether the given value is the missing data marker.
      */
     public abstract boolean isMissingValue(Object value);
@@ -87,7 +87,7 @@ public abstract class AbstractVariable implements Variable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of this variable.
      */
     public final void setName(String name) {
@@ -106,18 +106,13 @@ public abstract class AbstractVariable implements Variable {
 
     /**
      * {@inheritDoc}
-     *
-     * Checks to see whether the passed value is an acceptable value for
-     * this variable. For AbstractVariable, this method always
-     * returns true. Subclasses should override
-     * checkValue() in order to provide for subclass-specific value
-     * checking. The value should pass the test if it can be converted into an equivalent object of the correct class
-     * type (see
-     * getValueClass()) for this variable; otherwise, it should fail. In
-     * general, checkValue() should not fail a value for simply not being an instance of a particular class.
-     * Since this method is not
-     * static, subclasses may (but need not) provide for
-     * instance-specific value checking.
+     * <p>
+     * Checks to see whether the passed value is an acceptable value for this variable. For AbstractVariable, this
+     * method always returns true. Subclasses should override checkValue() in order to provide for subclass-specific
+     * value checking. The value should pass the test if it can be converted into an equivalent object of the correct
+     * class type (see getValueClass()) for this variable; otherwise, it should fail. In general, checkValue() should
+     * not fail a value for simply not being an instance of a particular class. Since this method is not static,
+     * subclasses may (but need not) provide for instance-specific value checking.
      */
     public boolean checkValue(Object value) {
         return true;
@@ -132,7 +127,9 @@ public abstract class AbstractVariable implements Variable {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public abstract Node like(String name);
 
 //    @Override

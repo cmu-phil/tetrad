@@ -36,7 +36,9 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public interface DataSet extends DataModel {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
@@ -194,7 +196,9 @@ public interface DataSet extends DataModel {
      */
     Node getVariable(int column);
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     Node getVariable(String name);
 
     /**
@@ -311,7 +315,7 @@ public interface DataSet extends DataModel {
     /**
      * <p>subsetRowsColumns.</p>
      *
-     * @param rows an array of {@link int} objects
+     * @param rows    an array of {@link int} objects
      * @param columns an array of {@link int} objects
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */

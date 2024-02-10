@@ -33,8 +33,8 @@ import java.util.List;
  * calculating marginals.
  *
  * @author josephramsey
- * @see edu.cmu.tetrad.util.MultiDimIntTable
  * @version $Id: $Id
+ * @see edu.cmu.tetrad.util.MultiDimIntTable
  */
 public final class CellTable {
 
