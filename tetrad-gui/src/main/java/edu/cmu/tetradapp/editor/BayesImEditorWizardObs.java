@@ -26,6 +26,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
+import java.io.Serial;
 
 /**
  * Allows the user to choose a variable in a Bayes net and edit the parameters associated with that variable.
@@ -33,16 +34,24 @@ import java.awt.*;
  * @author josephramsey
  * @version $Id: $Id
  */
-//////////////////////////////////////
-// there is only one JPD table
-//
 public final class BayesImEditorWizardObs extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = -2275425522013903246L;
 
+    /**
+     * The Bayes IM.
+     */
     private final BayesIm bayesIm;
+
+    /**
+     * The workbench.
+     */
     private final GraphWorkbench workbench;
 
+    /**
+     * Whether editing is enabled.
+     */
     private boolean enableEditing = true;
 
     /**

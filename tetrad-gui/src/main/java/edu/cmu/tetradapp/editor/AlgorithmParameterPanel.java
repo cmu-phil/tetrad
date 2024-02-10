@@ -38,6 +38,7 @@ import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
@@ -53,8 +54,12 @@ import java.util.stream.Stream;
  */
 public class AlgorithmParameterPanel extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 274638263704283474L;
 
+    /**
+     * The main panel.
+     */
     protected final JPanel mainPanel = new JPanel();
 
     /**

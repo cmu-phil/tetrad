@@ -201,6 +201,7 @@ public final class IntTextField extends JTextField {
          *
          * @param value    The value entered by the user.
          * @param oldValue The value previously displayed, in case it needs to be reverted to.
+         * @return The value that should be displayed.
          */
         int filter(int value, int oldValue);
     }

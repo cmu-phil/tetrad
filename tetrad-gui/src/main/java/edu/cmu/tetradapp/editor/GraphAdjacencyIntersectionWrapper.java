@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphSource;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,8 +41,17 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAddOldModel {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The graphs to intersect.
+     */
     private List<Graph> graphs;
+
+    /**
+     * The name of the intersection.
+     */
     private String name = "";
 
     /**

@@ -37,9 +37,25 @@ import java.beans.PropertyChangeSupport;
  * @version $Id: $Id
  */
 public class CovMatrixDisplay extends JPanel implements DataModelContainer {
+
+    /**
+     * The JTable that displays the data.
+     */
     private final CovMatrixJTable covMatrixJTable;
+
+    /**
+     * The label for the display.
+     */
     private final JLabel label;
+
+    /**
+     * The restore button.
+     */
     private final JButton restoreButton;
+
+    /**
+     * The property change support.
+     */
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /**

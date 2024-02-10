@@ -55,16 +55,55 @@ import java.util.List;
 public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeListener, ActionListener, FinalizingEditor {
     @Serial
     private static final long serialVersionUID = -5719467682865706447L;
+
+    /**
+     * The buttons for the cards.
+     */
     private final JButton algoFwdBtn = new JButton("Set Parameters   >");
+
+    /**
+     * The buttons for the cards.
+     */
     private final JButton paramBkBtn = new JButton("<   Choose Algorithm");
+
+    /**
+     * The buttons for the cards.
+     */
     private final JButton paramFwdBtn = new JButton("Run Search & Generate Graph   >");
+
+    /**
+     * The buttons for the cards.
+     */
     private final JButton graphBkBtn = new JButton("<   Set Parameters");
 
+    /**
+     * The algorithm card.
+     */
     private final AlgorithmCard algorithmCard;
+
+    /**
+     * The parameter card.
+     */
     private final ParameterCard parameterCard;
+
+    /**
+     * The graph card.
+     */
     private final GraphCard graphCard;
+
+    /**
+     * The algorithm runner.
+     */
     private final GeneralAlgorithmRunner algorithmRunner;
+
+    /**
+     * The desktop.
+     */
     private final TetradDesktop desktop;
+
+    /**
+     * The JSON result.
+     */
     private String jsonResult;
 
     /**

@@ -1006,14 +1006,132 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         return new MsepTest(getGraph());
     }
 
+    /**
+     * An enum of which type of graph selection to perform.
+     */
     public enum Type {
-        Subgraph, Adjacents, Adjacents_of_Adjacents, Adjacents_of_Adjacents_of_Adjacents, Parents, Children, Ancestors, Descendants,
-        Markov_Blankets, Treks, Trek_Edges,
-        Paths, Path_Edges, Directed_Paths, Directed_Path_Edges, Y_Structures,
-        Pag_Y_Structures, Indegree, Out_Degree, Degree
+
+        /**
+         * Subgraph.
+         */
+        Subgraph,
+
+        /**
+         * Adjacents.
+         */
+        Adjacents,
+
+        /**
+         * Adjacents of Adjacents.
+         */
+        Adjacents_of_Adjacents,
+
+        /**
+         * Adjacents of Adjacents of Adjacents.
+         */
+        Adjacents_of_Adjacents_of_Adjacents,
+
+        /**
+         * Parents.
+         */
+        Parents,
+
+        /**
+         * Children.
+         */
+        Children,
+
+        /**
+         * Ancestors.
+         */
+        Ancestors,
+
+        /**
+         * Descendants.
+         */
+        Descendants,
+
+        /**
+         * Markov Blankets.
+         */
+        Markov_Blankets,
+
+        /**
+         * Treks.
+         */
+        Treks,
+
+        /**
+         * Trek Edges.
+         */
+        Trek_Edges,
+
+        /**
+         * Paths.
+         */
+        Paths,
+
+        /**
+         * Path Edges.
+         */
+        Path_Edges,
+
+        /**
+         * Directed Paths.
+         */
+        Directed_Paths,
+
+        /**
+         * Directed Path Edges.
+         */
+        Directed_Path_Edges,
+
+        /**
+         * Y Structures.
+         */
+        Y_Structures,
+
+        /**
+         * Pag Y Structures.
+         */
+        Pag_Y_Structures,
+
+        /**
+         * Indegree.
+         */
+        Indegree,
+
+        /**
+         * Out Degree.
+         */
+        Out_Degree,
+
+        /**
+         * Degree.
+         */
+        Degree
     }
 
-    public enum nType {equals, atMost, atLeast}
+    /**
+     * An enum of which type of n to use.
+     */
+    public enum nType {
+
+        /**
+         * equals.
+         */
+        equals,
+
+        /**
+         * atMost.
+         */
+        atMost,
+
+        /**
+         * atLeast.
+         */
+        atLeast
+    }
 }
 
 

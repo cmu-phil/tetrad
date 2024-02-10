@@ -204,8 +204,6 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
     public Parameters getParams() {
         return this.params;
     }
-
-    public enum ComparisonType {DAG, CPDAG, PAG}
 }
 
 

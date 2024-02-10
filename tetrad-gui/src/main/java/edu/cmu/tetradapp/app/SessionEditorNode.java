@@ -44,6 +44,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -63,6 +64,7 @@ import java.util.Set;
  */
 public final class SessionEditorNode extends DisplayNode {
 
+    @Serial
     private static final long serialVersionUID = -6145843764762585351L;
     /**
      * The simulation edu.cmu.tetrad.study (used to edit the repetition values).
@@ -72,6 +74,10 @@ public final class SessionEditorNode extends DisplayNode {
      * The configuration for this editor node.
      */
     private final SessionNodeConfig config;
+
+    /**
+     * The popup for this node.
+     */
     JPopupMenu popup;
     /**
      * If an editor has been opened, this is a reference to that editor. Used to close the editor if necessary.

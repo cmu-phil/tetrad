@@ -40,6 +40,8 @@ public class TimeSeriesDataDisplayJTable extends JTable
 
     /**
      * Constructor. Takes a DataSet as a model.
+     *
+     * @param model the DataSet to be displayed.
      */
     public TimeSeriesDataDisplayJTable(TimeSeriesData model) {
         setModel(new TimeSeriesDataDisplayTable(model));

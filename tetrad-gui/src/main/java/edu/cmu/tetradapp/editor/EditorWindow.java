@@ -48,6 +48,10 @@ public class EditorWindow extends JInternalFrame
      * The bounds of the source component.
      */
     private final Component centeringComp;
+
+    /**
+     * The editor component.
+     */
     private JComponent editor;
     /**
      * Set to true if the dialog was canceled.

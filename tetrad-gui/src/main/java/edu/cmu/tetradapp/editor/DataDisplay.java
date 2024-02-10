@@ -38,7 +38,15 @@ import java.beans.PropertyChangeSupport;
  */
 public class DataDisplay extends JPanel implements DataModelContainer,
         PropertyChangeListener {
+
+    /**
+     * The JTable that displays the data.
+     */
     private final TabularDataJTable tabularDataJTable;
+
+    /**
+     * The property change support.
+     */
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /**

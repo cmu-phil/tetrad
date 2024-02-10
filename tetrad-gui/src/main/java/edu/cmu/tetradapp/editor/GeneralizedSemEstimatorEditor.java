@@ -38,6 +38,7 @@ import javax.swing.event.AncestorListener;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
@@ -51,7 +52,9 @@ import java.util.prefs.Preferences;
  */
 public final class GeneralizedSemEstimatorEditor extends JPanel implements DelegatesEditing, LayoutEditable {
 
+    @Serial
     private static final long serialVersionUID = 5161532456725190959L;
+
     /**
      * A reference to the error terms menu item so it can be reset.
      */
@@ -60,7 +63,12 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
      * A common map of nodes to launched editors so that they can all be closed when this editor is closed.
      */
     private final Map<Object, EditorWindow> launchedEditors = new HashMap<>();
+
+    /**
+     * The wrapper for the estimator.
+     */
     private final GeneralizedSemEstimatorWrapper wrapper;
+
     /**
      * The graphical editor for the SemIm.
      */

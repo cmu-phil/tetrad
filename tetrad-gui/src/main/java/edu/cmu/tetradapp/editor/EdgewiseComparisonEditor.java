@@ -26,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 
 /**
  * Provides a little display/editor for notes in the session workbench. This may be elaborated in the future to allow
@@ -36,13 +37,22 @@ import java.awt.*;
  */
 public class EdgewiseComparisonEditor extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 7921819261142670181L;
 
     /**
      * The model for the note.
      */
     private final EdgewiseComparisonModel comparison;
+
+    /**
+     * The parameters for the comparison.
+     */
     private final Parameters params;
+
+    /**
+     * The text area for the note.
+     */
     private JTextArea area;
 
     /**

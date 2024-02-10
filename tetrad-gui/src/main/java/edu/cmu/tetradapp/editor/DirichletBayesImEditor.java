@@ -42,7 +42,14 @@ import java.awt.*;
  */
 public class DirichletBayesImEditor extends JPanel {
 
+    /**
+     * The wizard for editing the probabilities.
+     */
     private final DirichletBayesImProbsWizard probsWizard;
+
+    /**
+     * The wizard for editing the pseudocounts.
+     */
     private final DirichletBayesImCountsWizard countsWizard;
 
     /**

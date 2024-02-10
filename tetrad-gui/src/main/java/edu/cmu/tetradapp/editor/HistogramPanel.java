@@ -37,21 +37,43 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public class HistogramPanel extends JPanel {
-    /** Constant <code>tiles</code> */
+    /**
+     * Constant <code>tiles</code>
+     */
     public static final String[] tiles = {"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
             "septile", "octile", "nontile", "decile"};
     private static final Color LINE_COLOR = Color.GRAY.darker();
+
+    /**
+     * The histogram to display.
+     */
     private final Histogram histogram;
+
+    /**
+     * The rectangles in the histogram.
+     */
     private final Map<Rectangle, Integer> rectMap = new LinkedHashMap<>();
+
+    /**
+     * Whether to draw the axes.
+     */
     private final boolean drawAxes;
+
+    /**
+     * The padding for the x-axis.
+     */
     private final int paddingX;
+
+    /**
+     * The color of the bars.
+     */
     private Color barColor = Color.RED.darker();
 
     /**
      * Constructs the histogram display panel given the initial histogram to display.
      *
      * @param histogram The histogram to display.
-     * @param drawAxes a boolean
+     * @param drawAxes  a boolean
      */
     public HistogramPanel(Histogram histogram, boolean drawAxes) {
         this.drawAxes = drawAxes;
@@ -80,7 +102,9 @@ public class HistogramPanel extends JPanel {
         return max;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getToolTipText(MouseEvent evt) {
 
         Point point = evt.getPoint();
@@ -100,7 +124,7 @@ public class HistogramPanel extends JPanel {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Paints the histogram and related items.
      */
     public void paintComponent(Graphics graphics) {

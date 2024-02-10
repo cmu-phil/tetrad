@@ -32,6 +32,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
@@ -47,10 +48,19 @@ import java.text.NumberFormat;
  */
 public class BayesEstimatorEditor extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The panel that contains the workbench and the wizard.
+     */
     private final JPanel targetPanel;
+
+    /**
+     * The wrapper for the Bayes estimator.
+     */
     private final BayesEstimatorWrapper wrapper;
+
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */

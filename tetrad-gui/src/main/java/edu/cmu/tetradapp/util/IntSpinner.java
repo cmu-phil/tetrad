@@ -37,7 +37,7 @@ public class IntSpinner extends JSpinner {
 
 
     /**
-     * The eidtor
+     * The editor
      */
     private final IntTextField editor;
 
@@ -169,8 +169,18 @@ public class IntSpinner extends JSpinner {
         return this.filter.filter((Integer) getValue(), value);
     }
 
+    /**
+     * Interface for filtering values.
+     */
     public interface Filter {
 
+        /**
+         * <p>filter.</p>
+         *
+         * @param oldValue a int
+         * @param newValue a int
+         * @return a int
+         */
         int filter(int oldValue, int newValue);
 
     }

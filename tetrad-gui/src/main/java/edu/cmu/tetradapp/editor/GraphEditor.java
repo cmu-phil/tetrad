@@ -51,6 +51,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
+import java.io.Serial;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
@@ -65,6 +66,7 @@ import java.util.*;
  */
 public final class GraphEditor extends JPanel implements GraphEditable, LayoutEditable, IndTestProducer {
 
+    @Serial
     private static final long serialVersionUID = 5123725895449927539L;
 
     private static final Set<String> EVENTS = new HashSet<>(Arrays.asList(
@@ -73,15 +75,35 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             "edgeRemoved",
             "nodeRemoved"
     ));
+
+    /**
+     * The parameters for the graph.
+     */
     private final Parameters parameters;
+
+    /**
+     * The scroll pane for the graph editor.
+     */
     private final JScrollPane graphEditorScroll = new JScrollPane();
+
+    /**
+     * The table for the edge types.
+     */
     private final EdgeTypeTable edgeTypeTable;
+
+    /**
+     * The workbench for the graph.
+     */
     private GraphWorkbench workbench;
+
     /**
      * Flag to indicate if interventional variables are in the graph - Zhou
      */
     private boolean hasInterventional;
 
+    /**
+     * Flag to indicate if editing is enabled.
+     */
     private boolean enableEditing = true;
 
     //===========================CONSTRUCTOR========================//

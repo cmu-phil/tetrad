@@ -48,15 +48,24 @@ import java.util.Set;
 public final class DataEditor extends JPanel implements KnowledgeEditable,
         PropertyChangeListener {
 
+    /**
+     * The parameters for the data editor.
+     */
     private final Parameters parameters;
+
     /**
      * The data wrapper being displayed.
      */
     private DataWrapper dataWrapper;
+
     /**
      * A tabbed pane containing displays for all data models and displaying 'dataModel' currently.
      */
     private JTabbedPane tabbedPane = new JTabbedPane();
+
+    /**
+     * True if menus should be shown.
+     */
     private boolean showMenus = true;
 
     //==========================CONSTRUCTORS===============================//

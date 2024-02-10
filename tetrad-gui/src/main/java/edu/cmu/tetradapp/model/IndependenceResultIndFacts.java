@@ -126,8 +126,25 @@ public final class IndependenceResultIndFacts implements TetradSerializable {
         return "Result: " + getFact() + "\t" + getType() + "\t" + IndependenceResultIndFacts.nf.format(getpValue());
     }
 
+    /**
+     * An enum of fact types.
+     */
     public enum Type {
-        INDEPENDENT, DEPENDENT, UNDETERMINED
+
+        /**
+         * INDEPENDENT.
+         */
+        INDEPENDENT,
+
+        /**
+         * DEPENDENT.
+         */
+        DEPENDENT,
+
+        /**
+         * UNDETERMINED.
+         */
+        UNDETERMINED
     }
 }
 

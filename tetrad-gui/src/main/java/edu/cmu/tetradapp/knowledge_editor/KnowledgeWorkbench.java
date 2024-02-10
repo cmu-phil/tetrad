@@ -35,13 +35,19 @@ import java.beans.PropertyChangeListener;
  * Extends AbstractWorkbench in the ways needed to display required and forbidden edges and edit a Knowledge object.
  *
  * @author josephramsey
- * @see edu.cmu.tetradapp.workbench.AbstractWorkbench
  * @version $Id: $Id
+ * @see edu.cmu.tetradapp.workbench.AbstractWorkbench
  */
 public class KnowledgeWorkbench extends AbstractWorkbench {
 
+    /**
+     * Marks forbidden edges.
+     */
     public static final int FORBIDDEN_EDGE = 0;
-    /** Constant <code>REQUIRED_EDGE=2</code> */
+
+    /**
+     * Marks required edges.
+     */
     public static final int REQUIRED_EDGE = 2;
 
     /**
@@ -101,7 +107,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new display node for the workbench based on the given model node.
      */
     public DisplayNode getNewDisplayNode(Node modelNode) {
@@ -122,7 +128,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new model edge for the workbench connecting the two given model nodes and using the edge type from
      * #getEdgeType().
      */
@@ -144,7 +150,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new display edge for the workbench based on the given model edge.
      */
     public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
@@ -167,7 +173,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Gets a new "tracking edge"--that is, an edge which is anchored at one end to a node but tracks the mouse at the
      * other end.  Used for drawing new edges.
      */

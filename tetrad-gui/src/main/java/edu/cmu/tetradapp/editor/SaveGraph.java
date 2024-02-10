@@ -60,8 +60,8 @@ public class SaveGraph extends AbstractAction {
      * <p>Constructor for SaveGraph.</p>
      *
      * @param graphEditable a {@link edu.cmu.tetradapp.editor.GraphEditable} object
-     * @param title a {@link java.lang.String} object
-     * @param type a {@link edu.cmu.tetradapp.editor.SaveGraph.Type} object
+     * @param title         a {@link java.lang.String} object
+     * @param type          a {@link edu.cmu.tetradapp.editor.SaveGraph.Type} object
      */
     public SaveGraph(GraphEditable graphEditable, String title, Type type) {
         super(title);
@@ -79,7 +79,7 @@ public class SaveGraph extends AbstractAction {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {
@@ -231,7 +231,46 @@ public class SaveGraph extends AbstractAction {
         return this.graphEditable;
     }
 
-    public enum Type {text, xml, json, r, dot, pcalg, lavaan}
+    /**
+     * Enumerates the types of files that can be saved.
+     */
+    public enum Type {
+
+        /**
+         * Save as a text file.
+         */
+        text,
+
+        /**
+         * Save as an XML file.
+         */
+        xml,
+
+        /**
+         *
+         */
+        json,
+
+        /**
+         * Save as a R file.
+         */
+        r,
+
+        /**
+         * Save as a dot file.
+         */
+        dot,
+
+        /**
+         * Save as a pcalg file.
+         */
+        pcalg,
+
+        /**
+         * Save as a lavaan file.
+         */
+        lavaan
+    }
 }
 
 

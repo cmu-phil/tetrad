@@ -29,31 +29,110 @@ package edu.cmu.tetradapp.editor;
  * @version $Id: $Id
  */
 public enum DataToken implements Token {
+
+    /**
+     * Whitespace.
+     */
     WHITESPACE("WHITESPACE"),
 
+    /**
+     * A blank line.
+     */
     BLANK_LINE("BLANK_LINE"),
+
+    /**
+     * Rest of the line.
+     */
     REST_OF_LINE("REST_OF_LINE"),
+
+    /**
+     * Comment line.
+     */
     COMMENT_LINE("COMMENT_LINE"),
 
+    /**
+     * Variable marker.
+     */
     VARIABLES_MARKER("VARIABLES_MARKER"),
+
+    /**
+     * Variable type.
+     */
     VAR_TYPE("VAR_TYPE"),
+
+    /**
+     * Colon.
+     */
     COLON("COLON"),
+
+    /**
+     * Left parenthesis.
+     */
     LPAREN("LPAREN"),
+
+    /**
+     * Discrete state.
+     */
     DISCRETE_STATE("DISCRETE_STATE"),
+
+    /**
+     * Comma.
+     */
     COMMA("COMMA"),
+
+    /**
+     * Right parenthesis.
+     */
     RPAREN("RPAREN"),
 
+    /**
+     * Data marker.
+     */
     DATA_MARKER("DATA_MARKER"),
+
+    /**
+     * Continuous token.
+     */
     CONTINUOUS_TOKEN("CONTINUOUS_TOKEN"),
+
+    /**
+     * Discrete token.
+     */
     DISCRETE_TOKEN("DISCRETE_TOKEN"),
+
+    /**
+     * String token.
+     */
     STRING_TOKEN("STRING_TOKEN"),
+
+    /**
+     * Missing value.
+     */
     MISSING_VALUE("MISSING_VALUE"),
 
-    KNOWLEDGE_MARKER("KNOWLEEDGE_MARKER"),
+    /**
+     * Knowledge marker.
+     */
+    KNOWLEDGE_MARKER("KNOWLEDGE_MARKER"),
+
+    /**
+     * Add temporal header.
+     */
     ADD_TEMPORAL_HEADER("ADD_TEMPORAL"),
+
+    /**
+     * Forbid direct header.
+     */
     FORBID_DIRECT_HEADER("FORBID_DIRECT"),
+
+    /**
+     * Require direct header.
+     */
     REQUIRE_DIRECT_HEADER("REQUIRE_DIRECT"),
 
+    /**
+     * The end of file.
+     */
     EOF("EOF");
 
     /**

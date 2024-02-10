@@ -40,7 +40,14 @@ import java.beans.PropertyChangeListener;
 public class BayesPmEditor extends JPanel
         implements PropertyChangeListener, DelegatesEditing {
 
+    /**
+     * The panel that contains the workbench and the wizard.
+     */
     private final JPanel targetPanel;
+
+    /**
+     * The wrapper for the Bayes PM.
+     */
     private final BayesPmWrapper wrapper;
 
     /**

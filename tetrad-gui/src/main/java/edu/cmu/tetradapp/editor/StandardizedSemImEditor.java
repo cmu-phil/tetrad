@@ -68,6 +68,8 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.StandardizedSemImWrapper} object
      */
     public StandardizedSemImEditor(StandardizedSemImWrapper wrapper) {
         StandardizedSemIm semIm = wrapper.getStandardizedSemIm();

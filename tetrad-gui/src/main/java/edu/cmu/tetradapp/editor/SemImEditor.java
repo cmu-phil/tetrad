@@ -265,8 +265,35 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
     }
 
+    /**
+     * An enum to say which tab is being displayed.
+     */
     public enum TabbedPaneDefault {
-        GRAPHICAL, TABULAR, COVMATRIX, tabbedPanedDefault, STATS
+
+        /**
+         * GRAPHICAL.
+         */
+        GRAPHICAL,
+
+        /**
+         * TABULAR.
+         */
+        TABULAR,
+
+        /**
+         * COVMATRIX.
+         */
+        COVMATRIX,
+
+        /**
+         * Default.
+         */
+        tabbedPanedDefault,
+
+        /**
+         * STATS.
+         */
+        STATS
     }
 
     /**

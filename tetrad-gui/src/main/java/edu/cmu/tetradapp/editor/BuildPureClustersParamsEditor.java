@@ -48,6 +48,10 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
      * The parameter wrapper being viewed.
      */
     private Parameters params;
+
+    /**
+     * The parent models.
+     */
     private Object[] parentModels;
 
     /**

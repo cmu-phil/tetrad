@@ -98,6 +98,14 @@ public final class UpdatedBayesImWizard extends JPanel {
      */
     private JPanel tablePanel;
 
+    /**
+     * Constructs a new getModel wizard from a given updater wrapper.
+     *
+     * @param updaterWrapper the updater wrapper
+     * @param workbench      the workbench
+     * @param tab            the tab
+     * @param selectedNode   the selected node
+     */
     public UpdatedBayesImWizard(UpdaterWrapper updaterWrapper,
                                 GraphWorkbench workbench, int tab, Node selectedNode) {
         if (updaterWrapper == null) {
@@ -515,6 +523,9 @@ public final class UpdatedBayesImWizard extends JPanel {
         return this.workbench;
     }
 
+    /**
+     * @return the getModel selectedNode.
+     */
     public Node getSelectedNode() {
         return this.selectedNode;
     }

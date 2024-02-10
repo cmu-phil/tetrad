@@ -47,12 +47,21 @@ import java.text.NumberFormat;
  */
 public class CovMatrixJTable extends JTable implements DataModelContainer,
         PropertyChangeListener {
+
+    /**
+     * The cell renderer for the table.
+     */
     private final CovCellRenderer covCellRenderer;
+
+    /**
+     * The cell editor for the table.
+     */
     private final CovCellEditor covCellEditor;
 
     /**
      * Construct a new JTable for the given CovarianceMatrix.
      *
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      * @see edu.cmu.tetrad.data.CovarianceMatrix
      */
     public CovMatrixJTable(ICovarianceMatrix covMatrix) {
@@ -163,6 +172,11 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
         firePropertyChange("modelChanged", null, null);
     }
 
+    /**
+     * Returns the covariance matrix.
+     *
+     * @return the covariance matrix.
+     */
     public TableCellEditor getCellEditor(int row, int col) {
         CovMatrixTable covMatrixTable = (CovMatrixTable) getModel();
         this.covCellEditor.setRed(false);
@@ -182,6 +196,11 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
         return this.covCellEditor;
     }
 
+    /**
+     * Returns the covariance matrix.
+     *
+     * @return the covariance matrix.
+     */
     public TableCellRenderer getCellRenderer(int row, int col) {
         CovMatrixTable covMatrixTable = (CovMatrixTable) getModel();
 //        covCellRenderer.setPositiveDefinite(false);
@@ -209,27 +228,46 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
         return this.covCellRenderer;
     }
 
+    /**
+     * Returns the covariance matrix.
+     *
+     * @return the covariance matrix.
+     */
     public DataModel getDataModel() {
         CovMatrixTable covMatrixTable = (CovMatrixTable) getModel();
         return covMatrixTable.getCovMatrix();
     }
 
+    /**
+     * Returns true if the covariance matrix is positive definite.
+     *
+     * @return true if the covariance matrix is positive definite.
+     */
     public boolean isEditingMatrixPositiveDefinite() {
         CovMatrixTable covMatrixTable = (CovMatrixTable) getModel();
         return covMatrixTable.isEditingMatrixPositiveDefinite();
     }
 
+    /**
+     * Restores the covariance matrix to its original state.
+     */
     public void restore() {
         CovMatrixTable covMatrixTable = (CovMatrixTable) getModel();
         covMatrixTable.restore();
     }
 
+    /**
+     * Property change listener.
+     */
     public void propertyChange(PropertyChangeEvent evt) {
         if ("modelChanged".equals(evt.getPropertyName())) {
             firePropertyChange("modelChanged", null, null);
         }
     }
 
+    /**
+     * Deletes the selected variables from the covariance matrix.
+     */
     public void deleteSelected() {
         CovMatrixTable model = (CovMatrixTable) getModel();
         ICovarianceMatrix cov = model.getCovMatrix();
@@ -244,6 +282,9 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
     }
 }
 
+/**
+ * A table model for the covariance matrix.
+ */
 class CovCellRenderer extends DefaultTableCellRenderer {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final ICovarianceMatrix covMatrix;
@@ -350,6 +391,9 @@ class CovCellRenderer extends DefaultTableCellRenderer {
 
 }
 
+/**
+ * A cell editor for the covariance matrix.
+ */
 class CovCellEditor extends DefaultCellEditor {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final JTextField textField;
@@ -399,6 +443,11 @@ class CovCellEditor extends DefaultCellEditor {
         this.textField.addActionListener(this.delegate);
     }
 
+    /**
+     * Sets the text of the editor to red if red is true, black otherwise.
+     *
+     * @param red if true, the text is set to red; otherwise, it is set to black.
+     */
     public void setRed(boolean red) {
         if (red) {
             this.textField.setForeground(Color.RED);

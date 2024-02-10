@@ -24,6 +24,7 @@ import org.apache.commons.math3.util.FastMath;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.io.Serial;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
  */
 public class EdgeTypeTable extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = -9104061917163909746L;
 
     private static final String[] EDGES = {
@@ -65,9 +67,19 @@ public class EdgeTypeTable extends JPanel {
             "<->"
     };
 
+    /**
+     * The title of the table.
+     */
     private final JLabel title = new JLabel();
+
+    /**
+     * The table.
+     */
     private final JTable table = new EdgeInfoTable(new DefaultTableModel());
 
+    /**
+     * The graph.
+     */
     private Graph graph;
 
     /**

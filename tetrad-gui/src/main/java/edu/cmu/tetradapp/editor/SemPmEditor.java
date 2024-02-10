@@ -75,6 +75,8 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
 
     /**
      * Constructs an editor for the given SemIm.
+     *
+     * @param wrapper the SemIm to edit.
      */
     public SemPmEditor(SemPmWrapper wrapper) {
         this.semPmWrapper = wrapper;

@@ -29,6 +29,7 @@ import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,13 +45,37 @@ import java.util.List;
  */
 public final class BayesImEditorWizard extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = -588986830104732678L;
 
+    /**
+     * The BayesIm being edited.
+     */
     private final BayesIm bayesIm;
+
+    /**
+     * The combo box that allows the user to choose a variable to edit.
+     */
     private final JComboBox<Node> varNamesComboBox;
+
+    /**
+     * The workbench that contains the Bayes net.
+     */
     private final GraphWorkbench workbench;
+
+    /**
+     * The panel that contains the table.
+     */
     private final JPanel tablePanel;
+
+    /**
+     * The table that allows the user to edit the parameters for a given variable.
+     */
     private BayesImNodeEditingTable editingTable;
+
+    /**
+     * True iff the user is allowed to edit the table.
+     */
     private boolean enableEditing = true;
 
     /**

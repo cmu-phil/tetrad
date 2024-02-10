@@ -40,6 +40,10 @@ import java.text.NumberFormat;
  * @version $Id: $Id
  */
 public class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
+
+    /**
+     * The workbench for the graph.
+     */
     private GraphWorkbench workbench;
 
     /**

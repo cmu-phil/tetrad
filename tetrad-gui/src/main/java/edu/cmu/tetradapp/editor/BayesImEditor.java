@@ -27,6 +27,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 
 /**
  * An editor for Bayes net instantiated models. Assumes that the workbench and parameterized model have been established
@@ -40,10 +41,19 @@ import java.awt.*;
  */
 public class BayesImEditor extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The panel that contains the workbench and the wizard.
+     */
     private final JPanel targetPanel;
+
+    /**
+     * The wrapper for the Bayes IM.
+     */
     private final BayesImWrapper wrapper;
+
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */

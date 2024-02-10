@@ -51,7 +51,7 @@ public final class StringTextField extends JTextField {
      * Constructs a new text field displaying the given default value.
      *
      * @param value a {@link java.lang.String} object
-     * @param size a int
+     * @param size  a int
      */
     public StringTextField(String value, int size) {
         super(size);
@@ -171,6 +171,7 @@ public final class StringTextField extends JTextField {
          *
          * @param value    The value entered by the user.
          * @param oldValue The value previously displayed, in case it needs to be reverted to.
+         * @return The value that should be displayed.
          */
         String filter(String value, String oldValue);
     }

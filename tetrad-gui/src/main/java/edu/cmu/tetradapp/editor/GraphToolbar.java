@@ -56,14 +56,44 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      */
     private final Box buttonsPanel = Box.createVerticalBox();
 
-    // The buttons in the toolbar.
+    /**
+     * The buttons in the toolbar.
+     */
     private final JToggleButton move;
+
+    /**
+     * The add observed button.
+     */
     private final JToggleButton addObserved;
+
+    /**
+     * The add latent button.
+     */
     private final JToggleButton addLatent;
+
+    /**
+     * The add directed edge button.
+     */
     private final JToggleButton addDirectedEdge;
+
+    /**
+     * The add nondirected edge button.
+     */
     private final JToggleButton addNondirectedEdge;
+
+    /**
+     * The add undirected edge button.
+     */
     private final JToggleButton addUndirectedEdge;
+
+    /**
+     * The add partially oriented edge button.
+     */
     private final JToggleButton addPartiallyOrientedEdge;
+
+    /**
+     * The add bidirected edge button.
+     */
     private final JToggleButton addBidirectedEdge;
 
     /**

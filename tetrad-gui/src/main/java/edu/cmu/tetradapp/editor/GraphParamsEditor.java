@@ -34,6 +34,10 @@ import java.awt.*;
  * @version $Id: $Id
  */
 public class GraphParamsEditor extends JPanel implements ParameterEditor {
+
+    /**
+     * The parameters to edit.
+     */
     private Parameters params = new Parameters();
 
     /**

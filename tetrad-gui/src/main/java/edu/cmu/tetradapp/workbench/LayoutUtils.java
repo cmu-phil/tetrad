@@ -66,7 +66,7 @@ public class LayoutUtils {
      * <p>setAllSizes.</p>
      *
      * @param comp a {@link java.awt.Component} object
-     * @param dim a {@link java.awt.Dimension} object
+     * @param dim  a {@link java.awt.Dimension} object
      */
     public static void setAllSizes(Component comp, Dimension dim) {
         comp.setPreferredSize(dim);
@@ -757,10 +757,90 @@ public class LayoutUtils {
     }
 
 
+    /**
+     * An anum of layout options
+     */
     public enum Layout {
-        lag0TopToBottom, lag0BottomToTop, lag0LeftToRight, lag0RightToLeft,
-        topToBottom, bottomToTop, leftToRight, rightToLeft, layered, source, knowledge, circle,
-        kamadaKawai, fruchtermReingold, distanceFromSelected, sqaure
+
+        /**
+         * lag0TopToBottom
+         */
+        lag0TopToBottom,
+
+        /**
+         * lag0BottomToTop
+         */
+        lag0BottomToTop,
+
+        /**
+         * lag0LeftToRight
+         */
+        lag0LeftToRight,
+
+        /**
+         * lag0RightToLeft
+         */
+        lag0RightToLeft,
+
+        /**
+         * topToBottom
+         */
+        topToBottom,
+
+        /**
+         * bottomToTop
+         */
+        bottomToTop,
+
+        /**
+         * leftToRight
+         */
+        leftToRight,
+
+        /**
+         * rightToLeft
+         */
+        rightToLeft,
+
+        /**
+         * layered
+         */
+        layered,
+
+        /**
+         * source
+         */
+        source,
+
+        /**
+         * knowledge
+         */
+        knowledge,
+
+        /**
+         * circle
+         */
+        circle,
+
+        /**
+         * kamadaKawai
+         */
+        kamadaKawai,
+
+        /**
+         * fruchtermReingold
+         */
+        fruchtermReingold,
+
+        /**
+         * distanceFromSelected
+         */
+        distanceFromSelected,
+
+        /**
+         * square
+         */
+        sqaure
     }
 }
 

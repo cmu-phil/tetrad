@@ -111,7 +111,7 @@ public final class SemEstimatorEditor extends JPanel {
     /**
      * <p>Constructor for SemEstimatorEditor.</p>
      *
-     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @param semIm   a {@link edu.cmu.tetrad.sem.SemIm} object
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public SemEstimatorEditor(SemIm semIm, DataSet dataSet) {
@@ -121,7 +121,7 @@ public final class SemEstimatorEditor extends JPanel {
     /**
      * <p>Constructor for SemEstimatorEditor.</p>
      *
-     * @param semPm a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param semPm   a {@link edu.cmu.tetrad.sem.SemPm} object
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public SemEstimatorEditor(SemPm semPm, DataSet dataSet) {
@@ -409,8 +409,35 @@ public final class SemEstimatorEditor extends JPanel {
         }
     }
 
+    /**
+     * Which tab is selected in the editor.
+     */
     public enum TabbedPaneDefault {
-        GRAPHICAL, TABULAR, COVMATRIX, tabbedPanedDefault, STATS
+
+        /**
+         * The graphical editor is selected.
+         */
+        GRAPHICAL,
+
+        /**
+         * The tabular editor is selected.
+         */
+        TABULAR,
+
+        /**
+         * The implied covariance matrix is selected.
+         */
+        COVMATRIX,
+
+        /**
+         * The statistics are selected.
+         */
+        tabbedPanedDefault,
+
+        /**
+         * The statistics are selected.
+         */
+        STATS
     }
 
     /**
