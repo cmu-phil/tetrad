@@ -16,6 +16,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,8 +35,12 @@ import java.util.List;
 @Bootstrapping
 public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The bootstrap graphs.
+     */
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     /**
@@ -68,7 +73,7 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
                 TetradLogger.getInstance().forceLogMessage("Stable = " + edu.cmu.tetrad.search.IcaLingD.isStable(bHat));
             }
 
-            if (bHats.size() > 0) {
+            if (!bHats.isEmpty()) {
                 return edu.cmu.tetrad.search.IcaLingD.makeGraph(bHats.get(0), dataSet.getVariables());
             } else {
                 throw new IllegalArgumentException("LiNG-D couldn't find a model.");

@@ -21,6 +21,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -44,9 +45,17 @@ import java.util.List;
 @Bootstrapping
 public class ImagesBoss implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * The score to use.
+     */
     private ScoreWrapper score = new SemBicScore();
 
     /**

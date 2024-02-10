@@ -6,10 +6,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * An API to allow results from external algorithms to be included in a report through the algrorithm comparison tool.
@@ -31,8 +28,15 @@ import java.io.IOException;
  * @version $Id: $Id
  */
 public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /** External directory. */
     private final String extDir;
+
+    /**
+     * Short description of the algorithm.
+     */
     private final String shortDescription;
 
     /**
@@ -148,8 +152,6 @@ public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
         int index = getIndex(dataSet);
 
         File file = new File(this.path, "/elapsed/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
-
-//        System.out.println(file.getAbsolutePath());
 
         try {
             BufferedReader r = new BufferedReader(new FileReader(file));

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,7 +55,12 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @version $Id: $Id
  */
 public class StandardizedSemIm implements Simulator {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The sample size for the model.
+     */
     private final int sampleSize;
     /**
      * The SEM model.
@@ -69,19 +75,46 @@ public class StandardizedSemIm implements Simulator {
      * includes coefficients for directed as well as bidirected edges.
      */
     private final Map<Edge, Double> edgeParameters;
+
+    /**
+     * The edge coefficient matrix of the model, a la SemIm. Note that this will normally need to be transposed, since
+     * [a][b] is the edge coefficient for a-->b, not b-->a. Sorry. History. THESE ARE PARAMETERS OF THE MODEL--THE ONLY
+     * PARAMETERS.
+     */
     private Matrix edgeCoef;
+
+    /**
+     * The error covariance matrix of the model. i.e. [a][b] is the covariance of E_a and E_b, with [a][a] of course being
+     * the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE CALCULATED. Note that elements of this matrix
+     * may be Double.NaN; this indicates that these elements cannot be calculated.
+     */
     private Matrix errorCovar;
-    private Map<Node, Double> errorVariances;
+
     /**
      * A map from error nodes in the graph to their error variances. These are not freeParameters in the model; their
      * values are always calculated as residual variances, under the constraint that the variances of each variable must
      * be 1.
      */
-//    private Map<Node, Double> errorVariances;
+    private Map<Node, Double> errorVariances;
 
+    /**
+     * The implied covariance matrix over all the variables.
+     */
     private Matrix implCovar;
+
+    /**
+     * The implied covariance matrix over the measured variables only.
+     */
     private Matrix implCovarMeas;
+
+    /**
+     * The edge being edited.
+     */
     private Edge editingEdge;
+
+    /**
+     * The range of the parameter being edited.
+     */
     private ParameterRange range;
 
     /**

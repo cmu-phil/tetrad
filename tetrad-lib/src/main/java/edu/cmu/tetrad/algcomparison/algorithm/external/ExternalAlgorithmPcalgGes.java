@@ -9,10 +9,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,8 +33,17 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The external directory.
+     */
     private final String extDir;
+
+    /**
+     * Short description of the algorithm.
+     */
     private final String shortDescription;
 
     /**

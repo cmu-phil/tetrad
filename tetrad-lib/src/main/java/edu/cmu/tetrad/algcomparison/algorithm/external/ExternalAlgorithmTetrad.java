@@ -9,10 +9,7 @@ import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * An API to allow results from external algorithms to be included in a report through the algrorithm comparison tool.
@@ -34,8 +31,17 @@ import java.io.IOException;
  * @version $Id: $Id
  */
 public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The external directory.
+     */
     private final String extDir;
+
+    /**
+     * Short description of the algorithm.
+     */
     private final String shortDescription;
 
 

@@ -15,6 +15,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.PrintStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,10 +29,27 @@ import java.util.List;
  */
 @Bootstrapping
 public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The score to use.
+     */
     private final ScoreWrapper score;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * The external graph.
+     */
     private Algorithm externalGraph;
+
+    /**
+     * True if the result should be compared to the true graph, false if to the CPDAG of the true graph.
+     */
     private boolean compareToTrue;
 
     /**

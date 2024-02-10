@@ -19,6 +19,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,11 +42,32 @@ import static edu.cmu.tetrad.util.Params.*;
         dataType = DataType.Continuous
 )
 public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
     private IndependenceWrapper test;
+
+    /**
+     * The score to use.
+     */
     private ScoreWrapper score;
+
+    /**
+     * The external graph.
+     */
     private Graph externalGraph;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * The algorithm.
+     */
     private Algorithm algorithm;
 
     // Don't delete.

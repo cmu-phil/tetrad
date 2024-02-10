@@ -12,10 +12,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -38,8 +35,17 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * External directory.
+     */
     private final String extDir;
+
+    /**
+     * Short description of the algorithm.
+     */
     private final String shortDescription;
 
     /**

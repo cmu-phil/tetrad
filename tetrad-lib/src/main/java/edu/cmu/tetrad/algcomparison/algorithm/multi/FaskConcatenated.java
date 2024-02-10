@@ -14,6 +14,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,9 +37,22 @@ import java.util.List;
 @Bootstrapping
 public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
     private IndependenceWrapper test;
+
+    /**
+     * The score to use.
+     */
     private ScoreWrapper score;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
 
     /**

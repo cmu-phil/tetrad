@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.Set;
 
 /**
@@ -30,9 +31,22 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The external algorithms to be intersected.
+     */
     private final ExternalAlgorithm[] algorithms;
+
+    /**
+     * Short description of the algorithm.
+     */
     private final String shortDescription;
+
+    /**
+     * Elapsed time.
+     */
     private long elapsed = -99;
 
     /**

@@ -18,6 +18,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,8 +37,12 @@ import java.util.List;
 @Bootstrapping
 public class IcaLingam implements Algorithm, ReturnsBootstrapGraphs {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The bootstrap graphs.
+     */
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     /**
