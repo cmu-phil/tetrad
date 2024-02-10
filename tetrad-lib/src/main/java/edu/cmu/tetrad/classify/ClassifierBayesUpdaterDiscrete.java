@@ -51,26 +51,44 @@ public final class ClassifierBayesUpdaterDiscrete implements ClassifierDiscrete,
     @Serial
     private static final long serialVersionUID = 23L;
 
-    // The BayesIm instance used to create an updater.  Supplied as an argument to the constructor.
+    /**
+     * The BayesIm instance used to create an updater.  Supplied as an argument to the constructor.
+     */
     private final BayesIm bayesIm;
-    // The dataset to be classified.
+    /**
+     * The dataset to be classified.
+     */
     private final DataSet testData;
-    // The variables in the dataset to be classified.  These should be
-    // the same variables as in the training dataset according to the
-    // "equals" method of DiscreteVariable.
+    /**
+     * The variables in the dataset to be classified.  These should be
+     * the same variables as in the training dataset according to the
+     * "equals" method of DiscreteVariable.
+     */
     private final List<Node> bayesImVars;
-    // The percentage of correct estimates of the target variable.  This will be set to a meaningful value upon
-    // completion of the crossTabulate method.
+    /**
+     * The percentage of correct estimates of the target variable.  This will be set to a meaningful value upon
+     * completion of the crossTabulate method.
+     */
     private double percentCorrect;
-    // The target variable (inferred from its name).
+    /**
+     * The target variable (inferred from its name).
+     */
     private DiscreteVariable targetVariable;
-    // The classifications of the target variable.
+    /**
+     * The classifications of the target variable.
+     */
     private int[] classifications;
-    // The marginals.
+    /**
+     * The marginals.
+     */
     private double[][] marginals;
-    // The number of cases in the dataset.
+    /**
+     * The number of cases in the dataset.
+     */
     private int numCases = -1;
-    // The number of usable cases in the dataset.
+    /**
+     * The number of usable cases in the dataset.
+     */
     private int totalUsableCases;
 
     //===========================CONSTRUCTORS==========================//

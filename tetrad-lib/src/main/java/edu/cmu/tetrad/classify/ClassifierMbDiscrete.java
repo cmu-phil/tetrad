@@ -53,15 +53,51 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class ClassifierMbDiscrete implements ClassifierDiscrete {
+
+    /**
+     * Train data.
+     */
     private DataSet train;
+
+    /**
+     * Test data.
+     */
     private DataSet test;
+
+    /**
+     * Target variable.
+     */
     private Node target;
     private double alpha;
+
+    /**
+     * Depth for PC-MB search.
+     */
     private int depth;
+
+    /**
+     * Prior for Dirichlet estimator.
+     */
     private double prior;
+
+    /**
+     * Maximum number of missing values for a test case.
+     */
     private int maxMissing;
+
+    /**
+     * Target variable.
+     */
     private DiscreteVariable targetVariable;
+
+    /**
+     * Percent correct.
+     */
     private double percentCorrect;
+
+    /**
+     * Cross-tabulation.
+     */
     private int[][] crossTabulation;
 
     //============================CONSTRUCTOR===========================//
