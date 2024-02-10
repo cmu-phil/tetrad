@@ -582,10 +582,11 @@ public final class BayesPm implements Pm, VariableSource {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s The object input stream.
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

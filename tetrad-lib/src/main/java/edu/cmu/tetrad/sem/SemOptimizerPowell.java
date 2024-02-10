@@ -31,6 +31,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -41,8 +42,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class SemOptimizerPowell implements SemOptimizer {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The number of restarts.
+     */
     private int numRestarts;
 
     /**

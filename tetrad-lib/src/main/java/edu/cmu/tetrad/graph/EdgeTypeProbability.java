@@ -16,8 +16,20 @@ public class EdgeTypeProbability implements TetradSerializable {
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The edge type.
+     */
     private EdgeType edgeType;
+
+    /**
+     * The properties.
+     */
     private List<Edge.Property> properties = new ArrayList<>();
+
+    /**
+     * The probability.
+     */
     private double probability;
 
     /**

@@ -24,6 +24,7 @@ package edu.cmu.tetrad.sem;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.ObjectStreamException;
+import java.io.Serial;
 
 /**
  * A typesafe enum of the types of the types of constraints on freeParameters for SEM models (LT, GT, EQ). For example,
@@ -59,6 +60,10 @@ public class ParamConstraintType implements TetradSerializable {
      * The name of this type.
      */
     private final transient String name;
+
+    /**
+     * The ordinal of this type.
+     */
     private final int ordinal = ParamConstraintType.NEXT_ORDINAL++;
 
     /**
@@ -86,6 +91,13 @@ public class ParamConstraintType implements TetradSerializable {
         return this.name;
     }
 
+    /**
+     * Returns the type of the constraint.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.ParamConstraintType} object
+     * @throws ObjectStreamException if something goes wrong
+     */
+    @Serial
     Object readResolve() throws ObjectStreamException {
         return ParamConstraintType.TYPES[this.ordinal]; // Canonicalize.
     }

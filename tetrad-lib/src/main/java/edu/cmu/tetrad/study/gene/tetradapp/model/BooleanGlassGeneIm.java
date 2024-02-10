@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.dist.Distribution;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,35 +44,36 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class BooleanGlassGeneIm implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Can be null.
+     * The name of the session model.
      */
     private String name;
 
     /**
-     * @serial Cannot be null.
+     * The BooleanGlassGenePm from which the BooleanGlassFunction is extracted.
      */
     private BooleanGlassGenePm genePm;
 
     /**
-     * @serial Cannot be null.
+     * The BooleanGlassFunction extracted from the BooleanGlassGenePm.
      */
     private BooleanGlassFunction glassFunction;
 
     /**
-     * @serial Cannot be null.
+     * The BasalInitializer for the BooleanGlassFunction.
      */
     private BasalInitializer initializer;
 
     /**
-     * @serial Cannot be null.
+     * The GeneHistory for the BooleanGlassFunction.
      */
     private GeneHistory history;
 
     /**
-     * @serial Cannot be null.
+     * The MeasurementSimulatorParams for the BooleanGlassFunction.
      */
     private MeasurementSimulatorParams simulator;
 
@@ -401,7 +403,12 @@ public class BooleanGlassGeneIm implements SessionModel {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream from which this object is being deserialized.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

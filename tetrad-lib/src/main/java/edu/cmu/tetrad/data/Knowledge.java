@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.CharArrayWriter;
 import java.io.IOException;
+import java.io.Serial;
 import java.rmi.MarshalledObject;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -50,25 +51,45 @@ import java.util.stream.Collectors;
  */
 public final class Knowledge implements TetradSerializable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
-    //    private static final Pattern VARNAME_PATTERN = Pattern.compile("[A-Za-z0-9:_\\-.]+");
-//    private static final Pattern SPEC_PATTERN = Pattern.compile("[A-Za-z0-9:-_,\\-.*]+");
+    /** The comma delimiter. */
     private static final Pattern COMMAN_DELIM = Pattern.compile(",");
 
+    /** The variable names. */
     private final Set<String> variables;
 
-    // This needs to be a list for backward compatibility. Need to check when adding
-    // a new spec whether it's already in the list.
+    /**
+     * This needs to be a list for backward compatibility. Need to check when adding
+     * a new spec whether it's already in the list.
+     */
     private final List<OrderedPair<Set<String>>> forbiddenRulesSpecs;
 
-    // This needs to be a list for backward compatibility. Need to check when adding
-    // a new spec whether it's already in the list.
+    /**
+     * This needs to be a list for backward compatibility. Need to check when adding
+     * a new spec whether it's already in the list.
+     */
     private final List<OrderedPair<Set<String>>> requiredRulesSpecs;
+
+    /**
+     * The tier specs.
+     */
     private final List<Set<String>> tierSpecs;
-    // Legacy.
+
+    /**
+     * The knowledge groups.
+     */
     private final List<KnowledgeGroup> knowledgeGroups;
+
+    /**
+     * The knowledge group rules.
+     */
     private final Map<KnowledgeGroup, OrderedPair<Set<String>>> knowledgeGroupRules;
+
+    /**
+     * The default to knowledge layout.
+     */
     private boolean defaultToKnowledgeLayout;
 
     /**

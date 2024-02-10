@@ -139,8 +139,17 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
      * Basic implementation of expression signature.
      */
     public static class Signature implements ExpressionSignature {
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The function name.
+         */
         private final String[] arguments;
+
+        /**
+         * The signature string.
+         */
         private String signature;
 
         public Signature(String function, boolean unlimited, boolean commulative, String... arguments) {

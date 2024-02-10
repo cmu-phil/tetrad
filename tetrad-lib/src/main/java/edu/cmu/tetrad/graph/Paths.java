@@ -7,6 +7,7 @@ import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -17,8 +18,12 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * @version $Id: $Id
  */
 public class Paths implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The graph.
+     */
     private final Graph graph;
 
     /**

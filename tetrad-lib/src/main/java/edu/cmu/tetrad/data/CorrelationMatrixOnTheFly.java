@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -44,25 +45,31 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @see CorrelationMatrix
  */
 public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The covariance matrix. Cannot be null. Must be symmetric and positive definite.
+     */
     private final ICovarianceMatrix cov;
+
+    /**
+     * Whether to print out verbose messages.
+     */
     private boolean verbose;
     /**
      * The variables (in order) for this covariance matrix.
-     *
-     * @serial Cannot be null.
      */
     private List<Node> variables;
 
     /**
-     * @serial Do not remove this field; it is needed for serialization.
+     * The matrix data. Should be square. This may be set by derived classes, but it must always be set to a legitimate
+     * covariance matrix.
      */
     private DoubleMatrix2D matrixC;
 
     /**
      * The list of selected variables.
-     *
-     * @serial Cannot be null.
      */
     private Set<Node> selectedVariables = new HashSet<>();
 
@@ -441,10 +448,11 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s The input stream.
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

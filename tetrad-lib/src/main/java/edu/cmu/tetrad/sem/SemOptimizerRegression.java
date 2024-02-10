@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -39,7 +40,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class SemOptimizerRegression implements SemOptimizer {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The number of restarts.
+     */
     private int numRestarts = 1;
 
     /**

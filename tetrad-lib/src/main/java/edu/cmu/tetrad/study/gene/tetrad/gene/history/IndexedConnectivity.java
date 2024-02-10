@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -39,6 +40,7 @@ import java.util.SortedSet;
  * @version $Id: $Id
  */
 public class IndexedConnectivity implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -241,7 +243,12 @@ public class IndexedConnectivity implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream to read from.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -253,7 +260,6 @@ public class IndexedConnectivity implements TetradSerializable {
         if (this.parents == null) {
             throw new IllegalStateException();
         }
-
     }
 }
 

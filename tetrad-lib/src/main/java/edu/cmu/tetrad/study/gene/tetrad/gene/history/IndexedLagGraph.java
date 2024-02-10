@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -39,19 +40,16 @@ import java.util.SortedSet;
  * @version $Id: $Id
  */
 public class IndexedLagGraph implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The factors in the graph, in the order that they are used.
-     *
-     * @serial
      */
     private final List<String> factors;
 
     /**
      * The graph that this "snapshot" of indexedLagGraph was taken from.
-     *
-     * @serial
      */
     private final IndexedParent[][] parents;
 
@@ -241,7 +239,12 @@ public class IndexedLagGraph implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

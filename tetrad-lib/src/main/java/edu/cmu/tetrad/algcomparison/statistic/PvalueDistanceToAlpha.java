@@ -22,6 +22,9 @@ import static org.apache.commons.math3.util.FastMath.abs;
 public class PvalueDistanceToAlpha implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * The significance level for the independence tests.
+     */
     private double alpha = 0.01;
 
     /**

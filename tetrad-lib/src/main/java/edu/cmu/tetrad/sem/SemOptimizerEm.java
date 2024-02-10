@@ -80,6 +80,10 @@ public class SemOptimizerEm implements SemOptimizer {
      * Partitions of the modeled cov.
      */
     zCovModel;
+
+    /**
+     * Expected covariance matrix.
+     */
     private Matrix expectedCov;
 
     /**

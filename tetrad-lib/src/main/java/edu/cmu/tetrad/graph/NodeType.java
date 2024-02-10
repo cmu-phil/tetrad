@@ -24,6 +24,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.ObjectStreamException;
+import java.io.Serial;
 
 /**
  * A typesafe enum of the types of the types of nodes in a graph (MEASURED, LATENT, ERROR).
@@ -71,6 +72,10 @@ public final class NodeType implements TetradSerializable {
      * The name of this type.
      */
     private final transient String name;
+
+    /**
+     * The ordinal of this type.
+     */
     private final int ordinal = NodeType.nextOrdinal++;
 
     /**
@@ -98,6 +103,13 @@ public final class NodeType implements TetradSerializable {
         return this.name;
     }
 
+    /**
+     * Returns the ordinal of this type.
+     *
+     * @return a int
+     * @throws java.io.ObjectStreamException if any.
+     */
+    @Serial
     Object readResolve() throws ObjectStreamException {
         return NodeType.TYPES[this.ordinal]; // Canonicalize.
     }

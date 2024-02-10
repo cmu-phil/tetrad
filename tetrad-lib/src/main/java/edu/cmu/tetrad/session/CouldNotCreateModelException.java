@@ -29,6 +29,10 @@ package edu.cmu.tetrad.session;
  * @version $Id: $Id
  */
 public class CouldNotCreateModelException extends Exception {
+
+    /**
+     * The class of the model that could not be created.
+     */
     private final Class modelClass;
 
     /**

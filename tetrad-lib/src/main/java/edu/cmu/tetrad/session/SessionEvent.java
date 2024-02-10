@@ -71,9 +71,25 @@ public class SessionEvent extends EventObject {
      * Constant <code>ADDING_EDGE=9</code>
      */
     public static final int ADDING_EDGE = 9;
+
+    /**
+     * The session node set, if this event was constructed using one session node.
+     */
     private SessionNode node;
+
+    /**
+     * The parent session node set, if this is an event constructed using two session nodes.
+     */
     private SessionNode parent;
+
+    /**
+     * The child session node set, if this is an event constructed using two session nodes
+     */
     private SessionNode child;
+
+    /**
+     * The type of this event--one of NODE_ADDED, NODE_REMOVED, PARENT_ADDED, PARENT_REMOVED, MODEL_CREATED, MODEL_DESTROYED, MODEL_UNCLEAR.
+     */
     private int type = -1;
 
     /**

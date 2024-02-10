@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.dist.Distribution;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,12 +37,11 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class LinearFunction implements UpdateFunction {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The wrapped polynomial function that's doing all the work.
-     *
-     * @serial
      */
     private final PolynomialFunction polynomialFunction;
 
@@ -241,7 +241,12 @@ public class LinearFunction implements UpdateFunction {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

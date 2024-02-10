@@ -24,6 +24,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.ObjectStreamException;
+import java.io.Serial;
 
 /**
  * Type-safe enum of discrete variable types. A nominal discrete variable is one in which the categories are in no
@@ -39,16 +40,30 @@ public final class DiscreteVariableType implements TetradSerializable {
      */
     public static final DiscreteVariableType NOMINAL =
             new DiscreteVariableType("Nominal");
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * Constant <code>ORDINAL</code>
+     */
     private static final DiscreteVariableType ORDINAL =
             new DiscreteVariableType("Ordinal");
+
+    /**
+     * Constant <code>INDEXICAL</code>
+     */
     private static final DiscreteVariableType[] TYPES = {DiscreteVariableType.NOMINAL, DiscreteVariableType.ORDINAL};
     // Declarations required for serialization.
     private static int nextOrdinal;
+
     /**
      * The name of this type.
      */
     private final transient String name;
+
+    /**
+     * The ordinal of this type.
+     */
     private final int ordinal = DiscreteVariableType.nextOrdinal++;
 
     /**
@@ -76,6 +91,13 @@ public final class DiscreteVariableType implements TetradSerializable {
         return this.name;
     }
 
+    /**
+     * Returns the ordinal of this type.
+     *
+     * @return a int
+     * @throws java.io.ObjectStreamException if any.
+     */
+    @Serial
     Object readResolve() throws ObjectStreamException {
         return DiscreteVariableType.TYPES[this.ordinal]; // Canonicalize.
     }

@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -64,27 +65,27 @@ import java.util.*;
  */
 public final class BoxDataSet implements DataSet {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * Case ID's. These are strings associated with some or all of the cases of the dataset.
-     *
-     * @serial
      */
     private final Map<Integer, String> caseIds = new HashMap<>();
-    private Map<String, String> columnToTooltip;
     /**
      * The name of the data model. This is not used internally; it is only here in case an external class wants this
      * dataset to have a name.
      *
      * @serial
      */
+    private Map<String, String> columnToTooltip;
+    /**
+     * The name of the data model. This is not used internally; it is only here in case an external class wants this
+     * dataset to have a name.
+     */
     private String name = "";
-
     /**
      * The list of variables. These correspond columnwise to the columns of
      * <code>data</code>.
-     *
-     * @serial
      */
     private List<Node> variables;
 

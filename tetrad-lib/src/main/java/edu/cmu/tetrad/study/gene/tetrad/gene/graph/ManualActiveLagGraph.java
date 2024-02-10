@@ -24,6 +24,8 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.graph;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor;
 
+import java.io.Serial;
+
 /**
  * Constructs as a (manual) update graph.
  *
@@ -31,7 +33,12 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor;
  * @version $Id: $Id
  */
 public class ManualActiveLagGraph extends ActiveLagGraph implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The name of the graph.
+     */
     private String name;
 
     //=========================CONSTRUCTORS===========================//

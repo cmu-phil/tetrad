@@ -22,6 +22,7 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,11 +35,27 @@ import java.util.List;
  */
 public class MixedDataBox implements DataBox {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The variables in the dataset.
+     */
     private final List<Node> variables;
+
+    /**
+     * The number of rows in the dataset.
+     */
     private final int numRows;
+
+    /**
+     * The continuous data.
+     */
     private double[][] continuousData;
+
+    /**
+     * The discrete data.
+     */
     private int[][] discreteData;
 
     /**

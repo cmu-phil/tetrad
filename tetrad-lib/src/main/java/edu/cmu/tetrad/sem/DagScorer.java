@@ -32,6 +32,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -48,17 +49,49 @@ import java.util.TreeSet;
  * @version $Id: $Id
  */
 public final class DagScorer implements TetradSerializable, Scorer {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The covariance matrix.
+     */
     private final ICovarianceMatrix covMatrix;
+    /**
+     * The edge coefficients.
+     */
     private final Matrix edgeCoef;
+    /**
+     * The error covariance.
+     */
     private final Matrix errorCovar;
+    /**
+     * The variables.
+     */
     private final List<Node> variables;
+    /**
+     * The sample covariance.
+     */
     private final Matrix sampleCovar;
+    /**
+     * The data set.
+     */
     private DataSet dataSet;
+    /**
+     * The DAG.
+     */
     private Graph dag;
+    /**
+     * The implied covariance matrix for the measured variables.
+     */
     private Matrix implCovarMeasC;
+    /**
+     * The log determinant of the sample covariance matrix.
+     */
     private double logDetSample;
+
+    /**
+     * The fml score.
+     */
     private double fml = Double.NaN;
 
 
@@ -303,9 +336,13 @@ public final class DagScorer implements TetradSerializable, Scorer {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws java.io.IOException if any.
+     * @throws java.lang.ClassNotFoundException if any.
      */
-    private void readObject
-    (ObjectInputStream
+    @Serial
+    private void readObject(ObjectInputStream
              s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

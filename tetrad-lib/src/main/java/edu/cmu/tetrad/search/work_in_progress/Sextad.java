@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,13 +36,37 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class Sextad implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The first node in the sextad.
+     */
     private final Node i;
+
+    /**
+     * The second node in the sextad.
+     */
     private final Node j;
+
+    /**
+     * The third node in the sextad.
+     */
     private final Node k;
+
+    /**
+     * The fourth node in the sextad.
+     */
     private final Node l;
+
+    /**
+     * The fifth node in the sextad.
+     */
     private final Node m;
+
+    /**
+     * The sixth node in the sextad.
+     */
     private final Node n;
 
     /**

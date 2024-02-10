@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,18 +37,20 @@ import java.util.Map;
  */
 public class GraphNode implements Node {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The attributes of the node.
+     */
     private final Map<String, Object> attributes = new HashMap<>();
     /**
      * The name of the node.
-     *
-     * @serial
      */
     private String name = "??";
     /**
      * The type of the node.
      *
-     * @serial
      * @see edu.cmu.tetrad.graph.NodeType
      */
     private NodeType nodeType = NodeType.MEASURED;
@@ -57,14 +60,10 @@ public class GraphNode implements Node {
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
     /**
      * The x coordinate of the center of the node.
-     *
-     * @serial
      */
     private int centerX = -1;
     /**
      * The y coordinate of the center of the node.
-     *
-     * @serial
      */
     private int centerY = -1;
     /**
@@ -265,7 +264,12 @@ public class GraphNode implements Node {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

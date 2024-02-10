@@ -16,6 +16,9 @@ public class ParameterColumn implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The name of the parameter to list. If this parameter does not exist, '*' is output.
+     */
     private final String parameter;
 
     /**

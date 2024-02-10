@@ -26,6 +26,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -36,10 +37,22 @@ import java.util.*;
  */
 public final class IndependenceFact implements Comparable<IndependenceFact>,
         TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The first node conditioned nodes.
+     */
     private final Node x;
+
+    /**
+     * The second conditioned node.
+     */
     private final Node y;
+
+    /**
+     * The conditioning set.
+     */
     private final Set<Node> _z;
 
     /**
@@ -238,10 +251,11 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

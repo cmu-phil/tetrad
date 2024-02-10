@@ -28,6 +28,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,17 +41,20 @@ import java.util.Map;
  */
 public final class ContinuousVariable extends AbstractVariable implements Variable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * This is the value which represents missing data in data columns for this variable.
      */
     private static final double MISSING_VALUE = Double.NaN;
+
+    /**
+     * The node type.
+     */
     private final Map<String, Object> attributes = new HashMap<>();
     /**
      * The node type.
-     *
-     * @serial
      */
     private NodeType nodeType = NodeType.MEASURED;
     /**
@@ -59,14 +63,10 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
     /**
      * The x coordinate of the center of the node.
-     *
-     * @serial
      */
     private int centerX = -1;
     /**
      * The y coordinate of the center of the node.
-     *
-     * @serial
      */
     private int centerY = -1;
     /**
@@ -284,7 +284,7 @@ public final class ContinuousVariable extends AbstractVariable implements Variab
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s The object input stream.
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

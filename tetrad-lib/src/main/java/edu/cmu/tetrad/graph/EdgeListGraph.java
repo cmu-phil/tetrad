@@ -48,34 +48,50 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     private static final long serialVersionUID = 23L;
     /**
      * The edges in the graph.
-     *
-     * @serial
      */
     final Set<Edge> edgesSet;
     /**
      * A list of the nodes in the graph, in the order in which they were added.
-     *
-     * @serial
      */
     private final List<Node> nodes;
     /**
      * A hash from node names to nodes;
      */
     private final Map<String, Node> namesHash;
+
+    /**
+     * The attributes.
+     */
     private final Map<String, Object> attributes = new HashMap<>();
 
-//    private final Paths paths;
     /**
      * Map from each node to the List of edges connected to that node.
-     *
-     * @serial
      */
     Map<Node, Set<Edge>> edgeLists;
+
+    /**
+     * The property change support.
+     */
     private transient PropertyChangeSupport pcs;
 
+    /**
+     * The underline triples.
+     */
     private Set<Triple> underLineTriples = new HashSet<>();
+
+    /**
+     * The dotted underline triples.
+     */
     private Set<Triple> dottedUnderLineTriples = new HashSet<>();
+
+    /**
+     * The ambiguous triples.
+     */
     private Set<Triple> ambiguousTriples = new HashSet<>();
+
+    /**
+     * The parents hash.
+     */
     private Map<Node, List<Node>> parentsHash = new HashMap<>();
 
     //==============================CONSTUCTORS===========================//
@@ -1215,7 +1231,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

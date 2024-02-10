@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.dist.Normal;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 //import edu.cmu.tetrad.gene.history.function.BooleanGlassFunction;
 
@@ -37,27 +38,22 @@ import java.io.ObjectInputStream;
  * @version $Id: $Id
  */
 public class BasalInitializer implements Initializer {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The update function this is initializing for.
-     *
-     * @serial
      */
     private final UpdateFunction updateFunction;
 
     /**
      * The average expression level that all unregulated genes are initialized to.
-     *
-     * @serial
      */
     private final double basalExpression;
 
     /**
      * The standard deviation of a normal distribution N(basalExpression, sem.D.) that random initial values for
      * unregulated genes are set to.
-     *
-     * @serial
      */
     private final double initStDev;
 
@@ -146,16 +142,17 @@ public class BasalInitializer implements Initializer {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.updateFunction == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.initStDev <= 0.0) {
+        if (0.0 >= this.initStDev) {
             throw new IllegalStateException();
         }
     }

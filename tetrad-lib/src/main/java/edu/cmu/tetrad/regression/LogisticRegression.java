@@ -32,6 +32,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class LogisticRegression implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -63,6 +65,10 @@ public class LogisticRegression implements TetradSerializable {
      * The default alpha level which may be specified otherwise in the GUI
      */
     private double alpha = 0.05;
+
+    /**
+     * The rows in the data used for regression.
+     */
     private int[] rows;
 
     /**
@@ -396,7 +402,12 @@ public class LogisticRegression implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            if an error occurs
+     * @throws ClassNotFoundException if an error occurs
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -405,20 +416,77 @@ public class LogisticRegression implements TetradSerializable {
     //================================== Public Methods =======================================//
 
     public static class Result implements TetradSerializable {
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The chi square statistic.
+         */
         private final double chiSq;
+
+        /**
+         * The alpha level.
+         */
         private final double alpha;
+
+        /**
+         * The names of the regressors.
+         */
         private final List<String> regressorNames;
+
+        /**
+         * The target.
+         */
         private final String target;
+
+        /**
+         * The number of cases with target = 0.
+         */
         private final int ny0;
+
+        /**
+         * The number of cases with target = 1.
+         */
         private final int ny1;
+
+        /**
+         * The number of regressors.
+         */
         private final int numRegressors;
+
+        /**
+         * The array of regression coefficients.
+         */
         private final double[] coefs;
+
+        /**
+         * The array of standard errors for the regression coefficients.
+         */
         private final double[] stdErrs;
+
+        /**
+         * The array of coefP-values for the regression coefficients.
+         */
         private final double[] probs;
+
+        /**
+         * The array of means.
+         */
         private final double[] xMeans;
+
+        /**
+         * The array of standard devs.
+         */
         private final double[] xStdDevs;
+
+        /**
+         * The intercept.
+         */
         private final double intercept;
+
+        /**
+         * The log likelihood of the regression.
+         */
         private final double logLikelihood;
 
 

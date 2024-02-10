@@ -23,6 +23,7 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,13 +34,26 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class Triple implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     // Note: Switching all uses of Underline to Triple, since they did the
     // same thing, and this allows for some useful generalizations, especially
     // since for triples it is always the case that (x, y, z) = (z, y, x).
+
+    /**
+     * The first node in the triple.
+     */
     private final Node x;
+
+    /**
+     * The second node in the triple.
+     */
     private final Node y;
+
+    /**
+     * The third node in the triple.
+     */
     private final Node z;
 
     /**

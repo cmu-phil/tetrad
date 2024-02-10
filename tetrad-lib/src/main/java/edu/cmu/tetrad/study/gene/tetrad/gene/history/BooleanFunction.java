@@ -38,11 +38,15 @@ public class BooleanFunction implements TetradSerializable {
     @Serial
     private static final long serialVersionUID = 23L;
 
-    // The array of parents for the stored boolean function.
+    /**
+     * The array of parents for the stored boolean function.
+     */
     private final IndexedParent[] parents;
 
-    // The stored boolean function.  The order of the rows (for the given parents array, for two parents) is 00, 01, 10,
-    // 11, and so on for higher numbers of parents.
+    /**
+     * The stored boolean function.  The order of the rows (for the given parents array, for two parents) is 00, 01, 10,
+     * 11, and so on for higher numbers of parents.
+     */
     private final boolean[] lookupTable;
 
     //==============================CONSTRUCTORS=========================//
@@ -307,6 +311,10 @@ public class BooleanFunction implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
+     *
+     * @param s Input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     @Serial
     private void readObject(ObjectInputStream s)

@@ -59,20 +59,34 @@ public class BooleanGlassFunction implements UpdateFunction {
 
     @Serial
     private static final long serialVersionUID = 23L;
-    // The indexed connectivity "snapshot" of the lag graph.
+    /**
+     * The indexed connectivity "snapshot" of the lag graph.
+     */
     private final IndexedLagGraph connectivity;
-    // Stores a boolean function for each factor from a preselected set of lagged factors to the given factor.
+    /**
+     * Stores a boolean function for each factor from a preselected set of lagged factors to the given factor.
+     */
     private final BooleanFunction[] booleanFunctions;
-    // Error distributions from which errors are drawn for each of the factors.
+    /**
+     * Error distributions from which errors are drawn for each of the factors.
+     */
     private final Distribution[] errorDistributions;
-    // The lower bound for expression levels. Expression levels that wander below this bound will be set to this bound.
+    /**
+     * The lower bound for expression levels. Expression levels that wander below this bound will be set to this bound.
+     */
     private double lowerBound;
-    // The basalExpression for determining whether history expression levels should be mapped to "true" or "false" for
-    // purposes of looking up output values in the Boolean function table.
+    /**
+     * The basalExpression for determining whether history expression levels should be mapped to "true" or "false" for
+     * purposes of looking up output values in the Boolean function table.
+     */
     private double basalExpression;
-    // The rate at which expression levels for a gene tend to return to basal level.
+    /**
+     * The rate at which expression levels for a gene tend to return to basal level.
+     */
     private double decayRate;
-    // The rate at which the F function (with outputs -1 and +1) affects the update for a gene.
+    /**
+     * The rate at which the F function (with outputs -1 and +1) affects the update for a gene.
+     */
     private double booleanInfluenceRate;
 
     //=============================CONSTRUCTORS=========================//
@@ -398,6 +412,10 @@ public class BooleanGlassFunction implements UpdateFunction {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     @Serial
     private void readObject(ObjectInputStream s)

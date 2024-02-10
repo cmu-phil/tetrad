@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.graph;
 
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -32,16 +33,41 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class LagGraph implements Graph {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The list of variables in the getModel time lag.
+     */
     private final List<String> variables = new ArrayList<>();
+
+    /**
+     * The map from variables to their lagged variables.
+     */
     private final Map<String, List<Node>> laggedVariables = new HashMap<>();
+
+    /**
+     * The map from variables to their attributes.
+     */
     private final Map<String, Object> attributes = new HashMap<>();
-    private Dag graph = new Dag();
+    /**
+     * The set of underline triples.
+     */
     private final Set<Triple> underLineTriples = new HashSet<>();
+    /**
+     * The set of dotted underline triples.
+     */
     private final Set<Triple> dottedUnderLineTriples = new HashSet<>();
+    /**
+     * The set of ambiguous triples.
+     */
     private final Set<Triple> ambiguousTriples = new HashSet<>();
+    /**
+     * The graph.
+     */
+    private Dag graph = new Dag();
 
-
+    /** The paths */
     private Paths paths;
 
     /**

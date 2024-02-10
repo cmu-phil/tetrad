@@ -31,6 +31,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
@@ -46,50 +47,50 @@ import java.util.concurrent.RecursiveTask;
  * @see CorrelationMatrix
  */
 public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The variances of the variables.
+     */
     private final double[] variances;
+
+    /**
+     * Whether to print out verbose information.
+     */
     private boolean verbose = false;
     /**
      * The name of the covariance matrix.
-     *
-     * @serial May be null.
      */
     private String name;
     /**
      * The variables (in order) for this covariance matrix.
-     *
-     * @serial Cannot be null.
      */
     private List<Node> variables;
     /**
      * The size of the sample from which this covariance matrix was calculated.
-     *
-     * @serial Range &gt; 0.
      */
     private int sampleSize;
     /**
      * Stored matrix data. Should be square. This may be set by derived classes, but it must always be set to a
      * legitimate covariance matrix.
-     *
-     * @serial Cannot be null. Must be symmetric and positive definite.
      */
     private Matrix matrix;
     /**
-     * @serial Do not remove this field; it is needed for serialization.
+     * The covariance matrix.
      */
     private DoubleMatrix2D matrixC;
     /**
      * The list of selected variables.
-     *
-     * @serial Cannot be null.
      */
     private Set<Node> selectedVariables = new HashSet<>();
     /**
      * The knowledge for this data.
-     *
-     * @serial Cannot be null.
      */
     private Knowledge knowledge = new Knowledge();
+    /**
+     * The vectors for the variables.
+     */
     private double[][] vectors = null;
 
     /**
@@ -856,10 +857,11 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s The input stream.
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.Matrix;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,22 +38,23 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class TimeSeriesData implements DataModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial
+     * The data.
      */
     private final Matrix data2;
     /**
-     * @serial
+     * The names of the variables.
      */
     private final List<String> varNames;
     /**
-     * @serial
+     * The name of the data.
      */
     private String name;
     /**
-     * @serial
+     * The knowledge about the data.
      */
     private Knowledge knowledge = new Knowledge();
 
@@ -218,7 +220,7 @@ public final class TimeSeriesData implements DataModel {
     /**
      * <p>getNumTimePoints.</p>
      *
-     * @return a int
+     * @return an int
      */
     public int getNumTimePoints() {
         return getData().getNumRows();
@@ -227,7 +229,7 @@ public final class TimeSeriesData implements DataModel {
     /**
      * <p>getNumVars.</p>
      *
-     * @return a int
+     * @return an int
      */
     public int getNumVars() {
         return getVariableNames().size();
@@ -236,8 +238,8 @@ public final class TimeSeriesData implements DataModel {
     /**
      * <p>getDatum.</p>
      *
-     * @param row a int
-     * @param col a int
+     * @param row an int
+     * @param col an int
      * @return a double
      */
     public double getDatum(int row, int col) {
@@ -250,12 +252,13 @@ public final class TimeSeriesData implements DataModel {
      * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
+     * help.)
      *
-     * @param s
+     * @param s an {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

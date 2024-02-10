@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -37,7 +38,12 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class SemOptimizerScattershot implements SemOptimizer {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The number of restarts to use.
+     */
     private int numRestarts;
 
     /**

@@ -66,6 +66,10 @@ public class GeneralizedSemIm implements Im, Simulator {
      * not appear in this list. All freeParameters are double-valued.
      */
     private final Map<String, Double> parameterValues;
+
+    /**
+     * Whether to guarantee that the IID is preserved when simulating data.
+     */
     private boolean guaranteeIid = true;
 
     /**

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Identifies a particular factor (by name) at a particular lag (integer).
@@ -33,17 +34,14 @@ import java.io.ObjectInputStream;
  * @version $Id: $Id
  */
 public class LaggedFactor implements Comparable, TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * The number of time steps back for the lagged factor.
-     *
-     * @serial
      */
     private final int lag;
     /**
      * The name of the factor.
-     *
-     * @serial
      */
     private String factor;
 
@@ -177,7 +175,12 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -189,7 +192,6 @@ public class LaggedFactor implements Comparable, TetradSerializable {
         if (this.lag < 0) {
             throw new IllegalStateException();
         }
-
     }
 }
 

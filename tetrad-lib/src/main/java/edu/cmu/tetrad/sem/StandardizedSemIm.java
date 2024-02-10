@@ -933,11 +933,27 @@ public class StandardizedSemIm implements Simulator {
      * @author josephramsey
      */
     public static final class ParameterRange implements TetradSerializable {
+        @Serial
         private static final long serialVersionUID = 23L;
 
+        /**
+         * The edge for which the range is needed.
+         */
         private final Edge edge;
+
+        /**
+         * The coefficient value for which the range is needed.
+         */
         private final double coef;
+
+        /**
+         * The low end of the range to which the coefficient value may be adjusted.
+         */
         private final double low;
+
+        /**
+         * The high end of the range to which the coefficient value may be adjusted.
+         */
         private final double high;
 
         public ParameterRange(Edge edge, double coef, double low, double high) {

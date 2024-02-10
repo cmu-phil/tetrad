@@ -24,6 +24,7 @@ package edu.cmu.tetrad.graph;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -34,10 +35,27 @@ import java.util.*;
  * @version $Id: $Id
  */
 public final class Dag implements Graph {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The graph.
+     */
     private final Graph graph;
+
+    /**
+     * The set of underline triples.
+     */
     private final Set<Triple> underLineTriples = new HashSet<>();
+
+    /**
+     * The set of dotted underline triples.
+     */
     private final Set<Triple> dottedUnderLineTriples = new HashSet<>();
+
+    /**
+     * The set of ambiguous triples.
+     */
     private final Set<Triple> ambiguousTriples = new HashSet<>();
 
     //===============================CONSTRUCTORS=======================//

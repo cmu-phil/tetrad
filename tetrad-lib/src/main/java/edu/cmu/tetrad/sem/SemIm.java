@@ -34,6 +34,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.rmi.MarshalledObject;
 import java.util.*;
 
@@ -66,51 +67,38 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 public final class SemIm implements Im, ISemIm {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * The Sem PM containing the graph and the freeParameters to be estimated. For now a defensive copy of this is not
      * being constructed, since it is not used anywhere in the code except in the the constructor and in its accessor
      * method. If somebody changes it, it's their own fault, but it won't affect this class.
-     *
-     * @serial Cannot be null.
      */
     private final SemPm semPm;
     /**
      * The list of measured and latent variableNodes for the semPm. (Unmodifiable.)
-     *
-     * @serial Cannot be null.
      */
     private final List<Node> variableNodes;
     /**
      * The list of measured variableNodes from the semPm. (Unmodifiable.)
-     *
-     * @serial Cannot be null.
      */
     private final List<Node> measuredNodes;
     /**
      * Matrix of edge coefficients. edgeCoefC[i][j] is the coefficient of the edge from getVariableNodes().get(i) to
      * getVariableNodes().get(j), or 0.0 if this edge is not in the graph. The values of these may be changed, but the
      * array itself may not.
-     *
-     * @serial Cannot be null.
      */
     private final Matrix edgeCoef;
     /**
      * Standard Deviations of means. Needed to calculate standard errors.
-     *
-     * @serial Cannot be null.
      */
     private final double[] variableMeansStdDev;
     /**
      * The list of free freeParameters (Unmodifiable). This must be in the same order as this.freeMappings.
-     *
-     * @serial Cannot be null.
      */
     private List<Parameter> freeParameters;
     /**
      * The list of fixed freeParameters (Unmodifiable). This must be in the same order as this.fixedMappings.
-     *
-     * @serial Cannot be null.
      */
     private List<Parameter> fixedParameters;
     /**
@@ -121,65 +109,45 @@ public final class SemIm implements Im, ISemIm {
      * Matrix of error covariances. errCovar[i][j] is the covariance of the error term of getExoNodes().get(i) and
      * getExoNodes().get(j), with the special case (duh!) that errCovar[i][i] is the variance of getExoNodes.get(i). The
      * values of these may be changed, but the array itself may not.
-     *
-     * @serial Cannot be null.
      */
     private Matrix errCovar;
     /**
      * Means of variables. These will not be counted for purposes of calculating degrees of freedom, since the increase
      * in dof is exactly balanced by a decrease in dof.
-     *
-     * @serial Cannot be null.
      */
     private double[] variableMeans;
     /**
      * Replaced by sampleCovar. Please do not delete. Required for serialization backward compatibility.
-     *
-     * @serial
      */
     private Matrix sampleCovarC;
     /**
      * The sample size.
-     *
-     * @serial Range &gt;= 0.
      */
     private int sampleSize;
     /**
      * Replaced by implCovarC. Please do not delete. Required for serialization backward compatibility.
-     *
-     * @serial
      */
     private Matrix implCovar;
     /**
      * The list of freeMappings. This is an unmodifiable list. It is fixed (up to order) by the SemPm. This must be in
      * the same order as this.freeParameters.
-     *
-     * @serial Cannot be null.
      */
     private List<Mapping> freeMappings;
     /**
      * The list of fixed freeParameters (Unmodifiable). This must be in the same order as this.fixedParameters.
-     *
-     * @serial Cannot be null.
      */
     private List<Mapping> fixedMappings;
     /**
      * Stores the standard errors for the freeParameters. May be null.
-     *
-     * @serial Can be null.
      */
     private double[] standardErrors;
     /**
      * True iff setting freeParameters to out-of-bound values throws exceptions.
-     *
-     * @serial Any value.
      */
     private boolean parameterBoundsEnforced = true;
 
     /**
      * True iff this SemIm is estimated.
-     *
-     * @serial Any value.
      */
     private boolean estimated;
     /**
@@ -204,12 +172,34 @@ public final class SemIm implements Im, ISemIm {
      * Stores the connection functions of specified nodes.
      */
     private Map<Node, ConnectionFunction> functions;
+
+    /**
+     * The type of score to use for estimation.
+     */
     private Map<Node, Integer> variablesHash;
+
+    /**
+     * The type of score to use for estimation.
+     */
     private Matrix sampleCovInv;
-    // Types of scores that yield a chi square value when minimized.
+    /**
+     * Types of scores that yield a chi square value when minimized.
+     */
     private ScoreType scoreType = ScoreType.Fml;
+
+    /**
+     * Error distribution parameters.
+     */
     private double errorParam1;
+
+    /**
+     * Error distribution parameters.
+     */
     private double errorParam2 = 1.0;
+
+    /**
+     * Number of random calls.
+     */
     private int numRandomCalls = 0;
 
     /**
@@ -2293,10 +2283,11 @@ public final class SemIm implements Im, ISemIm {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s The object input stream.
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

@@ -36,16 +36,59 @@ import java.util.concurrent.*;
  * @see Ida
  */
 public class Cstar {
+
+    /**
+     * The type of CPDAG algorithm to use.
+     */
     private final IndependenceWrapper test;
+
+    /**
+     * The type of score to use.
+     */
     private final ScoreWrapper score;
+
+    /**
+     * The parameters.
+     */
     private final Parameters parameters;
+
+    /**
+     * Whether the algorithm should be parallelized. Different runs of the algorithms can be run in different threads in
+     * parallel.
+     */
     private boolean parallelized = false;
+
+    /**
+     * The number of subsamples.
+     */
     private int numSubsamples = 30;
+
+
     private int topBracket = 5;
+
+    /**
+     * The selection alpha.
+     */
     private double selectionAlpha = 0.0;
+
+    /**
+     * The CPDAG algorithm.
+     */
     private CpdagAlgorithm cpdagAlgorithm = CpdagAlgorithm.PC_STABLE;
+
+    /**
+     * The sample style.
+     */
     private SampleStyle sampleStyle = SampleStyle.SUBSAMPLE;
+
+    /**
+     * The number of subsamples.
+     */
     private boolean verbose;
+
+    /**
+     * The number of subsamples.
+     */
     private File newDir = null;
 
     /**
@@ -695,19 +738,44 @@ public class Cstar {
      * Represents a single record in the returned table for CSTaR.
      */
     public static class Record implements TetradSerializable {
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The cause node.
+         */
         private final Node causeNode;
+
+        /**
+         * The effect node.
+         */
         private final Node target;
+
+        /**
+         * The percentage of the time the predictor is a cause of the target across subsamples.
+         */
         private final double pi;
+
+        /**
+         * The minimum effect size of the predictor on the target across subsamples calculated by IDA.
+         */
         private final double effect;
+
+        /**
+         * The number of possible causes of the target.
+         */
         private final int numCauses;
+
+        /**
+         * The number of possible effects of the target.
+         */
         private final int numEffects;
 
         /**
          * For X->Y.
          *
-         * @param predictor  X
-         * @param target     Y
+         * @param predictor  X (the cause)
+         * @param target     Y (the effect)
          * @param pi         The percentage of the time the predictor is a cause of the target across subsamples.
          * @param minEffect  The minimum effect size of the predictor on the target across subsamples calculated by IDA
          * @param numCauses  The number of possible causes of the target.

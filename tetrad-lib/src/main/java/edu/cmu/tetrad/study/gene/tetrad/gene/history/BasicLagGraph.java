@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.PointXy;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -43,27 +44,22 @@ import java.util.*;
  * @version $Id: $Id
  */
 public final class BasicLagGraph implements LagGraph {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * For each factor, stores the set of lagged factors which map into it. (Maps Strings to SortedSets of Strings.)
      * This is the main data structure for the graph.
-     *
-     * @serial
      */
     private final SortedMap<String, SortedSet<LaggedFactor>> connectivity;
 
     /**
      * The maximum allowable lag. edges may not be added with lags greater than this. The value must be &gt;= 1.
-     *
-     * @serial
      */
     private int maxLagAllowable = Integer.MAX_VALUE;
 
     /**
      * Stores the locations of the points for a directed graph.
-     *
-     * @serial
      */
     private Map<String, PointXy> locations;
 
@@ -430,7 +426,12 @@ public final class BasicLagGraph implements LagGraph {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

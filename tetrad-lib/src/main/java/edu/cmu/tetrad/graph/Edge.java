@@ -44,16 +44,49 @@ import java.util.List;
 public class Edge implements TetradSerializable, Comparable<Edge> {
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The first node.
+     */
     private final Node node1;
+
+    /**
+     * The second node.
+     */
     private final Node node2;
+
+    /**
+     * The endpoint at the first node.
+     */
     private Endpoint endpoint1;
+
+    /**
+     * The endpoint at the second node.
+     */
     private Endpoint endpoint2;
-    // Usual coloring--set to something else for a special line color.
+    /**
+     * Usual coloring--set to something else for a special line color.
+     */
     private transient Color lineColor;
+    /**
+     * Whether the edge is bold.
+     */
     private boolean bold = false;
+    /**
+     * Whether the edge is highlighted.
+     */
     private boolean highlighted = false;
+    /**
+     * The properties.
+     */
     private List<Property> properties = new ArrayList<>();
+    /**
+     * The edge type probabilities.
+     */
     private List<EdgeTypeProbability> edgeTypeProbabilities = new ArrayList<>();
+    /**
+     * The probability.
+     */
     private double probability;
 
     /**
@@ -430,10 +463,11 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

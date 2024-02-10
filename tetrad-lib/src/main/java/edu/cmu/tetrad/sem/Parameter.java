@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.dist.Normal;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Stores information about the identity of a SEM parameter--its name, its type (COEF, COVAR), and the node(s) it is
@@ -40,6 +41,7 @@ import java.io.ObjectInputStream;
  * @version $Id: $Id
  */
 public final class Parameter implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -304,10 +306,11 @@ public final class Parameter implements TetradSerializable {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s The stream to read from.
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

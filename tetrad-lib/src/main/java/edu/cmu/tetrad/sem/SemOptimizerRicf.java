@@ -27,6 +27,8 @@ import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.io.Serial;
+
 /**
  * Optimizes a SEM using RICF (see that class).
  *
@@ -34,7 +36,12 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @version $Id: $Id
  */
 public class SemOptimizerRicf implements SemOptimizer {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The number of restarts to use.
+     */
     private int numRestarts = 1;
 
     /**

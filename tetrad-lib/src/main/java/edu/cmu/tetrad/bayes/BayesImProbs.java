@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,6 +40,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -281,10 +283,11 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

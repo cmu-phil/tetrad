@@ -23,6 +23,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.util.regex.Pattern;
 
 /**
@@ -67,6 +68,9 @@ public final class DelimiterType implements TetradSerializable {
      * The regular expression representing the delimiter.
      */
     private final transient Pattern pattern;
+    /**
+     * The ordinal of this type.
+     */
     private final int ordinal = DelimiterType.nextOrdinal++;
 
     /**
@@ -104,6 +108,13 @@ public final class DelimiterType implements TetradSerializable {
         return this.name;
     }
 
+    /**
+     * <p>readResolve.</p>
+     *
+     * @return a {@link java.lang.Object} object
+     * @throws java.io.ObjectStreamException if any.
+     */
+    @Serial
     Object readResolve() throws ObjectStreamException {
         return DelimiterType.TYPES[this.ordinal]; // Canonicalize.
     }

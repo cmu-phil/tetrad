@@ -24,6 +24,7 @@ package edu.cmu.tetrad.graph;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -46,17 +47,36 @@ import java.util.*;
  * @version $Id: $Id
  */
 public final class SemGraph implements Graph {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The underlying graph that stores all the information. This needs to be an EdgeListGraph or something at least
      * that can allow nodes to quickly be added or removed.
-     *
-     * @serial
      */
     private final Graph graph;
+
+    /**
+     * The attributes of the graph.
+     */
     private final Map<String, Object> attributes = new HashMap<>();
+
+    /**
+     * The paths of the graph.
+     */
     private final Paths paths;
+    /**
+     * The underlines.
+     */
+    private final Set<Triple> underLineTriples = new HashSet<>();
+    /**
+     * The dotted underlines.
+     */
+    private final Set<Triple> dottedUnderLineTriples = new HashSet<>();
+    /**
+     * The ambiguous triples.
+     */
+    private final Set<Triple> ambiguousTriples = new HashSet<>();
     /**
      * A map from nodes to their error nodes, if they exist. This includes variables nodes to their error nodes and
      * error nodes to themselves. Added because looking them up in the graph was not scalable.
@@ -70,11 +90,14 @@ public final class SemGraph implements Graph {
      * @serial
      */
     private boolean showErrorTerms;
+    /**
+     * True if the graph is a PAG.
+     */
     private boolean pag;
+    /**
+     * True if the graph is a CPDAG.
+     */
     private boolean cpdag;
-    private final Set<Triple> underLineTriples = new HashSet<>();
-    private final Set<Triple> dottedUnderLineTriples = new HashSet<>();
-    private final Set<Triple> ambiguousTriples = new HashSet<>();
 
     //=========================CONSTRUCTORS============================//
 
@@ -948,10 +971,11 @@ public final class SemGraph implements Graph {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
      *
-     * @param s
+     * @param s The object input stream.
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

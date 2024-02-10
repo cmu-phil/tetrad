@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.dist.Normal;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 
 /**
@@ -36,19 +37,16 @@ import java.util.ArrayList;
  * @version $Id: $Id
  */
 public class PolynomialFunction implements UpdateFunction {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The "snapshot" indexed connectivity of the initial lag graph.
-     *
-     * @serial
      */
     private final IndexedLagGraph connectivity;
 
     /**
      * The polynomials of each factor given its parents.
-     *
-     * @serial
      */
     private final Polynomial[] polynomials;
 
@@ -213,7 +211,12 @@ public class PolynomialFunction implements UpdateFunction {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream from which this object is being deserialized.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

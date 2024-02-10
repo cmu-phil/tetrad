@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -45,24 +46,24 @@ public final class KnowledgeGroup implements TetradSerializable {
      * Constant <code>FORBIDDEN=2</code>
      */
     public static final int FORBIDDEN = 2;
+
+    @Serial
     private static final long serialVersionUID = 23L;
+
     /**
      * The left group of variables.
-     *
-     * @serial - not null
      */
     private final Set<String> fromGroup;
+
     /**
      * The right group of variables.
-     *
-     * @serial - not null
      */
     private final Set<String> toGroup;
+
     /**
      * The type of group that this is (currently either required or forbidden).
      */
     private final int type;
-
 
     /**
      * Constructs a group given the type.
@@ -228,10 +229,11 @@ public final class KnowledgeGroup implements TetradSerializable {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

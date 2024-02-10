@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,13 +13,37 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class Sextad implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The first node.
+     */
     private final int i;
+
+    /**
+     * The second node.
+     */
     private final int j;
+
+    /**
+     * The third node.
+     */
     private final int k;
+
+    /**
+     * The fourth node.
+     */
     private final int l;
+
+    /**
+     * The fifth node.
+     */
     private final int m;
+
+    /**
+     * The sixth node.
+     */
     private final int n;
 
     /**

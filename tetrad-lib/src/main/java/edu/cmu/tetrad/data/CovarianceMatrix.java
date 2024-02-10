@@ -27,6 +27,7 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -41,6 +42,7 @@ import java.util.*;
  * @see edu.cmu.tetrad.data.CorrelationMatrix
  */
 public class CovarianceMatrix implements ICovarianceMatrix {
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * The wrapped covariance matrix data.
@@ -48,32 +50,22 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     private final Matrix _covariancesMatrix;
     /**
      * The name of the covariance matrix.
-     *
-     * @serial May be null.
      */
     private String name;
     /**
      * The variables (in order) for this covariance matrix.
-     *
-     * @serial Cannot be null.
      */
     private List<Node> variables;
     /**
      * The size of the sample from which this covariance matrix was calculated.
-     *
-     * @serial Range &gt; 0.
      */
     private int sampleSize;
     /**
      * The list of selected variables.
-     *
-     * @serial Cannot be null.
      */
     private Set<Node> selectedVariables = new HashSet<>();
     /**
      * The knowledge for this data.
-     *
-     * @serial Cannot be null.
      */
     private Knowledge knowledge = new Knowledge();
 
@@ -574,10 +566,11 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s The input stream to read from.
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.Node;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -39,33 +40,26 @@ import java.util.List;
 public final class DataModelList extends AbstractList<DataModel>
         implements DataModel {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The list of models.
-     *
-     * @serial
      */
     private List<DataModel> modelList = new LinkedList<>();
 
     /**
      * The selected model (may be null).
-     *
-     * @serial
      */
     private DataModel selectedModel;
 
     /**
      * The name of the DataModelList.
-     *
-     * @serial
      */
     private String name;
 
     /**
      * The knowledge for this data.
-     *
-     * @serial
      */
     private Knowledge knowledge = new Knowledge();
 
@@ -359,10 +353,11 @@ public final class DataModelList extends AbstractList<DataModel>
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s The input stream to read from.
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

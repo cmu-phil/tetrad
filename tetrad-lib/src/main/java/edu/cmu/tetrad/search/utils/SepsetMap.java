@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -44,9 +45,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version $Id: $Id
  */
 public final class SepsetMap implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The map from pairs of nodes to separating sets.
+     */
     private final Map<Node, HashSet<Node>> parents = new HashMap<>();
+    /**
+     * The map from pairs of nodes to separating sets.
+     */
     private Map<Set<Node>, Set<Node>> sepsets = new ConcurrentHashMap<>();
+    /**
+     * The map from pairs of nodes to p-values.
+     */
     private Map<Set<Node>, Double> pValues = new ConcurrentHashMap<>();
 
 
@@ -172,7 +184,12 @@ public final class SepsetMap implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help).
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            if an error occurs
+     * @throws ClassNotFoundException if an error occurs
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

@@ -25,6 +25,8 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.study.gene.tetrad.gene.graph.ManualActiveLagGraph;
 import edu.cmu.tetrad.study.gene.tetrad.gene.graph.RandomActiveLagGraph;
 
+import java.io.Serial;
+
 /**
  * Implements a parametric model for Boolean Glass gene PM's, which in this case just presents the underlying workbench.
  * There are no additional parameters to the PM.
@@ -33,7 +35,12 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.graph.RandomActiveLagGraph;
  * @version $Id: $Id
  */
 public class BooleanGlassGenePm extends GenePm implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The name of the model.
+     */
     private String name;
 
     //============================CONSTRUCTORS===============================//

@@ -23,6 +23,8 @@ package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
+
 /**
  * A class for implementing constraints on the values of the freeParameters of of instances of the SemIm class.  The
  * constraint can either be on the value of a single parameter in relation to a given value (double) or it can constrain
@@ -33,12 +35,27 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @version $Id: $Id
  */
 public class ParamConstraint implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
-
+    /**
+     * The number of the constraint.
+     */
     private final double number;
+
+    /**
+     * The first parameter.
+     */
     private final Parameter param2;
+
+    /**
+     * The SEM.
+     */
     private final SemIm semIm;
+
+    /**
+     * The type of the constraint.
+     */
     private ParamConstraintType type;
 
     /**

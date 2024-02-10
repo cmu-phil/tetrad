@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -37,11 +38,27 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class IndependenceFacts implements DataModel {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The nodes in the graph.
+     */
     private List<Node> nodes = new ArrayList<>();
 
+    /**
+     * The unsorted facts.
+     */
     private Set<IndependenceFact> unsortedFacts = new LinkedHashSet<>();
+
+    /**
+     * The name of the independence facts.
+     */
     private String name = "";
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
 
     /**

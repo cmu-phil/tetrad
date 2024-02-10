@@ -32,6 +32,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.Arrays;
 
 /**
@@ -54,25 +55,71 @@ import java.util.Arrays;
  * @see TestMeasurementSimulator
  */
 public class MeasurementSimulator implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The parameters for this simulation.
+     */
     private final Parameters parameters;
+
+    /**
+     * The number of dishes to simulate.
+     */
     private final int numDishes = 1;
 
     // Adjustable parameters: for descriptions of these, see the
     // corresponding accessor methods. These parameters control how
     // the simulation is performed. Note that all of these parameters
     // are set to their default values as given in the spec.
-    private final int numCellsPerDish = 10000;
-    private final int stepsGenerated = 4;
-    private final int firstStepStored = 1;
-    private final int interval = 1;
-    private final double dishDishVariability = 10.0;
-    private final int numSamplesPerDish = 4;
-    private final double sampleSampleVariability = 0.025;
-    private final double chipChipVariability = 0.1;
-    private final double pixelDigitalization = 0.025;
+
     /**
-     * @serial
+     * The number of cells per dish.
+     */
+    private final int numCellsPerDish = 10000;
+
+    /**
+     * The number of time steps to generate.
+     */
+    private final int stepsGenerated = 4;
+
+    /**
+     * The index of the first step to actually be stored out.
+     */
+    private final int firstStepStored = 1;
+
+    /**
+     * The interval (in time steps) between time steps stored out.
+     */
+    private final int interval = 1;
+
+    /**
+     * Whether raw data is being saved in the getModel simulation.
+     */
+    private final double dishDishVariability = 10.0;
+
+    /**
+     * The number of samples generated per dish in the measurement model.
+     */
+    private final int numSamplesPerDish = 4;
+
+    /**
+     * The sample to sample variability.
+     */
+    private final double sampleSampleVariability = 0.025;
+
+    /**
+     * The chip to chip variability.
+     */
+    private final double chipChipVariability = 0.1;
+
+    /**
+     * The pixel digitalization error.
+     */
+    private final double pixelDigitalization = 0.025;
+
+    /**
+     * The history that will be used to simulate the data.
      */
     private GeneHistory history;
 
@@ -911,7 +958,12 @@ public class MeasurementSimulator implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            if an error occurs
+     * @throws ClassNotFoundException if an error occurs
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -919,50 +971,7 @@ public class MeasurementSimulator implements TetradSerializable {
         if (this.timeSteps == null) {
             throw new NullPointerException();
         }
-
-        if (this.chipChipVariability <= 0.0 || this.chipChipVariability >= 1.0) {
-            throw new IllegalStateException();
-        }
-
-        if (this.sampleSampleVariability <= 0.0 || this.sampleSampleVariability >= 1.0) {
-            throw new IllegalStateException();
-        }
-
-        if (this.pixelDigitalization <= 0.0 || this.pixelDigitalization >= 1.0) {
-            throw new IllegalStateException();
-        }
-
-        if (this.dishDishVariability <= 0.0 || this.dishDishVariability >= 100.0) {
-            throw new IllegalStateException();
-        }
-
-        if (this.numDishes <= 0) {
-            throw new IllegalStateException();
-        }
-
-        if (this.numCellsPerDish <= 0) {
-            throw new IllegalStateException();
-        }
-
-        if (this.stepsGenerated <= 0) {
-            throw new IllegalStateException();
-        }
-
-        if (this.firstStepStored <= 0) {
-            throw new IllegalStateException();
-        }
-
-        if (this.interval <= 0) {
-            throw new IllegalStateException();
-        }
-
-        if (this.numSamplesPerDish <= 0) {
-            throw new IllegalStateException();
-        }
-
     }
-
-
 }
 
 

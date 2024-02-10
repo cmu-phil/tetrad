@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,46 +44,44 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class SemEstimator implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The SemPm containing the graph and the freeParameters to be estimated.
-     *
-     * @serial Cannot be null.
      */
     private SemPm semPm;
 
     /**
      * The covariance matrix used to estimate the SemIm. Note that the variables names in the covariance matrix must be
      * in the same order as the variable names in the semPm.
-     *
-     * @serial Cannot be null.
      */
     private ICovarianceMatrix covMatrix;
 
     /**
      * The algorithm that minimizes the fitting function for the SEM.
-     *
-     * @serial
      */
     private SemOptimizer semOptimizer;
 
     /**
      * The most recently estimated model, or null if no model has been estimated yet.
-     *
-     * @serial Can be null.
      */
     private SemIm estimatedSem;
 
     /**
      * The data set being estimated from (needed to calculate means of variables).  May be null in which case means are
      * set to zero.
-     *
-     * @serial Can be null.
      */
     private DataSet dataSet;
 
+    /**
+     * The score type used to optimize the SEM.
+     */
     private ScoreType scoreType = ScoreType.Fgls;
+
+    /**
+     * The number of restarts to use.
+     */
     private int numRestarts = 1;
 
     /**

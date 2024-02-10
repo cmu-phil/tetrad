@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.Vector;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,8 +47,17 @@ import java.util.List;
  */
 public class SemUpdater implements TetradSerializable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The SEM to be updated.
+     */
     private final SemIm semIm;
+
+    /**
+     * The evidence to be used in the update.
+     */
     private SemEvidence evidence;
 
     /**

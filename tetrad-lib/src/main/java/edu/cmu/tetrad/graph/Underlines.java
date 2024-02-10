@@ -2,6 +2,7 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -17,11 +18,27 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public class Underlines implements TripleClassifier, TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The graph.
+     */
     private final Graph graph;
+
+    /**
+     * The underlines.
+     */
     private Set<Triple> underLineTriples;
+
+    /**
+     * The dotted underlines.
+     */
     private Set<Triple> dottedUnderLineTriples;
+
+    /**
+     * The ambiguous triples.
+     */
     private Set<Triple> ambiguousTriples;
 
     /**

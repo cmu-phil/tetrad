@@ -434,6 +434,10 @@ public final class ClassifierBayesUpdaterDiscrete implements ClassifierDiscrete,
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
+     *
+     * @param s The input stream.
+     * @throws IOException            If an IO error occurs.
+     * @throws ClassNotFoundException If a class is not found.
      */
     @Serial
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {

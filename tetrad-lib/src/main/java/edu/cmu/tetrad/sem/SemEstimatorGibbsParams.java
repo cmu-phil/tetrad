@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Stores the freeParameters for an instance of a SemEstimatorGibbs.
@@ -35,15 +36,26 @@ import java.io.ObjectInputStream;
  * @version $Id: $Id
  */
 public final class SemEstimatorGibbsParams implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /** The tolerance for convergence. */
     private final double tolerance;
+
+    /** The initial SEM. */
     private SemIm startIm;
+
+    /** Whether to use a flat prior. */
     private boolean flatPrior;
+
+    /** The number of iterations to run. */
     private int numIterations;
+
+    /** The stretch factor. */
     private double stretch;
 
     /**
-     *
+     * <p>Constructor for SemEstimatorGibbsParams.</p>
      */
     private SemEstimatorGibbsParams(SemIm startIm) {
 

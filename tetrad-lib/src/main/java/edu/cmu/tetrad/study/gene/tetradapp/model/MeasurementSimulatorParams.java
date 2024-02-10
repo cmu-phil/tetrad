@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps MeasurementSimulator so that it may be used as a parameter object.
@@ -38,12 +39,17 @@ import java.io.ObjectInputStream;
  * @version $Id: $Id
  */
 public class MeasurementSimulatorParams implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Cannot be null.
+     * The wrapped measurement simulator.
      */
     private final MeasurementSimulator simulator;
+
+    /**
+     * Whether to include dish and chip variables in the simulation.
+     */
     private boolean includeDishAndChipVariables;
 
     //==============================CONSTRUCTORS=========================//
@@ -369,14 +375,15 @@ public class MeasurementSimulatorParams implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream from which this object is being deserialized.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (this.simulator == null) {
-            throw new NullPointerException();
-        }
     }
 
     /**

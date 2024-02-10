@@ -20,6 +20,9 @@ import java.io.Serial;
 public class PvalueUniformityUnderNull implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
+    /**
+     * The significance level for the independence tests.
+     */
     private double alpha = 0.01;
 
     /**

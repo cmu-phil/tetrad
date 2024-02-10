@@ -24,6 +24,8 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.graph;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.study.gene.tetrad.gene.history.SimpleRandomizer;
 
+import java.io.Serial;
+
 /**
  * Constructs as a randomized update workbench.
  *
@@ -32,8 +34,12 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.history.SimpleRandomizer;
  */
 public class RandomActiveLagGraph extends ActiveLagGraph
         implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The name of the graph.
+     */
     private String name;
 
     //===========================CONSTRUCTORS===========================//

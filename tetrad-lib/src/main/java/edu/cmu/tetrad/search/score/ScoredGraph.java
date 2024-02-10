@@ -39,9 +39,13 @@ public class ScoredGraph implements Comparable<ScoredGraph>, TetradSerializable 
     @Serial
     private static final long serialVersionUID = 23L;
 
-    // The graph.
+    /**
+     * The graph.
+     */
     private final Graph graph;
-    // The score.
+    /**
+     * The score.
+     */
     private final Double score;
 
     /**

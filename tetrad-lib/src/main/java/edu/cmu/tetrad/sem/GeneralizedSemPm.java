@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.ParseException;
 import java.util.*;
 
@@ -41,6 +42,7 @@ import java.util.*;
  * @version $Id: $Id
  */
 public final class GeneralizedSemPm implements Pm, TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -125,6 +127,9 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      * A map from names to nodes, speedup.
      */
     private final Map<String, Node> namesToNodes = new HashMap<>();
+    /**
+     * A map from names to nodes, speedup.
+     */
     private final Map<String, Integer> parameterSubscript = new HashMap<>();
     /**
      * Distributions from which initial values for freeParameters are drawn.
@@ -171,10 +176,6 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
         }
-
-//        if (graph.existsDirectedCycle()) {
-//            throw new IllegalArgumentExcneption("Cycles are not supported.");
-//        }
 
         // Cannot afford to allow error terms on this graph to be shown or hidden from the outside; must make a
         // hidden copy of it and make sure error terms are shown.
@@ -1071,10 +1072,11 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help).
      *
-     * @param s
+     * @param s The object input stream.
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
