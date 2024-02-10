@@ -101,8 +101,8 @@ public final class LargeScaleSimulation {
     /**
      * <p>Constructor for LargeScaleSimulation.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param nodes a {@link java.util.List} object
+     * @param graph       a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param nodes       a {@link java.util.List} object
      * @param tierIndices an array of {@link int} objects
      */
     public LargeScaleSimulation(Graph graph, List<Node> nodes, int[] tierIndices) {
@@ -400,11 +400,11 @@ public final class LargeScaleSimulation {
     /**
      * <p>simulateDataFisher.</p>
      *
-     * @param intervalBetweenShocks a int
+     * @param intervalBetweenShocks     a int
      * @param intervalBetweenRecordings a int
-     * @param sampleSize a int
-     * @param epsilon a double
-     * @param saveLatentVars a boolean
+     * @param sampleSize                a int
+     * @param epsilon                   a double
+     * @param saveLatentVars            a boolean
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSet simulateDataFisher(int intervalBetweenShocks, int intervalBetweenRecordings, int sampleSize, double epsilon, boolean saveLatentVars) {
@@ -533,8 +533,7 @@ public final class LargeScaleSimulation {
             this.coefs[_head] = newCoefs;
         }
 
-        if (this.graph instanceof TimeLagGraph) {
-            TimeLagGraph lagGraph = (TimeLagGraph) this.graph;
+        if (this.graph instanceof TimeLagGraph lagGraph) {
             Knowledge knowledge = getKnowledge(lagGraph); //TimeSeriesUtils.getKnowledge(lagGraph);
             List<Node> lag0 = lagGraph.getLag0Nodes();
 
@@ -588,7 +587,7 @@ public final class LargeScaleSimulation {
     /**
      * <p>setCoefRange.</p>
      *
-     * @param coefLow a double
+     * @param coefLow  a double
      * @param coefHigh a double
      */
     public void setCoefRange(double coefLow, double coefHigh) {
@@ -599,7 +598,7 @@ public final class LargeScaleSimulation {
     /**
      * <p>setVarRange.</p>
      *
-     * @param varLow a double
+     * @param varLow  a double
      * @param varHigh a double
      */
     public void setVarRange(double varLow, double varHigh) {
@@ -610,7 +609,7 @@ public final class LargeScaleSimulation {
     /**
      * <p>setMeanRange.</p>
      *
-     * @param meanLow a double
+     * @param meanLow  a double
      * @param meanHigh a double
      */
     public void setMeanRange(double meanLow, double meanHigh) {

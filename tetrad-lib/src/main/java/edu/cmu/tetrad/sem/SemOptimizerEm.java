@@ -77,7 +77,9 @@ public class SemOptimizerEm implements SemOptimizer {
         return new SemOptimizerEm();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void optimize(SemIm semIm) {
         if (this.numRestarts < 1) this.numRestarts = 1;
 
@@ -163,13 +165,17 @@ public class SemOptimizerEm implements SemOptimizer {
         semIm.getSemPm().getGraph().setShowErrorTerms(showErrors);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;

@@ -241,11 +241,9 @@ public final class SemEvidence implements TetradSerializable {
             return false;
         }
 
-        if (!(o instanceof SemEvidence)) {
+        if (!(o instanceof SemEvidence evidence)) {
             throw new IllegalArgumentException();
         }
-
-        SemEvidence evidence = (SemEvidence) o;
 
         return this.semIm == evidence.semIm && this.proposition.equals(evidence.proposition) && this.manipulation.equals(evidence.manipulation);
 

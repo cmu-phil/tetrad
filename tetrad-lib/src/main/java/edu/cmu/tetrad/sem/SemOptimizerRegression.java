@@ -85,7 +85,7 @@ public class SemOptimizerRegression implements SemOptimizer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Fit the freeParameters by doing local regressions.
      */
     public void optimize(SemIm semIm) {
@@ -139,13 +139,17 @@ public class SemOptimizerRegression implements SemOptimizer {
         TetradLogger.getInstance().log("optimization", "FML = " + semIm.getScore());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;

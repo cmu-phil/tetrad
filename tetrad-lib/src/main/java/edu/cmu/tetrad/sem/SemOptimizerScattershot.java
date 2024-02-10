@@ -57,7 +57,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Optimizes the fitting function of the given Sem using the Powell method from Numerical Recipes by adjusting the
      * freeParameters of the Sem.
      */
@@ -120,13 +120,17 @@ public class SemOptimizerScattershot implements SemOptimizer {
 //        optimize2(semIm);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;

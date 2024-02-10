@@ -94,7 +94,7 @@ public class GeneralizedSemIm implements Im, Simulator {
     /**
      * <p>Constructor for GeneralizedSemIm.</p>
      *
-     * @param pm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @param pm    a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
      * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
      */
     public GeneralizedSemIm(GeneralizedSemPm pm, SemIm semIm) {
@@ -186,8 +186,8 @@ public class GeneralizedSemIm implements Im, Simulator {
     /**
      * <p>getNodeSubstitutedString.</p>
      *
-     * @return the user's String formula with numbers substituted for freeParameters, where substitutions exist.
      * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return the user's String formula with numbers substituted for freeParameters, where substitutions exist.
      */
     public String getNodeSubstitutedString(Node node) {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -298,7 +298,9 @@ public class GeneralizedSemIm implements Im, Simulator {
         return buf.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public synchronized DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         if (this.pm.getGraph().isTimeLagModel()) {
             return simulateTimeSeries(sampleSize);
@@ -400,9 +402,9 @@ public class GeneralizedSemIm implements Im, Simulator {
      * This simulates data by picking random values for the exogenous terms and percolating this information down
      * through the SEM, assuming it is acyclic. Fast for large simulations but hangs for cyclic models.
      *
-     * @param sampleSize &gt; 0.
-     * @return the simulated data set.
+     * @param sampleSize      &gt; 0.
      * @param latentDataSaved a boolean
+     * @return the simulated data set.
      */
     public DataSet simulateDataRecursive(int sampleSize, boolean latentDataSaved) {
         List<Node> variables = this.pm.getNodes();
@@ -491,7 +493,7 @@ public class GeneralizedSemIm implements Im, Simulator {
     /**
      * <p>simulateDataMinimizeSurface.</p>
      *
-     * @param sampleSize a int
+     * @param sampleSize      a int
      * @param latentDataSaved a boolean
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
@@ -629,7 +631,7 @@ public class GeneralizedSemIm implements Im, Simulator {
     /**
      * <p>simulateDataAvoidInfinity.</p>
      *
-     * @param sampleSize a int
+     * @param sampleSize      a int
      * @param latentDataSaved a boolean
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
@@ -1012,7 +1014,7 @@ public class GeneralizedSemIm implements Im, Simulator {
     /**
      * <p>simulateDataNSteps.</p>
      *
-     * @param sampleSize a int
+     * @param sampleSize      a int
      * @param latentDataSaved a boolean
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */

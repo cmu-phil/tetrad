@@ -34,7 +34,9 @@ import java.util.List;
  * @version $Id: $Id
  */
 public interface ISemIm extends Simulator {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
@@ -70,7 +72,7 @@ public interface ISemIm extends Simulator {
      * <p>setParamValue.</p>
      *
      * @param parameter a {@link edu.cmu.tetrad.sem.Parameter} object
-     * @param value a double
+     * @param value     a double
      */
     void setParamValue(Parameter parameter, double value);
 
@@ -78,7 +80,7 @@ public interface ISemIm extends Simulator {
      * <p>setFixedParamValue.</p>
      *
      * @param parameter a {@link edu.cmu.tetrad.sem.Parameter} object
-     * @param value a double
+     * @param value     a double
      */
     void setFixedParamValue(Parameter parameter, double value);
 
@@ -212,8 +214,8 @@ public interface ISemIm extends Simulator {
     /**
      * <p>setEdgeCoef.</p>
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y     a {@link edu.cmu.tetrad.graph.Node} object
      * @param value a double
      */
     void setEdgeCoef(Node x, Node y, double value);
@@ -221,7 +223,7 @@ public interface ISemIm extends Simulator {
     /**
      * <p>setIntercept.</p>
      *
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
      * @param intercept a double
      */
     void setIntercept(Node y, double intercept);
@@ -229,7 +231,7 @@ public interface ISemIm extends Simulator {
     /**
      * <p>setMean.</p>
      *
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
      * @param value a double
      */
     void setMean(Node node, double value);
@@ -237,7 +239,7 @@ public interface ISemIm extends Simulator {
     /**
      * <p>getStandardError.</p>
      *
-     * @param parameter a {@link edu.cmu.tetrad.sem.Parameter} object
+     * @param parameter                  a {@link edu.cmu.tetrad.sem.Parameter} object
      * @param maxFreeParamsForStatistics a int
      * @return a double
      */
@@ -246,7 +248,7 @@ public interface ISemIm extends Simulator {
     /**
      * <p>getTValue.</p>
      *
-     * @param parameter a {@link edu.cmu.tetrad.sem.Parameter} object
+     * @param parameter                  a {@link edu.cmu.tetrad.sem.Parameter} object
      * @param maxFreeParamsForStatistics a int
      * @return a double
      */
@@ -255,7 +257,7 @@ public interface ISemIm extends Simulator {
     /**
      * <p>getPValue.</p>
      *
-     * @param parameter a {@link edu.cmu.tetrad.sem.Parameter} object
+     * @param parameter                  a {@link edu.cmu.tetrad.sem.Parameter} object
      * @param maxFreeParamsForStatistics a int
      * @return a double
      */
@@ -271,7 +273,7 @@ public interface ISemIm extends Simulator {
     /**
      * <p>getVariance.</p>
      *
-     * @param nodeA a {@link edu.cmu.tetrad.graph.Node} object
+     * @param nodeA     a {@link edu.cmu.tetrad.graph.Node} object
      * @param implCovar a {@link edu.cmu.tetrad.util.Matrix} object
      * @return a double
      */
@@ -280,7 +282,7 @@ public interface ISemIm extends Simulator {
     /**
      * <p>getStdDev.</p>
      *
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node      a {@link edu.cmu.tetrad.graph.Node} object
      * @param implCovar a {@link edu.cmu.tetrad.util.Matrix} object
      * @return a double
      */

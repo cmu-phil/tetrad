@@ -167,11 +167,9 @@ public final class SemManipulation implements TetradSerializable {
             return false;
         }
 
-        if (!(o instanceof SemManipulation)) {
+        if (!(o instanceof SemManipulation evidence)) {
             throw new IllegalArgumentException();
         }
-
-        SemManipulation evidence = (SemManipulation) o;
 
         if (!(this.semIm == evidence.semIm)) {
             return false;

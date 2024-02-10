@@ -39,10 +39,10 @@ import java.util.List;
  * the Bayes net, possibly with additional information about which variables in the Bayes net have been manipulated.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.bayes.Evidence
  * @see edu.cmu.tetrad.bayes.Proposition
  * @see edu.cmu.tetrad.bayes.Manipulation
- * @version $Id: $Id
  */
 public class SemUpdater implements TetradSerializable {
 

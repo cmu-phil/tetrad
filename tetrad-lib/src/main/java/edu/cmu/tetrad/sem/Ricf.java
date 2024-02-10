@@ -60,7 +60,7 @@ public class Ricf {
     /**
      * <p>ricf.</p>
      *
-     * @param mag a {@link edu.cmu.tetrad.graph.SemGraph} object
+     * @param mag       a {@link edu.cmu.tetrad.graph.SemGraph} object
      * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      * @param tolerance a double
      * @return a {@link edu.cmu.tetrad.sem.Ricf.RicfResult} object
@@ -307,7 +307,7 @@ public class Ricf {
     /**
      * same as above but takes a Graph instead of a SemGraph
      *
-     * @param mag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param mag       a {@link edu.cmu.tetrad.graph.Graph} object
      * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      * @param tolerance a double
      * @return a {@link edu.cmu.tetrad.sem.Ricf.RicfResult} object
@@ -554,8 +554,8 @@ public class Ricf {
     /**
      * <p>cliques.</p>
      *
-     * @return an enumeration of the cliques of the given graph considered as undirected.
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return an enumeration of the cliques of the given graph considered as undirected.
      */
     public List<List<Node>> cliques(Graph graph) {
         List<Node> nodes = graph.getNodes();

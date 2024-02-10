@@ -105,7 +105,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Runs the estimator on the data and SemPm passed in through the constructor. Returns the fml score of the
      * resulting model.
      */

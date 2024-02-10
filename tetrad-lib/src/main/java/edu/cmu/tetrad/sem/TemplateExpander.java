@@ -68,11 +68,11 @@ public class TemplateExpander {
      *                 expressions --i.e. any TSUM or TPROD expressions--but it may contain NEW expressions. If semPm is
      *                 null, then node must be null as well, since the node is relative to a generalized SEM PM.
      * @return The expanded template.
-     * @throws java.text.ParseException for any of a variety of reasons. It may be that the original template cannot be parsed. It
-     *                        may be that the expanded formula without the error term added cannot be parsed. It may be
-     *                        that the expanded formula contains a "$", which means there was a "$" that was not
-     *                        properly embedded in a TSUM or TPROD. It may be that a TSUM or TPROD was embedded inside
-     *                        another TSUM or TPROD.
+     * @throws java.text.ParseException for any of a variety of reasons. It may be that the original template cannot be
+     *                                  parsed. It may be that the expanded formula without the error term added cannot
+     *                                  be parsed. It may be that the expanded formula contains a "$", which means there
+     *                                  was a "$" that was not properly embedded in a TSUM or TPROD. It may be that a
+     *                                  TSUM or TPROD was embedded inside another TSUM or TPROD.
      */
     public String expandTemplate(String template, GeneralizedSemPm semPm, Node node) throws ParseException {
         ExpressionParser parser = new ExpressionParser();

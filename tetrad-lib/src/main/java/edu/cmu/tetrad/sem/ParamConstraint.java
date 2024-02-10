@@ -45,9 +45,9 @@ public class ParamConstraint implements TetradSerializable {
      * The first constructor specifies the parameter and a number and the type of relation imposed by the constraint.
      * The SemIm is required because the freeParameters' values are determined by it.
      *
-     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @param semIm  a {@link edu.cmu.tetrad.sem.SemIm} object
      * @param param1 a {@link edu.cmu.tetrad.sem.Parameter} object
-     * @param type a {@link edu.cmu.tetrad.sem.ParamConstraintType} object
+     * @param type   a {@link edu.cmu.tetrad.sem.ParamConstraintType} object
      * @param number a double
      */
     public ParamConstraint(SemIm semIm, Parameter param1,
@@ -109,8 +109,8 @@ public class ParamConstraint implements TetradSerializable {
      * useful during a procedure which searches possible values of freeParameters to find that value which is optimal
      * with respect to some measure of fit of the parameterized SEM to some dataset.
      *
-     * @return true if the value would satisfy the constraint.
      * @param testValue a double
+     * @return true if the value would satisfy the constraint.
      */
     public boolean wouldBeSatisfied(double testValue) {
         return this.type == ParamConstraintType.NONE || this.param2 == null && (this.type == ParamConstraintType.EQ && testValue == this.number || this.type == ParamConstraintType.GT && testValue > this.number || this.type == ParamConstraintType.LT && testValue < this.number);

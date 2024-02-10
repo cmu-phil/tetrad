@@ -138,7 +138,7 @@ public class GeneralizedSemEstimator {
      * Maximizes likelihood equation by equation. Assumes the equations are recursive and that each has exactly one
      * error term.
      *
-     * @param pm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @param pm   a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
      * @param data a {@link edu.cmu.tetrad.data.DataSet} object
      * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
      */

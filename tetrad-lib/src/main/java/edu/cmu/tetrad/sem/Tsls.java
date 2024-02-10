@@ -51,9 +51,9 @@ class Tsls {
     /**
      * We require a DataSet (with continuous dataSet) and a SemPm with matching variables.
      *
-     * @param spm a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param spm     a {@link edu.cmu.tetrad.sem.SemPm} object
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param nm a {@link java.lang.String} object
+     * @param nm      a {@link java.lang.String} object
      */
     public Tsls(SemPm spm, DataSet dataSet, String nm) {
         initialization(spm, dataSet, nm);
@@ -67,9 +67,9 @@ class Tsls {
     /**
      * <p>Constructor for Tsls.</p>
      *
-     * @param spm a {@link edu.cmu.tetrad.sem.SemPm} object
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param nm a {@link java.lang.String} object
+     * @param spm           a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param dataSet       a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param nm            a {@link java.lang.String} object
      * @param fixedLoadings a {@link java.util.List} object
      */
     public Tsls(SemPm spm, DataSet dataSet, String nm,

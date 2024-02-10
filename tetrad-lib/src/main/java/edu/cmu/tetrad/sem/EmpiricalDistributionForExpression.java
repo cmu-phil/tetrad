@@ -43,8 +43,8 @@ public class EmpiricalDistributionForExpression {
     /**
      * <p>Constructor for EmpiricalDistributionForExpression.</p>
      *
-     * @param semPm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
-     * @param error a {@link edu.cmu.tetrad.graph.Node} object
+     * @param semPm   a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @param error   a {@link edu.cmu.tetrad.graph.Node} object
      * @param context a {@link edu.cmu.tetrad.calculator.expression.Context} object
      */
     public EmpiricalDistributionForExpression(GeneralizedSemPm semPm, Node error,

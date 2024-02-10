@@ -87,7 +87,7 @@ public class StandardizedSemIm implements Simulator {
     /**
      * Constructs a new standardized SEM IM, initializing from the freeParameters in the given SEM IM.
      *
-     * @param im The SEM IM that the freeParameters will be initialized from.
+     * @param im         The SEM IM that the freeParameters will be initialized from.
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public StandardizedSemIm(SemIm im, Parameters parameters) {
@@ -99,7 +99,7 @@ public class StandardizedSemIm implements Simulator {
      *
      * @param im             Stop asking me for these things! The given SEM IM!!!
      * @param initialization CALCULATE_FROM_SEM if the initial values will be calculated from the given SEM IM;
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) {
         if (im.getSemPm().getGraph().isTimeLagModel()) {
@@ -320,7 +320,7 @@ public class StandardizedSemIm implements Simulator {
     /**
      * <p>setParameterValue.</p>
      *
-     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @param edge  a {@link edu.cmu.tetrad.graph.Edge} object
      * @param value a double
      */
     public void setParameterValue(Edge edge, double value) {
@@ -583,7 +583,7 @@ public class StandardizedSemIm implements Simulator {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * A convenience method, in case we want to change out mind about how to simulate. For instance, it's unclear yet
      * whether we can allow nongaussian errors, so we don't know yet whether the reduced form method is needed.
      */
@@ -594,7 +594,7 @@ public class StandardizedSemIm implements Simulator {
     /**
      * <p>simulateDataReducedForm.</p>
      *
-     * @param sampleSize a int
+     * @param sampleSize      a int
      * @param latentDataSaved a boolean
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */

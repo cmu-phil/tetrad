@@ -61,7 +61,9 @@ public class SemOptimizerPowell implements SemOptimizer {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void optimize(SemIm semIm) {
         double min = Double.POSITIVE_INFINITY;
         double[] point = null;
@@ -121,13 +123,17 @@ public class SemOptimizerPowell implements SemOptimizer {
         return new FittingFunction(sem);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;

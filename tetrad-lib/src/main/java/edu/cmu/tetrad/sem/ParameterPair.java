@@ -95,7 +95,7 @@ public class ParameterPair implements TetradSerializable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Tests whether this object pair is equal to a second object pair by looking to see whether each element a and b is
      * equal to its corresponding element.
      */
@@ -104,11 +104,10 @@ public class ParameterPair implements TetradSerializable {
             return false;
         }
 
-        if (!(object instanceof ParameterPair)) {
+        if (!(object instanceof ParameterPair pair)) {
             return false;
         }
 
-        ParameterPair pair = (ParameterPair) object;
         return this.a.equals(pair.a) && this.b.equals(pair.b);
     }
 
