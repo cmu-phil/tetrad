@@ -21,12 +21,15 @@
 
 package edu.cmu.tetrad.calculator.expression;
 
+import java.io.Serial;
+
 /**
  * Contains some common methods for Expression Descriptors (see).
  *
  * @author Tyler Gibson
  */
 abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

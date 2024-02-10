@@ -24,6 +24,7 @@ package edu.cmu.tetrad.calculator.expression;
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 
+import java.io.Serial;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,6 +35,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class EvaluationExpression implements Expression {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

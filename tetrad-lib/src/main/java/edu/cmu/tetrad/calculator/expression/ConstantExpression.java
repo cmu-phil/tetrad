@@ -25,6 +25,7 @@ import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.Collections;
 import java.util.List;
 
@@ -43,6 +44,7 @@ public class ConstantExpression implements Expression {
      * Constant expression for e.
      */
     public static final ConstantExpression E = new ConstantExpression(FastMath.E, "E");// "e");
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * THe value of the expression.
