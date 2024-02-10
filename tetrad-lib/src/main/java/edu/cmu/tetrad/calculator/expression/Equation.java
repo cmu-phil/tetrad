@@ -50,9 +50,9 @@ public class Equation {
     /**
      * <p>Constructor for Equation.</p>
      *
-     * @param variable a {@link java.lang.String} object
+     * @param variable   a {@link java.lang.String} object
      * @param expression a {@link edu.cmu.tetrad.calculator.expression.Expression} object
-     * @param unparsed a {@link java.lang.String} object
+     * @param unparsed   a {@link java.lang.String} object
      */
     public Equation(String variable, Expression expression, String unparsed) {
         if (variable == null) {

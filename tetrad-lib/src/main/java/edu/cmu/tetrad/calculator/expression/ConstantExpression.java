@@ -98,7 +98,9 @@ public class ConstantExpression implements Expression {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double evaluate(Context context) {
         return this.value;
     }
@@ -143,13 +145,17 @@ public class ConstantExpression implements Expression {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public RealDistribution getRealDistribution(Context context) {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IntegerDistribution getIntegerDistribution(Context context) {
         return null;
     }

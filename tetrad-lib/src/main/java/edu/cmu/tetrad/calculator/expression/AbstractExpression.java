@@ -54,8 +54,8 @@ abstract class AbstractExpression implements Expression {
     /**
      * <p>Constructor for AbstractExpression.</p>
      *
-     * @param token a {@link java.lang.String} object
-     * @param position a {@link edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position} object
+     * @param token       a {@link java.lang.String} object
+     * @param position    a {@link edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position} object
      * @param expressions a {@link edu.cmu.tetrad.calculator.expression.Expression} object
      */
     public AbstractExpression(String token, ExpressionDescriptor.Position position, Expression... expressions) {
@@ -92,7 +92,9 @@ abstract class AbstractExpression implements Expression {
         return this.expressions;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public RealDistribution getRealDistribution(Context context) {
         if (this.expressions.size() == 1) {
@@ -103,7 +105,9 @@ abstract class AbstractExpression implements Expression {
 
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IntegerDistribution getIntegerDistribution(Context context) {
         if (this.expressions.size() == 1) {
             return this.expressions.get(0).getIntegerDistribution(context);

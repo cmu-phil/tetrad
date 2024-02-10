@@ -72,7 +72,7 @@ public class ExpressionParser {
      * Constructs the parser given a collection of allowable parameters.
      *
      * @param parameters a {@link java.util.Collection} object
-     * @param type a {@link edu.cmu.tetrad.calculator.parser.ExpressionParser.RestrictionType} object
+     * @param type       a {@link edu.cmu.tetrad.calculator.parser.ExpressionParser.RestrictionType} object
      */
     public ExpressionParser(Collection<String> parameters, RestrictionType type) {
         if (parameters == null) {

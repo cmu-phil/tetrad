@@ -30,7 +30,9 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @version $Id: $Id
  */
 public interface ExpressionSignature extends TetradSerializable {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
 
@@ -52,8 +54,8 @@ public interface ExpressionSignature extends TetradSerializable {
     /**
      * <p>getArgument.</p>
      *
-     * @return the argument type at the given index.
      * @param index a int
+     * @return the argument type at the given index.
      */
     String getArgument(int index);
 

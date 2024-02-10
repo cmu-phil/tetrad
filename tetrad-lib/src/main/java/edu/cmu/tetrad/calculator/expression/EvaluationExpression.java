@@ -52,7 +52,7 @@ public class EvaluationExpression implements Expression {
      * <p>Constructor for EvaluationExpression.</p>
      *
      * @param exp a {@link edu.cmu.tetrad.calculator.expression.VariableExpression} object
-     * @param s a {@link java.lang.String} object
+     * @param s   a {@link java.lang.String} object
      */
     public EvaluationExpression(VariableExpression exp, String s) {
         if (exp == null) {
@@ -74,7 +74,9 @@ public class EvaluationExpression implements Expression {
         return new EvaluationExpression(VariableExpression.serializableInstance(), "a");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double evaluate(Context context) {
         Object o = this.variable.evaluateGeneric(context);
         if (o != null && this.string.equals(o.toString())) {
@@ -110,13 +112,17 @@ public class EvaluationExpression implements Expression {
         return Collections.singletonList(this.variable);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public RealDistribution getRealDistribution(Context context) {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IntegerDistribution getIntegerDistribution(Context context) {
         return null;
     }

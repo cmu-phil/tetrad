@@ -86,7 +86,9 @@ public class VariableExpression implements Expression {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double evaluate(Context context) {
         Double value = context.getValue(this.variable);
 
@@ -134,13 +136,17 @@ public class VariableExpression implements Expression {
         return this.variable;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public RealDistribution getRealDistribution(Context context) {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IntegerDistribution getIntegerDistribution(Context context) {
         return null;
     }

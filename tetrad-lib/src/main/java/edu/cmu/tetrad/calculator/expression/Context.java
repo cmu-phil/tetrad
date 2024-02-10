@@ -33,8 +33,8 @@ public interface Context {
     /**
      * <p>getValue.</p>
      *
-     * @return the double value for the given var, or null if the variable has not been assigned a value.
      * @param var a {@link java.lang.String} object
+     * @return the double value for the given var, or null if the variable has not been assigned a value.
      */
     Double getValue(String var);
 

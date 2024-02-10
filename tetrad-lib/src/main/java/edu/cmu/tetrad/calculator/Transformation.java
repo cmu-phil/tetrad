@@ -60,9 +60,6 @@ public class Transformation {
      * @throws java.text.ParseException - Throws a parse exception if any of the given equations isn't "valid".
      */
     public static void transform(DataSet data, String... equations) throws ParseException {
-        if (equations.length == 0) {
-            return;
-        }
         for (String equation : equations) {
             Transformation.transformEquation(data, equation);
         }

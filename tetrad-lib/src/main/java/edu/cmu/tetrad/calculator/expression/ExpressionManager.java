@@ -188,8 +188,8 @@ public class ExpressionManager {
     /**
      * <p>getDescriptorFromToken.</p>
      *
-     * @return the descriptor to use for the given token.
      * @param token a {@link java.lang.String} object
+     * @return the descriptor to use for the given token.
      */
     public ExpressionDescriptor getDescriptorFromToken(String token) {
         return this.tokenMap.get(token);

@@ -36,7 +36,9 @@ import java.util.List;
  * @version $Id: $Id
  */
 public interface Expression extends TetradSerializable {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
