@@ -40,13 +40,45 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class BayesProperties {
+
+    /**
+     * The data set.
+     */
     private final DataSet dataSet;
+
+    /**
+     * The variables.
+     */
     private final List<Node> variables;
+
+    /**
+     * The sample size.
+     */
     private final int sampleSize;
+
+    /**
+     * The number of categories for each variable.
+     */
     private final int[] numCategories;
+
+    /**
+     * The chi-squared statistic.
+     */
     private double chisq;
+
+    /**
+     * The degrees of freedom.
+     */
     private double dof;
+
+    /**
+     * The BIC.
+     */
     private double bic;
+
+    /**
+     * The likelihood.
+     */
     private double likelihood;
 
     /**

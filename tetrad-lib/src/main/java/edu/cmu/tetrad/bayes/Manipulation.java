@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.Arrays;
 
 /**
@@ -36,14 +37,16 @@ import java.util.Arrays;
  * @version $Id: $Id
  */
 public final class Manipulation implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The variable source for which this manipulation is defined.
+     */
     private final VariableSource variableSource;
 
     /**
      * An array indicating whether each variable in turn is manipulated.
-     *
-     * @serial Cannot be null.
      */
     private final boolean[] manipulated;
 

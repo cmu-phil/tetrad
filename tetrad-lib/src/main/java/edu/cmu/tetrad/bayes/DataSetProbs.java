@@ -37,7 +37,6 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class DataSetProbs implements DiscreteProbs {
-    private static final long serialVersionUID = 23L;
 
     /**
      * The data set that this is a cell count table for.

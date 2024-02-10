@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.List;
 
@@ -43,15 +44,16 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class Proposition implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Cannot be null.
+     * The Bayes IM that this is a proposition for.
      */
     private final VariableSource variableSource;
 
     /**
-     * @serial Cannot be null.
+     * An array indicating whether each category for each variable is allowed.
      */
     private final boolean[][] allowedCategories;
 

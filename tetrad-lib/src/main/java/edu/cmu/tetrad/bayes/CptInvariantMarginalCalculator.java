@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -36,22 +37,23 @@ import java.util.*;
  */
 public final class CptInvariantMarginalCalculator
         implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Cannot be null.
+     * The Bayes net.
      */
     private final BayesIm bayesIm;
     /**
-     * @serial Cannot be null.
+     * The evidence.
      */
     private final Evidence evidence;
     /**
-     * @serial Cannot be null.
+     * The updated Bayes net.
      */
     private final UpdatedBayesIm updatedBayesIm;
     /**
-     * @serial Cannot be null.
+     * The stored marginals.
      */
     private double[][] storedMarginals;
 

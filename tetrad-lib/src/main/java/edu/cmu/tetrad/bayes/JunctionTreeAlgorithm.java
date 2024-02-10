@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradSerializable;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,16 +41,42 @@ import java.util.stream.Collectors;
  * href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
  */
 public class JunctionTreeAlgorithm implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The root of the junction tree.
+     */
     private final TreeNode root;
 
+    /**
+     * The nodes in the graph.
+     */
     private final Node[] graphNodes;
+
+    /**
+     * The marginal probabilities of the nodes.
+     */
     private final double[][] margins;
+
+    /**
+     * The maximum cardinality ordering of the nodes.
+     */
     private final Node[] maxCardOrdering;
 
+    /**
+     * The BayesPm.
+     */
     private final BayesPm bayesPm;
+
+    /**
+     * The BayesIm.
+     */
     private final BayesIm bayesIm;
+
+    /**
+     * The tree nodes.
+     */
     private final Map<Node, TreeNode> treeNodes;
 
     /**

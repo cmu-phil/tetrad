@@ -30,6 +30,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -66,7 +67,12 @@ import java.util.List;
  */
 public final class MlBayesImObs implements BayesIm {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * Tolerance.
+     */
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;
 
     /**
@@ -82,30 +88,22 @@ public final class MlBayesImObs implements BayesIm {
 
     /**
      * The associated Bayes PM model.
-     *
-     * @serial
      */
     private final BayesPm bayesPm;
 
     /**
      * The array of nodes from the graph. Order is important.
-     *
-     * @serial
      */
     private final Node[] nodes;
 
     /**
      * The list of parents for each node from the graph. Order or nodes corresponds to the order of nodes in 'nodes',
      * and order in subarrays is important.
-     *
-     * @serial
      */
     private int[][] parents;
 
     /**
      * The array of dimensionality (number of categories for each node) for each of the subarrays of 'parents'.
-     *
-     * @serial
      */
     private int[][] parentDims;
 
@@ -122,21 +120,27 @@ public final class MlBayesImObs implements BayesIm {
      */
     private double[][][] probs;  // this is left in for compatibility
 
-    // joint probability table
+    /**
+     * joint probability table
+     */
     private StoredCellProbsObs jpd;
 
-    // a regular MlBayesIm used to create randomized CPDs
-    // so that the values can be marginalized to a consistent observed jpd
+    /**
+     * a regular MlBayesIm used to create randomized CPDs
+     * so that the values can be marginalized to a consistent observed jpd
+     */
     private BayesIm bayesImRandomize;
 
-    // BayesIm containing only the observed variables.  Only used to
-    // 1) construct propositions (mapped from the original allowUnfaithfulness bayesIm)
-    //    in Identifiability
-    // 2) to avoid summing over rows in jpd when only the latent variables
-    //    have changed values (only sum when all the latent variables have
-    //    value 0)
-    // This is a MlBayesIm instead of a MlBayesImObs because otherwise
-    // there will be an infinite loop attempting to creating the MlBayesImObs
+    /**
+     * BayesIm containing only the observed variables.  Only used to
+     * 1) construct propositions (mapped from the original allowUnfaithfulness bayesIm)
+     * in Identifiability
+     * 2) to avoid summing over rows in jpd when only the latent variables
+     * have changed values (only sum when all the latent variables have
+     * value 0)
+     * This is a MlBayesIm instead of a MlBayesImObs because otherwise
+     * there will be an infinite loop attempting to creating the MlBayesImObs
+     */
     private BayesIm bayesImObs;
 
     //===============================CONSTRUCTORS=========================//

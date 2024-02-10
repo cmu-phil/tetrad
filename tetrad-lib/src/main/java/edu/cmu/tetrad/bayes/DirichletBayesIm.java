@@ -31,6 +31,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -68,7 +69,12 @@ import java.util.*;
  */
 public final class DirichletBayesIm implements BayesIm {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * Tolerance.
+     */
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;
 
     /**

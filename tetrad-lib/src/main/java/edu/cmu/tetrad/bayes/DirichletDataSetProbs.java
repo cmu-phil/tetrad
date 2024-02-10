@@ -38,32 +38,24 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
 
     /**
      * The data set that this is a cell count table for.
-     *
-     * @serial
      */
     private final DataSet dataSet;
 
     /**
      * An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
      * numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
-     *
-     * @serial
      */
     private final int[] dims;
     /**
      * The number of rows in the data.
-     *
-     * @serial
      */
     private final int numRows;
     /**
-     * @serial
+     * The value to add to each cell count to avoid zero counts.
      */
     private final double symmValue;
     /**
      * Indicates whether bounds on coordinate values are explicitly enforced. This may slow down loops.
-     *
-     * @serial
      */
     private boolean boundsEnforced = true;
 

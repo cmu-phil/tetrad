@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -42,10 +43,22 @@ import java.util.*;
 // used also for MlBayesImObs to store the JPD of observed variables
 //////////////////////////////////////////////////////////////////////
 public final class StoredCellProbsObs implements TetradSerializable, DiscreteProbs {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The variables for which the cell probabilities are stored.
+     */
     private final List<Node> variables;
+
+    /**
+     * The number of values for each parent.
+     */
     private final int[] parentDims;
+
+    /**
+     * The probabilities.
+     */
     private final double[] probs;
 
 

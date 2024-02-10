@@ -28,6 +28,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -42,35 +43,30 @@ import java.util.*;
  */
 public final class UpdatedBayesIm implements BayesIm {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /** The tolerance. */
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;
 
     /**
      * The wrapped BayesIm. Unmodified conditional probability values will be retrieved from here.
-     *
-     * @serial Cannot be null; must be evidence.getEstIm().
      */
     private final BayesIm bayesIm;
 
     /**
      * The evidence updated on.
-     *
-     * @serial Cannot be null.
      */
     private final Evidence evidence;
 
     /**
      * Stores probs that change with respect to the underlying bayesIm, calculated on the fly.
-     *
-     * @serial Cannot be null.
      */
     private final double[][][] changedProbs;
 
     /**
      * A boolean array that is true at a position if the node at that index is an ancestor or a child of one of the
      * evidence variables.
-     *
-     * @serial Cannot be null.
      */
     private final boolean[] affectedVars;
 

@@ -43,15 +43,11 @@ public final class Evidence implements TetradSerializable {
 
     /**
      * A proposition stating what we know for each variable.
-     *
-     * @serial Cannot be null.
      */
     private final Proposition proposition;
 
     /**
      * A manipulation indicating how the bayes Im should be manipulated before updating.
-     *
-     * @serial
      */
     private Manipulation manipulation;
 

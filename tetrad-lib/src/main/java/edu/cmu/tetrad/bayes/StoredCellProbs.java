@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -39,10 +40,22 @@ import java.util.*;
  * @version $Id: $Id
  */
 public final class StoredCellProbs implements TetradSerializable, DiscreteProbs {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The variables for which this table stores cell probabilities.
+     */
     private final List<Node> variables;
+
+    /**
+     * The parent dimensions of the table.
+     */
     private final int[] parentDims;
+
+    /**
+     * The cell probabilities.
+     */
     private final double[] probs;
 
     //============================CONSTRUCTORS============================//

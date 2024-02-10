@@ -52,11 +52,35 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public final class BdeMetricCache {
+
+    /**
+     * The dataset.
+     */
     private final DataSet dataSet;
+
+    /**
+     * The list of variables (nodes).
+     */
     private final List<Node> variables;
-    private final BayesPm bayesPm;  //Determines the list of variables (nodes)
+
+    /**
+     * The Bayes parameterized network. Determines the list of variables (nodes)
+     */
+    private final BayesPm bayesPm;
+
+    /**
+     * The scores.
+     */
     private final Map<NodeParentsPair, Double> scores;
+
+    /**
+     * The score counts.
+     */
     private final Map<NodeParentsPair, Integer> scoreCounts;
+
+    /**
+     * The observed counts.
+     */
     private double[][] observedCounts;
 
     /**

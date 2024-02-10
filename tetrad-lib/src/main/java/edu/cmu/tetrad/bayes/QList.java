@@ -28,15 +28,34 @@ package edu.cmu.tetrad.bayes;
  */
 final class QList {
 
+    /**
+     * The number of nodes.
+     */
     private final int nVariables; // number of nodes
 
+    /**
+     * The variables to be summed over in the summation.
+     */
     private boolean inNumerator;   // true: in the numerator; false: in the denominator
+
+    /**
+     * The variables to be summed over in the summation.
+     */
     private int[] sumOverVariables; // the variables to be summed over in the summation
 
-    // only one of probTerm and subList should be instantiated
-    private int[] probTerm;  // probability term
-    private QList subList;  // recursive list to be summed over sumOverVariables
+    /**
+     * probability term. only one of probTerm and subList should be instantiated
+     */
+    private int[] probTerm;
 
+    /**
+     * recursive list to be summed over sumOverVariables
+     */
+    private QList subList;
+
+    /**
+     * The next term in the list.
+     */
     private QList nextTerm;  // next term in the list
 
     //=============================CONSTRUCTORS=========================//

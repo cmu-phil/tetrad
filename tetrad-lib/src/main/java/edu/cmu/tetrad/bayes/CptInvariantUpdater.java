@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -38,6 +39,7 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

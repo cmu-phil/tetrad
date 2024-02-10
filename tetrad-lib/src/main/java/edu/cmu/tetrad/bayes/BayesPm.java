@@ -31,6 +31,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -45,6 +46,7 @@ import java.util.*;
  * @see BayesIm
  */
 public final class BayesPm implements Pm, VariableSource {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**

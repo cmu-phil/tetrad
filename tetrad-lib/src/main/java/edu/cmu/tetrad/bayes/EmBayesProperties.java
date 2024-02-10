@@ -49,7 +49,7 @@ public final class EmBayesProperties {
     private DataSet dataSet;
 
     /**
-     *
+     * The BayesPm.
      */
     private BayesPm bayesPm;
 

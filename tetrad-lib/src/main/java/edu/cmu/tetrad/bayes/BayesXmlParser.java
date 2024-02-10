@@ -38,6 +38,10 @@ import java.util.*;
  * @version $Id: $Id
  */
 public final class BayesXmlParser {
+
+    /**
+     * The names of the variables in the Bayes net.
+     */
     private Map<String, Node> namesToVars;
 
     private static BayesIm makeBayesIm(BayesPm bayesPm, Element element2) {

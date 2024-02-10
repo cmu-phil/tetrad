@@ -36,10 +36,25 @@ import edu.cmu.tetrad.graph.Node;
  * @author Frank Wimberly
  */
 final class BdeMetric {
+
+    /**
+     * The dataset.
+     */
     private final DataSet dataSet;
+
+    /**
+     * The Bayes parameterized network.
+     */
     private final BayesPm bayesPm;
+
+    /**
+     * The BayesIm.
+     */
     private BayesIm bayesIm;
 
+    /**
+     * The observed counts.
+     */
     private int[][][] observedCounts;
 
     /**

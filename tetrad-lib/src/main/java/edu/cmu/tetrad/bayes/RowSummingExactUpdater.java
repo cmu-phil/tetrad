@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -38,40 +39,31 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The BayesIm which this updater modifies.
-     *
-     * @serial Cannot be null.
      */
     private final BayesIm bayesIm;
 
     /**
      * Stores evidence for all variables.
-     *
-     * @serial Cannot be null.
      */
     private Evidence evidence;
 
     /**
      * The last manipulated BayesIm.
-     *
-     * @serial Can be null.
      */
     private BayesIm manipulatedBayesIm;
 
     /**
      * The BayesIm after update, if this was calculated.
-     *
-     * @serial Can be null.
      */
     private BayesIm updatedBayesIm;
 
     /**
      * Calculates probabilities from the manipulated Bayes IM.
-     *
-     * @serial Can be null.
      */
     private BayesImProbs bayesImProbs;
 

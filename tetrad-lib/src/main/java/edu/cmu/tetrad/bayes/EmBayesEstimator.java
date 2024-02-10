@@ -42,17 +42,50 @@ import java.util.List;
  * @version $Id: $Id
  */
 public final class EmBayesEstimator {
+
+    /**
+     * The Bayes PM whose graph contains latent and observed variables.
+     */
     private final BayesPm bayesPm;
 
+    /**
+     * The data set of observed variables; missing value codes may be present.
+     */
     private final DataSet dataSet;
+
+    /**
+     * The nodes in the graph of the Bayes PM.
+     */
     private final Node[] nodes;
-    //latents
+
+    /**
+     * The latents.
+     */
     private final Graph graph;
-    //private DataSet ddsNm;
+
+    /**
+     * The data set with missing value columns for latents.
+     */
     private DataSet mixedData;   //Contains all variables with missing value columns for
+
+    /**
+     * Variables in mixedData (observed and latents).
+     */
     private List<Node> allVariables;          //Variables in mixedData (observed and latents)
+
+    /**
+     * The Bayes PM with only observed variables.
+     */
     private BayesPm bayesPmObs;
+
+    /**
+     * The observed Bayes IM.
+     */
     private BayesIm observedIm;
+
+    /**
+     * The estimated Bayes IM.
+     */
     private BayesIm estimatedIm;
 
     /**

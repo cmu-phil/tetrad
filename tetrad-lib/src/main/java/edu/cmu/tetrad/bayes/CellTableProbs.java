@@ -35,16 +35,24 @@ import java.util.List;
  */
 public final class CellTableProbs implements DiscreteProbs {
 
-    // The data set that this is a cell count table for.
+    /**
+     * The data set that this is a cell count table for.
+     */
     private final DataSet dataSet;
-    // An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
-    // numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
+    /**
+     * An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
+     * numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
+     */
     private final int[] dims;
-    // A single-dimension array containing all the cells of the table. Must be at least long enough to contain data
-    // for each cell allowed for by the given dimension array--in other words, the length must be greater than or equal
-    // to dims[0] & dims[1] ... * dims[dims.length - 1].
+    /**
+     * A single-dimension array containing all the cells of the table. Must be at least long enough to contain data
+     * for each cell allowed for by the given dimension array--in other words, the length must be greater than or equal
+     * to dims[0] & dims[1] ... * dims[dims.length - 1].
+     */
     private final int[] cells;
-    // The total number of points in the cell count table.
+    /**
+     * The total number of points in the cell count table.
+     */
     private int numPoints;
 
     //============================CONSTRUCTORS===========================//

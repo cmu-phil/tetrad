@@ -80,32 +80,32 @@ public final class MlBayesIm implements BayesIm {
     public static final int RANDOM = 1;
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * Tolerance.
+     */
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-3;
+
+    /**
+     * Random number generator.
+     */
     static private final Random random = new Random();
 
     /**
      * The associated Bayes PM model.
-     *
-     * @serial
      */
     private final BayesPm bayesPm;
     /**
      * The array of nodes from the graph. Order is important.
-     *
-     * @serial
      */
     private final Node[] nodes;
     /**
      * The list of parents for each node from the graph. Order or nodes corresponds to the order of nodes in 'nodes',
      * and order in subarrays is important.
-     *
-     * @serial
      */
     private int[][] parents;
     /**
      * The array of dimensionality (number of categories for each node) for each of the subarrays of 'parents'.
-     *
-     * @serial
      */
     private int[][] parentDims;
 

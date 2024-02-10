@@ -62,9 +62,24 @@ public final class FactoredBayesStructuralEM {
     // *
     // * <p>The iterate and iterate1 methods have been replaced by iterate2.&gt; 0
 
+    /**
+     * The BayesPm that is used to initialize the iterative procedure.
+     */
     private final BayesPm bayesPmM0;
+
+    /**
+     * The data set that the iterative procedure is based on.
+     */
     private final DataSet dataSet;
+
+    /**
+     * The number of categories for each variable in the data set.
+     */
     private final int[] ncategories;
+
+    /**
+     * The tolerance parameter used in Bayes EM estimation.
+     */
     private double tolerance;
 
     /**
