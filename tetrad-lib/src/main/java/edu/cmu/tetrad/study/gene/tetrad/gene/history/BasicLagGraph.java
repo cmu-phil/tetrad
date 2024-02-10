@@ -102,7 +102,7 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Adds an edge to the given factor at lag 0 from the specified lagged factor.
      */
     public void addEdge(String factor, LaggedFactor laggedFactor)
@@ -140,7 +140,7 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Adds a factor to the graph. If the factor is already in the graph, no action is taken.
      */
     public void addFactor(String factor) {
@@ -157,7 +157,7 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether the given factor exists in the graph.
      */
     public boolean existsFactor(String factor) {
@@ -166,7 +166,7 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether the edge to 'factor' at time lag 0 from 'laggedFactor' exists in the graph.
      */
     public boolean existsEdge(String factor, LaggedFactor laggedFactor) {
@@ -187,7 +187,7 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the lagged factors which are into the given factor.
      */
     public SortedSet<LaggedFactor> getParents(String factor) {
@@ -196,7 +196,7 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Removes the lagged factor from the list of lagged factors associated with the given factor.
      */
     public void removeEdge(String factor, LaggedFactor laggedFactor) {
@@ -223,7 +223,7 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the maximum allowable lag. Edges may not be added with lags greater than this. This value must be &gt;= the
      * getModel value of getMaxLag().
      */
@@ -257,7 +257,7 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Removes a factor from the graph.
      */
     public void removeFactor(String factor) {
@@ -287,7 +287,7 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Renames a factor, changing all occurances of the old name to the new one
      */
     public void renameFactor(String oldName, String newName) {
@@ -363,7 +363,9 @@ public final class BasicLagGraph implements LagGraph {
         return buf.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addFactors(String base, int numFactors) {
 
         NumberFormat nf = NumberFormat.getInstance();
@@ -393,12 +395,16 @@ public final class BasicLagGraph implements LagGraph {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setLocation(String factor, PointXy point) {
         getLocations().put(factor, point);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public PointXy getLocation(String factor) {
         return getLocations().get(factor);
     }

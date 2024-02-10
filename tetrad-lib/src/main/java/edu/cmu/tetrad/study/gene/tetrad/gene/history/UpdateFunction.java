@@ -38,7 +38,9 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @version $Id: $Id
  */
 public interface UpdateFunction extends TetradSerializable {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**

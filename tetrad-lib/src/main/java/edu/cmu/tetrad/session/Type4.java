@@ -37,7 +37,7 @@ public class Type4 implements SessionModel, TetradSerializableExcluded {
     /**
      * It should be possible to construct a Type4-model with a Type1-node as parent.
      *
-     * @param model1 a {@link edu.cmu.tetrad.session.Type1} object
+     * @param model1     a {@link edu.cmu.tetrad.session.Type1} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Type4(Type1 model1, Parameters parameters) {
@@ -61,7 +61,9 @@ public class Type4 implements SessionModel, TetradSerializableExcluded {
         return new Type4(Type1.serializableInstance(), new Parameters());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         return (o instanceof Type4);
     }
@@ -77,7 +79,7 @@ public class Type4 implements SessionModel, TetradSerializableExcluded {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the session model.
      */
     public void setName(String name) {

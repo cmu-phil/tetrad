@@ -31,25 +31,45 @@ import java.util.EventObject;
  * @version $Id: $Id
  */
 public class SessionEvent extends EventObject {
-    /** Constant <code>NODE_ADDED=0</code> */
+    /**
+     * Constant <code>NODE_ADDED=0</code>
+     */
     public static final int NODE_ADDED = 0;
-    /** Constant <code>NODE_REMOVED=1</code> */
+    /**
+     * Constant <code>NODE_REMOVED=1</code>
+     */
     public static final int NODE_REMOVED = 1;
-    /** Constant <code>PARENT_ADDED=2</code> */
+    /**
+     * Constant <code>PARENT_ADDED=2</code>
+     */
     public static final int PARENT_ADDED = 2;
-    /** Constant <code>PARENT_REMOVED=3</code> */
+    /**
+     * Constant <code>PARENT_REMOVED=3</code>
+     */
     public static final int PARENT_REMOVED = 3;
-    /** Constant <code>MODEL_CREATED=4</code> */
+    /**
+     * Constant <code>MODEL_CREATED=4</code>
+     */
     public static final int MODEL_CREATED = 4;
-    /** Constant <code>MODEL_DESTROYED=5</code> */
+    /**
+     * Constant <code>MODEL_DESTROYED=5</code>
+     */
     public static final int MODEL_DESTROYED = 5;
-    /** Constant <code>MODEL_UNCLEAR=6</code> */
+    /**
+     * Constant <code>MODEL_UNCLEAR=6</code>
+     */
     public static final int MODEL_UNCLEAR = 6;
-    /** Constant <code>EXECUTION_STARTED=7</code> */
+    /**
+     * Constant <code>EXECUTION_STARTED=7</code>
+     */
     public static final int EXECUTION_STARTED = 7;
-    /** Constant <code>REPETITION_CHANGED=8</code> */
+    /**
+     * Constant <code>REPETITION_CHANGED=8</code>
+     */
     public static final int REPETITION_CHANGED = 8;
-    /** Constant <code>ADDING_EDGE=9</code> */
+    /**
+     * Constant <code>ADDING_EDGE=9</code>
+     */
     public static final int ADDING_EDGE = 9;
     private SessionNode node;
     private SessionNode parent;
@@ -61,7 +81,7 @@ public class SessionEvent extends EventObject {
      * destroyed.
      *
      * @param source a {@link java.lang.Object} object
-     * @param type a int
+     * @param type   a int
      */
     public SessionEvent(Object source, int type) {
         super(source);
@@ -88,8 +108,8 @@ public class SessionEvent extends EventObject {
      * destroyed.
      *
      * @param source a {@link java.lang.Object} object
-     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
-     * @param type a int
+     * @param node   a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param type   a int
      */
     public SessionEvent(Object source, SessionNode node, int type) {
         super(source);
@@ -132,8 +152,8 @@ public class SessionEvent extends EventObject {
      *
      * @param source a {@link java.lang.Object} object
      * @param parent a {@link edu.cmu.tetrad.session.SessionNode} object
-     * @param child a {@link edu.cmu.tetrad.session.SessionNode} object
-     * @param type a int
+     * @param child  a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param type   a int
      */
     public SessionEvent(Object source, SessionNode parent, SessionNode child,
                         int type) {
@@ -163,7 +183,7 @@ public class SessionEvent extends EventObject {
      * Creates a new SessionEvent with the same information as the given event but with a new source.
      *
      * @param source a {@link java.lang.Object} object
-     * @param event a {@link edu.cmu.tetrad.session.SessionEvent} object
+     * @param event  a {@link edu.cmu.tetrad.session.SessionEvent} object
      */
     public SessionEvent(Object source, SessionEvent event) {
 

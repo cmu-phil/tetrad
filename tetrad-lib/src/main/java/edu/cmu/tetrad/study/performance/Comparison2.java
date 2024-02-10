@@ -452,10 +452,11 @@ public class Comparison2 {
 //        return null;
 //    }
     // changed return type of 'summarize' to TextTable
+
     /**
      * <p>summarize.</p>
      *
-     * @param results a {@link java.util.List} object
+     * @param results      a {@link java.util.List} object
      * @param tableColumns a {@link java.util.List} object
      * @return a {@link edu.cmu.tetrad.util.TextTable} object
      */

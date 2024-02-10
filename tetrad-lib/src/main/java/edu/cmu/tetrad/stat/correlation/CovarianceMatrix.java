@@ -56,7 +56,9 @@ public class CovarianceMatrix implements Covariance {
         return mean;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public float[] computeLowerTriangle(boolean biasCorrected) {
         float[] covarianceMatrix = new float[(this.numOfCols * (this.numOfCols + 1)) / 2];
@@ -82,7 +84,9 @@ public class CovarianceMatrix implements Covariance {
         return covarianceMatrix;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public float[][] compute(boolean biasCorrected) {
         float[][] covarianceMatrix = new float[this.numOfCols][this.numOfCols];

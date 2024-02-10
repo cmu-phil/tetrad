@@ -29,6 +29,7 @@ public class HsimRepeatAutoRun {
     private char delimiter = ',';
 
     //*********Constructors*************//
+
     /**
      * <p>Constructor for HsimRepeatAutoRun.</p>
      *
@@ -49,7 +50,7 @@ public class HsimRepeatAutoRun {
      * <p>Constructor for HsimRepeatAutoRun.</p>
      *
      * @param readfilename a {@link java.lang.String} object
-     * @param delim a char
+     * @param delim        a char
      */
     public HsimRepeatAutoRun(String readfilename, char delim) {
         String workingDirectory = System.getProperty("user.dir");
@@ -68,11 +69,12 @@ public class HsimRepeatAutoRun {
     }
 
     //***************PUBLIC METHODS********************//
+
     /**
      * <p>run.</p>
      *
      * @param resimSize a int
-     * @param repeat a int
+     * @param repeat    a int
      * @return an array of {@link double} objects
      */
     public double[] run(int resimSize, int repeat) {
@@ -151,6 +153,7 @@ public class HsimRepeatAutoRun {
     }
 
     //*************************Methods for setting private variables***********//
+
     /**
      * <p>Setter for the field <code>verbose</code>.</p>
      *

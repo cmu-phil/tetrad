@@ -15,6 +15,7 @@ import java.util.Set;
 /*
  * Created by Erich on 3/27/2016.
  */
+
 /**
  * <p>Hsim class.</p>
  *
@@ -33,9 +34,9 @@ public class Hsim {
     /**
      * <p>Constructor for Hsim.</p>
      *
-     * @param thedag a {@link edu.cmu.tetrad.graph.Dag} object
+     * @param thedag      a {@link edu.cmu.tetrad.graph.Dag} object
      * @param thesimnodes a {@link java.util.Set} object
-     * @param thedata a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param thedata     a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public Hsim(Dag thedag, Set<Node> thesimnodes, DataSet thedata) {
         if (thedata.isContinuous()) {

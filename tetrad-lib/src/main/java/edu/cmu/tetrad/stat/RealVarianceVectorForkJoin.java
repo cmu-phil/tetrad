@@ -41,7 +41,7 @@ public class RealVarianceVectorForkJoin implements RealVariance {
     /**
      * <p>Constructor for RealVarianceVectorForkJoin.</p>
      *
-     * @param data an array of {@link double} objects
+     * @param data         an array of {@link double} objects
      * @param numOfThreads a int
      */
     public RealVarianceVectorForkJoin(double[][] data, int numOfThreads) {
@@ -51,7 +51,9 @@ public class RealVarianceVectorForkJoin implements RealVariance {
         this.numOfThreads = numOfThreads;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[] compute(boolean biasCorrected) {
         double[] means = new double[this.numOfCols];

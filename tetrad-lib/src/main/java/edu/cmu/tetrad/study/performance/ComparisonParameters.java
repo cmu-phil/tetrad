@@ -180,7 +180,8 @@ public class ComparisonParameters {
     /**
      * <p>Setter for the field <code>independenceTest</code>.</p>
      *
-     * @param independenceTest a {@link edu.cmu.tetrad.study.performance.ComparisonParameters.IndependenceTestType} object
+     * @param independenceTest a {@link edu.cmu.tetrad.study.performance.ComparisonParameters.IndependenceTestType}
+     *                         object
      */
     public void setIndependenceTest(IndependenceTestType independenceTest) {
         this.independenceTest = independenceTest;

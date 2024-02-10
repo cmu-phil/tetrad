@@ -50,8 +50,8 @@ import java.util.Arrays;
  * JUnit test class that contains several examples of code use.&gt; 0
  *
  * @author josephramsey
- * @see TestMeasurementSimulator
  * @version $Id: $Id
+ * @see TestMeasurementSimulator
  */
 public class MeasurementSimulator implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -112,8 +112,8 @@ public class MeasurementSimulator implements TetradSerializable {
      * Constructs a measurement simulator using the given history. The history will be used to do the simulation of each
      * cell.
      *
-     * @throws java.lang.NullPointerException if the history argument is null.
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws java.lang.NullPointerException if the history argument is null.
      */
     public MeasurementSimulator(Parameters parameters) {
         this.parameters = parameters;
@@ -230,8 +230,8 @@ public class MeasurementSimulator implements TetradSerializable {
     /**
      * Returns the number of steps generated.
      *
-     * @see #setStepsGenerated
      * @return a int
+     * @see #setStepsGenerated
      */
     public int getStepsGenerated() {
         return this.parameters.getInt("stepsGenerated", this.stepsGenerated);
@@ -303,8 +303,8 @@ public class MeasurementSimulator implements TetradSerializable {
     /**
      * Returns the interval (int time steps) between time steps stored out.
      *
-     * @see #getInterval
      * @param interval a int
+     * @see #getInterval
      */
     public void setInterval(int interval) {
 
@@ -322,8 +322,8 @@ public class MeasurementSimulator implements TetradSerializable {
     /**
      * Returns true if raw data is being saved in the getModel simulation, false if not.
      *
-     * @see #setRawDataSaved
      * @return a boolean
+     * @see #setRawDataSaved
      */
     public boolean isRawDataSaved() {
         boolean rawDataSaved = false;
@@ -346,8 +346,8 @@ public class MeasurementSimulator implements TetradSerializable {
     /**
      * Returns 'true' if measured data is being saved out for the getModel simulation, 'false' if not.
      *
-     * @see #setMeasuredDataSaved
      * @return a boolean
+     * @see #setMeasuredDataSaved
      */
     public boolean isMeasuredDataSaved() {
         boolean measuredDataSaved = true;
@@ -369,8 +369,8 @@ public class MeasurementSimulator implements TetradSerializable {
     /**
      * Returns 'true' if cells in the simulation will be synchronized, 'false' if not.
      *
-     * @see #setInitSync
      * @return a boolean
+     * @see #setInitSync
      */
     public boolean isInitSync() {
         boolean initSync = true;
@@ -420,8 +420,8 @@ public class MeasurementSimulator implements TetradSerializable {
     /**
      * Returns the standard deviation in percent of random dish bump values away from 100%.
      *
-     * @see #setDishDishVariability
      * @return a double
+     * @see #setDishDishVariability
      */
     public double getDishDishVariability() {
         return this.parameters.getDouble("dishDishVariability", this.dishDishVariability);
@@ -433,8 +433,8 @@ public class MeasurementSimulator implements TetradSerializable {
      * drawn for the dish model. This will determine how much expression levels will get bumped up or down depending on
      * the dish particular cells are in. See the dish model for details of how this is done.
      *
-     * @see DishModel
      * @param dishDishVariability a double
+     * @see DishModel
      */
     public void setDishDishVariability(double dishDishVariability) {
 
@@ -450,8 +450,8 @@ public class MeasurementSimulator implements TetradSerializable {
     /**
      * Returns the number of samples generated per dish in the measurement model.
      *
-     * @see #setNumSamplesPerDish
      * @return a int
+     * @see #setNumSamplesPerDish
      */
     public int getNumSamplesPerDish() {
         return this.parameters.getInt("numChipsPerDish", this.numSamplesPerDish);
@@ -482,8 +482,8 @@ public class MeasurementSimulator implements TetradSerializable {
      * Returns the sample to sample variability, which is the standard deviation of a normal distribution with mean 0
      * from which errors in measured expression levels due to the microarray being used for measurement are drawn.
      *
-     * @see #setSampleSampleVariability
      * @return a double
+     * @see #setSampleSampleVariability
      */
     public double getSampleSampleVariability() {
         return this.parameters.getDouble("sampleSampleVariability", this.sampleSampleVariability);
@@ -513,8 +513,8 @@ public class MeasurementSimulator implements TetradSerializable {
     /**
      * Returns the chip to chip variability.
      *
-     * @see #setChipChipVariability
      * @return a double
+     * @see #setChipChipVariability
      */
     public double getChipChipVariability() {
         return this.parameters.getDouble("chipChipVariability", this.chipChipVariability);
@@ -544,8 +544,8 @@ public class MeasurementSimulator implements TetradSerializable {
     /**
      * Returns the pixel digitalization error.
      *
-     * @see #setPixelDigitalization
      * @return a double
+     * @see #setPixelDigitalization
      */
     public double getPixelDigitalization() {
         return this.parameters.getDouble("pixelDigitalization", this.pixelDigitalization);
@@ -644,8 +644,8 @@ public class MeasurementSimulator implements TetradSerializable {
      * zero indexed. This is exported from the simulate() method to allow progress of the simulation to be reported. For
      * the total number of dishes, call <code>getNumDishes()</code>.
      *
-     * @see #getNumDishes
      * @return a int
+     * @see #getNumDishes
      */
     public int getDishNumber() {
         return this.dishNumber;
@@ -657,8 +657,8 @@ public class MeasurementSimulator implements TetradSerializable {
      * be reported. For the total number of dishes, call
      * <code>getNumCellsPerDish()</code>.
      *
-     * @see #getNumDishes
      * @return a int
+     * @see #getNumDishes
      */
     public int getCellNumber() {
         return this.cellNumber;
@@ -676,9 +676,9 @@ public class MeasurementSimulator implements TetradSerializable {
      * variation, chip to chip variation, and pixellation measurement variation. For more information, see the Genetic
      * Simulator spec, which this method implements.
      *
+     * @param history a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.GeneHistory} object
      * @see #getRawData
      * @see #getMeasuredData
-     * @param history a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.GeneHistory} object
      */
     public void simulate(GeneHistory history) {
 
@@ -881,7 +881,6 @@ public class MeasurementSimulator implements TetradSerializable {
             }                // END if (measuredDataSaved)
         }                    // END for (int d = 0; d < numDishes; d++)
 
-        return;
     }
 
     /*

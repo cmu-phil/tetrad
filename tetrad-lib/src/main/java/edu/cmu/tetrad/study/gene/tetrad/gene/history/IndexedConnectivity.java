@@ -71,7 +71,7 @@ public class IndexedConnectivity implements TetradSerializable {
      *
      * @param excludeSelfOneBack excludes from the connectivity any edge from a gene one time step back to the same gene
      *                           in the getModel time step.
-     * @param lagGraph a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LagGraph} object
+     * @param lagGraph           a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LagGraph} object
      */
     public IndexedConnectivity(LagGraph lagGraph, boolean excludeSelfOneBack) {
         if (lagGraph == null) {

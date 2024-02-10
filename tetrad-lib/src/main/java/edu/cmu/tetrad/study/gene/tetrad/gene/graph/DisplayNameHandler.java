@@ -46,7 +46,7 @@ public final class DisplayNameHandler {
      * Uses the given factor and lag information to construct a display string.
      *
      * @param factor a {@link java.lang.String} object
-     * @param lag a int
+     * @param lag    a int
      * @return a {@link java.lang.String} object
      */
     public static String getDisplayString(String factor, int lag) {

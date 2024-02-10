@@ -60,11 +60,11 @@ import java.util.Set;
  * construct, this has to be tested separately.&gt; 0
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see SessionNode
  * @see SessionListener
  * @see SessionAdapter
  * @see SessionEvent
- * @version $Id: $Id
  */
 public final class Session implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -148,14 +148,14 @@ public final class Session implements TetradSerializable {
      * <p>Adds the given node to the session, provided the node is in a freshly
      * created state.&gt; 0
      *
+     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
      * @throws java.lang.NullPointerException     if the node is null.
-     * @throws java.lang.IllegalArgumentException if the node is not in a freshly created state. There are two ways to put a
-     *                                  SessionNode into a freshly created state. One is to freshly create it, using one
-     *                                  of the constructors. The other was is to call the <code>reset</code> method on
-     *                                  the SessionNode.
+     * @throws java.lang.IllegalArgumentException if the node is not in a freshly created state. There are two ways to
+     *                                            put a SessionNode into a freshly created state. One is to freshly
+     *                                            create it, using one of the constructors. The other was is to call the
+     *                                            <code>reset</code> method on the SessionNode.
      * @see edu.cmu.tetrad.session.SessionNode#isFreshlyCreated
      * @see edu.cmu.tetrad.session.SessionNode#resetToFreshlyCreated
-     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void addNode(SessionNode node) {
         if (node == null) {

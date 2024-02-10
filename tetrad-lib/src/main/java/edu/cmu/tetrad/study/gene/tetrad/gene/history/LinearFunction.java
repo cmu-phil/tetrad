@@ -92,7 +92,7 @@ public class LinearFunction implements UpdateFunction {
      * Returns the value of the function.
      *
      * @param factorIndex a int
-     * @param history an array of {@link double} objects
+     * @param history     an array of {@link double} objects
      * @return a double
      */
     public double getValue(int factorIndex, double[][] history) {
@@ -111,7 +111,7 @@ public class LinearFunction implements UpdateFunction {
     /**
      * Sets the intercept for the given factor.
      *
-     * @param factor a {@link java.lang.String} object
+     * @param factor    a {@link java.lang.String} object
      * @param intercept a double
      * @return a boolean
      */
@@ -127,7 +127,7 @@ public class LinearFunction implements UpdateFunction {
     /**
      * Sets the intercept for the given factor.
      *
-     * @param factor a int
+     * @param factor    a int
      * @param intercept a double
      * @return a boolean
      */
@@ -145,8 +145,8 @@ public class LinearFunction implements UpdateFunction {
     /**
      * Sets the intercept for the given factor.
      *
-     * @param factor a {@link java.lang.String} object
-     * @param parent a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
+     * @param factor    a {@link java.lang.String} object
+     * @param parent    a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
      * @param intercept a double
      * @return a boolean
      */
@@ -163,8 +163,8 @@ public class LinearFunction implements UpdateFunction {
     /**
      * Sets the coefficient for the given parent of the given factor.
      *
-     * @param factor a int
-     * @param parent a int
+     * @param factor      a int
+     * @param parent      a int
      * @param coefficient a double
      * @return a boolean
      */
@@ -184,7 +184,7 @@ public class LinearFunction implements UpdateFunction {
     /**
      * Method setIntenalNoiseModel
      *
-     * @param factor a int
+     * @param factor       a int
      * @param distribution a {@link edu.cmu.tetrad.util.dist.Distribution} object
      */
     public void setErrorDistribution(int factor, Distribution distribution) {

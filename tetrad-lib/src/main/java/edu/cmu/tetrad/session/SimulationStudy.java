@@ -80,9 +80,9 @@ public final class SimulationStudy {
     /**
      * Gets the repeition of the given node. If the repetition of a node has not been set, it is assumed to be 1.
      *
-     * @see #setRepetition
      * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
      * @return a int
+     * @see #setRepetition
      */
     public static int getRepetition(SessionNode node) {
         if (node.getRepetition() < 1) {
@@ -130,7 +130,7 @@ public final class SimulationStudy {
      * a depth first traversal of the tree.
      *
      * @param repetition the repetition, an integer &gt; 0.
-     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param node       a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void setRepetition(SessionNode node, int repetition) {
         if (node == null) {
@@ -151,9 +151,9 @@ public final class SimulationStudy {
     /**
      * Executes the given node the specified number of times.
      *
-     * @see #getRepetition
      * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
-     * @param overwrite a boolean
+     * @param overwrite   a boolean
+     * @see #getRepetition
      */
     public void execute(SessionNode sessionNode, boolean overwrite) {
         if (!this.session.contains(sessionNode)) {
@@ -186,7 +186,7 @@ public final class SimulationStudy {
      * <p>createDescendantModels.</p>
      *
      * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
-     * @param overwrite a boolean
+     * @param overwrite   a boolean
      * @return a boolean
      */
     public boolean createDescendantModels(SessionNode sessionNode,

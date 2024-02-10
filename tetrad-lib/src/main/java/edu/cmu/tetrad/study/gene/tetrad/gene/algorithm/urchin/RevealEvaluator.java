@@ -57,9 +57,9 @@ public class RevealEvaluator {
      * evaluate whether the two are related by a canalyzing function.  The third argument is the time lag between cause
      * and effect, as usual.
      *
-     * @param child a int
+     * @param child  a int
      * @param parent a int
-     * @param lag a int
+     * @param lag    a int
      * @return an array of {@link int} objects
      */
     public int[][] crossTab(int child, int parent, int lag) {
@@ -84,9 +84,9 @@ public class RevealEvaluator {
      * must be at least one cause but there may be only one.  The third argument is the time lag between the cause(s)
      * and the effect.  See Fig. 5 in the Liang et al. paper.
      *
-     * @param child a int
+     * @param child   a int
      * @param parents an array of {@link int} objects
-     * @param lag a int
+     * @param lag     a int
      * @return a double
      */
     public double mutualInformation(int child, int[] parents, int lag) {
@@ -146,9 +146,9 @@ public class RevealEvaluator {
      * must be at least one cause but there may be only one.  The third argument is the time lag between the cause(s)
      * and the effect.  See Fig. 5 in the Liang et al. paper.
      *
-     * @param child a int
+     * @param child   a int
      * @param parents an array of {@link int} objects
-     * @param lags an array of {@link int} objects
+     * @param lags    an array of {@link int} objects
      * @return a double
      */
     public double mutualInformation(int child, int[] parents, int[] lags) {
@@ -251,7 +251,7 @@ public class RevealEvaluator {
      * from a point in time until the end of the data signal.  This is useful in the normalization of the mutual
      * information.
      *
-     * @param g a int
+     * @param g   a int
      * @param lag a int
      * @return a double
      */
@@ -406,7 +406,7 @@ public class RevealEvaluator {
      * ind=6 the vector will be (1, 1, 0).
      *
      * @param ind a int
-     * @param n a int
+     * @param n   a int
      * @return an array of {@link byte} objects
      */
     public byte[] booleanRepresentation(int ind, int n) {

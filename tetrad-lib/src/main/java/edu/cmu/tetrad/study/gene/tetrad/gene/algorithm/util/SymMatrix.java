@@ -59,7 +59,7 @@ public class SymMatrix extends LTMatrix {
      *
      * @param row a int
      * @param col a int
-     * @param x a int
+     * @param x   a int
      */
     public void setValue(int row, int col, int x) {
         if (row >= col) {
@@ -71,7 +71,7 @@ public class SymMatrix extends LTMatrix {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the value of element (<code>row</code>,<code>col</code>) to
      * <code>x</code>
      */
@@ -85,7 +85,7 @@ public class SymMatrix extends LTMatrix {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the value of element at (<code>row</code>,<code>col</code>)
      */
     public short getValue(int row, int col) {

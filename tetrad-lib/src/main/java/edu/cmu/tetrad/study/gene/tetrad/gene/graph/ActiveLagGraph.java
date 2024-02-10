@@ -100,7 +100,7 @@ public class ActiveLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Attempts to add an edge to the graph. If the lag of the edge is greater than maxLagAllowable, maxLagAllowable
      * will automatically be increased so that the edge can be added. Will throw a propertyChange event of (null,
      * (LaggedEdge) newEdge)
@@ -123,7 +123,7 @@ public class ActiveLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Attempts to add a factor to the graph. Will throw a propertyChange event of (null, (String) factor).
      */
     public void addFactor(String factor) {
@@ -143,7 +143,7 @@ public class ActiveLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Attempts to remove an edge from the graph. Will throw a propertyChange event of ((LaggedEdge) edge_removed,
      * null).
      */
@@ -160,7 +160,7 @@ public class ActiveLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Attempts to remove a factor from the graph. Will also search through and remove any edges that involve this edge.
      * Will throw a propertyChange event of ((String) factor_removed, null).
      */
@@ -197,7 +197,7 @@ public class ActiveLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Attempts to rename a factor. Will throw a propertyChange event of ((String) oldName, (String) newName).
      */
     public void renameFactor(String oldName, String newName) {
@@ -223,17 +223,23 @@ public class ActiveLagGraph implements LagGraph {
         this.lagGraph.clearEdges();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean existsFactor(String factor) {
         return this.lagGraph.existsFactor(factor);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean existsEdge(String factor, LaggedFactor laggedFactor) {
         return this.lagGraph.existsEdge(factor, laggedFactor);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public SortedSet<LaggedFactor> getParents(String factor) {
         return this.lagGraph.getParents(factor);
     }
@@ -249,7 +255,7 @@ public class ActiveLagGraph implements LagGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Attemps to set the maximum allowable lag of an edge in the graph. This really is not necessary to use publicly
      * anymore since the addEdge function will now automatically increase the MaxAllowableLag of the graph if an edge's
      * lag is greater than MaxAllowableLag. Will throw a propertyChange event of (null, (Integer) newMaxLagAllowable).
@@ -298,17 +304,23 @@ public class ActiveLagGraph implements LagGraph {
         return this.lagGraph.getFactors();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addFactors(String base, int numFactors) {
         this.lagGraph.addFactors(base, numFactors);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setLocation(String factor, PointXy point) {
         this.lagGraph.setLocation(factor, point);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public PointXy getLocation(String factor) {
         return this.lagGraph.getLocation(factor);
     }

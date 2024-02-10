@@ -29,7 +29,9 @@ package edu.cmu.tetrad.session;
  * @version $Id: $Id
  */
 public interface ParamsResettable {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**

@@ -62,7 +62,7 @@ public class Type11 implements SessionModel, TetradSerializableExcluded {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the session model.
      */
     public void setName(String name) {

@@ -56,7 +56,9 @@ public class RealCovarianceMatrix implements RealCovariance {
         return mean;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[] computeLowerTriangle(boolean biasCorrected) {
         double[] covarianceMatrix = new double[(this.numOfCols * (this.numOfCols + 1)) / 2];
@@ -82,7 +84,9 @@ public class RealCovarianceMatrix implements RealCovariance {
         return covarianceMatrix;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[][] compute(boolean biasCorrected) {
         double[][] covarianceMatrix = new double[this.numOfCols][this.numOfCols];

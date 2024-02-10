@@ -131,9 +131,9 @@ public class LTestReveal {
     /**
      * <p>mutualInformation.</p>
      *
-     * @param child a int
+     * @param child   a int
      * @param parents an array of {@link int} objects
-     * @param lag a int
+     * @param lag     a int
      * @return a double
      */
     public static double mutualInformation(int child, int[] parents, int lag) {
@@ -220,7 +220,7 @@ public class LTestReveal {
     /**
      * <p>entropy.</p>
      *
-     * @param g a int
+     * @param g   a int
      * @param lag a int
      * @return a double
      */
@@ -376,7 +376,7 @@ public class LTestReveal {
      * ind=6 the vector will be (1, 1, 0).
      *
      * @param ind a int
-     * @param n a int
+     * @param n   a int
      * @return an array of {@link byte} objects
      */
     public byte[] booleanRepresentation(int ind, int n) {

@@ -106,7 +106,7 @@ public class PolynomialFunction implements UpdateFunction {
      * Returns the value of the function.
      *
      * @param factorIndex a int
-     * @param history an array of {@link double} objects
+     * @param history     an array of {@link double} objects
      * @return a double
      */
     public double getValue(int factorIndex, double[][] history) {
@@ -133,7 +133,7 @@ public class PolynomialFunction implements UpdateFunction {
     /**
      * Method setIntenalNoiseModel
      *
-     * @param factor a int
+     * @param factor       a int
      * @param distribution a {@link edu.cmu.tetrad.util.dist.Distribution} object
      */
     public void setErrorDistribution(int factor, Distribution distribution) {
@@ -157,7 +157,7 @@ public class PolynomialFunction implements UpdateFunction {
     /**
      * Sets the polynomial for the given factor.
      *
-     * @param factor a int
+     * @param factor     a int
      * @param polynomial a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.Polynomial} object
      */
     public void setPolynomial(int factor, Polynomial polynomial) {

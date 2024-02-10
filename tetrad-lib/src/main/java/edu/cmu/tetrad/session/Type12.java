@@ -37,7 +37,7 @@ public class Type12 implements SessionModel, TetradSerializableExcluded {
     /**
      * <p>Constructor for Type12.</p>
      *
-     * @param a a {@link edu.cmu.tetrad.session.Type11} object
+     * @param a          a {@link edu.cmu.tetrad.session.Type11} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Type12(Type11 a, Parameters parameters) {
@@ -46,7 +46,7 @@ public class Type12 implements SessionModel, TetradSerializableExcluded {
     /**
      * <p>Constructor for Type12.</p>
      *
-     * @param a a {@link edu.cmu.tetrad.session.Type12} object
+     * @param a          a {@link edu.cmu.tetrad.session.Type12} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Type12(Type12 a, Parameters parameters) {
@@ -72,7 +72,7 @@ public class Type12 implements SessionModel, TetradSerializableExcluded {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the session model.
      */
     public void setName(String name) {

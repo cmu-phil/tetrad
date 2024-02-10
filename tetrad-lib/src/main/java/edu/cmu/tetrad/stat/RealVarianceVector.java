@@ -56,7 +56,9 @@ public class RealVarianceVector implements RealVariance {
         return mean;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[] compute(boolean biasCorrected) {
         double[] meanVariance = computeMeans();

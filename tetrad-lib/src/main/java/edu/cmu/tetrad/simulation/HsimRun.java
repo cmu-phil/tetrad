@@ -28,11 +28,11 @@ public class HsimRun {
     /**
      * <p>run.</p>
      *
-     * @param readfilename a {@link java.lang.String} object
-     * @param filenameOut a {@link java.lang.String} object
-     * @param delimiter a char
+     * @param readfilename   a {@link java.lang.String} object
+     * @param filenameOut    a {@link java.lang.String} object
+     * @param delimiter      a char
      * @param resimNodeNames an array of {@link java.lang.String} objects
-     * @param verbose a boolean
+     * @param verbose        a boolean
      */
     public static void run(String readfilename, String filenameOut, char delimiter, String[] resimNodeNames, boolean verbose) {
 

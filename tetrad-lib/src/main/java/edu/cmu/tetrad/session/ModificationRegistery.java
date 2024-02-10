@@ -46,7 +46,7 @@ public final class ModificationRegistery {
      * Registers an editor which could modify model.
      *
      * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
-     * @param editor a {@link javax.swing.JComponent} object
+     * @param editor      a {@link javax.swing.JComponent} object
      */
     public static void registerEditor(SessionNode sessionNode,
                                       JComponent editor) {
@@ -83,8 +83,8 @@ public final class ModificationRegistery {
     /**
      * <p>modelHasChanged.</p>
      *
-     * @return true if an editor has registered that model has changed.
      * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return true if an editor has registered that model has changed.
      */
     public static boolean modelHasChanged(SessionNode sessionNode) {
         return ModificationRegistery.EDITED_MODELS.contains(sessionNode);

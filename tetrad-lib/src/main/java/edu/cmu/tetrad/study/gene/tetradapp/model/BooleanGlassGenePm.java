@@ -77,7 +77,7 @@ public class BooleanGlassGenePm extends GenePm implements SessionModel {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the model.
      */
     public void setName(String name) {

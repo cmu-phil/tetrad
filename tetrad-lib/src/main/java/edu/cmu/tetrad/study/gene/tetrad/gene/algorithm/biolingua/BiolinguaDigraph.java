@@ -118,7 +118,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns null (no lag information is stored in a BiolinguaDigraph).
      */
     public int[] getLags(int i) {

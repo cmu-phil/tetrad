@@ -24,16 +24,17 @@ import java.util.List;
 public class HsimRobustCompare {
 
     //*************Public Methods*****************8//
+
     /**
      * <p>run.</p>
      *
-     * @param numVars a int
-     * @param edgesPerNode a double
-     * @param numCases a int
+     * @param numVars         a int
+     * @param edgesPerNode    a double
+     * @param numCases        a int
      * @param penaltyDiscount a double
-     * @param resimSize a int
-     * @param repeat a int
-     * @param verbose a boolean
+     * @param resimSize       a int
+     * @param repeat          a int
+     * @param verbose         a boolean
      * @return a {@link java.util.List} object
      */
     public static List<double[]> run(int numVars, double edgesPerNode, int numCases, double penaltyDiscount,

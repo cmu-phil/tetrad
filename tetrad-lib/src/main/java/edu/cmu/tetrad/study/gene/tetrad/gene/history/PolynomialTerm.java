@@ -59,7 +59,7 @@ public class PolynomialTerm implements TetradSerializable {
      * Constructs a term.
      *
      * @param coefficient a double
-     * @param variables an array of {@link int} objects
+     * @param variables   an array of {@link int} objects
      */
     public PolynomialTerm(double coefficient, int[] variables) {
         if (variables == null) {

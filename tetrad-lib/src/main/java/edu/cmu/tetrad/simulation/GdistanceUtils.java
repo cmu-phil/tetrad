@@ -14,10 +14,11 @@ public class GdistanceUtils {
 
     //this method returns a list of percents of how many members of input
     //fall into the various buckets determined by the array of thresholds (ordered from least to greatest)
+
     /**
      * <p>histogram.</p>
      *
-     * @param input a {@link java.util.List} object
+     * @param input      a {@link java.util.List} object
      * @param thresholds an array of {@link double} objects
      * @return an array of {@link double} objects
      */

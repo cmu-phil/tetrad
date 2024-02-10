@@ -92,7 +92,9 @@ public class RandomActiveLagGraph extends ActiveLagGraph
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

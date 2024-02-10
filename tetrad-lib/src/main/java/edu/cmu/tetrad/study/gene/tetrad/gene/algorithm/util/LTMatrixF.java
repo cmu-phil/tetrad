@@ -63,7 +63,7 @@ public class LTMatrixF extends BasicLTMatrix {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Casts double value x to float and assigns it to element (r,c) This method checks that x can be converted to a
      * float without causing overflow.
      */
@@ -106,7 +106,7 @@ public class LTMatrixF extends BasicLTMatrix {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns element (r,c) as a double
      */
     public double getDoubleValue(int r, int c) {

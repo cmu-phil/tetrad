@@ -20,12 +20,13 @@ import java.util.Set;
  */
 public class HsimUtils {
     //this method will trim an input graph down to the nodes and edges that are used for evaluation
+
     /**
      * <p>evalEdges.</p>
      *
      * @param inputgraph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param simnodes a {@link java.util.Set} object
-     * @param realnodes a {@link java.util.Set} object
+     * @param simnodes   a {@link java.util.Set} object
+     * @param realnodes  a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph evalEdges(Graph inputgraph, Set<Node> simnodes, Set<Node> realnodes) {
@@ -54,6 +55,7 @@ public class HsimUtils {
     }
 
     //this method returns the set of all parents of a provided set of parents, given a provided graph
+
     /**
      * <p>getAllParents.</p>
      *
@@ -80,10 +82,11 @@ public class HsimUtils {
     }
 
     //this method returns an array of doubles, which are standard error metrics for graph learning
+
     /**
      * <p>errorEval.</p>
      *
-     * @param estCPDAG a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param estCPDAG    a {@link edu.cmu.tetrad.graph.Graph} object
      * @param truePattern a {@link edu.cmu.tetrad.graph.Graph} object
      * @return an array of {@link double} objects
      */
@@ -173,6 +176,7 @@ public class HsimUtils {
     }
 
     //this method makes a VerticalIntDataBox from a regular data set
+
     /**
      * <p>makeVertIntBox.</p>
      *
@@ -191,6 +195,7 @@ public class HsimUtils {
     }
 
     //returns a String formatted as a latex table, which can be pasted directly into a latex document
+
     /**
      * <p>makeLatexTable.</p>
      *
@@ -226,6 +231,7 @@ public class HsimUtils {
 
     //this turns an array of doubles into an array of strings, formatted for easier reading
     //the input String should be formatted appropriately for the String.format method
+
     /**
      * <p>formatErrorsArray.</p>
      *
@@ -242,10 +248,11 @@ public class HsimUtils {
     }
 
     //used for making random graphs for SEMS without having to manually constuct the variable set each time
+
     /**
      * <p>mkRandSEMDAG.</p>
      *
-     * @param numVars a int
+     * @param numVars  a int
      * @param numEdges a int
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */

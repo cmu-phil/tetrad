@@ -175,8 +175,8 @@ public class TestMeasurementSimulator extends TestCase {
         TestCase.assertEquals(4, this.simulator.getStepsGenerated());
         TestCase.assertEquals(1, this.simulator.getFirstStepStored());
         TestCase.assertEquals(1, this.simulator.getInterval());
-        TestCase.assertEquals(false, this.simulator.isRawDataSaved());
-        TestCase.assertEquals(true, this.simulator.isInitSync());
+        TestCase.assertFalse(this.simulator.isRawDataSaved());
+        TestCase.assertTrue(this.simulator.isInitSync());
 
         // Make sure the time steps are 1, 2, 3, 4.
         int[] timeSteps = this.simulator.getTimeSteps();

@@ -36,13 +36,14 @@ public class Gdistance {
     private final int cores = Runtime.getRuntime().availableProcessors();
 
     //With the parallel version, it is better to make a constructor for central data like locationMap
+
     /**
      * <p>Constructor for Gdistance.</p>
      *
      * @param locationMap a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param xDist a double
-     * @param yDist a double
-     * @param zDist a double
+     * @param xDist       a double
+     * @param yDist       a double
+     * @param zDist       a double
      */
     public Gdistance(DataSet locationMap, double xDist, double yDist, double zDist) {
         this.locationMap = locationMap;

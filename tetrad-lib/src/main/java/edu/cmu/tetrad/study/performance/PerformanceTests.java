@@ -57,7 +57,7 @@ public class PerformanceTests {
     /**
      * <p>endpointMisclassification.</p>
      *
-     * @param _nodes a {@link java.util.List} object
+     * @param _nodes   a {@link java.util.List} object
      * @param estGraph a {@link edu.cmu.tetrad.graph.Graph} object
      * @param refGraph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link java.lang.String} object
@@ -228,10 +228,10 @@ public class PerformanceTests {
     /**
      * <p>testPc.</p>
      *
-     * @param numVars a int
+     * @param numVars    a int
      * @param edgeFactor a double
-     * @param numCases a int
-     * @param alpha a double
+     * @param numCases   a int
+     * @param alpha      a double
      */
     public void testPc(int numVars, double edgeFactor, int numCases, double alpha) {
         final int depth = -1;
@@ -368,10 +368,10 @@ public class PerformanceTests {
     /**
      * <p>testPcStable.</p>
      *
-     * @param numVars a int
+     * @param numVars    a int
      * @param edgeFactor a double
-     * @param numCases a int
-     * @param alpha a double
+     * @param numCases   a int
+     * @param alpha      a double
      */
     public void testPcStable(int numVars, double edgeFactor, int numCases, double alpha) {
         final int depth = -1;
@@ -445,9 +445,9 @@ public class PerformanceTests {
     /**
      * <p>testFges.</p>
      *
-     * @param numVars a int
-     * @param edgeFactor a double
-     * @param numCases a int
+     * @param numVars         a int
+     * @param edgeFactor      a double
+     * @param numCases        a int
      * @param penaltyDiscount a double
      */
     public void testFges(int numVars, double edgeFactor, int numCases, double penaltyDiscount) {
@@ -516,9 +516,9 @@ public class PerformanceTests {
     /**
      * <p>testCpc.</p>
      *
-     * @param numVars a int
+     * @param numVars    a int
      * @param edgeFactor a double
-     * @param numCases a int
+     * @param numCases   a int
      */
     public void testCpc(int numVars, double edgeFactor, int numCases) {
         final double alpha = 0.0001;
@@ -606,10 +606,10 @@ public class PerformanceTests {
     /**
      * <p>testCpcStable.</p>
      *
-     * @param numVars a int
+     * @param numVars    a int
      * @param edgeFactor a double
-     * @param numCases a int
-     * @param alpha a double
+     * @param numCases   a int
+     * @param alpha      a double
      */
     public void testCpcStable(int numVars, double edgeFactor, int numCases, double alpha) {
         final int depth = 3;
@@ -689,9 +689,9 @@ public class PerformanceTests {
     /**
      * <p>testFci.</p>
      *
-     * @param numVars a int
+     * @param numVars    a int
      * @param edgeFactor a double
-     * @param numCases a int
+     * @param numCases   a int
      */
     public void testFci(int numVars, double edgeFactor, int numCases) {
         final double alpha = 0.001;
@@ -773,7 +773,7 @@ public class PerformanceTests {
     /**
      * <p>testGfci.</p>
      *
-     * @param numVars a int
+     * @param numVars    a int
      * @param edgeFactor a double
      */
     public void testGfci(int numVars, double edgeFactor) {
@@ -872,10 +872,10 @@ public class PerformanceTests {
     /**
      * <p>testFgesComparisonContinuous.</p>
      *
-     * @param numVars a int
+     * @param numVars    a int
      * @param edgeFactor a double
-     * @param numCases a int
-     * @param numRuns a int
+     * @param numCases   a int
+     * @param numRuns    a int
      */
     public void testFgesComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
         testFges(numVars, edgeFactor, numCases, numRuns, true);
@@ -884,10 +884,10 @@ public class PerformanceTests {
     /**
      * <p>testFgesComparisonDiscrete.</p>
      *
-     * @param numVars a int
+     * @param numVars    a int
      * @param edgeFactor a double
-     * @param numCases a int
-     * @param numRuns a int
+     * @param numCases   a int
+     * @param numRuns    a int
      */
     public void testFgesComparisonDiscrete(int numVars, double edgeFactor, int numCases, int numRuns) {
         testFges(numVars, edgeFactor, numCases, numRuns, false);
@@ -1123,10 +1123,10 @@ public class PerformanceTests {
     /**
      * <p>testFgesMbComparisonContinuous.</p>
      *
-     * @param numVars a int
+     * @param numVars    a int
      * @param edgeFactor a double
-     * @param numCases a int
-     * @param numRuns a int
+     * @param numCases   a int
+     * @param numRuns    a int
      */
     public void testFgesMbComparisonContinuous(int numVars, double edgeFactor, int numCases, int numRuns) {
         testFgesMb(numVars, edgeFactor, numCases, numRuns, true);
@@ -1135,10 +1135,10 @@ public class PerformanceTests {
     /**
      * <p>testFgesMbComparisonDiscrete.</p>
      *
-     * @param numVars a int
+     * @param numVars    a int
      * @param edgeFactor a double
-     * @param numCases a int
-     * @param numRuns a int
+     * @param numCases   a int
+     * @param numRuns    a int
      */
     public void testFgesMbComparisonDiscrete(int numVars, double edgeFactor, int numCases, int numRuns) {
         testFgesMb(numVars, edgeFactor, numCases, numRuns, false);
@@ -1388,13 +1388,12 @@ public class PerformanceTests {
     }
 
     private String precisionRecall(double[] comparison) {
-        StringBuilder b = new StringBuilder();
         NumberFormat nf = new DecimalFormat("0.00");
 
-        b.append("\n");
-        b.append("APRE\tAREC\tOPRE\tOREC\n");
-        b.append(nf.format(comparison[0] * 100)).append("%\t").append(nf.format(comparison[1] * 100)).append("%\t").append(nf.format(comparison[2] * 100)).append("%\t").append(nf.format(comparison[3] * 100)).append("%");
-        return b.toString();
+        String b = "\n" +
+                "APRE\tAREC\tOPRE\tOREC\n" +
+                nf.format(comparison[0] * 100) + "%\t" + nf.format(comparison[1] * 100) + "%\t" + nf.format(comparison[2] * 100) + "%\t" + nf.format(comparison[3] * 100) + "%";
+        return b;
     }
 
     /**
@@ -1548,6 +1547,7 @@ public class PerformanceTests {
     }
 
     // Compares two different ways of calculating a PAG_of_the_true_DAG from a DAG, to see if they match up
+
     /**
      * <p>testCompareDagToCPDAG.</p>
      *
@@ -1617,10 +1617,11 @@ public class PerformanceTests {
     }
 
     // Fas is calibrated; we need to calibrate other FAS versions to it.
+
     /**
      * <p>testComparePcVersions.</p>
      *
-     * @param numVars a int
+     * @param numVars    a int
      * @param edgeFactor a double
      * @param numLatents a int
      */
@@ -1898,12 +1899,11 @@ public class PerformanceTests {
         double avg3 = sum3 / comparisons.size();
         double avg4 = sum4 / comparisons.size();
 
-        StringBuilder b = new StringBuilder();
         NumberFormat nf = new DecimalFormat("0.00");
 
-        b.append("\n");
-        b.append("APRE\tAREC\tOPRE\tOREC\n");
-        b.append(nf.format(avg1 * 100)).append("%\t").append(nf.format(avg2 * 100)).append("%\t").append(nf.format(avg3 * 100)).append("%\t").append(nf.format(avg4 * 100)).append("%");
+        String b = "\n" +
+                "APRE\tAREC\tOPRE\tOREC\n" +
+                nf.format(avg1 * 100) + "%\t" + nf.format(avg2 * 100) + "%\t" + nf.format(avg3 * 100) + "%\t" + nf.format(avg4 * 100) + "%";
 
         this.out.println(b);
     }
@@ -1941,12 +1941,11 @@ public class PerformanceTests {
 
         comparison[2] = trueArrow / (double) sumCol;
         comparison[3] = trueArrow / (double) sumRow;
-        StringBuilder b = new StringBuilder();
         NumberFormat nf = new DecimalFormat("0.00");
 
-        b.append("\n");
-        b.append("APRE\tAREC\tOPRE\tOREC\n");
-        b.append(nf.format(comparison[0] * 100)).append("%\t").append(nf.format(comparison[1] * 100)).append("%\t").append(nf.format(comparison[2] * 100)).append("%\t").append(nf.format(comparison[3] * 100)).append("%");
+        String b = "\n" +
+                "APRE\tAREC\tOPRE\tOREC\n" +
+                nf.format(comparison[0] * 100) + "%\t" + nf.format(comparison[1] * 100) + "%\t" + nf.format(comparison[2] * 100) + "%\t" + nf.format(comparison[3] * 100) + "%";
 
         this.out.println(b);
     }

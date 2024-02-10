@@ -33,12 +33,13 @@ public class NbGeneAnd extends AbstractNbComponent {
     /**
      * <p>Constructor for NbGeneAnd.</p>
      *
-     * @param factor a double
-     * @param power a double
-     * @param parents an array of {@link edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin.NbComponent} objects
+     * @param factor        a double
+     * @param power         a double
+     * @param parents       an array of {@link edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin.NbComponent}
+     *                      objects
      * @param inhibitExcite an array of {@link int} objects
-     * @param name a {@link java.lang.String} object
-     * @param sd a double
+     * @param name          a {@link java.lang.String} object
+     * @param sd            a double
      */
     public NbGeneAnd(double factor, double power, NbComponent[] parents,
                      int[] inhibitExcite, String name, double sd) {
@@ -62,7 +63,6 @@ public class NbGeneAnd extends AbstractNbComponent {
         setValue(product * getFactor());
 
         if (getSd() == 0.0) {
-            return;
         } else {
             double r = 1.0 +
                     RandomUtil.getInstance().nextNormal(0, 1) * getSd();

@@ -29,9 +29,9 @@ public class HsimContinuous {
     /**
      * <p>Constructor for HsimContinuous.</p>
      *
-     * @param thedag a {@link edu.cmu.tetrad.graph.Dag} object
+     * @param thedag      a {@link edu.cmu.tetrad.graph.Dag} object
      * @param thesimnodes a {@link java.util.Set} object
-     * @param thedata a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param thedata     a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public HsimContinuous(Dag thedag, Set<Node> thesimnodes, DataSet thedata) {
         if (thedata.isDiscrete()) {

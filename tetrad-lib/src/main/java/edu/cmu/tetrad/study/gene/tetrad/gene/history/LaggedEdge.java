@@ -50,7 +50,7 @@ public class LaggedEdge implements TetradSerializable {
     /**
      * Creates new LaggedEdge
      *
-     * @param factor a {@link java.lang.String} object
+     * @param factor       a {@link java.lang.String} object
      * @param laggedFactor a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor} object
      */
     public LaggedEdge(String factor, LaggedFactor laggedFactor) {

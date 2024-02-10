@@ -52,8 +52,8 @@ public class MeasurementSimulatorParams implements TetradSerializable {
      * Constructs a measurement simulator using the given history. The history will be used to do the simulation of each
      * cell.
      *
-     * @throws java.lang.NullPointerException if the history argument is null.
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws java.lang.NullPointerException if the history argument is null.
      */
     public MeasurementSimulatorParams(Parameters parameters) {
         this.simulator = new MeasurementSimulator(parameters);

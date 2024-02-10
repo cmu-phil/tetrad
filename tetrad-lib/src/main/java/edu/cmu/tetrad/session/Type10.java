@@ -37,8 +37,8 @@ public class Type10 implements SessionModel, TetradSerializableExcluded {
     /**
      * <p>Constructor for Type10.</p>
      *
-     * @param model1 a {@link edu.cmu.tetrad.session.Type6} object
-     * @param model2 a {@link edu.cmu.tetrad.session.Type6} object
+     * @param model1     a {@link edu.cmu.tetrad.session.Type6} object
+     * @param model2     a {@link edu.cmu.tetrad.session.Type6} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Type10(Type6 model1, Type6 model2, Parameters parameters) {
@@ -65,7 +65,7 @@ public class Type10 implements SessionModel, TetradSerializableExcluded {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the session model.
      */
     public void setName(String name) {

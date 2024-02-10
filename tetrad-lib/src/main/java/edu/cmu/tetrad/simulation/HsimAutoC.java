@@ -36,6 +36,7 @@ public class HsimAutoC {
 
     //*********Constructors*************//
     //contructor using a previously existing DataSet object
+
     /**
      * <p>Constructor for HsimAutoC.</p>
      *
@@ -48,11 +49,12 @@ public class HsimAutoC {
     }
 
     //constructor that loads data from a file named readfilename, with delimiter delim
+
     /**
      * <p>Constructor for HsimAutoC.</p>
      *
      * @param readfilename a {@link java.lang.String} object
-     * @param delim a char
+     * @param delim        a char
      */
     public HsimAutoC(String readfilename, char delim) {
         String workingDirectory = System.getProperty("user.dir");
@@ -70,6 +72,7 @@ public class HsimAutoC {
     }
 
     //***********Public methods*************//
+
     /**
      * <p>run.</p>
      *
@@ -167,6 +170,7 @@ public class HsimAutoC {
     }
 
     //******* Methods for setting values to private variables****************//
+
     /**
      * <p>Setter for the field <code>verbose</code>.</p>
      *

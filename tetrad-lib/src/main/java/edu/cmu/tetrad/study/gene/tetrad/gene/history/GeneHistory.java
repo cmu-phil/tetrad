@@ -107,7 +107,7 @@ public class GeneHistory implements TetradSerializable {
     /**
      * Constructs a new history with the given initializer and the given update function.
      *
-     * @param initializer a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.Initializer} object
+     * @param initializer    a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.Initializer} object
      * @param updateFunction a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.UpdateFunction} object
      */
     public GeneHistory(Initializer initializer, UpdateFunction updateFunction) {

@@ -72,7 +72,7 @@ public class Matrix extends BasicMatrix {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Casts double value x to short and assigns it to element (r,c)
      */
     public void setDoubleValue(int r, int c, double x) {
@@ -88,7 +88,7 @@ public class Matrix extends BasicMatrix {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the value stored at element (r,c) as a double
      */
     public double getDoubleValue(int r, int c) {

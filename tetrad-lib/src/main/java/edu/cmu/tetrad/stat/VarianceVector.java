@@ -56,7 +56,9 @@ public class VarianceVector implements Variance {
         return mean;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public float[] compute(boolean biasCorrected) {
         float[] meanVariance = computeMeans();

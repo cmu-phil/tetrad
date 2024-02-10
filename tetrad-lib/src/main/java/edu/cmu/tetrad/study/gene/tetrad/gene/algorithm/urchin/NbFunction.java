@@ -32,11 +32,12 @@ public class NbFunction extends AbstractNbComponent {
     /**
      * <p>Constructor for NbFunction.</p>
      *
-     * @param factor a double
-     * @param power a double
-     * @param parents an array of {@link edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin.NbComponent} objects
+     * @param factor        a double
+     * @param power         a double
+     * @param parents       an array of {@link edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin.NbComponent}
+     *                      objects
      * @param inhibitExcite an array of {@link int} objects
-     * @param name a {@link java.lang.String} object
+     * @param name          a {@link java.lang.String} object
      */
     public NbFunction(double factor, double power, NbComponent[] parents,
                       int[] inhibitExcite, String name) {

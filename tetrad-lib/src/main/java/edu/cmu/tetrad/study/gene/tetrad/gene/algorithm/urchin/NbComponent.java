@@ -60,7 +60,7 @@ public interface NbComponent {
     /**
      * Returns the name.
      *
-     * @return  the name.
+     * @return the name.
      */
     String getName();
 }

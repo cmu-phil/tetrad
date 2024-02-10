@@ -45,11 +45,11 @@ public abstract class AbstractNbComponent implements NbComponent {
     /**
      * Constructs a new component with the given factor, power, parents, and
      *
-     * @param factor the factor
-     * @param power the power
-     * @param parents the parents
+     * @param factor        the factor
+     * @param power         the power
+     * @param parents       the parents
      * @param inhibitExcite the inhibit/excite
-     * @param name the namew
+     * @param name          the namew
      */
     public AbstractNbComponent(double factor, double power,
                                NbComponent[] parents, int[] inhibitExcite, String name) {
@@ -76,7 +76,9 @@ public abstract class AbstractNbComponent implements NbComponent {
         return this.value;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setValue(double level) {
         this.value = level;
     }
@@ -104,7 +106,9 @@ public abstract class AbstractNbComponent implements NbComponent {
         this.name = name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addParent(NbComponent component, int ie) {
         if (getParents() == null) {
             this.setParents(new NbComponent[1]);

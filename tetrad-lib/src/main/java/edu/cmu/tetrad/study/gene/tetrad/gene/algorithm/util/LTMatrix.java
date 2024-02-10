@@ -63,7 +63,7 @@ public class LTMatrix extends BasicLTMatrix {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Casts double x to short and assigns it to element (r,c) This method checks that x can be converted to a short
      * without causing overflow.
      */
@@ -110,7 +110,7 @@ public class LTMatrix extends BasicLTMatrix {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns element (r,c) as a double
      */
     public double getDoubleValue(int r, int c) {

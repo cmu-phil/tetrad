@@ -40,8 +40,8 @@ public class Type1 implements SessionModel, TetradSerializableExcluded {
      * allow a model of type Type1 to be created. SessionNodes wrapping models of other types should not be addable as
      * parents.
      *
-     * @param model1 a {@link edu.cmu.tetrad.session.Type2} object
-     * @param model2 a {@link edu.cmu.tetrad.session.Type3} object
+     * @param model1     a {@link edu.cmu.tetrad.session.Type2} object
+     * @param model2     a {@link edu.cmu.tetrad.session.Type3} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Type1(Type2 model1, Type3 model2, Parameters parameters) {
@@ -57,7 +57,9 @@ public class Type1 implements SessionModel, TetradSerializableExcluded {
                 Type3.serializableInstance(), new Parameters());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         return (o instanceof Type1);
     }
@@ -73,7 +75,7 @@ public class Type1 implements SessionModel, TetradSerializableExcluded {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the session model.
      */
     public void setName(String name) {

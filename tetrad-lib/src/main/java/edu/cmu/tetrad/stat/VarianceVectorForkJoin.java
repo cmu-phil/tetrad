@@ -41,7 +41,7 @@ public class VarianceVectorForkJoin implements Variance {
     /**
      * <p>Constructor for VarianceVectorForkJoin.</p>
      *
-     * @param data an array of {@link float} objects
+     * @param data         an array of {@link float} objects
      * @param numOfThreads a int
      */
     public VarianceVectorForkJoin(float[][] data, int numOfThreads) {
@@ -51,7 +51,9 @@ public class VarianceVectorForkJoin implements Variance {
         this.numOfThreads = (numOfThreads > this.numOfCols) ? this.numOfCols : numOfThreads;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public float[] compute(boolean biasCorrected) {
         float[] means = new float[this.numOfCols];

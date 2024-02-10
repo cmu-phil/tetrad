@@ -166,7 +166,7 @@ public interface LagGraph extends TetradSerializable {
     /**
      * Returns a string representation of the graph, indicating for each factor which lagged factors map into it.
      *
-     * @param base the base name of the factors.
+     * @param base       the base name of the factors.
      * @param numFactors the number of factors.
      */
     void addFactors(String base, int numFactors);
@@ -175,7 +175,7 @@ public interface LagGraph extends TetradSerializable {
      * Sets the location.
      *
      * @param factor the factor.
-     * @param point the point.
+     * @param point  the point.
      */
     void setLocation(String factor, PointXy point);
 

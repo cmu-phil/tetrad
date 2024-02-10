@@ -618,8 +618,7 @@ public class SessionNode implements Node {
         }
 
         // If we're running a simulation, try executing the model.
-        if (this.model instanceof Executable) {
-            Executable executable = (Executable) this.model;
+        if (this.model instanceof Executable executable) {
 
             try {
 
@@ -1006,8 +1005,7 @@ public class SessionNode implements Node {
      * @param param      a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public void putParam(Class modelClass, Parameters param) {
-        if (param instanceof SessionListener) {
-            SessionListener listener = (SessionListener) param;
+        if (param instanceof SessionListener listener) {
             getSessionSupport().addSessionListener(listener);
         }
 
@@ -1032,8 +1030,7 @@ public class SessionNode implements Node {
     public void removeParam(Class modelClass) {
         Object param = this.paramMap.get(modelClass);
 
-        if (param != null && param instanceof SessionListener) {
-            SessionListener listener = (SessionListener) param;
+        if (param != null && param instanceof SessionListener listener) {
             getSessionSupport().removeSessionListener(listener);
         }
 
@@ -1331,7 +1328,6 @@ public class SessionNode implements Node {
             List<Class> remainingParameterTypes
                     = new ArrayList<>(Arrays.asList(parameterTypes));
 
-            loop2:
             for (Class argumentType : argumentTypes) {
                 Class type = findMatchingType(remainingParameterTypes, argumentType);
 
@@ -2098,8 +2094,7 @@ public class SessionNode implements Node {
             for (Class clazz : SessionNode.this.modelClasses) {
                 Object param = getParam(clazz);
 
-                if (param instanceof ExecutionRestarter) {
-                    ExecutionRestarter restarter = (ExecutionRestarter) param;
+                if (param instanceof ExecutionRestarter restarter) {
                     restarter.newExecution();
                 }
             }

@@ -162,7 +162,7 @@ public class BooleanFunction implements TetradSerializable {
      * <p>getParentValues.</p>
      *
      * @param row the row of the table.
-     * @return  the combination of parent values represented by a given row in the table.
+     * @return the combination of parent values represented by a given row in the table.
      */
     public boolean[] getParentValues(int row) {
 

@@ -77,7 +77,9 @@ public final class ManualLagGraph implements LagGraph {
 
     //=============================PUBLIC METHODS=======================//
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addEdge(String factor, LaggedFactor laggedFactor)
             throws IllegalArgumentException {
         this.lagGraph.addEdge(factor, laggedFactor);
@@ -90,7 +92,9 @@ public final class ManualLagGraph implements LagGraph {
         this.lagGraph.clearEdges();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addFactor(String factor) {
         if (!NamingProtocol.isLegalName(factor)) {
             throw new IllegalArgumentException(
@@ -100,22 +104,30 @@ public final class ManualLagGraph implements LagGraph {
         this.lagGraph.addFactor(factor);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean existsFactor(String factor) {
         return this.lagGraph.existsFactor(factor);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean existsEdge(String factor, LaggedFactor laggedFactor) {
         return this.lagGraph.existsEdge(factor, laggedFactor);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public SortedSet getParents(String factor) {
         return this.lagGraph.getParents(factor);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeEdge(String factor, LaggedFactor laggedFactor) {
         this.lagGraph.removeEdge(factor, laggedFactor);
     }
@@ -129,7 +141,9 @@ public final class ManualLagGraph implements LagGraph {
         return this.lagGraph.getMaxLagAllowable();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setMaxLagAllowable(int maxLagAllowable) {
         this.lagGraph.setMaxLagAllowable(maxLagAllowable);
     }
@@ -143,7 +157,9 @@ public final class ManualLagGraph implements LagGraph {
         return this.lagGraph.getMaxLag();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeFactor(String factor) {
         this.lagGraph.removeFactor(factor);
     }
@@ -157,7 +173,9 @@ public final class ManualLagGraph implements LagGraph {
         return this.lagGraph.getConnectivity();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void renameFactor(String oldName, String newName) {
         this.lagGraph.renameFactor(oldName, newName);
     }
@@ -189,17 +207,23 @@ public final class ManualLagGraph implements LagGraph {
         return this.lagGraph.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addFactors(String base, int numFactors) {
         this.lagGraph.addFactors(base, numFactors);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setLocation(String factor, PointXy point) {
         this.lagGraph.setLocation(factor, point);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public PointXy getLocation(String factor) {
         return this.lagGraph.getLocation(factor);
     }

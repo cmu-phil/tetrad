@@ -24,6 +24,7 @@ public class GdistanceRandom {
     private boolean verbose;
 
     //**************CONSTRUCTORS*********************//
+
     /**
      * <p>Constructor for GdistanceRandom.</p>
      *
@@ -76,6 +77,7 @@ public class GdistanceRandom {
     }
 
     //**********Methods for setting values of private variables**************//
+
     /**
      * <p>Setter for the field <code>locationMap</code>.</p>
      *

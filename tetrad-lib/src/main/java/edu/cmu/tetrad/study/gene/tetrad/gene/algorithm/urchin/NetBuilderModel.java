@@ -36,7 +36,7 @@ public class NetBuilderModel {
      * <p>Constructor for NetBuilderModel.</p>
      *
      * @param exogenousInputs an array of {@link double} objects
-     * @param nhours a int
+     * @param nhours          a int
      */
     public NetBuilderModel(double[] exogenousInputs, int nhours) {
 

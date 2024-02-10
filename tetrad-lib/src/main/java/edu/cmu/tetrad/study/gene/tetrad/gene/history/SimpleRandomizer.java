@@ -78,9 +78,9 @@ public class SimpleRandomizer implements GraphInitializer {
     /**
      * <p>Constructor for SimpleRandomizer.</p>
      *
-     * @param indegree a int
-     * @param indegreeType a int
-     * @param mlag a int
+     * @param indegree            a int
+     * @param indegreeType        a int
+     * @param mlag                a int
      * @param percentHousekeeping a double
      */
     public SimpleRandomizer(int indegree, int indegreeType, int mlag,
@@ -128,7 +128,7 @@ public class SimpleRandomizer implements GraphInitializer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Randomizes the graph.
      */
     public void initialize(LagGraph lagGraph) {

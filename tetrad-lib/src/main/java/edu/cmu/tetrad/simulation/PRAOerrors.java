@@ -17,10 +17,11 @@ public final class PRAOerrors {
     //****************CONSTRUCTORS*******************//
     //this constructor makes a PRAOerrors object from an array of error values.
     //make sure the array is storing its values in the correct order, if you use this
+
     /**
      * <p>Constructor for PRAOerrors.</p>
      *
-     * @param input an array of {@link double} objects
+     * @param input   an array of {@link double} objects
      * @param thename a {@link java.lang.String} object
      */
     public PRAOerrors(double[] input, String thename) {
@@ -44,10 +45,11 @@ public final class PRAOerrors {
     }
 
     //method for constructing a mean PRAO from a list of PRAO objects
+
     /**
      * <p>Constructor for PRAOerrors.</p>
      *
-     * @param input a {@link java.util.List} object
+     * @param input   a {@link java.util.List} object
      * @param thename a {@link java.lang.String} object
      */
     public PRAOerrors(List<PRAOerrors> input, String thename) {
@@ -86,6 +88,7 @@ public final class PRAOerrors {
     }
 
     //****************Public Methods******************8//
+
     /**
      * <p>getName.</p>
      *
@@ -141,6 +144,7 @@ public final class PRAOerrors {
     }
 
     //returns a string summarizing all the information
+
     /**
      * <p>allToString.</p>
      *
@@ -152,6 +156,7 @@ public final class PRAOerrors {
     }
 
     //returns an array of the error values
+
     /**
      * <p>toArray.</p>
      *

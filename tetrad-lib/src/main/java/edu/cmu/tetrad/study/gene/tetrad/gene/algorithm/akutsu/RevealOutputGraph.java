@@ -40,10 +40,10 @@ public class RevealOutputGraph implements OutputGraph {
     /**
      * <p>Constructor for RevealOutputGraph.</p>
      *
-     * @param ngenes a int
-     * @param parents an array of {@link int} objects
-     * @param lags an array of {@link int} objects
-     * @param names an array of {@link java.lang.String} objects
+     * @param ngenes    a int
+     * @param parents   an array of {@link int} objects
+     * @param lags      an array of {@link int} objects
+     * @param names     an array of {@link java.lang.String} objects
      * @param graphName a {@link java.lang.String} object
      */
     public RevealOutputGraph(int ngenes, int[][] parents, int[][] lags,
@@ -64,17 +64,23 @@ public class RevealOutputGraph implements OutputGraph {
         return this.ngenes;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int[] getParents(int index) {
         return this.parents[index];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int[] getLags(int index) {
         return this.lags[index];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getNodeName(int index) {
         return this.names[index];
     }

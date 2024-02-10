@@ -35,6 +35,7 @@ public class HsimAutoRun {
     private char delimiter = ',';
 
     //*********Constructors*************//
+
     /**
      * <p>Constructor for HsimAutoRun.</p>
      *
@@ -55,7 +56,7 @@ public class HsimAutoRun {
      * <p>Constructor for HsimAutoRun.</p>
      *
      * @param readfilename a {@link java.lang.String} object
-     * @param delim a char
+     * @param delim        a char
      */
     public HsimAutoRun(String readfilename, char delim) {
         String workingDirectory = System.getProperty("user.dir");
@@ -74,6 +75,7 @@ public class HsimAutoRun {
     }
 
     //***********Public methods*************//
+
     /**
      * <p>run.</p>
      *
@@ -206,6 +208,7 @@ public class HsimAutoRun {
     }
 
     //******* Methods for setting values to private variables****************//
+
     /**
      * <p>Setter for the field <code>verbose</code>.</p>
      *

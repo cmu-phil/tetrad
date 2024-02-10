@@ -42,17 +42,17 @@ public class Vicinity {
     /**
      * <p>Constructor for Vicinity.</p>
      *
-     * @param edges a {@link java.util.List} object
+     * @param edges       a {@link java.util.List} object
      * @param locationMap a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param xLow a int
-     * @param xHigh a int
-     * @param yLow a int
-     * @param yHigh a int
-     * @param zLow a int
-     * @param zHigh a int
-     * @param xDist a double
-     * @param yDist a double
-     * @param zDist a double
+     * @param xLow        a int
+     * @param xHigh       a int
+     * @param yLow        a int
+     * @param yHigh       a int
+     * @param zLow        a int
+     * @param zHigh       a int
+     * @param xDist       a double
+     * @param yDist       a double
+     * @param zDist       a double
      */
     public Vicinity(List<Edge> edges, DataSet locationMap, int xLow, int xHigh, int yLow, int yHigh, int zLow, int zHigh,
                     double xDist, double yDist, double zDist) {
@@ -82,10 +82,11 @@ public class Vicinity {
 
     //chunk basically establishes how quickly the search grows for a nearest edge. It should be small for
     //graphs that are dense in the location space, and large for graphs that are sparse in the location space
+
     /**
      * <p>getVicinity.</p>
      *
-     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @param edge  a {@link edu.cmu.tetrad.graph.Edge} object
      * @param chunk a int
      * @return a {@link java.util.List} object
      */

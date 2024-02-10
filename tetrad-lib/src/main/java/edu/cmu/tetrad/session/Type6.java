@@ -37,8 +37,8 @@ public class Type6 implements SessionModel, TetradSerializableExcluded {
     /**
      * <p>Constructor for Type6.</p>
      *
-     * @param model1 a {@link edu.cmu.tetrad.session.Type7} object
-     * @param model2 a {@link edu.cmu.tetrad.session.Type8} object
+     * @param model1     a {@link edu.cmu.tetrad.session.Type7} object
+     * @param model2     a {@link edu.cmu.tetrad.session.Type8} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Type6(Type7 model1, Type8 model2, Parameters parameters) {
@@ -65,7 +65,7 @@ public class Type6 implements SessionModel, TetradSerializableExcluded {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the session model.
      */
     public void setName(String name) {

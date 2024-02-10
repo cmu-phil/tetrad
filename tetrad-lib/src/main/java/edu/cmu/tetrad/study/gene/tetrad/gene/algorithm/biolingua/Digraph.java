@@ -27,8 +27,8 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.MatrixF;
 import java.io.IOException;
 
 /**
- * Simple implementation of a directed Graph edges are just represented by float values (a zero == no edge) stored in
- * a matrix.
+ * Simple implementation of a directed Graph edges are just represented by float values (a zero == no edge) stored in a
+ * matrix.
  * <p>
  * Two edges of different orientation can exist between two nodes, but no more than one edge of a given orientation can
  * exist between two nodes.
@@ -111,7 +111,7 @@ public class Digraph extends BasicGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets a value of edge between nodes i and j
      */
     public void setEdge(int i, int j, double value) {
@@ -130,7 +130,7 @@ public class Digraph extends BasicGraph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the value of edge between nodes i and j
      */
     public double getEdge(int i, int j) {

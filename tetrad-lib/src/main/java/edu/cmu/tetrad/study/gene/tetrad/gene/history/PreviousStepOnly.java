@@ -39,7 +39,7 @@ public class PreviousStepOnly implements GraphInitializer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Randomizes the graph.
      */
     public void initialize(LagGraph lagGraph) {

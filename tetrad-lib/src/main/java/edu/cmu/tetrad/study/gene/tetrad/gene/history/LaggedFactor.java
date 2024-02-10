@@ -91,13 +91,12 @@ public class LaggedFactor implements Comparable, TetradSerializable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether the given lagged factor is temporally prior to this lagged factor.
      */
     public int compareTo(Object o) {
 
-        if (o instanceof LaggedFactor) {
-            LaggedFactor f = (LaggedFactor) o;
+        if (o instanceof LaggedFactor f) {
             int n = this.factor.compareTo(f.getFactor());
 
             if (n != 0) {
@@ -148,17 +147,16 @@ public class LaggedFactor implements Comparable, TetradSerializable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Two lagged factors are equals just in case their factors are equals and their lags are equal.
      */
     public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
-        if (!(o instanceof LaggedFactor)) {
+        if (!(o instanceof LaggedFactor c)) {
             return false;
         }
-        LaggedFactor c = (LaggedFactor) o;
         return c.getFactor().equals(this.getFactor()) &&
                 c.getLag() == this.getLag();
     }

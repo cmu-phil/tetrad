@@ -54,7 +54,9 @@ public class Type2 implements SessionModel, TetradSerializableExcluded {
         return new Type2(new Parameters());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         return (o instanceof Type2);
     }
@@ -70,7 +72,7 @@ public class Type2 implements SessionModel, TetradSerializableExcluded {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the session model.
      */
     public void setName(String name) {

@@ -37,7 +37,7 @@ public class Type8 implements SessionModel, TetradSerializableExcluded {
     /**
      * <p>Constructor for Type8.</p>
      *
-     * @param model1 a {@link edu.cmu.tetrad.session.Type7} object
+     * @param model1     a {@link edu.cmu.tetrad.session.Type7} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Type8(Type7 model1, Parameters parameters) {
@@ -46,8 +46,8 @@ public class Type8 implements SessionModel, TetradSerializableExcluded {
     /**
      * <p>Constructor for Type8.</p>
      *
-     * @param model1 a {@link edu.cmu.tetrad.session.Type7} object
-     * @param model2 a {@link edu.cmu.tetrad.session.Type9} object
+     * @param model1     a {@link edu.cmu.tetrad.session.Type7} object
+     * @param model2     a {@link edu.cmu.tetrad.session.Type9} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Type8(Type7 model1, Type9 model2, Parameters parameters) {
@@ -73,7 +73,7 @@ public class Type8 implements SessionModel, TetradSerializableExcluded {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the session model.
      */
     public void setName(String name) {

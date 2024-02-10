@@ -64,7 +64,7 @@ public class DishModel implements TetradSerializable {
     /**
      * <p>Constructor for DishModel.</p>
      *
-     * @param numDishes a int
+     * @param numDishes     a int
      * @param dishBumpStDev a double
      */
     public DishModel(int numDishes, double dishBumpStDev) {

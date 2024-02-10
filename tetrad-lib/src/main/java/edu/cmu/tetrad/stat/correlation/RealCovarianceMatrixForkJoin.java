@@ -44,7 +44,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
     /**
      * <p>Constructor for RealCovarianceMatrixForkJoin.</p>
      *
-     * @param data an array of {@link double} objects
+     * @param data         an array of {@link double} objects
      * @param numOfThreads a int
      */
     public RealCovarianceMatrixForkJoin(double[][] data, int numOfThreads) {
@@ -54,7 +54,9 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         this.numOfThreads = (numOfThreads > this.numOfCols) ? this.numOfCols : numOfThreads;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[] computeLowerTriangle(boolean biasCorrected) {
         double[] covarianceMatrix = new double[(this.numOfCols * (this.numOfCols + 1)) / 2];
@@ -68,7 +70,9 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         return covarianceMatrix;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[][] compute(boolean biasCorrected) {
         double[][] covarianceMatrix = new double[this.numOfCols][this.numOfCols];

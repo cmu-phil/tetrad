@@ -128,18 +128,18 @@ public class RBExperiments {
     /**
      * <p>experiment.</p>
      *
-     * @param modelName a {@link java.lang.String} object
-     * @param numCases a int
-     * @param numModels a int
-     * @param numBootstrapSamples a int
-     * @param alpha a double
+     * @param modelName            a {@link java.lang.String} object
+     * @param numCases             a int
+     * @param numModels            a int
+     * @param numBootstrapSamples  a int
+     * @param alpha                a double
      * @param numLatentConfounders a double
-     * @param threshold1 a boolean
-     * @param threshold2 a boolean
-     * @param lower a double
-     * @param upper a double
-     * @param filePath a {@link java.lang.String} object
-     * @param round a int
+     * @param threshold1           a boolean
+     * @param threshold2           a boolean
+     * @param lower                a double
+     * @param upper                a double
+     * @param filePath             a {@link java.lang.String} object
+     * @param round                a int
      */
     public void experiment(String modelName, int numCases, int numModels, int numBootstrapSamples, double alpha,
                            double numLatentConfounders, boolean threshold1, boolean threshold2, double lower, double upper,

@@ -198,7 +198,7 @@ public class BoolSearch {
      * ind=6 the vector will be (1, 1, 0).
      *
      * @param ind a int
-     * @param n a int
+     * @param n   a int
      * @return an array of {@link byte} objects
      */
     public byte[] booleanRepresentation(int ind, int n) {

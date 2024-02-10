@@ -41,9 +41,9 @@ public class ItkPredictorSearch {
     /**
      * <p>Constructor for ItkPredictorSearch.</p>
      *
-     * @param ngenes a int
+     * @param ngenes     a int
      * @param expression an array of {@link int} objects
-     * @param names an array of {@link java.lang.String} objects
+     * @param names      an array of {@link java.lang.String} objects
      */
     public ItkPredictorSearch(int ngenes, int[][] expression, String[] names) {
 
@@ -310,6 +310,7 @@ public class ItkPredictorSearch {
     }
 
     //Returns true of b covers a, false otherwise
+
     /**
      * <p>covered.</p>
      *
@@ -345,8 +346,8 @@ public class ItkPredictorSearch {
      * the perturbation matrix).  It returns true if they do differ and false otherwise.
      *
      * @param gene a int
-     * @param p0 a int
-     * @param p1 a int
+     * @param p0   a int
+     * @param p1   a int
      * @return a boolean
      */
     public boolean differByPerturbation(int gene, int p0, int p1) {
@@ -372,7 +373,7 @@ public class ItkPredictorSearch {
      * ind=6 the vector will be (1, 1, 0).
      *
      * @param ind a int
-     * @param n a int
+     * @param n   a int
      * @return an array of {@link byte} objects
      */
     public byte[] booleanRepresentation(int ind, int n) {

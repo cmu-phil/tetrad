@@ -18,6 +18,7 @@ import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -175,11 +176,11 @@ public class HsimEvalFromData {
             //record all the params, the base error values, and the fsim/hsim mean squared errors
             String latexTable = HsimUtils.makeLatexTable(latexTableArray);
 
-            PrintWriter writer = new PrintWriter("latexTable.txt", "UTF-8");
+            PrintWriter writer = new PrintWriter("latexTable.txt", StandardCharsets.UTF_8);
             writer.println(latexTable);
             writer.close();
 
-            PrintWriter writer2 = new PrintWriter("HvsF-SimulationEvaluation.txt", "UTF-8");
+            PrintWriter writer2 = new PrintWriter("HvsF-SimulationEvaluation.txt", StandardCharsets.UTF_8);
             writer2.println(output);
             writer2.close();
 

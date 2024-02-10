@@ -190,7 +190,7 @@ public class BooleanGlassGeneIm implements SessionModel {
      *
      * @param factor the factor.
      * @param row    the row.
-     * @param value a boolean
+     * @param value  a boolean
      */
     public void setRowValueAt(int factor, int row, boolean value) {
         getBooleanGlassFunction().getSubFunction(factor).setValue(row, value);
@@ -377,7 +377,7 @@ public class BooleanGlassGeneIm implements SessionModel {
      * Sets the error distribution for the given factor to the given distribution. Values for the transcription error
      * for this factor will be drawn from this distribution.
      *
-     * @param factor the factor.
+     * @param factor       the factor.
      * @param distribution the distribution.
      */
     public void setErrorDistribution(int factor, Distribution distribution) {
@@ -438,7 +438,7 @@ public class BooleanGlassGeneIm implements SessionModel {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the session model.
      */
     public void setName(String name) {

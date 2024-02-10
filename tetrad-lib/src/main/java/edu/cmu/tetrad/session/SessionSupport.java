@@ -105,7 +105,7 @@ public class SessionSupport {
      * the session.
      *
      * @param parent a {@link edu.cmu.tetrad.session.SessionNode} object
-     * @param child a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param child  a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void fireParentAdded(SessionNode parent, SessionNode child) {
         SessionEvent event = new SessionEvent(this.source, parent, child,
@@ -119,7 +119,7 @@ public class SessionSupport {
      * the session.
      *
      * @param parent a {@link edu.cmu.tetrad.session.SessionNode} object
-     * @param child a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param child  a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void fireParentRemoved(SessionNode parent, SessionNode child) {
         SessionEvent event = new SessionEvent(this.source, parent, child,

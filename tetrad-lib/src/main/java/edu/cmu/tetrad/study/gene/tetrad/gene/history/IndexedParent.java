@@ -56,7 +56,7 @@ public final class IndexedParent implements TetradSerializable {
      * Constructs a new index parent.
      *
      * @param index a int
-     * @param lag a int
+     * @param lag   a int
      */
     public IndexedParent(int index, int lag) {
 
@@ -103,17 +103,16 @@ public final class IndexedParent implements TetradSerializable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true iff the lags and indices are equal.
      */
     public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
-        if (!(o instanceof IndexedParent)) {
+        if (!(o instanceof IndexedParent c)) {
             return false;
         }
-        IndexedParent c = (IndexedParent) o;
         return c.getIndex() == this.getIndex() && c.getLag() == this.getLag();
     }
 

@@ -12,11 +12,17 @@ import java.io.ObjectInputStream;
  * @version $Id: $Id
  */
 public class LagGraphParams {
-    /** Constant <code>CONSTANT=0</code> */
+    /**
+     * Constant <code>CONSTANT=0</code>
+     */
     public static final int CONSTANT = 0;
-    /** Constant <code>MAX=1</code> */
+    /**
+     * Constant <code>MAX=1</code>
+     */
     public static final int MAX = 1;
-    /** Constant <code>MEAN=2</code> */
+    /**
+     * Constant <code>MEAN=2</code>
+     */
     public static final int MEAN = 2;
     private static final long serialVersionUID = 23L;
     private final Parameters parameters;
