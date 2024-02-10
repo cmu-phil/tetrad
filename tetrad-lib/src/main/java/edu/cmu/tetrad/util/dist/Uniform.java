@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 
 /**
@@ -35,19 +36,16 @@ import java.text.NumberFormat;
  * @version $Id: $Id
  */
 public class Uniform implements Distribution {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The lower bound of the range from which numbers are drawn uniformly.
-     *
-     * @serial
      */
     private double a;
 
     /**
      * The upper bound of the range from which numbers are drawn uniformly.
-     *
-     * @serial
      */
     private double b;
 

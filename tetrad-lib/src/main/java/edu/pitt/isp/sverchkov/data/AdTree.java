@@ -43,9 +43,16 @@ import java.util.*;
  */
 public class AdTree<A, V> extends AdTreeHelper {
 
+    /** The attribute lookup. */
     private final Map<A, Integer> attributeLookup;
+
+    /** The attributes. */
     private final List<A> attributes;
+
+    /** The values. */
     private final List<VHelper> values;
+
+    // The root of the tree
     private final CountNode root;
 
     /**

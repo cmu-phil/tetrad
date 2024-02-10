@@ -23,6 +23,8 @@ package edu.cmu.tetrad.util.dist;
 
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
+
 /**
  * Wraps a chi square distribution for purposes of drawing random samples. Methods are provided to allow parameters to
  * be manipulated in an interface.
@@ -31,8 +33,12 @@ import edu.cmu.tetrad.util.RandomUtil;
  * @version $Id: $Id
  */
 public class Poisson implements Distribution {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The mean of the Poisson distribution.
+     */
     private double mean;
 
     private Poisson() {

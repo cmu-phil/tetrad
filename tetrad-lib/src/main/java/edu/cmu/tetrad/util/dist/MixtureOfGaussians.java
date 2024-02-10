@@ -23,6 +23,8 @@ package edu.cmu.tetrad.util.dist;
 
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
+
 /**
  * Wraps a chi square distribution for purposes of drawing random samples. Methods are provided to allow parameters to
  * be manipulated in an interface.
@@ -31,12 +33,32 @@ import edu.cmu.tetrad.util.RandomUtil;
  * @version $Id: $Id
  */
 public class MixtureOfGaussians implements Distribution {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The mixing parameter.
+     */
     private double a;
+
+    /**
+     * The mean of the first Gaussian.
+     */
     private double mean1;
+
+    /**
+     * The standard deviation of the first Gaussian.
+     */
     private double sd1;
+
+    /**
+     * The mean of the second Gaussian.
+     */
     private double mean2;
+
+    /**
+     * The standard deviation of the second Gaussian.
+     */
     private double sd2;
 
     /**

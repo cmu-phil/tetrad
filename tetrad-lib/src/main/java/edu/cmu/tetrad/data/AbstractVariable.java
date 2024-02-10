@@ -23,6 +23,8 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NamingProtocol;
 
+import java.io.Serial;
+
 /**
  * Base class for variable specifications for DataSet. These objects govern the types of values which may be recorded in
  * a Column of data and provide information about the interpretation of these values. Variables of every type must
@@ -35,6 +37,7 @@ import edu.cmu.tetrad.util.NamingProtocol;
  */
 public abstract class AbstractVariable implements Variable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
