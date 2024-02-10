@@ -172,13 +172,14 @@ public final class SepsetMapDci {
         return this.sepsets.keySet();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
-        if (!(o instanceof SepsetMapDci)) {
+        if (!(o instanceof SepsetMapDci _sepset)) {
             return false;
         }
 
-        SepsetMapDci _sepset = (SepsetMapDci) o;
         return this.sepsets.equals(_sepset.sepsets) && this.sepsetSets.equals(_sepset.sepsetSets);
     }
 

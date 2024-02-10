@@ -64,7 +64,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      * <p>Constructor for IndTestFisherZPercentIndependent.</p>
      *
      * @param dataSets a {@link java.util.List} object
-     * @param alpha a double
+     * @param alpha    a double
      */
     public IndTestFisherZPercentIndependent(List<DataSet> dataSets, double alpha) {
         this.dataSets = dataSets;
@@ -97,7 +97,9 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
     //==========================PUBLIC METHODS=============================//
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
@@ -105,8 +107,8 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     /**
      * {@inheritDoc}
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
      * @param _z a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
@@ -184,7 +186,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -211,7 +213,9 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      */
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean determines(List z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
@@ -219,8 +223,8 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     /**
      * <p>Getter for the field <code>data</code>.</p>
      *
-     * @throws java.lang.UnsupportedOperationException
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.lang.UnsupportedOperationException
      */
     public DataSet getData() {
         return DataTransforms.concatenate(this.dataSets);
@@ -241,13 +245,17 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         return new CovarianceMatrix(DataTransforms.concatenate(this.dataSets));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<DataSet> getDataSets() {
         return this.dataSets;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getSampleSize() {
         return this.dataSets.get(0).getNumRows();
@@ -308,7 +316,9 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         return this.verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

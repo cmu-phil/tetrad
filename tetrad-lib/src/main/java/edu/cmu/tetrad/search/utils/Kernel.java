@@ -45,7 +45,7 @@ public interface Kernel {
      * Sets bandwidth from data using default method
      *
      * @param dataset a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node    a {@link edu.cmu.tetrad.graph.Node} object
      */
     void setDefaultBw(DataSet dataset, Node node);
 

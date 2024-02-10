@@ -611,8 +611,7 @@ public class GraphoidAxioms {
         }
 
         public boolean equals(Object o) {
-            if (!(o instanceof GraphoidIndFact)) return false;
-            GraphoidIndFact _fact = (GraphoidIndFact) o;
+            if (!(o instanceof GraphoidIndFact _fact)) return false;
             return X.equals(_fact.X) && Y.equals(_fact.Y) && Z.equals(_fact.Z);
         }
 

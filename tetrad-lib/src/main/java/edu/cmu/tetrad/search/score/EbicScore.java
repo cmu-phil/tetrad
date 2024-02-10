@@ -112,7 +112,7 @@ public class EbicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the score of the node at index y, given its parents.
      */
     @Override
@@ -163,8 +163,9 @@ public class EbicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a judgement for FGES of whether the given bump implies an effect edge.
+     *
      * @see Fges
      */
     @Override
@@ -174,7 +175,7 @@ public class EbicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables for this score.
      */
     @Override
@@ -184,8 +185,9 @@ public class EbicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns an estimate of max degree of the graph for some algorithms.
+     *
      * @see Fges
      * @see MagSemBicScore
      */
@@ -196,7 +198,7 @@ public class EbicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Return a judgment of whether the variable in z determine y exactly.
      */
     @Override

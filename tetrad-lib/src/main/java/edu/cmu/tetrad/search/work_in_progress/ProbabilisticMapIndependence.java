@@ -111,13 +111,17 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
         this.H = new HashMap<>();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         List<Node> z = new ArrayList<>(_z);
@@ -128,7 +132,9 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
         return checkIndependence(x, y, nodes);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Node... z) {
         double pInd = probConstraint(BCInference.OP.independent, x, y, z);
@@ -156,9 +162,9 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
      * <p>probConstraint.</p>
      *
      * @param op a {@link edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference.OP} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z an array of {@link edu.cmu.tetrad.graph.Node} objects
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z  an array of {@link edu.cmu.tetrad.graph.Node} objects
      * @return a double
      */
     public double probConstraint(BCInference.OP op, Node x, Node y, Node[] z) {
@@ -173,13 +179,17 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
         return bci.probConstraint(op, _x, _y, _z);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getVariables() {
         return nodes;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Node getVariable(String name) {
         for (Node node : nodes) {
@@ -189,25 +199,33 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean determines(Set<Node> z, Node y) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getAlpha() {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getData() {
         return data;
@@ -239,13 +257,17 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
         return this.posterior;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

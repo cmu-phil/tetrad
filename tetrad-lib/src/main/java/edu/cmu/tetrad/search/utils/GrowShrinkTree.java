@@ -27,7 +27,7 @@ public class GrowShrinkTree {
      *
      * @param score a {@link edu.cmu.tetrad.search.score.Score} object
      * @param index a {@link java.util.Map} object
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
      */
     public GrowShrinkTree(Score score, Map<Node, Integer> index, Node node) {
         this.score = score;
@@ -44,7 +44,7 @@ public class GrowShrinkTree {
      * <p>trace.</p>
      *
      * @param prefix a {@link java.util.Set} object
-     * @param all a {@link java.util.Set} object
+     * @param all    a {@link java.util.Set} object
      * @return a double
      */
     public double trace(Set<Node> prefix, Set<Node> all) {
@@ -58,8 +58,8 @@ public class GrowShrinkTree {
     /**
      * <p>trace.</p>
      *
-     * @param prefix a {@link java.util.Set} object
-     * @param all a {@link java.util.Set} object
+     * @param prefix  a {@link java.util.Set} object
+     * @param all     a {@link java.util.Set} object
      * @param parents a {@link java.util.Set} object
      * @return a double
      */
@@ -179,7 +179,7 @@ public class GrowShrinkTree {
     /**
      * <p>setKnowledge.</p>
      *
-     * @param required a {@link java.util.List} object
+     * @param required  a {@link java.util.List} object
      * @param forbidden a {@link java.util.List} object
      */
     public void setKnowledge(List<Node> required, List<Node> forbidden) {

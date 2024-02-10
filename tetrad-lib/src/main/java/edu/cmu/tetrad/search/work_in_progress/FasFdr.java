@@ -175,32 +175,40 @@ public class FasFdr implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output will be printed.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long getElapsedTime() {
         return 0;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getNodes() {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setOut(PrintStream out) {
         this.out = out;
@@ -208,7 +216,7 @@ public class FasFdr implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the depth of the search--i.e., the maximum number of variables conditioned on for any conditional
      * independence test.
      */
@@ -223,11 +231,11 @@ public class FasFdr implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the knowledge to be used in the search.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     private Map<Node, Set<Node>> emptyGraph(List<Node> nodes) {

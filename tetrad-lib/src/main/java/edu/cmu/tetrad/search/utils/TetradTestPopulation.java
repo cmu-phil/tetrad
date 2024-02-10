@@ -80,7 +80,7 @@ public class TetradTestPopulation implements TetradTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Population scores: assumes CorrelationMatrix is the population covariance CorrelationMatrix. Due to numerical
      * rounding problems, we need a parameter epsilon to control it. Nothing here is implemented for discrete data
      * (yet).
@@ -114,12 +114,16 @@ public class TetradTestPopulation implements TetradTest {
         return count;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean tetradScore3(int v1, int v2, int v3, int v4) {
         return tetradScore(v1, v2, v3, v4) == 3;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean tetradScore1(int v1, int v2, int v3, int v4) {
         if (tetradScore(v1, v2, v3, v4) != 1) {
             return false;
@@ -127,7 +131,9 @@ public class TetradTestPopulation implements TetradTest {
         return this.bvalues[2];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean tetradHolds(int v1, int v2, int v3, int v4) {
         double p_12 = this.CorrelationMatrix.getValue(v1, v2);
         double p_13 = this.CorrelationMatrix.getValue(v1, v3);
@@ -137,24 +143,32 @@ public class TetradTestPopulation implements TetradTest {
         return this.bvalues[0];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean oneFactorTest(int a, int b, int c, int d) {
         return tetradScore3(a, b, c, d);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean oneFactorTest(int a, int b, int c, int d, int e) {
         return tetradScore3(a, b, c, d) && tetradScore3(a, b, c, e) &&
                 tetradScore3(b, c, d, e);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int a, int b, int c, int d) {
         tetradScore(a, b, c, d);
         return this.bvalues[2];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int a, int b, int c, int d, int e) {
         tetradScore(a, b, d, e);
 
@@ -172,7 +186,9 @@ public class TetradTestPopulation implements TetradTest {
         return this.bvalues[2];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int a, int b, int c, int d, int e, int f) {
         if (!twoFactorTest(a, b, c, d, e)) {
             return false;
@@ -185,7 +201,9 @@ public class TetradTestPopulation implements TetradTest {
         return twoFactorTest(a, b, c, e, f);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double tetradPValue(int v1, int v2, int v3, int v4) {
         return -1;
     }
@@ -199,7 +217,9 @@ public class TetradTestPopulation implements TetradTest {
         return 0;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setSignificance(double sig) {
         throw new UnsupportedOperationException();
     }

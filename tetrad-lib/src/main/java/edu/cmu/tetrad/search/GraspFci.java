@@ -54,11 +54,11 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  *
  * @author josephramsey
  * @author bryanandrews
+ * @version $Id: $Id
  * @see Grasp
  * @see GFci
  * @see FciOrient
  * @see Knowledge
- * @version $Id: $Id
  */
 public final class GraspFci implements IGraphSearch {
 

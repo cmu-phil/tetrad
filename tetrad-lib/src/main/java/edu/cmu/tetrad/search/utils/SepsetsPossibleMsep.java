@@ -39,9 +39,9 @@ import java.util.Set;
  * the Sepset map, for the case where possible msep sets are required.</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see SepsetProducer
  * @see SepsetMap
- * @version $Id: $Id
  */
 public class SepsetsPossibleMsep implements SepsetProducer {
     private final Graph graph;
@@ -55,10 +55,10 @@ public class SepsetsPossibleMsep implements SepsetProducer {
     /**
      * <p>Constructor for SepsetsPossibleMsep.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
-     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
-     * @param depth a int
+     * @param graph         a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param test          a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param knowledge     a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param depth         a int
      * @param maxPathLength a int
      */
     public SepsetsPossibleMsep(Graph graph, IndependenceTest test, Knowledge knowledge,
@@ -72,7 +72,7 @@ public class SepsetsPossibleMsep implements SepsetProducer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
     public Set<Node> getSepset(Node i, Node k) {
@@ -85,19 +85,25 @@ public class SepsetsPossibleMsep implements SepsetProducer {
         return condSet;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
         Set<Node> sepset = getSepset(i, k);
         return sepset != null && !sepset.contains(j);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getScore() {
         return -(this.result.getPValue() - this.test.getAlpha());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getVariables() {
         return this.test.getVariables();
@@ -112,12 +118,16 @@ public class SepsetsPossibleMsep implements SepsetProducer {
         return this.verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isIndependent(Node d, Node c, Set<Node> path) {
         IndependenceResult result = this.test.checkIndependence(d, c, path);

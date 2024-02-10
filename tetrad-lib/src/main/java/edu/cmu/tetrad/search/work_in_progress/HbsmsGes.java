@@ -59,7 +59,7 @@ public final class HbsmsGes implements Hbsms {
      * <p>Constructor for HbsmsGes.</p>
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param data  a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public HbsmsGes(Graph graph, DataSet data) {
         if (graph == null) throw new NullPointerException("Graph not specified.");
@@ -212,7 +212,9 @@ public final class HbsmsGes implements Hbsms {
         return this.newSemIm;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setHighPValueAlpha(double highPValueAlpha) {
     }
 
@@ -637,12 +639,16 @@ public final class HbsmsGes implements Hbsms {
         return this.alpha;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setBeamWidth(int beamWidth) {
 //        if (beamWidth < 1) throw new IllegalArgumentException();
         // Do nothing. We don't care about beam width.
@@ -657,9 +663,11 @@ public final class HbsmsGes implements Hbsms {
         return this.knowledge;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
@@ -694,8 +702,7 @@ public final class HbsmsGes implements Hbsms {
 
         public boolean equals(Object o) {
             if (o == null) return false;
-            if (!(o instanceof GraphWithPValue)) return false;
-            GraphWithPValue p = (GraphWithPValue) o;
+            if (!(o instanceof GraphWithPValue p)) return false;
             return (p.graph.equals(this.graph));
         }
     }

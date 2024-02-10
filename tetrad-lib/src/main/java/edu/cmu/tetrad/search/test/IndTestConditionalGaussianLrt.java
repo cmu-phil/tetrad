@@ -84,21 +84,23 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         this.alpha = alpha;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns and independence result that states whether x _||_y | z and what the p-value of the test is.
      *
-     * @see IndependenceResult
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
      * @param _z a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (this.facts.containsKey(new IndependenceFact(x, y, _z))) {
@@ -180,7 +182,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if y is determined the variable in z.
      */
     public boolean determines(List<Node> z, Node y) {
@@ -198,7 +200,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
@@ -226,7 +228,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true iff verbose output should be printed.
      */
     @Override
@@ -236,7 +238,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output should be printed.
      */
     @Override

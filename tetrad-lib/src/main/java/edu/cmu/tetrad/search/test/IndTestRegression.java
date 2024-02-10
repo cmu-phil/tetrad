@@ -60,13 +60,12 @@ public final class IndTestRegression implements IndependenceTest {
     private final List<Node> variables;
     // The data set.
     private final DataSet dataSet;
+    // A cache of results for independence facts.
+    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
     // The significance level of the independence tests.
     private double alpha;
     // The value of the Fisher's Z statistic associated with the las calculated partial correlation.
     private boolean verbose;
-
-    // A cache of results for independence facts.
-    private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation matrix implied by the
@@ -89,7 +88,7 @@ public final class IndTestRegression implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new IndTestCramerT instance for a subset of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -98,11 +97,11 @@ public final class IndTestRegression implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
-     * @param xVar a {@link edu.cmu.tetrad.graph.Node} object
-     * @param yVar a {@link edu.cmu.tetrad.graph.Node} object
+     * @param xVar  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param yVar  a {@link edu.cmu.tetrad.graph.Node} object
      * @param zList a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
@@ -175,7 +174,7 @@ public final class IndTestRegression implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -208,7 +207,9 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {
             throw new NullPointerException();
@@ -296,7 +297,7 @@ public final class IndTestRegression implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether the test prints verbose output.
      */
     public void setVerbose(boolean verbose) {

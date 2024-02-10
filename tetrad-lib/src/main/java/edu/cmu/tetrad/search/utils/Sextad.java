@@ -117,12 +117,11 @@ public class Sextad implements TetradSerializable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a judgment of equality with another Sextad instance.
      */
     public boolean equals(Object o) {
-        if (!(o instanceof Sextad)) return false;
-        Sextad sextad = (Sextad) o;
+        if (!(o instanceof Sextad sextad)) return false;
 
         boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||
                 this.i == sextad.i && this.j == sextad.k && this.k == sextad.j ||

@@ -111,7 +111,9 @@ public enum BpcTestType implements TetradSerializable {
      */
     GAP;
 
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     private static final long serialVersionUID = 23L;
 
     /**

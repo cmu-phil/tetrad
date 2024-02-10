@@ -258,7 +258,7 @@ public class DMSearch {
 
         Graph pattern = new EdgeListGraph();
 
-        if (useGES == true) {
+        if (useGES) {
             Fges ges = new Fges(new SemBicScore(cov));
 
             pattern = recursiveGES(pattern, knowledge, this.gesDiscount, getMinDepth(), data, inputString);
@@ -307,9 +307,9 @@ public class DMSearch {
     /**
      * <p>applyDmSearch.</p>
      *
-     * @param pattern a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param pattern     a {@link edu.cmu.tetrad.graph.Graph} object
      * @param inputString a {@link java.util.Set} object
-     * @param penalty a double
+     * @param penalty     a double
      * @return a {@link edu.cmu.tetrad.search.work_in_progress.DMSearch.LatentStructure} object
      */
     public LatentStructure applyDmSearch(Graph pattern, Set<String> inputString, double penalty) {
@@ -772,7 +772,7 @@ public class DMSearch {
             System.out.println("outputsLatentEffect.first()");
             System.out.println(outputsLatentEffect.first());
         }
-        if (testResult == true) {
+        if (testResult) {
             structure.latentEffects.get(latent).remove(latentEffect);
             structure.inputs.get(latentEffect).addAll(inputsLatent);
         }
@@ -812,7 +812,9 @@ public class DMSearch {
         return (false);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);

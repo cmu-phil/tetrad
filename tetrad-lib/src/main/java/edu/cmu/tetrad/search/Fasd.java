@@ -44,9 +44,9 @@ import java.util.*;
  *
  * @author peterspirtes
  * @author josephramsey.
+ * @version $Id: $Id
  * @see Fas
  * @see Knowledge
- * @version $Id: $Id
  */
 public class Fasd implements IFas {
 
@@ -147,7 +147,7 @@ public class Fasd implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the maximum number of variables conditioned on in any test.
      */
     public void setDepth(int depth) {
@@ -161,7 +161,7 @@ public class Fasd implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the knowledge to be used in the search.
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -210,7 +210,7 @@ public class Fasd implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output will be printed.
      */
     public void setVerbose(boolean verbose) {
@@ -219,7 +219,7 @@ public class Fasd implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the elapsed time.
      */
     @Override
@@ -229,7 +229,7 @@ public class Fasd implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the nodes being searched over.
      */
     @Override
@@ -239,7 +239,7 @@ public class Fasd implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns an empty list. Not used.
      */
     @Override
@@ -249,7 +249,7 @@ public class Fasd implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the output to send prints to.
      */
     @Override

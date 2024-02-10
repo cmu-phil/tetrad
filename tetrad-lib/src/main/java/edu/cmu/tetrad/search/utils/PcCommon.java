@@ -79,10 +79,10 @@ public final class PcCommon implements IGraphSearch {
      *
      * @param conflictRule The conflict rule to use.
      * @param graph        The graph to orient.
+     * @param x            a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y            a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z            a {@link edu.cmu.tetrad.graph.Node} object
      * @see PcCommon.ConflictRule
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link edu.cmu.tetrad.graph.Node} object
      */
     public static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph) {
         if (conflictRule == ConflictRule.PRIORITIZE_EXISTING) {

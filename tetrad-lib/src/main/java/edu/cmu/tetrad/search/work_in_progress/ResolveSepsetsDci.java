@@ -48,11 +48,11 @@ public final class ResolveSepsetsDci {
      * separations and associations. resolvedIndependent and resolvedDependent keep up with the number resolved to check
      * later against the truth
      *
-     * @param sepsets a {@link java.util.List} object
-     * @param independenceTests a {@link java.util.List} object
-     * @param method a {@link edu.cmu.tetrad.search.work_in_progress.ResolveSepsetsDci.Method} object
+     * @param sepsets             a {@link java.util.List} object
+     * @param independenceTests   a {@link java.util.List} object
+     * @param method              a {@link edu.cmu.tetrad.search.work_in_progress.ResolveSepsetsDci.Method} object
      * @param resolvedIndependent a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
-     * @param resolvedDependent a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
+     * @param resolvedDependent   a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
      * @return a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
      */
     public static SepsetMapDci resolveSepsets(List<SepsetMapDci> sepsets, List<IndependenceTest> independenceTests,
@@ -227,11 +227,11 @@ public final class ResolveSepsetsDci {
     /**
      * Tests for independence using one of the pooled methods
      *
-     * @param method a {@link edu.cmu.tetrad.search.work_in_progress.ResolveSepsetsDci.Method} object
+     * @param method            a {@link edu.cmu.tetrad.search.work_in_progress.ResolveSepsetsDci.Method} object
      * @param independenceTests a {@link java.util.List} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param condSet a {@link java.util.Set} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
     public static boolean isIndependentPooled(Method method, List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
@@ -270,9 +270,9 @@ public final class ResolveSepsetsDci {
      * See R. A. Fisher. Statistical Methods for Research Workers. Oliver and Boyd, 11th edition, 1950.
      *
      * @param independenceTests a {@link java.util.List} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param condSet a {@link java.util.Set} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
     public static boolean isIndependentPooledFisher(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
@@ -295,9 +295,9 @@ public final class ResolveSepsetsDci {
      * Eliminates from considerations independence tests that cannot be evaluated (due to missing variables mainly).
      *
      * @param independenceTests a {@link java.util.List} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param condSet a {@link java.util.Set} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
     public static boolean isIndependentPooledFisher2(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
@@ -325,9 +325,9 @@ public final class ResolveSepsetsDci {
      * See L. H. C. Tippett. The Method of Statistics. Williams and Norgate, 1st edition, 1950.
      *
      * @param independenceTests a {@link java.util.List} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param condSet a {@link java.util.Set} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
     public static boolean isIndependentPooledTippett(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
@@ -359,10 +359,10 @@ public final class ResolveSepsetsDci {
      * I don't have a reference for this but its basically in between Tippett and Worsley and Friston.
      *
      * @param independenceTests a {@link java.util.List} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param condSet a {@link java.util.Set} object
-     * @param r a int
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
+     * @param r                 a int
      * @return a boolean
      */
     public static boolean isIndependentPooledWilkinson(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet, int r) {
@@ -384,9 +384,9 @@ public final class ResolveSepsetsDci {
      * See K. J. Worsely and K. J. Friston. A test for conjunction. Statistics and Probability Letters 2000.
      *
      * @param independenceTests a {@link java.util.List} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param condSet a {@link java.util.Set} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
     public static boolean isIndependentPooledWorsleyFriston(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
@@ -418,9 +418,9 @@ public final class ResolveSepsetsDci {
      * Adjustment During Army Life. Princeton University Press, 1949.
      *
      * @param independenceTests a {@link java.util.List} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param condSet a {@link java.util.Set} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
     public static boolean isIndependentPooledStouffer(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
@@ -445,9 +445,9 @@ public final class ResolveSepsetsDci {
      * Symposium on Optimizing Method in Statistics, pages 345-366. Academic Press, 1979.
      *
      * @param independenceTests a {@link java.util.List} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param condSet a {@link java.util.Set} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
     public static boolean isIndependentPooledMudholkerGeorge(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
@@ -473,9 +473,9 @@ public final class ResolveSepsetsDci {
      * The same as isIndepenentPooledMudholkerGeoerge, except that only available independence tests are used.
      *
      * @param independenceTests a {@link java.util.List} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param condSet a {@link java.util.Set} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
     public static boolean isIndependentPooledMudholkerGeorge2(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
@@ -494,9 +494,9 @@ public final class ResolveSepsetsDci {
      * Checks independence from pooled samples by taking the average p value
      *
      * @param independenceTests a {@link java.util.List} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param condSet a {@link java.util.Set} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
     public static boolean isIndependentPooledAverage(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
@@ -563,9 +563,9 @@ public final class ResolveSepsetsDci {
      * TEST
      *
      * @param independenceTests a {@link java.util.List} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param condSet a {@link java.util.Set} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
     public static boolean isIndependentPooledAverageTest(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {
@@ -593,9 +593,9 @@ public final class ResolveSepsetsDci {
      * Checks independence from pooled samples by randomly selecting a p value
      *
      * @param independenceTests a {@link java.util.List} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param condSet a {@link java.util.Set} object
+     * @param x                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y                 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param condSet           a {@link java.util.Set} object
      * @return a boolean
      */
     public static boolean isIndependentPooledRandom(List<IndependenceTest> independenceTests, Node x, Node y, Set<Node> condSet) {

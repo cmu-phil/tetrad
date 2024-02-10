@@ -63,8 +63,8 @@ public final class HbsmsBeam implements Hbsms {
     /**
      * <p>Constructor for HbsmsBeam.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param data      a {@link edu.cmu.tetrad.data.DataSet} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public HbsmsBeam(Graph graph, DataSet data, Knowledge knowledge) {
@@ -80,8 +80,8 @@ public final class HbsmsBeam implements Hbsms {
     /**
      * <p>Constructor for HbsmsBeam.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param cov a {@link edu.cmu.tetrad.data.CovarianceMatrix} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param cov       a {@link edu.cmu.tetrad.data.CovarianceMatrix} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public HbsmsBeam(Graph graph, CovarianceMatrix cov, Knowledge knowledge) {
@@ -459,7 +459,9 @@ public final class HbsmsBeam implements Hbsms {
         return this.highPValueAlpha;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setHighPValueAlpha(double highPValueAlpha) {
         this.highPValueAlpha = highPValueAlpha;
     }
@@ -497,12 +499,16 @@ public final class HbsmsBeam implements Hbsms {
         return this.alpha;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setBeamWidth(int beamWidth) {
         if (beamWidth < 1) throw new IllegalArgumentException();
         this.beamWidth = beamWidth;
@@ -517,7 +523,9 @@ public final class HbsmsBeam implements Hbsms {
         return this.knowledge;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
 

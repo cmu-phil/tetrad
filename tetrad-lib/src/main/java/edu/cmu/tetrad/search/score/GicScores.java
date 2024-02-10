@@ -117,7 +117,7 @@ public class GicScores implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Calculates the sample likelihood and BIC score for index i given its parents in a simple SEM model.
      */
     @Override
@@ -220,7 +220,7 @@ public class GicScores implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if an edge with this bump is an effect edge.
      */
     @Override
@@ -257,7 +257,7 @@ public class GicScores implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables of the dataset.
      */
     @Override
@@ -280,7 +280,7 @@ public class GicScores implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the max degree of the graph for some algorithms.
      */
     @Override
@@ -290,7 +290,7 @@ public class GicScores implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a judgment of whether the variable in z determine y exactly.
      */
     @Override

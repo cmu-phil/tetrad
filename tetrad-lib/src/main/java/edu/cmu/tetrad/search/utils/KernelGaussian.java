@@ -70,7 +70,7 @@ public final class KernelGaussian implements Kernel {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Evaluates the kernel at two given points
      */
     public double eval(double i, double j) {
@@ -79,7 +79,7 @@ public final class KernelGaussian implements Kernel {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Default setting of bandwidth based on median distance heuristic
      */
     public void setDefaultBw(DataSet dataset, Node node) {

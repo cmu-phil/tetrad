@@ -52,9 +52,9 @@ import java.util.Set;
  * This class is not configured to respect knowledge of forbidden and required edges.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see FgesMb
  * @see PcMb
- * @version $Id: $Id
  */
 public class GrowShrink implements IMbSearch {
 
@@ -78,7 +78,7 @@ public class GrowShrink implements IMbSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Finds the Markov blanket of the given target.
      */
     public Set<Node> findMb(Node target) {
@@ -116,8 +116,8 @@ public class GrowShrink implements IMbSearch {
     /**
      * <p>getNumIndependenceTests.</p>
      *
-     * @throws java.lang.UnsupportedOperationException Since independence tests are not counted.
      * @return a int
+     * @throws java.lang.UnsupportedOperationException Since independence tests are not counted.
      */
     public int getNumIndependenceTests() {
         throw new UnsupportedOperationException("Independence tests are not counted in the algorithm.");

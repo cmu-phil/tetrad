@@ -74,14 +74,16 @@ public final class IndTestMulti implements IndependenceTest {
         this.method = method;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
@@ -117,7 +119,9 @@ public final class IndTestMulti implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
@@ -132,7 +136,9 @@ public final class IndTestMulti implements IndependenceTest {
         return this.variables;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
@@ -140,8 +146,8 @@ public final class IndTestMulti implements IndependenceTest {
     /**
      * <p>getData.</p>
      *
-     * @throws javax.help.UnsupportedOperationException Method not implemented.
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws javax.help.UnsupportedOperationException Method not implemented.
      */
     public DataSet getData() {
         throw new UnsupportedOperationException();
@@ -158,7 +164,7 @@ public final class IndTestMulti implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if the test prints verbose output.
      */
     @Override
@@ -168,7 +174,7 @@ public final class IndTestMulti implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether this test will print verbose output.
      */
     @Override

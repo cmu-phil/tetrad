@@ -115,7 +115,7 @@ public class PossibleMsepFci {
     /**
      * <p>Getter for the field <code>sepset</code>.</p>
      *
-     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test  a {@link edu.cmu.tetrad.search.IndependenceTest} object
      * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
      * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
      * @return a {@link java.util.Set} object
@@ -168,7 +168,7 @@ public class PossibleMsepFci {
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**

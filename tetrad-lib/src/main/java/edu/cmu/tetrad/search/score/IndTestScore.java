@@ -39,8 +39,8 @@ import java.util.List;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
- * @see IndependenceTest
  * @version $Id: $Id
+ * @see IndependenceTest
  */
 public class IndTestScore implements Score {
     // The independence test.
@@ -81,7 +81,7 @@ public class IndTestScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a "score difference", which amounts to a conditional local scoring criterion results. Only difference
      * methods is implemented, since the other methods don't make sense here.
      */
@@ -94,24 +94,26 @@ public class IndTestScore implements Score {
     /**
      * <p>localScore.</p>
      *
-     * @throws java.lang.UnsupportedOperationException if called.
-     * @param i a int
+     * @param i      a int
      * @param parent a int
      * @return a double
+     * @throws java.lang.UnsupportedOperationException if called.
      */
     public double localScore(int i, int parent) {
         throw new UnsupportedOperationException();
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double localScore(int i) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if the edge with the given bump is an effect edge.
      */
     @Override
@@ -148,7 +150,7 @@ public class IndTestScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the list of variables.
      */
     @Override
@@ -167,7 +169,7 @@ public class IndTestScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the maximum degree, which is set to 1000.
      */
     @Override
@@ -177,7 +179,7 @@ public class IndTestScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the 'determines' judgment from the first score.
      */
     @Override

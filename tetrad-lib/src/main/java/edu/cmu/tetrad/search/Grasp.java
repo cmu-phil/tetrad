@@ -47,11 +47,11 @@ import static java.util.Collections.shuffle;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fges
  * @see Boss
  * @see Sp
  * @see Knowledge
- * @version $Id: $Id
  */
 public class Grasp {
     // The variables to be permuted.

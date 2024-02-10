@@ -95,7 +95,7 @@ public final class TetradTestDiscrete implements TetradTest {
      * <p>Constructor for TetradTestDiscrete.</p>
      *
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param sig a double
+     * @param sig     a double
      */
     public TetradTestDiscrete(DataSet dataSet, double sig) {
         this.dataSet = dataSet;
@@ -244,12 +244,16 @@ public final class TetradTestDiscrete implements TetradTest {
         return this.sig;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setSignificance(double sig) {
         this.sig = sig;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int tetradScore(int i, int j, int k, int l) {
         if (!oneFactorTest(i, j, k, l)) {
             twoFactorTest(i, l, j, k);
@@ -295,7 +299,7 @@ public final class TetradTestDiscrete implements TetradTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Tests the tetrad (v1, v3) x (v2, v4) = (v1, v4) x (v2, v3), and only that.
      */
     public boolean tetradScore1(int v1, int v2, int v3, int v4) {
@@ -307,20 +311,24 @@ public final class TetradTestDiscrete implements TetradTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Tests if all tetrad constraints hold
      */
     public boolean tetradScore3(int v1, int v2, int v3, int v4) {
         return oneFactorTest(v1, v2, v3, v4);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double tetradPValue(int v1, int v2, int v3, int v4) {
         twoFactorTest(v1, v2, v3, v4);
         return this.tempProb;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean tetradHolds(int i, int j, int k, int l) {
         twoFactorTest(i, l, j, k);
         this.prob[0] = this.tempProb;
@@ -533,28 +541,38 @@ public final class TetradTestDiscrete implements TetradTest {
         return bestRho;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean oneFactorTest(int i, int j, int k, int l) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean oneFactorTest(int i, int j, int k, int l, int x) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int i, int j, int k, int l) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int i, int j, int k, int l, int x) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
 
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int i, int j, int k, int l, int x, int y) {
         throw new UnsupportedOperationException(); // Need to remove dependence on PAL.
     }

@@ -32,8 +32,8 @@ import java.util.concurrent.*;
  * This class is not configured to respect knowledge of forbidden and required edges.
  *
  * @author josephramsey
- * @see Ida
  * @version $Id: $Id
+ * @see Ida
  */
 public class Cstar {
     private final IndependenceWrapper test;
@@ -51,8 +51,8 @@ public class Cstar {
     /**
      * Constructor.
      *
-     * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
-     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     * @param test       a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param score      a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Cstar(IndependenceWrapper test, ScoreWrapper score, Parameters parameters) {
@@ -133,9 +133,9 @@ public class Cstar {
      * @param path            A path where interim results are to be stored. If null, interim results will not be
      *                        stored. If the path is specified, then if the process is stopped and restarted, previously
      *                        computed interim results will be loaded.
-     * @see Record
-     * @param topBracket a int
+     * @param topBracket      a int
      * @return a {@link java.util.LinkedList} object
+     * @see Record
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, int topBracket, String path) {
         if (topBracket < 1) {

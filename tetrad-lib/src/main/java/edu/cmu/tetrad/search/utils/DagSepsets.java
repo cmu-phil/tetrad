@@ -50,7 +50,7 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the list of sepset for {a, b}.
      */
     @Override
@@ -60,7 +60,7 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * True iff i*-*j*-*k is an unshielded collider.
      */
     @Override
@@ -71,7 +71,7 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Not implemented; required for an interface.
      */
     @Override
@@ -81,7 +81,7 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true just in case msep(a, b | c) in the DAG. Don't let the name isIndependent fool you; this is a
      * d-separation method. We only use the name isIndependent so that this can be used in place of an independence
      * check.
@@ -93,7 +93,7 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the nodes in the DAG.
      */
     @Override
@@ -103,7 +103,7 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Thsi method is not used.
      */
     @Override

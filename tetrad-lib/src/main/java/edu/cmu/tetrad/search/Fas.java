@@ -57,10 +57,10 @@ import java.util.*;
  * @author peterspirtes
  * @author clarkglymour
  * @author josephramsey.
+ * @version $Id: $Id
  * @see Pc
  * @see Fci
  * @see Knowledge
- * @version $Id: $Id
  */
 public class Fas implements IFas {
     // The test to be used for conditional independence tests.
@@ -98,7 +98,7 @@ public class Fas implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Runs the search and returns the resulting (undirected) graph.
      */
     @Override
@@ -233,7 +233,7 @@ public class Fas implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the depth of the search, which is the maximum number of variables that ben be conditioned on in any
      * conditional independence test.
      */
@@ -248,8 +248,9 @@ public class Fas implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the knowledge to be used in the search.
+     *
      * @see Knowledge
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -277,7 +278,7 @@ public class Fas implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output should be printed.
      */
     public void setVerbose(boolean verbose) {
@@ -295,7 +296,7 @@ public class Fas implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the nodes from the test.
      */
     @Override
@@ -305,7 +306,7 @@ public class Fas implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * There are no ambiguous triples for this search, for any nodes.
      */
     @Override
@@ -313,7 +314,9 @@ public class Fas implements IFas {
         return new ArrayList<>();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setOut(PrintStream out) {
         this.out = out;

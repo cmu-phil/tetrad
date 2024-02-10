@@ -158,7 +158,7 @@ public class Dci {
     /**
      * <p>Constructor for Dci.</p>
      *
-     * @param tests a {@link java.util.List} object
+     * @param tests  a {@link java.util.List} object
      * @param method a {@link edu.cmu.tetrad.search.utils.ResolveSepsets.Method} object
      */
     public Dci(List<IndependenceTest> tests, ResolveSepsets.Method method) {
@@ -938,7 +938,7 @@ public class Dci {
     /**
      * Determines whether one trek is a subtrek of another trek
      *
-     * @param trek a {@link java.util.List} object
+     * @param trek    a {@link java.util.List} object
      * @param subtrek a {@link java.util.List} object
      * @return a boolean
      */

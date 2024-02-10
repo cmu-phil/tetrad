@@ -41,11 +41,11 @@ import java.util.*;
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fci
  * @see Cpc
  * @see #getAmbiguousTriples()
  * @see Knowledge
- * @version $Id: $Id
  */
 public final class Cfci implements IGraphSearch {
 

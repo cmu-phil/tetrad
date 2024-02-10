@@ -54,10 +54,10 @@ import java.util.*;
  * @author Alex Smith, December 2008
  * @author josephramsey
  * @author Choh-Man Teng
+ * @version $Id: $Id
  * @see Fci
  * @see GFci
  * @see Rfci
- * @version $Id: $Id
  */
 public final class FciOrient {
     private final SepsetProducer sepsets;
@@ -87,10 +87,10 @@ public final class FciOrient {
      * <p>
      * Probably extremely slow.
      *
-     * @param n1 The beginning node of the undirectedPaths.
-     * @param n2 The ending node of the undirectedPaths.
-     * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
+     * @param n1    The beginning node of the undirectedPaths.
+     * @param n2    The ending node of the undirectedPaths.
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
      */
     public static List<List<Node>> getUcPdPaths(Node n1, Node n2, Graph graph) {
         List<List<Node>> ucPdPaths = new LinkedList<>();
@@ -158,10 +158,10 @@ public final class FciOrient {
      * <p>
      * Probably extremely slow.
      *
-     * @param n1 The beginning node of the undirectedPaths.
-     * @param n2 The ending node of the undirectedPaths.
-     * @return A list of uncovered circle undirectedPaths between n1 and n2.
+     * @param n1    The beginning node of the undirectedPaths.
+     * @param n2    The ending node of the undirectedPaths.
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return A list of uncovered circle undirectedPaths between n1 and n2.
      */
     public static List<List<Node>> getUcCirclePaths(Node n1, Node n2, Graph graph) {
         List<List<Node>> ucCirclePaths = new LinkedList<>();
@@ -193,9 +193,9 @@ public final class FciOrient {
     /**
      * <p>isArrowheadAllowed.</p>
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param x         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      * @return a boolean
      */
@@ -453,6 +453,7 @@ public final class FciOrient {
 
     //Does all 3 of these rules at once instead of going through all
     // triples multiple times per iteration of doFinalOrientation.
+
     /**
      * <p>rulesR1R2cycle.</p>
      *
@@ -490,12 +491,13 @@ public final class FciOrient {
 
     /// R1, away from collider
     // If a*->bo-*c and a, c not adjacent then a*->b->c
+
     /**
      * <p>ruleR1.</p>
      *
-     * @param a a {@link edu.cmu.tetrad.graph.Node} object
-     * @param b a {@link edu.cmu.tetrad.graph.Node} object
-     * @param c a {@link edu.cmu.tetrad.graph.Node} object
+     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR1(Node a, Node b, Node c, Graph graph) {
@@ -520,12 +522,13 @@ public final class FciOrient {
 
     //if a*-oc and either a-->b*->c or a*->b-->c, and a*-oc then a*->c
     // This is Zhang's rule R2.
+
     /**
      * <p>ruleR2.</p>
      *
-     * @param a a {@link edu.cmu.tetrad.graph.Node} object
-     * @param b a {@link edu.cmu.tetrad.graph.Node} object
-     * @param c a {@link edu.cmu.tetrad.graph.Node} object
+     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR2(Node a, Node b, Node c, Graph graph) {
@@ -667,9 +670,9 @@ public final class FciOrient {
      * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
      * consists of colliders that are parents of c.
      *
-     * @param a a {@link edu.cmu.tetrad.graph.Node} object
-     * @param b a {@link edu.cmu.tetrad.graph.Node} object
-     * @param c a {@link edu.cmu.tetrad.graph.Node} object
+     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ddpOrient(Node a, Node b, Node c, Graph graph) {
@@ -912,10 +915,10 @@ public final class FciOrient {
      * Orients the edges inside the definte discriminating path triangle. Takes the left endpoint, and a,b,c as
      * arguments.
      *
-     * @param d a {@link edu.cmu.tetrad.graph.Node} object
-     * @param a a {@link edu.cmu.tetrad.graph.Node} object
-     * @param b a {@link edu.cmu.tetrad.graph.Node} object
-     * @param c a {@link edu.cmu.tetrad.graph.Node} object
+     * @param d     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a boolean
      */
@@ -976,7 +979,7 @@ public final class FciOrient {
      * DOES NOT CHECK IF SUCH EDGES ACTUALLY EXIST: MAY DO WEIRD THINGS IF PASSED AN ARBITRARY LIST OF NODES THAT IS NOT
      * A PATH.
      *
-     * @param path The path to orient as all tails.
+     * @param path  The path to orient as all tails.
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void orientTailPath(List<Node> path, Graph graph) {
@@ -1002,10 +1005,10 @@ public final class FciOrient {
      * <p>
      * R8: If Ao->C and A-->B-->C or A--oB-->C, then A-->C.
      *
-     * @param a The node A.
-     * @param c The node C.
-     * @return Whether R8 was successfully applied.
+     * @param a     The node A.
+     * @param c     The node C.
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return Whether R8 was successfully applied.
      */
     public boolean ruleR8(Node a, Node c, Graph graph) {
         List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
@@ -1053,10 +1056,10 @@ public final class FciOrient {
      * <p>
      * R9: If Ao-&gt;C and there is an uncovered p.d. path u=&lt;A,B,..,C&gt; such that C,B nonadjacent, then A--&gt;C.
      *
-     * @param a The node A.
-     * @param c The node C.
-     * @return Whether R9 was succesfully applied.
+     * @param a     The node A.
+     * @param c     The node C.
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return Whether R9 was succesfully applied.
      */
     public boolean ruleR9(Node a, Node c, Graph graph) {
         Edge e = graph.getEdge(a, c);
@@ -1093,8 +1096,8 @@ public final class FciOrient {
     /**
      * Orients according to background knowledge
      *
-     * @param bk a {@link edu.cmu.tetrad.data.Knowledge} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param bk        a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @param variables a {@link java.util.List} object
      */
     public void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
@@ -1260,8 +1263,8 @@ public final class FciOrient {
      * R10: If Ao-&gt;C, B--&gt;C&lt;--D, there is an uncovered p.d. path u1=&lt;A,M,...,B&gt; and an uncovered p.d.
      * path u2= &lt;A,N,...,D&gt; with M != N and M,N nonadjacent then A--&gt;C.
      *
-     * @param a The node A.
-     * @param c The node C.
+     * @param a     The node A.
+     * @param c     The node C.
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ruleR10(Node a, Node c, Graph graph) {

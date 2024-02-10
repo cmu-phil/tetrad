@@ -59,11 +59,11 @@ import java.util.concurrent.RecursiveTask;
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fci
  * @see Fas
  * @see FciOrient
  * @see Knowledge
- * @version $Id: $Id
  */
 public final class FciMax implements IGraphSearch {
     // The independence test.

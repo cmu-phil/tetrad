@@ -47,10 +47,10 @@ import java.util.Set;
  *
  * @author peterspirtes
  * @author josephramsey.
+ * @version $Id: $Id
  * @see Fasd
  * @see Pc
  * @see Knowledge
- * @version $Id: $Id
  */
 public class Pcd implements IGraphSearch {
 
@@ -218,7 +218,7 @@ public class Pcd implements IGraphSearch {
     /**
      * <p>search.</p>
      *
-     * @param fas a {@link edu.cmu.tetrad.search.IFas} object
+     * @param fas   a {@link edu.cmu.tetrad.search.IFas} object
      * @param nodes a {@link java.util.List} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */

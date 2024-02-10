@@ -73,7 +73,7 @@ public class OtherPermAlgs {
     /**
      * <p>Constructor for OtherPermAlgs.</p>
      *
-     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test  a {@link edu.cmu.tetrad.search.IndependenceTest} object
      * @param score a {@link edu.cmu.tetrad.search.score.Score} object
      */
     public OtherPermAlgs(@NotNull IndependenceTest test, Score score) {
@@ -556,7 +556,7 @@ public class OtherPermAlgs {
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**

@@ -66,10 +66,10 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  * @see PermutationSearch
  * @see Grasp
  * @see Knowledge
- * @version $Id: $Id
  */
 public class Boss implements SuborderSearch {
     // The score.
@@ -125,7 +125,7 @@ public class Boss implements SuborderSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Searches a suborder of the variables. The prefix is the set of variables that must precede the suborder. The
      * suborder is the set of variables to be ordered. The gsts is a map from variables to GrowShrinkTrees, which are
      * used to cache scores for the variables. The searchSuborder method will update the suborder to be the best
@@ -226,7 +226,7 @@ public class Boss implements SuborderSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the knowledge to be used for the search.
      */
     @Override
@@ -286,7 +286,7 @@ public class Boss implements SuborderSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables.
      */
     @Override
@@ -296,7 +296,7 @@ public class Boss implements SuborderSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the map from nodes to the sets of their parents.
      */
     @Override
@@ -306,7 +306,7 @@ public class Boss implements SuborderSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the score being used for the search.
      */
     @Override

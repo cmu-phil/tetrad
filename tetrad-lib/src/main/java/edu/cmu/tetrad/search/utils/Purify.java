@@ -116,14 +116,13 @@ public class Purify {
     private TetradTest tetradTest;
 
     /**
-     *******************************************************
-     * INITIALIZATION                                                                                        o
-     ********************************************************
+     * ****************************************************** INITIALIZATION
+     * o *******************************************************
      *
      * @param correlationMatrix a {@link edu.cmu.tetrad.data.CorrelationMatrix} object
-     * @param sig a double
-     * @param testType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
-     * @param clusters a {@link edu.cmu.tetrad.data.Clusters} object
+     * @param sig               a double
+     * @param testType          a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
+     * @param clusters          a {@link edu.cmu.tetrad.data.Clusters} object
      */
 
     /*
@@ -150,8 +149,8 @@ public class Purify {
     /**
      * <p>Constructor for Purify.</p>
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param sig a double
+     * @param dataSet  a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param sig      a double
      * @param testType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
      * @param clusters a {@link edu.cmu.tetrad.data.Clusters} object
      */
@@ -178,7 +177,7 @@ public class Purify {
      * <p>Constructor for Purify.</p>
      *
      * @param tetradTest a {@link edu.cmu.tetrad.search.utils.TetradTest} object
-     * @param knowledge a {@link edu.cmu.tetrad.data.Clusters} object
+     * @param knowledge  a {@link edu.cmu.tetrad.data.Clusters} object
      */
     public Purify(TetradTest tetradTest, Clusters knowledge) {
         this.tetradTest = tetradTest;

@@ -138,7 +138,7 @@ public class RegressionCovariance implements Regression {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the cutoff for significance. Parameters with p values less than this will be labeled as significant.
      */
     public void setAlpha(double alpha) {
@@ -271,7 +271,7 @@ public class RegressionCovariance implements Regression {
     /**
      * <p>regress.</p>
      *
-     * @param target a {@link edu.cmu.tetrad.graph.Node} object
+     * @param target     a {@link edu.cmu.tetrad.graph.Node} object
      * @param regressors a {@link edu.cmu.tetrad.graph.Node} object
      * @return a {@link edu.cmu.tetrad.regression.RegressionResult} object
      */

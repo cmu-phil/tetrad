@@ -43,9 +43,9 @@ import java.util.*;
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see FgesMb
  * @see Knowledge
- * @version $Id: $Id
  */
 public final class PcMb implements IMbSearch, IGraphSearch {
 
@@ -102,6 +102,16 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.test = test;
         this.depth = depth;
         this.variables = test.getVariables();
+    }
+
+    private static boolean isArrowheadAllowed1(Node from, Node to,
+                                               Knowledge knowledge) {
+        if (knowledge == null) {
+            return true;
+        }
+
+        return !knowledge.isRequired(to.toString(), from.toString()) &&
+                !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     /**
@@ -433,7 +443,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the Markov blanket variables (not the Markov blanket DAG).
      */
     public Set<Node> findMb(Node target) {
@@ -451,7 +461,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     public IndependenceTest getTest() {
         return this.test;
     }
-
 
     /**
      * Returns The knowledge used in search.
@@ -471,17 +480,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
-
-    private static boolean isArrowheadAllowed1(Node from, Node to,
-                                               Knowledge knowledge) {
-        if (knowledge == null) {
-            return true;
-        }
-
-        return !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
-    }
-
 
     private Set<Node> getA() {
         return this.a;

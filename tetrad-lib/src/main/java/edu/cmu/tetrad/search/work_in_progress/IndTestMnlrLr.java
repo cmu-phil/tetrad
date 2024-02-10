@@ -55,7 +55,7 @@ public class IndTestMnlrLr implements IndependenceTest {
     /**
      * <p>Constructor for IndTestMnlrLr.</p>
      *
-     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param data  a {@link edu.cmu.tetrad.data.DataSet} object
      * @param alpha a double
      */
     public IndTestMnlrLr(DataSet data, double alpha) {
@@ -73,7 +73,9 @@ public class IndTestMnlrLr implements IndependenceTest {
         this.alpha = alpha;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
@@ -81,8 +83,8 @@ public class IndTestMnlrLr implements IndependenceTest {
     /**
      * {@inheritDoc}
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
      * @param _z a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
@@ -166,7 +168,9 @@ public class IndTestMnlrLr implements IndependenceTest {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
     }
@@ -183,7 +187,7 @@ public class IndTestMnlrLr implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
@@ -201,7 +205,7 @@ public class IndTestMnlrLr implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns whether verbose output should be printed.
      */
     @Override
@@ -211,7 +215,7 @@ public class IndTestMnlrLr implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether this test will print verbose output.
      */
     @Override

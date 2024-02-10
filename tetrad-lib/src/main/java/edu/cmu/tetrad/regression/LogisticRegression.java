@@ -90,7 +90,7 @@ public class LogisticRegression implements TetradSerializable {
     /**
      * x must be binary; regressors must be continuous or binary.
      *
-     * @param x a {@link edu.cmu.tetrad.data.DiscreteVariable} object
+     * @param x          a {@link edu.cmu.tetrad.data.DiscreteVariable} object
      * @param regressors a {@link java.util.List} object
      * @return a {@link edu.cmu.tetrad.regression.LogisticRegression.Result} object
      */

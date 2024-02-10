@@ -32,10 +32,10 @@ import static org.apache.commons.math3.util.FastMath.min;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fges
  * @see Bes
  * @see Boss
- * @version $Id: $Id
  */
 public class BesPermutation {
     // The variables.

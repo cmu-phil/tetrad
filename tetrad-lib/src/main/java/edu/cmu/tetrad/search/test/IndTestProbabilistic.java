@@ -106,7 +106,9 @@ public class IndTestProbabilistic implements IndependenceTest {
         this.bci = setup(_data);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
@@ -114,8 +116,9 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns an independence result that states whether x _||_y | z and what the p-value of the test is.
+     *
      * @see IndependenceResult
      */
     @Override
@@ -138,8 +141,9 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns an independence result that states whether x _||_y | z and what the p-value of the test is.
+     *
      * @see IndependenceResult
      */
     @Override
@@ -248,7 +252,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables of the data set.
      */
     @Override
@@ -258,7 +262,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variable with the given name.
      */
     @Override
@@ -270,19 +274,25 @@ public class IndTestProbabilistic implements IndependenceTest {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean determines(Set<Node> z, Node y) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getAlpha() {
         throw new UnsupportedOperationException("The Probabiistic Test doesn't use an alpha parameter");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
@@ -290,7 +300,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the data set for which conditional independence judgments are requested.
      */
     @Override
@@ -318,7 +328,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if verbose output should be printed.
      */
     @Override
@@ -328,7 +338,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output should be printed.
      */
     @Override

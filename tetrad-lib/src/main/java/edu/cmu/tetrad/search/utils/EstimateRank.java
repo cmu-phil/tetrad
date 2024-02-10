@@ -52,8 +52,8 @@ public class EstimateRank {
     /**
      * Compute canonical correlations from covariance matrix.
      *
-     * @param iA an array of {@link int} objects
-     * @param iB an array of {@link int} objects
+     * @param iA  an array of {@link int} objects
+     * @param iB  an array of {@link int} objects
      * @param cov an array of {@link double} objects
      * @return an array of {@link double} objects
      */
@@ -75,8 +75,8 @@ public class EstimateRank {
     /**
      * Estimate rank from data.
      *
-     * @param A an array of {@link double} objects
-     * @param B an array of {@link double} objects
+     * @param A     an array of {@link double} objects
+     * @param B     an array of {@link double} objects
      * @param alpha a double
      * @return a int
      */
@@ -105,10 +105,10 @@ public class EstimateRank {
     /**
      * Estimate rank from covariance matrix.
      *
-     * @param iA an array of {@link int} objects
-     * @param iB an array of {@link int} objects
-     * @param cov an array of {@link double} objects
-     * @param N a int
+     * @param iA    an array of {@link int} objects
+     * @param iB    an array of {@link int} objects
+     * @param cov   an array of {@link double} objects
+     * @param N     a int
      * @param alpha a double
      * @return a int
      */

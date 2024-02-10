@@ -52,7 +52,7 @@ public class MvpScore implements Score {
      * @param dataSet        The mixed dataset being analyzed.
      * @param structurePrior The structure prior
      * @param fDegree        The f degree.
-     * @param discretize a boolean
+     * @param discretize     a boolean
      */
     public MvpScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 
@@ -115,8 +115,9 @@ public class MvpScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * A method for FGES returning a judgment of whether an edge with a given bump counts as a effect edge.
+     *
      * @see edu.cmu.tetrad.search.Fges
      */
     @Override
@@ -126,7 +127,7 @@ public class MvpScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the list of variables.
      */
     @Override
@@ -136,7 +137,7 @@ public class MvpScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns an estimate of the maximum degree of the graph for some algorithms.
      */
     @Override
@@ -146,7 +147,7 @@ public class MvpScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a judgment of whether the variable in z determine y exactly.
      */
     @Override

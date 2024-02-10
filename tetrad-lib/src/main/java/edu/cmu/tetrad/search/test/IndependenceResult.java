@@ -59,8 +59,8 @@ public final class IndependenceResult implements TetradSerializable {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @see TetradSerializableUtils
      */
     public static IndependenceResult serializableInstance() {
         return new IndependenceResult(new IndependenceFact(

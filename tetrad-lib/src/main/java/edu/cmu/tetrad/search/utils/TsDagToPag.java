@@ -36,9 +36,9 @@ import java.util.List;
  * Finds the PAG to which a DAG belongs, for a time series model.
  *
  * @author danielmalinsky
+ * @version $Id: $Id
  * @see Fci
  * @see DagToPag
- * @version $Id: $Id
  */
 public final class TsDagToPag {
 
@@ -108,9 +108,9 @@ public final class TsDagToPag {
     /**
      * <p>existsInducingPathInto.</p>
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param x         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      * @return a boolean
      */
@@ -136,12 +136,12 @@ public final class TsDagToPag {
     /**
      * <p>existsInducingPathVisitts.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param a a {@link edu.cmu.tetrad.graph.Node} object
-     * @param b a {@link edu.cmu.tetrad.graph.Node} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param path a {@link java.util.LinkedList} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param a         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param path      a {@link java.util.LinkedList} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      * @return a boolean
      */

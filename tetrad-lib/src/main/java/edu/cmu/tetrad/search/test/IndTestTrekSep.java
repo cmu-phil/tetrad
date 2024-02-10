@@ -86,7 +86,7 @@ public final class IndTestTrekSep implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new independence test instance for a sublist of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -115,7 +115,7 @@ public final class IndTestTrekSep implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
@@ -188,7 +188,7 @@ public final class IndTestTrekSep implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -224,7 +224,7 @@ public final class IndTestTrekSep implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variable with the given name.
      */
     public Node getVariable(String name) {
@@ -233,7 +233,7 @@ public final class IndTestTrekSep implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * If isDeterminismAllowed(), defers to IndTestFisherZD; otherwise throws UnsupportedOperationException.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
@@ -273,8 +273,8 @@ public final class IndTestTrekSep implements IndependenceTest {
     /**
      * <p>getData.</p>
      *
-     * @throws java.lang.UnsupportedOperationException Always.
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.lang.UnsupportedOperationException Always.
      */
     public DataSet getData() {
         throw new UnsupportedOperationException("Dataset not available.");
@@ -298,7 +298,9 @@ public final class IndTestTrekSep implements IndependenceTest {
         return this.covMatrix;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<DataSet> getDataSets() {
         throw new UnsupportedOperationException("Dataset not available.");
@@ -306,7 +308,7 @@ public final class IndTestTrekSep implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the sample size.
      */
     @Override
@@ -316,7 +318,7 @@ public final class IndTestTrekSep implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if verbose output should be printed.
      */
     @Override
@@ -326,7 +328,7 @@ public final class IndTestTrekSep implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output should be printed.
      */
     @Override

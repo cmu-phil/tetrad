@@ -54,11 +54,11 @@ public class TsUtils {
     /**
      * <p>ar.</p>
      *
+     * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param numLags    a int
      * @return the VAR residuals of the given time series with the given number of lags. That is, every variable at the
      * model lag is regressed onto every variable at previous lags, up to the given number of lags, and the residuals of
      * these regressions for each variable are returned.
-     * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param numLags a int
      */
     public static DataSet ar(DataSet timeSeries, int numLags) {
         DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);
@@ -88,7 +88,7 @@ public class TsUtils {
      * <p>ar2.</p>
      *
      * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param numLags a int
+     * @param numLags    a int
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet ar2(DataSet timeSeries, int numLags) {
@@ -153,7 +153,7 @@ public class TsUtils {
      * <p>structuralVar.</p>
      *
      * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param numLags a int
+     * @param numLags    a int
      * @return a {@link edu.cmu.tetrad.search.utils.TsUtils.VarResult} object
      */
     public static VarResult structuralVar(DataSet timeSeries, int numLags) {
@@ -228,7 +228,7 @@ public class TsUtils {
     /**
      * <p>createShiftedData.</p>
      *
-     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param data   a {@link edu.cmu.tetrad.data.DataSet} object
      * @param shifts an array of {@link int} objects
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
@@ -299,7 +299,7 @@ public class TsUtils {
      * <p>sumOfArCoefficients.</p>
      *
      * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param numLags a int
+     * @param numLags    a int
      * @return a double
      */
     public static double sumOfArCoefficients(DataSet timeSeries, int numLags) {
@@ -369,7 +369,7 @@ public class TsUtils {
     /**
      * Creates new time series dataset from the given one (fixed to deal with mixed datasets)
      *
-     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param data    a {@link edu.cmu.tetrad.data.DataSet} object
      * @param numLags a int
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
@@ -394,8 +394,7 @@ public class TsUtils {
 
                 if (node instanceof ContinuousVariable) {
                     laggedNode = new ContinuousVariable(name);
-                } else if (node instanceof DiscreteVariable) {
-                    DiscreteVariable var = (DiscreteVariable) node;
+                } else if (node instanceof DiscreteVariable var) {
                     laggedNode = new DiscreteVariable(var);
                     laggedNode.setName(name);
                 } else {
@@ -474,7 +473,7 @@ public class TsUtils {
     /**
      * <p>graphToLagGraph.</p>
      *
-     * @param _graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param _graph  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param numLags a int
      * @return a {@link edu.cmu.tetrad.graph.TimeLagGraph} object
      */

@@ -65,11 +65,11 @@ import static org.apache.commons.math3.util.FastMath.log;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.search.Fges
  * @see edu.cmu.tetrad.search.Sp
  * @see edu.cmu.tetrad.search.Grasp
  * @see edu.cmu.tetrad.search.Boss
- * @version $Id: $Id
  */
 public class SemBicScore implements Score {
 
@@ -159,9 +159,9 @@ public class SemBicScore implements Score {
      * @param parents             The indices of the parents.
      * @param covariances         The covariance matrix.
      * @param calculateRowSubsets True if row subsets should be calculated.
+     * @param data                a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param usePseudoInverse    a boolean
      * @return The variance of the residual of the regression of the ith variable on its parents.
-     * @param data a {@link edu.cmu.tetrad.util.Matrix} object
-     * @param usePseudoInverse a boolean
      * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances,
@@ -307,7 +307,9 @@ public class SemBicScore implements Score {
         this.usePseudoInverse = usePseudoInverse;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         if (this.ruleType == RuleType.NANDY) {
@@ -452,7 +454,7 @@ public class SemBicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if the given bump is an effect edge.
      */
     @Override
@@ -489,7 +491,7 @@ public class SemBicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables of the covariance matrix.
      */
     @Override
@@ -512,7 +514,7 @@ public class SemBicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the maximum degree of the score.
      */
     @Override
@@ -522,7 +524,7 @@ public class SemBicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true is the variables in z determine the variable y.
      */
     @Override

@@ -54,10 +54,10 @@ import static org.apache.commons.math3.util.FastMath.*;
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Score
  * @see Rule
  * @see Knowledge
- * @version $Id: $Id
  */
 public class Lofs {
     // The graph to be oriented.
@@ -770,12 +770,13 @@ public class Lofs {
     }
 
     // rowIndex is for the W matrix, not for the data.
+
     /**
      * <p>scoreRow.</p>
      *
-     * @param rowIndex a int
-     * @param data a {@link edu.cmu.tetrad.util.Matrix} object
-     * @param rows a {@link java.util.List} object
+     * @param rowIndex   a int
+     * @param data       a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param rows       a {@link java.util.List} object
      * @param parameters a {@link java.util.List} object
      * @return a double
      */
@@ -1310,8 +1311,8 @@ public class Lofs {
     /**
      * <p>getPValue.</p>
      *
-     * @return the probability associated with the most recently computed independence test.
      * @param fisherZ a double
+     * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue(double fisherZ) {
         return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
@@ -1848,6 +1849,7 @@ public class Lofs {
     }
 
     // Gaussian
+
     /**
      * <p>kernel1.</p>
      *
@@ -1859,6 +1861,7 @@ public class Lofs {
     }
 
     // Uniform
+
     /**
      * <p>kernel2.</p>
      *
@@ -1871,6 +1874,7 @@ public class Lofs {
     }
 
     // Triangular
+
     /**
      * <p>kernel3.</p>
      *
@@ -1883,6 +1887,7 @@ public class Lofs {
     }
 
     // Epanechnikov
+
     /**
      * <p>kernel4.</p>
      *
@@ -1895,6 +1900,7 @@ public class Lofs {
     }
 
     // Quartic
+
     /**
      * <p>kernel5.</p>
      *
@@ -1907,6 +1913,7 @@ public class Lofs {
     }
 
     // Triweight
+
     /**
      * <p>kernel6.</p>
      *
@@ -1919,6 +1926,7 @@ public class Lofs {
     }
 
     // Tricube
+
     /**
      * <p>kernel7.</p>
      *
@@ -1931,6 +1939,7 @@ public class Lofs {
     }
 
     // Cosine
+
     /**
      * <p>kernel8.</p>
      *

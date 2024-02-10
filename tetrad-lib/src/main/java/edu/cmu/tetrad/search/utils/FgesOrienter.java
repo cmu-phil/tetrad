@@ -40,8 +40,8 @@ import java.util.concurrent.*;
  * graph, using FGES method.
  *
  * @author AJ Sedgewick, 5/2015
- * @see Fges
  * @version $Id: $Id
+ * @see Fges
  */
 public final class FgesOrienter implements IGraphSearch, DagScorer {
 
@@ -246,6 +246,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     }
 
     // This will "orient" graph
+
     /**
      * <p>orient.</p>
      *
@@ -417,8 +418,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     /**
      * <p>getScore.</p>
      *
-     * @return the score of the given DAG, up to a constant.
      * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return the score of the given DAG, up to a constant.
      */
     public double getScore(Graph dag) {
         return scoreDag(dag);
@@ -1411,7 +1412,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Scores the given DAG, up to a constant.
      */
     public double scoreDag(Graph dag) {

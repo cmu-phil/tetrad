@@ -131,7 +131,7 @@ public class RegressionResult implements TetradSerializable {
      * @param r2                   The R squared statistic for the regression.
      * @param rss                  The residual sum of squares of the regression.
      * @param alpha                The alpha value for the regression, determining which regressors are taken to be
-     * @param res a {@link edu.cmu.tetrad.util.Vector} object
+     * @param res                  a {@link edu.cmu.tetrad.util.Vector} object
      */
     public RegressionResult(boolean zeroInterceptAssumed, String[] regressorNames, int n, double[] b, double[] t,
                             double[] p, double[] se, double r2, double rss, double alpha, Vector res) {

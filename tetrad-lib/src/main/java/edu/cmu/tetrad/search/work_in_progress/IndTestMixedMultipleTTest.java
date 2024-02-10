@@ -68,7 +68,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     /**
      * <p>Constructor for IndTestMixedMultipleTTest.</p>
      *
-     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param data  a {@link edu.cmu.tetrad.data.DataSet} object
      * @param alpha a double
      */
     public IndTestMixedMultipleTTest(DataSet data, double alpha) {
@@ -98,7 +98,9 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         this.preferLinear = preferLinear;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
@@ -149,7 +151,9 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         return this.searchVariables; // Make sure the variables from the ORIGINAL data set are returned, not the modified dataset!
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Method not implemented.");
     }
@@ -157,8 +161,8 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     /**
      * <p>Getter for the field <code>alpha</code>.</p>
      *
-     * @throws java.lang.UnsupportedOperationException if there is no significance level.
      * @return a double
+     * @throws java.lang.UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
         throw new UnsupportedOperationException("Method not implemented.");
@@ -166,7 +170,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
@@ -203,7 +207,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output should be printed.
      */
     public void setVerbose(boolean verbose) {

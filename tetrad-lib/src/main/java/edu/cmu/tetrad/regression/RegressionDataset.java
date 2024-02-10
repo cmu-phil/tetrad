@@ -80,7 +80,7 @@ public class RegressionDataset implements Regression {
     /**
      * <p>Constructor for RegressionDataset.</p>
      *
-     * @param data a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param data      a {@link edu.cmu.tetrad.util.Matrix} object
      * @param variables a {@link java.util.List} object
      */
     public RegressionDataset(Matrix data, List<Node> variables) {
@@ -96,7 +96,7 @@ public class RegressionDataset implements Regression {
     /**
      * <p>regress.</p>
      *
-     * @param target an array of {@link double} objects
+     * @param target     an array of {@link double} objects
      * @param regressors an array of {@link double} objects
      * @return a {@link edu.cmu.tetrad.regression.RegressionResult} object
      */
@@ -211,7 +211,7 @@ public class RegressionDataset implements Regression {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the alpha level for deciding which regressors are significant based on their p values.
      */
     public void setAlpha(double alpha) {
@@ -344,7 +344,7 @@ public class RegressionDataset implements Regression {
     /**
      * <p>regress.</p>
      *
-     * @param target a {@link edu.cmu.tetrad.graph.Node} object
+     * @param target     a {@link edu.cmu.tetrad.graph.Node} object
      * @param regressors a {@link edu.cmu.tetrad.graph.Node} object
      * @return a {@link edu.cmu.tetrad.regression.RegressionResult} object
      */

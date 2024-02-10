@@ -45,7 +45,7 @@ public class PurifySextadBased {
      * <p>Constructor for PurifySextadBased.</p>
      *
      * @param sextadTest a {@link edu.cmu.tetrad.search.utils.DeltaSextadTest} object
-     * @param alpha a double
+     * @param alpha      a double
      */
     public PurifySextadBased(DeltaSextadTest sextadTest, double alpha) {
         this.sextadTest = sextadTest;
@@ -59,6 +59,7 @@ public class PurifySextadBased {
     }
 
     // The input nodes may not be object-identical to the ones from the IntSextad test.
+
     /**
      * <p>purify.</p>
      *

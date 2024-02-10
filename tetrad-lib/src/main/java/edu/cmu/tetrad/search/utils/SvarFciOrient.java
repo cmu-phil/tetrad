@@ -44,9 +44,9 @@ import java.util.*;
  * edges, including knowledge of temporal tiers.</p>
  *
  * @author dmalinsky
+ * @version $Id: $Id
  * @see Knowledge
  * @see SvarFci
- * @version $Id: $Id
  */
 public final class SvarFciOrient {
 
@@ -79,7 +79,7 @@ public final class SvarFciOrient {
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      *
-     * @param sepsets a {@link edu.cmu.tetrad.search.utils.SepsetProducer} object
+     * @param sepsets          a {@link edu.cmu.tetrad.search.utils.SepsetProducer} object
      * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public SvarFciOrient(SepsetProducer sepsets, IndependenceTest independenceTest) {
@@ -510,9 +510,9 @@ public final class SvarFciOrient {
      * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
      * consists of colliders that are parents of c.
      *
-     * @param a a {@link edu.cmu.tetrad.graph.Node} object
-     * @param b a {@link edu.cmu.tetrad.graph.Node} object
-     * @param c a {@link edu.cmu.tetrad.graph.Node} object
+     * @param a     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c     a {@link edu.cmu.tetrad.graph.Node} object
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void ddpOrient(Node a, Node b, Node c, Graph graph) {

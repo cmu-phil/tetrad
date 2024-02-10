@@ -15,18 +15,18 @@ import java.util.Map;
  * Scores an entire DAG using the SemBicScore.
  *
  * @author josephramsey
- * @see SemBicScore
  * @version $Id: $Id
+ * @see SemBicScore
  */
 public class SemBicScorer {
 
     /**
      * Scores the given DAG using the given data model, usimg a BIC score.
      *
-     * @param dag  The DAG.
-     * @param data a continuous dataset or a covariance matrix.
-     * @return The BIC score of the DAG.
+     * @param dag                   The DAG.
+     * @param data                  a continuous dataset or a covariance matrix.
      * @param precomputeCovariances a boolean
+     * @return The BIC score of the DAG.
      */
     public static double scoreDag(Graph dag, DataModel data, boolean precomputeCovariances) {
         return scoreDag(dag, data, 1.0, precomputeCovariances);
@@ -35,11 +35,11 @@ public class SemBicScorer {
     /**
      * Scores the given DAG using the given data model, usimg a BIC score.
      *
-     * @param dag             The DAG.
-     * @param data            a continuous dataset or a covariance matrix.
-     * @param penaltyDiscount The penalty discount.
-     * @return The BIC score of the DAG.
+     * @param dag                   The DAG.
+     * @param data                  a continuous dataset or a covariance matrix.
+     * @param penaltyDiscount       The penalty discount.
      * @param precomputeCovariances a boolean
+     * @return The BIC score of the DAG.
      */
     public static double scoreDag(Graph dag, DataModel data, double penaltyDiscount, boolean precomputeCovariances) {
         if (dag == null) throw new NullPointerException("DAG not specified.");

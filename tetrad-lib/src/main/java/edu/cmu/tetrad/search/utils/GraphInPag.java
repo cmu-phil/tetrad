@@ -41,9 +41,9 @@ public final class GraphInPag {
     /**
      * This method implements step (1) of the definition.
      *
-     * @return true if every vertex in gamma is in O.
      * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
      * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return true if every vertex in gamma is in O.
      */
     public static boolean graphInPagStep0(Graph pag, Graph dag) {
 

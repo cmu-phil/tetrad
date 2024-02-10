@@ -103,7 +103,7 @@ public final class Mmmb implements IMbSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Searches for the Markov blanket of the node by the given name.
      */
     public Set<Node> findMb(Node target) {
@@ -246,8 +246,8 @@ public final class Mmmb implements IMbSearch {
     /**
      * <p>Getter for the field <code>pc</code>.</p>
      *
-     * @return a supserset of PC, or, if the symmetric algorithm is used, PC.
      * @param t a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a supserset of PC, or, if the symmetric algorithm is used, PC.
      */
     public List<Node> getPc(Node t) {
         if (!this.pc.containsKey(t)) {

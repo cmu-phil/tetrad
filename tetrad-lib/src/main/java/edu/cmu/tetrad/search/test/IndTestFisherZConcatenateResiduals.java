@@ -45,8 +45,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Calculates independence from pooled residuals using the Fisher Z method.
  *
  * @author josephramsey
- * @see IndTestFisherZ
  * @version $Id: $Id
+ * @see IndTestFisherZ
  */
 public final class IndTestFisherZConcatenateResiduals implements IndependenceTest {
 
@@ -96,21 +96,23 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         this.dataSets = dataSets2;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether x _||_ y | z.
      *
-     * @see IndependenceResult
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
      * @param _z a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (facts.containsKey(new IndependenceFact(x, y, _z))) {
@@ -193,7 +195,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -216,7 +218,9 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         return this.variables;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
@@ -232,7 +236,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns teh covaraince matrix of the concatenated data.
      */
     @Override
@@ -266,7 +270,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output is printed.
      */
     public void setVerbose(boolean verbose) {

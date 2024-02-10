@@ -368,11 +368,10 @@ public class DeltaSextadTest {
         }
 
         public boolean equals(Object o) {
-            if (!(o instanceof Sigma)) {
+            if (!(o instanceof Sigma _o)) {
                 throw new IllegalArgumentException();
             }
 
-            Sigma _o = (Sigma) o;
             return (_o.getA() == (getA()) && _o.getB() == (getB())) || (_o.getB() == (getA()) && _o.getA() == (getB()));
         }
 

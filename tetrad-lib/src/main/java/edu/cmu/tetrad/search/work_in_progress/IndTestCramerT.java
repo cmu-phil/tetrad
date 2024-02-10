@@ -110,7 +110,7 @@ public final class IndTestCramerT implements IndependenceTest {
      * matrix and the given significance level.
      *
      * @param covMatrix a {@link edu.cmu.tetrad.data.CorrelationMatrix} object
-     * @param alpha a double
+     * @param alpha     a double
      */
     public IndTestCramerT(CorrelationMatrix covMatrix, double alpha) {
         this.covMatrix = covMatrix;
@@ -125,7 +125,7 @@ public final class IndTestCramerT implements IndependenceTest {
      * matrix and the given significance level.
      *
      * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
-     * @param alpha a double
+     * @param alpha     a double
      */
     public IndTestCramerT(ICovarianceMatrix covMatrix, double alpha) {
         CorrelationMatrix corrMatrix = new CorrelationMatrix(covMatrix);
@@ -139,7 +139,7 @@ public final class IndTestCramerT implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new IndTestCramerT instance for a subset of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -168,11 +168,11 @@ public final class IndTestCramerT implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
      * @param _z a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
@@ -289,7 +289,7 @@ public final class IndTestCramerT implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level for future tests.
      */
     public void setAlpha(double alpha) {
@@ -314,7 +314,9 @@ public final class IndTestCramerT implements IndependenceTest {
         return this.variables;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[z.size()];
 
@@ -411,7 +413,9 @@ public final class IndTestCramerT implements IndependenceTest {
         return this.verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

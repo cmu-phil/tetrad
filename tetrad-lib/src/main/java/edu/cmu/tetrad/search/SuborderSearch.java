@@ -20,11 +20,11 @@ import java.util.Set;
  * tiers.
  *
  * @author bryanandrews
+ * @version $Id: $Id
  * @see PermutationSearch
  * @see Boss
  * @see Sp
  * @see Knowledge
- * @version $Id: $Id
  */
 public interface SuborderSearch {
 

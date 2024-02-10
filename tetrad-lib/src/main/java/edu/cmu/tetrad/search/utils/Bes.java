@@ -31,9 +31,9 @@ import static org.apache.commons.math3.util.FastMath.min;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fges
  * @see Boss
- * @version $Id: $Id
  */
 public class Bes {
 
@@ -149,6 +149,10 @@ public class Bes {
         }
     }
 
+    private Knowledge getKnowledge() {
+        return knowledge;
+    }
+
     /**
      * Sets the knowledge for the search.
      *
@@ -156,11 +160,7 @@ public class Bes {
      * @see Knowledge
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    private Knowledge getKnowledge() {
-        return knowledge;
+        this.knowledge = new Knowledge(knowledge);
     }
 
     private void delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX, Graph graph) {

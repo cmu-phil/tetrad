@@ -147,12 +147,13 @@ public final class SampleVcpcFast implements IGraphSearch {
 
     //    Takes a triple n1-n2-child and adds child to futureNodes set if satisfies constraints for future.
 //    Uses traverseFuturePath to add nodes to set.
+
     /**
      * <p>futureNodeVisit.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param b a {@link edu.cmu.tetrad.graph.Node} object
-     * @param path a {@link java.util.LinkedList} object
+     * @param graph       a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param b           a {@link edu.cmu.tetrad.graph.Node} object
+     * @param path        a {@link java.util.LinkedList} object
      * @param futureNodes a {@link java.util.Set} object
      */
     public static void futureNodeVisit(Graph graph, Node b, LinkedList<Node> path, Set<Node> futureNodes) {
@@ -183,8 +184,8 @@ public final class SampleVcpcFast implements IGraphSearch {
     /**
      * <p>isArrowheadAllowed1.</p>
      *
-     * @param from a {@link edu.cmu.tetrad.graph.Node} object
-     * @param to a {@link edu.cmu.tetrad.graph.Node} object
+     * @param from      a {@link edu.cmu.tetrad.graph.Node} object
+     * @param to        a {@link edu.cmu.tetrad.graph.Node} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      * @return a boolean
      */
@@ -254,7 +255,7 @@ public final class SampleVcpcFast implements IGraphSearch {
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**

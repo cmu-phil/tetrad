@@ -98,18 +98,20 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         this.dataSets = dataSets;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
      * @param _z a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
@@ -197,7 +199,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -219,7 +221,9 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         return this.variables;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
@@ -268,7 +272,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output is printed.
      */
     public void setVerbose(boolean verbose) {

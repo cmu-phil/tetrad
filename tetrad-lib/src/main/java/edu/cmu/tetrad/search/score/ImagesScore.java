@@ -41,10 +41,10 @@ import java.util.List;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fges
  * @see Grasp
  * @see Boss
- * @version $Id: $Id
  */
 public class ImagesScore implements Score {
 
@@ -71,7 +71,7 @@ public class ImagesScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the average of the individual scores returned from each component score from their localScoreDiff
      * methods. Score differences that are returned as undefined (NaN) are excluded from the average.
      */
@@ -97,9 +97,9 @@ public class ImagesScore implements Score {
      * such scores obtained from each individual score provided in the constructor, excluding scores that are returned
      * as undefined (which are left out of the average).
      *
-     * @param i The variable whose score is needed.
-     * @return This score.
+     * @param i       The variable whose score is needed.
      * @param parents an array of {@link int} objects
+     * @return This score.
      */
     public double localScore(int i, int[] parents) {
         double sum = 0.0;
@@ -142,9 +142,9 @@ public class ImagesScore implements Score {
      * local such scores obtained from each individual score provided in the constructor, excluding scores that are
      * returned as undefined (which are left out of the average).
      *
-     * @param i The variable whose score is needed.
-     * @return This score.
+     * @param i      The variable whose score is needed.
      * @param parent a int
+     * @return This score.
      */
     public double localScore(int i, int parent) {
         double sum = 0.0;
@@ -164,7 +164,7 @@ public class ImagesScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the (aggregate) local node score, which is obtained by averaging the local scores obtained from each
      * individual score provided in the constructor, excluding scores that are returned as undefined (which are left out
      * of the average).
@@ -187,7 +187,7 @@ public class ImagesScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a judgment for FGES whether a score with the bump is for an effect edge.
      */
     @Override
@@ -197,7 +197,7 @@ public class ImagesScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables.
      */
     @Override
@@ -207,7 +207,7 @@ public class ImagesScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the sample size from the first score.
      */
     @Override
@@ -217,7 +217,7 @@ public class ImagesScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the max degree from teh first score.
      */
     @Override
@@ -227,7 +227,7 @@ public class ImagesScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the 'determines' judgment from the first score.
      */
     @Override

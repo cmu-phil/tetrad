@@ -59,12 +59,12 @@ import java.util.List;
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Bpc
  * @see Fofc
  * @see #getLatentsCov()
  * @see Grasp
  * @see Knowledge
- * @version $Id: $Id
  */
 public class Mimbuild {
     // The clustering from BPC or equivalent. Small clusters are removed.

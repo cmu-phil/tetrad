@@ -57,10 +57,10 @@ import java.util.Set;
  * tiers.
  *
  * @author danielmalinsky
+ * @version $Id: $Id
  * @see GFci
  * @see Knowledge
  * @see SvarFci
- * @version $Id: $Id
  */
 public final class SvarGfci implements IGraphSearch {
     // The logger to use.

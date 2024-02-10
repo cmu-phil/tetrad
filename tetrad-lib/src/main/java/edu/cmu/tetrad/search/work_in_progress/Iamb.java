@@ -63,7 +63,9 @@ public class Iamb implements IMbSearch {
         this.variables = test.getVariables();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Set<Node> findMb(Node target) {
         Set<Node> cmb = new HashSet<>();
         boolean cont = true;

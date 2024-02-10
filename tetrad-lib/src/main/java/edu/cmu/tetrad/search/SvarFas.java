@@ -53,10 +53,10 @@ import java.util.*;
  * tiers.
  *
  * @author dmalinsky
+ * @version $Id: $Id
  * @see Fas
  * @see Knowledge
  * @see SvarFci
- * @version $Id: $Id
  */
 public class SvarFas implements IFas {
 
@@ -154,7 +154,7 @@ public class SvarFas implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the depth--i.e., the maximum number of variables conditioned on in any test, -1 for unlimited.
      */
     public void setDepth(int depth) {
@@ -168,7 +168,7 @@ public class SvarFas implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the knowledge used in the search.
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -204,14 +204,16 @@ public class SvarFas implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output should be printed.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long getElapsedTime() {
         throw new UnsupportedOperationException("This method is not used.");
@@ -219,7 +221,7 @@ public class SvarFas implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the nodes of the test.
      */
     @Override
@@ -227,7 +229,9 @@ public class SvarFas implements IFas {
         return this.test.getVariables();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
         throw new UnsupportedOperationException("This method is not used.");
@@ -235,8 +239,9 @@ public class SvarFas implements IFas {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the output stream for printing, default is System.out.
+     *
      * @see PrintStream
      */
     @Override

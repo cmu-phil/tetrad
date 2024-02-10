@@ -44,9 +44,9 @@ import java.util.List;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see ConditionalGaussianLikelihood
  * @see DegenerateGaussianScore
- * @version $Id: $Id
  */
 public class ConditionalGaussianScore implements Score {
     // The dataset.
@@ -123,8 +123,8 @@ public class ConditionalGaussianScore implements Score {
      *
      * @param x The index of the child.
      * @param z The indices of the parents.
-     * @return The score difference.
      * @param y a int
+     * @return The score difference.
      */
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
@@ -141,8 +141,9 @@ public class ConditionalGaussianScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * A method for FGES for determining whether an edge counts as an effect edges for this score bump.
+     *
      * @see Fges
      */
     @Override
@@ -152,7 +153,7 @@ public class ConditionalGaussianScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables of the data.
      */
     @Override
@@ -162,8 +163,9 @@ public class ConditionalGaussianScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the max degree recommended for the search form the MagSemBicScore and Fges.
+     *
      * @see MagSemBicScore
      * @see Fges
      */
@@ -199,7 +201,9 @@ public class ConditionalGaussianScore implements Score {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");

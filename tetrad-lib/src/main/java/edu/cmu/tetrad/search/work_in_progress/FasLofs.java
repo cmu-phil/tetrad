@@ -48,9 +48,9 @@ import java.util.Collections;
  * arXiv:1206.3260.</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fas
  * @see Fask
- * @version $Id: $Id
  */
 public final class FasLofs implements IGraphSearch {
 
@@ -73,7 +73,7 @@ public final class FasLofs implements IGraphSearch {
      * <p>Constructor for FasLofs.</p>
      *
      * @param dataSet These datasets to analyze.
-     * @param rule a {@link edu.cmu.tetrad.search.Lofs.Rule} object
+     * @param rule    a {@link edu.cmu.tetrad.search.Lofs.Rule} object
      */
     public FasLofs(DataSet dataSet, Lofs.Rule rule) {
         this.dataSet = dataSet;
@@ -185,7 +185,7 @@ public final class FasLofs implements IGraphSearch {
      * @param knowledge Knowledge of forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 }
 

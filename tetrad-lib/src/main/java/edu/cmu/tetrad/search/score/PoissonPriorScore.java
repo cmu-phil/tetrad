@@ -113,7 +113,7 @@ public class PoissonPriorScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the score difference localScore(y | z, x) - localScore(y | z).
      */
     @Override
@@ -201,7 +201,7 @@ public class PoissonPriorScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if the edge with the given bump is an effect edge.
      */
     @Override
@@ -211,7 +211,7 @@ public class PoissonPriorScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables.
      */
     @Override
@@ -221,7 +221,7 @@ public class PoissonPriorScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the max degree.
      */
     @Override
@@ -231,7 +231,7 @@ public class PoissonPriorScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if z determines y.
      */
     @Override

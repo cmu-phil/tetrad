@@ -107,9 +107,9 @@ public class KernelUtils {
     /**
      * Approximates Gram matrix using incomplete Cholesky factorization
      *
-     * @param kernels the kernels for each variable
-     * @param dataset the dataset containing each variable
-     * @param nodes   the variables to construct the Gram matrix for
+     * @param kernels   the kernels for each variable
+     * @param dataset   the dataset containing each variable
+     * @param nodes     the variables to construct the Gram matrix for
      * @param precision a double
      * @return a {@link edu.cmu.tetrad.util.Matrix} object
      */

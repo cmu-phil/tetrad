@@ -129,9 +129,9 @@ import static org.apache.commons.math3.util.FastMath.*;
  *
  * @author josephramsey
  * @author rubensanchez
+ * @version $Id: $Id
  * @see Knowledge
  * @see Lofs
- * @version $Id: $Id
  */
 public final class Fask implements IGraphSearch {
 
@@ -182,7 +182,7 @@ public final class Fask implements IGraphSearch {
      *
      * @param dataSet A continuous dataset over variables V.
      * @param test    An independence test over variables V. (Used for FAS.)
-     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
+     * @param score   a {@link edu.cmu.tetrad.search.score.Score} object
      */
     public Fask(DataSet dataSet, Score score, IndependenceTest test) {
         if (dataSet == null) {
@@ -206,10 +206,10 @@ public final class Fask implements IGraphSearch {
     /**
      * <p>faskLeftRightV2.</p>
      *
-     * @param x an array of {@link double} objects
-     * @param y an array of {@link double} objects
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
      * @param empirical a boolean
-     * @param delta a double
+     * @param delta     a double
      * @return a double
      */
     public static double faskLeftRightV2(double[] x, double[] y, boolean empirical, double delta) {
@@ -232,10 +232,10 @@ public final class Fask implements IGraphSearch {
     /**
      * <p>faskLeftRightV1.</p>
      *
-     * @param x an array of {@link double} objects
-     * @param y an array of {@link double} objects
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
      * @param empirical a boolean
-     * @param delta a double
+     * @param delta     a double
      * @return a double
      */
     public static double faskLeftRightV1(double[] x, double[] y, boolean empirical, double delta) {
@@ -260,8 +260,8 @@ public final class Fask implements IGraphSearch {
     /**
      * <p>robustSkew.</p>
      *
-     * @param x an array of {@link double} objects
-     * @param y an array of {@link double} objects
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
      * @param empirical a boolean
      * @return a double
      */
@@ -284,8 +284,8 @@ public final class Fask implements IGraphSearch {
     /**
      * <p>skew.</p>
      *
-     * @param x an array of {@link double} objects
-     * @param y an array of {@link double} objects
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
      * @param empirical a boolean
      * @return a double
      */
@@ -319,13 +319,48 @@ public final class Fask implements IGraphSearch {
      * <p>correctSkewness.</p>
      *
      * @param data an array of {@link double} objects
-     * @param sk a double
+     * @param sk   a double
      * @return an array of {@link double} objects
      */
     public static double[] correctSkewness(double[] data, double sk) {
         double[] data2 = new double[data.length];
         for (int i = 0; i < data.length; i++) data2[i] = data[i] * signum(sk);
         return data2;
+    }
+
+    private static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    // Returns E(XY | Z > 0); Z is typically either X or Y.
+    private static double E(double[] x, double[] y, double[] z) {
+        double exy = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (z[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
+    private static double correxp(double[] x, double[] y, double[] z) {
+        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
     }
 
     /**
@@ -732,43 +767,6 @@ public final class Fask implements IGraphSearch {
         }
 
         throw new IllegalStateException("Left right rule not configured: " + this.leftRight);
-    }
-
-
-    private static double cu(double[] x, double[] y, double[] condition) {
-        double exy = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-    // Returns E(XY | Z > 0); Z is typically either X or Y.
-    private static double E(double[] x, double[] y, double[] z) {
-        double exy = 0.0;
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (z[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-
-    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
-    private static double correxp(double[] x, double[] y, double[] z) {
-        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
     }
 
     private double tanh(double[] x, double[] y, boolean empirical) {

@@ -30,8 +30,8 @@ import java.util.Set;
  * Provides a covenience interface for classes that can generate and keep track of sepsets.
  *
  * @author josephramsey
- * @see SepsetMap
  * @version $Id: $Id
+ * @see SepsetMap
  */
 public interface SepsetProducer {
     /**
@@ -77,8 +77,8 @@ public interface SepsetProducer {
     /**
      * <p>isIndependent.</p>
      *
-     * @param d a {@link edu.cmu.tetrad.graph.Node} object
-     * @param c a {@link edu.cmu.tetrad.graph.Node} object
+     * @param d    a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c    a {@link edu.cmu.tetrad.graph.Node} object
      * @param path a {@link java.util.Set} object
      * @return a boolean
      */

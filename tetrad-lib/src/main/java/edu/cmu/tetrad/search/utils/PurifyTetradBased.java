@@ -49,7 +49,9 @@ public class PurifyTetradBased implements IPurify {
         this.nodes = tetradTest.getVariables();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<List<Node>> purify(List<List<Node>> clustering) {
 
         // The input nodes may not be object-identical to the ones from the tetrad test, so we map them over then
@@ -82,7 +84,9 @@ public class PurifyTetradBased implements IPurify {
         return convertedResult;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setTrueGraph(Graph mim) {
     }
 

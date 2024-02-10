@@ -108,7 +108,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new independence test instance for a subset of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -117,11 +117,11 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
-     * @param x0 a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y0 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x0  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y0  a {@link edu.cmu.tetrad.graph.Node} object
      * @param _z0 a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
@@ -209,7 +209,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -243,14 +243,16 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         this.covMatrix.setVariables(variables);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node getVariable(String name) {
         return this.nameMap.get(name);
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      */
@@ -317,7 +319,9 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         return this.covMatrix;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<DataSet> getDataSets() {
 
@@ -328,7 +332,9 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         return dataSets;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getSampleSize() {
         return this.covMatrix.getSampleSize();
@@ -343,7 +349,9 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         return this.verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

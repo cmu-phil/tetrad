@@ -91,7 +91,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
      * given data set (must be continuous). The given significance level is used.
      */
@@ -101,14 +101,14 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Checks the independence of x _||_ y | z
      *
-     * @see IndependenceResult
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
      * @param y a {@link edu.cmu.tetrad.graph.Node} object
      * @param z a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (this.facts.containsKey(new IndependenceFact(x, y, z))) {
@@ -158,7 +158,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level at which independence judgments should be made. Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -181,7 +181,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         return this.variables;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("The 'determines' method is not implemented");
     }
@@ -215,7 +217,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output should be printed.
      */
     public void setVerbose(boolean verbose) {

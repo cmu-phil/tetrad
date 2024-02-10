@@ -33,9 +33,9 @@ import java.util.Set;
  * the Sepset map.</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see SepsetProducer
  * @see SepsetMap
- * @version $Id: $Id
  */
 public class SepsetsSet implements SepsetProducer {
     private final SepsetMap sepsets;
@@ -47,21 +47,25 @@ public class SepsetsSet implements SepsetProducer {
      * <p>Constructor for SepsetsSet.</p>
      *
      * @param sepsets a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
-     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test    a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public SepsetsSet(SepsetMap sepsets, IndependenceTest test) {
         this.sepsets = sepsets;
         this.test = test;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<Node> getSepset(Node a, Node b) {
         //isIndependent(a, b, sepsets.get(a, b));
         return this.sepsets.get(a, b);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
         Set<Node> sepset = this.sepsets.get(i, k);
@@ -69,7 +73,9 @@ public class SepsetsSet implements SepsetProducer {
         else return !sepset.contains(j);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isIndependent(Node a, Node b, Set<Node> c) {
         IndependenceResult result = this.test.checkIndependence(a, b, c);
@@ -77,13 +83,17 @@ public class SepsetsSet implements SepsetProducer {
         return result.isIndependent();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getScore() {
         return -(this.result.getPValue() - this.test.getAlpha());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getVariables() {
         return this.test.getVariables();
@@ -98,7 +108,9 @@ public class SepsetsSet implements SepsetProducer {
         return this.verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

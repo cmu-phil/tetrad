@@ -75,7 +75,7 @@ public class SemBicScoreDeterministic implements Score {
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      *
-     * @param i a int
+     * @param i       a int
      * @param parents a int
      * @return a double
      */
@@ -118,7 +118,9 @@ public class SemBicScoreDeterministic implements Score {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
 
@@ -176,7 +178,9 @@ public class SemBicScoreDeterministic implements Score {
         return this.sampleSize;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;//-0.25 * getPenaltyDiscount() * FastMath.log(sampleSize);
@@ -209,7 +213,9 @@ public class SemBicScoreDeterministic implements Score {
         this.verbose = verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
@@ -229,13 +235,17 @@ public class SemBicScoreDeterministic implements Score {
         return cov.getSelection(rows, cols);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(log(this.sampleSize));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
         int i = this.variables.indexOf(y);

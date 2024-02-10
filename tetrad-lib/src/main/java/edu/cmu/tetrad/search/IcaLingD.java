@@ -93,8 +93,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author gustavolacerda
  * @author patrickhoyer
  * @author josephramsey
- * @see IcaLingam
  * @version $Id: $Id
+ * @see IcaLingam
  */
 public class IcaLingD {
     // The threshold for the spine of the W matrix.

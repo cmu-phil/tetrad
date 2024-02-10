@@ -99,14 +99,16 @@ public class IndTestIod implements IndependenceTest {
         this.nodeList = nodeList;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Checks the indicated independence fact by pooling available tests for the given variables.
      *
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
@@ -140,7 +142,7 @@ public class IndTestIod implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if z contains x.
      */
     public boolean determines(List<Node> z, Node x) {
@@ -158,7 +160,7 @@ public class IndTestIod implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the alpha level for this test.
      */
     public void setAlpha(double alpha) {
@@ -167,7 +169,7 @@ public class IndTestIod implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variable associated with the given name in the graph.
      */
     public Node getVariable(String name) {
@@ -183,8 +185,8 @@ public class IndTestIod implements IndependenceTest {
     /**
      * Returns the variable associated with the given node in the graph.
      *
-     * @return This variable.
      * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return This variable.
      */
     public Node getVariable(Node node) {
         return getVariable(node.getName());
@@ -193,8 +195,8 @@ public class IndTestIod implements IndependenceTest {
     /**
      * Return the node associated with the given variable in the graph.
      *
-     * @return This node.
      * @param variable a {@link edu.cmu.tetrad.graph.Node} object
+     * @return This node.
      */
     public Node getNode(Node variable) {
         for (Node node : nodeList) {
@@ -235,7 +237,7 @@ public class IndTestIod implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the test to verbose or not.
      */
     public void setVerbose(boolean verbose) {

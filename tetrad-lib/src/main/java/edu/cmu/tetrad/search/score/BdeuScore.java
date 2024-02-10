@@ -41,8 +41,8 @@ import java.util.List;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
- * @see BdeScore
  * @version $Id: $Id
+ * @see BdeScore
  */
 public class BdeuScore implements DiscreteScore {
 
@@ -113,7 +113,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Calculates the BDeu score of a node given its parents.
      */
     @Override
@@ -199,7 +199,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Calculates localScore(y | z, x) - localScore(y | z).
      */
     @Override
@@ -209,7 +209,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables of the data.
      */
     @Override
@@ -228,8 +228,9 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * For FGES, this determines whether an edge counts as an effect edge.
+     *
      * @see Fges
      */
     public boolean isEffectEdge(double bump) {
@@ -238,7 +239,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the dataset being analyzed.
      */
     @Override
@@ -257,7 +258,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the structure prior
      */
     public void setStructurePrior(double structurePrior) {
@@ -275,7 +276,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Set the sample prior
      */
     @Override
@@ -285,7 +286,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a string representation of this score.
      */
     @Override
@@ -296,7 +297,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the needed max degree for some searches.
      */
     @Override
@@ -306,7 +307,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * This score does not implement a method to decide whether a node is determined by its parents.
      */
     @Override

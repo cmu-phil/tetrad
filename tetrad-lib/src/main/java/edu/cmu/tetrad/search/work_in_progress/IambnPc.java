@@ -67,7 +67,9 @@ public class IambnPc implements IMbSearch {
         this.variables = test.getVariables();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Set<Node> findMb(Node target) {
         Set<Node> cmb = new HashSet<>();
         Pc pc = new Pc(this.independenceTest);

@@ -47,7 +47,7 @@ public class LogUtilsSearch {
      * <p>edgeOrientedMsg.</p>
      *
      * @param reason a {@link java.lang.String} object
-     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @param edge   a {@link edu.cmu.tetrad.graph.Edge} object
      * @return a {@link java.lang.String} object
      */
     public static String edgeOrientedMsg(String reason, Edge edge) {
@@ -58,9 +58,9 @@ public class LogUtilsSearch {
      * <p>colliderOrientedMsg.</p>
      *
      * @param note a {@link java.lang.String} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x    a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y    a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z    a {@link edu.cmu.tetrad.graph.Node} object
      * @return a {@link java.lang.String} object
      */
     public static String colliderOrientedMsg(String note, Node x, Node y, Node z) {
@@ -84,9 +84,9 @@ public class LogUtilsSearch {
     /**
      * <p>colliderOrientedMsg.</p>
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x      a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y      a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z      a {@link edu.cmu.tetrad.graph.Node} object
      * @param sepset a {@link java.util.Set} object
      * @return a {@link java.lang.String} object
      */
@@ -100,7 +100,7 @@ public class LogUtilsSearch {
      * <p>determinismDetected.</p>
      *
      * @param sepset a {@link java.util.Set} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x      a {@link edu.cmu.tetrad.graph.Node} object
      * @return a {@link java.lang.String} object
      */
     public static String determinismDetected(Set<Node> sepset, Node x) {
@@ -110,10 +110,10 @@ public class LogUtilsSearch {
     /**
      * <p>independenceFactMsg.</p>
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x       a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y       a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet a {@link java.util.Set} object
-     * @param pValue a double
+     * @param pValue  a double
      * @return a {@link java.lang.String} object
      */
     public static String independenceFactMsg(Node x, Node y, Set<Node> condSet, double pValue) {
@@ -133,10 +133,10 @@ public class LogUtilsSearch {
     /**
      * <p>dependenceFactMsg.</p>
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x       a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y       a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet a {@link java.util.Set} object
-     * @param pValue a double
+     * @param pValue  a double
      * @return a {@link java.lang.String} object
      */
     public static String dependenceFactMsg(Node x, Node y, Set<Node> condSet, double pValue) {
@@ -157,8 +157,8 @@ public class LogUtilsSearch {
     /**
      * <p>independenceFact.</p>
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x       a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y       a {@link edu.cmu.tetrad.graph.Node} object
      * @param condSet a {@link java.util.Set} object
      * @return a {@link java.lang.String} object
      */
@@ -187,8 +187,8 @@ public class LogUtilsSearch {
     /**
      * <p>getScoreFact.</p>
      *
-     * @param i a int
-     * @param parents an array of {@link int} objects
+     * @param i         a int
+     * @param parents   an array of {@link int} objects
      * @param variables a {@link java.util.List} object
      * @return a {@link java.lang.String} object
      */
@@ -210,7 +210,7 @@ public class LogUtilsSearch {
     /**
      * <p>getScoreFact.</p>
      *
-     * @param i a {@link edu.cmu.tetrad.graph.Node} object
+     * @param i       a {@link edu.cmu.tetrad.graph.Node} object
      * @param parents a {@link java.util.List} object
      * @return a {@link java.lang.String} object
      */
@@ -282,7 +282,7 @@ public class LogUtilsSearch {
     /**
      * <p>stampWithBic.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
      */
     public static void stampWithBic(Graph graph, DataModel dataModel) {

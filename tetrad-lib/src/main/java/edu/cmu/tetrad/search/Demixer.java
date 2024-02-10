@@ -44,7 +44,7 @@ public class Demixer {
      * Constructor. Initializes the means, weights, and covariance matrices for each model.
      *
      * @param data the data set
-     * @param k the number of models
+     * @param k    the number of models
      */
     public Demixer(DataSet data, int k) {
         this.numClusters = k;

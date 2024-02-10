@@ -73,11 +73,11 @@ import static org.apache.commons.math3.util.FastMath.min;
  *
  * @author Ricardo Silva
  * @author josephramsey
+ * @version $Id: $Id
  * @see Grasp
  * @see Boss
  * @see Sp
  * @see Knowledge
- * @version $Id: $Id
  */
 public final class FgesMb implements DagScorer {
     //===internal===//
@@ -155,6 +155,21 @@ public final class FgesMb implements DagScorer {
         this.graph = new EdgeListGraph(getVariables());
     }
 
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+
+        return null;
+    }
+
     /**
      * <p>Setter for the field <code>trimmingStyle</code>.</p>
      *
@@ -164,13 +179,12 @@ public final class FgesMb implements DagScorer {
         this.trimmingStyle = trimmingStyle;
     }
 
-
     /**
      * Greedy equivalence search: Start from the empty graph, add edges till the model is significant. Then start
      * deleting edges till a minimum is achieved.
      *
-     * @return the resulting Pattern.
      * @param targets a {@link java.util.List} object
+     * @return the resulting Pattern.
      */
     public Graph search(List<Node> targets) {
         if (targets == null || targets.isEmpty()) {
@@ -299,7 +313,9 @@ public final class FgesMb implements DagScorer {
         return elapsedTime;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double scoreDag(Graph dag) {
         return scoreDag(dag, false);
     }
@@ -393,21 +409,6 @@ public final class FgesMb implements DagScorer {
      */
     public double getModelScore() {
         return modelScore;
-    }
-
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-
-        return null;
     }
 
     //Sets the discrete scoring function to use.

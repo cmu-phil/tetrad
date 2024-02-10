@@ -72,7 +72,7 @@ public class MnlrScore implements Score {
     /**
      * The local score of the child given its parents.
      *
-     * @param i a int
+     * @param i       a int
      * @param parents a int
      * @return a double
      */
@@ -114,8 +114,9 @@ public class MnlrScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * A method for FGES returning a judgment of whether an edge with a given bump counts as a effect edge.
+     *
      * @see edu.cmu.tetrad.search.Fges
      */
     @Override
@@ -125,7 +126,7 @@ public class MnlrScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables.
      */
     @Override
@@ -135,7 +136,7 @@ public class MnlrScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a maximum degree used by some algorithms.
      */
     @Override

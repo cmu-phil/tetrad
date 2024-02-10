@@ -48,9 +48,9 @@ import java.util.List;
  * tiers.
  *
  * @author adambrodie
+ * @version $Id: $Id
  * @see Knowledge
  * @see Mimbuild
- * @version $Id: $Id
  */
 public class MimbuildTrek {
     // The clustering from BPC or equivalent. Small clusters are removed.

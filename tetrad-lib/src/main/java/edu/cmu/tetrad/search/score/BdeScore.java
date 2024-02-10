@@ -39,8 +39,8 @@ import java.util.List;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
- * @see BdeuScore
  * @version $Id: $Id
+ * @see BdeuScore
  */
 public class BdeScore implements DiscreteScore {
 
@@ -152,7 +152,7 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the difference between localScore(y | z, x) and localScore(y | z)
      */
     @Override
@@ -163,7 +163,7 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the dataset being analyzed.
      */
     @Override
@@ -180,19 +180,23 @@ public class BdeScore implements DiscreteScore {
         return rowIndex;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setStructurePrior(double structurePrior) {
         throw new UnsupportedOperationException("BDe does not use a structure prior.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setSamplePrior(double samplePrior) {
         throw new UnsupportedOperationException("BDe does not use a sample prior.");
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables of the dataset.
      */
     @Override
@@ -211,9 +215,10 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a judgment of whether the given bump in score allows one to conclude that the edge is an "effect edge"
      * for FGES.
+     *
      * @see Fges
      */
     @Override
@@ -223,7 +228,7 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the maximum degree of the graphs as they're searched.
      */
     @Override
@@ -233,7 +238,7 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns "BDe Score".
      */
     @Override

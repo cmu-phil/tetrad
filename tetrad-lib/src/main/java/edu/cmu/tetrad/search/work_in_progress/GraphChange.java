@@ -187,7 +187,7 @@ public class GraphChange {
      * Add another orient operation to the GraphChange.
      *
      * @param from a {@link edu.cmu.tetrad.graph.Node} object
-     * @param to a {@link edu.cmu.tetrad.graph.Node} object
+     * @param to   a {@link edu.cmu.tetrad.graph.Node} object
      */
     public void addOrient(Node from, Node to) {
         this.orients.add(new NodePair(from, to));
@@ -268,14 +268,13 @@ public class GraphChange {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Equals is defined such that if the internal strucs of this GraphChange all individually equal the corresponding
      * strucs of GraphChange gc, then this "equals" gc
      */
     public boolean equals(Object other) {
-        if (!(other instanceof GraphChange))
+        if (!(other instanceof GraphChange otherGC))
             return false;
-        GraphChange otherGC = (GraphChange) other;
 
         return otherGC.removes.equals(this.removes) &&
                 otherGC.colliders.equals(this.colliders) &&
@@ -360,10 +359,9 @@ public class GraphChange {
             if (o == this) {
                 return true;
             }
-            if (!(o instanceof NodePair)) {
+            if (!(o instanceof NodePair thatPair)) {
                 return false;
             }
-            NodePair thatPair = (NodePair) o;
             return this.getFirst().equals(thatPair.getFirst())
                     && this.getSecond().equals(thatPair.getSecond());
 

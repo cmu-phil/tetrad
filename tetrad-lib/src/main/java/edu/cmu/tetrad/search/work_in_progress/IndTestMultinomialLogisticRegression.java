@@ -65,7 +65,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
     /**
      * <p>Constructor for IndTestMultinomialLogisticRegression.</p>
      *
-     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param data  a {@link edu.cmu.tetrad.data.DataSet} object
      * @param alpha a double
      */
     public IndTestMultinomialLogisticRegression(DataSet data, double alpha) {
@@ -86,7 +86,9 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         this.regression = new RegressionDataset(internalData);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
@@ -317,7 +319,9 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
     }
@@ -334,7 +338,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
@@ -369,7 +373,9 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         return this.verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

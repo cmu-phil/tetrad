@@ -50,8 +50,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * The Kpc algorithm by Tillman had run PC using this test; to run Kpc, simply select this test for PC.
  *
  * @author Robert Tillman
- * @see edu.cmu.tetrad.search.work_in_progress.Kpc
  * @version $Id: $Id
+ * @see edu.cmu.tetrad.search.work_in_progress.Kpc
  */
 public final class IndTestHsic implements IndependenceTest {
 
@@ -117,7 +117,7 @@ public final class IndTestHsic implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new IndTestHsic instance for a subset of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -144,11 +144,11 @@ public final class IndTestHsic implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
      * @param _z a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
@@ -547,7 +547,7 @@ public final class IndTestHsic implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level at which independence judgments should be made.
      */
     public void setAlpha(double alpha) {
@@ -571,7 +571,7 @@ public final class IndTestHsic implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variable with the given name.
      */
     public Node getVariable(String name) {
@@ -603,7 +603,9 @@ public final class IndTestHsic implements IndependenceTest {
         return "HSIC, alpha = " + IndTestHsic.nf.format(getAlpha());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Method not implemented");
     }
@@ -630,7 +632,9 @@ public final class IndTestHsic implements IndependenceTest {
         return this.verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

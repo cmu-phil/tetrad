@@ -112,7 +112,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the score of the given nodes given its parents.
      */
     @Override
@@ -283,7 +283,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns localScore(y | z, x) - localScore(y | z).
      */
     @Override
@@ -293,7 +293,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables.
      */
     @Override
@@ -328,8 +328,9 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Must be called directly after the corresponding scoring call. Used in FGES.
+     *
      * @see Fges
      */
     public boolean isEffectEdge(double bump) {
@@ -338,7 +339,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the dataset being analyzed.
      */
     @Override
@@ -348,7 +349,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the structure prior.
      */
     @Override
@@ -358,7 +359,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * This method is not used for this score.
      */
     @Override
@@ -377,7 +378,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the maximum degree for some algorithms.
      */
     @Override
@@ -387,7 +388,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a string representation of this score.
      */
     @Override

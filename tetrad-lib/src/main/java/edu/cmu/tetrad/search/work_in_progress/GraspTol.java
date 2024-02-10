@@ -71,7 +71,7 @@ public class GraspTol {
     /**
      * <p>Constructor for GraspTol.</p>
      *
-     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test  a {@link edu.cmu.tetrad.search.IndependenceTest} object
      * @param score a {@link edu.cmu.tetrad.search.score.Score} object
      */
     public GraspTol(@NotNull IndependenceTest test, Score score) {

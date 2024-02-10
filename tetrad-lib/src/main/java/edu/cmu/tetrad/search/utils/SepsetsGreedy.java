@@ -41,9 +41,9 @@ import java.util.Set;
  * i or k, or null if none is found.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see SepsetProducer
  * @see SepsetMap
- * @version $Id: $Id
  */
 public class SepsetsGreedy implements SepsetProducer {
     private final Graph graph;
@@ -57,11 +57,11 @@ public class SepsetsGreedy implements SepsetProducer {
     /**
      * <p>Constructor for SepsetsGreedy.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph            a {@link edu.cmu.tetrad.graph.Graph} object
      * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
-     * @param extraSepsets a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
-     * @param depth a int
-     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param extraSepsets     a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
+     * @param depth            a int
+     * @param knowledge        a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth, Knowledge knowledge) {
         this.graph = graph;
@@ -76,20 +76,24 @@ public class SepsetsGreedy implements SepsetProducer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Pick out the sepset from among adj(i) or adj(k) with the highest score value.
      */
     public Set<Node> getSepset(Node i, Node k) {
         return getSepsetGreedy(i, k);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
         Set<Node> set = getSepsetGreedy(i, k);
         return set != null && !set.contains(j);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isIndependent(Node a, Node b, Set<Node> c) {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
@@ -97,13 +101,17 @@ public class SepsetsGreedy implements SepsetProducer {
         return result.isIndependent();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getScore() {
         return -(result.getPValue() - this.independenceTest.getAlpha());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getVariables() {
         return this.independenceTest.getVariables();
@@ -118,7 +126,9 @@ public class SepsetsGreedy implements SepsetProducer {
         return this.verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setVerbose(boolean verbose) {
         independenceTest.setVerbose(verbose);

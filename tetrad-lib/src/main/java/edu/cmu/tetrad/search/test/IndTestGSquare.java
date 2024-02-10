@@ -40,8 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * equivalent to the formulation on page 142 of Fienberg.
  *
  * @author josephramsey
- * @see ChiSquareTest
  * @version $Id: $Id
+ * @see ChiSquareTest
  */
 public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
@@ -101,7 +101,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new IndTestGSquare for a sublist of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -135,11 +135,11 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
      * @param _z a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
@@ -204,7 +204,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -233,7 +233,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a judgment whether the variables in z determine x.
      */
     public boolean determines(Set<Node> _z, Node x) {
@@ -313,7 +313,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns True if verbose output is printed.
      */
     @Override
@@ -323,7 +323,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output is printed.
      */
     @Override
@@ -345,7 +345,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the rows used for the test. If null, all rows are used.
      */
     @Override
@@ -355,7 +355,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the rows to use for the test. If null, all rows are used.
      */
     @Override

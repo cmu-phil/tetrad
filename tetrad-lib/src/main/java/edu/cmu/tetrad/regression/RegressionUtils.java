@@ -46,7 +46,7 @@ public class RegressionUtils {
      * <p>residuals.</p>
      *
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph   a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet residuals(DataSet dataSet, Graph graph) {

@@ -108,7 +108,7 @@ public class FasDci {
     /**
      * Constructs a new FastAdjacencySearch for DCI.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph            a {@link edu.cmu.tetrad.graph.Graph} object
      * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public FasDci(Graph graph, IndependenceTest independenceTest) {
@@ -120,13 +120,13 @@ public class FasDci {
     /**
      * Constructs a new FastAdjacencySearch for DCI with independence test pooling to resolve inconsistencies.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
-     * @param method a {@link edu.cmu.tetrad.search.utils.ResolveSepsets.Method} object
-     * @param marginalVars a {@link java.util.List} object
-     * @param independenceTests a {@link java.util.List} object
+     * @param graph               a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param independenceTest    a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param method              a {@link edu.cmu.tetrad.search.utils.ResolveSepsets.Method} object
+     * @param marginalVars        a {@link java.util.List} object
+     * @param independenceTests   a {@link java.util.List} object
      * @param knownIndependencies a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
-     * @param knownAssociations a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
+     * @param knownAssociations   a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
      */
     public FasDci(Graph graph, IndependenceTest independenceTest,
                   ResolveSepsets.Method method, List<Set<Node>> marginalVars,

@@ -180,7 +180,7 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the list of variables.
      */
     @Override
@@ -190,7 +190,7 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * True if an edge with the given bump is an effect edge.
      */
     @Override
@@ -200,7 +200,7 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the sample sizE.
      */
     @Override
@@ -210,7 +210,7 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the max degree.
      */
     @Override
@@ -220,7 +220,7 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a string for this object.
      */
     @Override

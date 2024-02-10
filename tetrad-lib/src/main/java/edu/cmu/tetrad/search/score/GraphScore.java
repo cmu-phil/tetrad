@@ -53,8 +53,8 @@ import java.util.Set;
  * dependence measure. In Uncertainty in Artificial Intelligence (pp. 1782-1791). PMLR.
  *
  * @author josephramsey
- * @see Fges
  * @version $Id: $Id
+ * @see Fges
  */
 public class GraphScore implements Score {
 
@@ -91,9 +91,9 @@ public class GraphScore implements Score {
     /**
      * Calculates the sample likelihood and BIC score for y given its z in a simple SEM model.
      *
-     * @return this score.
      * @param y a int
      * @param z an array of {@link int} objects
+     * @return this score.
      */
     public double localScore(int y, int[] z) {
         throw new UnsupportedOperationException();
@@ -101,7 +101,7 @@ public class GraphScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a "score difference", which amounts to a conditional local scoring criterion results. Only difference
      * methods is implemented, since the other methods don't make sense here.
      */
@@ -112,8 +112,9 @@ public class GraphScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
-     * The "unconditional difference." Only difference methods is implemented, since the other methods don't make sense here.
+     * <p>
+     * The "unconditional difference." Only difference methods is implemented, since the other methods don't make sense
+     * here.
      */
     @Override
     public double localScoreDiff(int x, int y) {
@@ -123,24 +124,27 @@ public class GraphScore implements Score {
     /**
      * <p>localScore.</p>
      *
-     * @throws java.lang.UnsupportedOperationException Since the method doesn't make sense here.
-     * @param i a int
+     * @param i      a int
      * @param parent a int
      * @return a double
+     * @throws java.lang.UnsupportedOperationException Since the method doesn't make sense here.
      */
     public double localScore(int i, int parent) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double localScore(int i) {
         throw new UnsupportedOperationException("The 'local score' method is not supported here.");
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a judgment for FGES whether a score with the bump is for an effect edge.
+     *
      * @see Fges
      */
     @Override
@@ -150,7 +154,7 @@ public class GraphScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the list of variables.
      */
     @Override
@@ -160,7 +164,7 @@ public class GraphScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the maximum degree, which is set to 1000.
      */
     @Override
@@ -171,8 +175,8 @@ public class GraphScore implements Score {
     /**
      * <p>getSampleSize.</p>
      *
-     * @throws java.lang.UnsupportedOperationException Since the method doesn't make sense here.
      * @return a int
+     * @throws java.lang.UnsupportedOperationException Since the method doesn't make sense here.
      */
     public int getSampleSize() {
         throw new UnsupportedOperationException("This score does not use data, so no sample size is available.");

@@ -66,7 +66,7 @@ public class ScoreIndTest implements IndependenceTest {
      * <p>Constructor for ScoreIndTest.</p>
      *
      * @param score a {@link edu.cmu.tetrad.search.score.Score} object
-     * @param data a {@link edu.cmu.tetrad.data.DataModel} object
+     * @param data  a {@link edu.cmu.tetrad.data.DataModel} object
      */
     public ScoreIndTest(Score score, DataModel data) {
         if (score == null) throw new NullPointerException();
@@ -75,21 +75,23 @@ public class ScoreIndTest implements IndependenceTest {
         this.data = data;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public ScoreIndTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether x _||_ y | z
      *
-     * @see IndependenceResult
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
      * @param y a {@link edu.cmu.tetrad.graph.Node} object
      * @param z a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         List<Node> z1 = new ArrayList<>(z);
@@ -131,7 +133,7 @@ public class ScoreIndTest implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variable by the given name.
      */
     public Node getVariable(String name) {
@@ -146,7 +148,7 @@ public class ScoreIndTest implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if y is determined the variable in z.
      */
     public boolean determines(List<Node> z, Node y) {
@@ -165,7 +167,7 @@ public class ScoreIndTest implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
@@ -192,8 +194,8 @@ public class ScoreIndTest implements IndependenceTest {
     /**
      * <p>getDataSets.</p>
      *
-     * @throws java.lang.UnsupportedOperationException Not implemented.
      * @return a {@link java.util.List} object
+     * @throws java.lang.UnsupportedOperationException Not implemented.
      */
     public List<DataSet> getDataSets() {
         throw new UnsupportedOperationException("Method not implemented");
@@ -220,7 +222,7 @@ public class ScoreIndTest implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if verbose ouput should be printed.
      */
     @Override
@@ -230,7 +232,7 @@ public class ScoreIndTest implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output should be printed.
      */
     @Override
@@ -240,7 +242,7 @@ public class ScoreIndTest implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a String representation of this test.
      */
     @Override

@@ -46,11 +46,11 @@ public interface IndependenceTest {
     /**
      * <p>checkIndependence.</p>
      *
-     * @return an IndependenceResult (see).
-     * @see IndependenceResult
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
      * @param y a {@link edu.cmu.tetrad.graph.Node} object
      * @param z a {@link java.util.Set} object
+     * @return an IndependenceResult (see).
+     * @see IndependenceResult
      */
     IndependenceResult checkIndependence(Node x, Node y, Set<Node> z);
 
@@ -107,11 +107,11 @@ public interface IndependenceTest {
     /**
      * Checks the independence fact in question and returns and independence result.
      *
-     * @return The independence result.
-     * @see IndependenceResult
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
      * @param y a {@link edu.cmu.tetrad.graph.Node} object
      * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     * @return The independence result.
+     * @see IndependenceResult
      */
     default IndependenceResult checkIndependence(Node x, Node y, Node... z) {
         Set<Node> zList = GraphUtils.asSet(z);
@@ -137,8 +137,8 @@ public interface IndependenceTest {
     /**
      * Returns The variable by the given name.
      *
-     * @return This variable.
      * @param name a {@link java.lang.String} object
+     * @return This variable.
      */
     default Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
@@ -168,9 +168,9 @@ public interface IndependenceTest {
     /**
      * Returns true if y is determined the variable in z.
      *
-     * @return True, if so.
      * @param z a {@link java.util.Set} object
      * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @return True, if so.
      */
     default boolean determines(Set<Node> z, Node y) {
         throw new UnsupportedOperationException("Determines method is not implemented.");

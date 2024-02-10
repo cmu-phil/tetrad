@@ -71,7 +71,7 @@ public class MagSemBicScore implements Score {
     /**
      * Constructor.
      *
-     * @param dataSet The continuous dataset to analyze.
+     * @param dataSet               The continuous dataset to analyze.
      * @param precomputeCovariances a boolean
      */
     public MagSemBicScore(DataSet dataSet, boolean precomputeCovariances) {
@@ -136,7 +136,7 @@ public class MagSemBicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Return the BIC score for a node given its parents.
      */
     @Override
@@ -215,7 +215,9 @@ public class MagSemBicScore implements Score {
         this.score.setPenaltyDiscount(penaltyDiscount);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
@@ -223,7 +225,7 @@ public class MagSemBicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the sample size.
      */
     @Override
@@ -233,7 +235,7 @@ public class MagSemBicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the list of variables.
      */
     @Override
@@ -243,8 +245,9 @@ public class MagSemBicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a judgment for FGES as to whether an edges with this bump (for this score) counts as an effect edge.
+     *
      * @see Fges
      */
     @Override
@@ -254,8 +257,9 @@ public class MagSemBicScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a judgment of the max degree needed for this score.
+     *
      * @see Fges
      */
     @Override

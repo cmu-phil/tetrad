@@ -40,8 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * test are equivalent to the formulation on page 142 of Fienberg.
  *
  * @author josephramsey
- * @see ChiSquareTest
  * @version $Id: $Id
+ * @see ChiSquareTest
  */
 public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
@@ -105,7 +105,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new IndTestChiSquare for a subset of the nodes.
      */
     public IndependenceTest indTestSubset(List<Node> nodes) {
@@ -156,11 +156,11 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
      * @param _z a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
@@ -223,7 +223,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns True if the variables z determining the variable z.
      */
     public boolean determines(List<Node> z, Node x) {
@@ -291,7 +291,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -330,7 +330,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if verbose output should be printed.
      */
     @Override
@@ -340,7 +340,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output should be printed.
      */
     @Override
@@ -370,7 +370,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the rows used for the test. If null, all rows are used.
      */
     @Override
@@ -380,7 +380,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the rows to use for the test. If null, all rows are used.
      */
     @Override

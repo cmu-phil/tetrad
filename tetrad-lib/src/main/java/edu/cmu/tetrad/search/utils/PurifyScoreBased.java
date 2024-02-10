@@ -89,7 +89,7 @@ public class PurifyScoreBased implements IPurify {
     /**
      * <p>Constructor for PurifyScoreBased.</p>
      *
-     * @param tetradTest a {@link edu.cmu.tetrad.search.utils.TetradTest} object
+     * @param tetradTest    a {@link edu.cmu.tetrad.search.utils.TetradTest} object
      * @param forbiddenList a {@link java.util.List} object
      */
     public PurifyScoreBased(TetradTest tetradTest, List<Set<String>> forbiddenList) {
@@ -98,7 +98,9 @@ public class PurifyScoreBased implements IPurify {
         this.forbiddenList = forbiddenList;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<List<Node>> purify(List<List<Node>> partition) {
         System.out.println("*** " + partition);
         List<int[]> _partition = convertListToInt(partition);
@@ -133,7 +135,9 @@ public class PurifyScoreBased implements IPurify {
         return convertIntToList(_partition1);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setTrueGraph(Graph mim) {
         throw new UnsupportedOperationException();
     }

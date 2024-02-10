@@ -58,7 +58,7 @@ public class Mmhc implements IGraphSearch {
     /**
      * <p>Constructor for Mmhc.</p>
      *
-     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test    a {@link edu.cmu.tetrad.search.IndependenceTest} object
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public Mmhc(IndependenceTest test, DataSet dataSet) {
@@ -154,7 +154,7 @@ public class Mmhc implements IGraphSearch {
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 }
 

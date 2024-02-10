@@ -49,9 +49,9 @@ import java.util.*;
  * @author Alex Smith, December 2008
  * @author josephramsey
  * @author Choh-Man Teng
+ * @version $Id: $Id
  * @see Fci
  * @see Knowledge
- * @version $Id: $Id
  */
 public final class Rfci implements IGraphSearch {
     // The variables to search over (optional)
@@ -94,7 +94,7 @@ public final class Rfci implements IGraphSearch {
      * search over.
      *
      * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
-     * @param searchVars a {@link java.util.List} object
+     * @param searchVars       a {@link java.util.List} object
      */
     public Rfci(IndependenceTest independenceTest, List<Node> searchVars) {
         if (independenceTest == null) {

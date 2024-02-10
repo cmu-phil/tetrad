@@ -24,11 +24,11 @@ import java.util.*;
  * tiers.
  *
  * @author bryanandrews
+ * @version $Id: $Id
  * @see SuborderSearch
  * @see Boss
  * @see Sp
  * @see Knowledge
- * @version $Id: $Id
  */
 public class PermutationSearch {
     private final SuborderSearch suborderSearch;
@@ -131,7 +131,6 @@ public class PermutationSearch {
                     if (!this.knowledge.isTierForbiddenWithin(i)) continue;
                     suborder = this.order.subList(start++, this.order.size());
                     this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
-                    ;
                 }
 
                 if (this.knowledge.isTierForbiddenWithin(i)) continue;

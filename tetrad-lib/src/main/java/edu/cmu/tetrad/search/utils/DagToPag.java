@@ -76,8 +76,8 @@ public final class DagToPag {
     /**
      * <p>existsInducingPathInto.</p>
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y     a {@link edu.cmu.tetrad.graph.Node} object
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a boolean
      */

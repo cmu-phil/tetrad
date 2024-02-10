@@ -32,9 +32,9 @@ import java.util.Arrays;
  * identity permtuation will be used. Returns the matrix permuted by these row and column permutations.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see IcaLingam
  * @see IcaLingD
- * @version $Id: $Id
  */
 public class PermutationMatrixPair {
     private final int[] rowPerm;

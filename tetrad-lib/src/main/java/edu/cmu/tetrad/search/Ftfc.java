@@ -59,9 +59,9 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author peterspirtes
  * @author erichkummerfeld
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fofc
  * @see Bpc
- * @version $Id: $Id
  */
 public class Ftfc {
     // The correlation matrix.

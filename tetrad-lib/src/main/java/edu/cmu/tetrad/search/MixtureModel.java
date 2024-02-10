@@ -38,12 +38,12 @@ public class MixtureModel {
      * Constructs a mixture model from a mixed data set, a means matrix, a weights array, a variance matrix, and a gamma
      * matrix.
      *
-     * @param data          the mixed data set
-     * @param dataArray     the mixed data set in array form
-     * @param meansArray    the means matrix
-     * @param weightsArray  the weights array
+     * @param data           the mixed data set
+     * @param dataArray      the mixed data set in array form
+     * @param meansArray     the means matrix
+     * @param weightsArray   the weights array
      * @param variancesArray the variance matrix
-     * @param gammaArray    the gamma matrix
+     * @param gammaArray     the gamma matrix
      */
     public MixtureModel(DataSet data, double[][] dataArray, double[][] meansArray, double[] weightsArray, Matrix[] variancesArray, double[][] gammaArray) {
         this.data = data;
@@ -176,6 +176,7 @@ public class MixtureModel {
      *
      * @return a list of data sets
      */
+
     /**
      * <p>getDemixedData.</p>
      *

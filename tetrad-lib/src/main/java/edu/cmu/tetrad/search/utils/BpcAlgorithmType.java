@@ -66,7 +66,9 @@ public enum BpcAlgorithmType implements TetradSerializable {
      */
     FIND_TWO_FACTOR_CLUSTERS;
 
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     private static final long serialVersionUID = 23L;
 
     /**

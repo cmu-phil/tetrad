@@ -222,11 +222,11 @@ public class MbUtils {
      * Generates the list of MB DAGs consistent with the MB CPDAG returned by the previous search.
      *
      * @param orientBidirectedEdges True iff bidirected edges should be oriented as if they were undirected.
+     * @param mbCPDAG               a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param test                  a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param depth                 a int
+     * @param target                a {@link edu.cmu.tetrad.graph.Node} object
      * @return a list of Dag's.
-     * @param mbCPDAG a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
-     * @param depth a int
-     * @param target a {@link edu.cmu.tetrad.graph.Node} object
      */
     public static List<Graph> generateMbDags(Graph mbCPDAG,
                                              boolean orientBidirectedEdges,

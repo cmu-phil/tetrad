@@ -137,12 +137,13 @@ public final class VcPcFast implements IGraphSearch {
 
     //    Takes a triple n1-n2-child and adds child to futureNodes set if satisfies constraints for future.
 //    Uses traverseFuturePath to add nodes to set.
+
     /**
      * <p>futureNodeVisit.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param b a {@link edu.cmu.tetrad.graph.Node} object
-     * @param path a {@link java.util.LinkedList} object
+     * @param graph       a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param b           a {@link edu.cmu.tetrad.graph.Node} object
+     * @param path        a {@link java.util.LinkedList} object
      * @param futureNodes a {@link java.util.Set} object
      */
     public static void futureNodeVisit(Graph graph, Node b, LinkedList<Node> path, Set<Node> futureNodes) {
@@ -213,7 +214,7 @@ public final class VcPcFast implements IGraphSearch {
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
@@ -315,6 +316,7 @@ public final class VcPcFast implements IGraphSearch {
     }
 
     //  modified FAS into VCFAS; added in definitelyNonadjacencies set of edges.
+
     /**
      * <p>search.</p>
      *
@@ -631,12 +633,12 @@ public final class VcPcFast implements IGraphSearch {
     /**
      * <p>getPopulationTripleType.</p>
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link edu.cmu.tetrad.graph.Node} object
-     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
-     * @param depth a int
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param x       a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y       a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z       a {@link edu.cmu.tetrad.graph.Node} object
+     * @param test    a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param depth   a int
+     * @param graph   a {@link edu.cmu.tetrad.graph.Graph} object
      * @param verbose a boolean
      * @return a {@link edu.cmu.tetrad.search.work_in_progress.VcPcFast.CpcTripleType} object
      */

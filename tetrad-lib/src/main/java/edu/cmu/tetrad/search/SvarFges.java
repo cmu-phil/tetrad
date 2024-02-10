@@ -54,10 +54,10 @@ import java.util.concurrent.*;
  * tiers.
  *
  * @author danielmalinsky
+ * @version $Id: $Id
  * @see Fges
  * @see Knowledge
  * @see SvarFci
- * @version $Id: $Id
  */
 public final class SvarFges implements IGraphSearch, DagScorer {
 
@@ -75,7 +75,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     // The ordering doesn't matter; it just has to be transitive.
     private int arrowIndex;
     // The set of removed edges.
-    private Set<Edge> removedEdges = new HashSet<>();
+    private final Set<Edge> removedEdges = new HashSet<>();
     // Specification of forbidden and required edges.
     private Knowledge knowledge = new Knowledge();
     // List of variables in the data set, in order.
@@ -382,8 +382,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     /**
      * <p>getMinChunk.</p>
      *
-     * @return the graph being constructed.
      * @param n a int
+     * @return the graph being constructed.
      */
     public int getMinChunk(int n) {
         // The minimum number of operations to do before parallelizing.
@@ -393,7 +393,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Scores the given DAG, up to a constant.
      */
     public double scoreDag(Graph dag) {

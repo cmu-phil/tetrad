@@ -73,11 +73,11 @@ import static org.apache.commons.math3.util.FastMath.min;
  *
  * @author Ricardo Silva
  * @author josephramsey
+ * @version $Id: $Id
  * @see Grasp
  * @see Boss
  * @see Sp
  * @see Knowledge
- * @version $Id: $Id
  */
 public final class Fges implements IGraphSearch, DagScorer {
     // Used to find semidirected paths for cycle checking.
@@ -134,7 +134,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     private boolean symmetricFirstStep = false;
     // True, if FGES should run in a single thread, no if parallelized.
     private boolean parallelized = false;
-    private ExecutorService pool;
+    private final ExecutorService pool;
 
     /**
      * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
@@ -262,7 +262,9 @@ public final class Fges implements IGraphSearch, DagScorer {
         return elapsedTime;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double scoreDag(Graph dag) {
         return scoreDag(dag, false);
     }

@@ -311,5 +311,6 @@ public class ClusterSignificance {
         /**
          * Do not do the check.
          */
-        None}
+        None
+    }
 }

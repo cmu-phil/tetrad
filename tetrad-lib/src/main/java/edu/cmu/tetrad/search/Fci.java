@@ -62,6 +62,7 @@ import java.util.Set;
  * @author clarkglymour
  * @author jijizhang
  * @author josephramsey
+ * @version $Id: $Id
  * @see FciOrient
  * @see FciOrient
  * @see FciOrient
@@ -81,7 +82,6 @@ import java.util.Set;
  * @see FciOrient
  * @see FciOrient
  * @see Knowledge
- * @version $Id: $Id
  */
 public final class Fci implements IGraphSearch {
     // The variables to search over.

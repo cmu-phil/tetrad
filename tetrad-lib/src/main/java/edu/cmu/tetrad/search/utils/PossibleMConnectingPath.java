@@ -66,9 +66,9 @@ public class PossibleMConnectingPath {
      * given z.
      *
      * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Collection} object
+     * @param x   a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y   a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z   a {@link java.util.Collection} object
      * @return a {@link java.util.List} object
      */
     public static List<PossibleMConnectingPath> findMConnectingPaths(Graph pag, Node x, Node y, Collection<Node> z) {
@@ -98,10 +98,10 @@ public class PossibleMConnectingPath {
      * Finds all possible D-connection undirectedPaths as sub-graphs of the pag given at construction time from x to y
      * given z for a particular path length.
      *
-     * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link java.util.Collection} object
+     * @param pag    a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param x      a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y      a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z      a {@link java.util.Collection} object
      * @param length a {@link java.lang.Integer} object
      * @return a {@link java.util.List} object
      */
@@ -295,12 +295,13 @@ public class PossibleMConnectingPath {
         return this.path.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
-        if (!(o instanceof PossibleMConnectingPath)) {
+        if (!(o instanceof PossibleMConnectingPath p)) {
             return false;
         }
-        PossibleMConnectingPath p = (PossibleMConnectingPath) o;
         return p.pag.equals(this.pag) && p.path.equals(this.path) && p.conditions.equals(this.conditions);
     }
 }

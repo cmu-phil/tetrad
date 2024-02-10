@@ -50,7 +50,7 @@ public final class GraphSearchUtils {
     /**
      * Orients according to background knowledge.
      *
-     * @param bk a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param bk    a {@link edu.cmu.tetrad.data.Knowledge} object
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @param nodes a {@link java.util.List} object
      */
@@ -106,9 +106,9 @@ public final class GraphSearchUtils {
      * as X--&gt;W&lt;--Y if W is *determined by* the sepset of (X, Y), rather than W just being *in* the sepset of (X,
      * Y).
      *
-     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param test      a {@link edu.cmu.tetrad.search.IndependenceTest} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static void pcdOrientC(IndependenceTest test, Knowledge knowledge, Graph graph) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
@@ -214,10 +214,10 @@ public final class GraphSearchUtils {
      * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-&gt; y &lt;-* z
      * just in case y is in Sepset({x, z}).
      *
-     * @param set a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
-     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param verbose a boolean
+     * @param set          a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
+     * @param knowledge    a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param graph        a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param verbose      a boolean
      * @param enforceCpdag a boolean
      */
     public static void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose,
@@ -284,8 +284,8 @@ public final class GraphSearchUtils {
     /**
      * Checks if an arrowhead is allowed by background knowledge.
      *
-     * @param from a {@link java.lang.Object} object
-     * @param to a {@link java.lang.Object} object
+     * @param from      a {@link java.lang.Object} object
+     * @param to        a {@link java.lang.Object} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      * @return a boolean
      */
@@ -339,7 +339,7 @@ public final class GraphSearchUtils {
      * <p>basicCpdagRestricted2.</p>
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
      */
     public static void basicCpdagRestricted2(Graph graph, Node node) {
         Set<Edge> undirectedEdges = new HashSet<>();
@@ -626,7 +626,7 @@ public final class GraphSearchUtils {
     /**
      * <p>arrangeByKnowledgeTiers.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public static void arrangeByKnowledgeTiers(Graph graph,
@@ -740,12 +740,13 @@ public final class GraphSearchUtils {
     /**
      * <p>getReachableNodes.</p>
      *
-     * @param initialNodes The nodes that reachability undirectedPaths start from.
-     * @param legalPairs   Specifies initial edges (given initial nodes) and legal edge pairs.
-     * @param c            a set of vertices (intuitively, the set of variables to be conditioned on.
-     * @param d            a set of vertices (intuitively to be used in tests of legality, for example, the set of
-     *                     ancestors of c).
-     * @param graph        the graph with respect to which reachability is
+     * @param initialNodes  The nodes that reachability undirectedPaths start from.
+     * @param legalPairs    Specifies initial edges (given initial nodes) and legal edge pairs.
+     * @param c             a set of vertices (intuitively, the set of variables to be conditioned on.
+     * @param d             a set of vertices (intuitively to be used in tests of legality, for example, the set of
+     *                      ancestors of c).
+     * @param graph         the graph with respect to which reachability is
+     * @param maxPathLength a int
      * @return the set of nodes reachable from the given set of initial nodes in the given graph according to the
      * criteria in the given legal pairs object.
      * <p>
@@ -754,7 +755,6 @@ public final class GraphSearchUtils {
      * legalPairs.isLegalPairs(H1, H2, H3).
      * <p>
      * The algorithm used is a variant of Algorithm 1 from Geiger, Verma, and Pearl (1990).
-     * @param maxPathLength a int
      */
     public static Set<Node> getReachableNodes(List<Node> initialNodes,
                                               LegalPairs legalPairs, List<Node> c, List<Node> d, Graph graph, int maxPathLength) {
@@ -811,9 +811,9 @@ public final class GraphSearchUtils {
     /**
      * <p>translate.</p>
      *
-     * @return the string in nodelist which matches string in BK.
-     * @param a a {@link java.lang.String} object
+     * @param a     a {@link java.lang.String} object
      * @param nodes a {@link java.util.List} object
+     * @return the string in nodelist which matches string in BK.
      */
     public static Node translate(String a, List<Node> nodes) {
         for (Node node : nodes) {
@@ -848,13 +848,14 @@ public final class GraphSearchUtils {
     }
 
     // The published version.
+
     /**
      * <p>getCpcTripleType.</p>
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link edu.cmu.tetrad.graph.Node} object
-     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param x     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param test  a {@link edu.cmu.tetrad.search.IndependenceTest} object
      * @param depth a int
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link edu.cmu.tetrad.search.utils.GraphSearchUtils.CpcTripleType} object
@@ -937,7 +938,7 @@ public final class GraphSearchUtils {
      * Converts each graph (DAG or CPDAG) into its CPDAG before scoring.
      *
      * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param estGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param estGraph  a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a int
      */
     public static int structuralHammingDistance(Graph trueGraph, Graph estGraph) {
@@ -1012,7 +1013,7 @@ public final class GraphSearchUtils {
     /**
      * Just counts arrowhead errors--for cyclic edges counts an arrowhead at each node.
      *
-     * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param trueGraph   a {@link edu.cmu.tetrad.graph.Graph} object
      * @param targetGraph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link edu.cmu.tetrad.graph.GraphUtils.GraphComparison} object
      */
@@ -1155,10 +1156,10 @@ public final class GraphSearchUtils {
     /**
      * <p>getEdgewiseComparisonString.</p>
      *
-     * @param trueGraphName a {@link java.lang.String} object
-     * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param trueGraphName   a {@link java.lang.String} object
+     * @param trueGraph       a {@link edu.cmu.tetrad.graph.Graph} object
      * @param targetGraphName a {@link java.lang.String} object
-     * @param targetGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param targetGraph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a {@link java.lang.String} object
      */
     public static String getEdgewiseComparisonString(String trueGraphName, Graph trueGraph,
@@ -1183,8 +1184,8 @@ public final class GraphSearchUtils {
      * <p>graphComparison.</p>
      *
      * @param trueCpdag a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param estCpdag a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param out a {@link java.io.PrintStream} object
+     * @param estCpdag  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param out       a {@link java.io.PrintStream} object
      * @return an array of {@link int} objects
      */
     public static int[][] graphComparison(Graph trueCpdag, Graph estCpdag, PrintStream out) {
@@ -1313,9 +1314,7 @@ public final class GraphSearchUtils {
         }
 
         public boolean equals(Object obj) {
-            if (!(obj instanceof ReachabilityEdge)) return false;
-
-            ReachabilityEdge edge = (ReachabilityEdge) obj;
+            if (!(obj instanceof ReachabilityEdge edge)) return false;
 
             if (!(edge.getFrom().equals(this.getFrom()))) {
                 return false;

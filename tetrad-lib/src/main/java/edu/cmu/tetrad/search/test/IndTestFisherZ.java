@@ -179,8 +179,9 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new independence test instance for a subset of the variables.
+     *
      * @see IndependenceTest
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -209,14 +210,14 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether variable x _||_ y | z given a list of conditioning variables z.
      *
-     * @see IndependenceResult
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
      * @param y a {@link edu.cmu.tetrad.graph.Node} object
      * @param z a {@link java.util.Set} object
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (facts.containsKey(new IndependenceFact(x, y, z))) {
@@ -397,7 +398,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -433,7 +434,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variable with the given name.
      */
     public Node getVariable(String name) {
@@ -460,7 +461,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the (singleton) list of datasets being analyzed.
      */
     @Override
@@ -472,7 +473,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the sample size.
      */
     @Override
@@ -492,7 +493,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether verbose output should be printed.
      */
     public void setVerbose(boolean verbose) {
@@ -510,7 +511,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true in case the variable in Z jointly determine x.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
@@ -743,7 +744,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Allows the user to set which rows are used in the test. Otherwise, all rows are used, except those with missing
      * values.
      */

@@ -60,10 +60,10 @@ public class Tetrad {
     /**
      * <p>Constructor for Tetrad.</p>
      *
-     * @param i a {@link edu.cmu.tetrad.graph.Node} object
-     * @param j a {@link edu.cmu.tetrad.graph.Node} object
-     * @param k a {@link edu.cmu.tetrad.graph.Node} object
-     * @param l a {@link edu.cmu.tetrad.graph.Node} object
+     * @param i      a {@link edu.cmu.tetrad.graph.Node} object
+     * @param j      a {@link edu.cmu.tetrad.graph.Node} object
+     * @param k      a {@link edu.cmu.tetrad.graph.Node} object
+     * @param l      a {@link edu.cmu.tetrad.graph.Node} object
      * @param pValue a double
      */
     public Tetrad(Node i, Node j, Node k, Node l, double pValue) {
@@ -121,11 +121,12 @@ public class Tetrad {
         return hash;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == null) return false;
-        if (!(o instanceof Tetrad)) return false;
-        Tetrad tetrad = (Tetrad) o;
+        if (!(o instanceof Tetrad tetrad)) return false;
         return (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.k && this.l == tetrad.l)
                 || (this.i == tetrad.j && this.j == tetrad.i && this.k == tetrad.k && this.l == tetrad.l)
                 || (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.l && this.l == tetrad.k)

@@ -73,9 +73,9 @@ public final class TetradTestContinuous implements TetradTest {
     /**
      * <p>Constructor for TetradTestContinuous.</p>
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dataSet     a {@link edu.cmu.tetrad.data.DataSet} object
      * @param sigTestType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
-     * @param sig a double
+     * @param sig         a double
      */
     public TetradTestContinuous(DataSet dataSet, BpcTestType sigTestType,
                                 double sig) {
@@ -108,9 +108,9 @@ public final class TetradTestContinuous implements TetradTest {
     /**
      * <p>Constructor for TetradTestContinuous.</p>
      *
-     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param covMatrix   a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      * @param sigTestType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
-     * @param sig a double
+     * @param sig         a double
      */
     public TetradTestContinuous(ICovarianceMatrix covMatrix,
                                 BpcTestType sigTestType, double sig) {
@@ -137,8 +137,8 @@ public final class TetradTestContinuous implements TetradTest {
      * <p>Constructor for TetradTestContinuous.</p>
      *
      * @param correlationMatrix a {@link edu.cmu.tetrad.data.CorrelationMatrix} object
-     * @param sigTestType a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
-     * @param sig a double
+     * @param sigTestType       a {@link edu.cmu.tetrad.search.utils.BpcTestType} object
+     * @param sig               a double
      */
     public TetradTestContinuous(CorrelationMatrix correlationMatrix,
                                 BpcTestType sigTestType, double sig) {
@@ -172,7 +172,9 @@ public final class TetradTestContinuous implements TetradTest {
         return this.sig;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setSignificance(double sig) {
         this.sig = sig;
     }
@@ -186,7 +188,9 @@ public final class TetradTestContinuous implements TetradTest {
         return this.dataSet;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ICovarianceMatrix getCovMatrix() {
         if (this.covMatrix != null) {
@@ -267,7 +271,9 @@ public final class TetradTestContinuous implements TetradTest {
         this.rho = this.covMatrix.getMatrix();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int tetradScore(int v1, int v2, int v3, int v4) {
         boolean holds = wishartEvalTetradDifferences2(v1, v2, v3, v4, this.sig);
         if (!holds) return 1;
@@ -276,7 +282,7 @@ public final class TetradTestContinuous implements TetradTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Tests the tetrad (v1, v3) x (v2, v4) = (v1, v4) x (v2, v3)
      */
     public boolean tetradScore1(int v1, int v2, int v3, int v4) {
@@ -286,7 +292,7 @@ public final class TetradTestContinuous implements TetradTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Tests if all tetrad constraints hold
      */
     public boolean tetradScore3(int v1, int v2, int v3, int v4) {
@@ -297,13 +303,17 @@ public final class TetradTestContinuous implements TetradTest {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean tetradHolds(int v1, int v2, int v3, int v4) {
         evalTetradDifference(v1, v2, v3, v4);
         return this.prob[0] >= this.sig;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double tetradPValue(int v1, int v2, int v3, int v4) {
         evalTetradDifference(v1, v2, v3, v4);
         return this.prob[0];
@@ -584,35 +594,45 @@ public final class TetradTestContinuous implements TetradTest {
      * significance testing
      */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean oneFactorTest(int v1, int v2, int v3, int v4) {
         int[] indices = {v1, v2, v3, v4};
         this.oneFactorEst4.init(indices);
         return this.oneFactorEst4.isSignificant();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean oneFactorTest(int v1, int v2, int v3, int v4, int v5) {
         int[] indices = {v1, v2, v3, v4, v5};
         this.oneFactorEst5.init(indices);
         return this.oneFactorEst5.isSignificant();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int v1, int v2, int v3, int v4) {
         int[] indices = {v1, v2, v3, v4};
         this.twoFactorsEst4.init(indices, 2);
         return this.twoFactorsEst4.isSignificant();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int v1, int v2, int v3, int v4, int v5) {
         int[] indices = {v1, v2, v3, v4, v5};
         this.twoFactorsEst5.init(indices, 3);
         return this.twoFactorsEst5.isSignificant();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean twoFactorTest(int v1, int v2, int v3, int v4, int v5,
                                  int v6) {
         int[] indices = {v1, v2, v3, v4, v5, v6};

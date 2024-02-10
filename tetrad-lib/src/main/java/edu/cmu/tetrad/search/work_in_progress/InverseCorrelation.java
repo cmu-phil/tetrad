@@ -44,7 +44,7 @@ public class InverseCorrelation {
     /**
      * <p>Constructor for InverseCorrelation.</p>
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dataSet   a {@link edu.cmu.tetrad.data.DataSet} object
      * @param threshold a double
      */
     public InverseCorrelation(DataSet dataSet, double threshold) {

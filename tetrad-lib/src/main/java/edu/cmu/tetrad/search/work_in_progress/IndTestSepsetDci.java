@@ -68,7 +68,7 @@ public class IndTestSepsetDci implements IndependenceTest {
      * Constructs a new independence test that returns d-separation facts for the given graph as independence results.
      *
      * @param sepset a {@link edu.cmu.tetrad.search.work_in_progress.SepsetMapDci} object
-     * @param nodes a {@link java.util.List} object
+     * @param nodes  a {@link java.util.List} object
      */
     public IndTestSepsetDci(SepsetMapDci sepset, List<Node> nodes) {
         if (sepset == null) {
@@ -89,7 +89,7 @@ public class IndTestSepsetDci implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Required by IndependenceTest.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -109,7 +109,7 @@ public class IndTestSepsetDci implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Checks the indicated independence fact.
      *
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
@@ -180,7 +180,9 @@ public class IndTestSepsetDci implements IndependenceTest {
         return Collections.unmodifiableList(this.observedVars);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean determines(List<Node> z, Node x1) {
         return z.contains(x1);
     }
@@ -194,12 +196,16 @@ public class IndTestSepsetDci implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
             Node variable = getVariables().get(i);
@@ -215,8 +221,8 @@ public class IndTestSepsetDci implements IndependenceTest {
     /**
      * <p>getVariable.</p>
      *
-     * @return the variable associated with the given node in the graph.
      * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return the variable associated with the given node in the graph.
      */
     public Node getVariable(Node node) {
         return this.nodesToVariables.get(node);
@@ -225,8 +231,8 @@ public class IndTestSepsetDci implements IndependenceTest {
     /**
      * <p>getNode.</p>
      *
-     * @return the node associated with the given variable in the graph.
      * @param variable a {@link edu.cmu.tetrad.graph.Node} object
+     * @return the node associated with the given variable in the graph.
      */
     public Node getNode(Node variable) {
         return this.variablesToNodes.get(variable);
@@ -259,7 +265,9 @@ public class IndTestSepsetDci implements IndependenceTest {
         return this.verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

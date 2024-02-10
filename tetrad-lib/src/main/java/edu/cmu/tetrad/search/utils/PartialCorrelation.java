@@ -71,10 +71,10 @@ public class PartialCorrelation {
     /**
      * Calculates the partial correlation of x and y conditional on the nodes in z recursively.
      *
-     * @return this partial correlation.
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
      * @param y a {@link edu.cmu.tetrad.graph.Node} object
      * @param z a {@link java.util.List} object
+     * @return this partial correlation.
      */
     public double corr(Node x, Node y, List<Node> z) {
         if (z.isEmpty()) return this.corr.getValue(this.nodesMap.get(x), this.nodesMap.get(y));

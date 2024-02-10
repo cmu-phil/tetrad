@@ -58,9 +58,9 @@ import java.util.Set;
  * tiers.
  *
  * @author danielmalinsky
+ * @version $Id: $Id
  * @see Fci
  * @see Knowledge
- * @version $Id: $Id
  */
 public final class SvarFci implements IGraphSearch {
     // The independence test to use.

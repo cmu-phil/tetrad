@@ -40,10 +40,10 @@ import java.util.Set;
  * reasoning (see the CPC algorithm).</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see SepsetProducer
  * @see SepsetMap
  * @see Cpc
- * @version $Id: $Id
  */
 public class SepsetsConservative implements SepsetProducer {
     private final Graph graph;
@@ -55,10 +55,10 @@ public class SepsetsConservative implements SepsetProducer {
     /**
      * <p>Constructor for SepsetsConservative.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph            a {@link edu.cmu.tetrad.graph.Graph} object
      * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
-     * @param extraSepsets a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
-     * @param depth a int
+     * @param extraSepsets     a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
+     * @param depth            a int
      */
     public SepsetsConservative(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -69,7 +69,7 @@ public class SepsetsConservative implements SepsetProducer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
     public Set<Node> getSepset(Node i, Node k) {
@@ -132,21 +132,24 @@ public class SepsetsConservative implements SepsetProducer {
         return _v;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
         List<List<Set<Node>>> ret = getSepsetsLists(i, j, k, this.independenceTest, this.depth, true);
         return ret.get(0).isEmpty();
     }
 
     // The published version.
+
     /**
      * <p>getSepsetsLists.</p>
      *
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link edu.cmu.tetrad.graph.Node} object
-     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
-     * @param depth a int
+     * @param x       a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y       a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z       a {@link edu.cmu.tetrad.graph.Node} object
+     * @param test    a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param depth   a int
      * @param verbose a boolean
      * @return a {@link java.util.List} object
      */
@@ -221,7 +224,9 @@ public class SepsetsConservative implements SepsetProducer {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isIndependent(Node a, Node b, Set<Node> c) {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
@@ -229,19 +234,25 @@ public class SepsetsConservative implements SepsetProducer {
         return result.isIndependent();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getScore() {
         return -(this.lastResult.getPValue() - this.independenceTest.getAlpha());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getVariables() {
         return this.independenceTest.getVariables();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setVerbose(boolean verbose) {
     }

@@ -114,7 +114,7 @@ public class Kpc implements IGraphSearch {
      *
      * @param dataset The oracle for conditional independence facts. This does not make a copy of the independence test,
      *                for fear of duplicating the data set!
-     * @param alpha a double
+     * @param alpha   a double
      */
     public Kpc(DataSet dataset, double alpha) {
         if (dataset == null) {

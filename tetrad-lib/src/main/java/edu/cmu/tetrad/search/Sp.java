@@ -32,6 +32,7 @@ import java.util.*;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  * @see PermutationSearch
  * @see Knowledge
  * @see Knowledge
@@ -50,7 +51,6 @@ import java.util.*;
  * @see Knowledge
  * @see Knowledge
  * @see Knowledge
- * @version $Id: $Id
  */
 public class Sp implements SuborderSearch {
     // The score to use.
@@ -81,7 +81,7 @@ public class Sp implements SuborderSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * This is the method called by PermutationSearch per tier.
      */
     @Override
@@ -124,7 +124,7 @@ public class Sp implements SuborderSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables being searched over.
      */
     @Override
@@ -134,7 +134,7 @@ public class Sp implements SuborderSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the parents of each variable.
      */
     @Override
@@ -144,7 +144,7 @@ public class Sp implements SuborderSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the score being used.
      */
     @Override
@@ -154,7 +154,7 @@ public class Sp implements SuborderSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Set the knowledge to used.
      */
     @Override

@@ -100,7 +100,7 @@ public class ZsbScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      *
-     * @param dataSet The data set.
+     * @param dataSet               The data set.
      * @param precomputeCovariances a boolean
      */
     public ZsbScore(DataSet dataSet, boolean precomputeCovariances) {
@@ -183,7 +183,7 @@ public class ZsbScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns localScore(y | z, x) - localScore(y | z).
      */
     @Override
@@ -237,8 +237,9 @@ public class ZsbScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a judgement for FGES for whether a certain bump in score gives efidence of an effect edges.
+     *
      * @see Fges
      */
     @Override
@@ -248,7 +249,7 @@ public class ZsbScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables.
      */
     @Override
@@ -258,8 +259,9 @@ public class ZsbScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a judgment of max degree for some algorithms.
+     *
      * @see Fges
      */
     @Override
@@ -269,7 +271,7 @@ public class ZsbScore implements Score {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns true if the variable in Z determine y.
      */
     @Override

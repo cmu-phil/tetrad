@@ -134,7 +134,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
      * matrix and the given significance level.
      *
      * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
-     * @param alpha a double
+     * @param alpha     a double
      */
     public IndTestFisherZRecursive(ICovarianceMatrix covMatrix, double alpha) {
         this.covMatrix = covMatrix;
@@ -151,7 +151,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new independence test instance for a subset of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -180,7 +180,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
      * @param x a {@link edu.cmu.tetrad.graph.Node} object
@@ -250,7 +250,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -284,14 +284,16 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         this.covMatrix.setVariables(variables);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node getVariable(String name) {
         return this.nameMap.get(name);
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      */
@@ -377,7 +379,9 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         return this.covMatrix;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<DataSet> getDataSets() {
         List<DataSet> dataSets = new ArrayList<>();
@@ -385,7 +389,9 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         return dataSets;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getSampleSize() {
         return this.covMatrix.getSampleSize();
@@ -400,7 +406,9 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         return this.verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
