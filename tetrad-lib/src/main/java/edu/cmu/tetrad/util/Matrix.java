@@ -27,6 +27,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps the Apache math3 linear algebra library for most uses in Tetrad. Specialized uses will still have to use the
@@ -37,10 +38,23 @@ import java.io.ObjectInputStream;
  * @version $Id: $Id
  */
 public class Matrix implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The Apache math3 matrix.
+     */
     private final RealMatrix apacheData;
-    private int m, n;
+
+    /**
+     * The number of rows.
+     */
+    private int m;
+
+    /**
+     * The number of columns.
+     */
+    private int n;
 
     /**
      * <p>Constructor for Matrix.</p>

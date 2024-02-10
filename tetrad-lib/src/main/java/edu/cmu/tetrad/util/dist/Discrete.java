@@ -23,6 +23,7 @@ package edu.cmu.tetrad.util.dist;
 
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
 import java.util.Arrays;
 
 /**
@@ -34,8 +35,12 @@ import java.util.Arrays;
  * @version $Id: $Id
  */
 public class Discrete implements Distribution {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The probabilities of the different values.
+     */
     private final double[] p;
 
     /**

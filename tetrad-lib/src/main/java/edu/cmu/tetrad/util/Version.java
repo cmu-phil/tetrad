@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings("RedundantIfStatement")
 public class Version implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -308,7 +309,7 @@ public class Version implements TetradSerializable {
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
      *
-     * @param s
+     * @param s The input stream.
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */

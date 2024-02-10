@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.util;
 
 
+import java.io.Serial;
 import java.util.*;
 
 /**
@@ -32,6 +33,7 @@ import java.util.*;
  */
 public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -165,9 +167,17 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
     //================================= Inner class ==================================//
 
     public static class DefaultEvent implements TetradLoggerConfig.Event {
+        @Serial
         private static final long serialVersionUID = 23L;
 
+        /**
+         * The id of the event.
+         */
         private final String id;
+
+        /**
+         * The description of the event.
+         */
         private final String description;
 
 

@@ -24,6 +24,8 @@ package edu.cmu.tetrad.util;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 
+import java.io.Serial;
+
 /**
  * Vector wrapping matrix library.
  *
@@ -31,8 +33,12 @@ import org.apache.commons.math3.linear.RealVector;
  * @version $Id: $Id
  */
 public class Vector implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The data.
+     */
     private final RealVector data;
 
     /**

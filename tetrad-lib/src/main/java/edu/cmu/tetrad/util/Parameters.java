@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.util;
 
+import java.io.Serial;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -12,10 +13,22 @@ import java.util.stream.Collectors;
  */
 public class Parameters implements TetradSerializable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The parameters.
+     */
     private Map<String, Object[]> parameters = new LinkedHashMap<>();
+
+    /**
+     * The used parameters.
+     */
     private Set<String> usedParameters = new LinkedHashSet<>();
+
+    /**
+     * The overridden parameters.
+     */
     private Map<String, Object> overriddenParameters = new HashMap<>();
 
     /**

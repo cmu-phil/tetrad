@@ -23,6 +23,8 @@ package edu.cmu.tetrad.util.dist;
 
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
+
 /**
  * <p>GaussianPower class.</p>
  *
@@ -30,10 +32,22 @@ import edu.cmu.tetrad.util.RandomUtil;
  * @version $Id: $Id
  */
 public class GaussianPower implements Distribution {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The standard deviation of the Gaussian distribution.
+     */
     private final double sd;
+
+    /**
+     * The name.
+     */
     private final String name;
+
+    /**
+     * The power.
+     */
     private double power;
 
     /**

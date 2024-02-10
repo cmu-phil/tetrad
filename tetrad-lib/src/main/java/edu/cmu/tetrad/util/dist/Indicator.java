@@ -23,6 +23,8 @@ package edu.cmu.tetrad.util.dist;
 
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
+
 /**
  * Created by IntelliJ IDEA. User: jdramsey Date: Jan 15, 2008 Time: 5:07:01 PM To change this template use File |
  * Settings | File Templates.
@@ -31,8 +33,12 @@ import edu.cmu.tetrad.util.RandomUtil;
  * @version $Id: $Id
  */
 public class Indicator implements Distribution {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The probability of returning 1.
+     */
     private double p;
 
     /**

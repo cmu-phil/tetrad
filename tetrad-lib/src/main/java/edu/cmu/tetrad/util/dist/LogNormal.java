@@ -24,6 +24,8 @@ package edu.cmu.tetrad.util.dist;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
+
 /**
  * Represents a lognormal distribution for purposes of sampling.
  *
@@ -31,8 +33,12 @@ import org.apache.commons.math3.util.FastMath;
  * @version $Id: $Id
  */
 public class LogNormal implements Distribution {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The standard deviation.
+     */
     private double sd;
 
     /**

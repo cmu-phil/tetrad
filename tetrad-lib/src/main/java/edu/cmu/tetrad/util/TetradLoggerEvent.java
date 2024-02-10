@@ -31,7 +31,9 @@ import java.util.EventObject;
  */
 public class TetradLoggerEvent extends EventObject {
 
-
+    /**
+     * The config associated with the event, may be null.
+     */
     private final TetradLoggerConfig config;
 
 
