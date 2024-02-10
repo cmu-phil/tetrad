@@ -45,7 +45,7 @@ public class NodePair {
     /**
      * <p>Constructor for NodePair.</p>
      *
-     * @param first a {@link edu.cmu.tetrad.graph.Node} object
+     * @param first  a {@link edu.cmu.tetrad.graph.Node} object
      * @param second a {@link edu.cmu.tetrad.graph.Node} object
      */
     public NodePair(Node first, Node second) {
@@ -89,16 +89,17 @@ public class NodePair {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
-        if (!(o instanceof NodePair)) {
+        if (!(o instanceof NodePair thatPair)) {
             return false;
         }
-        NodePair thatPair = (NodePair) o;
-//        return this.first.equals(thatPair.first) && this.second.equals(thatPair.second) || this.first.equals(thatPair.second) && this.second.equals(thatPair.first);
+        //        return this.first.equals(thatPair.first) && this.second.equals(thatPair.second) || this.first.equals(thatPair.second) && this.second.equals(thatPair.first);
         return (this.first == thatPair.first && this.second == thatPair.second) || (this.first == thatPair.second && this.second == thatPair.first);
     }
 

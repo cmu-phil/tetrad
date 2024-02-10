@@ -17,11 +17,11 @@ public class LayoutUtil {
     /**
      * <p>kamadaKawaiLayout.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph               a {@link edu.cmu.tetrad.graph.Graph} object
      * @param randomlyInitialized a boolean
-     * @param naturalEdgeLength a double
-     * @param springConstant a double
-     * @param stopEnergy a double
+     * @param naturalEdgeLength   a double
+     * @param springConstant      a double
+     * @param stopEnergy          a double
      */
     public static void kamadaKawaiLayout(Graph graph, boolean randomlyInitialized, double naturalEdgeLength, double springConstant, double stopEnergy) {
         KamadaKawaiLayout layout = new KamadaKawaiLayout(graph);
@@ -45,7 +45,7 @@ public class LayoutUtil {
     /**
      * <p>arrangeByLayout.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param layout a {@link java.util.HashMap} object
      */
     public static void arrangeByLayout(Graph graph, HashMap<String, PointXy> layout) {
@@ -153,7 +153,7 @@ public class LayoutUtil {
             }
             Node node = nodes.get(i + 3 * side);
             node.setCenterX(bufferx);
-            node.setCenterY(buffery + spacey * (side  - i));
+            node.setCenterY(buffery + spacey * (side - i));
         }
     }
 
@@ -248,9 +248,9 @@ public class LayoutUtil {
     /**
      * Arranges the nodes in the result graph according to their positions in the source graph.
      *
-     * @return true if all the nodes were arranged, false if not.
      * @param resultGraph a {@link edu.cmu.tetrad.graph.Graph} object
      * @param sourceGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return true if all the nodes were arranged, false if not.
      */
     public static boolean arrangeBySourceGraph(Graph resultGraph, Graph sourceGraph) {
         if (resultGraph == null) {

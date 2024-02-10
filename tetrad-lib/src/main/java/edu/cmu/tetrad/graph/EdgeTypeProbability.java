@@ -28,8 +28,8 @@ public class EdgeTypeProbability implements TetradSerializable {
     /**
      * <p>Constructor for EdgeTypeProbability.</p>
      *
-     * @param edgeType a {@link edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType} object
-     * @param properties a {@link java.util.List} object
+     * @param edgeType    a {@link edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType} object
+     * @param properties  a {@link java.util.List} object
      * @param probability a double
      */
     public EdgeTypeProbability(EdgeType edgeType, List<Edge.Property> properties, double probability) {
@@ -41,7 +41,7 @@ public class EdgeTypeProbability implements TetradSerializable {
     /**
      * <p>Constructor for EdgeTypeProbability.</p>
      *
-     * @param edgeType a {@link edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType} object
+     * @param edgeType    a {@link edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType} object
      * @param probability a double
      */
     public EdgeTypeProbability(EdgeType edgeType, double probability) {

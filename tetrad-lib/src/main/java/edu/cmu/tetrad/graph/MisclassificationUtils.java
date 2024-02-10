@@ -52,7 +52,7 @@ public class MisclassificationUtils {
     /**
      * <p>convertNodes.</p>
      *
-     * @param edges a {@link java.util.Set} object
+     * @param edges        a {@link java.util.Set} object
      * @param newVariables a {@link java.util.List} object
      * @return a {@link java.util.Set} object
      */

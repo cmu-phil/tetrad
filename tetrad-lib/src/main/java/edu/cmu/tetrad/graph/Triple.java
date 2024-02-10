@@ -72,9 +72,9 @@ public final class Triple implements TetradSerializable {
      * <p>pathString.</p>
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param x a {@link edu.cmu.tetrad.graph.Node} object
-     * @param y a {@link edu.cmu.tetrad.graph.Node} object
-     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z     a {@link edu.cmu.tetrad.graph.Node} object
      * @return a {@link java.lang.String} object
      */
     public static String pathString(Graph graph, Node x, Node y, Node z) {
@@ -124,13 +124,14 @@ public final class Triple implements TetradSerializable {
         return hash;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object obj) {
-        if (!(obj instanceof Triple)) {
+        if (!(obj instanceof Triple triple)) {
             return false;
         }
 
-        Triple triple = (Triple) obj;
         return (this.x == triple.x && this.y == triple.y &&
                 this.z == triple.z)
                 || (this.x == triple.z && this.y == triple.y &&

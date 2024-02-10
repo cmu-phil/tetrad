@@ -117,7 +117,7 @@ public class GraphNode implements Node {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of this variable.
      */
     public final void setName(String name) {
@@ -142,8 +142,9 @@ public class GraphNode implements Node {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the node type.
+     *
      * @see edu.cmu.tetrad.graph.NodeType
      */
     public final void setNodeType(NodeType nodeType) {
@@ -164,7 +165,7 @@ public class GraphNode implements Node {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the x coordinate of the center of this node.
      */
     public final void setCenterX(int centerX) {
@@ -182,7 +183,7 @@ public class GraphNode implements Node {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the y coordinate of the center of this node.
      */
     public final void setCenterY(int centerY) {
@@ -191,7 +192,7 @@ public class GraphNode implements Node {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the (x, y) coordinates of the center of this node.
      */
     public final void setCenter(int centerX, int centerY) {
@@ -212,7 +213,7 @@ public class GraphNode implements Node {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Adds a property change listener.
      */
     public final void addPropertyChangeListener(PropertyChangeListener l) {
@@ -239,7 +240,7 @@ public class GraphNode implements Node {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Two continuous variables are equal if they have the same name and the same missing value marker.
      */
     public boolean equals(Object o) {
@@ -248,7 +249,9 @@ public class GraphNode implements Node {
         return getName().equals(((Node) o).getName());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node like(String name) {
         GraphNode node = new GraphNode(name);
         node.setNodeType(getNodeType());
@@ -329,37 +332,49 @@ public class GraphNode implements Node {
 //        return node1.compareTo(node2);
 //    }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public NodeVariableType getNodeVariableType() {
         return this.nodeVariableType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);

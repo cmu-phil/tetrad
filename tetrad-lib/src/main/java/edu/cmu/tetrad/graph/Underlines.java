@@ -9,6 +9,7 @@ import java.util.Set;
 
 // This used ot be a field in the graph classes but that led to a circular dependency
 // between the graph and the graph reader/writer. So now it's a separate class.
+
 /**
  * <p>Underlines class.</p>
  *
@@ -272,7 +273,9 @@ public class Underlines implements TripleClassifier, TetradSerializable {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, graph));

@@ -30,19 +30,27 @@ import java.util.regex.Pattern;
  * Represents an object with a name, node type, and position that can serve as a node in a graph.
  *
  * @author josephramsey
- * @see NodeType
  * @version $Id: $Id
+ * @see NodeType
  */
 public interface Node extends TetradSerializable, Comparable<Node> {
 
-    /** Constant <code>ALPHA</code> */
+    /**
+     * Constant <code>ALPHA</code>
+     */
     Pattern ALPHA = Pattern.compile("^[a-zA-Z]+$");
-    /** Constant <code>ALPHA_NUM</code> */
+    /**
+     * Constant <code>ALPHA_NUM</code>
+     */
     Pattern ALPHA_NUM = Pattern.compile("^[a-zA-Z]+[0-9]+$");
-    /** Constant <code>LAG</code> */
+    /**
+     * Constant <code>LAG</code>
+     */
     Pattern LAG = Pattern.compile("^.+:[0-9]+$");
 
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
@@ -147,8 +155,8 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     /**
      * Tests whether this variable is equal to the given variable.
      *
-     * @return true iff this variable is equal to the given variable.
      * @param o a {@link java.lang.Object} object
+     * @return true iff this variable is equal to the given variable.
      */
     boolean equals(Object o);
 
@@ -243,7 +251,7 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     /**
      * <p>addAttribute.</p>
      *
-     * @param key a {@link java.lang.String} object
+     * @param key   a {@link java.lang.String} object
      * @param value a {@link java.lang.Object} object
      */
     void addAttribute(String key, Object value);

@@ -147,10 +147,11 @@ public class GraphSaveLoadUtils {
 
 
     // Bayes net toolbox.
+
     /**
      * <p>loadGraphBNTPcMatrix.</p>
      *
-     * @param vars a {@link java.util.List} object
+     * @param vars    a {@link java.util.List} object
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
@@ -708,7 +709,7 @@ public class GraphSaveLoadUtils {
      * <p>graphToDot.</p>
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param file a {@link java.io.File} object
+     * @param file  a {@link java.io.File} object
      */
     public static void graphToDot(Graph graph, File file) {
         try {
@@ -723,8 +724,8 @@ public class GraphSaveLoadUtils {
     /**
      * <p>convertToXml.</p>
      *
-     * @return an XML element representing the given graph. (Well, only a basic graph for now...)
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return an XML element representing the given graph. (Well, only a basic graph for now...)
      */
     public static Element convertToXml(Graph graph) {
         Element element = new Element("graph");
@@ -923,7 +924,7 @@ public class GraphSaveLoadUtils {
      * <p>parseGraphXml.</p>
      *
      * @param graphElement a {@link nu.xom.Element} object
-     * @param nodes a {@link java.util.Map} object
+     * @param nodes        a {@link java.util.Map} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      * @throws nu.xom.ParsingException if any.
      */
@@ -1112,7 +1113,7 @@ public class GraphSaveLoadUtils {
      * @param file a {@link java.io.File} object
      * @return a {@link nu.xom.Element} object
      * @throws nu.xom.ParsingException if any.
-     * @throws java.io.IOException if any.
+     * @throws java.io.IOException     if any.
      */
     public static Element getRootElement(File file) throws ParsingException, IOException {
         Builder builder = new Builder();
@@ -1173,9 +1174,9 @@ public class GraphSaveLoadUtils {
     /**
      * <p>getCollidersFromGraph.</p>
      *
-     * @return A list of triples of the form X*-&gt;Y&lt;-*Z.
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return A list of triples of the form X*-&gt;Y&lt;-*Z.
      */
     public static List<Triple> getCollidersFromGraph(Node node, Graph graph) {
         List<Triple> colliders = new ArrayList<>();

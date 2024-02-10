@@ -72,9 +72,9 @@ public final class SemGraph implements Graph {
     private boolean showErrorTerms;
     private boolean pag;
     private boolean cpdag;
-    private Set<Triple> underLineTriples = new HashSet<>();
-    private Set<Triple> dottedUnderLineTriples = new HashSet<>();
-    private Set<Triple> ambiguousTriples = new HashSet<>();
+    private final Set<Triple> underLineTriples = new HashSet<>();
+    private final Set<Triple> dottedUnderLineTriples = new HashSet<>();
+    private final Set<Triple> ambiguousTriples = new HashSet<>();
 
     //=========================CONSTRUCTORS============================//
 

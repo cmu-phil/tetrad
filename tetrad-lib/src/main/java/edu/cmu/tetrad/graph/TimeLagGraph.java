@@ -47,9 +47,9 @@ public class TimeLagGraph implements Graph {
     private boolean cpdag;
     private Paths paths;
 
-    private Set<Triple> underLineTriples = new HashSet<>();
-    private Set<Triple> dottedUnderLineTriples = new HashSet<>();
-    private Set<Triple> ambiguousTriples = new HashSet<>();
+    private final Set<Triple> underLineTriples = new HashSet<>();
+    private final Set<Triple> dottedUnderLineTriples = new HashSet<>();
+    private final Set<Triple> ambiguousTriples = new HashSet<>();
 
     /**
      * <p>Constructor for TimeLagGraph.</p>
@@ -85,7 +85,7 @@ public class TimeLagGraph implements Graph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Nodes may be added into the getModel time step only. That is, node.getLag() must be 0.
      */
     public boolean addNode(Node node) {
@@ -126,7 +126,9 @@ public class TimeLagGraph implements Graph {
         return added;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeNode(Node node) {
         if (!containsNode(node)) {
             throw new IllegalArgumentException("That is not a node in this graph: " + node);
@@ -149,7 +151,9 @@ public class TimeLagGraph implements Graph {
         return getGraph().containsNode(node) && getGraph().removeNode(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addEdge(Edge edge) {
         if (!Edges.isDirectedEdge(edge)) {
             throw new IllegalArgumentException("Only directed edges supported: " + edge);
@@ -188,7 +192,9 @@ public class TimeLagGraph implements Graph {
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeEdge(Edge edge) {
         if (!Edges.isDirectedEdge(edge))
             throw new IllegalArgumentException("Only directed edges are expected in the model.");
@@ -383,7 +389,7 @@ public class TimeLagGraph implements Graph {
      * <p>getNode.</p>
      *
      * @param name a {@link java.lang.String} object
-     * @param lag a int
+     * @param lag  a int
      * @return a {@link edu.cmu.tetrad.graph.Node} object
      */
     public Node getNode(String name, int lag) {
@@ -441,42 +447,58 @@ public class TimeLagGraph implements Graph {
         return getGraph().toString() + "\n" + this.lag0Nodes;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addDirectedEdge(Node node1, Node node2) {
         return this.graph.addDirectedEdge(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addUndirectedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException("Undirected edges not currently supported.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addNondirectedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException("Nondireced edges not supported.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException("Partially oriented edges not supported.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean addBidirectedEdge(Node node1, Node node2) {
         throw new UnsupportedOperationException("Bidireced edges not currently supported.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
         return getGraph().isDefNoncollider(node1, node2, node3);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isDefCollider(Node node1, Node node2, Node node3) {
         return getGraph().isDefCollider(node1, node2, node3);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getChildren(Node node) {
         return getGraph().getChildren(node);
     }
@@ -490,70 +512,96 @@ public class TimeLagGraph implements Graph {
         return getGraph().getDegree();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Edge getEdge(Node node1, Node node2) {
         return getGraph().getEdge(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Edge getDirectedEdge(Node node1, Node node2) {
         return getGraph().getDirectedEdge(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getParents(Node node) {
         return getGraph().getParents(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getIndegree(Node node) {
         return getGraph().getIndegree(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getDegree(Node node) {
         return getGraph().getDegree(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getOutdegree(Node node) {
         return getGraph().getOutdegree(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isAdjacentTo(Node node1, Node node2) {
         return getGraph().isAdjacentTo(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isChildOf(Node node1, Node node2) {
         return getGraph().isChildOf(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isParentOf(Node node1, Node node2) {
         return graph.isParentOf(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void transferNodesAndEdges(Graph graph) throws IllegalArgumentException {
         getGraph().transferNodesAndEdges(graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void transferAttributes(Graph graph) throws IllegalArgumentException {
         getGraph().transferAttributes(graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Paths paths() {
         return this.paths;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isParameterizable(Node node) {
         return getNodeId(node).getLag() < getNumInitialLags();
     }
@@ -576,43 +624,59 @@ public class TimeLagGraph implements Graph {
         return this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<Node> getSepset(Node n1, Node n2) {
         return this.graph.getSepset(n1, n2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isExogenous(Node node) {
         return getGraph().isExogenous(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Endpoint getEndpoint(Node node1, Node node2) {
         return getGraph().getEndpoint(node1, node2);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean setEndpoint(Node from, Node to, Endpoint endPoint) throws IllegalArgumentException {
         return getGraph().setEndpoint(from, to, endPoint);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
         return getGraph().getNodesInTo(node, endpoint);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Node> getNodesOutTo(Node node, Endpoint endpoint) {
         return getGraph().getNodesOutTo(node, endpoint);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addPropertyChangeListener(PropertyChangeListener l) {
         getPcs().addPropertyChangeListener(l);
         getGraph().addPropertyChangeListener(l);
@@ -627,17 +691,23 @@ public class TimeLagGraph implements Graph {
         return getGraph().getEdges();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean containsEdge(Edge edge) {
         return getGraph().containsEdge(edge);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean containsNode(Node node) {
         return getGraph().containsNode(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Edge> getEdges(Node node) {
         if (getGraph().containsNode(node)) {
             return getGraph().getEdges(node);
@@ -646,7 +716,9 @@ public class TimeLagGraph implements Graph {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<Edge> getEdges(Node node1, Node node2) {
         return getGraph().getEdges(node1, node2);
     }
@@ -660,23 +732,31 @@ public class TimeLagGraph implements Graph {
         return getGraph().hashCode();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (!(o instanceof Graph)) return false;
         return getGraph().equals(o);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void fullyConnect(Endpoint endpoint) {
         getGraph().fullyConnect(endpoint);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void reorientAllWith(Endpoint endpoint) {
         getGraph().reorientAllWith(endpoint);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node getNode(String name) {
         return getGraph().getNode(name);
     }
@@ -699,12 +779,16 @@ public class TimeLagGraph implements Graph {
         return getGraph().getNumEdges();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getNumEdges(Node node) {
         return getGraph().getNumEdges(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Graph subgraph(List<Node> nodes) {
         return getGraph().subgraph(nodes);
     }
@@ -718,7 +802,9 @@ public class TimeLagGraph implements Graph {
         return getGraph().getNodes();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNodes(List<Node> nodes) {
         throw new IllegalArgumentException("Sorry, you cannot replace the variables for a time lag graph.");
@@ -740,12 +826,16 @@ public class TimeLagGraph implements Graph {
         getGraph().clear();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeEdge(Node node1, Node node2) {
         return removeEdge(getEdge(node1, node2));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeEdges(Collection<Edge> edges) {
         boolean change = false;
 
@@ -757,12 +847,16 @@ public class TimeLagGraph implements Graph {
         return change;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeNodes(List<Node> nodes) {
         return getGraph().removeNodes(nodes);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean removeEdges(Node node1, Node node2) {
         return removeEdges(getEdges(node1, node2));
     }
@@ -777,25 +871,33 @@ public class TimeLagGraph implements Graph {
         return this.pcs;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);
@@ -810,7 +912,9 @@ public class TimeLagGraph implements Graph {
         return new HashSet<>(this.ambiguousTriples);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setAmbiguousTriples(Set<Triple> triples) {
         this.ambiguousTriples.clear();
 
@@ -839,7 +943,7 @@ public class TimeLagGraph implements Graph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * States whether r-s-r is an underline triple or not.
      */
     public boolean isAmbiguousTriple(Node x, Node y, Node z) {
@@ -848,19 +952,23 @@ public class TimeLagGraph implements Graph {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * States whether r-s-r is an underline triple or not.
      */
     public boolean isUnderlineTriple(Node x, Node y, Node z) {
         return this.underLineTriples.contains(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addAmbiguousTriple(Node x, Node y, Node z) {
         this.ambiguousTriples.add(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addUnderlineTriple(Node x, Node y, Node z) {
         Triple triple = new Triple(x, y, z);
 
@@ -871,7 +979,9 @@ public class TimeLagGraph implements Graph {
         this.underLineTriples.add(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addDottedUnderlineTriple(Node x, Node y, Node z) {
         Triple triple = new Triple(x, y, z);
 
@@ -882,22 +992,30 @@ public class TimeLagGraph implements Graph {
         this.dottedUnderLineTriples.add(triple);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeAmbiguousTriple(Node x, Node y, Node z) {
         this.ambiguousTriples.remove(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeUnderlineTriple(Node x, Node y, Node z) {
         this.underLineTriples.remove(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
         this.dottedUnderLineTriples.remove(new Triple(x, y, z));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setUnderLineTriples(Set<Triple> triples) {
         this.underLineTriples.clear();
 
@@ -906,7 +1024,9 @@ public class TimeLagGraph implements Graph {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setDottedUnderLineTriples(Set<Triple> triples) {
         this.dottedUnderLineTriples.clear();
 

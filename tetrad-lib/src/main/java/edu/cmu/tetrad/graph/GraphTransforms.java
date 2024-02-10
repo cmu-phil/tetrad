@@ -3,7 +3,6 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.search.utils.DagInCpcagIterator;
 import edu.cmu.tetrad.search.utils.DagToPag;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +30,7 @@ public class GraphTransforms {
     /**
      * Returns a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
      *
-     * @param graph the CPDAG
+     * @param graph     the CPDAG
      * @param knowledge the knowledge
      * @return a DAG from the given CPDAG. If the given CPDAG is not a PDAG, returns null.
      */
@@ -66,6 +65,7 @@ public class GraphTransforms {
     }
 
     // Zhang 2008 Theorem 2
+
     /**
      * <p>pagToMag.</p>
      *
@@ -138,7 +138,7 @@ public class GraphTransforms {
     /**
      * Generates the list of DAGs in the given cpdag.
      *
-     * @param cpdag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param cpdag                 a {@link edu.cmu.tetrad.graph.Graph} object
      * @param orientBidirectedEdges a boolean
      * @return a {@link java.util.List} object
      */
@@ -153,7 +153,7 @@ public class GraphTransforms {
     /**
      * <p>getDagsInCpdagMeek.</p>
      *
-     * @param cpdag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param cpdag     a {@link edu.cmu.tetrad.graph.Graph} object
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      * @return a {@link java.util.List} object
      */

@@ -27,8 +27,8 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 /**
  * An ordered pair of objects. This does not serialize well, unfortunately.
  *
- * @author Tyler Gibson
  * @param <E> The type of the objects in the pair.
+ * @author Tyler Gibson
  * @version $Id: $Id
  */
 public class OrderedPair<E> implements TetradSerializable, TetradSerializableExcluded {
@@ -49,7 +49,7 @@ public class OrderedPair<E> implements TetradSerializable, TetradSerializableExc
     /**
      * <p>Constructor for OrderedPair.</p>
      *
-     * @param first a E object
+     * @param first  a E object
      * @param second a E object
      */
     public OrderedPair(E first, E second) {
@@ -92,7 +92,9 @@ public class OrderedPair<E> implements TetradSerializable, TetradSerializableExc
         return 13 * this.first.hashCode() + 67 * this.second.hashCode();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (!(o instanceof OrderedPair)) throw new IllegalArgumentException();
         OrderedPair<E> that = (OrderedPair<E>) o;
