@@ -2,6 +2,7 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import java.util.List;
  */
 public class EdgeTypeProbability implements TetradSerializable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     private EdgeType edgeType;
     private List<Edge.Property> properties = new ArrayList<>();
@@ -114,8 +116,50 @@ public class EdgeTypeProbability implements TetradSerializable {
         this.probability = probability;
     }
 
+    /**
+     * An enumeration of the different types of edges.
+     */
     public enum EdgeType {
-        nil, ta, at, ca, ac, cc, aa, tt
+
+        /**
+         * No edge
+         */
+        nil,
+
+        /**
+         * Tail-to-arrow
+         */
+        ta,
+
+        /**
+         * Arrow-to-tail
+         */
+        at,
+
+        /**
+         * Circle-to-arrow
+         */
+        ca,
+
+        /**
+         * Arrow-to-circle
+         */
+        ac,
+
+        /**
+         * Circle-to-circle
+         */
+        cc,
+
+        /**
+         * Arrow-to-arrow
+         */
+        aa,
+
+        /**
+         * Tail-to-tail
+         */
+        tt
     }
 
 }

@@ -42,12 +42,38 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public final class EmBayesProperties {
+
+    /**
+     * The data set.
+     */
     private DataSet dataSet;
+
+    /**
+     *
+     */
     private BayesPm bayesPm;
+
+    /**
+     * The graph.
+     */
     private Graph graph;
+
+    /**
+     * The blank BayesIm.
+     */
     private MlBayesIm blankBayesIm;
+
+    /**
+     * Degrees of freedom for the p-value.
+     */
     private int pValueDf;
+
+    /**
+     * The chi-squared value.
+     */
     private double chisq;
+
+
     private Estimator estimator = (bayesPm, dataSet) -> {
         EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
         this.dataSet = estimator.getMixedDataSet();

@@ -1906,7 +1906,7 @@ public class ProbUtils {
      * @param ah upper bound 1
      * @param ak upper bound 1
      * @param r  correlatiohn
-     * @return Prob(x1 & amp ; le ; ah, x2 & amp ; le ; ak)
+     * @return a double
      */
     public static double biNormalCdf(double ah, double ak, double r) {
         return ProbUtils.biNormalCdf2(-ah, -ak, r);

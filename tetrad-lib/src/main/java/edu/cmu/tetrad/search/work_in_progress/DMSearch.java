@@ -22,31 +22,67 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class DMSearch {
+
+    /**
+     * Input variables.
+     */
     private int[] inputs;
+
+    /**
+     * Output variables.
+     */
     private int[] outputs;
 
-    //alpha value for sober's criterion.
+    /**
+     * alpha value for sober's criterion.
+     */
     private double alphaSober = .05;
 
-    //Alpha value for pc.
+    /**
+     * Alpha value for pc.
+     */
     private double alphaPC = .05;
 
 
-    //Starting ges penalty discount.
+    /**
+     * Starting ges penalty discount.
+     */
     private double gesDiscount = 10;
+
+    /**
+     * Maximum depth of GES search.
+     */
     private int gesDepth = 0;
 
-    //Minimum ges penalty discount to use in recursive search.
+    /**
+     * Minimum ges penalty discount to use in recursive search.
+     */
     private int minDiscount = 4;
 
-    //If true, use GES, else use PC.
+    /**
+     * If true, use GES, else use PC.
+     */
     private boolean useGES = true;
 
-    //Lets the user select a subset of the inputs in the dataset to search over.
-    //If not subseting, should be set to the entire input set.
+    /**
+     * Lets the user select a subset of the inputs in the dataset to search over. If not subseting, should be set to the
+     * entire input set.
+     */
     private int[] trueInputs;
+
+    /**
+     * The dataset to search over.
+     */
     private DataSet data;
+
+    /**
+     * The covariance matrix of the dataset.
+     */
     private CovarianceMatrix cov;
+
+    /**
+     * The latent structure of the dataset.
+     */
     private LatentStructure dmStructure;
 
     /**
@@ -883,16 +919,29 @@ public class DMSearch {
         return (actualInputs);
     }
 
+    /**
+     * Structure to hold latent structure.
+     */
     public class LatentStructure {
         List<Node> latents = new ArrayList<Node>();
         Map<Node, SortedSet<Node>> inputs = new TreeMap<Node, SortedSet<Node>>();
         Map<Node, SortedSet<Node>> outputs = new TreeMap<Node, SortedSet<Node>>();
         Map<Node, SortedSet<Node>> latentEffects = new TreeMap<Node, SortedSet<Node>>();
 
-
+        /**
+         * <p>Constructor for LatentStructure.</p>
+         */
         public LatentStructure() {
         }
 
+        /**
+         * <p>addRecord.</p>
+         *
+         * @param latent        a {@link edu.cmu.tetrad.graph.Node} object
+         * @param inputs        a {@link java.util.SortedSet} object
+         * @param outputs       a {@link java.util.SortedSet} object
+         * @param latentEffects a {@link java.util.SortedSet} object
+         */
         public void addRecord(Node latent, SortedSet<Node> inputs, SortedSet<Node> outputs, SortedSet<Node> latentEffects) {
             if (latents.contains(latent)) throw new IllegalArgumentException();
 
@@ -902,6 +951,11 @@ public class DMSearch {
             this.latentEffects.put(latent, latentEffects);
         }
 
+        /**
+         * <p>removeLatent.</p>
+         *
+         * @param latent a {@link edu.cmu.tetrad.graph.Node} object
+         */
         public void removeLatent(Node latent) {
             this.latents.remove(latent);
             this.inputs.remove(latent);
@@ -909,26 +963,60 @@ public class DMSearch {
             this.latentEffects.remove(latent);
         }
 
+        /**
+         * <p>getLatents.</p>
+         *
+         * @return a {@link java.util.List} object
+         */
         public List<Node> getLatents() {
             return new ArrayList<Node>(latents);
         }
 
+        /**
+         * <p>containsLatent.</p>
+         *
+         * @param latent a {@link edu.cmu.tetrad.graph.Node} object
+         * @return a boolean
+         */
         public boolean containsLatent(Node latent) {
             return latents.contains(latent);
         }
 
+        /**
+         * <p>getInputs.</p>
+         *
+         * @param latent a {@link edu.cmu.tetrad.graph.Node} object
+         * @return a {@link java.util.SortedSet} object
+         */
         public SortedSet<Node> getInputs(Node latent) {
             return new TreeSet<Node>(inputs.get(latent));
         }
 
+        /**
+         * <p>getOutputs.</p>
+         *
+         * @param latent a {@link edu.cmu.tetrad.graph.Node} object
+         * @return a {@link java.util.SortedSet} object
+         */
         public SortedSet<Node> getOutputs(Node latent) {
             return new TreeSet<Node>(outputs.get(latent));
         }
 
+        /**
+         * <p>getLatentEffects.</p>
+         *
+         * @param latent a {@link edu.cmu.tetrad.graph.Node} object
+         * @return a {@link java.util.SortedSet} object
+         */
         public SortedSet<Node> getLatentEffects(Node latent) {
             return new TreeSet<Node>(latentEffects.get(latent));
         }
 
+        /**
+         * <p>toString.</p>
+         *
+         * @return a {@link java.lang.String} object
+         */
         public String toString() {
             StringBuilder b = new StringBuilder();
 
@@ -943,6 +1031,11 @@ public class DMSearch {
             return b.toString();
         }
 
+        /**
+         * <p>latentStructToEdgeListGraph.</p>
+         * @param structure a {@link edu.cmu.tetrad.search.work_in_progress.DMSearch.LatentStructure} object
+         * @return
+         */
         public Graph latentStructToEdgeListGraph(LatentStructure structure) {
 
             Graph structureGraph = new EdgeListGraph();

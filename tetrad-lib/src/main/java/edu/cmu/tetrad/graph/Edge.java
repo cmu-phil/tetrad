@@ -549,6 +549,25 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     public enum Property {
-        dd, nl, pd, pl
+
+        /**
+         * Definitely direct.
+         */
+        dd,
+
+        /**
+         * No latent confounder.
+         */
+        nl,
+
+        /**
+         * Possibly direct.
+         */
+        pd,
+
+        /**
+         * Possible latent confounder.
+         */
+        pl
     }
 }

@@ -122,7 +122,7 @@
                     <show>public</show>
                     <additionalJOptions>
                         <additionalJOption>-Xmaxwarns</additionalJOption>
-                        <additionalJOption>1000</additionalJOption>
+                        <additionalJOption>999</additionalJOption>
                     </additionalJOptions>
                 </configuration>
                 <executions>

@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,24 +43,88 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class SemOptimizerEm implements SemOptimizer {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Tolerance for the function.
+     */
     private static final double FUNC_TOLERANCE = 1.0e-6;
 
+    /**
+     * The SEM to optimize.
+     */
     private SemIm semIm;
+
+    /**
+     * The SEM graph.
+     */
     private SemGraph graph;
 
+    /**
+     * The sample covariance matrix.
+     */
     private Matrix yCov;   // Sample cov.
-    private Matrix yCovModel, yzCovModel, zCovModel; // Partitions of the modeled cov.
+
+    /**
+     * Partitions of the modeled cov.
+     */
+    private Matrix yCovModel,
+
+    /**
+     * Partitions of the modeled cov.
+     */
+    yzCovModel,
+
+    /**
+     * Partitions of the modeled cov.
+     */
+    zCovModel;
     private Matrix expectedCov;
 
-    private int numObserved, numLatent;
-    private int[] idxLatent, idxObserved;
+    /**
+     * Number of observed and latent variables.
+     */
+    private int numObserved,
 
+    /**
+     * Number of observed and latent variables.
+     */
+    numLatent;
+
+    /**
+     * Indices of the latent variables.
+     */
+    private int[] idxLatent,
+
+    /**
+     * Indices of the observed variables.
+     */
+    idxObserved;
+
+    /**
+     * Indices of the parents of each node.
+     */
     private int[][] parents;
+
+    /**
+     * Error parent of each node.
+     */
     private Node[] errorParent;
+
+    /**
+     * Covariance of each node with its parents.
+     */
     private double[][] nodeParentsCov;
+
+    /**
+     * Parents covariance matrix.
+     */
     private double[][][] parentsCov;
+
+    /**
+     * Number of restarts.
+     */
     private int numRestarts = 1;
 
     /**
