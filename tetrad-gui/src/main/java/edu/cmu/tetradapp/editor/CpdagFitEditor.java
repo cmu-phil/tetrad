@@ -32,8 +32,7 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Provides a little display/editor for notes in the session workbench. This may be elaborated in the future to allow
- * marked up text.
+ * Displays a CpdagFitModel object as a JTable.
  *
  * @author josephramsey
  * @version $Id: $Id
