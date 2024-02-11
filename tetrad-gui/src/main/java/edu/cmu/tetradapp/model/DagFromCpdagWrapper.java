@@ -28,6 +28,8 @@ import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.io.Serial;
+
 /**
  * Picks a DAG from the given graph.
  *
@@ -35,6 +37,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @version $Id: $Id
  */
 public class DagFromCpdagWrapper extends GraphWrapper implements DoNotAddOldModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
