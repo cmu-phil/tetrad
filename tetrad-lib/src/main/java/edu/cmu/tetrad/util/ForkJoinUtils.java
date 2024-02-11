@@ -29,30 +29,23 @@ import java.util.concurrent.ForkJoinPool;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class ForkJoinPoolInstance {
-    private static final ForkJoinPoolInstance INSTANCE = new ForkJoinPoolInstance();
-    private final ForkJoinPool pool = ForkJoinPool.commonPool();
+public class ForkJoinUtils {
 
-    private ForkJoinPoolInstance() {
+    private ForkJoinUtils() {
 
     }
 
     /**
-     * <p>getInstance.</p>
+     * Returns a ForkJoinPool with the given parallelism. If parallelism is 1, returns the common pool.
      *
-     * @return a {@link edu.cmu.tetrad.util.ForkJoinPoolInstance} object
+     * @param parallelism the number of threads to use.
      */
-    public static ForkJoinPoolInstance getInstance() {
-        return ForkJoinPoolInstance.INSTANCE;
-    }
-
-    /**
-     * <p>Getter for the field <code>pool</code>.</p>
-     *
-     * @return a {@link java.util.concurrent.ForkJoinPool} object
-     */
-    public ForkJoinPool getPool() {
-        return this.pool;
+    public static ForkJoinPool getPool(int parallelism) {
+        if (parallelism == 1) {
+            return ForkJoinPool.commonPool();
+        } else {
+            return new ForkJoinPool(parallelism);
+        }
     }
 }
 

@@ -10,10 +10,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.*;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static org.apache.commons.math3.util.FastMath.min;
@@ -379,7 +376,8 @@ public class Bes {
 
         for (Node r : toProcess) {
             List<Node> adjacentNodes = new ArrayList<>(toProcess);
-            ForkJoinPool.commonPool().invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0, adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
+            BackwardTask task = new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0, adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward);
+            task.invoke();
         }
     }
 
@@ -474,7 +472,7 @@ public class Bes {
     }
 
 
-    private static class Arrow implements Comparable<Arrow> {
+    public static class Arrow implements Comparable<Arrow> {
 
         private final double bump;
         private final Node a;

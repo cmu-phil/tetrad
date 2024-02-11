@@ -62,13 +62,13 @@ import java.util.concurrent.*;
 public final class SvarFges implements IGraphSearch, DagScorer {
 
     // The number of threads to use.
-    final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
+    final int maxThreads = Runtime.getRuntime().availableProcessors();
     // The logger for this class. The config needs to be set.
     private final TetradLogger logger = TetradLogger.getInstance();
     // The top n graphs found by the algorithm, where n is numCPDAGsToStore.
     private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
     // The static ForkJoinPool instance.
-    private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+    private final ForkJoinPool pool = ForkJoinUtils.getPool(maxThreads);
     // The number of graphs searched.
     private final int[] count = new int[1];
     // The set of removed edges.

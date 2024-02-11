@@ -18,6 +18,8 @@
  */
 package edu.cmu.tetrad.stat.correlation;
 
+import edu.cmu.tetrad.util.ForkJoinUtils;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -62,7 +64,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         double[] covarianceMatrix = new double[(this.numOfCols * (this.numOfCols + 1)) / 2];
         double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = ForkJoinPool.commonPool();
+        ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
         pool.invoke(new MeanAction(means, this.data, 0, this.numOfCols - 1));
         pool.invoke(new CovarianceLowerTriangleAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
         pool.shutdown();
@@ -78,7 +80,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         double[][] covarianceMatrix = new double[this.numOfCols][this.numOfCols];
         double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = ForkJoinPool.commonPool();
+        ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
         pool.invoke(new MeanAction(means, this.data, 0, this.numOfCols - 1));
         pool.invoke(new CovarianceAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
         pool.shutdown();

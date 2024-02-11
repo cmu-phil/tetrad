@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.RowsSettable;
+import edu.cmu.tetrad.util.ForkJoinUtils;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.math3.distribution.BinomialDistribution;
@@ -637,8 +638,16 @@ public class MarkovCheck {
         }
 
         if (parallelized) {
+            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+
             List<Future<Pair<Set<IndependenceFact>, Set<IndependenceFact>>>> theseResults
-                    = ForkJoinPool.commonPool().invokeAll(tasks);
+                    = null;
+            try {
+                theseResults = pool.invokeAll(tasks);
+            } catch (Exception e) {
+                pool.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
 
             for (Future<Pair<Set<IndependenceFact>, Set<IndependenceFact>>> future : theseResults) {
                 try {
@@ -646,9 +655,12 @@ public class MarkovCheck {
                     msep.addAll(setPair.getFirst());
                     mconn.addAll(setPair.getSecond());
                 } catch (InterruptedException | ExecutionException e) {
-                    throw new RuntimeException(e);
+                    pool.shutdownNow();
+                    Thread.currentThread().interrupt();
                 }
             }
+
+            pool.shutdown();
         }
     }
 
@@ -730,16 +742,26 @@ public class MarkovCheck {
         }
 
         if (parallelized) {
-            List<Future<Pair<Set<IndependenceResult>, Set<IndependenceResult>>>> theseResults = ForkJoinPool.commonPool().invokeAll(tasks);
+            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+            List<Future<Pair<Set<IndependenceResult>, Set<IndependenceResult>>>> theseResults = null;
+            try {
+                theseResults = pool.invokeAll(tasks);
+            } catch (Exception e) {
+                pool.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
 
             for (Future<Pair<Set<IndependenceResult>, Set<IndependenceResult>>> future : theseResults) {
                 try {
                     resultsIndep.addAll(future.get().getFirst());
                     resultsDep.addAll(future.get().getSecond());
                 } catch (InterruptedException | ExecutionException e) {
-                    throw new RuntimeException(e);
+                    pool.shutdownNow();
+                    Thread.currentThread().interrupt();
                 }
             }
+
+            pool.shutdown();
         }
     }
 

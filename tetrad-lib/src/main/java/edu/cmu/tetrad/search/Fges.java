@@ -95,7 +95,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
     //    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
-    private final ExecutorService pool;
+    private final ForkJoinPool pool;
     //    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
     private boolean faithfulnessAssumed = false;
     // Specification of forbidden and required edges.
@@ -394,12 +394,14 @@ public final class Fges implements IGraphSearch, DagScorer {
 
         for (int i = 0; i < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
             if (Thread.currentThread().isInterrupted()) {
-                pool.shutdownNow();
+                if (pool.getParallelism() > 1) {
+                    pool.shutdownNow();
+                    Thread.currentThread().interrupt();
+                }
                 break;
             }
 
-            NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, min(nodes.size(), i + chunkSize),
-                    nodes, emptySet);
+            NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, min(nodes.size(), i + chunkSize), nodes, emptySet);
 
             if (!parallelized) {
                 task.call();
@@ -409,11 +411,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
 
         if (parallelized) {
-            try {
-                pool.invokeAll(tasks);
-            } catch (InterruptedException e) {
-                pool.shutdownNow();
-            }
+            pool.invokeAll(tasks);
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -557,6 +555,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         for (int i = 0; i < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
+                Thread.currentThread().interrupt();
                 break;
             }
 
@@ -570,11 +569,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
 
         if (this.parallelized) {
-            try {
-                pool.invokeAll(tasks);
-            } catch (InterruptedException e) {
-                pool.shutdownNow();
-            }
+            pool.invokeAll(tasks);
         }
     }
 
@@ -659,6 +654,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         for (int i = 0; i < TT.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
+                Thread.currentThread().interrupt();
                 break;
             }
 
@@ -678,23 +674,19 @@ public final class Fges implements IGraphSearch, DagScorer {
 
         if (this.parallelized) {
             List<Future<EvalPair>> futures = null;
-            try {
-                futures = pool.invokeAll(tasks);
-            } catch (InterruptedException e) {
-                pool.shutdownNow();
-            }
+            futures = pool.invokeAll(tasks);
 
-            if (futures != null) {
-                for (Future<EvalPair> future : futures) {
-                    try {
-                        EvalPair pair = future.get();
-                        if (pair.bump > maxBump) {
-                            maxT = pair.T;
-                            maxBump = pair.bump;
-                        }
-                    } catch (InterruptedException | ExecutionException e) {
-                        e.printStackTrace();
+            for (Future<EvalPair> future : futures) {
+                try {
+                    EvalPair pair = future.get();
+                    if (pair.bump > maxBump) {
+                        maxT = pair.T;
+                        maxBump = pair.bump;
                     }
+                } catch (InterruptedException | ExecutionException e) {
+                    pool.shutdownNow();
+                    Thread.currentThread().interrupt();
+                    e.printStackTrace();
                 }
             }
         }
@@ -704,8 +696,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
     }
 
-    private void addArrowForward(Node a, Node b, Set<Node> hOrT, Set<Node> TNeighbors, Set<Node> naYX,
-                                 Set<Node> parents, double bump) {
+    private void addArrowForward(Node a, Node b, Set<Node> hOrT, Set<Node> TNeighbors, Set<Node> naYX, Set<Node> parents, double bump) {
         Arrow arrow = new Arrow(bump, a, b, hOrT, TNeighbors, naYX, parents, arrowIndex++);
         sortedArrows.add(arrow);
 //        System.out.println(arrow);
@@ -740,8 +731,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     // Evaluate the Insert(X, Y, TNeighbors) operator (Definition 12 from Chickering, 2002).
-    private double insertEval(Node x, Node y, Set<Node> T, Set<Node> naYX, Set<Node> parents,
-                              Map<Node, Integer> hashIndices) {
+    private double insertEval(Node x, Node y, Set<Node> T, Set<Node> naYX, Set<Node> parents, Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(T);
         set.addAll(parents);
@@ -762,10 +752,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         if (verbose) {
             int cond = T.size() + getNaYX(x, y).size() + graph.getParents(y).size();
 
-            final String message = graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y)
-                    + " " + T + " " + bump
-                    + " degree = " + GraphUtils.getDegree(graph)
-                    + " indegree = " + GraphUtils.getIndegree(graph) + " cond = " + cond;
+            final String message = graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) + " " + T + " " + bump + " degree = " + GraphUtils.getDegree(graph) + " indegree = " + GraphUtils.getIndegree(graph) + " cond = " + cond;
             TetradLogger.getInstance().forceLogMessage(message);
         }
 
@@ -781,7 +768,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     // Test if the candidate insertion is a valid operation
-    // (Theorem 15 from Chickering, 2002).
+// (Theorem 15 from Chickering, 2002).
     private boolean validInsert(Node x, Node y, Set<Node> T, Set<Node> naYX) {
         boolean violatesKnowledge = false;
 
@@ -800,8 +787,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         Set<Node> union = new HashSet<>(T);
         union.addAll(naYX);
 
-        return isClique(union) && semidirectedPathCondition(y, x, union)
-                && !violatesKnowledge;
+        return isClique(union) && semidirectedPathCondition(y, x, union) && !violatesKnowledge;
     }
 
     // Adds edges required by knowledge.
@@ -813,6 +799,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         for (Iterator<KnowledgeEdge> it = getKnowledge().requiredEdgesIterator(); it.hasNext() /*&& !Thread.currentThread().isInterrupted()*/; ) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
+                Thread.currentThread().interrupt();
                 break;
             }
 
@@ -833,6 +820,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         for (Edge edge : graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
+                Thread.currentThread().interrupt();
                 break;
             }
 
@@ -893,8 +881,8 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     // Use background knowledge to decide if an insert or delete operation does not orient edges in a forbidden
-    // direction according to prior knowledge. If some orientation is forbidden in the subset, the whole subset is
-    // forbidden.
+// direction according to prior knowledge. If some orientation is forbidden in the subset, the whole subset is
+// forbidden.
     private boolean invalidSetByKnowledge(Node y, Set<Node> subset) {
         for (Node node : subset) {
             if (getKnowledge().isForbidden(node.getName(), y.getName())) {
@@ -905,7 +893,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     // Find all adj that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
-    // directed edge).
+// directed edge).
     private Set<Node> getNaYX(Node x, Node y) {
         List<Node> adj = graph.getAdjacentNodes(y);
         Set<Node> nayx = new HashSet<>();
@@ -1035,8 +1023,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         return _score;
     }
 
-    private double scoreGraphChange(Node x, Node y, Set<Node> parents,
-                                    Map<Node, Integer> hashIndices) {
+    private double scoreGraphChange(Node x, Node y, Set<Node> parents, Map<Node, Integer> hashIndices) {
         int xIndex = hashIndices.get(x);
         int yIndex = hashIndices.get(y);
 
@@ -1125,10 +1112,10 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
-    // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
-    // For the forward direction, TNeighbors neighbors are needed; for the backward direction, H neighbors are needed.
-    // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
-    // as the "bump."
+// associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
+// For the forward direction, TNeighbors neighbors are needed; for the backward direction, H neighbors are needed.
+// See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
+// as the "bump."
     private static class Arrow implements Comparable<Arrow> {
 
         private final double bump;
@@ -1140,8 +1127,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         private final int index;
         private Set<Node> TNeighbors;
 
-        Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> capTorH, Set<Node> naYX,
-              Set<Node> parents, int index) {
+        Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> capTorH, Set<Node> naYX, Set<Node> parents, int index) {
             this.bump = bump;
             this.a = a;
             this.b = b;
@@ -1190,11 +1176,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
 
         public String toString() {
-            return "Arrow<" + a + "->" + b + " bump = " + bump
-                    + " t/h = " + hOrT
-                    + " TNeighbors = " + getTNeighbors()
-                    + " parents = " + parents
-                    + " naYX = " + naYX + ">";
+            return "Arrow<" + a + "->" + b + " bump = " + bump + " t/h = " + hOrT + " TNeighbors = " + getTNeighbors() + " parents = " + parents + " naYX = " + naYX + ">";
         }
 
         public int getIndex() {
@@ -1247,6 +1229,7 @@ public final class Fges implements IGraphSearch, DagScorer {
                 for (int j = i + 1; j < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; j++) {
                     if (Thread.interrupted()) {
                         pool.shutdownNow();
+                        Thread.currentThread().interrupt();
                         break;
                     }
 

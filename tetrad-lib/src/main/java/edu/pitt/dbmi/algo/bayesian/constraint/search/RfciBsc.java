@@ -13,6 +13,7 @@ import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
+import edu.cmu.tetrad.util.ForkJoinUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
@@ -321,24 +322,15 @@ public class RfciBsc implements IGraphSearch {
         int trial = 0;
 
         int numCandidatePagSearchTrial = 1000;
-        while (vars.size() == 0 && trial < numCandidatePagSearchTrial) {
+        while (vars.isEmpty() && trial < numCandidatePagSearchTrial) {
             tasks.clear();
 
             for (int i = 0; i < this.numRandomizedSearchModels; i++) {
                 tasks.add(new SearchPagTask());
             }
 
-            ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
-
-            try {
-                pool.invokeAll(tasks);
-            } catch (InterruptedException exception) {
-                if (this.verbose) {
-                    this.logger.log("error", "Task has been interrupted");
-                }
-                Thread.currentThread().interrupt();
-            }
-
+            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+            pool.invokeAll(tasks);
             shutdownAndAwaitTermination(pool);
             trial++;
         }
@@ -403,17 +395,8 @@ public class RfciBsc implements IGraphSearch {
             tasks.add(new BootstrapDepDataTask(b, rows));
         }
 
-        ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
-
-        try {
-            pool.invokeAll(tasks);
-        } catch (InterruptedException exception) {
-            if (this.verbose) {
-                this.logger.log("error", "Task has been interrupted");
-            }
-            Thread.currentThread().interrupt();
-        }
-
+        ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+        pool.invokeAll(tasks);
         shutdownAndAwaitTermination(pool);
 
         // learn structure of constraints using empirical data => constraint data
@@ -476,17 +459,8 @@ public class RfciBsc implements IGraphSearch {
             tasks.add(new CalculateBscScoreTask(pagOrig));
         }
 
-        pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
-
-        try {
-            pool.invokeAll(tasks);
-        } catch (InterruptedException exception) {
-            if (this.verbose) {
-                this.logger.log("error", "Task has been interrupted");
-            }
-            Thread.currentThread().interrupt();
-        }
-
+        pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+        pool.invokeAll(tasks);
         shutdownAndAwaitTermination(pool);
 
         for (int i = 0; i < this.pAGs.size(); i++) {
@@ -760,12 +734,13 @@ public class RfciBsc implements IGraphSearch {
         return this.bscI;
     }
 
-    private void shutdownAndAwaitTermination(ExecutorService pool) {
+    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
         pool.shutdown(); // Disable new tasks from being submitted
         try {
             // Wait a while for existing tasks to terminate
             if (!pool.awaitTermination(1, TimeUnit.SECONDS)) {
                 pool.shutdownNow(); // Cancel currently executing tasks
+                Thread.currentThread().interrupt();
                 // Wait a while for tasks to respond to being cancelled
                 if (!pool.awaitTermination(1, TimeUnit.SECONDS)) {
                     System.err.println("Pool did not terminate");

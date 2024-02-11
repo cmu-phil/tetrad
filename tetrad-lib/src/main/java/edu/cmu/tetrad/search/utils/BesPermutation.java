@@ -5,15 +5,13 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.util.ForkJoinUtils;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.*;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static org.apache.commons.math3.util.FastMath.min;
@@ -418,7 +416,10 @@ public class BesPermutation {
 
         for (Node r : toProcess) {
             List<Node> adjacentNodes = new ArrayList<>(toProcess);
-            ForkJoinPool.commonPool().invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0, adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
+            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+            pool.invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
+                    adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
+            pool.shutdown();
         }
     }
 

@@ -897,7 +897,7 @@ public class TimeoutComparison {
             }
         }
 
-        ExecutorService pool = Executors.newSingleThreadExecutor();
+        ForkJoinPool pool = ForkJoinUtils.getPool(1);
         tasks.forEach(task -> {
             Future<Void> future = pool.submit(task);
             try {
@@ -917,6 +917,7 @@ public class TimeoutComparison {
                 }
             }
         });
+
         shutdownAndAwaitTermination(pool);
 
         return allStats;
@@ -926,7 +927,7 @@ public class TimeoutComparison {
         return TimeoutComparison.DF.format(new Date(MillisecondTimes.timeMillis()));
     }
 
-    private void shutdownAndAwaitTermination(ExecutorService pool) {
+    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
         pool.shutdown(); // Disable new tasks from being submitted
         try {
             // Wait a while for existing tasks to terminate

@@ -23,7 +23,7 @@ package edu.cmu.tetrad.data;
 
 import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.ForkJoinUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Vector;
@@ -276,7 +276,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         int chunk = FastMath.max(_chunk, minChunk);
 
         VarianceTask task = new VarianceTask(chunk, 0, variables.size());
-        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
+        ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors()).invoke(task);
 
         if (verbose) {
             System.out.println("Done with variances.");

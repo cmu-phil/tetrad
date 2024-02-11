@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.BesPermutation;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
+import edu.cmu.tetrad.util.ForkJoinUtils;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -145,8 +146,9 @@ public class Boss implements SuborderSearch {
         double score, bestScore = Double.NEGATIVE_INFINITY;
         boolean improved;
 
-        if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
-        else this.pool = ForkJoinPool.commonPool();
+//        if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
+//        else this.pool = ForkJoinPool.commonPool();
+        this.pool = ForkJoinUtils.getPool(this.numThreads);
 
         for (int i = 0; i < this.numStarts; i++) {
 
@@ -359,6 +361,7 @@ public class Boss implements SuborderSearch {
         for (Node z : suborder) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
+                Thread.currentThread().interrupt();
                 return false;
             }
             if (this.knowledge.isRequired(x.getName(), z.getName())) break;
@@ -418,6 +421,7 @@ public class Boss implements SuborderSearch {
         while (itr.hasNext()) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
+                Thread.currentThread().interrupt();
                 return false;
             }
 

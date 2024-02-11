@@ -370,7 +370,7 @@ public final class FciMax implements IGraphSearch {
 
         Task task = new Task(nodes, graph, 0, nodes.size());
 
-        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
+        ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors()).invoke(task);
 
         List<Triple> tripleList = new ArrayList<>(scores.keySet());
 

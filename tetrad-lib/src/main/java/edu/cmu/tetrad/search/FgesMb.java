@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.score.ScoredGraph;
 import edu.cmu.tetrad.search.utils.Bes;
 import edu.cmu.tetrad.search.utils.DagScorer;
 import edu.cmu.tetrad.search.utils.MeekRules;
+import edu.cmu.tetrad.util.ForkJoinUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -454,7 +455,14 @@ public final class FgesMb implements DagScorer {
         }
 
         if (parallelized) {
-            ForkJoinPool.commonPool().invokeAll(tasks);
+            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+            try {
+                pool.invokeAll(tasks);
+            } catch (Exception e) {
+                pool.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+            pool.shutdown();
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -610,7 +618,15 @@ public final class FgesMb implements DagScorer {
         }
 
         if (this.parallelized) {
-            ForkJoinPool.commonPool().invokeAll(tasks);
+            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+            try {
+                pool.invokeAll(tasks);
+            } catch (Exception e) {
+                pool.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+            pool.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -708,7 +724,8 @@ public final class FgesMb implements DagScorer {
         }
 
         if (this.parallelized) {
-            List<Future<EvalPair>> futures = ForkJoinPool.commonPool().invokeAll(tasks);
+            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+            List<Future<EvalPair>> futures = pool.invokeAll(tasks);
 
             for (Future<EvalPair> future : futures) {
                 try {
@@ -718,8 +735,11 @@ public final class FgesMb implements DagScorer {
                         maxBump = pair.bump;
                     }
                 } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
+                    pool.shutdownNow();
+                    Thread.currentThread().interrupt();
                 }
+
+                pool.shutdown();
             }
         }
 

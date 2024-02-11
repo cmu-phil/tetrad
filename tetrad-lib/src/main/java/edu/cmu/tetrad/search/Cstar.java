@@ -708,17 +708,20 @@ public class Cstar {
                 }
             }
         } else {
-            ForkJoinPool executorService = ForkJoinPool.commonPool();
+            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
 
             try {
-                List<Future<double[][]>> futures = executorService.invokeAll(tasks);
+                List<Future<double[][]>> futures = pool.invokeAll(tasks);
 
                 for (Future<double[][]> future : futures) {
                     results.add(future.get());
                 }
             } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+                pool.shutdownNow();
+                Thread.currentThread().interrupt();
             }
+
+            pool.shutdown();
         }
 
         return results;

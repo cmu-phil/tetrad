@@ -27,13 +27,14 @@ import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.ForkJoinUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
 /**
@@ -1258,10 +1259,10 @@ public final class GraphUtils {
 
         List<Edge> edges = new ArrayList<>(edgeSet);
 
-        ForkJoinPoolInstance pool = ForkJoinPoolInstance.getInstance();
+        ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
 
         CountTask task = new CountTask(500, 0, edges.size(), edges, leftGraph, topGraph, new int[1]);
-        Counts counts = pool.getPool().invoke(task);
+        Counts counts = pool.invoke(task);
 
         return counts.countArray();
     }

@@ -22,7 +22,7 @@ package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.ForkJoinUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Vector;
@@ -38,6 +38,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
 import static org.apache.commons.math3.util.FastMath.abs;
@@ -240,7 +241,8 @@ public final class LargeScaleSimulation {
 
         int chunk = sampleSize / (Runtime.getRuntime().availableProcessors());
 
-        ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(0, sampleSize, all, chunk));
+        ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+        pool.invoke(new SimulateTask(0, sampleSize, all, chunk));
 
         if (this.graph instanceof TimeLagGraph) {
             int[] rem = new int[200];

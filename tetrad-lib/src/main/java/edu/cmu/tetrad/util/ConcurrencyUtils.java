@@ -29,7 +29,7 @@ public class ConcurrencyUtils {
                 }
             }
         } else {
-            ForkJoinPool pool = ForkJoinPool.commonPool();
+            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
             pool.invokeAll(tasks);
         }
     }

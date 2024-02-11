@@ -7,6 +7,7 @@ import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.util.ForkJoinUtils;
 import edu.cmu.tetrad.util.GraphSampling;
 
 import java.util.LinkedList;
@@ -78,7 +79,7 @@ public class PagSamplingRfci implements IGraphSearch {
     private List<Graph> runSearches() {
         List<Graph> graphs = new LinkedList<>();
 
-        ExecutorService pool = Executors.newFixedThreadPool(NUM_THREADS);
+        ForkJoinPool pool = ForkJoinUtils.getPool(NUM_THREADS);
         try {
             while (graphs.size() < numRandomizedSearchModels && !Thread.currentThread().isInterrupted()) {
                 List<Callable<Graph>> callableTasks = createTasks(numRandomizedSearchModels - graphs.size());
@@ -107,11 +108,12 @@ public class PagSamplingRfci implements IGraphSearch {
      * Call shutdown to reject incoming tasks, and then calling shutdownNow, if necessary, to cancel any lingering
      * tasks.
      */
-    private void shutdownAndAwaitTermination(ExecutorService pool) {
+    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
         pool.shutdown();
         try {
             if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
                 pool.shutdownNow();
+                Thread.currentThread().interrupt();
                 if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
                     System.err.println("Pool did not terminate");
                 }

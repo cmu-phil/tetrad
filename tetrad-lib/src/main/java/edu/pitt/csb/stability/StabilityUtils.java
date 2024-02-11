@@ -29,7 +29,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.ForkJoinUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.csb.mgm.Mgm;
@@ -103,7 +103,7 @@ public class StabilityUtils {
 
         int[][] samps = StabilityUtils.subSampleNoReplacement(data.getNumRows(), b, N);
 
-        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+        ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
 
         class StabilityAction extends RecursiveAction {
             private final int chunk;
