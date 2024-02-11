@@ -29,37 +29,59 @@ package edu.cmu.tetrad.calculator.parser;
  */
 public enum Token {
 
-    /** Whitespace. */
+    /**
+     * Whitespace.
+     */
     WHITESPACE,
 
-    /** Left parenthesis. */
+    /**
+     * Left parenthesis.
+     */
     LPAREN,
 
-    /** Right parenthesis. */
+    /**
+     * Right parenthesis.
+     */
     RPAREN,
 
-    /** Comma. */
+    /**
+     * Comma.
+     */
     COMMA,
 
-    /** Number. */
+    /**
+     * Number.
+     */
     NUMBER,
 
-    /** Operator. */
+    /**
+     * Operator.
+     */
     OPERATOR,
 
-    /** Parameter. */
+    /**
+     * Parameter.
+     */
     PARAMETER,
 
-    /** Equation. */
+    /**
+     * Equation.
+     */
     EQUATION,
 
-    /** String. */
+    /**
+     * String.
+     */
     STRING,
 
-    /** End of file. */
+    /**
+     * End of file.
+     */
     EOF,
 
-    /** Unknown. */
+    /**
+     * Unknown.
+     */
     UNKNOWN,
 }
 

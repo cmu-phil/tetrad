@@ -42,7 +42,7 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
     /**
      * <p>Constructor for SubsetSelectedVariablesWrapper.</p>
      *
-     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param data   a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SubsetSelectedVariablesWrapper(DataWrapper data, Parameters params) {
@@ -71,8 +71,8 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

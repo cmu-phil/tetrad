@@ -61,8 +61,8 @@ public class CovMatrixDisplay extends JPanel implements DataModelContainer {
     /**
      * Construct a new JTable for the given CovarianceMatrix.
      *
-     * @see edu.cmu.tetrad.data.CovarianceMatrix
      * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @see edu.cmu.tetrad.data.CovarianceMatrix
      */
     public CovMatrixDisplay(ICovarianceMatrix covMatrix) {
         this.covMatrixJTable = new CovMatrixJTable(covMatrix);

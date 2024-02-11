@@ -102,7 +102,7 @@ public final class AlgorithmModels {
     /**
      * <p>Getter for the field <code>models</code>.</p>
      *
-     * @param dataType a {@link edu.cmu.tetrad.data.DataType} object
+     * @param dataType              a {@link edu.cmu.tetrad.data.DataType} object
      * @param multiDataSetAlgorithm a boolean
      * @return a {@link java.util.List} object
      */
@@ -113,8 +113,8 @@ public final class AlgorithmModels {
     /**
      * <p>Getter for the field <code>models</code>.</p>
      *
-     * @param algType a {@link edu.cmu.tetrad.annotation.AlgType} object
-     * @param dataType a {@link edu.cmu.tetrad.data.DataType} object
+     * @param algType               a {@link edu.cmu.tetrad.annotation.AlgType} object
+     * @param dataType              a {@link edu.cmu.tetrad.data.DataType} object
      * @param multiDataSetAlgorithm a boolean
      * @return a {@link java.util.List} object
      */

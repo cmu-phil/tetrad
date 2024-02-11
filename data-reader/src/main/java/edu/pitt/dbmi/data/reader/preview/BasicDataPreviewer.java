@@ -50,7 +50,7 @@ public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPre
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Get the previews of the data file.
      */
     @Override

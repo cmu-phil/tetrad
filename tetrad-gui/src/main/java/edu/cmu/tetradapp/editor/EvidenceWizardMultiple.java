@@ -55,7 +55,7 @@ class EvidenceWizardMultiple extends JPanel {
      * probabilities ranging from 0.0 to 1.0.
      *
      * @param updaterWrapper a {@link edu.cmu.tetradapp.model.UpdaterWrapper} object
-     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     * @param workbench      a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public EvidenceWizardMultiple(UpdaterWrapper updaterWrapper,
                                   GraphWorkbench workbench) {

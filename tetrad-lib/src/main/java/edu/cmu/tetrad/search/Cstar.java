@@ -905,10 +905,10 @@ public class Cstar {
         /**
          * For X->Y.
          *
-         * @param cause    X (the cause)
-         * @param effect   Y (the effect)
-         * @param pi       The percentage of the time the predictor is a cause of the target across subsamples.
-         * @param minBeta  The minimum effect size of the predictor on the target across subsamples calculated by IDA
+         * @param cause   X (the cause)
+         * @param effect  Y (the effect)
+         * @param pi      The percentage of the time the predictor is a cause of the target across subsamples.
+         * @param minBeta The minimum effect size of the predictor on the target across subsamples calculated by IDA
          */
         private Tuple(Node cause, Node effect, double pi, double minBeta) {
             this.cause = cause;

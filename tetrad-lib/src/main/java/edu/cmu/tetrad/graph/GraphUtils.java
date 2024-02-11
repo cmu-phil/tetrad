@@ -2423,6 +2423,7 @@ public final class GraphUtils {
 
         /**
          * Returns the adjacency false negatives.
+         *
          * @return the adjacency false negatives.
          */
         public int getAdjFn() {
@@ -2431,6 +2432,7 @@ public final class GraphUtils {
 
         /**
          * Returns the adjacency false positives.
+         *
          * @return the adjacency false positives.
          */
         public int getAdjFp() {
@@ -2439,6 +2441,7 @@ public final class GraphUtils {
 
         /**
          * Returns the adjacency correct.
+         *
          * @return the adjacency correct.
          */
         public int getAdjCor() {
@@ -2447,6 +2450,7 @@ public final class GraphUtils {
 
         /**
          * Returns the arrowhead false negatives.
+         *
          * @return the arrowhead false negatives.
          */
         public int getAhdFn() {
@@ -2455,6 +2459,7 @@ public final class GraphUtils {
 
         /**
          * Returns the arrowhead false positives.
+         *
          * @return the arrowhead false positives.
          */
         public int getAhdFp() {
@@ -2463,6 +2468,7 @@ public final class GraphUtils {
 
         /**
          * Returns the arrowhead correct.
+         *
          * @return the arrowhead correct.
          */
         public int getAhdCor() {
@@ -2471,6 +2477,7 @@ public final class GraphUtils {
 
         /**
          * Returns the adjacency precision.
+         *
          * @return the adjacency precision.
          */
         public int getShd() {
@@ -2479,6 +2486,7 @@ public final class GraphUtils {
 
         /**
          * Returns the edges added.
+         *
          * @return the edges added.
          */
         public List<Edge> getEdgesAdded() {
@@ -2487,6 +2495,7 @@ public final class GraphUtils {
 
         /**
          * Returns the edges removed.
+         *
          * @return the edges removed.
          */
         public List<Edge> getEdgesRemoved() {
@@ -2495,6 +2504,7 @@ public final class GraphUtils {
 
         /**
          * Returns the adjaency precision.
+         *
          * @return the adjacency precision.
          */
         public double getAdjPrec() {
@@ -2503,6 +2513,7 @@ public final class GraphUtils {
 
         /**
          * Returns the adjacency recall.
+         *
          * @return the adjacency recall.
          */
         public double getAdjRec() {
@@ -2511,6 +2522,7 @@ public final class GraphUtils {
 
         /**
          * Returns the arrowhead precision.
+         *
          * @return the arrowhead precision.
          */
         public double getAhdPrec() {
@@ -2519,6 +2531,7 @@ public final class GraphUtils {
 
         /**
          * Returns the arrowhead recall.
+         *
          * @return the arrowhead recall.
          */
         public double getAhdRec() {
@@ -2527,6 +2540,7 @@ public final class GraphUtils {
 
         /**
          * Returns the counts.
+         *
          * @return the counts.
          */
         public int[][] getCounts() {

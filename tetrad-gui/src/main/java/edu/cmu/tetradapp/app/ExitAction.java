@@ -42,7 +42,7 @@ final class ExitAction extends AbstractAction {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {

@@ -209,7 +209,9 @@ class BayesImNodeEditingTableObs extends JTable {
         popup.show((Component) e.getSource(), e.getX(), e.getY());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setModel(@NotNull TableModel model) {
         super.setModel(model);
     }

@@ -77,7 +77,7 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
     /**
      * <p>Constructor for TimeLagGraphWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.TimeLagGraph} object
+     * @param graph      a {@link edu.cmu.tetrad.graph.TimeLagGraph} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public TimeLagGraphWrapper(TimeLagGraph graph, Parameters parameters) {
@@ -170,8 +170,8 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.TimeLagGraphWrapper} object
+     * @see TetradSerializableUtils
      */
     public static TimeLagGraphWrapper serializableInstance() {
         return new TimeLagGraphWrapper(new TimeLagGraph(),
@@ -195,7 +195,7 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
      * help.
      *
      * @param s a {@link java.io.ObjectInputStream} object
-     * @throws IOException if any.
+     * @throws IOException            if any.
      * @throws ClassNotFoundException if any.
      */
     @Serial
@@ -235,7 +235,9 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

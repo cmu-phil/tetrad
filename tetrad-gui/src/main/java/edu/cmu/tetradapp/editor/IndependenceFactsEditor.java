@@ -152,7 +152,7 @@ public class IndependenceFactsEditor extends JPanel {
     /**
      * <p>Constructor for IndependenceFactsEditor.</p>
      *
-     * @param layout a {@link java.awt.LayoutManager} object
+     * @param layout           a {@link java.awt.LayoutManager} object
      * @param isDoubleBuffered a boolean
      */
     public IndependenceFactsEditor(LayoutManager layout, boolean isDoubleBuffered) {

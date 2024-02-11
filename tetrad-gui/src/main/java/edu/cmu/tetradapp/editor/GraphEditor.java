@@ -107,6 +107,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     private boolean enableEditing = true;
 
     //===========================CONSTRUCTOR========================//
+
     /**
      * <p>Constructor for GraphEditor.</p>
      *
@@ -130,7 +131,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of this editor.
      */
     @Override
@@ -140,7 +141,9 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         firePropertyChange("name", oldName, getName());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List getSelectedModelComponents() {
         List<Component> selectedComponents
@@ -163,7 +166,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Pastes list of session elements into the workbench.
      */
     @Override
@@ -181,61 +184,81 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         getWorkbench().selectConnectingEdges();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphWorkbench getWorkbench() {
         return this.workbench;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getGraph() {
         return getWorkbench().getGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setGraph(Graph graph) {
         getWorkbench().setGraph(graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getSourceGraph() {
         return getWorkbench().getGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void layoutByGraph(Graph graph) {
         getWorkbench().layoutByGraph(graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void layoutByKnowledge() {
         // Does nothing.
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Rectangle getVisibleRect() {
         return getWorkbench().getVisibleRect();
@@ -640,7 +663,9 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getIndependenceTest() {
         Graph graph = getWorkbench().getGraph();

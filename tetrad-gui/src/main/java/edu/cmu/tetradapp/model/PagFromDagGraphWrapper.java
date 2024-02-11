@@ -41,7 +41,7 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
     /**
      * <p>Constructor for PagFromDagGraphWrapper.</p>
      *
-     * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PagFromDagGraphWrapper(GraphSource source, Parameters parameters) {
@@ -80,7 +80,9 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
     //======================== Private Method ======================//
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

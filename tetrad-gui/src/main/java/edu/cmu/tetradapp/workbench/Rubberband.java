@@ -96,7 +96,7 @@ class Rubberband extends JComponent {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Paints the rubberband.
      */
     public void paint(Graphics g) {

@@ -50,7 +50,7 @@ final class IndTestChooser {
      * <p>getTest.</p>
      *
      * @param dataSource a {@link java.lang.Object} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
      * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public IndependenceTest getTest(Object dataSource, Parameters params) {
@@ -60,11 +60,11 @@ final class IndTestChooser {
     /**
      * <p>getTest.</p>
      *
+     * @param dataSource a {@link java.lang.Object} object
+     * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param testType   a {@link edu.cmu.tetradapp.util.IndTestType} object
      * @return an independence checker appropriate to the given data source. Also sets the Parameters on the params to
      * an appropriate type object (using the existing one if it's of the right type).
-     * @param dataSource a {@link java.lang.Object} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param testType a {@link edu.cmu.tetradapp.util.IndTestType} object
      */
     public IndependenceTest getTest(Object dataSource, Parameters params,
                                     IndTestType testType) {

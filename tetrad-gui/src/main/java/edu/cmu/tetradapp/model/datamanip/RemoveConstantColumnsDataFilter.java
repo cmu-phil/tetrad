@@ -55,7 +55,7 @@ class RemoveConstantColumnsDataFilter implements DataFilter {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Removes any constant columns from the given dataset.
      */
     public DataSet filter(DataSet dataSet) {

@@ -77,7 +77,7 @@ public class ColumnMetadata {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Return a string representation of the column metadata.
      */
     @Override

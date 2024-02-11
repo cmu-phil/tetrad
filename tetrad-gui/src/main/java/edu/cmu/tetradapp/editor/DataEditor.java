@@ -109,7 +109,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     /**
      * <p>Constructor for DataEditor.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param tabPlacement a int
      */
     public DataEditor(DataWrapper dataWrapper, int tabPlacement) {
@@ -129,7 +129,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * <p>Constructor for DataEditor.</p>
      *
      * @param comparison a {@link edu.cmu.tetradapp.model.TabularComparison} object
-     * @param showMenus a boolean
+     * @param showMenus  a boolean
      */
     public DataEditor(TabularComparison comparison, boolean showMenus) {
         this(new DataWrapper(comparison.getDataSet()), showMenus);
@@ -139,7 +139,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      * <p>Constructor for DataEditor.</p>
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param showMenus a boolean
+     * @param showMenus   a boolean
      */
     public DataEditor(DataWrapper dataWrapper, boolean showMenus) {
         this(dataWrapper, showMenus, SwingConstants.TOP);
@@ -148,8 +148,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     /**
      * Constructs a standalone data editor.
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param showMenus a boolean
+     * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param showMenus    a boolean
      * @param tabPlacement a int
      */
     public DataEditor(DataWrapper dataWrapper, boolean showMenus, int tabPlacement) {
@@ -463,12 +463,16 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         return this.dataWrapper.getKnowledge();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.dataWrapper.setKnowledge(knowledge);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
     }

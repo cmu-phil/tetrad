@@ -704,43 +704,69 @@ public class Comparison2 {
         return (Integer.parseInt(tmp));
     }
 
-    /** An enum of table columns. */
+    /**
+     * An enum of table columns.
+     */
     public enum TableColumn {
 
-        /** Constant <code>AdjCor</code> */
+        /**
+         * Constant <code>AdjCor</code>
+         */
         AdjCor,
 
-        /** Constant <code>AdjFn</code> */
+        /**
+         * Constant <code>AdjFn</code>
+         */
         AdjFn,
 
-        /** Constant <code>AdjFp</code> */
+        /**
+         * Constant <code>AdjFp</code>
+         */
         AdjFp,
 
-        /** Constant <code>AhdCor</code> */
+        /**
+         * Constant <code>AhdCor</code>
+         */
         AhdCor,
 
-        /** Constant <code>AhdFn</code> */
+        /**
+         * Constant <code>AhdFn</code>
+         */
         AhdFn,
 
-        /** Constant <code>AhdFp</code> */
+        /**
+         * Constant <code>AhdFp</code>
+         */
         AhdFp,
 
-        /** Constant <code>SHD</code> */
+        /**
+         * Constant <code>SHD</code>
+         */
         SHD,
 
-        /** Constant <code>AdjPrec</code> */
+        /**
+         * Constant <code>AdjPrec</code>
+         */
         AdjPrec,
 
-        /** Constant <code>AdjRec</code> */
+        /**
+         * Constant <code>AdjRec</code>
+         */
         AdjRec,
 
-        /** Constant <code>AhdPrec</code> */
+        /**
+         * Constant <code>AhdPrec</code>
+         */
         AhdPrec,
 
-        /** Constant <code>AhdRec</code> */
+        /**
+         * Constant <code>AhdRec</code>
+         */
         AhdRec,
 
-        /** Constant <code>Elapsed</code> */
+        /**
+         * Constant <code>Elapsed</code>
+         */
         Elapsed
     }
 }

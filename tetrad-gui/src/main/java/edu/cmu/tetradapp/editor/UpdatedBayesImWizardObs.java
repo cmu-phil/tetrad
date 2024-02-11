@@ -45,10 +45,8 @@ import java.text.NumberFormat;
 import java.util.List;
 
 /**
- * Display the updated marginal and joint probabilities
- * Probably do not need the two classes following this main one:
- * UpdaterEditingTableObs and UpdaterEditingTableModelObs.
- * They are for displaying the conditional probability tables
+ * Display the updated marginal and joint probabilities Probably do not need the two classes following this main one:
+ * UpdaterEditingTableObs and UpdaterEditingTableModelObs. They are for displaying the conditional probability tables
  * after updating an MlBayesIm.
  *
  * @author josephramsey
@@ -104,9 +102,9 @@ public class UpdatedBayesImWizardObs extends JPanel {
      * <p>Constructor for UpdatedBayesImWizardObs.</p>
      *
      * @param updaterWrapper a {@link edu.cmu.tetradapp.model.UpdaterWrapper} object
-     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
-     * @param tab a int
-     * @param selectedNode a {@link edu.cmu.tetrad.graph.Node} object
+     * @param workbench      a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     * @param tab            a int
+     * @param selectedNode   a {@link edu.cmu.tetrad.graph.Node} object
      */
     public UpdatedBayesImWizardObs(UpdaterWrapper updaterWrapper,
                                    GraphWorkbench workbench, int tab, Node selectedNode) {

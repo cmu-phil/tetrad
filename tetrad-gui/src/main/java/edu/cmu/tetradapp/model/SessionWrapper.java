@@ -72,7 +72,6 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      */
     private final boolean highlighted = false;
     /**
-     *
      * The property change support.
      */
     private transient PropertyChangeSupport propertyChangeSupport;

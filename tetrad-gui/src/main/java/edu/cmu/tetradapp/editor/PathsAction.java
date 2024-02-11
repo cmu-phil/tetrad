@@ -84,7 +84,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         this.workbench = workbench;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void actionPerformed(ActionEvent e) {
         Graph graph = this.workbench.getGraph();
 
@@ -363,7 +365,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

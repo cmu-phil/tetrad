@@ -40,7 +40,7 @@ public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
     /**
      * <p>Constructor for MagInPagWrapper.</p>
      *
-     * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public MagInPagWrapper(GraphSource source, Parameters parameters) {
@@ -72,7 +72,9 @@ public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
         return new MagInPagWrapper(EdgeListGraph.serializableInstance());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

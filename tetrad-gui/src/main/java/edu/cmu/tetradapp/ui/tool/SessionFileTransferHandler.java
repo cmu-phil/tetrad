@@ -54,7 +54,9 @@ public class SessionFileTransferHandler extends TransferHandler {
 
 //    private static final Logger LOGGER = LoggerFactory.getLogger(SessionFileTransferHandler.class);
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean canImport(TransferSupport support) {
         for (DataFlavor flavor : support.getDataFlavors()) {
@@ -66,7 +68,9 @@ public class SessionFileTransferHandler extends TransferHandler {
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean importData(TransferSupport support) {
         try {

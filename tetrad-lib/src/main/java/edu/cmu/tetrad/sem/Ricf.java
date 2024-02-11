@@ -998,9 +998,10 @@ public class Ricf {
 
         /**
          * The result.
-         * @param shat The shat matrix.
-         * @param deviance The deviance.
-         * @param df The degrees of freedom.
+         *
+         * @param shat       The shat matrix.
+         * @param deviance   The deviance.
+         * @param df         The degrees of freedom.
          * @param iterations The iterations.
          */
         public FitConGraphResult(DoubleMatrix2D shat, double deviance,

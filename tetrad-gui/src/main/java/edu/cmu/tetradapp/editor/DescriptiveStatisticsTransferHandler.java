@@ -30,14 +30,16 @@ import java.awt.datatransfer.Transferable;
  */
 class DescriptiveStatisticsTransferHandler extends TransferHandler {
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getSourceActions(JComponent c) {
         return TransferHandler.COPY_OR_MOVE;
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Create a Transferable to use as the source for a data transfer.
      */
     protected Transferable createTransferable(JComponent c) {

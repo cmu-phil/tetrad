@@ -338,12 +338,12 @@ public final class DagScorer implements TetradSerializable, Scorer {
      * help.
      *
      * @param s a {@link java.io.ObjectInputStream} object
-     * @throws java.io.IOException if any.
+     * @throws java.io.IOException              if any.
      * @throws java.lang.ClassNotFoundException if any.
      */
     @Serial
     private void readObject(ObjectInputStream
-             s)
+                                    s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 

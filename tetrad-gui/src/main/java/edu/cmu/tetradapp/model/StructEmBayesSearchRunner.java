@@ -88,7 +88,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     /**
      * <p>Constructor for StructEmBayesSearchRunner.</p>
      *
-     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
+     * @param simulation     a {@link edu.cmu.tetradapp.model.Simulation} object
      * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
      */
     public StructEmBayesSearchRunner(Simulation simulation,
@@ -99,9 +99,9 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     /**
      * <p>Constructor for StructEmBayesSearchRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public StructEmBayesSearchRunner(DataWrapper dataWrapper,
                                      BayesPmWrapper bayesPmWrapper, Parameters params) {
@@ -138,9 +138,9 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     /**
      * <p>Constructor for StructEmBayesSearchRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param bayesImWrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public StructEmBayesSearchRunner(DataWrapper dataWrapper,
                                      BayesImWrapper bayesImWrapper, Parameters params) {
@@ -179,8 +179,8 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -230,7 +230,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
      * help.
      *
      * @param s a {@link java.io.ObjectInputStream} object
-     * @throws IOException if any.
+     * @throws IOException            if any.
      * @throws ClassNotFoundException if any.
      */
     @Serial
@@ -265,7 +265,9 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

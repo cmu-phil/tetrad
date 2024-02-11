@@ -253,7 +253,7 @@ public abstract class DataFileReader implements DataReader {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the quote character.
      */
     @Override
@@ -265,7 +265,7 @@ public abstract class DataFileReader implements DataReader {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the comment marker.
      */
     @Override

@@ -41,7 +41,7 @@ public class ModeInterpolatorWrapper extends DataWrapper {
      * <p>Constructor for ModeInterpolatorWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ModeInterpolatorWrapper(DataWrapper wrapper, Parameters params) {
         DataFilter interpolator = new ModeInterpolator();
@@ -57,8 +57,8 @@ public class ModeInterpolatorWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

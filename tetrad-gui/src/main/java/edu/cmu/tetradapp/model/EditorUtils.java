@@ -112,11 +112,11 @@ public class EditorUtils {
     /**
      * <p>getSaveFileWithPath.</p>
      *
-     * @param prefix a {@link java.lang.String} object
-     * @param suffix a {@link java.lang.String} object
-     * @param parent a {@link java.awt.Component} object
-     * @param overwrite a boolean
-     * @param dialogName a {@link java.lang.String} object
+     * @param prefix       a {@link java.lang.String} object
+     * @param suffix       a {@link java.lang.String} object
+     * @param parent       a {@link java.awt.Component} object
+     * @param overwrite    a boolean
+     * @param dialogName   a {@link java.lang.String} object
      * @param saveLocation a {@link java.lang.String} object
      * @return a {@link java.io.File} object
      */
@@ -185,13 +185,13 @@ public class EditorUtils {
      * Displays a save dialog in the getModel save directory and returns the selected file. The file is of form
      * prefix.suffix.
      *
-     * @param prefix    The prefix of the file.
-     * @param suffix    The suffix of the file.
-     * @param parent    The parent that the save dialog should be centered on and in front of.
-     * @param overwrite True iff the file prefix.suffix should be overwritten. If false, the next avialable filename in
-     *                  the series prefix{n}.suffix will be suggested.
-     * @return null, if the selection was cancelled or there was an error.
+     * @param prefix     The prefix of the file.
+     * @param suffix     The suffix of the file.
+     * @param parent     The parent that the save dialog should be centered on and in front of.
+     * @param overwrite  True iff the file prefix.suffix should be overwritten. If false, the next avialable filename in
+     *                   the series prefix{n}.suffix will be suggested.
      * @param dialogName a {@link java.lang.String} object
+     * @return null, if the selection was cancelled or there was an error.
      */
     public static File getSaveFile(String prefix, String suffix,
                                    Component parent, boolean overwrite, String dialogName) {

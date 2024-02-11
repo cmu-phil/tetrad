@@ -29,7 +29,6 @@ import edu.cmu.tetradapp.model.EditorUtils;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -87,7 +86,7 @@ final class SaveDataAction extends AbstractAction {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {

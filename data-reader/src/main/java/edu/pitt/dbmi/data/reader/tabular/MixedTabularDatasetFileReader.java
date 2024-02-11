@@ -54,7 +54,7 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the data.
      */
     @Override
@@ -62,7 +62,9 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
         return readInData(Collections.EMPTY_SET);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Data readInData(Set<String> namesOfColumnsToExclude) throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
@@ -86,7 +88,7 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the data.
      */
     @Override
@@ -162,7 +164,7 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether the data file has a header.
      */
     @Override
@@ -172,7 +174,7 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the quote character.
      */
     @Override

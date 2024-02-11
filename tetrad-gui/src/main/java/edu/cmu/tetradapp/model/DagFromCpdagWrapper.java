@@ -40,7 +40,7 @@ public class DagFromCpdagWrapper extends GraphWrapper implements DoNotAddOldMode
     /**
      * <p>Constructor for DagFromCPDAGWrapper.</p>
      *
-     * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public DagFromCpdagWrapper(GraphSource source, Parameters parameters) {
@@ -72,7 +72,9 @@ public class DagFromCpdagWrapper extends GraphWrapper implements DoNotAddOldMode
         return new DagFromCpdagWrapper(EdgeListGraph.serializableInstance());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

@@ -39,7 +39,9 @@ class ListTransferable implements Transferable {
      */
     private static final DataFlavor[] dataFlavors = {
             new DataFlavor(ListTransferable.class, "String List Selection")};
-    /** Constant <code>DATA_FLAVOR</code> */
+    /**
+     * Constant <code>DATA_FLAVOR</code>
+     */
     public static final DataFlavor DATA_FLAVOR = ListTransferable.dataFlavors[0];
     /**
      * The list of graph nodes that constitutes the selection.
@@ -61,7 +63,9 @@ class ListTransferable implements Transferable {
         this.list = list;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
         if (!isDataFlavorSupported(flavor)) {
@@ -71,7 +75,9 @@ class ListTransferable implements Transferable {
         return this.list;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(ListTransferable.dataFlavors[0]);
     }

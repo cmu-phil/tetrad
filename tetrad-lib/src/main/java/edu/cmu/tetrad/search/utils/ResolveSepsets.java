@@ -530,29 +530,53 @@ public final class ResolveSepsets {
      * Gives the method to be used to resolve sepsets when they conflict.
      */
     public enum Method {
-        /** Fisher's method */
+        /**
+         * Fisher's method
+         */
         fisher,
-        /** Fisher's method */
+        /**
+         * Fisher's method
+         */
         fisher2,
-        /** Tippett's method */
+        /**
+         * Tippett's method
+         */
         tippett,
-        /** Worsley and Friston's method */
+        /**
+         * Worsley and Friston's method
+         */
         worsleyfriston,
-        /** Stouffer et al.'s method */
+        /**
+         * Stouffer et al.'s method
+         */
         stouffer,
-        /** Mudholker and George's method */
+        /**
+         * Mudholker and George's method
+         */
         mudholkergeorge,
-        /** Mudholker and George's method */
+        /**
+         * Mudholker and George's method
+         */
         mudholkergeorge2,
-        /** Wilkinson's method */
+        /**
+         * Wilkinson's method
+         */
         average,
-        /** Average method */
+        /**
+         * Average method
+         */
         averagetest,
-        /** Random method */
+        /**
+         * Random method
+         */
         random,
-        /** False discovery rate method */
+        /**
+         * False discovery rate method
+         */
         fdr,
-        /** Majority method */
+        /**
+         * Majority method
+         */
         majority
     }
 }

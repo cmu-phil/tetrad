@@ -80,7 +80,7 @@ public class GraphNodeMeasured extends DisplayNode {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Launches an editor for this node.
      */
     public void doDoubleClickAction(Graph graph) {

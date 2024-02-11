@@ -57,7 +57,7 @@ class EvidenceWizardSingleObs extends JPanel {
      * based on it.
      *
      * @param updaterWrapper a {@link edu.cmu.tetradapp.model.UpdaterWrapper} object
-     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     * @param workbench      a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public EvidenceWizardSingleObs(UpdaterWrapper updaterWrapper,
                                    GraphWorkbench workbench) {

@@ -51,7 +51,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the data.
      */
     @Override
@@ -291,7 +291,9 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Data read(DataColumn[] dataColumns, boolean hasHeader) throws IOException {
         if (dataColumns == null) {
@@ -324,7 +326,9 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Data read(DataColumn[] dataColumns, boolean hasHeader, Metadata metadata) throws IOException {
         Data data = read(dataColumns, hasHeader);

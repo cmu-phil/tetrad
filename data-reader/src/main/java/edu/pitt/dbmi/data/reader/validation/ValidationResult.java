@@ -63,7 +63,7 @@ public class ValidationResult {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Return the string representation of this object.
      */
     @Override

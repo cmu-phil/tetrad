@@ -63,7 +63,7 @@ public class SelectDirectedAction extends AbstractAction implements ClipboardOwn
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Selects all directed edges in the given display graph.
      */
     public void actionPerformed(ActionEvent e) {
@@ -81,7 +81,7 @@ public class SelectDirectedAction extends AbstractAction implements ClipboardOwn
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

@@ -222,6 +222,7 @@ public final class LoadDataSettings extends JPanel {
     private StringTextField missingStringField;
 
     //================================CONSTRUCTOR=======================//
+
     /**
      * <p>Constructor for LoadDataSettings.</p>
      *
@@ -240,6 +241,7 @@ public final class LoadDataSettings extends JPanel {
     }
 
     // Step 1 items
+
     /**
      * <p>basicSettings.</p>
      *
@@ -701,6 +703,7 @@ public final class LoadDataSettings extends JPanel {
     }
 
     // Step 2 items
+
     /**
      * <p>advancedSettings.</p>
      *

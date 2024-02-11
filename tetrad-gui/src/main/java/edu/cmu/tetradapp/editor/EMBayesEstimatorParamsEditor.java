@@ -119,7 +119,9 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
         return this.params;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         this.params = params;
     }

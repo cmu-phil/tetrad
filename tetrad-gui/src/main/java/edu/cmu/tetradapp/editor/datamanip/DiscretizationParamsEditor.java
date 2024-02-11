@@ -235,7 +235,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the previous params, must be <code>DiscretizationParams</code>.
      */
     public void setParams(Parameters params) {

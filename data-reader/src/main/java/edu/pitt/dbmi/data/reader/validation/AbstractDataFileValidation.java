@@ -49,7 +49,7 @@ public abstract class AbstractDataFileValidation extends DataFileReader implemen
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Set the maximum number of messages to validate.
      */
     @Override

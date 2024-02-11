@@ -49,7 +49,7 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a string representation of the object.
      */
     @Override
@@ -59,7 +59,7 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Gets the encode value of the given value.
      */
     @Override
@@ -71,7 +71,7 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Does a recategorization of the data column.
      */
     @Override
@@ -89,7 +89,7 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the value.
      */
     @Override
@@ -101,7 +101,7 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Gets the data column.
      */
     @Override
@@ -120,7 +120,7 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Gets the categories.
      */
     @Override

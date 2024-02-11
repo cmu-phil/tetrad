@@ -48,8 +48,8 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
      * <p>Constructor for PurifyRunner.</p>
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param mmWrapper a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param mmWrapper   a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PurifyRunner(DataWrapper dataWrapper,
                         MeasurementModelWrapper mmWrapper,
@@ -62,8 +62,8 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -125,7 +125,9 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
         return super.getClusters();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void setClusters(Clusters clusters) {
         super.setClusters(clusters);
     }

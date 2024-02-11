@@ -57,7 +57,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(BayesPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -67,7 +67,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(GraphWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -77,7 +77,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.StandardizedSemImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(StandardizedSemImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -87,7 +87,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(SemImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -97,7 +97,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(SemPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -107,7 +107,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(DataWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -117,7 +117,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.TimeLagGraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(TimeLagGraphWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -127,7 +127,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(GeneralizedSemImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -137,7 +137,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(BayesImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -147,7 +147,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(SemGraphWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -157,7 +157,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(GeneralizedSemPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -167,7 +167,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(DagWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -177,7 +177,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(DirichletBayesImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -187,7 +187,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.BuildPureClustersRunner} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(BuildPureClustersRunner wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -197,7 +197,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.PurifyRunner} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(PurifyRunner wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -207,7 +207,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(MeasurementModelWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -216,7 +216,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
     /**
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
-     * @param input a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
+     * @param input  a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(KnowledgeBoxInput input, Parameters params) {
@@ -227,7 +227,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * Constructor from dataWrapper edge
      *
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param input a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
+     * @param input  a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
      */
     public ForbiddenGraphModel(Parameters params, KnowledgeBoxInput input) {
         super(new KnowledgeBoxInput[]{input}, params);
@@ -272,8 +272,8 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.ForbiddenGraphModel} object
+     * @see TetradSerializableUtils
      */
     public static ForbiddenGraphModel serializableInstance() {
         return new ForbiddenGraphModel(new Parameters(), GraphWrapper.serializableInstance());

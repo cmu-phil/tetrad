@@ -355,7 +355,9 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         throw new UnsupportedOperationException("Cannot return selected components.");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         throw new UnsupportedOperationException("Cannot paste subsessions on a search editor.");
     }
@@ -383,7 +385,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Not supported.
      */
     public void setGraph(Graph g) {
@@ -399,7 +401,9 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         return (IndTestType) getParams().get("indTestType", IndTestType.FISHER_Z);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setTestType(IndTestType testType) {
         getParams().set("indTestType", testType);
     }

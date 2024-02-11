@@ -53,7 +53,7 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the data.
      */
     @Override
@@ -63,7 +63,7 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the data.
      */
     @Override
@@ -87,7 +87,7 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the data.
      */
     @Override
@@ -111,7 +111,7 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Set whether the data has a header.
      */
     @Override
@@ -121,7 +121,7 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Set the quote character.
      */
     @Override

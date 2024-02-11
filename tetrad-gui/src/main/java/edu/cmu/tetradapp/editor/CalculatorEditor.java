@@ -125,7 +125,7 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the calculator's params.
      */
     public void setParams(Parameters params) {

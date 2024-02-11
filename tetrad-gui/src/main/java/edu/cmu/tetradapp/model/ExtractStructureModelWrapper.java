@@ -43,7 +43,7 @@ public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotA
     /**
      * <p>Constructor for ExtractStructureModelWrapper.</p>
      *
-     * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ExtractStructureModelWrapper(GraphSource source, Parameters parameters) {
@@ -97,7 +97,9 @@ public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotA
     //======================== Private Method ======================//
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

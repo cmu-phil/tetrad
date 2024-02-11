@@ -45,7 +45,9 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         Graph graph = this.workbench.getGraph();
@@ -60,7 +62,9 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
 

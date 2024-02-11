@@ -41,7 +41,7 @@ public class UndirectedToBidirectedWrapper extends GraphWrapper implements DoNot
     /**
      * <p>Constructor for UndirectedToBidirectedWrapper.</p>
      *
-     * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public UndirectedToBidirectedWrapper(GraphSource source, Parameters parameters) {
@@ -73,7 +73,9 @@ public class UndirectedToBidirectedWrapper extends GraphWrapper implements DoNot
     //======================== Private Methods ================================//
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

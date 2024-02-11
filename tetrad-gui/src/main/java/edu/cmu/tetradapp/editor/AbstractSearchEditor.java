@@ -109,7 +109,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of this editor.
      */
     public final void setName(String name) {
@@ -148,7 +148,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Not supported.
      */
     public void setGraph(Graph g) {
@@ -186,7 +186,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Not supported.
      */
     public void pasteSubsession(java.util.List<Object> sessionElements, Point upperLeft) {
@@ -492,7 +492,9 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         return (IndTestType) getAlgorithmRunner().getParams().get("indTestType", IndTestType.FISHER_Z);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setTestType(IndTestType testType) {
         getAlgorithmRunner().getParams().set("indTestType", testType);
     }

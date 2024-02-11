@@ -52,8 +52,8 @@ class TemporalTierEditor extends JPanel
     /**
      * <p>Constructor for TemporalTierEditor.</p>
      *
-     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
-     * @param varNames a {@link java.util.List} object
+     * @param knowledge   a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param varNames    a {@link java.util.List} object
      * @param sessionName a {@link java.lang.String} object
      */
     public TemporalTierEditor(Knowledge knowledge, List varNames,
@@ -104,7 +104,7 @@ class TemporalTierEditor extends JPanel
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reacts to property change events
      */
     public void propertyChange(PropertyChangeEvent e) {
@@ -116,7 +116,7 @@ class TemporalTierEditor extends JPanel
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of this editor.
      */
     public void setName(String name) {
@@ -133,7 +133,9 @@ class TemporalTierEditor extends JPanel
         return getName() + ":  " + graphName;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void actionPerformed(ActionEvent a) {
         if (a.getSource() == this.clear) {
             this.knowledge.clear();

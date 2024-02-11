@@ -81,7 +81,7 @@ class CalculatorAction extends AbstractAction {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Launches the calculator editoir.
      */
     public void actionPerformed(ActionEvent e) {

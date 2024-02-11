@@ -35,8 +35,8 @@ import java.util.List;
  *
  * @author josephramsey
  * @author Willie Wheeler
- * @see edu.cmu.tetradapp.workbench.AbstractWorkbench
  * @version $Id: $Id
+ * @see edu.cmu.tetradapp.workbench.AbstractWorkbench
  */
 public class LagWorkbench extends AbstractWorkbench {
 
@@ -155,7 +155,7 @@ public class LagWorkbench extends AbstractWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new display node for the workbench based on the given model node.
      */
     public DisplayNode getNewDisplayNode(Node modelNode) {
@@ -188,7 +188,7 @@ public class LagWorkbench extends AbstractWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new display edge for the workbench based on the given model edge.
      */
     public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
@@ -211,7 +211,7 @@ public class LagWorkbench extends AbstractWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new model edge for the workbench connecting the two given model nodes and using the edge type from
      * #getEdgeType().
      */
@@ -236,7 +236,7 @@ public class LagWorkbench extends AbstractWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Gets a new "tracking edge"--that is, an edge which is anchored at one end to a node but tracks the mouse at the
      * other end.  Used for drawing new edges.
      */
@@ -320,7 +320,7 @@ public class LagWorkbench extends AbstractWorkbench {
      * Pastes a list of session elements (SessionNodeWrappers and SessionEdges) into the workbench.
      *
      * @param graphElements a {@link java.util.List} object
-     * @param upperLeft a {@link java.awt.Point} object
+     * @param upperLeft     a {@link java.awt.Point} object
      */
     public void pasteSubgraph(List graphElements, Point upperLeft) {
 

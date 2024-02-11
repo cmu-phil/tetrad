@@ -83,7 +83,7 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets up the editor, does the layout, and so on.
      */
     protected void setup(String resultLabel) {
@@ -125,7 +125,9 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
         add(panel);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void addSpecialMenus(JMenuBar menuBar) {
 
     }
@@ -165,7 +167,9 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
 
     //================================PRIVATE METHODS====================//
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void doDefaultArrangement(Graph resultGraph) {
         if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
             LayoutUtil.arrangeBySourceGraph(resultGraph,

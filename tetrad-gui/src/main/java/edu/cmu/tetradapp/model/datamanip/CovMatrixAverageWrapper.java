@@ -47,7 +47,7 @@ public class CovMatrixAverageWrapper extends DataWrapper {
     /**
      * <p>Constructor for CovMatrixAverageWrapper.</p>
      *
-     * @param covs an array of {@link edu.cmu.tetradapp.model.DataWrapper} objects
+     * @param covs   an array of {@link edu.cmu.tetradapp.model.DataWrapper} objects
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public CovMatrixAverageWrapper(DataWrapper[] covs, Parameters params) {
@@ -60,8 +60,8 @@ public class CovMatrixAverageWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

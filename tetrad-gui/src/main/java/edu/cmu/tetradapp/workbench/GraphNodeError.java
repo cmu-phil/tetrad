@@ -63,7 +63,7 @@ public class GraphNodeError extends DisplayNode {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Launches a dialog that lets the user change the name of the variable, making sure the user doesn't pick a name
      * that's already being used. That's what the given graph is used for--to provide a list of variables whose names
      * should not be picked by the user as the new name for any variable.

@@ -88,7 +88,9 @@ class CovMatrixTable extends AbstractTableModel {
         return (getNumVariables() < 30) ? 30 : getNumVariables() + 1;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object getValueAt(int row, int col) {
         final int firstDataRow = 4;
         final int firstDataCol = 1;
@@ -123,7 +125,9 @@ class CovMatrixTable extends AbstractTableModel {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isCellEditable(int row, int col) {
         final int firstDataRow = 4;
         final int firstDataCol = 1;
@@ -157,7 +161,9 @@ class CovMatrixTable extends AbstractTableModel {
 
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setValueAt(Object aValue, int row, int col) {
         final int firstDataRow = 4;
         final int firstDataCol = 1;

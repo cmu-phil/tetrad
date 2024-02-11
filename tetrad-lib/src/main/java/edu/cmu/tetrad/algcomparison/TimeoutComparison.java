@@ -1983,6 +1983,55 @@ public class TimeoutComparison {
     }
 
     /**
+     * A wrapper for a run.
+     */
+    private static class Run {
+
+        /**
+         * The index of the algorithm-simulation wrapper to be used.
+         */
+        private final int algSimIndex;
+
+        /**
+         * The index of the run to be used.
+         */
+        private final int runIndex;
+
+        /**
+         * The index to be used.
+         */
+        private final int index;
+
+        /**
+         * The algorithm-simulation wrapper to be used.
+         */
+        private final AlgorithmSimulationWrapper wrapper;
+
+        public Run(int algSimIndex, int runIndex, int index, AlgorithmSimulationWrapper wrapper) {
+            this.runIndex = runIndex;
+            this.algSimIndex = algSimIndex;
+            this.index = index;
+            this.wrapper = wrapper;
+        }
+
+        public int getAlgSimIndex() {
+            return this.algSimIndex;
+        }
+
+        public int getRunIndex() {
+            return this.runIndex;
+        }
+
+        public int getIndex() {
+            return this.index;
+        }
+
+        public AlgorithmSimulationWrapper getWrapper() {
+            return this.wrapper;
+        }
+    }
+
+    /**
      * A wrapper for a simulation and an algorithm.
      */
     private class AlgorithmTask implements Callable<Void> {
@@ -2040,55 +2089,6 @@ public class TimeoutComparison {
             return null;
         }
 
-    }
-
-    /**
-     * A wrapper for a run.
-     */
-    private static class Run {
-
-        /**
-         * The index of the algorithm-simulation wrapper to be used.
-         */
-        private final int algSimIndex;
-
-        /**
-         * The index of the run to be used.
-         */
-        private final int runIndex;
-
-        /**
-         * The index to be used.
-         */
-        private final int index;
-
-        /**
-         * The algorithm-simulation wrapper to be used.
-         */
-        private final AlgorithmSimulationWrapper wrapper;
-
-        public Run(int algSimIndex, int runIndex, int index, AlgorithmSimulationWrapper wrapper) {
-            this.runIndex = runIndex;
-            this.algSimIndex = algSimIndex;
-            this.index = index;
-            this.wrapper = wrapper;
-        }
-
-        public int getAlgSimIndex() {
-            return this.algSimIndex;
-        }
-
-        public int getRunIndex() {
-            return this.runIndex;
-        }
-
-        public int getIndex() {
-            return this.index;
-        }
-
-        public AlgorithmSimulationWrapper getWrapper() {
-            return this.wrapper;
-        }
     }
 
 }

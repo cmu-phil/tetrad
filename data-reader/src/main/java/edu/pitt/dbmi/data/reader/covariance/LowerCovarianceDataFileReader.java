@@ -50,7 +50,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the covariance data.
      */
     @Override

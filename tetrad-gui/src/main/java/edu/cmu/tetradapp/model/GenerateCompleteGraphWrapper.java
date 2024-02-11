@@ -41,7 +41,7 @@ public class GenerateCompleteGraphWrapper extends GraphWrapper implements DoNotA
     /**
      * <p>Constructor for GenerateCompleteGraphWrapper.</p>
      *
-     * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GenerateCompleteGraphWrapper(GraphSource source, Parameters parameters) {
@@ -77,7 +77,9 @@ public class GenerateCompleteGraphWrapper extends GraphWrapper implements DoNotA
         return GraphUtils.completeGraph(graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

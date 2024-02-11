@@ -185,7 +185,7 @@ final class ConstructTemplateAction extends AbstractAction {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Performs the action of adding the specified templatew into the frontmost session. It is assumed that all example
      * sessions will be located in directory "example_sessions".
      */
@@ -217,7 +217,7 @@ final class ConstructTemplateAction extends AbstractAction {
      * <p>addParent.</p>
      *
      * @param thisNode a {@link edu.cmu.tetradapp.app.SessionEditorNode} object
-     * @param type a {@link java.lang.String} object
+     * @param type     a {@link java.lang.String} object
      */
     public void addParent(SessionEditorNode thisNode, String type) {
         String name = ConstructTemplateAction.nextName(type);

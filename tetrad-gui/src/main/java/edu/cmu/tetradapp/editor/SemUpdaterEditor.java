@@ -289,7 +289,7 @@ public class SemUpdaterEditor extends JPanel {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of this editor.
      */
     @Override

@@ -45,7 +45,7 @@ public class ContinuousTabularData implements ContinuousData {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Get the data columns.
      */
     @Override
@@ -55,7 +55,7 @@ public class ContinuousTabularData implements ContinuousData {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Get the data.
      */
     @Override

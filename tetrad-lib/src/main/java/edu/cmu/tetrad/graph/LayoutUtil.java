@@ -396,11 +396,11 @@ public class LayoutUtil {
         }
 
         /**
-         * Sets whether the spring layout should start from a randomlyInitialized position or from the getModel positions of
-         * the nodes.
+         * Sets whether the spring layout should start from a randomlyInitialized position or from the getModel
+         * positions of the nodes.
          *
-         * @param randomlyInitialized true if the spring layout should start from a randomlyInitialized position, false if the
-         *                            spring layout should start from the getModel positions of the nodes.
+         * @param randomlyInitialized true if the spring layout should start from a randomlyInitialized position, false
+         *                            if the spring layout should start from the getModel positions of the nodes.
          */
         public void setRandomlyInitialized(boolean randomlyInitialized) {
             this.randomlyInitialized = randomlyInitialized;

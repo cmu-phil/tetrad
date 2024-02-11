@@ -65,10 +65,10 @@ public class EditorWindow extends JInternalFrame
     /**
      * Pops a new editor window up from a dialog.
      *
-     * @param editor a {@link javax.swing.JComponent} object
-     * @param title a {@link java.lang.String} object
-     * @param buttonName a {@link java.lang.String} object
-     * @param cancellable a boolean
+     * @param editor        a {@link javax.swing.JComponent} object
+     * @param title         a {@link java.lang.String} object
+     * @param buttonName    a {@link java.lang.String} object
+     * @param cancellable   a boolean
      * @param centeringComp a {@link java.awt.Component} object
      */
     public EditorWindow(JComponent editor, String title, String buttonName,
@@ -87,7 +87,9 @@ public class EditorWindow extends JInternalFrame
         setClosable(false);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int compareTo(@NotNull Object o) {
         EditorWindow to = (EditorWindow) o;

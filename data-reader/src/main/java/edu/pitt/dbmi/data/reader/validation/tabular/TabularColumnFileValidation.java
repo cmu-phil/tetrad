@@ -57,7 +57,7 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Constructor.
      */
     @Override
@@ -67,7 +67,7 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Validate the data file.
      */
     @Override
@@ -94,7 +94,7 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Validate the data file.
      */
     @Override
@@ -291,7 +291,7 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Set the maximum number of messages.
      */
     @Override

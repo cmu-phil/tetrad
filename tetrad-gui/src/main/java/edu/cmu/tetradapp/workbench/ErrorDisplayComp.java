@@ -50,13 +50,17 @@ public class ErrorDisplayComp extends JComponent
         setName(name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         super.setName(name);
         setSize(getPreferredSize());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
@@ -71,7 +75,7 @@ public class ErrorDisplayComp extends JComponent
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Paints the component.
      */
     public void paint(Graphics g) {
@@ -107,7 +111,9 @@ public class ErrorDisplayComp extends JComponent
         return this.selected;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setSelected(boolean selected) {
         this.selected = selected;
     }

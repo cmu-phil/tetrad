@@ -130,7 +130,9 @@ public class DescriptiveStatisticsJTable extends JTable implements DataModelCont
         });
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setValueAt(Object aValue, int row, int column) {
         try {
             super.setValueAt(aValue, row, column);
@@ -169,7 +171,9 @@ public class DescriptiveStatisticsJTable extends JTable implements DataModelCont
         return getDataSet();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
     }

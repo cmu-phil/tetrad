@@ -34,8 +34,8 @@ import java.util.List;
  *
  * @author josephramsey
  * @author Willie Wheeler
- * @see edu.cmu.tetradapp.workbench.AbstractWorkbench
  * @version $Id: $Id
+ * @see edu.cmu.tetradapp.workbench.AbstractWorkbench
  */
 public class TimeLagGraphWorkbench extends GraphWorkbench {
 
@@ -208,7 +208,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the edge mode to the given mode.
      */
     public void setEdgeMode(int edgeMode) {
@@ -260,7 +260,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new display node for the workbench based on the given model node.
      */
     public DisplayNode getNewDisplayNode(Node modelNode) {
@@ -291,7 +291,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new display edge for the workbench based on the given model edge.
      */
     public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
@@ -314,7 +314,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Creates a new model edge for the workbench connecting the two given model nodes and using the edge type from
      * #getEdgeType().
      */
@@ -339,7 +339,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Gets a new "tracking edge"--that is, an edge which is anchored at one end to a node but tracks the mouse at the
      * other end.  Used for drawing new edges.
      */
@@ -376,7 +376,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Given base b (a String), returns the first node in the sequence "b1", "b2", "b3", etc., which is not already the
      * name of a node in the workbench.
      */
@@ -408,7 +408,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the type of this node to the given type.
      */
     public void setNodeType(int nodeType) {
@@ -424,7 +424,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Pastes a list of session elements (SessionNodeWrappers and SessionEdges) into the workbench.
      */
     public void pasteSubgraph(List graphElements, Point upperLeft) {

@@ -51,7 +51,9 @@ class SaveBayesImXmlAction extends AbstractAction {
         this.bayesImEditor = bayesImEditor;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void actionPerformed(ActionEvent e) {
         try {
 

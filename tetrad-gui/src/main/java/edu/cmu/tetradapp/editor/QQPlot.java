@@ -78,7 +78,7 @@ class QQPlot {
     /**
      * Constructs the histogram given the dataset to wrap and the node that should be viewed.
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dataSet      a {@link edu.cmu.tetrad.data.DataSet} object
      * @param selectedNode a {@link edu.cmu.tetrad.graph.Node} object
      */
     public QQPlot(DataSet dataSet, Node selectedNode) {

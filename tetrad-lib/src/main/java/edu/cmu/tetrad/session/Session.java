@@ -153,7 +153,8 @@ public final class Session implements TetradSerializable {
      * @throws java.lang.NullPointerException     if the node is null.
      * @throws java.lang.IllegalArgumentException if the node is not in a freshly created state. There are two ways to
      *                                            put a SessionNode into a freshly created state. One is to freshly
-     *                                            create it, using one of the constructors. The other was is to call the
+     *                                            create it, using one of the constructors. The other was is to call
+     *                                            the
      *                                            <code>reset</code> method on the SessionNode.
      * @see edu.cmu.tetrad.session.SessionNode#isFreshlyCreated
      * @see edu.cmu.tetrad.session.SessionNode#resetToFreshlyCreated

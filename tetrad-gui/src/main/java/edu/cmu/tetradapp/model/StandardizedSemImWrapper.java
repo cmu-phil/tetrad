@@ -57,11 +57,12 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
     private boolean showErrors;
 
     //============================CONSTRUCTORS==========================//
+
     /**
      * <p>Constructor for StandardizedSemImWrapper.</p>
      *
      * @param semImWrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public StandardizedSemImWrapper(SemImWrapper semImWrapper, Parameters parameters) {
         if (semImWrapper == null) {
@@ -76,7 +77,7 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
      * <p>Constructor for StandardizedSemImWrapper.</p>
      *
      * @param semPmWrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public StandardizedSemImWrapper(SemPmWrapper semPmWrapper, Parameters parameters) {
         if (semPmWrapper == null) {
@@ -91,8 +92,8 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -100,6 +101,7 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
     }
 
     //===========================PUBLIC METHODS=========================//
+
     /**
      * <p>Getter for the field <code>standardizedSemIm</code>.</p>
      *
@@ -127,7 +129,9 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -161,7 +165,7 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
      * help.
      *
      * @param s a {@link java.io.ObjectInputStream} object
-     * @throws IOException if any.
+     * @throws IOException            if any.
      * @throws ClassNotFoundException if any.
      */
     @Serial

@@ -76,8 +76,8 @@ public class TetradMetadata
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.TetradMetadata} object
+     * @see TetradSerializableUtils
      */
     public static TetradMetadata serializableInstance() {
         return new TetradMetadata();
@@ -114,7 +114,7 @@ public class TetradMetadata
      * help.
      *
      * @param s a {@link java.io.ObjectInputStream} object
-     * @throws IOException if any.
+     * @throws IOException            if any.
      * @throws ClassNotFoundException if any.
      */
     private void readObject(ObjectInputStream s)

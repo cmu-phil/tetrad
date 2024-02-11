@@ -57,13 +57,14 @@ import java.util.concurrent.RecursiveAction;
 public class StabilityUtils {
 
     //returns an adjacency matrix containing the edgewise instability as defined in Liu et al
+
     /**
      * <p>StabilitySearch.</p>
      *
      * @param data a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param gs a {@link edu.pitt.csb.stability.DataGraphSearch} object
-     * @param N a int
-     * @param b a int
+     * @param gs   a {@link edu.pitt.csb.stability.DataGraphSearch} object
+     * @param N    a int
+     * @param b    a int
      * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
      */
     public static DoubleMatrix2D StabilitySearch(DataSet data, DataGraphSearch gs, int N, int b) {
@@ -85,13 +86,14 @@ public class StabilityUtils {
     }
 
     //returns an adjacency matrix containing the edgewise instability as defined in Liu et al
+
     /**
      * <p>StabilitySearchPar.</p>
      *
      * @param data a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param gs a {@link edu.pitt.csb.stability.DataGraphSearch} object
-     * @param N a int
-     * @param b a int
+     * @param gs   a {@link edu.pitt.csb.stability.DataGraphSearch} object
+     * @param N    a int
+     * @param b    a int
      * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
      */
     public static DoubleMatrix2D StabilitySearchPar(DataSet data, DataGraphSearch gs, int N, int b) {
@@ -159,10 +161,11 @@ public class StabilityUtils {
 
     //needs a symmetric matrix
     //array of averages of instability matrix over [all, cc, cd, dd] edges
+
     /**
      * <p>totalInstabilityUndir.</p>
      *
-     * @param xi a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @param xi   a {@link cern.colt.matrix.DoubleMatrix2D} object
      * @param vars a {@link java.util.List} object
      * @return an array of {@link double} objects
      */
@@ -194,10 +197,11 @@ public class StabilityUtils {
     }
 
     //array of averages of instability matrix over [all, cc, cd, dd] edges
+
     /**
      * <p>totalInstabilityDir.</p>
      *
-     * @param xi a {@link cern.colt.matrix.DoubleMatrix2D} object
+     * @param xi   a {@link cern.colt.matrix.DoubleMatrix2D} object
      * @param vars a {@link java.util.List} object
      * @return an array of {@link double} objects
      */
@@ -221,12 +225,13 @@ public class StabilityUtils {
     }
 
     //returns an numSub by subSize matrix of subsamples of the sequence 1:sampSize
+
     /**
      * <p>subSampleNoReplacement.</p>
      *
      * @param sampSize a int
-     * @param subSize a int
-     * @param numSub a int
+     * @param subSize  a int
+     * @param numSub   a int
      * @return an array of {@link int} objects
      */
     public static int[][] subSampleNoReplacement(int sampSize, int subSize, int numSub) {
@@ -277,6 +282,7 @@ public class StabilityUtils {
 
 
     //some tests...
+
     /**
      * <p>main.</p>
      *

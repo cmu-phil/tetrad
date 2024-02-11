@@ -82,9 +82,9 @@ public class DoubleTextField extends JTextField {
     /**
      * <p>Constructor for DoubleTextField.</p>
      *
-     * @param value a double
-     * @param width a int
-     * @param format a {@link java.text.NumberFormat} object
+     * @param value             a double
+     * @param width             a int
+     * @param format            a {@link java.text.NumberFormat} object
      * @param smallNumberFormat a {@link java.text.NumberFormat} object
      * @param smallNumberCutoff a double
      */

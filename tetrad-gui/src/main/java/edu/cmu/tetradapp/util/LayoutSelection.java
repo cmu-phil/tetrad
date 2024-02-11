@@ -68,7 +68,9 @@ public class LayoutSelection implements Transferable {
         this.layoutGraph = (Graph) result;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
         if (!isDataFlavorSupported(flavor)) {
@@ -78,7 +80,9 @@ public class LayoutSelection implements Transferable {
         return this.layoutGraph;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);
     }

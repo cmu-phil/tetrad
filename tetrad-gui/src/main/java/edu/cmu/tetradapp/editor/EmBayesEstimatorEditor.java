@@ -145,7 +145,7 @@ public class EmBayesEstimatorEditor extends JPanel {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of this editor.
      */
     public void setName(String name) {

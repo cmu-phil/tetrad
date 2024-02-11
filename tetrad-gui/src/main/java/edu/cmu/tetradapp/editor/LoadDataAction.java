@@ -76,7 +76,7 @@ final class LoadDataAction extends AbstractAction {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Performs the action of loading a session from a file.
      */
     @Override

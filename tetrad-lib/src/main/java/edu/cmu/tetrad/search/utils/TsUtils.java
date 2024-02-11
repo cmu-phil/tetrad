@@ -726,7 +726,7 @@ public class TsUtils {
         /**
          * Constructs a new result.
          *
-         * @param dataSet          a {@link edu.cmu.tetrad.data.DataSet} object
+         * @param dataSet           a {@link edu.cmu.tetrad.data.DataSet} object
          * @param collapsedVarGraph a {@link edu.cmu.tetrad.graph.Graph} object
          */
         public VarResult(DataSet dataSet, Graph collapsedVarGraph) {

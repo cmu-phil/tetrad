@@ -29,7 +29,7 @@ public class DeterminismWrapper extends DataWrapper {
      * <p>Constructor for DeterminismWraper.</p>
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public DeterminismWrapper(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
@@ -72,7 +72,7 @@ public class DeterminismWrapper extends DataWrapper {
      * help.
      *
      * @param s a {@link java.io.ObjectInputStream} object
-     * @throws IOException if any.
+     * @throws IOException            if any.
      * @throws ClassNotFoundException if any.
      */
     @Serial

@@ -56,7 +56,9 @@ class DescriptiveStatsActionSingleVar extends AbstractAction {
         this.dataEditor = editor;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void actionPerformed(ActionEvent e) {
         if (!(this.dataEditor.getSelectedDataModel() instanceof DataSet)) {
             JOptionPane.showMessageDialog(findOwner(), "Need a tabular dataset to generate descriptive statistics.");

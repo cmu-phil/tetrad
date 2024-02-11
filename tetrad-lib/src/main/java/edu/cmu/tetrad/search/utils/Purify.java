@@ -116,8 +116,8 @@ public class Purify {
     private TetradTest tetradTest;
 
     /**
-     * ****************************************************** INITIALIZATION
-     * o *******************************************************
+     * ****************************************************** INITIALIZATION o
+     * *******************************************************
      *
      * @param correlationMatrix a {@link edu.cmu.tetrad.data.CorrelationMatrix} object
      * @param sig               a double

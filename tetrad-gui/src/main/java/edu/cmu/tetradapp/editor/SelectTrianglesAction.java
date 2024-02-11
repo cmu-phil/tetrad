@@ -62,7 +62,7 @@ public class SelectTrianglesAction extends AbstractAction implements ClipboardOw
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Selects all edges in triangle in the given display graph.
      */
     public void actionPerformed(ActionEvent e) {
@@ -85,7 +85,7 @@ public class SelectTrianglesAction extends AbstractAction implements ClipboardOw
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

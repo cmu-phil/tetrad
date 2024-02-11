@@ -39,6 +39,7 @@ import java.nio.charset.Charset;
 public class FileLoadingUtils {
     // Converts the contents of a file into a CharSequence
     // suitable for use by the regex package.
+
     /**
      * <p>fromFile.</p>
      *

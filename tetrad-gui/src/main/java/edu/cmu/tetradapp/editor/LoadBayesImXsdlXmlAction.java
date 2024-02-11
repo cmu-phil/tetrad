@@ -44,7 +44,7 @@ class LoadBayesImXsdlXmlAction extends AbstractAction {
     /**
      * <p>Constructor for LoadBayesImXsdlXmlAction.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
+     * @param wrapper       a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
      * @param bayesImEditor a {@link edu.cmu.tetradapp.editor.BayesImEditor} object
      */
     public LoadBayesImXsdlXmlAction(BayesImWrapper wrapper, BayesImEditor bayesImEditor) {
@@ -80,7 +80,9 @@ class LoadBayesImXsdlXmlAction extends AbstractAction {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void actionPerformed(ActionEvent e) {
         if (this.bayesImWrapper == null) {
             throw new RuntimeException("Not a Bayes IM.");

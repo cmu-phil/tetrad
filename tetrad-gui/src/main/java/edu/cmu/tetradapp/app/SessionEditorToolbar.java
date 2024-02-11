@@ -251,7 +251,9 @@ final class SessionEditorToolbar extends JPanel {
         this.respondingToEvents = respondingToEvents;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void processKeyEvent(KeyEvent e) {
         System.out.println("process key event " + e);
         super.processKeyEvent(e);

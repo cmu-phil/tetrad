@@ -81,7 +81,9 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         return this.title;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setTitle(String title) {
         if (title == null) {
             throw new NullPointerException("The title must not be null");
@@ -109,7 +111,9 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setModelConfigs(List<SessionNodeModelConfig> configs) {
         ChooserTreeModel model = new ChooserTreeModel(configs);
         this.tree = new JTree(model);
@@ -173,7 +177,9 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setNodeId(String id) {
         if (id == null) {
             throw new NullPointerException("The given id must not be null");
@@ -181,7 +187,9 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         this.nodeId = id;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setSessionNode(SessionNode sessionNode) {
         this.sessionNode = sessionNode;
         this.nodeName = sessionNode.getDisplayName();

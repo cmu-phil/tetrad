@@ -162,8 +162,8 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @see TetradSerializableUtils
      */
     public static KnowledgeBoxModel serializableInstance() {
         return new KnowledgeBoxModel(new KnowledgeBoxInput[]{GraphWrapper.serializableInstance()}, new Parameters());
@@ -189,25 +189,32 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getName() {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setName(String name) {
         this.name = name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getSourceGraph() {
         return this.sourceGraph;
     }
 
     //    @Override
+
     /**
      * <p>getResultGraph.</p>
      *
@@ -217,19 +224,25 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         return this.sourceGraph;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getVarNames() {
         return this.variableNames;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -243,7 +256,9 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 //        TetradLogger.getInstance().log("knowledge", knowledge.toString());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void resetParams(Object params) {
         this.params = (Parameters) params;
@@ -253,13 +268,16 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
 //        TetradLogger.getInstance().log("knowledge", knowledge.toString());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getResettableParams() {
         return this.params;
     }
 
     //    @Override
+
     /**
      * <p>Getter for the field <code>variables</code>.</p>
      *
@@ -270,6 +288,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     }
 
     //    @Override
+
     /**
      * <p>Getter for the field <code>variableNames</code>.</p>
      *

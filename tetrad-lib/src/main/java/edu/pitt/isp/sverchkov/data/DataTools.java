@@ -33,11 +33,17 @@ import java.util.Scanner;
  * @version $Id: $Id
  */
 public class DataTools {
-    /** Constant <code>NEWLINE="System.getProperty(line.separator)"</code> */
+    /**
+     * Constant <code>NEWLINE="System.getProperty(line.separator)"</code>
+     */
     public static final String NEWLINE = System.getProperty("line.separator");
-    /** Constant <code>DELIMITER_REGEX=" *, *"</code> */
+    /**
+     * Constant <code>DELIMITER_REGEX=" *, *"</code>
+     */
     public static final String DELIMITER_REGEX = " *, *";
-    /** Constant <code>DELIMITER=", "</code> */
+    /**
+     * Constant <code>DELIMITER=", "</code>
+     */
     public static final String DELIMITER = ", ";
 
     /**
@@ -60,12 +66,12 @@ public class DataTools {
     /**
      * Saves a data table to a file.
      *
-     * @param data    The data table to save
-     * @param dest    The file to save to
-     * @param headers Whether to include headers
-     * @throws java.io.IOException if something goes wrong
+     * @param data        The data table to save
+     * @param dest        The file to save to
+     * @param headers     Whether to include headers
      * @param <Attribute> a Attribute class
-     * @param <Value> a Value class
+     * @param <Value>     a Value class
+     * @throws java.io.IOException if something goes wrong
      */
     public static <Attribute, Value> void saveCSV(DataTable<Attribute, Value> data, File dest, boolean headers) throws IOException {
         try (BufferedWriter out = new BufferedWriter(new FileWriter(dest))) {

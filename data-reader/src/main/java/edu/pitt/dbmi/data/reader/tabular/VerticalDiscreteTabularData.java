@@ -45,7 +45,7 @@ public class VerticalDiscreteTabularData implements DiscreteData {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Gets the data columns.
      */
     @Override
@@ -55,7 +55,7 @@ public class VerticalDiscreteTabularData implements DiscreteData {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Gets the data.
      */
     @Override

@@ -53,7 +53,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the data columns.
      */
     @Override
@@ -63,7 +63,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the data columns.
      */
     @Override
@@ -95,7 +95,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the data columns.
      */
     @Override
@@ -109,7 +109,7 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Generates the data columns.
      */
     @Override

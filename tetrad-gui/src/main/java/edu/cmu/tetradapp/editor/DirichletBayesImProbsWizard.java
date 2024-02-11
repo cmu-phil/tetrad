@@ -55,7 +55,7 @@ final class DirichletBayesImProbsWizard extends JPanel {
     /**
      * <p>Constructor for DirichletBayesImProbsWizard.</p>
      *
-     * @param bayesIm a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
+     * @param bayesIm   a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
      * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public DirichletBayesImProbsWizard(DirichletBayesIm bayesIm, GraphWorkbench workbench) {

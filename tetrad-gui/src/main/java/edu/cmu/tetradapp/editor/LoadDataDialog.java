@@ -194,6 +194,7 @@ public final class LoadDataDialog extends JPanel {
     private JButton loadButton;
 
     //================================CONSTRUCTOR=======================//
+
     /**
      * <p>Constructor for LoadDataDialog.</p>
      *
@@ -237,6 +238,7 @@ public final class LoadDataDialog extends JPanel {
     }
 
     //==============================PUBLIC METHODS=========================//
+
     /**
      * <p>showDataLoaderDialog.</p>
      *

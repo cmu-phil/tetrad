@@ -50,13 +50,17 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
         this.setSize(getPreferredSize());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         super.setName(name);
         setSize(getPreferredSize());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
@@ -71,7 +75,7 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Paints the component.
      */
     public void paint(Graphics g) {
@@ -115,7 +119,9 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
         return this.selected;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setSelected(boolean selected) {
         this.selected = selected;
     }

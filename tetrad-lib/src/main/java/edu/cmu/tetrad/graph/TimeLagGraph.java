@@ -42,59 +42,49 @@ public class TimeLagGraph implements Graph {
      */
     private final Map<String, Object> attributes = new HashMap<>();
     /**
-     * Fires property change events.
-     */
-    private transient PropertyChangeSupport pcs;
-
-    /**
-     * A node in a time lag graph.
-     */
-    private EdgeListGraph graph = new EdgeListGraph();
-
-    /**
-     * The maximum lag.
-     */
-    private int maxLag = 1;
-
-    /**
-     * The number of initial lags.
-     */
-    private int numInitialLags = 1;
-
-    /**
-     * The nodes in lag 0.
-     */
-    private List<Node> lag0Nodes = new ArrayList<>();
-
-    /**
-     * Whether the graph is a PAG.
-     */
-    private boolean pag;
-
-    /**
-     * Whether the graph is a CPDAG.
-     */
-    private boolean cpdag;
-
-    /**
-     * The paths in the graph.
-     */
-    private Paths paths;
-
-    /**
      * The set of underlined triples.
      */
     private final Set<Triple> underLineTriples = new HashSet<>();
-
     /**
      * The set of dotted underlined triples.
      */
     private final Set<Triple> dottedUnderLineTriples = new HashSet<>();
-
     /**
      * The set of ambiguous triples.
      */
     private final Set<Triple> ambiguousTriples = new HashSet<>();
+    /**
+     * Fires property change events.
+     */
+    private transient PropertyChangeSupport pcs;
+    /**
+     * A node in a time lag graph.
+     */
+    private EdgeListGraph graph = new EdgeListGraph();
+    /**
+     * The maximum lag.
+     */
+    private int maxLag = 1;
+    /**
+     * The number of initial lags.
+     */
+    private int numInitialLags = 1;
+    /**
+     * The nodes in lag 0.
+     */
+    private List<Node> lag0Nodes = new ArrayList<>();
+    /**
+     * Whether the graph is a PAG.
+     */
+    private boolean pag;
+    /**
+     * Whether the graph is a CPDAG.
+     */
+    private boolean cpdag;
+    /**
+     * The paths in the graph.
+     */
+    private Paths paths;
 
     /**
      * <p>Constructor for TimeLagGraph.</p>

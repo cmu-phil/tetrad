@@ -149,7 +149,9 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

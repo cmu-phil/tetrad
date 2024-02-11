@@ -3352,30 +3352,6 @@ public final class TestGrasp {
         }
     }
 
-    private static class Ret {
-        private final String label;
-        private final IndependenceFacts facts;
-        private int truth;
-
-        public Ret(String label, IndependenceFacts facts, int truth) {
-            this.label = label;
-            this.facts = facts;
-            this.truth = truth;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public IndependenceFacts getFacts() {
-            return facts;
-        }
-
-        public int getTruth() {
-            return truth;
-        }
-    }
-
     public void testJaime() {
         try {
 //            String path = "/Users/josephramsey/Downloads/sample100genes.csv1.imputed.txt";
@@ -3402,6 +3378,30 @@ public final class TestGrasp {
             Graph graph = alg.search(data, parameters);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static class Ret {
+        private final String label;
+        private final IndependenceFacts facts;
+        private int truth;
+
+        public Ret(String label, IndependenceFacts facts, int truth) {
+            this.label = label;
+            this.facts = facts;
+            this.truth = truth;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public IndependenceFacts getFacts() {
+            return facts;
+        }
+
+        public int getTruth() {
+            return truth;
         }
     }
 }

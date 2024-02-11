@@ -192,7 +192,9 @@ public class SetupLoggingAction extends AbstractAction {
         return box;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void actionPerformed(ActionEvent e) {
         JComponent comp = SetupLoggingAction.buildSetupLoggingComponent();
         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), comp,

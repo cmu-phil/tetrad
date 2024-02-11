@@ -53,7 +53,7 @@ public class InterventionalColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a string representation of this object.
      */
     @Override

@@ -19,7 +19,7 @@ public class GraphUtils {
     /**
      * <p>makeRandomGraph.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph      a {@link edu.cmu.tetrad.graph.Graph} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */

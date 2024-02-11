@@ -64,7 +64,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets up the GUI.
      */
     @Override
@@ -127,7 +127,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Tells the editor to commit any final details before it is closed (only called when the user selects "Ok" or
      * something of that nature). If false is returned the edit is considered invalid and it will be treated as if the
      * user selected "cancelAll".
@@ -142,7 +142,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the previous params, must be <code>DiscretizationParams</code>.
      */
     @Override
@@ -152,7 +152,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * The parent model should be a <code>DataWrapper</code>.
      */
     @Override
@@ -191,7 +191,9 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
         this.sourceDataSetCopy = SerializationUtils.clone(dataSet);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean mustBeShown() {
         return true;

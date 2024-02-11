@@ -58,7 +58,7 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
@@ -202,7 +202,7 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
@@ -212,7 +212,7 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
     /**
      * <p>setGraph.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public void setGraph(Graph graph, GraphWorkbench workbench) {

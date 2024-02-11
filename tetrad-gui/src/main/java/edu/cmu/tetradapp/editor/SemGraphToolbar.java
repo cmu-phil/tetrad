@@ -196,7 +196,7 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Responds to property change events.
      */
     public void propertyChange(PropertyChangeEvent e) {

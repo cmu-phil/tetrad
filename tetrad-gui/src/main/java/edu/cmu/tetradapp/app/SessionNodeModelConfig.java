@@ -77,9 +77,9 @@ public interface SessionNodeModelConfig {
     /**
      * <p>getEditorInstance.</p>
      *
+     * @param arguments an array of {@link java.lang.Object} objects
      * @return an instance of the editor to use for the model.
      * @throws java.lang.IllegalArgumentException - Throws an exception of the arguments aren't of the right sort.
-     * @param arguments an array of {@link java.lang.Object} objects
      */
     JPanel getEditorInstance(Object[] arguments);
 

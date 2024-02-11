@@ -37,24 +37,21 @@ import java.awt.event.ItemEvent;
  */
 class DescriptiveStatsEditorPanel extends JPanel {
 
-    boolean precomputeCovariances = true;
-
-
     /**
      * Combo box of all the variables.
      */
     private final JComboBox variableBox;
-
     /**
      * The dataset being viewed.
      */
     private final DataSet dataSet;
+    boolean precomputeCovariances = true;
 
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
      *
      * @param selected a {@link edu.cmu.tetrad.graph.Node} object
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dataSet  a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DescriptiveStatsEditorPanel(Node selected, DataSet dataSet) {
         //   construct components

@@ -1033,6 +1033,7 @@ public class DMSearch {
 
         /**
          * <p>latentStructToEdgeListGraph.</p>
+         *
          * @param structure a {@link edu.cmu.tetrad.search.work_in_progress.DMSearch.LatentStructure} object
          * @return a {@link edu.cmu.tetrad.graph.Graph} object
          */

@@ -817,6 +817,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private void setShowRequired(boolean showRequired) {
         this.showRequired = showRequired;
     }
+
     private void setShowForbiddenByTiers(boolean showForbiddenByTiers) {
         this.showForbiddenByTiers = showForbiddenByTiers;
     }

@@ -63,8 +63,8 @@ public class NoteModel implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.NoteModel} object
+     * @see TetradSerializableUtils
      */
     public static NoteModel serializableInstance() {
         return new NoteModel(new Parameters());
@@ -97,7 +97,9 @@ public class NoteModel implements SessionModel {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

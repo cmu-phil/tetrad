@@ -88,7 +88,8 @@ public class SessionEvent extends EventObject {
     private SessionNode child;
 
     /**
-     * The type of this event--one of NODE_ADDED, NODE_REMOVED, PARENT_ADDED, PARENT_REMOVED, MODEL_CREATED, MODEL_DESTROYED, MODEL_UNCLEAR.
+     * The type of this event--one of NODE_ADDED, NODE_REMOVED, PARENT_ADDED, PARENT_REMOVED, MODEL_CREATED,
+     * MODEL_DESTROYED, MODEL_UNCLEAR.
      */
     private int type = -1;
 

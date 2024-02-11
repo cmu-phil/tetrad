@@ -57,7 +57,7 @@ class OtherGroupsEditor extends JPanel {
      * <p>Constructor for OtherGroupsEditor.</p>
      *
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
-     * @param vars a {@link java.util.List} object
+     * @param vars      a {@link java.util.List} object
      */
     public OtherGroupsEditor(Knowledge knowledge, List<String> vars) {
         if (knowledge == null) {

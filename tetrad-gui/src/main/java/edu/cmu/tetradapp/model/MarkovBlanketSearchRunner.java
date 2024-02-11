@@ -35,7 +35,9 @@ import java.util.List;
  * @version $Id: $Id
  */
 public interface MarkovBlanketSearchRunner extends Executable {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
@@ -49,7 +51,7 @@ public interface MarkovBlanketSearchRunner extends Executable {
     /**
      * <p>getSource.</p>
      *
-     * @return  the source for the search.
+     * @return the source for the search.
      */
     DataSet getSource();
 

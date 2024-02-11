@@ -470,7 +470,8 @@ public class ScatterPlot {
         /**
          * Uniform jitter.
          */
-        Uniform}
+        Uniform
+    }
 
     private static class Result {
         public double[] xdata;

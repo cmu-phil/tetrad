@@ -50,7 +50,7 @@ final class CutSubsessionAction extends AbstractAction
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
@@ -66,7 +66,7 @@ final class CutSubsessionAction extends AbstractAction
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Required by the ClipboardOwner interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

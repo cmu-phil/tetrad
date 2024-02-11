@@ -52,7 +52,7 @@ final class PasteSubsessionAction extends AbstractAction
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
@@ -89,7 +89,7 @@ final class PasteSubsessionAction extends AbstractAction
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Notifies this object that it is no longer the owner of the contents of the clipboard.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

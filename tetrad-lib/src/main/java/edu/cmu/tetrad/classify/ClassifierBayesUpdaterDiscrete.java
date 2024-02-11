@@ -60,9 +60,8 @@ public final class ClassifierBayesUpdaterDiscrete implements ClassifierDiscrete,
      */
     private final DataSet testData;
     /**
-     * The variables in the dataset to be classified.  These should be
-     * the same variables as in the training dataset according to the
-     * "equals" method of DiscreteVariable.
+     * The variables in the dataset to be classified.  These should be the same variables as in the training dataset
+     * according to the "equals" method of DiscreteVariable.
      */
     private final List<Node> bayesImVars;
     /**

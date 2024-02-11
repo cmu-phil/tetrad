@@ -101,12 +101,13 @@ public class ProximalGradient {
     }
 
     //run FISTA with step size backtracking attempt to speed up
+
     /**
      * <p>learnBackTrack.</p>
      *
-     * @param cp a {@link edu.pitt.csb.mgm.ConvexProximal} object
-     * @param Xin a {@link cern.colt.matrix.DoubleMatrix1D} object
-     * @param epsilon a double
+     * @param cp        a {@link edu.pitt.csb.mgm.ConvexProximal} object
+     * @param Xin       a {@link cern.colt.matrix.DoubleMatrix1D} object
+     * @param epsilon   a double
      * @param iterLimit a int
      * @return a {@link cern.colt.matrix.DoubleMatrix1D} object
      */

@@ -57,7 +57,7 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAdd
     /**
      * <p>Constructor for GraphAdjacencyIntersectionWrapper.</p>
      *
-     * @param data1 an array of {@link edu.cmu.tetradapp.model.GraphSource} objects
+     * @param data1      an array of {@link edu.cmu.tetradapp.model.GraphSource} objects
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GraphAdjacencyIntersectionWrapper(GraphSource[] data1, Parameters parameters) {
@@ -67,8 +67,8 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAdd
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
         return new DataWrapper(new Parameters());
@@ -108,7 +108,9 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAdd
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

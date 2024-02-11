@@ -69,7 +69,7 @@ public class PcRunner extends AbstractAlgorithmRunner
      * or a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PcRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -78,8 +78,8 @@ public class PcRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for PcRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public PcRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -87,12 +87,13 @@ public class PcRunner extends AbstractAlgorithmRunner
     }
 
     // Starts PC from the given graph.
+
     /**
      * <p>Constructor for PcRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -102,9 +103,9 @@ public class PcRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for PcRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param graphWrapper      a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public PcRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -115,7 +116,7 @@ public class PcRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PcRunner(Graph graph, Parameters params) {
@@ -126,7 +127,7 @@ public class PcRunner extends AbstractAlgorithmRunner
      * Constucts a wrapper for the given EdgeListGraph.
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PcRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
@@ -135,9 +136,9 @@ public class PcRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for PcRunner.</p>
      *
-     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param graphWrapper      a {@link edu.cmu.tetradapp.model.GraphWrapper} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PcRunner(GraphWrapper graphWrapper, KnowledgeBoxModel knowledgeBoxModel, Parameters params) {
         super(graphWrapper.getGraph(), params, knowledgeBoxModel);
@@ -147,7 +148,7 @@ public class PcRunner extends AbstractAlgorithmRunner
      * <p>Constructor for PcRunner.</p>
      *
      * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PcRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
@@ -157,7 +158,7 @@ public class PcRunner extends AbstractAlgorithmRunner
      * <p>Constructor for PcRunner.</p>
      *
      * @param dagWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PcRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
@@ -167,8 +168,8 @@ public class PcRunner extends AbstractAlgorithmRunner
      * <p>Constructor for PcRunner.</p>
      *
      * @param graphModel a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param facts a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param facts      a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public PcRunner(GraphWrapper graphModel, IndependenceFactsModel facts, Parameters params) {
         super(graphModel.getGraph(), params, null, facts.getFacts());
@@ -177,8 +178,8 @@ public class PcRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for PcRunner.</p>
      *
-     * @param model a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param model             a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public PcRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -189,8 +190,8 @@ public class PcRunner extends AbstractAlgorithmRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return new PcRunner(Dag.serializableInstance(), new Parameters());
@@ -208,7 +209,9 @@ public class PcRunner extends AbstractAlgorithmRunner
         return rules;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAlgorithmName() {
         return "PC";
@@ -277,7 +280,9 @@ public class PcRunner extends AbstractAlgorithmRunner
         return new ArrayList<>();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new ArrayList<>();
     }
@@ -309,7 +314,9 @@ public class PcRunner extends AbstractAlgorithmRunner
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();

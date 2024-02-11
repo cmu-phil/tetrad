@@ -9,21 +9,33 @@ package edu.cmu.tetrad.data;
  */
 public enum DataType {
 
-    /** Continuous. */
+    /**
+     * Continuous.
+     */
     Continuous,
 
-    /** Discrete. */
+    /**
+     * Discrete.
+     */
     Discrete,
 
-    /** Mixed. */
+    /**
+     * Mixed.
+     */
     Mixed,
 
-    /** Graph. */
+    /**
+     * Graph.
+     */
     Graph,
 
-    /** Covariance. */
+    /**
+     * Covariance.
+     */
     Covariance,
 
-    /** All. */
+    /**
+     * All.
+     */
     All
 }

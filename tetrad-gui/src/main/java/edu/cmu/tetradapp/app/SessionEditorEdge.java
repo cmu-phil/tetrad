@@ -34,7 +34,9 @@ import java.awt.*;
 final class SessionEditorEdge extends DisplayEdge {
 
     /* Modes */
-    /** Constant <code>UNRANDOMIZED=0</code> */
+    /**
+     * Constant <code>UNRANDOMIZED=0</code>
+     */
     public static final int UNRANDOMIZED = 0;
     /* Colors */
     private static final Color DIE_BACKGROUND = Color.red;
@@ -207,7 +209,7 @@ final class SessionEditorEdge extends DisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * This method paints the component.
      */
     public void paint(Graphics g) {

@@ -57,7 +57,7 @@ public final class BayesImEditorWizardObs extends JPanel {
     /**
      * <p>Constructor for BayesImEditorWizardObs.</p>
      *
-     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param bayesIm   a {@link edu.cmu.tetrad.bayes.BayesIm} object
      * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public BayesImEditorWizardObs(BayesIm bayesIm, GraphWorkbench workbench) {

@@ -573,11 +573,16 @@ public final class ConditionalCorrelationIndependence {
      */
     public enum Kernel {
 
-        /** The Epinechnikov kernel. */
+        /**
+         * The Epinechnikov kernel.
+         */
         Epinechnikov,
 
-        /** The Gaussian kernel. */
-        Gaussian}
+        /**
+         * The Gaussian kernel.
+         */
+        Gaussian
+    }
 
     /**
      * Gives a choice of basis functions to use for judgments of independence for conditional correlation independence.

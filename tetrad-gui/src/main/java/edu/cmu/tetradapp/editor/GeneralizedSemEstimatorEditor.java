@@ -75,6 +75,7 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
     private GeneralizedSemImGraphicalEditor graphicalEditor;
 
     //========================CONSTRUCTORS===========================//
+
     /**
      * <p>Constructor for GeneralizedSemEstimatorEditor.</p>
      *
@@ -235,7 +236,9 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
         return graphicalEditor().getWorkbench().getGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map getModelEdgesToDisplay() {
         return graphicalEditor().getWorkbench().getModelEdgesToDisplay();
@@ -268,7 +271,9 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
         return graphicalEditor().getWorkbench().getSourceGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void layoutByGraph(Graph graph) {
         SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);

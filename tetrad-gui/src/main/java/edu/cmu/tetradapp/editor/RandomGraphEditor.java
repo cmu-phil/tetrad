@@ -56,7 +56,7 @@ class RandomGraphEditor extends JPanel {
      * Constructs a dialog to edit the given workbench randomization parameters.
      *
      * @param cyclicAllowed a boolean
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters    a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RandomGraphEditor(boolean cyclicAllowed, Parameters parameters) {
         this(new EdgeListGraph(), cyclicAllowed, parameters);
@@ -68,9 +68,9 @@ class RandomGraphEditor extends JPanel {
      * nodes. Useful if the interface suggests a number of nodes //     * that overrides the number of nodes set in the
      * preferences.
      *
-     * @param oldGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param oldGraph      a {@link edu.cmu.tetrad.graph.Graph} object
      * @param cyclicAllowed a boolean
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters    a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RandomGraphEditor(Graph oldGraph, boolean cyclicAllowed, Parameters parameters) {
         if (parameters == null) {
@@ -446,7 +446,9 @@ class RandomGraphEditor extends JPanel {
         add(d, BorderLayout.CENTER);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
 

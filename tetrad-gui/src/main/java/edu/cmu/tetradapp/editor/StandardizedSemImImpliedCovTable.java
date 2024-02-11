@@ -68,8 +68,8 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
      * Constructs a new table for the given covariance matrix, the nodes for which are as specified (in the order they
      * appear in the matrix).
      *
-     * @param semIm a {@link edu.cmu.tetrad.sem.StandardizedSemIm} object
-     * @param measured a boolean
+     * @param semIm        a {@link edu.cmu.tetrad.sem.StandardizedSemIm} object
+     * @param measured     a boolean
      * @param correlations a boolean
      */
     public StandardizedSemImImpliedCovTable(StandardizedSemIm semIm, boolean measured,
@@ -151,7 +151,9 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getColumnName(int columnIndex) {
         if (columnIndex == 0) {
             return "";
@@ -168,7 +170,9 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (rowIndex == 0) {
             return getColumnName(columnIndex);

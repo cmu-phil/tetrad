@@ -68,7 +68,7 @@ public final class ParameterComponents {
     /**
      * <p>createParameterComponents.</p>
      *
-     * @param params a {@link java.util.Set} object
+     * @param params     a {@link java.util.Set} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      * @return a {@link java.util.Map} object
      */
@@ -87,11 +87,11 @@ public final class ParameterComponents {
     /**
      * <p>getDoubleField.</p>
      *
-     * @param parameter a {@link java.lang.String} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
      * @param defaultValue a double
-     * @param lowerBound a double
-     * @param upperBound a double
+     * @param lowerBound   a double
+     * @param upperBound   a double
      * @return a {@link edu.cmu.tetradapp.util.DoubleTextField} object
      */
     public static DoubleTextField getDoubleField(String parameter, Parameters parameters,
@@ -127,11 +127,11 @@ public final class ParameterComponents {
     /**
      * <p>getIntTextField.</p>
      *
-     * @param parameter a {@link java.lang.String} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
      * @param defaultValue a int
-     * @param lowerBound a double
-     * @param upperBound a double
+     * @param lowerBound   a double
+     * @param upperBound   a double
      * @return a {@link edu.cmu.tetradapp.util.IntTextField} object
      */
     public static IntTextField getIntTextField(String parameter, Parameters parameters,
@@ -166,11 +166,11 @@ public final class ParameterComponents {
     /**
      * <p>getLongTextField.</p>
      *
-     * @param parameter a {@link java.lang.String} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
      * @param defaultValue a long
-     * @param lowerBound a double
-     * @param upperBound a double
+     * @param lowerBound   a double
+     * @param upperBound   a double
      * @return a {@link edu.cmu.tetradapp.util.LongTextField} object
      */
     public static LongTextField getLongTextField(String parameter, Parameters parameters,
@@ -205,8 +205,8 @@ public final class ParameterComponents {
     /**
      * <p>getBooleanSelectionBox.</p>
      *
-     * @param parameter a {@link java.lang.String} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
      * @param defaultValue a boolean
      * @return a {@link javax.swing.Box} object
      */
@@ -256,8 +256,8 @@ public final class ParameterComponents {
     /**
      * <p>getStringField.</p>
      *
-     * @param parameter a {@link java.lang.String} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
      * @param defaultValue a {@link java.lang.String} object
      * @return a {@link edu.cmu.tetradapp.util.StringTextField} object
      */

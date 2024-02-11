@@ -66,8 +66,8 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     /**
      * <p>Constructor for IndTestMultinomialLogisticRegressionWald.</p>
      *
-     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param alpha a double
+     * @param data         a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param alpha        a double
      * @param preferLinear a boolean
      */
     public IndTestMultinomialLogisticRegressionWald(DataSet data, double alpha, boolean preferLinear) {
@@ -93,7 +93,9 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         this.regression = new RegressionDataset(internalData);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
@@ -387,7 +389,9 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
     }
@@ -404,7 +408,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
@@ -430,13 +434,17 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         return "Multinomial Logistic Regression, alpha = " + nf.format(getAlpha());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

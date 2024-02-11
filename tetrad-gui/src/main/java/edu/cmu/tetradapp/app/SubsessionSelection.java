@@ -84,7 +84,9 @@ final class SubsessionSelection implements Transferable {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
         if (!isDataFlavorSupported(flavor)) {
@@ -103,7 +105,9 @@ final class SubsessionSelection implements Transferable {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);
     }

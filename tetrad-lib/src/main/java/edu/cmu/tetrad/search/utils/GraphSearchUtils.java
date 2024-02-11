@@ -1242,13 +1242,19 @@ public final class GraphSearchUtils {
      * "noncollider" or "ambiguous".
      */
     public enum CpcTripleType {
-        /** A collider triple. */
+        /**
+         * A collider triple.
+         */
         COLLIDER,
 
-        /** A noncollider triple. */
+        /**
+         * A noncollider triple.
+         */
         NONCOLLIDER,
 
-        /** An ambiguous triple. */
+        /**
+         * An ambiguous triple.
+         */
         AMBIGUOUS
     }
 

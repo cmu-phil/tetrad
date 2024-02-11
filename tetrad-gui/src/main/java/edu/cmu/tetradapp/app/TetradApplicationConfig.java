@@ -327,8 +327,8 @@ public class TetradApplicationConfig {
     /**
      * <p>getSessionNodeConfig.</p>
      *
-     * @return the <code>SessionNodeConfig</code> that the given model is part of.
      * @param model a {@link java.lang.Class} object
+     * @return the <code>SessionNodeConfig</code> that the given model is part of.
      */
     public SessionNodeConfig getSessionNodeConfig(Class model) {
         return this.classMap.get(model);

@@ -63,7 +63,7 @@ public class TabularDataColumn implements DataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a string representation of the object.
      */
     @Override
@@ -73,7 +73,7 @@ public class TabularDataColumn implements DataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Get the name of the column.
      */
     @Override
@@ -83,7 +83,7 @@ public class TabularDataColumn implements DataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Get the column number.
      */
     @Override
@@ -93,7 +93,7 @@ public class TabularDataColumn implements DataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Is the column generated?
      */
     @Override
@@ -103,7 +103,7 @@ public class TabularDataColumn implements DataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Is the column discrete?
      */
     @Override
@@ -113,7 +113,7 @@ public class TabularDataColumn implements DataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Set the discrete status of the column.
      */
     @Override

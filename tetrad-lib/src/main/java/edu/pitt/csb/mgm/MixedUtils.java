@@ -52,7 +52,9 @@ import java.util.*;
 public class MixedUtils {
 
     //labels corresponding to values from allEdgeStats
-    /** Constant <code>EdgeStatHeader="TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\"{trunked}</code> */
+    /**
+     * Constant <code>EdgeStatHeader="TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\"{trunked}</code>
+     */
     public static final String EdgeStatHeader = "TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\tBidir";
 
     /**
@@ -102,6 +104,7 @@ public class MixedUtils {
     }
 
     //Converts a Dataset with both ContinuousVariables and DiscreteVariables to only ContinuousVariables
+
     /**
      * <p>makeContinuousData.</p>
      *
@@ -124,11 +127,12 @@ public class MixedUtils {
 
     //takes DataSet of all ContinuousVariables
     //convert variables to discrete if there is an entry with <NodeName, "Disc"> in nodeDists
+
     /**
      * <p>makeMixedData.</p>
      *
-     * @param dsCont a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param nodeDists a {@link java.util.Map} object
+     * @param dsCont        a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param nodeDists     a {@link java.util.Map} object
      * @param numCategories a int
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
@@ -148,10 +152,11 @@ public class MixedUtils {
 
     //takes DataSet of all ContinuousVariables
     //convert variables to discrete if there is an entry with <NodeName, x> with x > 0, num categories set to x
+
     /**
      * <p>makeMixedData.</p>
      *
-     * @param dsCont a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dsCont    a {@link edu.cmu.tetrad.data.DataSet} object
      * @param nodeDists a {@link java.util.Map} object
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
@@ -191,6 +196,7 @@ public class MixedUtils {
     }
 
     //Takes a mixed dataset and returns only data corresponding to ContinuousVariables in order
+
     /**
      * <p>getContinousData.</p>
      *
@@ -207,6 +213,7 @@ public class MixedUtils {
     }
 
     //Takes a mixed dataset and returns only data corresponding to DiscreteVariables in order
+
     /**
      * <p>getDiscreteData.</p>
      *
@@ -304,12 +311,13 @@ public class MixedUtils {
 
     //generate PM from trueGraph for mixed Gaussian and Trinary variables
     //Don't use, buggy
+
     /**
      * <p>GaussianTrinaryPm.</p>
      *
-     * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param nodeDists a {@link java.util.HashMap} object
-     * @param maxSample a int
+     * @param trueGraph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param nodeDists     a {@link java.util.HashMap} object
+     * @param maxSample     a int
      * @param paramTemplate a {@link java.lang.String} object
      * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
      * @throws java.lang.IllegalStateException if any.
@@ -389,10 +397,11 @@ public class MixedUtils {
 
     //generate PM from trueGraph for mixed Gaussian and Categorical variables
     //public static GeneralizedSemPm GaussianCategoricalPm(Graph trueGraph, HashMap<String, Integer> nodeDists, String paramTemplate) throws IllegalStateException{
+
     /**
      * <p>GaussianCategoricalPm.</p>
      *
-     * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param trueGraph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @param paramTemplate a {@link java.lang.String} object
      * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
      * @throws java.lang.IllegalStateException if any.
@@ -505,9 +514,9 @@ public class MixedUtils {
     /**
      * Set all existing parameters that begins with sta to template and also set template for any new parameters
      *
-     * @param sta a {@link java.lang.String} object
+     * @param sta      a {@link java.lang.String} object
      * @param template a {@link java.lang.String} object
-     * @param pm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @param pm       a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
      */
     public static void setStartsWith(String sta, String template, GeneralizedSemPm pm) {
         try {
@@ -524,6 +533,7 @@ public class MixedUtils {
     }
 
     //legacy
+
     /**
      * <p>GaussianCategoricalIm.</p>
      *
@@ -543,7 +553,7 @@ public class MixedUtils {
      * -w/(categories-1) in the rest. For random, c-d params are uniformly drawn from 0 to 1 then transformed to have w
      * as max value and sum to 0.
      *
-     * @param pm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @param pm            a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
      * @param discParamRand true for random edge generation behavior, false for deterministic
      * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
      */
@@ -634,6 +644,7 @@ public class MixedUtils {
     }
 
     //Given two node names and a parameterized model return list of parameters corresponding to edge between them
+
     /**
      * <p>getEdgeParams.</p>
      *
@@ -649,6 +660,7 @@ public class MixedUtils {
     }
 
     //randomly permute an array of doubles
+
     /**
      * <p>arrayPermute.</p>
      *
@@ -669,6 +681,7 @@ public class MixedUtils {
     }
 
     //randomly permute array of ints
+
     /**
      * <p>arrayPermute.</p>
      *
@@ -689,6 +702,7 @@ public class MixedUtils {
     }
 
     //generates a vector of length L that starts with -w and increases with consistent steps to w
+
     /**
      * <p>evenSplitVector.</p>
      *
@@ -706,6 +720,7 @@ public class MixedUtils {
     }
 
     //Given two nodes and a parameterized model return list of parameters corresponding to edge between them
+
     /**
      * <p>getEdgeParams.</p>
      *
@@ -760,6 +775,7 @@ public class MixedUtils {
     }
 
     //generates a vector of length L with maximum value w that sums to 0
+
     /**
      * <p>generateMixedEdgeParams.</p>
      *
@@ -796,6 +812,7 @@ public class MixedUtils {
     }
 
     //assumes Graphs have properly assigned variable types
+
     /**
      * <p>allEdgeStats.</p>
      *
@@ -820,11 +837,12 @@ public class MixedUtils {
     // break out stats by node distributions, here only "Norm" and "Disc"
     // so three types of possible edges, cc, cd, dd, output is edge type by stat type
     // counts bidirected
+
     /**
      * <p>allEdgeStats.</p>
      *
-     * @param pT a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param pE a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param pT        a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param pE        a {@link edu.cmu.tetrad.graph.Graph} object
      * @param nodeDists a {@link java.util.HashMap} object
      * @return an array of {@link int} objects
      */
@@ -911,6 +929,7 @@ public class MixedUtils {
     }
 
     //Utils
+
     /**
      * <p>makeMixedGraph.</p>
      *
@@ -962,7 +981,7 @@ public class MixedUtils {
     /**
      * <p>loadDataSet.</p>
      *
-     * @param dir a {@link java.lang.String} object
+     * @param dir      a {@link java.lang.String} object
      * @param filename a {@link java.lang.String} object
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      * @throws java.io.IOException if any.
@@ -976,7 +995,7 @@ public class MixedUtils {
     /**
      * <p>loadDelim.</p>
      *
-     * @param dir a {@link java.lang.String} object
+     * @param dir      a {@link java.lang.String} object
      * @param filename a {@link java.lang.String} object
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      * @throws java.io.IOException if any.
@@ -988,6 +1007,7 @@ public class MixedUtils {
     }
 
     //Gives a map of number of categories of DiscreteVariables in g. ContinuousVariables are mapped to 0
+
     /**
      * <p>getNodeDists.</p>
      *
@@ -1009,7 +1029,7 @@ public class MixedUtils {
     /**
      * <p>loadData.</p>
      *
-     * @param dir a {@link java.lang.String} object
+     * @param dir      a {@link java.lang.String} object
      * @param filename a {@link java.lang.String} object
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      * @throws java.io.IOException if any.
@@ -1024,7 +1044,7 @@ public class MixedUtils {
      * Check each pair of variables to see if correlation is 1. WARNING: calculates correlation matrix, memory heavy
      * when there are lots of variables
      *
-     * @param ds a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param ds      a {@link edu.cmu.tetrad.data.DataSet} object
      * @param verbose a boolean
      * @return a boolean
      */
@@ -1050,9 +1070,9 @@ public class MixedUtils {
     /**
      * <p>graphToMatrix.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph            a {@link edu.cmu.tetrad.graph.Graph} object
      * @param undirectedWeight a double
-     * @param directedWeight a double
+     * @param directedWeight   a double
      * @return a {@link cern.colt.matrix.DoubleMatrix2D} object
      */
     public static DoubleMatrix2D graphToMatrix(Graph graph, double undirectedWeight, double directedWeight) {
@@ -1091,6 +1111,7 @@ public class MixedUtils {
     }
 
     //returns undirected skeleton matrix (symmetric
+
     /**
      * <p>skeletonToMatrix.</p>
      *
@@ -1138,8 +1159,8 @@ public class MixedUtils {
      * Returns independence tests by name located in edu.cmu.tetrad.search and edu.pitt.csb.mgm also supports shorthand
      * for LRT ("lrt) and t-tests ("tlin" for prefer linear (fastest) or "tlog" for prefer logistic)
      *
-     * @param name a {@link java.lang.String} object
-     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param name  a {@link java.lang.String} object
+     * @param data  a {@link edu.cmu.tetrad.data.DataSet} object
      * @param alpha a double
      * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
@@ -1192,6 +1213,7 @@ public class MixedUtils {
     }
 
     //main for testing
+
     /**
      * <p>main.</p>
      *

@@ -139,7 +139,7 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the parameter-storing object. This is a separate method because a blank constructor is needed.
      */
     public void setParams(Parameters params) {

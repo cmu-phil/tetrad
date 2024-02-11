@@ -28,8 +28,8 @@ import edu.cmu.tetrad.session.Session;
  * TetradDesktop for meaning of methods.
  *
  * @author josephramsey
- * @see edu.cmu.tetradapp.app.TetradDesktop
  * @version $Id: $Id
+ * @see edu.cmu.tetradapp.app.TetradDesktop
  */
 public interface DesktopControllable {
     /**
@@ -81,7 +81,7 @@ public interface DesktopControllable {
      * <p>putMetadata.</p>
      *
      * @param sessionWrapper a {@link edu.cmu.tetradapp.util.SessionWrapperIndirectRef} object
-     * @param metadata a {@link edu.cmu.tetradapp.util.TetradMetadataIndirectRef} object
+     * @param metadata       a {@link edu.cmu.tetradapp.util.TetradMetadataIndirectRef} object
      */
     void putMetadata(SessionWrapperIndirectRef sessionWrapper,
                      TetradMetadataIndirectRef metadata);
@@ -99,7 +99,7 @@ public interface DesktopControllable {
      * <p>addEditorWindow.</p>
      *
      * @param editorWindow a {@link edu.cmu.tetradapp.util.EditorWindowIndirectRef} object
-     * @param layer a int
+     * @param layer        a int
      */
     void addEditorWindow(EditorWindowIndirectRef editorWindow, int layer);
 

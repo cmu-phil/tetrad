@@ -65,7 +65,7 @@ public class SelectLatentsAction extends AbstractAction implements ClipboardOwne
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Highlights all latent variables in the given display graph.
      */
     public void actionPerformed(ActionEvent e) {
@@ -94,7 +94,7 @@ public class SelectLatentsAction extends AbstractAction implements ClipboardOwne
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

@@ -42,8 +42,8 @@ public final class ImageUtils {
      * @param path   the pathname of the image beyond "/resources/images/". It is assumed that all images will be in
      *               this directory in the jar.
      * @return the image.
-     * @throws java.lang.RuntimeException if the image can't be loaded. The text of the exception contains the path of the image
-     *                          that could not be loaded.
+     * @throws java.lang.RuntimeException if the image can't be loaded. The text of the exception contains the path of
+     *                                    the image that could not be loaded.
      */
     public static Image getImage(Object anchor, String path) {
         if (anchor == null) {

@@ -888,17 +888,21 @@ public class MarkovCheck {
      */
     public static class AllSubsetsIndependenceFacts {
 
-        /** {@link Set} of m-separation facts. */
+        /**
+         * {@link Set} of m-separation facts.
+         */
         private final Set<IndependenceFact> msep;
 
-        /** {@link Set} of m-connection facts. */
+        /**
+         * {@link Set} of m-connection facts.
+         */
         private final Set<IndependenceFact> mconn;
 
         /**
          * Constructor.
          *
-         * @param msep   The set of m-separation facts.
-         * @param mconn  The set of m-connection facts.
+         * @param msep  The set of m-separation facts.
+         * @param mconn The set of m-connection facts.
          */
         public AllSubsetsIndependenceFacts(Set<IndependenceFact> msep, Set<IndependenceFact> mconn) {
             this.msep = msep;

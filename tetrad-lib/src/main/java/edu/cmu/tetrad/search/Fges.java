@@ -95,6 +95,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
     //    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
+    private final ExecutorService pool;
     //    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
     private boolean faithfulnessAssumed = false;
     // Specification of forbidden and required edges.
@@ -134,7 +135,6 @@ public final class Fges implements IGraphSearch, DagScorer {
     private boolean symmetricFirstStep = false;
     // True, if FGES should run in a single thread, no if parallelized.
     private boolean parallelized = false;
-    private final ExecutorService pool;
 
     /**
      * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of

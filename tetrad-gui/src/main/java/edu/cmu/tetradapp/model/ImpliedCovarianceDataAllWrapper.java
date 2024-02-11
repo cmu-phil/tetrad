@@ -57,7 +57,7 @@ public class ImpliedCovarianceDataAllWrapper extends DataWrapper {
      * <p>Constructor for ImpliedCovarianceDataAllWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ImpliedCovarianceDataAllWrapper(SemEstimatorWrapper wrapper, Parameters params) {
         SemEstimator semEstimator = wrapper.getSemEstimator();
@@ -80,8 +80,8 @@ public class ImpliedCovarianceDataAllWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

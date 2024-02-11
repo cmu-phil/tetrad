@@ -40,9 +40,9 @@ import java.util.List;
  * Displays a toolbar and workbench for editing Session's.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see SessionEditorWorkbench
  * @see SessionEditorToolbar
- * @version $Id: $Id
  */
 public final class SessionEditor extends JComponent
         implements SessionEditorIndirectRef {
@@ -69,7 +69,7 @@ public final class SessionEditor extends JComponent
     /**
      * Constructs a new session editor.  A session editor consists of a session workbench and a session toolbar.
      *
-     * @param name The name of the session.  This is used for saving out
+     * @param name      The name of the session.  This is used for saving out
      * @param workbench a {@link edu.cmu.tetradapp.app.SessionEditorWorkbench} object
      */
     public SessionEditor(String name, SessionEditorWorkbench workbench) {
@@ -153,7 +153,7 @@ public final class SessionEditor extends JComponent
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of the session editor.
      */
     public void setName(String name) {
@@ -191,8 +191,8 @@ public final class SessionEditor extends JComponent
     /**
      * <p>firePropertyChange.</p>
      *
-     * @param s a {@link java.lang.String} object
-     * @param o a {@link java.lang.Object} object
+     * @param s    a {@link java.lang.String} object
+     * @param o    a {@link java.lang.Object} object
      * @param name a {@link java.lang.String} object
      */
     public void firePropertyChange(String s, Object o, String name) {

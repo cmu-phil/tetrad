@@ -56,11 +56,11 @@ import java.util.Set;
  * launches corresponding model editors.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see SessionEditorWorkbench
  * @see edu.cmu.tetrad.graph.Edge
  * @see edu.cmu.tetrad.session.SessionNode
  * @see edu.cmu.tetrad.session.Session
- * @version $Id: $Id
  */
 public final class SessionEditorNode extends DisplayNode {
 
@@ -92,7 +92,7 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * Wraps the given SessionNodeWrapper as a SessionEditorNode.
      *
-     * @param modelNode a {@link edu.cmu.tetradapp.model.SessionNodeWrapper} object
+     * @param modelNode       a {@link edu.cmu.tetradapp.model.SessionNodeWrapper} object
      * @param simulationStudy a {@link edu.cmu.tetrad.session.SimulationStudy} object
      */
     public SessionEditorNode(SessionNodeWrapper modelNode, SimulationStudy simulationStudy) {
@@ -243,7 +243,9 @@ public final class SessionEditorNode extends DisplayNode {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void doDoubleClickAction() {
         doDoubleClickAction(null);
@@ -251,7 +253,7 @@ public final class SessionEditorNode extends DisplayNode {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Launches the editor associates with this node.
      */
     @Override
@@ -359,7 +361,7 @@ public final class SessionEditorNode extends DisplayNode {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the selection status of the node.
      */
     @Override
@@ -912,11 +914,11 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * Creates a model in the wrapped SessionNode, given the SessionNode's parent models.
      *
-     * @throws java.lang.IllegalStateException if the model cannot be created. The reason why the model cannot be created is in
-     *                               the message of the exception.
      * @param simulation a boolean
      * @return a boolean
-     * @throws java.lang.Exception if any.
+     * @throws java.lang.IllegalStateException if the model cannot be created. The reason why the model cannot be
+     *                                         created is in the message of the exception.
+     * @throws java.lang.Exception             if any.
      */
     public boolean createModel(boolean simulation) throws Exception {
         if (getSessionNode().getModel() != null) {
@@ -959,8 +961,8 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * <p>determineTheModelClass.</p>
      *
-     * @return the model class, or null if no model class was determined.
      * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return the model class, or null if no model class was determined.
      */
     public Class determineTheModelClass(SessionNode sessionNode) {
 
@@ -1067,8 +1069,8 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * Tries to edit the parameters, returns true if successfully otherwise false is returned
      *
-     * @param modelClass a {@link java.lang.Class} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param modelClass   a {@link java.lang.Class} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      * @param parentModels an array of {@link java.lang.Object} objects
      * @return a boolean
      */

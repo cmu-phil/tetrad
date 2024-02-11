@@ -99,7 +99,7 @@ public class Simulation extends DataWrapper implements
      * <p>Constructor for Simulation.</p>
      *
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(GraphSource graphSource, Parameters parameters) {
         if (graphSource instanceof Simulation) {
@@ -131,7 +131,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(BayesImWrapper wrapper, Parameters parameters) {
@@ -143,7 +143,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapperObs} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.BayesImWrapperObs} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(BayesImWrapperObs wrapper, Parameters parameters) {
@@ -155,7 +155,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(BayesPmWrapper wrapper, Parameters parameters) {
@@ -167,7 +167,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(BayesEstimatorWrapper wrapper, Parameters parameters) {
@@ -179,7 +179,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(DirichletBayesImWrapper wrapper, Parameters parameters) {
@@ -191,7 +191,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletEstimatorWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.DirichletEstimatorWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(DirichletEstimatorWrapper wrapper, Parameters parameters) {
@@ -203,7 +203,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
@@ -215,7 +215,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(SemPmWrapper wrapper, Parameters parameters) {
@@ -227,7 +227,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.SemImWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(SemImWrapper wrapper, Parameters parameters) {
@@ -239,7 +239,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.StandardizedSemImWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.StandardizedSemImWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(StandardizedSemImWrapper wrapper, Parameters parameters) {
@@ -251,7 +251,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(SemEstimatorWrapper wrapper, Parameters parameters) {
@@ -263,7 +263,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.SemUpdaterWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.SemUpdaterWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(SemUpdaterWrapper wrapper, Parameters parameters) {
@@ -275,7 +275,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(GeneralizedSemPmWrapper wrapper, Parameters parameters) {
@@ -287,7 +287,7 @@ public class Simulation extends DataWrapper implements
     /**
      * <p>Constructor for Simulation.</p>
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemImWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.GeneralizedSemImWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(GeneralizedSemImWrapper wrapper, Parameters parameters) {
@@ -304,7 +304,7 @@ public class Simulation extends DataWrapper implements
      * <p>Constructor for Simulation.</p>
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Simulation(DataWrapper dataWrapper, Parameters parameters) {
         if (this.simulation == null) {
@@ -319,8 +319,8 @@ public class Simulation extends DataWrapper implements
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -364,7 +364,9 @@ public class Simulation extends DataWrapper implements
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -380,7 +382,7 @@ public class Simulation extends DataWrapper implements
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the data model.
      */
     public void setDataModel(DataModel dataModel) {
@@ -401,7 +403,9 @@ public class Simulation extends DataWrapper implements
         return list;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setDataModelList(DataModelList dataModelList) {
         throw new UnsupportedOperationException();
     }
@@ -421,12 +425,16 @@ public class Simulation extends DataWrapper implements
         return list;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParameters(Parameters parameters) {
         this.parameters = parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getParamSettings() {
         return new HashMap<>();
@@ -516,7 +524,9 @@ public class Simulation extends DataWrapper implements
         return this.inputDataModelList;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getGraph() {
         Set<Graph> graphs = new HashSet<>(getGraphs());

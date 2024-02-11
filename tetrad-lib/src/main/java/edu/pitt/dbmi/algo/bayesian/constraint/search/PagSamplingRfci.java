@@ -49,7 +49,7 @@ public class PagSamplingRfci implements IGraphSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Search for a PAG.
      */
     @Override

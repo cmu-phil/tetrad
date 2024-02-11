@@ -789,7 +789,9 @@ public final class VcPcFast implements IGraphSearch {
         this.facts = facts;
     }
 
-    /** An enum of the types of triples that can be found in a graph. */
+    /**
+     * An enum of the types of triples that can be found in a graph.
+     */
     public enum CpcTripleType {
 
         /**

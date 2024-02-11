@@ -232,8 +232,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * Constructs a new DisplayEdge connecting two components, 'node1' and 'node2', assuming that a reference to the
      * model edge will be needed.
      *
-     * @param node1 the 'from' component.
-     * @param node2 the 'to' component.
+     * @param node1     the 'from' component.
+     * @param node2     the 'to' component.
      * @param modelEdge a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public KnowledgeDisplayEdge(Edge modelEdge, DisplayNode node1,
@@ -288,8 +288,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @param node1           the 'from' component.
      * @param mouseTrackPoint the initial value of the mouse track point.
+     * @param type            a int
      * @see #updateTrackPoint
-     * @param type a int
      */
     public KnowledgeDisplayEdge(DisplayNode node1, Point mouseTrackPoint,
                                 int type) {
@@ -441,7 +441,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Paints the component.
      */
     public void paint(Graphics g) {
@@ -511,7 +511,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Overrides the parent's contains() method using the click region, so that points not in the click region are
      * passed through to components lying beneath this one in the z-order. (Equates the effective shape of this edge to
      * its click region.)
@@ -615,7 +615,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether the component is selected.
      */
     public final void setSelected(boolean selected) {
@@ -640,7 +640,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Updates the position of the free end of the edge while it is in the HALF_ANCHORED mode.
      */
     public final void updateTrackPoint(Point p) {
@@ -688,7 +688,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Allows subclasses to set what the connected points are.
      */
     public final void setConnectedPoints(PointPair connectedPoints) {
@@ -942,7 +942,9 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         return this.offset;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setOffset(double offset) {
         this.offset = offset;
     }
@@ -982,7 +984,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Unimplemented.
      */
     public void setLineColor(Color lineColor) {
@@ -998,12 +1000,16 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         return this.solid;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setSolid(boolean solid) {
         this.solid = solid;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setThick(boolean thick) {
         this.thick = thick;
@@ -1020,7 +1026,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Unimplemented.
      */
     public void setSelectedColor(Color selectedColor) {
@@ -1036,7 +1042,9 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
         return this.highlightedColor;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setHighlightedColor(Color highlightedColor) {
         this.highlightedColor = highlightedColor;
     }
@@ -1052,14 +1060,16 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Unimplemented.
      */
     public void setStrokeWidth(float strokeWidth) {
         throw new UnsupportedOperationException();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setHighlighted(boolean highlighted) {
         /*
       True iff this edge is highlighted.

@@ -144,7 +144,7 @@ public class BayesPmEditor extends JPanel
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * G Reacts to property change events.
      */
     public void propertyChange(PropertyChangeEvent e) {
@@ -165,7 +165,7 @@ public class BayesPmEditor extends JPanel
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name fo the Bayes PM.
      */
     public void setName(String name) {

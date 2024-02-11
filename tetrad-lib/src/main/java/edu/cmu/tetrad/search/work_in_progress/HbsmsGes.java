@@ -703,19 +703,25 @@ public final class HbsmsGes implements Hbsms {
         return this.significantModels;
     }
 
-    /** A graph with a P value. */
+    /**
+     * A graph with a P value.
+     */
     public static class GraphWithPValue {
 
-        /** The graph. */
+        /**
+         * The graph.
+         */
         private final Graph graph;
 
-        /** The P value. */
+        /**
+         * The P value.
+         */
         private final double pValue;
 
         /**
          * <p>Constructor for GraphWithPValue.</p>
          *
-         * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+         * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
          * @param pValue a double
          */
         public GraphWithPValue(Graph graph, double pValue) {
@@ -808,6 +814,7 @@ public final class HbsmsGes implements Hbsms {
 
         /**
          * Returns the estimated SEM IM.
+         *
          * @return the estimated SEM IM.
          */
         public SemIm getEstimatedSem() {
@@ -816,6 +823,7 @@ public final class HbsmsGes implements Hbsms {
 
         /**
          * Returns the P value.
+         *
          * @return the P value.
          */
         public double getPValue() {
@@ -824,6 +832,7 @@ public final class HbsmsGes implements Hbsms {
 
         /**
          * Returns the score.
+         *
          * @return the score.
          */
         public double getScore() {
@@ -832,6 +841,7 @@ public final class HbsmsGes implements Hbsms {
 
         /**
          * Returns the Fml.
+         *
          * @return the Fml.
          */
         public double getFml() {
@@ -840,6 +850,7 @@ public final class HbsmsGes implements Hbsms {
 
         /**
          * Returns the degrees of freedom.
+         *
          * @return the degrees of freedom.
          */
         public int getDof() {
@@ -848,6 +859,7 @@ public final class HbsmsGes implements Hbsms {
 
         /**
          * Returns the chi square.
+         *
          * @return the chi square.
          */
         public double getChiSquare() {
@@ -856,6 +868,7 @@ public final class HbsmsGes implements Hbsms {
 
         /**
          * Returns the BIC.
+         *
          * @return the BIC.
          */
         public double getBic() {

@@ -155,7 +155,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         this.graphCard.addPropertyChangeListener(this);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if ("algoFwdBtn".equals(evt.getPropertyName())) {
@@ -163,7 +165,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void actionPerformed(ActionEvent evt) {
         Object obj = evt.getSource();
@@ -256,7 +260,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         new MyWatchedProcess();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean finalizeEditor() {
         List<Graph> graphs = this.algorithmRunner.getGraphs();

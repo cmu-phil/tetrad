@@ -58,7 +58,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Constructor.
      */
     @Override
@@ -917,7 +917,9 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
         results.add(result);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setMaximumNumberOfMessages(int maxNumOfMsg) {
         this.maxNumOfMsg = maxNumOfMsg;

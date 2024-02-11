@@ -79,7 +79,9 @@ public class DataDisplay extends JPanel implements DataModelContainer,
         return this.tabularDataJTable;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
 
         // For some reason openjdk leaves this null at this point first call. Not sure why. 4/23/2009 jdr
@@ -90,7 +92,9 @@ public class DataDisplay extends JPanel implements DataModelContainer,
         this.pcs.addPropertyChangeListener(listener);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void propertyChange(PropertyChangeEvent evt) {
 //        System.out.println("DataDisplay: " + evt.getPropertyName());
         this.pcs.firePropertyChange(evt);

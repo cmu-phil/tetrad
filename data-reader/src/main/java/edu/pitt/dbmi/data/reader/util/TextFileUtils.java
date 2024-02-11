@@ -109,7 +109,7 @@ public class TextFileUtils {
                         if (currChar == TextFileUtils.CARRIAGE_RETURN || currChar == TextFileUtils.LINE_FEED) {
 
                             // Do not delete this casting; it is needed to fix a versioning problem.
-                            ((java.nio.Buffer)byteBuffer).clear();
+                            ((java.nio.Buffer) byteBuffer).clear();
                             reqCheck = prefix.length > 0;
 
                             if (!(currChar == TextFileUtils.LINE_FEED && prevChar == TextFileUtils.CARRIAGE_RETURN)) {
@@ -129,7 +129,7 @@ public class TextFileUtils {
                                         prevNonBlankChar = TextFileUtils.SPACE_CHAR;
 
                                         // Do not delete this casting; it is needed to fix a versioning problem.
-                                        ((java.nio.Buffer)byteBuffer).clear();
+                                        ((java.nio.Buffer) byteBuffer).clear();
 
                                         prevChar = currChar;
                                         continue;
@@ -148,7 +148,7 @@ public class TextFileUtils {
                                     skipLine = true;
 
                                     // Do not delete this casting; it is needed to fix a versioning problem.
-                                    ((java.nio.Buffer)byteBuffer).clear();
+                                    ((java.nio.Buffer) byteBuffer).clear();
                                 } else {
 
                                     // Do not delete this casting; it is needed to fix a versioning problem.
@@ -166,7 +166,7 @@ public class TextFileUtils {
                                         }
 
                                         // Do not delete this casting; it is needed to fix a versioning problem.
-                                        ((java.nio.Buffer)byteBuffer).clear();
+                                        ((java.nio.Buffer) byteBuffer).clear();
                                     }
 
                                     if (currChar == quoteChar) {

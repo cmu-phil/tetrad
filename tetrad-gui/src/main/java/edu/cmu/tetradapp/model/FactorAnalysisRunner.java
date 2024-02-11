@@ -72,8 +72,8 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -178,7 +178,9 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
         return new ArrayList<>();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new ArrayList<>();
     }
@@ -192,7 +194,9 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAlgorithmName() {
         return "Factor Analysis";

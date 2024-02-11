@@ -66,7 +66,7 @@ class TabularDataTable extends AbstractTableModel {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Note that returning null here has two effects. First, it
      */
     public String getColumnName(int col) {
@@ -93,7 +93,9 @@ class TabularDataTable extends AbstractTableModel {
                 : this.dataSet.getNumColumns() + getNumLeadingCols() + 1;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getValueAt(int row, int col) {
         int columnIndex = col - getNumLeadingCols();
@@ -163,14 +165,16 @@ class TabularDataTable extends AbstractTableModel {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isCellEditable(int row, int col) {
         return row > 0 && col >= 1;
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the value at the given (row, col) coordinates of the table as an Object. If the variable for the col is a
      * DiscreteVariable, the String value (as opposed to the integer index value) is extracted and returned. If the
      * coordinates are out of range of the wrapped table model, 'null' is returned. Otherwise, the value stored in the

@@ -42,7 +42,9 @@ public class BootstrapSamplerParamsEditor extends JPanel implements ParameterEdi
     private Parameters params;
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         this.params = params;
     }

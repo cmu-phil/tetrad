@@ -83,8 +83,8 @@ class ExpressionEditor extends JPanel {
      * Creates the editor given the data set being worked on.
      *
      * @param data a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param lhs a {@link java.lang.String} object
-     * @param rhs a {@link java.lang.String} object
+     * @param lhs  a {@link java.lang.String} object
+     * @param rhs  a {@link java.lang.String} object
      */
     public ExpressionEditor(DataSet data, String lhs, String rhs) {
         this.parser = new ExpressionParser(data.getVariableNames(), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);

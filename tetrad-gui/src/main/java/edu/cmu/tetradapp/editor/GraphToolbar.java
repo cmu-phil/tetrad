@@ -41,8 +41,8 @@ import java.beans.PropertyChangeListener;
  *
  * @author Donald Crimbchin
  * @author josephramsey
- * @see GraphEditor
  * @version $Id: $Id
+ * @see GraphEditor
  */
 public class GraphToolbar extends JPanel implements PropertyChangeListener {
 
@@ -256,7 +256,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Responds to property change events.
      */
     public void propertyChange(PropertyChangeEvent e) {

@@ -236,7 +236,9 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         return this.params;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void resetParams(Object params) {
         this.params = (Parameters) params;
     }
@@ -300,7 +302,9 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

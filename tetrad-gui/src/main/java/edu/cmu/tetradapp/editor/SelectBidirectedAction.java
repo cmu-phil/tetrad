@@ -63,7 +63,7 @@ public class SelectBidirectedAction extends AbstractAction implements ClipboardO
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Highlights all bidirected edges in the given display graph.
      */
     public void actionPerformed(ActionEvent e) {
@@ -81,7 +81,7 @@ public class SelectBidirectedAction extends AbstractAction implements ClipboardO
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

@@ -46,7 +46,9 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
     public GraphParamsEditor() {
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();

@@ -694,6 +694,7 @@ public final class HbsmsBeam implements Hbsms {
 
         /**
          * Returns a string representation of this move.
+         *
          * @return a string representation of this move.
          */
         public String toString() {

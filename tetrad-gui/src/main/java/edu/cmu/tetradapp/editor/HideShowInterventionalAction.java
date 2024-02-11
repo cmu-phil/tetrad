@@ -50,7 +50,7 @@ public class HideShowInterventionalAction extends AbstractAction implements Clip
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     @Override
@@ -76,7 +76,7 @@ public class HideShowInterventionalAction extends AbstractAction implements Clip
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     @Override

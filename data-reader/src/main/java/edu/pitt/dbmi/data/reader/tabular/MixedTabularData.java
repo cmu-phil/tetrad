@@ -51,7 +51,7 @@ public class MixedTabularData implements MixedData {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Get the number of rows.
      */
     @Override
@@ -61,7 +61,7 @@ public class MixedTabularData implements MixedData {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Get the data columns.
      */
     @Override
@@ -71,7 +71,7 @@ public class MixedTabularData implements MixedData {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Get the continuous data.
      */
     @Override
@@ -81,7 +81,7 @@ public class MixedTabularData implements MixedData {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Get the discrete data.
      */
     @Override

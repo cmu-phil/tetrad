@@ -692,7 +692,8 @@ public final class PcCommon implements IGraphSearch {
         /**
          * Sort edges in reverse order using p-values of associated independence facts.
          */
-        HEURISTIC_3}
+        HEURISTIC_3
+    }
 
     /**
      * Gives the type of FAS used, regular or stable.
@@ -711,7 +712,8 @@ public final class PcCommon implements IGraphSearch {
         /**
          * Stable FAS.
          */
-        STABLE}
+        STABLE
+    }
 
     /**
      * <p>Give the options for the collider discovery algroithm to use--FAS with sepsets reasoning, FAS with

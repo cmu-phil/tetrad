@@ -42,7 +42,7 @@ class BuildPureClustersIndTestParamsEditor2 extends JComponent {
      * <p>Constructor for BuildPureClustersIndTestParamsEditor2.</p>
      *
      * @param paramsPureClusters a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param discreteData a boolean
+     * @param discreteData       a boolean
      */
     public BuildPureClustersIndTestParamsEditor2(
             Parameters paramsPureClusters,

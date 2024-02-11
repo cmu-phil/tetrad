@@ -37,7 +37,7 @@ public class MetadataFileWriter implements MetadataWriter {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Writes the metadata as a string.
      */
     @Override
@@ -50,7 +50,7 @@ public class MetadataFileWriter implements MetadataWriter {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Writes the metadata to a file.
      */
     @Override

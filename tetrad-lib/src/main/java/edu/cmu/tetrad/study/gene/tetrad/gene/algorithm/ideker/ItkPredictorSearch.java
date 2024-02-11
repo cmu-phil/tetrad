@@ -34,16 +34,24 @@ import java.util.TreeSet;
  */
 public class ItkPredictorSearch {
 
-    /** The number of genes. */
+    /**
+     * The number of genes.
+     */
     int ngenes;
 
-    /** The number of rows in the expression matrix. */
+    /**
+     * The number of rows in the expression matrix.
+     */
     int nrows;
 
-    /** The names of the genes. */
+    /**
+     * The names of the genes.
+     */
     String[] names;
 
-    /** The expression matrix. */
+    /**
+     * The expression matrix.
+     */
     int[][] expression;
 
     /**
@@ -403,10 +411,14 @@ public class ItkPredictorSearch {
         return rep;
     }
 
-    /** A gene. */
+    /**
+     * A gene.
+     */
     public static class Gene implements Comparable {
 
-        /** The index of the gene. */
+        /**
+         * The index of the gene.
+         */
         int gene;
 
         /**
@@ -427,7 +439,9 @@ public class ItkPredictorSearch {
             return this.gene;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public int compareTo(Object o) {
             int ret;
             if (this.gene < ((Gene) o).getIndex()) {

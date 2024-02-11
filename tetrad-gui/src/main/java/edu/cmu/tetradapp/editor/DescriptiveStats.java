@@ -42,8 +42,8 @@ class DescriptiveStats {
     /**
      * Constructs a readable table of normality test results
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
-     * @param variable a {@link edu.cmu.tetrad.graph.Node} object
+     * @param dataSet               a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param variable              a {@link edu.cmu.tetrad.graph.Node} object
      * @param precomputeCovariances a boolean
      * @return a {@link java.lang.String} object
      */
@@ -142,6 +142,7 @@ class DescriptiveStats {
     /*
         Returns the median in index 0, but also returns the min and max in 1 and 2 respectively.
      */
+
     /**
      * <p>median.</p>
      *
@@ -171,7 +172,7 @@ class DescriptiveStats {
     /**
      * <p>standardErrorMean.</p>
      *
-     * @param stdDev a double
+     * @param stdDev     a double
      * @param sampleSize a double
      * @return a double
      */
@@ -182,8 +183,8 @@ class DescriptiveStats {
     /**
      * Given some variable, returns the mean, standard deviation, and variance.
      *
-     * @return [0] -&gt; mean, [1] -&gt; standard deviation, [2] -&gt; variance
      * @param data an array of {@link double} objects
+     * @return [0] -&gt; mean, [1] -&gt; standard deviation, [2] -&gt; variance
      */
     public static double[] normalParams(double[] data) {
         double mean = 0.0;

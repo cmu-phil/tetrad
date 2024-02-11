@@ -45,14 +45,16 @@ import java.util.regex.Pattern;
  */
 class TabularDataTransferHandler extends TransferHandler {
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getSourceActions(JComponent c) {
         return TransferHandler.COPY_OR_MOVE;
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Create a Transferable to use as the source for a data transfer.
      */
     protected Transferable createTransferable(JComponent c) {
@@ -184,7 +186,9 @@ class TabularDataTransferHandler extends TransferHandler {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean importData(JComponent c, Transferable t) {
         if (c instanceof TabularDataJTable) {
             try {
@@ -436,7 +440,9 @@ class TabularDataTransferHandler extends TransferHandler {
         tableModel.fireTableDataChanged();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void exportDone(JComponent source, Transferable data, int action) {
         if (action == TransferHandler.MOVE && source instanceof TabularDataJTable) {
             TabularDataJTable tableTabular = (TabularDataJTable) source;

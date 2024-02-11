@@ -60,7 +60,7 @@ public class Metadata {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a string representation of this object.
      */
     @Override

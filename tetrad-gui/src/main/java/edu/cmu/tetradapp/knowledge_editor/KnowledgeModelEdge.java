@@ -39,13 +39,21 @@ public class KnowledgeModelEdge extends Edge
      * Edge types.
      */
     public static final int FORBIDDEN_EXPLICITLY = 0;
-    /** Constant <code>FORBIDDEN_BY_TIERS=1</code> */
+    /**
+     * Constant <code>FORBIDDEN_BY_TIERS=1</code>
+     */
     public static final int FORBIDDEN_BY_TIERS = 1;
-    /** Constant <code>REQUIRED=2</code> */
+    /**
+     * Constant <code>REQUIRED=2</code>
+     */
     public static final int REQUIRED = 2;
-    /** Constant <code>FORBIDDEN_BY_GROUPS=3</code> */
+    /**
+     * Constant <code>FORBIDDEN_BY_GROUPS=3</code>
+     */
     public static final int FORBIDDEN_BY_GROUPS = 3;
-    /** Constant <code>REQUIRED_BY_GROUPS=4</code> */
+    /**
+     * Constant <code>REQUIRED_BY_GROUPS=4</code>
+     */
     public static final int REQUIRED_BY_GROUPS = 4;
     private static final long serialVersionUID = 23L;
     /**
@@ -79,8 +87,8 @@ public class KnowledgeModelEdge extends Edge
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetrad.graph.Edge} object
+     * @see TetradSerializableUtils
      */
     public static Edge serializableInstance() {
         return new KnowledgeModelEdge(new KnowledgeModelNode("X"),

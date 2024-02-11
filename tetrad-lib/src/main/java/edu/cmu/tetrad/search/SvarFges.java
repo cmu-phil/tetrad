@@ -71,11 +71,11 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
     // The number of graphs searched.
     private final int[] count = new int[1];
+    // The set of removed edges.
+    private final Set<Edge> removedEdges = new HashSet<>();
     // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
     // The ordering doesn't matter; it just has to be transitive.
     private int arrowIndex;
-    // The set of removed edges.
-    private final Set<Edge> removedEdges = new HashSet<>();
     // Specification of forbidden and required edges.
     private Knowledge knowledge = new Knowledge();
     // List of variables in the data set, in order.

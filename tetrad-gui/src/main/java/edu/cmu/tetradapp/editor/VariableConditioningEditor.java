@@ -571,7 +571,8 @@ public class VariableConditioningEditor extends JPanel {
             /**
              * Below average.
              */
-            BelowAverage}
+            BelowAverage
+        }
     }
 
     /**

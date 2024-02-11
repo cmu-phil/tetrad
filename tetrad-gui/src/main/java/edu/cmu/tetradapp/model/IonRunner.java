@@ -61,7 +61,7 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag    a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag, Parameters params) {
@@ -71,8 +71,8 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, Parameters params) {
@@ -82,9 +82,9 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, Parameters params) {
@@ -94,10 +94,10 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4, Parameters params) {
@@ -107,11 +107,11 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag5 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5   a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
@@ -123,12 +123,12 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag5 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag6 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6   a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
@@ -140,13 +140,13 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag5 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag6 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag7 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7   a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
@@ -158,14 +158,14 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag5 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag6 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag7 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag8 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag8   a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
@@ -177,15 +177,15 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag5 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag6 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag7 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag8 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag9 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag8   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag9   a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
@@ -199,16 +199,16 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag5 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag6 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag7 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag8 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag9 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag10 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag8   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag9   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag10  a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
@@ -222,9 +222,9 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag       a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag.getGraph());
@@ -233,10 +233,10 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph());
@@ -245,11 +245,11 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph());
@@ -258,12 +258,12 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph());
@@ -272,13 +272,13 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag5 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5      a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, KnowledgeBoxModel knowledge, Parameters params) {
@@ -289,14 +289,14 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag5 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag6 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6      a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, KnowledgeBoxModel knowledge, Parameters params) {
@@ -307,15 +307,15 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag5 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag6 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag7 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7      a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, KnowledgeBoxModel knowledge, Parameters params) {
@@ -326,16 +326,16 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag5 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag6 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag7 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag8 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag8      a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8, KnowledgeBoxModel knowledge, Parameters params) {
@@ -346,17 +346,17 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag5 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag6 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag7 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag8 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag9 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag8      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag9      a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8,
@@ -369,18 +369,18 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param pag1 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag2 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag3 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag4 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag5 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag6 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag7 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag8 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag9 a {@link edu.cmu.tetradapp.util.IonInput} object
-     * @param pag10 a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag8      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag9      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag10     a {@link edu.cmu.tetradapp.util.IonInput} object
      * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8,
@@ -393,7 +393,7 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param fci a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci    a {@link edu.cmu.tetradapp.model.FciRunner} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(FciRunner fci, Parameters params) {
@@ -403,8 +403,8 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param fci1 a {@link edu.cmu.tetradapp.model.FciRunner} object
-     * @param fci2 a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci1   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci2   a {@link edu.cmu.tetradapp.model.FciRunner} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(FciRunner fci1, FciRunner fci2, Parameters params) {
@@ -414,9 +414,9 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param fci1 a {@link edu.cmu.tetradapp.model.FciRunner} object
-     * @param fci2 a {@link edu.cmu.tetradapp.model.FciRunner} object
-     * @param fci3 a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci1   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci2   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci3   a {@link edu.cmu.tetradapp.model.FciRunner} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(FciRunner fci1, FciRunner fci2, FciRunner fci3, Parameters params) {
@@ -426,10 +426,10 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for IonRunner.</p>
      *
-     * @param fci1 a {@link edu.cmu.tetradapp.model.FciRunner} object
-     * @param fci2 a {@link edu.cmu.tetradapp.model.FciRunner} object
-     * @param fci3 a {@link edu.cmu.tetradapp.model.FciRunner} object
-     * @param fci4 a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci1   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci2   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci3   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci4   a {@link edu.cmu.tetradapp.model.FciRunner} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IonRunner(FciRunner fci1, FciRunner fci2, FciRunner fci3, FciRunner fci4, Parameters params) {
@@ -439,8 +439,8 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.IonRunner} object
+     * @see TetradSerializableUtils
      */
     public static IonRunner serializableInstance() {
         return new IonRunner(new GraphWrapper(new EdgeListGraph()), new Parameters());
@@ -517,7 +517,9 @@ public class IonRunner extends AbstractAlgorithmRunner
         return new ArrayList<>();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new ArrayList<>();
     }
@@ -531,7 +533,9 @@ public class IonRunner extends AbstractAlgorithmRunner
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAlgorithmName() {
         return "ION";

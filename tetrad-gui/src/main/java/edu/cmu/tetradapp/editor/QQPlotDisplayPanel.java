@@ -117,7 +117,9 @@ class QQPlotDisplayPanel extends JPanel {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getToolTipText(MouseEvent evt) {
         return null;
     }
@@ -125,7 +127,7 @@ class QQPlotDisplayPanel extends JPanel {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Paints the histogram and related items.
      */
     public void paintComponent(Graphics graphics) {

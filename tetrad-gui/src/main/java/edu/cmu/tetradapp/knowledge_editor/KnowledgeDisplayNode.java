@@ -56,7 +56,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Determines whether the given coordinate lie inside the component.
      */
     public boolean contains(int x, int y) {
@@ -86,7 +86,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Launches an editor for this node.
      */
     public void doDoubleClickAction(Graph graph) {
@@ -170,7 +170,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Paints the component.
      */
     public void paint(Graphics g) {

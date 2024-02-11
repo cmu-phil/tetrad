@@ -71,7 +71,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
     /**
      * Constructs a wrapper for the given DataWrapper.
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param dataWrapper        a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param pureClustersParams a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public BuildPureClustersRunner(DataWrapper dataWrapper,
@@ -83,8 +83,8 @@ public class BuildPureClustersRunner extends AbstractMimRunner
     /**
      * <p>Constructor for BuildPureClustersRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param semImWrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param dataWrapper        a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param semImWrapper       a {@link edu.cmu.tetradapp.model.SemImWrapper} object
      * @param pureClustersParams a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public BuildPureClustersRunner(DataWrapper dataWrapper, SemImWrapper semImWrapper,
@@ -97,8 +97,8 @@ public class BuildPureClustersRunner extends AbstractMimRunner
     /**
      * <p>Constructor for BuildPureClustersRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param dataWrapper        a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param graphWrapper       a {@link edu.cmu.tetradapp.model.GraphWrapper} object
      * @param pureClustersParams a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public BuildPureClustersRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper,
@@ -110,8 +110,8 @@ public class BuildPureClustersRunner extends AbstractMimRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

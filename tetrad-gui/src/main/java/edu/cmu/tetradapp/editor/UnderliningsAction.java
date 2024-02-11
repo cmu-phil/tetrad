@@ -64,7 +64,7 @@ public class UnderliningsAction extends AbstractAction implements ClipboardOwner
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
@@ -170,7 +170,7 @@ public class UnderliningsAction extends AbstractAction implements ClipboardOwner
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

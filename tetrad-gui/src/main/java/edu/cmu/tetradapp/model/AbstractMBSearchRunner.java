@@ -74,9 +74,9 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
     /**
      * Conctructs the abstract search runner.
      *
-     * @serial may be null.
      * @param source - The source data the search is acting on.
      * @param params - The params for the search.
+     * @serial may be null.
      */
     AbstractMBSearchRunner(DataModel source, Parameters params) {
         super(AbstractMBSearchRunner.castData(source));

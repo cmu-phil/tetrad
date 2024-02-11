@@ -47,7 +47,7 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns a string representation of the object.
      */
     @Override
@@ -57,7 +57,7 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Gets the encode value of the given value.
      */
     @Override
@@ -67,7 +67,7 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Does a recategorization of the data column.
      */
     @Override
@@ -83,7 +83,7 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Gets the value of the given encode value.
      */
     @Override
@@ -93,7 +93,7 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Gets the data column.
      */
     @Override
@@ -112,7 +112,7 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Gets the categories.
      */
     @Override

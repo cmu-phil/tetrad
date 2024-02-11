@@ -58,7 +58,9 @@ public class GraphNodeLatent extends DisplayNode {
         setDisplayComp(new LatentDisplayComp(modelNode.getName()));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void doDoubleClickAction(Graph graph) {
         String newName;
         List<Node> nodes = graph.getNodes();

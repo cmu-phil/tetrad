@@ -70,8 +70,8 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
      * <p>Constructor for MimBuildTrekRunner.</p>
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param mmWrapper a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param mmWrapper   a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public MimBuildTrekRunner(DataWrapper dataWrapper,
                               MeasurementModelWrapper mmWrapper,
@@ -86,8 +86,8 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
      * <p>Constructor for MimBuildTrekRunner.</p>
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param mmWrapper a {@link edu.cmu.tetradapp.model.BuildPureClustersRunner} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param mmWrapper   a {@link edu.cmu.tetradapp.model.BuildPureClustersRunner} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public MimBuildTrekRunner(DataWrapper dataWrapper,
                               BuildPureClustersRunner mmWrapper,
@@ -101,9 +101,9 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
     /**
      * <p>Constructor for MimBuildTrekRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param mmWrapper a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param mmWrapper         a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public MimBuildTrekRunner(DataWrapper dataWrapper,
@@ -120,9 +120,9 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
     /**
      * <p>Constructor for MimBuildTrekRunner.</p>
      *
-     * @param mmWrapper a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
+     * @param mmWrapper   a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public MimBuildTrekRunner(MeasurementModelWrapper mmWrapper,
                               DataWrapper dataWrapper,
@@ -148,9 +148,9 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
     /**
      * <p>Constructor for MimBuildTrekRunner.</p>
      *
-     * @param runner a {@link edu.cmu.tetradapp.model.MimBuildTrekRunner} object
+     * @param runner       a {@link edu.cmu.tetradapp.model.MimBuildTrekRunner} object
      * @param knowledgeBox a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public MimBuildTrekRunner(MimBuildTrekRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
         super(runner, params);
@@ -162,8 +162,8 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

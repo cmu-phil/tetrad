@@ -48,7 +48,9 @@ public final class SaveSessionAsAction extends AbstractAction {
     @Serial
     private static final long serialVersionUID = 2798487128341621686L;
 
-    /** Constant <code>saved=false</code> */
+    /**
+     * Constant <code>saved=false</code>
+     */
     public static boolean saved = false;
 
     /**
@@ -60,7 +62,7 @@ public final class SaveSessionAsAction extends AbstractAction {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Performs the action of saving a session to a file.
      */
     @Override

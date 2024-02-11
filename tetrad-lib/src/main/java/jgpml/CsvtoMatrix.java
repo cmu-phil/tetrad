@@ -49,7 +49,7 @@ public class CsvtoMatrix {
      * Load data
      *
      * @param filename      data file
-     * @param sizeofInputs number of input variables
+     * @param sizeofInputs  number of input variables
      * @param sizeofOutputs number of output variables
      * @return [X, Y]
      */

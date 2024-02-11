@@ -56,6 +56,7 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
     private String name;
 
     //===========================CONSTRUCTORS=============================//
+
     /**
      * <p>Constructor for DirichletBayesImWrapper.</p>
      *
@@ -69,7 +70,7 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
      * <p>Constructor for DirichletBayesImWrapper.</p>
      *
      * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public DirichletBayesImWrapper(BayesPmWrapper bayesPmWrapper,
                                    Parameters params) {
@@ -112,8 +113,8 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
+     * @see TetradSerializableUtils
      */
     public static DirichletBayesImWrapper serializableInstance() {
         return new DirichletBayesImWrapper(
@@ -122,6 +123,7 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
     }
 
     //================================PUBLIC METHODS=======================//
+
     /**
      * <p>Getter for the field <code>dirichletBayesIm</code>.</p>
      *
@@ -140,7 +142,7 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
      * help.
      *
      * @param s a {@link java.io.ObjectInputStream} object
-     * @throws java.io.IOException if any.
+     * @throws java.io.IOException              if any.
      * @throws java.lang.ClassNotFoundException if any.
      */
     @Serial
@@ -171,7 +173,9 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

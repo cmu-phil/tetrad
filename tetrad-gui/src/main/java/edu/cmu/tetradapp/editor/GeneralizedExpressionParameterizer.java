@@ -52,7 +52,7 @@ class GeneralizedExpressionParameterizer extends JComponent {
      * <p>Constructor for GeneralizedExpressionParameterizer.</p>
      *
      * @param semIm a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
      */
     public GeneralizedExpressionParameterizer(GeneralizedSemIm semIm, Node node) {
         if (semIm == null) {

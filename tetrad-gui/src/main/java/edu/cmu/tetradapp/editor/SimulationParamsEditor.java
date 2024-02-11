@@ -75,7 +75,9 @@ public class SimulationParamsEditor extends JPanel implements ParameterEditor {
         return this.params;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();

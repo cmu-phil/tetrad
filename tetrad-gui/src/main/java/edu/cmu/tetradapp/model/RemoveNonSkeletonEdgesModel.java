@@ -55,7 +55,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(BayesPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -65,7 +65,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(GraphWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -75,7 +75,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.StandardizedSemImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(StandardizedSemImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -85,7 +85,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(SemImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -95,7 +95,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(SemPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -105,7 +105,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(DataWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -115,7 +115,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.TimeLagGraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(TimeLagGraphWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -125,7 +125,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(GeneralizedSemImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -135,7 +135,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(BayesImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -145,7 +145,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(SemGraphWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -155,7 +155,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(GeneralizedSemPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -165,7 +165,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(DagWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -175,7 +175,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(DirichletBayesImWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -185,7 +185,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.BuildPureClustersRunner} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(BuildPureClustersRunner wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -195,7 +195,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.PurifyRunner} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(PurifyRunner wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -205,7 +205,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.MeasurementModelWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(MeasurementModelWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -214,7 +214,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
     /**
      * <p>Constructor for RemoveNonSkeletonEdgesModel.</p>
      *
-     * @param input a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
+     * @param input  a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNonSkeletonEdgesModel(KnowledgeBoxInput input, Parameters params) {
@@ -225,7 +225,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      * Constructor from dataWrapper edge
      *
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param input a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
+     * @param input  a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
      */
     public RemoveNonSkeletonEdgesModel(Parameters params, KnowledgeBoxInput input) {
         super(new KnowledgeBoxInput[]{input}, params);
@@ -264,8 +264,8 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.RemoveNonSkeletonEdgesModel} object
+     * @see TetradSerializableUtils
      */
     public static RemoveNonSkeletonEdgesModel serializableInstance() {
         return new RemoveNonSkeletonEdgesModel(new Parameters(), GraphWrapper.serializableInstance());

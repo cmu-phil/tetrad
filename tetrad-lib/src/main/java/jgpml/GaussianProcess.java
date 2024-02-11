@@ -237,8 +237,8 @@ public class GaussianProcess {
      * @param logtheta column <code>Matrix</code> of hyperparameters
      * @param y        output dataset
      * @param df0      returned partial derivatives with respect to the hyperparameters
+     * @param x        a {@link Jama.Matrix} object
      * @return lml minus log marginal likelihood
-     * @param x a {@link Jama.Matrix} object
      */
     public double negativeLogLikelihood(Matrix logtheta, Matrix x, Matrix y, Matrix df0) {
 

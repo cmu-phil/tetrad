@@ -100,8 +100,8 @@ class RocPlot extends JPanel implements PropertyChangeListener {
      * point.  I.e. points[i][0] is the x coordinate and points[i][1] is the y coordinate of the ith point.
      *
      * @param points an array of {@link double} objects
-     * @param title a {@link java.lang.String} object
-     * @param info a {@link java.lang.String} object
+     * @param title  a {@link java.lang.String} object
+     * @param info   a {@link java.lang.String} object
      */
     public RocPlot(double[][] points, String title, String info) {
         this.points = points;
@@ -244,7 +244,7 @@ class RocPlot extends JPanel implements PropertyChangeListener {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Paints the "power" graph for each of the requested measures. Measures are requested by selecting the appropriate
      * checkboxes in the control panel.
      */
@@ -344,7 +344,7 @@ class RocPlot extends JPanel implements PropertyChangeListener {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reacts to any property change event by repainting the graph.
      */
     public void propertyChange(PropertyChangeEvent e) {

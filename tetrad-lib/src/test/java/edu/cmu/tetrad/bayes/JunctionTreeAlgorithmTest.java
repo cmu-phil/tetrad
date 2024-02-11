@@ -27,7 +27,6 @@ import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetReader;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -80,7 +79,7 @@ public class JunctionTreeAlgorithmTest {
         System.out.printf("P(v1=0|v2=0)P(v2=0)P(v3=0|v2=0) = %f%n", v1GivenV2 * v2Parent * v3Givenv2);
     }
 
-//    @Ignore
+    //    @Ignore
     @Test
     public void testJointProbGivenParents() throws IOException {
         String graphFile = Objects.requireNonNull(this.getClass().getResource("/jta/graph2.txt")).getFile();
@@ -107,7 +106,7 @@ public class JunctionTreeAlgorithmTest {
         double probXYGivenZW = jta.getConditionalProbabilities(nodes, values, parents, parentValues);  // 0.24614443432733896
     }
 
-//    @Ignore
+    //    @Ignore
     @Test
     public void testJointProbability() {
         String graphFile = this.getClass().getResource("/jta/graph.txt").getFile();
@@ -124,7 +123,7 @@ public class JunctionTreeAlgorithmTest {
         }
     }
 
-//    @Ignore
+    //    @Ignore
     @Test
     public void testJunctionTree() {
         String graphFile = Objects.requireNonNull(this.getClass().getResource("/jta/graph.txt")).getFile();

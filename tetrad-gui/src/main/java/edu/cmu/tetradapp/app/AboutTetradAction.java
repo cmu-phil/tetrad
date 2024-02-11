@@ -48,7 +48,7 @@ final class AboutTetradAction extends AbstractAction {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Closes the frontmost session of this action's desktop.
      */
     public void actionPerformed(ActionEvent e) {

@@ -1074,11 +1074,16 @@ public class Fofc {
      */
     public enum Algorithm {
 
-        /** The SAG algorithm. */
+        /**
+         * The SAG algorithm.
+         */
         SAG,
 
-        /** The GAP algorithm. */
-        GAP}
+        /**
+         * The GAP algorithm.
+         */
+        GAP
+    }
 }
 
 

@@ -67,7 +67,9 @@ public class LagGraph implements Graph {
      */
     private Dag graph = new Dag();
 
-    /** The paths */
+    /**
+     * The paths
+     */
     private Paths paths;
 
     /**

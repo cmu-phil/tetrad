@@ -41,7 +41,7 @@ public class AllEdgesUndirectedWrapper extends GraphWrapper implements DoNotAddO
     /**
      * <p>Constructor for AllEdgesUndirectedWrapper.</p>
      *
-     * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public AllEdgesUndirectedWrapper(GraphSource source, Parameters parameters) {
@@ -73,7 +73,9 @@ public class AllEdgesUndirectedWrapper extends GraphWrapper implements DoNotAddO
     //======================== Private Methods ================================//
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

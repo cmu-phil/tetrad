@@ -196,7 +196,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @param node1 a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
      * @param node2 a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
-     * @param type a int
+     * @param type  a int
      * @param color a {@link java.awt.Color} object
      */
     protected DisplayEdge(DisplayNode node1, DisplayNode node2, int type, Color color) {
@@ -235,8 +235,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * Constructs a new DisplayEdge connecting two components, 'node1' and 'node2', assuming that a reference to the
      * model edge will be needed.
      *
-     * @param node1 the 'from' component.
-     * @param node2 the 'to' component.
+     * @param node1     the 'from' component.
+     * @param node2     the 'to' component.
      * @param modelEdge a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public DisplayEdge(Edge modelEdge, DisplayNode node1, DisplayNode node2) {
@@ -247,9 +247,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * <p>Constructor for DisplayEdge.</p>
      *
      * @param modelEdge a {@link edu.cmu.tetrad.graph.Edge} object
-     * @param node1 a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
-     * @param node2 a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
-     * @param color a {@link java.awt.Color} object
+     * @param node1     a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
+     * @param node2     a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
+     * @param color     a {@link java.awt.Color} object
      */
     public DisplayEdge(Edge modelEdge, DisplayNode node1, DisplayNode node2, Color color) {
 
@@ -292,8 +292,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      *
      * @param node1           the 'from' component.
      * @param mouseTrackPoint the initial value of the mouse track point.
+     * @param type            a int
      * @see #updateTrackPoint
-     * @param type a int
      */
     public DisplayEdge(DisplayNode node1, Point mouseTrackPoint, int type) {
         this(node1, mouseTrackPoint, type, null);
@@ -302,10 +302,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * <p>Constructor for DisplayEdge.</p>
      *
-     * @param node1 a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
+     * @param node1           a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
      * @param mouseTrackPoint a {@link java.awt.Point} object
-     * @param type a int
-     * @param color a {@link java.awt.Color} object
+     * @param type            a int
+     * @param color           a {@link java.awt.Color} object
      */
     public DisplayEdge(DisplayNode node1, Point mouseTrackPoint, int type, Color color) {
 
@@ -379,7 +379,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Paints the component.
      */
     public void paint(Graphics g) {
@@ -499,7 +499,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Overrides the parent's contains() method using the click region, so that points not in the click region are
      * passed through to components lying beneath this one in the z-order. (Equates the effective shape of this edge to
      * its click region.)
@@ -612,7 +612,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets whether the component is selected.
      */
     public final void setSelected(boolean selected) {
@@ -637,7 +637,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Updates the position of the free end of the edge while it is in the HALF_ANCHORED mode.
      */
     public final void updateTrackPoint(Point p) {
@@ -685,7 +685,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Allows subclasses to set what the connected points are.
      */
     public final void setConnectedPoints(PointPair connectedPoints) {
@@ -706,10 +706,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * Calculates the two endpoints of the line segment connecting two given non-overlapping rectangles.  (Should give
      * back null for overlapping rectangles but doesn't always...)
      *
-     * @return a point pair which represents the connecting line segment through the center of each rectangle touching
-     * the edge of each.
      * @param comp1 a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
      * @param comp2 a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
+     * @return a point pair which represents the connecting line segment through the center of each rectangle touching
+     * the edge of each.
      */
     protected final PointPair calculateEdge(DisplayNode comp1, DisplayNode comp2) {
         Rectangle r1 = comp1.getBounds();
@@ -751,7 +751,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * Assumes that the component contains the center point of its bounding rectangle.
      *
      * @param comp a {@link edu.cmu.tetradapp.workbench.DisplayNode} object
-     * @param p a {@link java.awt.Point} object
+     * @param p    a {@link java.awt.Point} object
      * @return a {@link edu.cmu.tetradapp.workbench.PointPair} object
      */
     protected final PointPair calculateEdge(DisplayNode comp, Point p) {
@@ -1045,7 +1045,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         return this.offset;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setOffset(double offset) {
         this.offset = offset;
     }
@@ -1060,7 +1062,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 //        return lineColor;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setLineColor(Color lineColor) {
         if (lineColor != null) {
             this.lineColor = lineColor;
@@ -1076,12 +1080,16 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         return this.solid;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setSolid(boolean solid) {
         this.solid = solid;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setThick(boolean thick) {
         this.thick = thick;
@@ -1096,7 +1104,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         return this.selectedColor;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setSelectedColor(Color selectedColor) {
         this.selectedColor = selectedColor;
     }
@@ -1110,7 +1120,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         return this.highlightedColor;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setHighlightedColor(Color highlightedColor) {
         this.highlightedColor = highlightedColor;
     }
@@ -1124,7 +1136,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         return this.strokeWidth;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setStrokeWidth(float strokeWidth) {
         if (strokeWidth < 0f) {
             throw new IllegalArgumentException("Stroke width must be at least 0.");
@@ -1133,7 +1147,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         this.strokeWidth = strokeWidth;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setHighlighted(boolean highlighted) {
         this.highlighted = highlighted;
     }

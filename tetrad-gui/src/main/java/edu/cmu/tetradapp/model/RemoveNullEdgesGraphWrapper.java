@@ -45,7 +45,7 @@ public class RemoveNullEdgesGraphWrapper extends GraphWrapper implements DoNotAd
     /**
      * <p>Constructor for RemoveNullEdgesGraphWrapper.</p>
      *
-     * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RemoveNullEdgesGraphWrapper(GraphSource source, Parameters parameters) {

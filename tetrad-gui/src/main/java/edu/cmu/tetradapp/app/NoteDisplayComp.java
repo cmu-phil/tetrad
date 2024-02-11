@@ -59,7 +59,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Paints the component.
      */
     public void paint(Graphics g) {
@@ -85,7 +85,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the acronym of the component.
      */
     public void setAcronym(String acronym) {
@@ -103,7 +103,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the comp as selected.
      */
     public void setSelected(boolean selected) {
@@ -112,7 +112,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Does nothing.
      */
     public void setHasModel(boolean b) {
@@ -120,7 +120,9 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         super.setName(name);
         this.name.setText(name);

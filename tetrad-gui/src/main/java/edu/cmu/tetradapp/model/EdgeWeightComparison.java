@@ -59,8 +59,8 @@ public class EdgeWeightComparison implements SessionModel {
     /**
      * <p>Constructor for EdgeWeightComparison.</p>
      *
-     * @param reference a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
-     * @param target a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     * @param reference  a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     * @param target     a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public EdgeWeightComparison(SemEstimatorWrapper reference, SemEstimatorWrapper target, Parameters parameters) {
@@ -71,8 +71,8 @@ public class EdgeWeightComparison implements SessionModel {
     /**
      * <p>Constructor for EdgeWeightComparison.</p>
      *
-     * @param reference a {@link edu.cmu.tetradapp.model.SemImWrapper} object
-     * @param target a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     * @param reference  a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param target     a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public EdgeWeightComparison(SemImWrapper reference, SemEstimatorWrapper target, Parameters parameters) {
@@ -83,8 +83,8 @@ public class EdgeWeightComparison implements SessionModel {
     /**
      * <p>Constructor for EdgeWeightComparison.</p>
      *
-     * @param reference a {@link edu.cmu.tetradapp.model.SemImWrapper} object
-     * @param target a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param reference  a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param target     a {@link edu.cmu.tetradapp.model.SemImWrapper} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public EdgeWeightComparison(SemImWrapper reference, SemImWrapper target, Parameters parameters) {
@@ -95,8 +95,8 @@ public class EdgeWeightComparison implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @see TetradSerializableUtils
      */
     public static DataWrapper serializableInstance() {
         return new DataWrapper(new Parameters());
@@ -140,7 +140,9 @@ public class EdgeWeightComparison implements SessionModel {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

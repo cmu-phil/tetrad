@@ -65,7 +65,7 @@ public class IndTestModel implements SessionModel {
     /**
      * <p>Constructor for IndTestModel.</p>
      *
-     * @param producers an array of {@link edu.cmu.tetradapp.model.IndTestProducer} objects
+     * @param producers  an array of {@link edu.cmu.tetradapp.model.IndTestProducer} objects
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public IndTestModel(IndTestProducer[] producers, Parameters parameters) {
@@ -77,8 +77,8 @@ public class IndTestModel implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @see TetradSerializableUtils
      */
     public static Knowledge serializableInstance() {
         return new Knowledge();
@@ -93,13 +93,17 @@ public class IndTestModel implements SessionModel {
         return this.indTestProducers;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getName() {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setName(String name) {
         this.name = name;

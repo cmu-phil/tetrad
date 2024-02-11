@@ -50,7 +50,7 @@ public class LowerCovarianceDataFileValidation extends AbstractDataFileValidatio
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Validate the covariance.
      */
     @Override

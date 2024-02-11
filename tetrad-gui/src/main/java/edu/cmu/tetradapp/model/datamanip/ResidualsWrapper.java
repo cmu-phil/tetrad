@@ -43,9 +43,9 @@ public class ResidualsWrapper extends DataWrapper {
     /**
      * Constructs a new time series dataset.
      *
-     * @param data - Previous data (from the parent node)
+     * @param data       - Previous data (from the parent node)
      * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ResidualsWrapper(DataWrapper data, DagWrapper dagWrapper, Parameters params) {
         DataModelList list = data.getDataModelList();
@@ -71,9 +71,9 @@ public class ResidualsWrapper extends DataWrapper {
     /**
      * <p>Constructor for ResidualsWrapper.</p>
      *
-     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param data         a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ResidualsWrapper(DataWrapper data, GraphWrapper graphWrapper, Parameters params) {
         DataModelList list = data.getDataModelList();
@@ -98,9 +98,9 @@ public class ResidualsWrapper extends DataWrapper {
     /**
      * <p>Constructor for ResidualsWrapper.</p>
      *
-     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param data    a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param wrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ResidualsWrapper(DataWrapper data, SemGraphWrapper wrapper, Parameters params) {
         DataModelList list = data.getDataModelList();
@@ -125,8 +125,8 @@ public class ResidualsWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

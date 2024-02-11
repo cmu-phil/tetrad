@@ -252,16 +252,27 @@ public class TextTable {
         this.delimiter = delimiter;
     }
 
-    /** An enum of delimiters. */
+    /**
+     * An enum of delimiters.
+     */
     public enum Delimiter {
-        /** Constant <code>JUSTIFIED</code> */
+        /**
+         * Constant <code>JUSTIFIED</code>
+         */
         JUSTIFIED,
-        /** Constant <code>COMMA</code> */
+        /**
+         * Constant <code>COMMA</code>
+         */
         COMMA,
-        /** Constant <code>TAB</code> */
+        /**
+         * Constant <code>TAB</code>
+         */
         TAB,
-        /** Constant <code>SPACE</code> */
-        SPACE}
+        /**
+         * Constant <code>SPACE</code>
+         */
+        SPACE
+    }
 
 }
 

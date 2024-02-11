@@ -48,34 +48,54 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public final class IndTestFisherZPercentIndependent implements IndependenceTest {
 
-    /** The variables. */
+    /**
+     * The variables.
+     */
     private final List<Node> variables;
 
-    /** The data sets. */
+    /**
+     * The data sets.
+     */
     private final List<DataSet> dataSets;
 
-    /** The rows. */
+    /**
+     * The rows.
+     */
     private final int[] rows;
 
-    /** The data. */
+    /**
+     * The data.
+     */
     private final List<Matrix> data;
 
-    /** The ncov. */
+    /**
+     * The ncov.
+     */
     private final List<Matrix> ncov;
 
-    /** The alpha. */
+    /**
+     * The alpha.
+     */
     private final Map<Node, Integer> variablesMap;
 
-    /** The alpha. */
+    /**
+     * The alpha.
+     */
     private double alpha;
 
-    /** The percent. */
+    /**
+     * The percent.
+     */
     private double percent = .75;
 
-    /** The fdr. */
+    /**
+     * The fdr.
+     */
     private boolean fdr = true;
 
-    /** whether to print verbose output */
+    /**
+     * whether to print verbose output
+     */
     private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//

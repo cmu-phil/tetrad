@@ -63,7 +63,7 @@ final class NumberFormatAction extends AbstractAction
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Pops up a dialog that lets the user decide how to render real numbers. A basic and an advanced version are
      * available.
      */
@@ -302,7 +302,7 @@ final class NumberFormatAction extends AbstractAction
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

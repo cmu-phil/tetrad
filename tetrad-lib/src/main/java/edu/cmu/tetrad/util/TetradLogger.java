@@ -708,6 +708,7 @@ public class TetradLogger {
 
         /**
          * Generates a simple exemplar of this class to test serialization.
+         *
          * @return a simple exemplar of this class to test serialization.
          */
         public static EmptyConfig serializableInstance() {

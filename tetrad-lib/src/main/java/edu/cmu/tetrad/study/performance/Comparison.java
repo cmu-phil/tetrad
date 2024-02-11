@@ -366,43 +366,69 @@ public class Comparison {
         return table;
     }
 
-    /** An enumeration of the columns in the comparison table. */
+    /**
+     * An enumeration of the columns in the comparison table.
+     */
     public enum TableColumn {
 
-        /** The number of adjacency correct edges. */
+        /**
+         * The number of adjacency correct edges.
+         */
         AdjCor,
 
-        /** The number of adjacency false negative edges. */
+        /**
+         * The number of adjacency false negative edges.
+         */
         AdjFn,
 
-        /** The number of adjacency false positive edges. */
+        /**
+         * The number of adjacency false positive edges.
+         */
         AdjFp,
 
-        /** The number of arrowhead false positive edges. */
+        /**
+         * The number of arrowhead false positive edges.
+         */
         AhdCor,
 
-        /** The number of arrowhead false negative edges. */
+        /**
+         * The number of arrowhead false negative edges.
+         */
         AhdFn,
 
-        /** The number of arrowhead false positive edges. */
+        /**
+         * The number of arrowhead false positive edges.
+         */
         AhdFp,
 
-        /** The structural Hamming distance. */
+        /**
+         * The structural Hamming distance.
+         */
         SHD,
 
-        /** The adjacency precision. */
+        /**
+         * The adjacency precision.
+         */
         AdjPrec,
 
-        /** The adjacency recall. */
+        /**
+         * The adjacency recall.
+         */
         AdjRec,
 
-        /** The arrowhead precision. */
+        /**
+         * The arrowhead precision.
+         */
         AhdPrec,
 
-        /** The arrowhead recall. */
+        /**
+         * The arrowhead recall.
+         */
         AhdRec,
 
-        /** The elapsed time. */
+        /**
+         * The elapsed time.
+         */
         Elapsed
     }
 }

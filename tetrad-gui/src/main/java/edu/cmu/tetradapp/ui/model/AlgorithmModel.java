@@ -78,13 +78,17 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
         this.requiredTest = TakesIndependenceWrapper.class.isAssignableFrom(algorithm.clazz());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int compareTo(AlgorithmModel other) {
         return this.name.compareTo(other.name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return this.name;

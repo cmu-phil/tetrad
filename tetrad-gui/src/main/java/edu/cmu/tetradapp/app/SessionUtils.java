@@ -44,9 +44,10 @@ final class SessionUtils {
      * model type with buttons that link to an explanations of how the model works with each combination of parent
      * values.
      *
-     * @param warning   If true, shows a warning icon.
-     * @param onlyModel If true, displays a message indicating that this is the only model consistent with the parents.
-     * @param modelClass a {@link java.lang.Class} object
+     * @param warning       If true, shows a warning icon.
+     * @param onlyModel     If true, displays a message indicating that this is the only model consistent with the
+     *                      parents.
+     * @param modelClass    a {@link java.lang.Class} object
      * @param centeringComp a {@link javax.swing.JComponent} object
      */
     public static void showPermissibleParentsDialog(Class modelClass,

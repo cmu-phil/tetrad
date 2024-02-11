@@ -107,7 +107,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
     /**
      * <p>Constructor for ScoredGraphsDisplay.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param scorer a {@link edu.cmu.tetrad.search.utils.DagScorer} object
      */
     public ScoredGraphsDisplay(Graph graph, DagScorer scorer) {
@@ -275,7 +275,9 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         return selectedModelComponents;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
@@ -309,7 +311,9 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         return this.workbench.getGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setGraph(Graph graph) {
         this.workbench.setGraph(graph);
     }

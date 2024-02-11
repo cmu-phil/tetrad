@@ -102,7 +102,7 @@ final class BayesPmEditorWizard extends JPanel {
      * This is the wizard for the PMEditor class. Its function is to allow the user to enter, for each variable in the
      * associated Graph, the number of categories it may take on and the string names for each of those categories.
      *
-     * @param bayesPm a {@link edu.cmu.tetrad.bayes.BayesPm} object
+     * @param bayesPm   a {@link edu.cmu.tetrad.bayes.BayesPm} object
      * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public BayesPmEditorWizard(BayesPm bayesPm, GraphWorkbench workbench) {
@@ -234,7 +234,9 @@ final class BayesPmEditorWizard extends JPanel {
             setEnabled(isEditingLatentVariablesAllowed() || this.categoryEditor.getNode().getNodeType() != NodeType.LATENT);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         this.numCategoriesSpinner.setEnabled(enabled);

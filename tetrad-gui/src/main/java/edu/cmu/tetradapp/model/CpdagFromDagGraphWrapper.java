@@ -42,7 +42,7 @@ public class CpdagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
     /**
      * <p>Constructor for CpdagFromDagGraphWrapper.</p>
      *
-     * @param source a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public CpdagFromDagGraphWrapper(GraphSource source, Parameters parameters) {
@@ -88,7 +88,9 @@ public class CpdagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
         return GraphTransforms.cpdagForDag(graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

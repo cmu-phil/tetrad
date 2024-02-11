@@ -58,7 +58,7 @@ public class FasRunner extends AbstractAlgorithmRunner
      * or a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FasRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -67,8 +67,8 @@ public class FasRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for FasRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public FasRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -76,12 +76,13 @@ public class FasRunner extends AbstractAlgorithmRunner
     }
 
     // Starts PC from the given graph.
+
     /**
      * <p>Constructor for FasRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FasRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -91,9 +92,9 @@ public class FasRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for FasRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param graphWrapper      a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public FasRunner(DataWrapper dataWrapper, GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -104,7 +105,7 @@ public class FasRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FasRunner(Graph graph, Parameters params) {
@@ -115,7 +116,7 @@ public class FasRunner extends AbstractAlgorithmRunner
      * Constucts a wrapper for the given EdgeListGraph.
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FasRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
@@ -124,8 +125,8 @@ public class FasRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      *
-     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param graphWrapper      a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public FasRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -136,7 +137,7 @@ public class FasRunner extends AbstractAlgorithmRunner
      * <p>Constructor for FasRunner.</p>
      *
      * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FasRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
@@ -146,7 +147,7 @@ public class FasRunner extends AbstractAlgorithmRunner
      * <p>Constructor for FasRunner.</p>
      *
      * @param dagWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FasRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
@@ -155,7 +156,7 @@ public class FasRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for FasRunner.</p>
      *
-     * @param model a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param model  a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FasRunner(IndependenceFactsModel model, Parameters params) {
@@ -165,8 +166,8 @@ public class FasRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for FasRunner.</p>
      *
-     * @param model a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param model             a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public FasRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -176,8 +177,8 @@ public class FasRunner extends AbstractAlgorithmRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.FasRunner} object
+     * @see TetradSerializableUtils
      */
     public static FasRunner serializableInstance() {
         return new FasRunner(Dag.serializableInstance(), new Parameters());
@@ -195,7 +196,9 @@ public class FasRunner extends AbstractAlgorithmRunner
         return rules;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAlgorithmName() {
         return "FAS";
@@ -267,7 +270,9 @@ public class FasRunner extends AbstractAlgorithmRunner
         return new ArrayList<>();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new ArrayList<>();
     }

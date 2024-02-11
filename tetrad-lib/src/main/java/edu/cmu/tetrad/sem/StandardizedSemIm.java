@@ -84,9 +84,9 @@ public class StandardizedSemIm implements Simulator {
     private Matrix edgeCoef;
 
     /**
-     * The error covariance matrix of the model. i.e. [a][b] is the covariance of E_a and E_b, with [a][a] of course being
-     * the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE CALCULATED. Note that elements of this matrix
-     * may be Double.NaN; this indicates that these elements cannot be calculated.
+     * The error covariance matrix of the model. i.e. [a][b] is the covariance of E_a and E_b, with [a][a] of course
+     * being the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE CALCULATED. Note that elements of this
+     * matrix may be Double.NaN; this indicates that these elements cannot be calculated.
      */
     private Matrix errorCovar;
 
@@ -927,10 +927,14 @@ public class StandardizedSemIm implements Simulator {
      */
     public enum Initialization {
 
-        /** Calculate from SEM. */
+        /**
+         * Calculate from SEM.
+         */
         CALCULATE_FROM_SEM,
 
-        /** Initialize the SEM from data */
+        /**
+         * Initialize the SEM from data
+         */
         INITIALIZE_FROM_DATA
     }
 

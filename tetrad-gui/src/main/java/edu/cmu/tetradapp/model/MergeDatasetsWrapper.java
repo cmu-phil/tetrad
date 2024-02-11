@@ -38,7 +38,7 @@ public class MergeDatasetsWrapper extends DataWrapper {
     /**
      * <p>Constructor for MergeDatasetsWrapper.</p>
      *
-     * @param data an array of {@link edu.cmu.tetradapp.model.DataWrapper} objects
+     * @param data   an array of {@link edu.cmu.tetradapp.model.DataWrapper} objects
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public MergeDatasetsWrapper(DataWrapper[] data, Parameters params) {
@@ -48,8 +48,8 @@ public class MergeDatasetsWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

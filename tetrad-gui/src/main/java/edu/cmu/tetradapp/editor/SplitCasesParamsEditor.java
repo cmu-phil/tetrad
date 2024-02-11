@@ -186,7 +186,9 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         this.add(b1, BorderLayout.CENTER);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         this.params = params;
     }

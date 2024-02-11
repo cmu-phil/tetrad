@@ -63,7 +63,7 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the value to the formatted version of the stored numerical value.
      */
     public void setValue(Object value) {

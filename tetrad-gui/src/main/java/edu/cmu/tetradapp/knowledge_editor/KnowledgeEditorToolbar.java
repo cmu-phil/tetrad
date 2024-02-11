@@ -69,7 +69,7 @@ class KnowledgeEditorToolbar extends JPanel {
     /**
      * Constructs a new session toolbar.
      *
-     * @param workbench the workbench this toolbar controls.
+     * @param workbench   the workbench this toolbar controls.
      * @param sourceGraph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public KnowledgeEditorToolbar(KnowledgeWorkbench workbench,

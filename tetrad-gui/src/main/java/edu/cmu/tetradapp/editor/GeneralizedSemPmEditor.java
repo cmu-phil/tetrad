@@ -343,7 +343,9 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
         return graphicalEditor().getWorkbench().getGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map getModelEdgesToDisplay() {
         return graphicalEditor().getWorkbench().getModelEdgesToDisplay();
@@ -376,7 +378,9 @@ public final class GeneralizedSemPmEditor extends JPanel implements DelegatesEdi
         return graphicalEditor().getWorkbench().getSourceGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void layoutByGraph(Graph graph) {
         SemGraph _graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);

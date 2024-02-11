@@ -49,7 +49,9 @@ public final class SaveSessionAction extends AbstractAction {
     @Serial
     private static final long serialVersionUID = -1812370698394158108L;
 
-    /** Constant <code>saved=false</code> */
+    /**
+     * Constant <code>saved=false</code>
+     */
     public static boolean saved = false;
 
     /**
@@ -59,7 +61,9 @@ public final class SaveSessionAction extends AbstractAction {
         super("Save Session");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         // Get the frontmost SessionWrapper.

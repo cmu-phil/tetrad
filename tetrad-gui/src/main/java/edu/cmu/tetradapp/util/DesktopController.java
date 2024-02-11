@@ -83,17 +83,23 @@ public class DesktopController implements DesktopControllable {
         DesktopController.getInstance().exitProgram();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean existsSessionByName(String name) {
         return DesktopController.getInstance().existsSessionByName(name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Session getSessionByName(String name) {
         return DesktopController.getInstance().getSessionByName(name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addSessionEditor(SessionEditorIndirectRef editor) {
         DesktopController.getInstance().addSessionEditor(editor);
     }
@@ -105,19 +111,25 @@ public class DesktopController implements DesktopControllable {
         DesktopController.getInstance().closeAllSessions();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void putMetadata(SessionWrapperIndirectRef sessionWrapper,
                             TetradMetadataIndirectRef metadata) {
         DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public TetradMetadataIndirectRef getTetradMetadata(
             SessionWrapperIndirectRef sessionWrapper) {
         return DesktopController.getInstance().getTetradMetadata(sessionWrapper);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addEditorWindow(EditorWindowIndirectRef editorWindow, int layer) {
         DesktopController.getInstance().addEditorWindow(editorWindow, layer);
     }
@@ -130,7 +142,9 @@ public class DesktopController implements DesktopControllable {
         DesktopController.getInstance().closeFrontmostSession();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void closeSessionByName(String name) {
         DesktopController.getInstance().closeSessionByName(name);

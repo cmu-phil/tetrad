@@ -51,13 +51,17 @@ public class ContinuousTabularDatasetFileReader extends DatasetFileReader implem
         this.quoteChar = '"';
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Data readInData() throws IOException {
         return readInData(Collections.EMPTY_SET);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Data readInData(Set<String> namesOfColumnsToExclude) throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
@@ -77,7 +81,9 @@ public class ContinuousTabularDatasetFileReader extends DatasetFileReader implem
         return dataReader.read(dataColumns, this.hasHeader);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Data readInData(int[] columnsToExclude) throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
@@ -97,13 +103,17 @@ public class ContinuousTabularDatasetFileReader extends DatasetFileReader implem
         return dataReader.read(dataColumns, this.hasHeader);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setHasHeader(boolean hasHeader) {
         this.hasHeader = hasHeader;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setQuoteCharacter(char quoteCharacter) {
         this.quoteChar = quoteCharacter;

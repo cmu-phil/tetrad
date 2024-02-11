@@ -1568,6 +1568,7 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
 
         /**
          * Returns a string representation of the object
+         *
          * @return a string representation of the object
          */
         public String toString() {

@@ -76,8 +76,8 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
      */
     private transient MarkovCheck markovCheck = null;
     /**
-     * The knowledge to use. This will be passed to the underlying Markov check object. For facts odf the form
-     * X _||_ Y | Z, X and Y should be in the last tier, and Z should be in previous tiers.
+     * The knowledge to use. This will be passed to the underlying Markov check object. For facts odf the form X _||_ Y
+     * | Z, X and Y should be in the last tier, and Z should be in previous tiers.
      */
     private Knowledge knowledge;
 
@@ -114,8 +114,8 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @see TetradSerializableUtils
      */
     public static Knowledge serializableInstance() {
         return new Knowledge();
@@ -145,7 +145,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the graph.
      */
     @Override
@@ -173,7 +173,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the name of this model.
      */
     @Override
@@ -183,7 +183,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of this model.
      */
     @Override
@@ -245,7 +245,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the source graph.
      */
     @Override
@@ -255,7 +255,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the result graph.
      */
     @Override
@@ -265,7 +265,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variables.
      */
     @Override
@@ -275,7 +275,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Returns the variable names.
      */
     @Override

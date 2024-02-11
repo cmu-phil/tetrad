@@ -50,7 +50,9 @@ class RunSimulationAction extends AbstractAction {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void actionPerformed(ActionEvent e) {
         executeNode();
     }

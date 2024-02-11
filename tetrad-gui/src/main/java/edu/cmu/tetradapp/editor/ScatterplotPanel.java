@@ -35,7 +35,7 @@ class ScatterplotPanel extends JPanel {
     /**
      * Constructor.
      *
-     * @param ScatterPlot a {@link edu.cmu.tetradapp.editor.ScatterPlot} object
+     * @param ScatterPlot             a {@link edu.cmu.tetradapp.editor.ScatterPlot} object
      * @param removeZeroPointsPerPlot a boolean
      */
     public ScatterplotPanel(ScatterPlot ScatterPlot, boolean removeZeroPointsPerPlot) {
@@ -53,7 +53,7 @@ class ScatterplotPanel extends JPanel {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Renders the view.
      */
     public void paintComponent(Graphics graphics) {

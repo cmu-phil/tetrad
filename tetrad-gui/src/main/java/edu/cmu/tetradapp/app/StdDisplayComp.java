@@ -89,7 +89,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the selection status of the node.
      */
     public void setSelected(boolean selected) {
@@ -98,13 +98,17 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         repaint();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         super.setName(name);
         this.nameLabel.setText(name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setAcronym(String acronym) {
         this.acronymLabel.setText(acronym);
         layoutComponents();
@@ -115,12 +119,16 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
                 getSize().height - 1, 10, 10);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setHasModel(boolean hasModel) {
         if (hasModel) {
             this.unselectedColor = StdDisplayComp.HAS_MODEL_COLOR;
@@ -132,7 +140,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Paints the background of the component (since it has to be a JComponent).
      */
     public void paint(Graphics g) {

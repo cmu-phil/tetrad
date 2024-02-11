@@ -285,8 +285,7 @@ public final class Cpc implements IGraphSearch {
      * following reference for this:</p>
      *
      * <p>Colombo, D., &amp; Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J.
-     * Mach.
-     * Learn. Res., 15(1), 3741-3782.</p>
+     * Mach. Learn. Res., 15(1), 3741-3782.</p>
      *
      * @param stable True iff the case.
      */

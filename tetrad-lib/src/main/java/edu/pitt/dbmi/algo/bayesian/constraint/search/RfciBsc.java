@@ -228,7 +228,7 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Performs the search.
      */
     @Override
@@ -745,7 +745,7 @@ public class RfciBsc implements IGraphSearch {
     /**
      * Returns the BSC-D score.
      *
-     * @return  the BSC-D score.
+     * @return the BSC-D score.
      */
     public double getBscD() {
         return this.bscD;
@@ -782,7 +782,7 @@ public class RfciBsc implements IGraphSearch {
     /**
      * Sets whether verbose output should be produced.
      *
-     * @param  verbose true if verbose output should be produced.
+     * @param verbose true if verbose output should be produced.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

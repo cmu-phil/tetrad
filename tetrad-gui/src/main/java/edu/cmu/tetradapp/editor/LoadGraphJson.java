@@ -28,7 +28,7 @@ public class LoadGraphJson extends AbstractAction {
      * <p>Constructor for LoadGraphJson.</p>
      *
      * @param graphEditable a {@link edu.cmu.tetradapp.editor.GraphEditable} object
-     * @param title a {@link java.lang.String} object
+     * @param title         a {@link java.lang.String} object
      */
     public LoadGraphJson(GraphEditable graphEditable, String title) {
         super(title);
@@ -50,7 +50,9 @@ public class LoadGraphJson extends AbstractAction {
         return chooser;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         JFileChooser chooser = LoadGraphJson.getJFileChooser();

@@ -60,7 +60,7 @@ public class JunctionTreeWrapper implements SessionModel, UpdaterWrapper, Unmars
      * <p>Constructor for JunctionTreeWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public JunctionTreeWrapper(BayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
@@ -75,7 +75,7 @@ public class JunctionTreeWrapper implements SessionModel, UpdaterWrapper, Unmars
      * <p>Constructor for JunctionTreeWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public JunctionTreeWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
         if (wrapper == null) {
@@ -89,7 +89,7 @@ public class JunctionTreeWrapper implements SessionModel, UpdaterWrapper, Unmars
      * <p>Constructor for JunctionTreeWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public JunctionTreeWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
@@ -104,7 +104,7 @@ public class JunctionTreeWrapper implements SessionModel, UpdaterWrapper, Unmars
      * <p>Constructor for JunctionTreeWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.DirichletEstimatorWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public JunctionTreeWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
@@ -118,7 +118,7 @@ public class JunctionTreeWrapper implements SessionModel, UpdaterWrapper, Unmars
      * <p>Constructor for JunctionTreeWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.EmBayesEstimatorWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public JunctionTreeWrapper(EmBayesEstimatorWrapper wrapper, Parameters params) {
         if (wrapper == null) {
@@ -183,25 +183,33 @@ public class JunctionTreeWrapper implements SessionModel, UpdaterWrapper, Unmars
         return variable.getCategory(i);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getName() {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setName(String name) {
         this.name = name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Parameters getParams() {
         return this.params;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ManipulatingBayesUpdater getBayesUpdater() {
         return this.bayesUpdater;

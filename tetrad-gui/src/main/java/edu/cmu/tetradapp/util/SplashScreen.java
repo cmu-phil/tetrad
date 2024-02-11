@@ -41,8 +41,8 @@ public class SplashScreen {
      * <p>show.</p>
      *
      * @param parent a {@link java.awt.Frame} object
-     * @param title a {@link java.lang.String} object
-     * @param max a int
+     * @param title  a {@link java.lang.String} object
+     * @param max    a int
      */
     public static void show(Frame parent, String title, int max) {
         SplashScreen.hide();
@@ -54,7 +54,7 @@ public class SplashScreen {
      * <p>show.</p>
      *
      * @param title a {@link java.lang.String} object
-     * @param max a int
+     * @param max   a int
      */
     public static void show(String title, int max) {
         SplashScreen.hide();

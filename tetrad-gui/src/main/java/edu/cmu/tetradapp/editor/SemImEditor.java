@@ -112,10 +112,10 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
     /**
      * Constructs an editor for the given SemIm.
      *
-     * @param wrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     * @param wrapper              a {@link edu.cmu.tetradapp.model.SemImWrapper} object
      * @param graphicalEditorTitle a {@link java.lang.String} object
-     * @param tabularEditorTitle a {@link java.lang.String} object
-     * @param tabbedPaneDefault a {@link edu.cmu.tetradapp.editor.SemImEditor.TabbedPaneDefault} object
+     * @param tabularEditorTitle   a {@link java.lang.String} object
+     * @param tabbedPaneDefault    a {@link edu.cmu.tetradapp.editor.SemImEditor.TabbedPaneDefault} object
      */
     public SemImEditor(SemImWrapper wrapper, String graphicalEditorTitle,
                        String tabularEditorTitle, TabbedPaneDefault tabbedPaneDefault) {
@@ -164,43 +164,57 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         this.targetPanel.add(this.oneEditorPanel, BorderLayout.CENTER);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getGraph() {
         return this.oneEditorPanel.getGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<Edge, Object> getModelEdgesToDisplay() {
         return this.oneEditorPanel.getModelEdgesToDisplay();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<Node, Object> getModelNodesToDisplay() {
         return this.oneEditorPanel.getModelNodesToDisplay();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.oneEditorPanel.getKnowledge();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getSourceGraph() {
         return this.oneEditorPanel.getSourceGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void layoutByGraph(Graph graph) {
         this.oneEditorPanel.layoutByGraph(graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void layoutByKnowledge() {
 
@@ -245,9 +259,9 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
     /**
      * <p>displaySemIm.</p>
      *
-     * @param updatedSem a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @param updatedSem        a {@link edu.cmu.tetrad.sem.SemIm} object
      * @param tabSelectionIndex a int
-     * @param matrixSelection a int
+     * @param matrixSelection   a int
      */
     public void displaySemIm(SemIm updatedSem, int tabSelectionIndex, int matrixSelection) {
         this.oneEditorPanel.displaySemIm(updatedSem, tabSelectionIndex, matrixSelection);

@@ -45,9 +45,9 @@ import java.util.prefs.Preferences;
  * @author Aaron Powell
  * @author josephramsey
  * @author Willie Wheeler
+ * @version $Id: $Id
  * @see DisplayNode
  * @see DisplayEdge
- * @version $Id: $Id
  */
 public abstract class AbstractWorkbench extends JComponent implements WorkbenchModel, LayoutEditable {
 
@@ -589,7 +589,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     /**
      * Node tooltip to show the node attributes - Added by Kong
      *
-     * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
+     * @param modelNode   a {@link edu.cmu.tetrad.graph.Node} object
      * @param toolTipText a {@link java.lang.String} object
      */
     public final void setNodeToolTip(Node modelNode, String toolTipText) {
@@ -607,7 +607,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     /**
      * Edge tooltip to show the edge type and probabilities - Added by Zhou
      *
-     * @param modelEdge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @param modelEdge   a {@link edu.cmu.tetrad.graph.Edge} object
      * @param toolTipText a {@link java.lang.String} object
      */
     public final void setEdgeToolTip(Edge modelEdge, String toolTipText) {
@@ -626,10 +626,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Sets the label for a node to a particular JComponent. The label will be displayed slightly off to the right of
      * the node.
      *
-     * @param label Ibid.
+     * @param label     Ibid.
      * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
-     * @param x a int
-     * @param y a int
+     * @param x         a int
+     * @param y         a int
      */
     public final void setNodeLabel(Node modelNode, JComponent label, int x, int y) {
         if (modelNode == null) {
@@ -811,7 +811,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Paints the background of the workbench.
      */
     public final void paint(Graphics g) {
@@ -849,13 +849,17 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         return super.getBackground();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setBackground(Color color) {
         super.setBackground(color);
         repaint();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void layoutByGraph(Graph layoutGraph) {
         LayoutUtil.arrangeBySourceGraph(this.graph, layoutGraph);
 
@@ -990,18 +994,26 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     public abstract Node getNewModelNode();
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public abstract DisplayNode getNewDisplayNode(Node modelNode);
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public abstract IDisplayEdge getNewDisplayEdge(Edge modelEdge);
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public abstract Edge getNewModelEdge(Node node1, Node node2);
 
     // ============================PRIVATE METHODS=========================//
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public abstract IDisplayEdge getNewTrackingEdge(DisplayNode displayNode, Point mouseLoc);
 
     /**

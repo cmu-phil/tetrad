@@ -247,13 +247,19 @@ public class GeneralizedSemEstimator {
      */
     public static class MyContext implements Context {
 
-        /** The variable values. */
+        /**
+         * The variable values.
+         */
         final Map<String, Double> variableValues = new HashMap<>();
 
-        /** The parameter values. */
+        /**
+         * The parameter values.
+         */
         final Map<String, Double> parameterValues = new HashMap<>();
 
-        /** Get the value of a variable or parameter. */
+        /**
+         * Get the value of a variable or parameter.
+         */
         public Double getValue(String term) {
             Double value = this.parameterValues.get(term);
 
@@ -272,7 +278,8 @@ public class GeneralizedSemEstimator {
 
         /**
          * <p>putParameterValue.</p>
-         * @param s a {@link java.lang.String} object
+         *
+         * @param s         a {@link java.lang.String} object
          * @param parameter a double
          */
         public void putParameterValue(String s, double parameter) {
@@ -281,7 +288,8 @@ public class GeneralizedSemEstimator {
 
         /**
          * <p>putVariableValue.</p>
-         * @param s a {@link java.lang.String} object
+         *
+         * @param s     a {@link java.lang.String} object
          * @param value a double
          */
         public void putVariableValue(String s, double value) {
@@ -294,19 +302,29 @@ public class GeneralizedSemEstimator {
      */
     static class LikelihoodFittingFunction implements MultivariateFunction {
 
-        /** The pm. */
+        /**
+         * The pm.
+         */
         private final GeneralizedSemPm pm;
 
-        /** The context. */
+        /**
+         * The context.
+         */
         private final MyContext context;
 
-        /** The parameters. */
+        /**
+         * The parameters.
+         */
         private final List<String> parameters;
 
-        /** The tier ordering. */
+        /**
+         * The tier ordering.
+         */
         private final List<Node> tierOrdering;
 
-        /** The data values. */
+        /**
+         * The data values.
+         */
         private final double[][] dataValues;
 
         /**
@@ -396,38 +414,54 @@ public class GeneralizedSemEstimator {
      */
     static class LikelihoodFittingFunction2 implements MultivariateFunction {
 
-        /** The pm. */
+        /**
+         * The pm.
+         */
         private final GeneralizedSemPm pm;
 
-        /** The data. */
+        /**
+         * The data.
+         */
         private final DataSet data;
 
-        /** The parameters. */
+        /**
+         * The parameters.
+         */
         private final List<String> parameters;
 
-        /** The tier ordering. */
+        /**
+         * The tier ordering.
+         */
         private final List<Node> tierOrdering;
 
-        /** The index. */
+        /**
+         * The index.
+         */
         private final int index;
 
-        /** The context. */
+        /**
+         * The context.
+         */
         private final MyContext context;
 
-        /** The disturbances. */
+        /**
+         * The disturbances.
+         */
         private List<Double> disturbances;
 
-        /** The distribution. */
+        /**
+         * The distribution.
+         */
         private RealDistribution distribution;
 
         /**
          * Constructs a new CoefFittingFunction for the given Sem.
          *
-         * @param index a int
-         * @param pm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
-         * @param parameters a {@link java.util.List} object
+         * @param index        a int
+         * @param pm           a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+         * @param parameters   a {@link java.util.List} object
          * @param tierOrdering a {@link java.util.List} object
-         * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+         * @param data         a {@link edu.cmu.tetrad.data.DataSet} object
          * @
          */
         public LikelihoodFittingFunction2(int index, GeneralizedSemPm pm, List<String> parameters,

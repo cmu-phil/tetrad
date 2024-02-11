@@ -38,8 +38,8 @@ import java.util.LinkedList;
 public class DagIterator {
 
     /**
-     * The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether
-     * these edges have already been oriented left and/or right.
+     * The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether these edges
+     * have already been oriented left and/or right.
      */
     private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
     /**

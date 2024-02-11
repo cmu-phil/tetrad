@@ -97,6 +97,7 @@ public final class SemGraphEditor extends JPanel
     private GraphWorkbench workbench;
 
     //===========================CONSTRUCTOR========================//
+
     /**
      * <p>Constructor for SemGraphEditor.</p>
      *
@@ -119,7 +120,7 @@ public final class SemGraphEditor extends JPanel
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of this editor.
      */
     @Override
@@ -129,7 +130,9 @@ public final class SemGraphEditor extends JPanel
         firePropertyChange("name", oldName, getName());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List getSelectedModelComponents() {
         List<Component> selectedComponents = getWorkbench().getSelectedComponents();
@@ -148,7 +151,7 @@ public final class SemGraphEditor extends JPanel
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Pastes list of session elements into the workbench.
      */
     @Override
@@ -167,25 +170,33 @@ public final class SemGraphEditor extends JPanel
         getWorkbench().selectConnectingEdges();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JComponent getEditDelegate() {
         return getWorkbench();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphWorkbench getWorkbench() {
         return this.workbench;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getGraph() {
         return this.workbench.getGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setGraph(Graph graph) {
         try {
@@ -196,31 +207,41 @@ public final class SemGraphEditor extends JPanel
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map getModelEdgesToDisplay() {
         return this.workbench.getModelEdgesToDisplay();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map getModelNodesToDisplay() {
         return this.workbench.getModelNodesToDisplay();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getSourceGraph() {
         return getWorkbench().getGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void layoutByGraph(Graph graph) {
         ((SemGraph) graph).setShowErrorTerms(false);
@@ -228,13 +249,17 @@ public final class SemGraphEditor extends JPanel
         ((SemGraph) graph).resetErrorPositions();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void layoutByKnowledge() {
         // Does nothing.
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Rectangle getVisibleRect() {
         return getWorkbench().getVisibleRect();
@@ -609,7 +634,9 @@ public final class SemGraphEditor extends JPanel
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getIndependenceTest() {
         return new MsepTest(this.workbench.getGraph());

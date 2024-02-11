@@ -33,7 +33,7 @@ final class TetFileFilter extends FileFilter {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Accepts a file if its name ends with ".tet".
      */
     public boolean accept(File file) {

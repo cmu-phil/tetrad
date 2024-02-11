@@ -79,7 +79,9 @@ class SubgraphSelection implements Transferable {
         this.graphElements = (List) result;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
         if (!isDataFlavorSupported(flavor)) {
@@ -91,7 +93,9 @@ class SubgraphSelection implements Transferable {
         return returnList;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);
     }

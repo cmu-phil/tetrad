@@ -54,21 +54,25 @@ public final class Knowledge implements TetradSerializable {
     @Serial
     private static final long serialVersionUID = 23L;
 
-    /** The comma delimiter. */
+    /**
+     * The comma delimiter.
+     */
     private static final Pattern COMMAN_DELIM = Pattern.compile(",");
 
-    /** The variable names. */
+    /**
+     * The variable names.
+     */
     private final Set<String> variables;
 
     /**
-     * This needs to be a list for backward compatibility. Need to check when adding
-     * a new spec whether it's already in the list.
+     * This needs to be a list for backward compatibility. Need to check when adding a new spec whether it's already in
+     * the list.
      */
     private final List<OrderedPair<Set<String>>> forbiddenRulesSpecs;
 
     /**
-     * This needs to be a list for backward compatibility. Need to check when adding
-     * a new spec whether it's already in the list.
+     * This needs to be a list for backward compatibility. Need to check when adding a new spec whether it's already in
+     * the list.
      */
     private final List<OrderedPair<Set<String>>> requiredRulesSpecs;
 

@@ -166,7 +166,9 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
     //================================= Inner class ==================================//
 
-    /** A default implementation of the event. */
+    /**
+     * A default implementation of the event.
+     */
     public static class DefaultEvent implements TetradLoggerConfig.Event {
         @Serial
         private static final long serialVersionUID = 23L;
@@ -202,6 +204,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
         /**
          * Generates a simple exemplar of this class to test serialization.
+         *
          * @return a {@link edu.cmu.tetrad.util.DefaultTetradLoggerConfig.DefaultEvent} object
          */
         public static DefaultEvent serializableInstance() {

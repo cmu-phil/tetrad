@@ -162,7 +162,7 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Sets the name of this editor.
      */
     public void setName(String name) {

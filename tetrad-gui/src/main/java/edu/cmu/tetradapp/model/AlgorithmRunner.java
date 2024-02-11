@@ -40,7 +40,9 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
         TripleClassifier, SimulationParamsSource, MultipleGraphSource {
-    /** Constant <code>serialVersionUID=23L</code> */
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**

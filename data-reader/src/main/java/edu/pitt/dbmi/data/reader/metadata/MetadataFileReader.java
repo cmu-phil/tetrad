@@ -49,7 +49,7 @@ public class MetadataFileReader implements MetadataReader {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reads in the metadata.
      */
     @Override

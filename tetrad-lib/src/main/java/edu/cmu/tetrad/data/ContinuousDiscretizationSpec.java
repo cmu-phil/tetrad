@@ -81,8 +81,8 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
      * <p>Constructor for ContinuousDiscretizationSpec.</p>
      *
      * @param breakpoints an array of {@link double} objects
-     * @param categories a {@link java.util.List} object
-     * @param method a int
+     * @param categories  a {@link java.util.List} object
+     * @param method      a int
      */
     public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories, int method) {
         if (breakpoints == null) {

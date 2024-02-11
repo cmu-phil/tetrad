@@ -63,7 +63,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
      *
-     * @param semIm a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
+     * @param semIm           a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
      * @param launchedEditors a {@link java.util.Map} object
      */
     public GeneralizedSemImGraphicalEditor(GeneralizedSemIm semIm, Map<Object, EditorWindow> launchedEditors) {
@@ -79,6 +79,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
     }
 
     //============================================PUBLIC======================================================//
+
     /**
      * <p>refreshLabels.</p>
      */

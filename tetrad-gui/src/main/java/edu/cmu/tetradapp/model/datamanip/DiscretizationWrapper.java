@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -50,7 +49,7 @@ public class DiscretizationWrapper extends DataWrapper {
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
      *
-     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param data   a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public DiscretizationWrapper(DataWrapper data, Parameters params) {
@@ -88,8 +87,8 @@ public class DiscretizationWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -104,7 +103,7 @@ public class DiscretizationWrapper extends DataWrapper {
      * help.
      *
      * @param s a {@link java.io.ObjectInputStream} object
-     * @throws IOException if any.
+     * @throws IOException            if any.
      * @throws ClassNotFoundException if any.
      */
     @Serial

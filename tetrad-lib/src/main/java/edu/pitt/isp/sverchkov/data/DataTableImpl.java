@@ -49,25 +49,33 @@ public class DataTableImpl<N, V> implements DataTable<N, V> {
         this.rows = new ArrayList<>();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<N> variables() {
         return this.variables;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int columnCount() {
         return this.variables.size();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int rowCount() {
         return this.rows.size();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addRow(List<? extends V> row) {
         int
@@ -80,7 +88,9 @@ public class DataTableImpl<N, V> implements DataTable<N, V> {
         this.rows.add(Collections.unmodifiableList(new ArrayList<>(row)));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Iterator<List<V>> iterator() {
         return Collections.unmodifiableList(this.rows).listIterator();

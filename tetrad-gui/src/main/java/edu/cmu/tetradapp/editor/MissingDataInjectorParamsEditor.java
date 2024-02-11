@@ -51,7 +51,9 @@ public class MissingDataInjectorParamsEditor extends JPanel implements Parameter
         buildGui();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         this.params = params;
     }

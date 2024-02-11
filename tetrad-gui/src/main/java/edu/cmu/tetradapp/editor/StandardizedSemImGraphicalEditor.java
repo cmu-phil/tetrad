@@ -237,6 +237,7 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     }
 
     //=================================PUBLIC METHODS=======================================//
+
     /**
      * <p>Getter for the field <code>workbench</code>.</p>
      *

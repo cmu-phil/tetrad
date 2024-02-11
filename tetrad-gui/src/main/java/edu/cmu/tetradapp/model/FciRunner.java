@@ -52,7 +52,7 @@ public class FciRunner extends AbstractAlgorithmRunner
      * <p>Constructor for FciRunner.</p>
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FciRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -61,8 +61,8 @@ public class FciRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      *
-     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param graphWrapper      a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public FciRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -73,8 +73,8 @@ public class FciRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for FciRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public FciRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -84,7 +84,7 @@ public class FciRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for FciRunner.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FciRunner(Graph graph, Parameters params) {
@@ -94,8 +94,8 @@ public class FciRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for FciRunner.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param graph             a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public FciRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -106,7 +106,7 @@ public class FciRunner extends AbstractAlgorithmRunner
      * <p>Constructor for FciRunner.</p>
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FciRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
@@ -116,7 +116,7 @@ public class FciRunner extends AbstractAlgorithmRunner
      * <p>Constructor for FciRunner.</p>
      *
      * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FciRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
@@ -126,7 +126,7 @@ public class FciRunner extends AbstractAlgorithmRunner
      * <p>Constructor for FciRunner.</p>
      *
      * @param dagWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FciRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
@@ -135,7 +135,7 @@ public class FciRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for FciRunner.</p>
      *
-     * @param model a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param model  a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public FciRunner(IndependenceFactsModel model, Parameters params) {
@@ -145,8 +145,8 @@ public class FciRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for FciRunner.</p>
      *
-     * @param model a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param model             a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public FciRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -157,8 +157,8 @@ public class FciRunner extends AbstractAlgorithmRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @see TetradSerializableUtils
      */
     public static FciRunner serializableInstance() {
         return new FciRunner(Dag.serializableInstance(), new Parameters());
@@ -240,7 +240,9 @@ public class FciRunner extends AbstractAlgorithmRunner
         return new ArrayList<>();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
@@ -256,7 +258,9 @@ public class FciRunner extends AbstractAlgorithmRunner
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAlgorithmName() {
         return "FCI";

@@ -85,9 +85,9 @@ class RegressionParamsEditorPanel extends JPanel {
      * <code>DataModel</code> that should be used.
      *
      * @param regressionModel a {@link edu.cmu.tetradapp.model.RegressionModel} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param model a {@link edu.cmu.tetrad.data.DataModel} object
-     * @param logistic a boolean
+     * @param parameters      a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param model           a {@link edu.cmu.tetrad.data.DataModel} object
+     * @param logistic        a boolean
      */
     public RegressionParamsEditorPanel(RegressionModel regressionModel, Parameters parameters,
                                        DataModel model, boolean logistic) {

@@ -43,7 +43,10 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -119,10 +122,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private long elapsedTime = -1L;
 
     //===========================CONSTRUCTORS===========================//
+
     /**
      * <p>Constructor for GeneralAlgorithmRunner.</p>
      *
-     * @param runner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     * @param runner     a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GeneralAlgorithmRunner(GeneralAlgorithmRunner runner, Parameters parameters) {
@@ -139,7 +143,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * <p>Constructor for GeneralAlgorithmRunner.</p>
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters) {
         this(dataWrapper, null, parameters, null, null);
@@ -149,8 +153,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
      * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
@@ -163,7 +167,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
         this(dataWrapper, graphSource, parameters, null, null);
@@ -172,10 +176,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     /**
      * <p>Constructor for GeneralAlgorithmRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param graphSource       a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource,
                                   KnowledgeBoxModel knowledgeBoxModel,
@@ -187,10 +191,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
      * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param facts a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param facts             a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
@@ -201,8 +205,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * <p>Constructor for GeneralAlgorithmRunner.</p>
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param runner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param runner      a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters) {
         this(dataWrapper, null, parameters, null, null);
@@ -215,9 +219,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
      * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param runner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param runner            a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters,
@@ -233,8 +237,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param runner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param runner      a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
                                   Parameters parameters) {
@@ -248,10 +252,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
      * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param runner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param graphSource       a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param runner            a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
@@ -267,8 +271,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * Constucts a wrapper for the given graph.
      *
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param runner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param runner      a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GeneralAlgorithmRunner(GraphSource graphSource, GeneralAlgorithmRunner runner, Parameters parameters) {
         this(null, graphSource, parameters, null, null);
@@ -280,8 +284,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     /**
      * <p>Constructor for GeneralAlgorithmRunner.</p>
      *
-     * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param graphSource       a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters,
@@ -292,8 +296,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     /**
      * <p>Constructor for GeneralAlgorithmRunner.</p>
      *
-     * @param model a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param model             a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public GeneralAlgorithmRunner(IndependenceFactsModel model,
@@ -305,7 +309,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * Constucts a wrapper for the given graph.
      *
      * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public GeneralAlgorithmRunner(GraphSource graphSource, Parameters parameters) {
         this(null, graphSource, parameters, null, null);
@@ -315,11 +319,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
      * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param graphSource a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param graphSource       a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters        a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
-     * @param facts a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param facts             a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
@@ -366,7 +370,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     //============================PUBLIC METHODS==========================//
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void execute() {
         long start = System.currentTimeMillis();
@@ -416,7 +423,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
                 }
             }
-
 
 
             Graph graph = algo.search(null, this.parameters);
@@ -581,7 +587,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * By default, algorithm do not support knowledge. Those that do will speak up.
      */
     @Override
@@ -589,43 +595,57 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public MeekRules getMeekRules() {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getExternalGraph() {
         return this.externalGraph;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setExternalGraph(Graph graph) {
         this.externalGraph = graph;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAlgorithmName() {
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final Graph getSourceGraph() {
         return this.sourceGraph;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getResultGraph() {
         return getGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final DataModel getDataModel() {
         if (this.dataWrapper != null) {
@@ -643,7 +663,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Parameters getParams() {
         return null;
@@ -670,13 +692,17 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return this.parameters;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getResettableParams() {
         return this.getParameters();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void resetParams(Object params) {
         this.parameters = (Parameters) params;
@@ -696,7 +722,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * help.
      *
      * @param s a {@link java.io.ObjectInputStream} object
-     * @throws IOException If any.
+     * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
     @Serial
@@ -705,7 +731,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         s.defaultReadObject();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getIndependenceTest() {
         if (this.independenceTests == null) {
@@ -763,13 +791,17 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return this.independenceTests.get(0);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getName() {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setName(String name) {
         this.name = name;
@@ -796,37 +828,49 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         this.algorithm = algorithm;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getTriplesClassificationTypes() {
         return Collections.EMPTY_LIST;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<List<Triple>> getTriplesLists(Node node) {
         return Collections.EMPTY_LIST;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getParamSettings() {
         return Collections.EMPTY_MAP;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getAllParamSettings() {
         return Collections.EMPTY_MAP;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
 
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getGraph() {
         if (this.graphList == null || this.graphList.isEmpty()) {
@@ -836,7 +880,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Graph> getGraphs() {
         return this.graphList;
@@ -860,13 +906,17 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return this.dataWrapper;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getVariables() {
         return Collections.EMPTY_LIST;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getVariableNames() {
         return Collections.EMPTY_LIST;

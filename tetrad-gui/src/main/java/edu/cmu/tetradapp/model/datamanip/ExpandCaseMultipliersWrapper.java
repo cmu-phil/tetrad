@@ -40,7 +40,7 @@ public class ExpandCaseMultipliersWrapper extends DataWrapper {
     /**
      * <p>Constructor for ExpandCaseMultipliersWrapper.</p>
      *
-     * @param data a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param data   a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ExpandCaseMultipliersWrapper(DataWrapper data, Parameters params) {
@@ -62,8 +62,8 @@ public class ExpandCaseMultipliersWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

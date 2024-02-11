@@ -44,7 +44,9 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
     private Parameters params;
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         this.params = params;
     }

@@ -173,7 +173,9 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         return nodeWrapper;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public DisplayNode getNewDisplayNode(Node modelNode) {
         SessionNodeWrapper wrapper = (SessionNodeWrapper) modelNode;
         SessionEditorNode displayNode = new SessionEditorNode(wrapper, getSimulationStudy());
@@ -182,17 +184,23 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         return displayNode;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Edge getNewModelEdge(Node node1, Node node2) {
         return new Edge(node1, node2, Endpoint.TAIL, Endpoint.ARROW);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
         return new SessionEditorEdge((SessionEditorNode) node, mouseLoc);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
         Node modelNodeA = modelEdge.getNode1();
         Node modelNodeB = modelEdge.getNode2();
@@ -247,7 +255,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * Pastes list of session elements into the workbench.
      *
      * @param sessionElements a {@link java.util.List} object
-     * @param point a {@link java.awt.Point} object
+     * @param point           a {@link java.awt.Point} object
      */
     public void pasteSubsession(List sessionElements, Point point) {
         SessionWrapper sessionWrapper = (SessionWrapper) getGraph();
@@ -294,7 +302,9 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         });
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         getSimulationStudy().getSession().setName(name);
     }

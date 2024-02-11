@@ -39,19 +39,29 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
     @Serial
     private static final long serialVersionUID = 23L;
 
-    /** The tolerance for convergence. */
+    /**
+     * The tolerance for convergence.
+     */
     private final double tolerance;
 
-    /** The initial SEM. */
+    /**
+     * The initial SEM.
+     */
     private SemIm startIm;
 
-    /** Whether to use a flat prior. */
+    /**
+     * Whether to use a flat prior.
+     */
     private boolean flatPrior;
 
-    /** The number of iterations to run. */
+    /**
+     * The number of iterations to run.
+     */
     private int numIterations;
 
-    /** The stretch factor. */
+    /**
+     * The stretch factor.
+     */
     private double stretch;
 
     /**

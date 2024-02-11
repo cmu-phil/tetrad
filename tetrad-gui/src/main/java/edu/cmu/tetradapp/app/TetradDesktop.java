@@ -159,7 +159,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Adds a component to the middle layer of the desktop--that is, the layer for session node editors. Note: The comp
      * is a SessionEditor
      */
@@ -199,7 +199,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Adds the given component to the given layer.
      */
     public void addEditorWindow(EditorWindowIndirectRef windowRef, int layer) {
@@ -286,7 +286,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void closeSessionByName(String name) {
         for (JInternalFrame frame : this.desktopPane.getAllFrames()) {
             if (frame instanceof EditorWindow) {
@@ -323,7 +325,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean existsSessionByName(String name) {
         JInternalFrame[] allFrames = this.desktopPane.getAllFramesInLayer(0);
 
@@ -341,7 +345,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Session getSessionByName(String name) {
         JInternalFrame[] allFrames = this.desktopPane.getAllFramesInLayer(0);
@@ -382,7 +388,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Reacts to property change events 'editorClosing', 'closeFrame', and 'name'.
      */
     public void propertyChange(PropertyChangeEvent e) {
@@ -484,7 +490,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void putMetadata(SessionWrapperIndirectRef sessionWrapperRef,
                             TetradMetadataIndirectRef metadataRef) {
         SessionWrapper sessionWrapper = (SessionWrapper) sessionWrapperRef;
@@ -493,7 +501,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         this.metadataMap.put(sessionWrapper, metadata);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public TetradMetadataIndirectRef getTetradMetadata(
             SessionWrapperIndirectRef sessionWrapperRef) {
         SessionWrapper sessionWrapper = (SessionWrapper) sessionWrapperRef;

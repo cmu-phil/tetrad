@@ -25,8 +25,8 @@ package edu.cmu.tetradapp.util;
  * Indirect reference for SessionEditor, to avoid package cycle while allowing app components to access desktop.
  *
  * @author josephramsey
- * @see DesktopController
  * @version $Id: $Id
+ * @see DesktopController
  */
 public interface SessionEditorIndirectRef {
 }

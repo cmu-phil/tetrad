@@ -76,6 +76,7 @@ public class SearchWrappers {
     public static class MGMWrapper extends DataGraphSearch {
         /**
          * should be array three parameters for lambdas of each edge type
+         *
          * @param params parameters
          */
         public MGMWrapper(double... params) {

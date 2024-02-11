@@ -199,7 +199,9 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         return this.params;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();

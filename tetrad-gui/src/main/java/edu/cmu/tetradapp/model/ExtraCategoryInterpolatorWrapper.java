@@ -41,7 +41,7 @@ public class ExtraCategoryInterpolatorWrapper extends DataWrapper {
      * <p>Constructor for ExtraCategoryInterpolatorWrapper.</p>
      *
      * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ExtraCategoryInterpolatorWrapper(DataWrapper wrapper, Parameters params) {
         DataFilter interpolator = new ExtraCategoryInterpolator();
@@ -57,8 +57,8 @@ public class ExtraCategoryInterpolatorWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

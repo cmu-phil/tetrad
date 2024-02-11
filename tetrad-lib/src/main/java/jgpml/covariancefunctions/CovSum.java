@@ -68,7 +68,7 @@ public class CovSum implements CovarianceFunction {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Compute covariance matrix of a dataset X
      */
     public Matrix compute(Matrix loghyper, Matrix X) {
@@ -84,7 +84,7 @@ public class CovSum implements CovarianceFunction {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Compute compute test set covariances
      */
     public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar) {
@@ -103,7 +103,7 @@ public class CovSum implements CovarianceFunction {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
      * <code>idx</code>
      */

@@ -49,11 +49,11 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     /**
      * <p>Constructor for GeneralResamplingSearchRunnable.</p>
      *
-     * @param dataModel a {@link edu.cmu.tetrad.data.DataModel} object
-     * @param algorithm a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataModel                 a {@link edu.cmu.tetrad.data.DataModel} object
+     * @param algorithm                 a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
+     * @param parameters                a {@link edu.cmu.tetrad.util.Parameters} object
      * @param resamplingAlgorithmSearch a {@link edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch} object
-     * @param verbose a boolean
+     * @param verbose                   a boolean
      */
     public GeneralResamplingSearchRunnable(DataModel dataModel, Algorithm algorithm, Parameters parameters,
                                            GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
@@ -72,11 +72,11 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     /**
      * <p>Constructor for GeneralResamplingSearchRunnable.</p>
      *
-     * @param dataModel a {@link java.util.List} object
-     * @param algorithm a {@link edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataModel                 a {@link java.util.List} object
+     * @param algorithm                 a {@link edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm} object
+     * @param parameters                a {@link edu.cmu.tetrad.util.Parameters} object
      * @param resamplingAlgorithmSearch a {@link edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch} object
-     * @param verbose a boolean
+     * @param verbose                   a boolean
      */
     public GeneralResamplingSearchRunnable(List<DataModel> dataModel, MultiDataSetAlgorithm algorithm, Parameters parameters,
                                            GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
@@ -146,7 +146,9 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
         this.out = out;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph call() {
         long start;

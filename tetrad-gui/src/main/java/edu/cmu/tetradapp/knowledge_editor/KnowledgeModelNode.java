@@ -64,6 +64,7 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
     private int centerY;
 
     //=============================CONSTRUCTORS=========================//
+
     /**
      * <p>Constructor for KnowledgeModelNode.</p>
      *
@@ -80,14 +81,15 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
-     * @see TetradSerializableUtils
      * @return a {@link edu.cmu.tetradapp.knowledge_editor.KnowledgeModelNode} object
+     * @see TetradSerializableUtils
      */
     public static KnowledgeModelNode serializableInstance() {
         return new KnowledgeModelNode("X");
     }
 
     //=============================PUBLIC METHODS=======================//
+
     /**
      * <p>Getter for the field <code>name</code>.</p>
      *
@@ -97,7 +99,9 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
         return this.name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         if (name == null) {
             throw new NullPointerException();
@@ -120,7 +124,9 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
         return NodeType.NO_TYPE;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setNodeType(NodeType nodeType) {
         throw new UnsupportedOperationException();
     }
@@ -134,7 +140,9 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
         return this.centerX;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setCenterX(int centerX) {
         this.centerX = centerX;
     }
@@ -148,23 +156,31 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
         return this.centerY;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setCenterY(int centerY) {
         this.centerY = centerY;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setCenter(int centerX, int centerY) {
         this.centerX = centerX;
         this.centerY = centerY;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addPropertyChangeListener(PropertyChangeListener l) {
         // Ignore.
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node like(String name) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -203,37 +219,49 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
 //        }
 //    }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public NodeVariableType getNodeVariableType() {
         return this.nodeVariableType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNodeVariableType(NodeVariableType nodeVariableType) {
         this.nodeVariableType = nodeVariableType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);

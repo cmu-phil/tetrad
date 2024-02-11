@@ -68,7 +68,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
     /**
      * <p>Constructor for TabularDataJTable.</p>
      *
-     * @param model a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param model           a {@link edu.cmu.tetrad.data.DataSet} object
      * @param columnToTooltip a {@link java.util.Map} object
      */
     public TabularDataJTable(DataSet model, Map<String, String> columnToTooltip) {
@@ -182,7 +182,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         });
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int rowIndex, int vColIndex) {
         Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
@@ -211,7 +213,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         this.editable = editable;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setValueAt(Object aValue, int row, int column) {
         try {
             super.setValueAt(aValue, row, column);
@@ -221,7 +225,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public TableCellEditor getCellEditor(int row, int column) {
         if (!this.editable) {
             return new DoNothingEditor();
@@ -238,7 +244,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public TableCellRenderer getCellRenderer(int row, int column) {
         if (column == 0) {
             return new RowNumberRenderer();
@@ -463,9 +471,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
     }
 
     /**
-     * @return true iff the given token is a legitimate value for the cell at (row, col) in the table.
      * @param token a {@link java.lang.String} object
-     * @param col a int
+     * @param col   a int
+     * @return true iff the given token is a legitimate value for the cell at (row, col) in the table.
      */
     public boolean checkValueAt(String token, int col) {
         if (col < getNumLeadingCols()) {
@@ -508,9 +516,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         table.setCategoryNamesShown(selected);
     }
 
-        /**
-         * {@inheritDoc}
-         */
+    /**
+     * {@inheritDoc}
+     */
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
     }
@@ -555,12 +563,12 @@ class DoNothingEditor extends DefaultCellEditor {
 
     public DoNothingEditor() {
         super(new JTextField());
-    /**
-     * <p>Constructor for DataCellRenderer.</p>
-     *
-     * @param tableTabular a {@link edu.cmu.tetradapp.editor.TabularDataJTable} object
-     * @param numLeadingCols a int
-     */
+        /**
+         * <p>Constructor for DataCellRenderer.</p>
+         *
+         * @param tableTabular a {@link edu.cmu.tetradapp.editor.TabularDataJTable} object
+         * @param numLeadingCols a int
+         */
     }
 
     public boolean isCellEditable(EventObject anEvent) {
@@ -568,7 +576,9 @@ class DoNothingEditor extends DefaultCellEditor {
     }
 }
 
-/** {@inheritDoc} */
+/**
+ * {@inheritDoc}
+ */
 class VariableNameEditor extends DefaultCellEditor {
 
     private final JTextField textField;

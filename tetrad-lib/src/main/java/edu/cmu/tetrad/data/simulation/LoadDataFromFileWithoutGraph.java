@@ -29,13 +29,19 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
     @Serial
     private static final long serialVersionUID = 23L;
 
-    /** The path. */
+    /**
+     * The path.
+     */
     private final String path;
 
-    /** The parameter values. */
+    /**
+     * The parameter values.
+     */
     private final Map<String, Object> parameterValues = new HashMap<>();
 
-    /** The data set. */
+    /**
+     * The data set.
+     */
     private DataSet dataSet;
 
     /**

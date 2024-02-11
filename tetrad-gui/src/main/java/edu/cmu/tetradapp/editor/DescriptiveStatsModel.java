@@ -65,7 +65,7 @@ class DescriptiveStatsModel extends AbstractTableModel {
     /**
      * <p>generateDescriptiveStats.</p>
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dataSet  a {@link edu.cmu.tetrad.data.DataSet} object
      * @param variable a {@link edu.cmu.tetrad.graph.Node} object
      * @return a {@link edu.cmu.tetradapp.editor.DescriptiveStatsModel.Ret} object
      */
@@ -180,7 +180,7 @@ class DescriptiveStatsModel extends AbstractTableModel {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Note that returning null here has two effects. First, it
      */
     public String getColumnName(int col) {
@@ -206,7 +206,9 @@ class DescriptiveStatsModel extends AbstractTableModel {
         return stats.get(0).stats.size() + 1;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object getValueAt(int row, int col) {
         if (col == 0) return vars.get(row).getName();
         else {

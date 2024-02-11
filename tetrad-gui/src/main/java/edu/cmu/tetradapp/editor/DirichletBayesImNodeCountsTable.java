@@ -56,7 +56,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
     /**
      * Constructs a new editing table from a given editing table model.
      *
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node             a {@link edu.cmu.tetrad.graph.Node} object
      * @param dirichletBayesIm a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
      */
     public DirichletBayesImNodeCountsTable(Node node,
@@ -367,7 +367,9 @@ class DirichletBayesImNodeCountsTable extends JTable {
         return existsCompleteRow;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setModel(@NotNull TableModel model) {
         super.setModel(model);
     }

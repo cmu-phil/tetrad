@@ -146,7 +146,9 @@ public class IntSpinner extends JSpinner {
         this.filter = filter;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setValue(Object object) {
         if (object == null) {
             throw new NullPointerException();

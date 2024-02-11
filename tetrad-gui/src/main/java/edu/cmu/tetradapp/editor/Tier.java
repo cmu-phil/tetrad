@@ -46,8 +46,8 @@ class Tier extends JPanel {
     /**
      * A panel with a tier name, and all vars in that tier.
      *
-     * @param kn a {@link edu.cmu.tetradapp.editor.TierList} object
-     * @param thisTier a int
+     * @param kn        a {@link edu.cmu.tetradapp.editor.TierList} object
+     * @param thisTier  a int
      * @param tierNames an array of {@link java.lang.String} objects
      */
     public Tier(TierList kn, int thisTier, String[] tierNames) {

@@ -56,8 +56,8 @@ public class BayesEstimatorWrapper implements SessionModel {
      */
     private final DataWrapper dataWrapper;
 
-    /**'
-     * The estimated Bayes Im.
+    /**
+     * ' The estimated Bayes Im.
      */
     private final List<BayesIm> bayesIms = new ArrayList<>();
 

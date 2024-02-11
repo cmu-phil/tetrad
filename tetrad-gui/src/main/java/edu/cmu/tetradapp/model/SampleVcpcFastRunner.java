@@ -75,7 +75,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
      * or a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      *
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SampleVcpcFastRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -84,8 +84,8 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for SampleVcpcFastRunner.</p>
      *
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper       a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public SampleVcpcFastRunner(DataWrapper dataWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -96,8 +96,8 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
      * <p>Constructor for SampleVcpcFastRunner.</p>
      *
      * @param semImWrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public SampleVcpcFastRunner(SemImWrapper semImWrapper, Parameters params, DataWrapper dataWrapper) {
         super(dataWrapper, params, null);
@@ -108,7 +108,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SampleVcpcFastRunner(Graph graph, Parameters params) {
@@ -118,8 +118,8 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param graph             a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public SampleVcpcFastRunner(Graph graph, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -130,7 +130,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
      * Constucts a wrapper for the given EdgeListGraph.
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SampleVcpcFastRunner(GraphWrapper graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
@@ -139,8 +139,8 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      *
-     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param graphWrapper      a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public SampleVcpcFastRunner(GraphWrapper graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -150,8 +150,8 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     /**
      * Constucts a wrapper for the given EdgeListGraph.
      *
-     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param graphWrapper      a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public SampleVcpcFastRunner(GraphSource graphWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -162,7 +162,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
      * Constucts a wrapper for the given EdgeListGraph.
      *
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params       a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SampleVcpcFastRunner(GraphSource graphWrapper, Parameters params) {
         super(graphWrapper.getGraph(), params);
@@ -172,7 +172,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
      * <p>Constructor for SampleVcpcFastRunner.</p>
      *
      * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SampleVcpcFastRunner(DagWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getDag(), params);
@@ -181,8 +181,8 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for SampleVcpcFastRunner.</p>
      *
-     * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dagWrapper        a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public SampleVcpcFastRunner(DagWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -193,7 +193,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
      * <p>Constructor for SampleVcpcFastRunner.</p>
      *
      * @param dagWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param params     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SampleVcpcFastRunner(SemGraphWrapper dagWrapper, Parameters params) {
         super(dagWrapper.getGraph(), params);
@@ -202,8 +202,8 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for SampleVcpcFastRunner.</p>
      *
-     * @param dagWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param dagWrapper        a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public SampleVcpcFastRunner(SemGraphWrapper dagWrapper, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -213,7 +213,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for SampleVcpcFastRunner.</p>
      *
-     * @param model a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param model  a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SampleVcpcFastRunner(IndependenceFactsModel model, Parameters params) {
@@ -223,8 +223,8 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     /**
      * <p>Constructor for SampleVcpcFastRunner.</p>
      *
-     * @param model a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
-     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param model             a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @param params            a {@link edu.cmu.tetrad.util.Parameters} object
      * @param knowledgeBoxModel a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public SampleVcpcFastRunner(IndependenceFactsModel model, Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -270,6 +270,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
     }
 
     //
+
     /**
      * <p>getIndependenceTest.</p>
      *
@@ -307,7 +308,9 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         return names;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
@@ -363,7 +366,9 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         return meekRules;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAlgorithmName() {
         return "Sample-VCPC-Fast";

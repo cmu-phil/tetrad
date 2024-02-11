@@ -45,7 +45,7 @@ class NormalityTests {
     /**
      * Constructs a readable table of normality test results
      *
-     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dataSet  a {@link edu.cmu.tetrad.data.DataSet} object
      * @param variable a {@link edu.cmu.tetrad.data.ContinuousVariable} object
      * @return a {@link java.lang.String} object
      */

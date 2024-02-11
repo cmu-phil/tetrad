@@ -52,7 +52,7 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     @Override
@@ -80,7 +80,7 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     @Override
