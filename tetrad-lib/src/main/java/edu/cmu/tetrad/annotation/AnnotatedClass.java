@@ -22,13 +22,13 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 
-/**
- * Annotated class.
- *
- * @param clazz class
- * @param <T>   annotation type
- * @author Kevin V. Bui (kvb2@pitt.edu)
- */
+///**
+// * Annotated class.
+// *
+// * @param clazz class
+// * @param <T>   annotation type
+// * @author Kevin V. Bui (kvb2@pitt.edu)
+// */
 public record AnnotatedClass<T extends Annotation>(Class clazz, T annotation) implements Serializable {
 
     @Serial

@@ -1108,10 +1108,6 @@ public final class FgesMb implements DagScorer {
         this.numExpansions = numExpansions;
     }
 
-    public enum TrimmingStyle {
-        NONE, ADJACENT_TO_TARGETS, MARKOV_BLANKET_GRAPH, SEMIDIRECTED_PATHS_TO_TARGETS
-    }
-
     /**
      * Internal.
      */

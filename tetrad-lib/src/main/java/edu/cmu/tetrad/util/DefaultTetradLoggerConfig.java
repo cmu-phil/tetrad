@@ -181,6 +181,12 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
         private final String description;
 
 
+        /**
+         * Constructs the event.
+         *
+         * @param id          The id of the event.
+         * @param description
+         */
         public DefaultEvent(String id, String description) {
             if (id == null) {
                 throw new NullPointerException("The given id must not be null");

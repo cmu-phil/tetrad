@@ -855,6 +855,9 @@ public class Ricf {
         return true;
     }
 
+    /**
+     * RICF result.
+     */
     public static class RicfResult {
 
         /**
@@ -892,6 +895,17 @@ public class Ricf {
          */
         private final double diff;
 
+        /**
+         * The result.
+         *
+         * @param shat       The shat matrix.
+         * @param lhat       The laht matrix.
+         * @param bhat       The bhat matrix.
+         * @param ohat       The ohat matrix.
+         * @param iterations The number of iterations.
+         * @param diff       The diff.
+         * @param covMatrix  The covariance matrix.
+         */
         public RicfResult(DoubleMatrix2D shat, DoubleMatrix2D lhat, DoubleMatrix2D bhat,
                           DoubleMatrix2D ohat, int iterations, double diff, ICovarianceMatrix covMatrix) {
             this.shat = shat;
@@ -903,6 +917,9 @@ public class Ricf {
             this.covMatrix = covMatrix;
         }
 
+        /**
+         * A string representation of the result.
+         */
         public String toString() {
 
             return "\nSigma hat\n" +
@@ -918,33 +935,74 @@ public class Ricf {
                     "\n\ndiff = " + this.diff;
         }
 
+        /**
+         * @return shat.
+         */
         public DoubleMatrix2D getShat() {
             return this.shat;
         }
 
+        /**
+         * @return lhat.
+         */
         public DoubleMatrix2D getLhat() {
             return this.lhat;
         }
 
+        /**
+         * @return bhat
+         */
         public DoubleMatrix2D getBhat() {
             return this.bhat;
         }
 
+        /**
+         * @return ohat.
+         */
         public DoubleMatrix2D getOhat() {
             return this.ohat;
         }
 
+        /**
+         * @return the number of iterations.
+         */
         public int getIterations() {
             return this.iterations;
         }
     }
 
+    /**
+     * The fit con graph result.
+     */
     public static class FitConGraphResult {
+
+        /**
+         * The shat matrix
+         */
         private final DoubleMatrix2D shat;
+
+        /**
+         * The deviance
+         */
         double deviance;
+
+        /**
+         * The degrees of freedom.
+         */
         int df;
+
+        /**
+         * The number of iterations.
+         */
         int iterations;
 
+        /**
+         * The result.
+         * @param shat The shat matrix.
+         * @param deviance The deviance.
+         * @param df The degrees of freedom.
+         * @param iterations The iterations.
+         */
         public FitConGraphResult(DoubleMatrix2D shat, double deviance,
                                  int df, int iterations) {
             this.shat = shat;
@@ -953,6 +1011,9 @@ public class Ricf {
             this.iterations = iterations;
         }
 
+        /**
+         * @return a string representation.
+         */
         public String toString() {
 
             return "\nSigma hat\n" +

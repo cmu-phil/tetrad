@@ -77,8 +77,6 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
         this(breakpoints, categories, ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS);
     }
 
-
-    @SuppressWarnings("SameParameterValue")
     /**
      * <p>Constructor for ContinuousDiscretizationSpec.</p>
      *

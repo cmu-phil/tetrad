@@ -9,24 +9,62 @@ import edu.cmu.tetrad.sem.ScoreType;
  * @version $Id: $Id
  */
 public class ComparisonParameters {
+
+    /** The data type. */
     private DataType dataType;
+
+    /** The result type. */
     private ResultType resultType;
+
+    /** The num vars. */
     private int numVars = 100;
+
+    /** The num edges. */
     private int numEdges = 100;
+
+    /** The sample size. */
     private int sampleSize = 1000;
+
+    /** The independence test. */
     private IndependenceTestType independenceTest;
+
+    /** The alpha. */
     private double alpha = 0.001;
+
+    /** The penalty discount. */
     private double penaltyDiscount = 4;
+
+    /** The score. */
     private ScoreType score;
+
+    /** The sample prior. */
     private double samplePrior = 1;
+
+    /** The structure prior. */
     private double structurePrior = 1;
+
+    /** The algorithm. */
     private Algorithm algorithm;
+
+    /** The data file. */
     private String dataFile;
+
+    /** The graph file. */
     private String graphFile;
+
+    /** The one edge faithfulness assumed. */
     private boolean oneEdgeFaithfulnessAssumed;
+
+    /** The no data. */
     private boolean noData;
+
+    /** The data from file. */
     private boolean dataFromFile;
+
+    /** The graph num. */
     private int graphNum;
+
+    /** The trial. */
     private int trial;
 
     /**

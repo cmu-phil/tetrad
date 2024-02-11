@@ -37,7 +37,6 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * @see Manipulation
  */
 public interface BayesUpdater extends TetradSerializable {
-    long serialVersionUID = 23L;
 
     /**
      * Returns the marginal probability of the given variable taking the given value, given the evidence.

@@ -704,8 +704,43 @@ public class Comparison2 {
         return (Integer.parseInt(tmp));
     }
 
+    /** An enum of table columns. */
     public enum TableColumn {
-        AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,
-        AdjPrec, AdjRec, AhdPrec, AhdRec, Elapsed
+
+        /** Constant <code>AdjCor</code> */
+        AdjCor,
+
+        /** Constant <code>AdjFn</code> */
+        AdjFn,
+
+        /** Constant <code>AdjFp</code> */
+        AdjFp,
+
+        /** Constant <code>AhdCor</code> */
+        AhdCor,
+
+        /** Constant <code>AhdFn</code> */
+        AhdFn,
+
+        /** Constant <code>AhdFp</code> */
+        AhdFp,
+
+        /** Constant <code>SHD</code> */
+        SHD,
+
+        /** Constant <code>AdjPrec</code> */
+        AdjPrec,
+
+        /** Constant <code>AdjRec</code> */
+        AdjRec,
+
+        /** Constant <code>AhdPrec</code> */
+        AhdPrec,
+
+        /** Constant <code>AhdRec</code> */
+        AhdRec,
+
+        /** Constant <code>Elapsed</code> */
+        Elapsed
     }
 }

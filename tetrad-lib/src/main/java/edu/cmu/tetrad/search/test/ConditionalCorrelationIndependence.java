@@ -578,8 +578,21 @@ public final class ConditionalCorrelationIndependence {
      *
      * @see ConditionalCorrelationIndependence
      */
-    public enum Basis {Polynomial, Cosine}
+    public enum Basis {
+
+        /**
+         * Polynomial basis.
+         */
+        Polynomial,
+
+        /**
+         * Cosine basis.
+         */
+        Cosine
+    }
 }
+
+
 
 
 

@@ -38,8 +38,20 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class Discretizer {
+
+    /**
+     * The dataset to be discretized.
+     */
     private final DataSet sourceDataSet;
+
+    /**
+     * The discretization specifications for each variable.
+     */
     private final Map<Node, DiscretizationSpec> specs;
+
+    /**
+     * Whether to copy the variables that are not discretized.
+     */
     private boolean variablesCopied = true;
 
     /**

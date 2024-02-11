@@ -304,7 +304,18 @@ public final class EmBayesProperties {
         this.dataSet = dataSet;
     }
 
+    /**
+     * Interface for an estimator.
+     */
     public interface Estimator {
+
+        /**
+         * <p>estimate.</p>
+         *
+         * @param bayesPm a {@link edu.cmu.tetrad.bayes.BayesPm} object
+         * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+         * @return a {@link edu.cmu.tetrad.bayes.MlBayesIm} object
+         */
         BayesIm estimate(BayesPm bayesPm, DataSet dataSet);
     }
 

@@ -928,12 +928,68 @@ public final class Fask implements IGraphSearch {
      * paper, "empirical" versions were given in which the variables are multiplied through by the signs of the
      * skewnesses; we follow this advice here (with good results). These others are provided for those who prefer them.
      */
-    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
+    public enum LeftRight {
+        /**
+         * The original FASK left-right rule.
+         */
+        FASK1,
+
+        /**
+         * The modified FASK left-right rule.
+         */
+        FASK2,
+
+        /**
+         * The robust skew rule from the Hyvarinen and Smith paper.
+         */
+        RSKEW,
+
+        /**
+         * The skew rule from the Hyvarinen and Smith paper.
+         */
+        SKEW,
+
+        /**
+         * The tanh rule from the Hyvarinen and Smith paper.
+         */
+        TANH
+    }
 
     /**
      * Enumerates the alternatives to use for finding the initial adjacencies for FASK.
      */
-    public enum AdjacencyMethod {FAS_STABLE, FGES, BOSS, GRASP, EXTERNAL_GRAPH, NONE}
+    public enum AdjacencyMethod {
+
+        /**
+         * Fast Adjacency Search (FAS) with the stable option.
+         */
+        FAS_STABLE,
+
+        /**
+         * FGES with the BIC score.
+         */
+        FGES,
+
+        /**
+         * A permutation search with the BOSS algorithm.
+         */
+        BOSS,
+
+        /**
+         * A permutation search with the GRASP algorithm.
+         */
+        GRASP,
+
+        /**
+         * Use an external graph.
+         */
+        EXTERNAL_GRAPH,
+
+        /**
+         * No initial adjacencies.
+         */
+        NONE
+    }
 }
 
 

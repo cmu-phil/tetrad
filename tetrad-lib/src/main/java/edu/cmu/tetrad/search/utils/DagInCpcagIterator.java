@@ -35,16 +35,26 @@ import java.util.*;
  */
 public class DagInCpcagIterator {
 
-    // The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether
-    // these edges have already been oriented left and/or right.
+    /**
+     * The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether
+     * these edges have already been oriented left and/or right.
+     */
     private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
-    // The set of colliders in the original CPDAG.
+    /**
+     * The set of colliders in the original CPDAG.
+     */
     private final LinkedList<Triple> colliders;
-    // Whether to allow new colliders in the graphs.
+    /**
+     * Whether to allow new colliders in the graphs.
+     */
     private final boolean allowNewColliders;
-    // The graph to be returned by next() if it is not null.
+    /**
+     * The graph to be returned by next() if it is not null.
+     */
     private Graph storedGraph;
-    // Whether the first graph has been returned.
+    /**
+     * Whether the first graph has been returned.
+     */
     private boolean returnedOne;
 
     /**

@@ -59,22 +59,59 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 public class Fofc {
 
+    /**
+     * The type of test used.
+     */
     private final CorrelationMatrix corr;
-    // The list of all variables.
+    /**
+     * The list of all variables.
+     */
     private final List<Node> variables;
-    // The significance level.
+    /**
+     * The significance level.
+     */
     private final double alpha;
-    // The Delta test. Testing two tetrads simultaneously.
+    /**
+     * The Delta test. Testing two tetrads simultaneously.
+     */
     private final DeltaTetradTest test;
-    // The tetrad test--using Ricardo's. Used only for Wishart.
+    /**
+     * The tetrad test--using Ricardo's. Used only for Wishart.
+     */
     private final TetradTestContinuous test2;
-    // The data.
+    /**
+     * The data.
+     */
     private final transient DataModel dataModel;
+
+    /**
+     * The type of test used.
+     */
     private final BpcTestType testType;
+
+    /**
+     * The type of FOFC algorithm used.
+     */
     private final Algorithm algorithm;
+
+    /**
+     * The clusters that are output by the algorithm from the last call to search().
+     */
     private List<List<Node>> clusters;
+
+    /**
+     * Whether verbose output is desired.
+     */
     private boolean verbose;
+
+    /**
+     * Whether the significance of the cluster should be checked for each cluster.
+     */
     private boolean significanceChecked;
+
+    /**
+     * The type of cluster check should be performed.
+     */
     private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
 
     /**

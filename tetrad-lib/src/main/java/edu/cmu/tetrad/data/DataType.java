@@ -8,5 +8,22 @@ package edu.cmu.tetrad.data;
  * @version $Id: $Id
  */
 public enum DataType {
-    Continuous, Discrete, Mixed, Graph, Covariance, All
+
+    /** Continuous. */
+    Continuous,
+
+    /** Discrete. */
+    Discrete,
+
+    /** Mixed. */
+    Mixed,
+
+    /** Graph. */
+    Graph,
+
+    /** Covariance. */
+    Covariance,
+
+    /** All. */
+    All
 }

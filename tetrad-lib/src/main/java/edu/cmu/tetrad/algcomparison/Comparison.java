@@ -1795,19 +1795,52 @@ public class Comparison {
         }
     }
 
+    /**
+     * An enum of comparison graphs types.
+     */
     public enum ComparisonGraph {
-        true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
+
+        /**
+         * Constant for the true DAG.
+         */
+        true_DAG,
+
+        /**
+         * Constant for the CPDAG of the true DAG.
+         */
+        CPDAG_of_the_true_DAG,
+
+        /**
+         * Constant for the PAG of the true DAG.
+         */
+        PAG_of_the_true_DAG
     }
 
     private enum Mode {
         Average, StandardDeviation, MinValue, MaxValue, MedianValue
     }
 
+    /**
+     * An algorithm wrapper.
+     */
     private static class AlgorithmWrapper implements Algorithm {
 
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The algorithm.
+         */
         private final Algorithm algorithm;
+
+        /**
+         * The parameters.
+         */
         private final Parameters parameters;
+
+        /**
+         * The overridden parameters.
+         */
         private final List<String> overriddenParameters = new ArrayList<>();
 
         public AlgorithmWrapper(Algorithm algorithm, Parameters parameters) {
@@ -1830,7 +1863,7 @@ public class Comparison {
             StringBuilder description = new StringBuilder();
             description.append(this.algorithm.getDescription());
 
-            if (this.overriddenParameters.size() > 0) {
+            if (!this.overriddenParameters.isEmpty()) {
                 for (String name : new ArrayList<>(this.overriddenParameters)) {
                     description.append(", ").append(name).append(" = ").append(this.parameters.get(name));
                 }
@@ -1869,8 +1902,17 @@ public class Comparison {
 
     private static class AlgorithmSimulationWrapper implements Algorithm {
 
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The simulation wrapper.
+         */
         private final SimulationWrapper simulationWrapper;
+
+        /**
+         * The algorithm wrapper.
+         */
         private final AlgorithmWrapper algorithmWrapper;
 
         public AlgorithmSimulationWrapper(AlgorithmWrapper algorithm, SimulationWrapper simulation) {
@@ -1878,26 +1920,54 @@ public class Comparison {
             this.simulationWrapper = simulation;
         }
 
+        /**
+         * <p>search.</p>
+         *
+         * @param DataModel  a {@link edu.cmu.tetrad.data.DataModel} object
+         * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+         * @return a {@link edu.cmu.tetrad.graph.Graph} object
+         */
         @Override
         public Graph search(DataModel DataModel, Parameters parameters) {
             return this.algorithmWrapper.getAlgorithm().search(DataModel, parameters);
         }
 
+        /**
+         * <p>getComparisonGraph.</p>
+         *
+         * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+         * @return a {@link edu.cmu.tetrad.graph.Graph} object
+         */
         @Override
         public Graph getComparisonGraph(Graph graph) {
             return this.algorithmWrapper.getComparisonGraph(graph);
         }
 
+        /**
+         * <p>getDescription.</p>
+         *
+         * @return a {@link java.lang.String} object
+         */
         @Override
         public String getDescription() {
             throw new IllegalArgumentException();
         }
 
+        /**
+         * <p>getDataType.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.data.DataType} object
+         */
         @Override
         public DataType getDataType() {
             return this.algorithmWrapper.getDataType();
         }
 
+        /**
+         * <p>getParameters.</p>
+         *
+         * @return a {@link java.util.List} object
+         */
         @Override
         public List<String> getParameters() {
             List<String> params = new ArrayList<>(this.simulationWrapper.getParameters());
@@ -1905,22 +1975,52 @@ public class Comparison {
             return params;
         }
 
+        /**
+         * <p>getAlgorithmWrapper.</p>
+         *
+         * @return a simulation wrapper
+         */
         public SimulationWrapper getSimulationWrapper() {
             return this.simulationWrapper;
         }
 
+        /**
+         * <p>getAlgorithmWrapper.</p>
+         *
+         * @return an algorithm wrapper
+         */
         public AlgorithmWrapper getAlgorithmWrapper() {
             return this.algorithmWrapper;
         }
     }
 
     private static class SimulationWrapper implements Simulation {
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The simulation.
+         */
         private final Simulation simulation;
+
+        /**
+         * The graphs.
+         */
         private List<Graph> graphs;
+
+        /**
+         * The data models.
+         */
         private List<DataModel> dataModels;
+
+        /**
+         * The parameters.
+         */
         private Parameters parameters;
 
+        /**
+         * {@inheritDoc}
+         */
         public SimulationWrapper(Simulation simulation, Parameters parameters) {
             this.simulation = simulation;
 
@@ -1929,6 +2029,9 @@ public class Comparison {
             this.parameters = new Parameters(parameters);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void createData(Parameters parameters, boolean newModel) {
             if (newModel) {
@@ -1942,6 +2045,9 @@ public class Comparison {
             }
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int getNumDataModels() {
             if (this.dataModels == null) {
@@ -1950,6 +2056,9 @@ public class Comparison {
             return this.dataModels.size();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Graph getTrueGraph(int index) {
             if (this.graphs.get(index) == null) {
@@ -1959,30 +2068,48 @@ public class Comparison {
             }
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public synchronized DataModel getDataModel(int index) {
             return this.dataModels.get(index);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public DataType getDataType() {
             return this.simulation.getDataType();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String getDescription() {
             return this.simulation.getDescription();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public List<String> getParameters() {
             return this.simulation.getParameters();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public void setParameters(Parameters parameters) {
             this.parameters = new Parameters(parameters);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public void setValue(String name, Object value) {
             if (!(value instanceof Number)) {
                 throw new IllegalArgumentException();
@@ -1991,6 +2118,9 @@ public class Comparison {
             this.parameters.set(name, value);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public Object getValue(String name) {
             Object[] values = this.parameters.getValues(name);
 
@@ -2001,22 +2131,54 @@ public class Comparison {
             return values[0];
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public Simulation getSimulation() {
             return this.simulation;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public Parameters getSimulationSpecificParameters() {
             return this.parameters;
         }
     }
 
+    /**
+     * A run.
+     */
     private static class Run {
 
+        /**
+         * The algorithm simulation index.
+         */
         private final int algSimIndex;
+
+        /**
+         * The run index.
+         */
         private final int runIndex;
+
+        /**
+         * The index.
+         */
         private final int index;
+
+        /**
+         * The wrapper.
+         */
         private final AlgorithmSimulationWrapper wrapper;
 
+        /**
+         * Constructs a new run.
+         *
+         * @param algSimIndex the algorithm simulation index
+         * @param runIndex    the run index
+         * @param index       the index
+         * @param wrapper     the wrapper
+         */
         public Run(int algSimIndex, int runIndex, int index, AlgorithmSimulationWrapper wrapper) {
             this.runIndex = runIndex;
             this.algSimIndex = algSimIndex;
@@ -2024,34 +2186,100 @@ public class Comparison {
             this.wrapper = wrapper;
         }
 
+        /**
+         * <p>Getter for the field <code>algSimIndex</code>.</p>
+         *
+         * @return the algorithm simulation index
+         */
         public int getAlgSimIndex() {
             return this.algSimIndex;
         }
 
+        /**
+         * <p>Getter for the field <code>runIndex</code>.</p>
+         *
+         * @return the run index
+         */
         public int getRunIndex() {
             return this.runIndex;
         }
 
+        /**
+         * <p>Getter for the field <code>index</code>.</p>
+         *
+         * @return the index
+         */
         public int getIndex() {
             return this.index;
         }
 
+        /**
+         * <p>Getter for the field <code>wrapper</code>.</p>
+         *
+         * @return the wrapper
+         */
         public AlgorithmSimulationWrapper getWrapper() {
             return this.wrapper;
         }
     }
 
+    /**
+     * A task for running an algorithm.
+     */
     private class AlgorithmTask implements Callable<Boolean> {
 
+        /**
+         * The algorithm simulation wrappers.
+         */
         private final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
+
+        /**
+         * The algorithm wrappers.
+         */
         private final List<AlgorithmWrapper> algorithmWrappers;
+
+        /**
+         * The simulation wrappers.
+         */
         private final List<SimulationWrapper> simulationWrappers;
+
+        /**
+         * The statistics.
+         */
         private final Statistics statistics;
+
+        /**
+         * The number of graph types.
+         */
         private final int numGraphTypes;
+
+        /**
+         * The statistics.
+         */
         private final double[][][][] allStats;
+
+        /**
+         * The run.
+         */
         private final Run run;
+
+        /**
+         * The standard output.
+         */
         private final PrintStream stdout;
 
+        /**
+         * Constructs a new algorithm task.
+         *
+         * @param algorithmSimulationWrappers the algorithm simulation wrappers
+         * @param algorithmWrappers           the algorithm wrappers
+         * @param simulationWrappers          the simulation wrappers
+         * @param statistics                  the statistics
+         * @param numGraphTypes               the number of graph types
+         * @param allStats                    the statistics
+         * @param run                         the run
+         * @param stdout                      the standard output
+         */
         public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
                              List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
                              Statistics statistics, int numGraphTypes, double[][][][] allStats, Run run, PrintStream stdout) {
@@ -2065,6 +2293,12 @@ public class Comparison {
             this.stdout = stdout;
         }
 
+        /**
+         * Does a run.
+         *
+         * @return true.
+         * @throws java.lang.Exception if any.
+         */
         @Override
         public Boolean call() throws Exception {
             doRun(this.algorithmSimulationWrappers, this.algorithmWrappers,

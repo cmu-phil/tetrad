@@ -727,12 +727,32 @@ public class Cstar {
     /**
      * An enumeration of the options available for determining the CPDAG used for the algorithm.
      */
-    public enum CpdagAlgorithm {PC_STABLE, FGES, BOSS, RESTRICTED_BOSS}
+    public enum CpdagAlgorithm {
+
+        /** The PC_STABLE algorithm. */
+        PC_STABLE,
+
+        /** The FGES algorithm. */
+        FGES,
+
+        /** The BOSS algorihtm. */
+        BOSS,
+
+        /** The RESTRICTED_BOSS algorithm. */
+        RESTRICTED_BOSS
+    }
 
     /**
      * An enumeration of the methods for selecting samples from the full dataset.
      */
-    public enum SampleStyle {BOOTSTRAP, SUBSAMPLE}
+    public enum SampleStyle {
+
+        /** Use bootstrap. */
+        BOOTSTRAP,
+
+        /** Use subsample. */
+        SUBSAMPLE
+    }
 
     /**
      * Represents a single record in the returned table for CSTaR.

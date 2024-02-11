@@ -90,7 +90,7 @@ public class DataUtility {
      *
      * @param file dataset
      * @return the number of lines that contain data.
-     * @throws java.io.IOException
+     * @throws java.io.IOException if any.
      */
     public static int countLine(File file) throws IOException {
         int count = 0;

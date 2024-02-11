@@ -73,14 +73,37 @@ public interface ExpressionDescriptor extends TetradSerializable {
     Expression createExpression(Expression... expressions) throws ExpressionInitializationException;
 
 
+    /**
+     * An enum of positions that an expression can occur in.
+     */
     enum Position implements TetradSerializable {
+        /**
+         * The expression can occur in neither the prefix nor infix position.
+         */
         NEITHER,
+
+        /**
+         * The expression can occur in the infix position.
+         */
         INFIX,
+
+        /**
+         * The expression can occur in the prefix position.
+         */
         PREFIX,
+
+        /**
+         * The expression can occur in both the prefix and infix position.
+         */
         BOTH;
 
         private static final long serialVersionUID = 23L;
 
+        /**
+         * <p>serializableInstance.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position} object
+         */
         public static Position serializableInstance() {
             return Position.NEITHER;
         }

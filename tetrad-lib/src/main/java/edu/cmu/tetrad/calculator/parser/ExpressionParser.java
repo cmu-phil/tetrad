@@ -499,7 +499,21 @@ public class ExpressionParser {
      * parameters occur in the expression are OK.
      */
     public enum RestrictionType {
-        MAY_ONLY_CONTAIN, MAY_NOT_CONTAIN, NONE
+
+        /**
+         * The expression may only contain parameters in the given list.
+         */
+        MAY_ONLY_CONTAIN,
+
+        /**
+         * The expression may not contain parameters in the given list.
+         */
+        MAY_NOT_CONTAIN,
+
+        /**
+         * The expression may contain any parameters.
+         */
+        NONE
     }
 }
 

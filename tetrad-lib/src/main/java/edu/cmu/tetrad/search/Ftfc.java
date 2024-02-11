@@ -64,21 +64,37 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @see Bpc
  */
 public class Ftfc {
-    // The correlation matrix.
+    /**
+     * The correlation matrix.
+     */
     private final CorrelationMatrix corr;
-    // The list of all variables.
+    /**
+     * The list of all variables.
+     */
     private final List<Node> variables;
-    // The significance level.
+    /**
+     * The significance level.
+     */
     private final double alpha;
-    // The Delta test. Testing two sextads simultaneously.
+    /**
+     * The Delta test. Testing two sextads simultaneously.
+     */
     private final DeltaSextadTest test;
-    // The data.
+    /**
+     * The data.
+     */
     private final transient DataModel dataModel;
-    // The algorithm used.
+    /**
+     * The algorithm used.
+     */
     private final Algorithm algorithm;
-    // The clusters found.
+    /**
+     * The clusters found.
+     */
     private List<List<Node>> clusters;
-    // Whether verbose output should be printed.
+    /**
+     * Whether verbose output should be printed.
+     */
     private boolean verbose;
 
     /**

@@ -55,23 +55,41 @@ import static org.apache.commons.math3.util.FastMath.log;
  */
 public class ConditionalGaussianLikelihood {
 
-    // A constant.
+    /**
+     * A constant.
+     */
     private static final double LOG2PI = log(2.0 * FastMath.PI);
-    // The data set. May contain continuous and/or discrete mixedVariables.
+    /**
+     * The data set. May contain continuous and/or discrete mixedVariables.
+     */
     private final DataSet mixedDataSet;
-    // The data set with all continuous mixedVariables discretized.
+    /**
+     * The data set with all continuous mixedVariables discretized.
+     */
     private final DataSet dataSet;
-    // The mixedVariables of the mixed data set.
+    /**
+     * The mixedVariables of the mixed data set.
+     */
     private final List<Node> mixedVariables;
-    // Indices of mixedVariables.
+    /**
+     * Indices of mixedVariables.
+     */
     private final Map<Node, Integer> nodesHash;
-    // Continuous data only.
+    /**
+     * Continuous data only.
+     */
     private final double[][] continuousData;
-    // Number of categories to use to discretize continuous mixedVariables.
+    /**
+     * Number of categories to use to discretize continuous mixedVariables.
+     */
     private int numCategoriesToDiscretize = 3;
-    // "Cell" consisting of all rows.
+    /**
+     * "Cell" consisting of all rows.
+     */
     private List<Integer> rows;
-    // Discretize the parents
+    /**
+     * Discretize the parents
+     */
     private boolean discretize;
 
     /**
