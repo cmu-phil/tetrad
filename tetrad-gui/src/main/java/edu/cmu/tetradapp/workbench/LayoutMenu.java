@@ -21,17 +21,12 @@
 
 package edu.cmu.tetradapp.workbench;
 
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.util.CopyLayoutAction;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
 
 import javax.swing.*;
-import java.util.ArrayList;
 
 /**
  * Builds a menu for layout operations on graphs. Interacts with classes that implement the LayoutEditable interface.
