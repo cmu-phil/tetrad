@@ -28,6 +28,7 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -127,7 +128,7 @@ class GeneralizedExpressionParameterizer extends JComponent {
         Box b2 = Box.createHorizontalBox();
         String parameterString = parameterString(parser);
 
-        if ("".equals(parameterString)) parameterString = "--NONE--";
+        if (parameterString.isEmpty()) parameterString = "--NONE--";
 
         JLabel referencedParametersLabel = new JLabel("Parameters:  " + parameterString);
         b2.add(referencedParametersLabel);
@@ -200,6 +201,28 @@ class GeneralizedExpressionParameterizer extends JComponent {
     }
 
     private String parameterString(ExpressionParser parser) {
+        Result result = getResult(parser);
+
+        for (int i = 0; i < result.parametersList().size(); i++) {
+            result.buf().append(result.parametersList().get(i));
+
+            Set<Node> referencingNodes = this.semPm.getReferencingNodes(result.parametersList().get(i));
+            referencingNodes.remove(this.node);
+
+            if (!referencingNodes.isEmpty()) {
+                result.buf().append("*");
+            }
+
+            if (i < result.parametersList().size() - 1) {
+                result.buf().append(", ");
+            }
+        }
+
+        return result.buf().toString();
+    }
+
+    @NotNull
+    private Result getResult(ExpressionParser parser) {
         Set<String> parameters = new LinkedHashSet<>(parser.getParameters());
 
         for (Node _node : this.semPm.getNodes()) {
@@ -209,22 +232,10 @@ class GeneralizedExpressionParameterizer extends JComponent {
         List<String> parametersList = new ArrayList<>(parameters);
         StringBuilder buf = new StringBuilder();
 
-        for (int i = 0; i < parametersList.size(); i++) {
-            buf.append(parametersList.get(i));
+        return new Result(parametersList, buf);
+    }
 
-            Set<Node> referencingNodes = this.semPm.getReferencingNodes(parametersList.get(i));
-            referencingNodes.remove(this.node);
-
-            if (referencingNodes.size() > 0) {
-                buf.append("*");
-            }
-
-            if (i < parametersList.size() - 1) {
-                buf.append(", ");
-            }
-        }
-
-        return buf.toString();
+    private record Result(List<String> parametersList, StringBuilder buf) {
     }
 }
 
