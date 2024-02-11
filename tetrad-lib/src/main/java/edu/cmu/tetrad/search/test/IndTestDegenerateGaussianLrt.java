@@ -52,27 +52,49 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
-    // A constant.
+    /**
+     * A constant.
+     */
     private static final double L2PE = log(2.0 * PI * E);
-    // The data set.
+    /**
+     * The data set.
+     */
     private final BoxDataSet ddata;
-    // The data set.
+    /**
+     * The data set.
+     */
     private final double[][] _ddata;
-    // A hash of nodes to indices.
+    /**
+     * A hash of nodes to indices.
+     */
     private final Map<Node, Integer> nodeHash;
-    // The data set.
+    /**
+     * The data set.
+     */
     private final DataSet dataSet;
-    // The mixed variables of the original dataset.
+    /**
+     * The mixed variables of the original dataset.
+     */
     private final List<Node> variables;
-    // The embedding map.
+    /**
+     * The embedding map.
+     */
     private final Map<Integer, List<Integer>> embedding;
-    // A cache of results for independence facts.
+    /**
+     * A cache of results for independence facts.
+     */
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-    // The alpha level.
+    /**
+     * The alpha level.
+     */
     private double alpha = 0.001;
-    // The p value.
+    /**
+     * The p value.
+     */
     private double pValue = NaN;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
 
     /**
@@ -431,22 +453,51 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
      * Stores a return value for a likelihood--i.e., a likelihood value and the degrees of freedom for it.
      */
     public static class Ret {
+
+        /**
+         * The likelihood.
+         */
         private final double lik;
+
+        /**
+         * The degrees of freedom.
+         */
         private final double dof;
 
+        /**
+         * Constructs a return value.
+         *
+         * @param lik The likelihood.
+         * @param dof The degrees of freedom.
+         */
         private Ret(double lik, double dof) {
             this.lik = lik;
             this.dof = dof;
         }
 
+        /**
+         * Returns the likelihood.
+         *
+         * @return This likelihood.
+         */
         public double getLik() {
             return this.lik;
         }
 
+        /**
+         * Returns the degrees of freedom.
+         *
+         * @return These degrees of freedom.
+         */
         public double getDof() {
             return this.dof;
         }
 
+        /**
+         * Returns a string representation of this object.
+         *
+         * @return This string.
+         */
         public String toString() {
             return "lik = " + this.lik + " dof = " + this.dof;
         }

@@ -62,5 +62,24 @@ public class MillisecondTimes {
         }
     }
 
-    public enum Type {Wall, User, CPU}
+    /**
+     * An enum for the type of time.
+     */
+    public enum Type {
+
+        /**
+         * Wall time.
+         */
+        Wall,
+
+        /**
+         * User time.
+         */
+        User,
+
+        /**
+         * CPU time.
+         */
+        CPU
+    }
 }

@@ -10,61 +10,99 @@ import edu.cmu.tetrad.sem.ScoreType;
  */
 public class ComparisonParameters {
 
-    /** The data type. */
+    /**
+     * The data type.
+     */
     private DataType dataType;
 
-    /** The result type. */
+    /**
+     * The result type.
+     */
     private ResultType resultType;
 
-    /** The num vars. */
+    /**
+     * The num vars.
+     */
     private int numVars = 100;
 
-    /** The num edges. */
+    /**
+     * The num edges.
+     */
     private int numEdges = 100;
 
-    /** The sample size. */
+    /**
+     * The sample size.
+     */
     private int sampleSize = 1000;
 
-    /** The independence test. */
+    /**
+     * The independence test.
+     */
     private IndependenceTestType independenceTest;
 
-    /** The alpha. */
+    /**
+     * The alpha.
+     */
     private double alpha = 0.001;
 
-    /** The penalty discount. */
+    /**
+     * The penalty discount.
+     */
     private double penaltyDiscount = 4;
 
-    /** The score. */
+    /**
+     * The score.
+     */
     private ScoreType score;
 
-    /** The sample prior. */
+    /**
+     * The sample prior.
+     */
     private double samplePrior = 1;
 
-    /** The structure prior. */
+    /**
+     * The structure prior.
+     */
     private double structurePrior = 1;
 
-    /** The algorithm. */
+    /**
+     * The algorithm.
+     */
     private Algorithm algorithm;
 
-    /** The data file. */
+    /**
+     * The data file.
+     */
     private String dataFile;
 
-    /** The graph file. */
+    /**
+     * The graph file.
+     */
     private String graphFile;
 
-    /** The one edge faithfulness assumed. */
+    /**
+     * The one edge faithfulness assumed.
+     */
     private boolean oneEdgeFaithfulnessAssumed;
 
-    /** The no data. */
+    /**
+     * The no data.
+     */
     private boolean noData;
 
-    /** The data from file. */
+    /**
+     * The data from file.
+     */
     private boolean dataFromFile;
 
-    /** The graph num. */
+    /**
+     * The graph num.
+     */
     private int graphNum;
 
-    /** The trial. */
+    /**
+     * The trial.
+     */
     private int trial;
 
     /**
@@ -553,11 +591,81 @@ public class ComparisonParameters {
         this.trial = trial;
     }
 
-    public enum DataType {Continuous, Discrete}
+    /**
+     * An enumeration of the data types that can be used for structure learning.
+     */
+    public enum DataType {
+        /**
+         * Constant for continuous data.
+         */
+        Continuous,
+        /**
+         * Constant for discrete data.
+         */
+        Discrete
+    }
 
-    public enum ResultType {CPDAG, PAG}
+    /**
+     * An enumeration of the result types that can be used for structure learning.
+     */
+    public enum ResultType {
+        /**
+         * Constant for CPDAG result type.
+         */
+        CPDAG,
+        /**
+         * Constant for PAG result type.
+         */
+        PAG
+    }
 
-    public enum IndependenceTestType {FisherZ, ChiSquare}
+    /**
+     * An enumeration of the independence test types that can be used for structure learning.
+     */
+    public enum IndependenceTestType {
+        /**
+         * Constant for the FisherZ independence test.
+         */
+        FisherZ,
+        /**
+         * Constant for the ChiSquare independence test.
+         */
+        ChiSquare
+    }
 
-    public enum Algorithm {PC, CPC, FGES, FGES2, FCI, GFCI, SVARFCI}
+    /**
+     * An enumeration of the algorithms that can be used for structure learning.
+     */
+    public enum Algorithm {
+
+        /**
+         * Constant for the PC algorithm.
+         */
+        PC,
+
+        /**
+         * Constant for the CPC algorithm.
+         */
+        CPC,
+
+        /**
+         * Constant for the FGES algorithm.
+         */
+        FGES,
+
+        /**
+         * Constant for the FCI algorithm.
+         */
+        FCI,
+
+        /**
+         * Constant for the GFCI algorithm.
+         */
+        GFCI,
+
+        /**
+         * Constant for the SVARFCI algorithm.
+         */
+        SVARFCI
+    }
 }

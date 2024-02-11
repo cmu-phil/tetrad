@@ -46,13 +46,37 @@ import java.util.*;
  * @version $Id: $Id
  */
 public final class HbsmsGes implements Hbsms {
+    /**
+     * The graph to be searched.
+     */
     private final Graph graph;
+    /**
+     * The number format for printing.
+     */
     private final NumberFormat nf = new DecimalFormat("0.0#########");
+    /**
+     * The significant models.
+     */
     private final Set<GraphWithPValue> significantModels = new HashSet<>();
+    /**
+     * The scorer.
+     */
     private final Scorer scorer;
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
+    /**
+     * The alpha.
+     */
     private double alpha = 0.05;
+    /**
+     * The original SEM IM.
+     */
     private SemIm originalSemIm;
+    /**
+     * The new SEM IM.
+     */
     private SemIm newSemIm;
 
     /**
@@ -679,27 +703,59 @@ public final class HbsmsGes implements Hbsms {
         return this.significantModels;
     }
 
+    /** A graph with a P value. */
     public static class GraphWithPValue {
+
+        /** The graph. */
         private final Graph graph;
+
+        /** The P value. */
         private final double pValue;
 
+        /**
+         * <p>Constructor for GraphWithPValue.</p>
+         *
+         * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+         * @param pValue a double
+         */
         public GraphWithPValue(Graph graph, double pValue) {
             this.graph = graph;
             this.pValue = pValue;
         }
 
+        /**
+         * <p>Getter for the field <code>graph</code>.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Graph} object
+         */
         public Graph getGraph() {
             return this.graph;
         }
 
+        /**
+         * <p>getPValue.</p>
+         *
+         * @return a double
+         */
         public double getPValue() {
             return this.pValue;
         }
 
+        /**
+         * <p>hashCode.</p>
+         *
+         * @return a int
+         */
         public int hashCode() {
             return 17 * this.graph.hashCode();
         }
 
+        /**
+         * <p>equals.</p>
+         *
+         * @param o a {@link java.lang.Object} object
+         * @return a boolean
+         */
         public boolean equals(Object o) {
             if (o == null) return false;
             if (!(o instanceof GraphWithPValue p)) return false;
@@ -707,51 +763,101 @@ public final class HbsmsGes implements Hbsms {
         }
     }
 
+    /**
+     * The score of a model.
+     */
     public static class Score {
+        /**
+         * The scorer.
+         */
         private final Scorer scorer;
+        /**
+         * The P value.
+         */
         private final double pValue;
+        /**
+         * The Fml.
+         */
         private final double fml;
+        /**
+         * The chi square.
+         */
         private final double chisq;
+        /**
+         * The BIC.
+         */
         private final double bic;
-        //        private double aic;
+        /**
+         * The degrees of freedom.
+         */
         private final int dof;
 
+        /**
+         * <p>Constructor for Score.</p>
+         *
+         * @param scorer a {@link edu.cmu.tetrad.sem.DagScorer} object
+         */
         public Score(Scorer scorer) {
             this.scorer = scorer;
             this.pValue = scorer.getPValue();
             this.fml = scorer.getFml();
             this.chisq = scorer.getChiSquare();
             this.bic = scorer.getBicScore();
-//            this.aic = scorer.getAicScore();
             this.dof = scorer.getDof();
         }
 
+        /**
+         * Returns the estimated SEM IM.
+         * @return the estimated SEM IM.
+         */
         public SemIm getEstimatedSem() {
             return this.scorer.getEstSem();
         }
 
+        /**
+         * Returns the P value.
+         * @return the P value.
+         */
         public double getPValue() {
             return this.pValue;
         }
 
+        /**
+         * Returns the score.
+         * @return the score.
+         */
         public double getScore() {
-
             return -this.bic;
-//            return -aic;
         }
 
+        /**
+         * Returns the Fml.
+         * @return the Fml.
+         */
         public double getFml() {
             return this.fml;
         }
 
+        /**
+         * Returns the degrees of freedom.
+         * @return the degrees of freedom.
+         */
         public int getDof() {
             return this.dof;
         }
 
+        /**
+         * Returns the chi square.
+         * @return the chi square.
+         */
         public double getChiSquare() {
             return this.chisq;
         }
 
+        /**
+         * Returns the BIC.
+         * @return the BIC.
+         */
         public double getBic() {
             return this.bic;
         }

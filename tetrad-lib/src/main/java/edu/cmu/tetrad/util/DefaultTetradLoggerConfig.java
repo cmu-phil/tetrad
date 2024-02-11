@@ -166,6 +166,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
     //================================= Inner class ==================================//
 
+    /** A default implementation of the event. */
     public static class DefaultEvent implements TetradLoggerConfig.Event {
         @Serial
         private static final long serialVersionUID = 23L;
@@ -185,7 +186,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
          * Constructs the event.
          *
          * @param id          The id of the event.
-         * @param description
+         * @param description The description of the event.
          */
         public DefaultEvent(String id, String description) {
             if (id == null) {
@@ -201,19 +202,35 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
         /**
          * Generates a simple exemplar of this class to test serialization.
+         * @return a {@link edu.cmu.tetrad.util.DefaultTetradLoggerConfig.DefaultEvent} object
          */
         public static DefaultEvent serializableInstance() {
             return new DefaultEvent("", "");
         }
 
+        /**
+         * <p>getId.</p>
+         *
+         * @return a {@link java.lang.String} object
+         */
         public String getId() {
             return this.id;
         }
 
+        /**
+         * <p>getDescription.</p>
+         *
+         * @return a {@link java.lang.String} object
+         */
         public String getDescription() {
             return this.description;
         }
 
+        /**
+         * <p>toString.</p>
+         *
+         * @return a {@link java.lang.String} object
+         */
         public String toString() {
             return "Event(" + this.id + ", " + this.description + ")";
         }

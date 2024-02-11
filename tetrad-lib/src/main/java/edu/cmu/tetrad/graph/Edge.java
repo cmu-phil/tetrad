@@ -582,6 +582,9 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         this.highlighted = highlighted;
     }
 
+    /**
+     * A property of an edge.
+     */
     public enum Property {
 
         /**

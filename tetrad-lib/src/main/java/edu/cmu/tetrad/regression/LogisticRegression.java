@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * Implements a logistic regression algorithm based on a Javascript implementation by John Pezzullo.  That
  * implementation together with a description of logistic regression and some examples appear on his web page
- * http://members.aol.com/johnp71/logistic.html
+ * <a href="http://members.aol.com/johnp71/logistic.html">...</a>
  * <p>
  * See also  Applied Logistic Regression, by D.W. Hosmer and S. Lemeshow. 1989, John Wiley and Sons, New York which
  * Pezzullo references.  In particular see pages 27-29.
@@ -415,6 +415,9 @@ public class LogisticRegression implements TetradSerializable {
 
     //================================== Public Methods =======================================//
 
+    /**
+     * The result of a logistic regression.
+     */
     public static class Result implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;
@@ -493,12 +496,20 @@ public class LogisticRegression implements TetradSerializable {
         /**
          * Constructs a new LinRegrResult.
          *
-         * @param numRegressors the number of regressors
-         * @param ny0           the number of cases with target = 0.
-         * @param ny1           the number of cases with target = 1.
-         * @param coefs         the array of regression coefficients.
-         * @param stdErrs       the array of std errors of the coefficients.
-         * @param probs         the array of P-values for the regression
+         * @param target         the target variable
+         * @param regressorNames the names of the regressors
+         * @param xMeans         the array of means
+         * @param xStdDevs       the array of standard devs
+         * @param numRegressors  the number of regressors
+         * @param ny0            the number of cases with target = 0.
+         * @param ny1            the number of cases with target = 1.
+         * @param coefs          the array of regression coefficients.
+         * @param stdErrs        the array of std errors of the coefficients.
+         * @param probs          the array of P-values for the regression
+         * @param intercept      the intercept
+         * @param logLikelihood  the log likelihood of the regression
+         * @param chiSq          the chi square statistic
+         * @param alpha          the alpha level
          */
         public Result(String target, List<String> regressorNames, double[] xMeans, double[] xStdDevs,
                       int numRegressors, int ny0, int ny1, double[] coefs,
@@ -551,6 +562,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * Generates a simple exemplar of this class to test serialization.
+         *
+         * @return a {@link edu.cmu.tetrad.regression.LogisticRegression.Result} object
          */
         public static Result serializableInstance() {
             return new Result("X1", new ArrayList<>(), new double[1], new double[1], 0, 0, 0,
@@ -559,6 +572,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The variables.
+         *
+         * @return a {@link java.util.List} object
          */
         public List<String> getRegressorNames() {
             return this.regressorNames;
@@ -566,6 +581,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The target.
+         *
+         * @return a {@link java.lang.String} object
          */
         public String getTarget() {
             return this.target;
@@ -573,6 +590,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The number of data points with target = 0.
+         *
+         * @return a int
          */
         public int getNy0() {
             return this.ny0;
@@ -580,6 +599,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The number of data points with target = 1.
+         *
+         * @return a int
          */
         public int getNy1() {
             return this.ny1;
@@ -587,6 +608,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The number of regressors.
+         *
+         * @return a int
          */
         public int getNumRegressors() {
             return this.numRegressors;
@@ -594,6 +617,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The array of regression coefficients.
+         *
+         * @return an array of double
          */
         public double[] getCoefs() {
             return this.coefs;
@@ -601,6 +626,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The array of standard errors for the regression coefficients.
+         *
+         * @return an array of double
          */
         public double[] getStdErrs() {
             return this.stdErrs;
@@ -608,6 +635,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The array of coefP-values for the regression coefficients.
+         *
+         * @return an array of double
          */
         public double[] getProbs() {
             return this.probs;
@@ -615,6 +644,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * THe array of means.
+         *
+         * @return an array of double
          */
         public double[] getxMeans() {
             return this.xMeans;
@@ -622,22 +653,34 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The array of standard devs.
+         *
+         * @return an array of double
          */
         public double[] getxStdDevs() {
             return this.xStdDevs;
         }
 
+        /**
+         * The intercept.
+         *
+         * @return a double
+         */
         public double getIntercept() {
             return this.intercept;
         }
 
         /**
          * The log likelihood of the regression
+         *
+         * @return a double
          */
         public double getLogLikelihood() {
             return this.logLikelihood;
         }
 
+        /**
+         * Returns a string representation of the regression results.
+         */
         public String toString() {
             NumberFormat nf = new DecimalFormat("0.0000");
             StringBuilder report = new StringBuilder();

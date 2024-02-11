@@ -964,6 +964,14 @@ public class StandardizedSemIm implements Simulator {
          */
         private final double high;
 
+        /**
+         * Constructs a new parameter range.
+         *
+         * @param edge The edge for which the range is needed.
+         * @param coef The coefficient value for which the range is needed.
+         * @param low  The low end of the range to which the coefficient value may be adjusted.
+         * @param high The high end of the range to which the coefficient value may be adjusted.
+         */
         public ParameterRange(Edge edge, double coef, double low, double high) {
             this.edge = edge;
             this.coef = coef;
@@ -973,6 +981,8 @@ public class StandardizedSemIm implements Simulator {
 
         /**
          * Generates a simple exemplar of this class to test serialization.
+         *
+         * @return a {@link edu.cmu.tetrad.sem.StandardizedSemIm.ParameterRange} object
          */
         public static ParameterRange serializableInstance() {
             return new ParameterRange(Edge.serializableInstance(), 1.0, 1.0, 1.0);

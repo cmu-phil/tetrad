@@ -60,37 +60,69 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @see Knowledge
  */
 public class Lofs {
-    // The graph to be oriented.
+    /**
+     * The graph to be oriented.
+     */
     private final Graph cpdag;
-    // The square root of 2 * pi.
+    /**
+     * The square root of 2 * pi.
+     */
     private final double SQRT = sqrt(2. * PI);
-    // The data to use to do the orientation.
+    /**
+     * The data to use to do the orientation.
+     */
     Matrix _data;
-    // The data to use to do the orientation.
+    /**
+     * The data to use to do the orientation.
+     */
     private List<DataSet> dataSets;
-    // The matrices to use to do the orientation.
+    /**
+     * The matrices to use to do the orientation.
+     */
     private List<Matrix> matrices;
-    // The alpha to use, where applicable.
+    /**
+     * The alpha to use, where applicable.
+     */
     private double alpha = 1.1;
-    // The regressions to use to do the orientation.
+    /**
+     * The regressions to use to do the orientation.
+     */
     private List<Regression> regressions;
-    // The variables to use to do the orientation.
+    /**
+     * The variables to use to do the orientation.
+     */
     private List<Node> variables;
-    // Whether orientation should be done in the stronger direction, where applicable.
+    /**
+     * Whether orientation should be done in the stronger direction, where applicable.
+     */
     private boolean orientStrongerDirection;
-    // For R2, whether cycles should be oriented.
+    /**
+     * For R2, whether cycles should be oriented.
+     */
     private boolean r2Orient2Cycles = true;
-    // The (LoFS) score to use.
+    /**
+     * The (LoFS) score to use.
+     */
     private Lofs.Score score = Lofs.Score.andersonDarling;
-    // The self-loop strength, if applicable.
+    /**
+     * The self-loop strength, if applicable.
+     */
     private double epsilon = 1.0;
-    // The knowledge to use to do the orientation.
+    /**
+     * The knowledge to use to do the orientation.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The rule to use to do the orientation.
+    /**
+     * The rule to use to do the orientation.
+     */
     private Rule rule = Rule.R1;
-    // The number of variables.
+    /**
+     * The number of variables.
+     */
     private double selfLoopStrength;
-    // The number of variables.
+    /**
+     * The number of variables.
+     */
     private double[] col;
 
     /**
@@ -2018,16 +2050,132 @@ public class Lofs {
      * Gives a list of options for non-Gaussian transformations that can be used for some scores.
      */
     public enum Score {
-        andersonDarling, skew, kurtosis, fifthMoment, absoluteValue,
-        exp, expUnstandardized, expUnstandardizedInverted, other, logcosh, entropy
+        /**
+         * The  Anderson-Darling score.
+         */
+        andersonDarling,
+        /**
+         * The skew.
+         */
+        skew,
+        /**
+         * The kurtosis.
+         */
+        kurtosis,
+
+        /**
+         * The fifth moment.
+         */
+        fifthMoment,
+        /**
+         * The absolute value.
+         */
+        absoluteValue,
+        /**
+         * The exp.
+         */
+        exp,
+        /**
+         * The exp unstandardized.
+         */
+        expUnstandardized,
+        /**
+         * The exp unstandardized inverted.
+         */
+        expUnstandardizedInverted,
+        /**
+         * Other score.
+         */
+        other,
+
+        /**
+         * The logcosh.
+         */
+        logcosh,
+
+        /**
+         * The  entropy.
+         */
+        entropy
     }
 
     /**
      * Give a list of options for rules for doing the non-Gaussian orientations.
      */
     public enum Rule {
-        IGCI, R1TimeLag, R1, R2, R3, Tanh, EB, Skew, SkewE, RSkew, RSkewE,
-        Patel, Patel25, Patel50, Patel75, Patel90, FastICA, RC
+        /**
+         * The IGCI rule.
+         */
+        IGCI,
+        /**
+         * The R1 Time Lag rule.
+         */
+        R1TimeLag,
+        /**
+         * The R1 rule.
+         */
+        R1,
+        /**
+         * The R2 rule.
+         */
+        R2,
+        /**
+         * The R3 rule.
+         */
+        R3,
+        /**
+         * The Tahn rule.
+         */
+        Tanh,
+        /**
+         * The EB rule.
+         */
+        EB,
+        /**
+         * The Skew rule.
+         */
+        Skew,
+        /**
+         * The SkewE rule.
+         */
+        SkewE,
+        /**
+         * The RSkew rule.
+         */
+        RSkew,
+        /**
+         * The RSkewE rule.
+         */
+        RSkewE,
+        /**
+         * The Patel rule.
+         */
+        Patel,
+        /**
+         * The Patel25 rule.
+         */
+        Patel25,
+
+        /**
+         * The Patel50 rule.
+         */
+        Patel50,
+        /**
+         * The Patel75 rule.
+         */
+        Patel75,
+        /**
+         * The Patel90 rule.
+         */
+        Patel90,
+        /**
+         * The FastICA rule.
+         */
+        FastICA,
+        /**
+         * The RC rule.
+         */
+        RC
     }
 
 }

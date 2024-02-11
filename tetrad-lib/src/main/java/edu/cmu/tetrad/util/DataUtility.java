@@ -41,6 +41,9 @@ public class DataUtility {
 
     private static final byte CARRIAGE_RETURN = '\r';
 
+    /**
+     * <p>Constructor for DataUtility.</p>
+     */
     private DataUtility() {
     }
 
@@ -50,7 +53,7 @@ public class DataUtility {
      * @param file      dataset
      * @param delimiter a single character used to separate the data
      * @return the number of column of the first line in the file.
-     * @throws java.io.IOException
+     * @throws java.io.IOException if any.
      */
     public static int countColumn(File file, char delimiter) throws IOException {
         int count = 0;

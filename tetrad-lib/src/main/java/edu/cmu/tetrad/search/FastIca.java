@@ -658,11 +658,36 @@ public class FastIca {
      * S: estimated source matrix
      */
     public static class IcaResult {
+
+        /**
+         * The pre-processed data matrix.
+         */
         private final Matrix X;
+
+        /**
+         * The pre-whitening matrix that projects data onto the first n.comp principal components.
+         */
         private final Matrix K;
+
+        /**
+         * The estimated un-mixing matrix.
+         */
         private final Matrix W;
+
+        /**
+         * The estimated source matrix.
+         */
         private final Matrix S;
 
+        /**
+         * Constructs an instance of the IcaResult class, taking as arguments the four matrices that are the result of
+         * the Fast ICA algorithm.
+         *
+         * @param X The pre-processed data matrix.
+         * @param K The pre-whitening matrix that projects data onto the first n.comp principal components.
+         * @param W The estimated un-mixing matrix.
+         * @param S The estimated source matrix.
+         */
         public IcaResult(Matrix X, Matrix K, Matrix W,
                          Matrix S) {
             this.X = X;
@@ -671,22 +696,47 @@ public class FastIca {
             this.S = S;
         }
 
+        /**
+         * Returns the pre-processed data matrix.
+         *
+         * @return this matrix.
+         */
         public Matrix getX() {
             return this.X;
         }
 
+        /**
+         * Returns the pre-whitening matrix that projects data onto the first n.comp principal components.
+         *
+         * @return this matrix.
+         */
         public Matrix getK() {
             return this.K;
         }
 
+        /**
+         * Returns the estimated un-mixing matrix.
+         *
+         * @return this matrix.
+         */
         public Matrix getW() {
             return this.W;
         }
 
+        /**
+         * Returns the estimated source matrix.
+         *
+         * @return this matrix.
+         */
         public Matrix getS() {
             return this.S;
         }
 
+        /**
+         * Returns a string representation of this IcaResult object.
+         *
+         * @return this string.
+         */
         public String toString() {
             return "\n\nX:\n" +
                     this.X +

@@ -1242,7 +1242,14 @@ public final class GraphSearchUtils {
      * "noncollider" or "ambiguous".
      */
     public enum CpcTripleType {
-        COLLIDER, NONCOLLIDER, AMBIGUOUS
+        /** A collider triple. */
+        COLLIDER,
+
+        /** A noncollider triple. */
+        NONCOLLIDER,
+
+        /** An ambiguous triple. */
+        AMBIGUOUS
     }
 
     /**
@@ -1250,19 +1257,43 @@ public final class GraphSearchUtils {
      * why it is not, if it is not (a String).
      */
     public static class LegalPagRet {
+
+        /**
+         * Whether the graph is a legal PAG.
+         */
         private final boolean legalPag;
+
+        /**
+         * The reason why the graph is not a legal PAG, if not.
+         */
         private final String reason;
 
+        /**
+         * Constructs a new LegalPagRet object.
+         *
+         * @param legalPag Whether the graph is a legal PAG.
+         * @param reason   The reason why the graph is not a legal PAG, if not.
+         */
         public LegalPagRet(boolean legalPag, String reason) {
             if (reason == null) throw new NullPointerException("Reason must be given.");
             this.legalPag = legalPag;
             this.reason = reason;
         }
 
+        /**
+         * Returns whether the graph is a legal PAG.
+         *
+         * @return Whether the graph is a legal PAG.
+         */
         public boolean isLegalPag() {
             return legalPag;
         }
 
+        /**
+         * Returns the reason why the graph is not a legal PAG, if not.
+         *
+         * @return The reason why the graph is not a legal PAG, if not.
+         */
         public String getReason() {
             return reason;
         }
@@ -1273,19 +1304,43 @@ public final class GraphSearchUtils {
      * why it is not, if it is not (a String).
      */
     public static class LegalMagRet {
+
+        /**
+         * Whether the graph is a legal MAG.
+         */
         private final boolean legalMag;
+
+        /**
+         * The reason why the graph is not a legal MAG, if not.
+         */
         private final String reason;
 
+        /**
+         * Constructs a new LegalMagRet object.
+         *
+         * @param legalPag Whether the graph is a legal MAG.
+         * @param reason   The reason why the graph is not a legal MAG, if not.
+         */
         public LegalMagRet(boolean legalPag, String reason) {
             if (reason == null) throw new NullPointerException("Reason must be given.");
             this.legalMag = legalPag;
             this.reason = reason;
         }
 
+        /**
+         * Returns whether the graph is a legal MAG.
+         *
+         * @return Whether the graph is a legal MAG.
+         */
         public boolean isLegalMag() {
             return legalMag;
         }
 
+        /**
+         * Returns the reason why the graph is not a legal MAG, if not.
+         *
+         * @return The reason why the graph is not a legal MAG, if not.
+         */
         public String getReason() {
             return reason;
         }

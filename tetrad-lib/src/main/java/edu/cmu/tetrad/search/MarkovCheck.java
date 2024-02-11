@@ -887,14 +887,29 @@ public class MarkovCheck {
      * Stores the set of m-separation facts and the set of m-connection facts for a graph, for the global check.
      */
     public static class AllSubsetsIndependenceFacts {
+
+        /** {@link Set} of m-separation facts. */
         private final Set<IndependenceFact> msep;
+
+        /** {@link Set} of m-connection facts. */
         private final Set<IndependenceFact> mconn;
 
+        /**
+         * Constructor.
+         *
+         * @param msep   The set of m-separation facts.
+         * @param mconn  The set of m-connection facts.
+         */
         public AllSubsetsIndependenceFacts(Set<IndependenceFact> msep, Set<IndependenceFact> mconn) {
             this.msep = msep;
             this.mconn = mconn;
         }
 
+        /**
+         * Returns a string representation of the m-separation facts.
+         *
+         * @return A string representation of the m-separation facts.
+         */
         public String toStringIndep() {
             StringBuilder builder = new StringBuilder("All subsets independence facts:\n");
 
@@ -905,6 +920,11 @@ public class MarkovCheck {
             return builder.toString();
         }
 
+        /**
+         * Returns a string representation of the m-connection facts.
+         *
+         * @return A string representation of the m-connection facts.
+         */
         public String toStringDep() {
             StringBuilder builder = new StringBuilder("All subsets independence facts:\n");
 
@@ -915,10 +935,20 @@ public class MarkovCheck {
             return builder.toString();
         }
 
+        /**
+         * Returns the set of m-separation facts.
+         *
+         * @return The set of m-separation facts.
+         */
         public List<IndependenceFact> getMsep() {
             return new ArrayList<>(msep);
         }
 
+        /**
+         * Returns the set of m-connection facts.
+         *
+         * @return The set of m-connection facts.
+         */
         public List<IndependenceFact> getMconn() {
             return new ArrayList<>(mconn);
         }

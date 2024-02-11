@@ -33,12 +33,32 @@ import java.lang.annotation.*;
 @Documented
 public @interface Score {
 
+    /**
+     * The name of the score.
+     *
+     * @return the name of the score
+     */
     String name();
 
+    /**
+     * The command to execute the score.
+     *
+     * @return the command to execute the score
+     */
     String command();
 
+    /**
+     * The description of the score.
+     *
+     * @return the description of the score
+     */
     String description() default "";
 
+    /**
+     * The data types that the score can be applied to.
+     *
+     * @return the data types that the score can be applied to
+     */
     DataType[] dataType();
 
 }

@@ -369,7 +369,31 @@ public class GicScores implements Score {
      *
      * @see GicScores
      */
-    public enum RuleType {MANUAL, BIC, NANDY, GIC2, RIC, RICc, GIC5, GIC6}
+    public enum RuleType {
+
+        /** The lambda is set manually. */
+        MANUAL,
+
+        /** The Bayesian Information Criterion. */
+        BIC,
+
+        /** BIC using Nandy et al.'s formulation. */
+        NANDY,
+
+        /** The GIC2 rule. */
+        GIC2,
+
+        /** The RIC rule. */
+        RIC,
+
+        /** The RICc rule. */
+        RICc,
+
+        /** The GIC5 rule. */
+        GIC5,
+
+        /** The GIC6 rule. */
+        GIC6}
 }
 
 

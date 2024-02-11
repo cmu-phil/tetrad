@@ -707,9 +707,67 @@ public final class ResolveSepsetsDci {
         return independent;
     }
 
+    /**
+     * A method for combining p values.
+     */
     public enum Method {
-        fisher, fisher2, tippett, worsleyfriston, stouffer, mudholkergeorge,
-        mudholkergeorge2, average, averagetest, random, fdr, majority
+        /**
+         * The fisher method.
+         */
+        fisher,
+        /**
+         * The fisher method with only available p values.
+         */
+        fisher2,
+
+        /**
+         * The tippett method.
+         */
+        tippett,
+
+        /**
+         * The wilkinson method.
+         */
+        worsleyfriston,
+
+        /**
+         * The stouffer method.
+         */
+        stouffer,
+
+        /**
+         * The mudholkergeorge method.
+         */
+        mudholkergeorge,
+
+        /**
+         * The mudholkergeorge2 method.
+         */
+        mudholkergeorge2,
+
+        /**
+         * `The average method.
+         */
+        average,
+
+        /**
+         * The average test method.
+         */
+        averagetest,
+
+        /**
+         * The random method.
+         */
+        random,
+        /**
+         * The fdr method.
+         */
+        fdr,
+
+        /**
+         * The majority method.
+         */
+        majority
     }
 }
 

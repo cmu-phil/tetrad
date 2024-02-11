@@ -1471,11 +1471,6 @@ public final class TestGrasp {
                     boss.setNonSingularDepth(1);
                     boss.setUncoveredDepth(1);
 
-//                    OtherPermAlgs spAlg = new OtherPermAlgs(test);
-//                    spAlg.setUsePearl(true);
-//                    spAlg.setMethod(OtherPermAlgs.Method.SP);
-//                    spAlg.setUseDataOrder(true);
-//                    spAlg.setNumVariables(numVars);
                     List<Node> spPi = boss.bestOrder(variables);
                     Graph spGraph = boss.getGraph(true);
                     int spNumEdges = spGraph.getNumEdges();

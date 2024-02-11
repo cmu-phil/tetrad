@@ -206,13 +206,6 @@ public class Comparison {
             result.setResultGraph(search.search());
             Graph dag = new EdgeListGraph(trueDag);
             result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES2) {
-            if (score == null) throw new IllegalArgumentException("Score not set.");
-            Fges search = new Fges(score);
-            search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
-            result.setResultGraph(search.search());
-            Graph dag = new EdgeListGraph(trueDag);
-            result.setCorrectResult(GraphTransforms.cpdagForDag(dag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Fci search = new Fci(test);
@@ -373,8 +366,43 @@ public class Comparison {
         return table;
     }
 
+    /** An enumeration of the columns in the comparison table. */
     public enum TableColumn {
-        AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,
-        AdjPrec, AdjRec, AhdPrec, AhdRec, Elapsed
+
+        /** The number of adjacency correct edges. */
+        AdjCor,
+
+        /** The number of adjacency false negative edges. */
+        AdjFn,
+
+        /** The number of adjacency false positive edges. */
+        AdjFp,
+
+        /** The number of arrowhead false positive edges. */
+        AhdCor,
+
+        /** The number of arrowhead false negative edges. */
+        AhdFn,
+
+        /** The number of arrowhead false positive edges. */
+        AhdFp,
+
+        /** The structural Hamming distance. */
+        SHD,
+
+        /** The adjacency precision. */
+        AdjPrec,
+
+        /** The adjacency recall. */
+        AdjRec,
+
+        /** The arrowhead precision. */
+        AhdPrec,
+
+        /** The arrowhead recall. */
+        AhdRec,
+
+        /** The elapsed time. */
+        Elapsed
     }
 }

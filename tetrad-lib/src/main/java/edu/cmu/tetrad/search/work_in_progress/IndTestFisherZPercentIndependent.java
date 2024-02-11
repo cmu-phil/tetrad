@@ -47,15 +47,35 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @version $Id: $Id
  */
 public final class IndTestFisherZPercentIndependent implements IndependenceTest {
+
+    /** The variables. */
     private final List<Node> variables;
+
+    /** The data sets. */
     private final List<DataSet> dataSets;
+
+    /** The rows. */
     private final int[] rows;
+
+    /** The data. */
     private final List<Matrix> data;
+
+    /** The ncov. */
     private final List<Matrix> ncov;
+
+    /** The alpha. */
     private final Map<Node, Integer> variablesMap;
+
+    /** The alpha. */
     private double alpha;
+
+    /** The percent. */
     private double percent = .75;
+
+    /** The fdr. */
     private boolean fdr = true;
+
+    /** whether to print verbose output */
     private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
@@ -224,7 +244,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      * <p>Getter for the field <code>data</code>.</p>
      *
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
-     * @throws java.lang.UnsupportedOperationException
+     * @throws java.lang.UnsupportedOperationException if any.
      */
     public DataSet getData() {
         return DataTransforms.concatenate(this.dataSets);

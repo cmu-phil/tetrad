@@ -42,9 +42,26 @@ import java.util.*;
  * @version $Id: $Id
  */
 public class GraphoidAxioms {
+
+    /**
+     * A set of GraphoidIndFacts.
+     */
     private final Set<GraphoidIndFact> facts;
+
+    /**
+     * The list of nodes.
+     */
     private final List<Node> nodes;
+
+    /**
+     * Whether triviality is assumed.
+     */
     private boolean trivialtyAssumed = false;
+
+    /**
+     * A map from GraphoidIndFacts to String text specs. The text specs are used for printing information to the user
+     * about which facts are found or are missing.
+     */
     private Map<GraphoidAxioms.GraphoidIndFact, String> textSpecs = null;
 
     /**
@@ -581,10 +598,29 @@ public class GraphoidAxioms {
      * Represents a graphoid independence fact--i.e., a fact in a general independence model (IM) X _||_Y | Z.
      */
     public static class GraphoidIndFact {
+
+        /**
+         * The set of nodes X.
+         */
         private final Set<Node> X;
+
+        /**
+         * The set of nodes Y.
+         */
         private final Set<Node> Y;
+
+        /**
+         * The set of nodes Z.
+         */
         private final Set<Node> Z;
 
+        /**
+         * Constructor.
+         *
+         * @param X The set of nodes X.
+         * @param Y The set of nodes Y.
+         * @param Z The set of nodes Z.
+         */
         public GraphoidIndFact(Set<Node> X, Set<Node> Y, Set<Node> Z) {
             if (X.isEmpty() || Y.isEmpty()) throw new IllegalArgumentException("X or Y is empty");
             if (!disjoint(X, Y, Z)) throw new IllegalArgumentException();
@@ -594,27 +630,58 @@ public class GraphoidAxioms {
             this.Z = new HashSet<>(Z);
         }
 
+        /**
+         * Returns the set of nodes X.
+         *
+         * @return The set of nodes X.
+         */
         public Set<Node> getX() {
             return new HashSet<>(X);
         }
 
+        /**
+         * Returns the set of nodes Y.
+         *
+         * @return The set of nodes Y.
+         */
         public Set<Node> getY() {
             return new HashSet<>(Y);
         }
 
+        /**
+         * Returns the set of nodes Z.
+         *
+         * @return The set of nodes Z.
+         */
         public Set<Node> getZ() {
             return new HashSet<>(Z);
         }
 
+        /**
+         * Returns the hash code.
+         *
+         * @return The hash code.
+         */
         public int hashCode() {
             return 1;
         }
 
+        /**
+         * Returns whether this object is equal to another.
+         *
+         * @param o The other object.
+         * @return True, if so.
+         */
         public boolean equals(Object o) {
             if (!(o instanceof GraphoidIndFact _fact)) return false;
             return X.equals(_fact.X) && Y.equals(_fact.Y) && Z.equals(_fact.Z);
         }
 
+        /**
+         * Returns a string representation of this object.
+         *
+         * @return A string representation of this object.
+         */
         public String toString() {
             return X + " : " + Y + " | " + Z;
         }

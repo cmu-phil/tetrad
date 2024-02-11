@@ -2243,22 +2243,49 @@ public final class GraphUtils {
         return _graph;
     }
 
+    /**
+     * The counts of different types of edges.
+     */
     private static class Counts {
 
+        /**
+         * The counts.
+         */
         private final int[][] counts;
 
+        /**
+         * Constructs a new Counts.
+         */
         public Counts() {
             this.counts = new int[8][6];
         }
 
+        /**
+         * Increments the count for the given edge type.
+         *
+         * @param m a int
+         * @param n a int
+         */
         public void increment(int m, int n) {
             this.counts[m][n]++;
         }
 
+        /**
+         * Returns the count for the given edge type.
+         *
+         * @param m a int
+         * @param n a int
+         * @return a int
+         */
         public int getCount(int m, int n) {
             return this.counts[m][n];
         }
 
+        /**
+         * Adds the counts of another Counts object to this one.
+         *
+         * @param counts2 a {@link edu.cmu.tetrad.graph.GraphUtils.Counts} object
+         */
         public void addAll(Counts counts2) {
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 6; j++) {
@@ -2267,47 +2294,125 @@ public final class GraphUtils {
             }
         }
 
+        /**
+         * Returns the counts.
+         *
+         * @return a int[][]
+         */
         public int[][] countArray() {
             return this.counts;
         }
     }
 
+    /**
+     * Graph comparison.
+     */
     public static class GraphComparison {
 
+        /**
+         * Counts.
+         */
         private final int[][] counts;
+
+        /**
+         * Adjacency false negatives.
+         */
         private final int adjFn;
+
+        /**
+         * Adjacency false positives.
+         */
         private final int adjFp;
+
+        /**
+         * Adjacency correct.
+         */
         private final int adjCorrect;
-        private final int arrowptFn;
-        private final int arrowptFp;
-        private final int arrowptCorrect;
 
+        /**
+         * Arrowhead false negatives.
+         */
+        private final int ahdFn;
+
+        /**
+         * Arrowhead false positives.
+         */
+        private final int ahdFp;
+
+        /**
+         * Arrowhead correct.
+         */
+        private final int ahdCorrect;
+
+        /**
+         * Adjacency precision.
+         */
         private final double adjPrec;
-        private final double adjRec;
-        private final double arrowptPrec;
-        private final double arrowptRec;
 
+        /**
+         * Adjacency recall.
+         */
+        private final double adjRec;
+
+        /**
+         * Arrowhead precision.
+         */
+        private final double ahdPrec;
+
+        /**
+         * Arrowhead recall.
+         */
+        private final double ahdRec;
+
+        /**
+         * Structural Hamming distance.
+         */
         private final int shd;
 
+        /**
+         * Edges added.
+         */
         private final List<Edge> edgesAdded;
+
+        /**
+         * Edges removed.
+         */
         private final List<Edge> edgesRemoved;
 
-        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int arrowptFn, int arrowptFp,
-                               int arrowptCorrect, double adjPrec, double adjRec, double arrowptPrec,
-                               double arrowptRec, int shd,
+        /**
+         * Constructs a new GraphComparison.
+         *
+         * @param adjFn        a int
+         * @param adjFp        a int
+         * @param adjCorrect   a int
+         * @param ahdFn        a int
+         * @param ahdFp        a int
+         * @param ahdCorrect   a int
+         * @param adjPrec      a double
+         * @param adjRec       a double
+         * @param ahdPrec      a double
+         * @param ahdRec       a double
+         * @param shd          a int
+         * @param edgesAdded   a {@link java.util.List} object
+         * @param edgesRemoved a {@link java.util.List} object
+         * @param counts       a int[][]
+         */
+        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int ahdFn, int ahdFp,
+                               int ahdCorrect, double adjPrec, double adjRec, double ahdPrec,
+                               double ahdRec, int shd,
                                List<Edge> edgesAdded, List<Edge> edgesRemoved,
                                int[][] counts) {
             this.adjFn = adjFn;
             this.adjFp = adjFp;
             this.adjCorrect = adjCorrect;
-            this.arrowptFn = arrowptFn;
-            this.arrowptFp = arrowptFp;
-            this.arrowptCorrect = arrowptCorrect;
+            this.ahdFn = ahdFn;
+            this.ahdFp = ahdFp;
+            this.ahdCorrect = ahdCorrect;
 
             this.adjPrec = adjPrec;
             this.adjRec = adjRec;
-            this.arrowptPrec = arrowptPrec;
-            this.arrowptRec = arrowptRec;
+            this.ahdPrec = ahdPrec;
+            this.ahdRec = ahdRec;
 
             this.shd = shd;
             this.edgesAdded = edgesAdded;
@@ -2316,74 +2421,157 @@ public final class GraphUtils {
             this.counts = counts;
         }
 
+        /**
+         * Returns the adjacency false negatives.
+         * @return the adjacency false negatives.
+         */
         public int getAdjFn() {
             return this.adjFn;
         }
 
+        /**
+         * Returns the adjacency false positives.
+         * @return the adjacency false positives.
+         */
         public int getAdjFp() {
             return this.adjFp;
         }
 
+        /**
+         * Returns the adjacency correct.
+         * @return the adjacency correct.
+         */
         public int getAdjCor() {
             return this.adjCorrect;
         }
 
+        /**
+         * Returns the arrowhead false negatives.
+         * @return the arrowhead false negatives.
+         */
         public int getAhdFn() {
-            return this.arrowptFn;
+            return this.ahdFn;
         }
 
+        /**
+         * Returns the arrowhead false positives.
+         * @return the arrowhead false positives.
+         */
         public int getAhdFp() {
-            return this.arrowptFp;
+            return this.ahdFp;
         }
 
+        /**
+         * Returns the arrowhead correct.
+         * @return the arrowhead correct.
+         */
         public int getAhdCor() {
-            return this.arrowptCorrect;
+            return this.ahdCorrect;
         }
 
+        /**
+         * Returns the adjacency precision.
+         * @return the adjacency precision.
+         */
         public int getShd() {
             return this.shd;
         }
 
+        /**
+         * Returns the edges added.
+         * @return the edges added.
+         */
         public List<Edge> getEdgesAdded() {
             return this.edgesAdded;
         }
 
+        /**
+         * Returns the edges removed.
+         * @return the edges removed.
+         */
         public List<Edge> getEdgesRemoved() {
             return this.edgesRemoved;
         }
 
+        /**
+         * Returns the adjaency precision.
+         * @return the adjacency precision.
+         */
         public double getAdjPrec() {
             return this.adjPrec;
         }
 
+        /**
+         * Returns the adjacency recall.
+         * @return the adjacency recall.
+         */
         public double getAdjRec() {
             return this.adjRec;
         }
 
+        /**
+         * Returns the arrowhead precision.
+         * @return the arrowhead precision.
+         */
         public double getAhdPrec() {
-            return this.arrowptPrec;
+            return this.ahdPrec;
         }
 
+        /**
+         * Returns the arrowhead recall.
+         * @return the arrowhead recall.
+         */
         public double getAhdRec() {
-            return this.arrowptRec;
+            return this.ahdRec;
         }
 
+        /**
+         * Returns the counts.
+         * @return the counts.
+         */
         public int[][] getCounts() {
             return this.counts;
         }
     }
 
+    /**
+     * Two-cycle errors.
+     */
     public static class TwoCycleErrors {
+
+        /**
+         * The number of correct edges.
+         */
         public int twoCycCor;
+
+        /**
+         * The number of false negatives.
+         */
         public int twoCycFn;
+
+        /**
+         * The number of false positives.
+         */
         public int twoCycFp;
 
+        /**
+         * Constructs a new TwoCycleErrors.
+         *
+         * @param twoCycCor the number of correct edges.
+         * @param twoCycFn  the number of false negatives.
+         * @param twoCycFp  the number of false positives.
+         */
         public TwoCycleErrors(int twoCycCor, int twoCycFn, int twoCycFp) {
             this.twoCycCor = twoCycCor;
             this.twoCycFn = twoCycFn;
             this.twoCycFp = twoCycFp;
         }
 
+        /**
+         * Returns a string representation of this object.
+         *
+         * @return a string representation of this object.
+         */
         public String toString() {
             return "2c cor = " + this.twoCycCor + "\t" + "2c fn = " + this.twoCycFn + "\t" + "2c fp = " + this.twoCycFp;
         }

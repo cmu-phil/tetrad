@@ -936,7 +936,13 @@ public class Ftfc {
      * time. GAP (Grow and Pick) grows out all the cluster initially and then just picks from among these. SAG is
      * generally faster; GAP is generally slower but more accurate.
      */
-    public enum Algorithm {SAG, GAP}
+    public enum Algorithm {
+
+        /** The SAG algorithm. */
+        SAG,
+
+        /** The GAP algorithm. */
+        GAP}
 }
 
 

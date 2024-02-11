@@ -7,9 +7,25 @@ package edu.cmu.tetrad.sem;
  * @version $Id: $Id
  */
 public enum ScoreType {
+
+    /**
+     * The FGLS score
+     */
     Fgls,
+
+    /**
+     * The FML score
+     */
     Fml,
+
+    /**
+     * The BIC score
+     */
     SemBic,
+
+    /**
+     * the BDeu score
+     */
     BDeu
 
 }

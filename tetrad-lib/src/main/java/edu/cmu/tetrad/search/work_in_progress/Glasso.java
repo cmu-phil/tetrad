@@ -638,10 +638,20 @@ public class Glasso {
          */
         private final Matrix wwi;
 
+        /**
+         * <p>Constructor for Result.</p>
+         *
+         * @param wwi a {@link edu.cmu.tetrad.util.Matrix} object
+         */
         public Result(Matrix wwi) {
             this.wwi = wwi;
         }
 
+        /**
+         * <p>Getter for the field <code>wwi</code>.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.util.Matrix} object
+         */
         public Matrix getWwi() {
             return this.wwi;
         }

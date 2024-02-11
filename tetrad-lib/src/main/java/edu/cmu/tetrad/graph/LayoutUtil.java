@@ -347,6 +347,11 @@ public class LayoutUtil {
 
         //==============================CONSTRUCTORS===========================//
 
+        /**
+         * Constructs a new Kamada-Kawai layout for the given graph.
+         *
+         * @param graph the graph to be laid out.
+         */
         public KamadaKawaiLayout(Graph graph) {
             if (graph == null) {
                 throw new NullPointerException();
@@ -357,6 +362,9 @@ public class LayoutUtil {
 
         //============================PUBLIC METHODS==========================//
 
+        /**
+         * Lays out the graph.
+         */
         public void doLayout() {
             defaultLayout(this.graph);
 
@@ -387,6 +395,13 @@ public class LayoutUtil {
             return this.randomlyInitialized;
         }
 
+        /**
+         * Sets whether the spring layout should start from a randomlyInitialized position or from the getModel positions of
+         * the nodes.
+         *
+         * @param randomlyInitialized true if the spring layout should start from a randomlyInitialized position, false if the
+         *                            spring layout should start from the getModel positions of the nodes.
+         */
         public void setRandomlyInitialized(boolean randomlyInitialized) {
             this.randomlyInitialized = randomlyInitialized;
         }
@@ -395,6 +410,11 @@ public class LayoutUtil {
             return this.stopEnergy;
         }
 
+        /**
+         * Sets the max delta at which the algorithm will stop settling.
+         *
+         * @param stopEnergy the max delta at which the algorithm will stop settling.
+         */
         public void setStopEnergy(double stopEnergy) {
             if (stopEnergy <= 0.0) {
                 throw new IllegalArgumentException(
@@ -409,6 +429,11 @@ public class LayoutUtil {
             return this.naturalEdgeLength;
         }
 
+        /**
+         * Sets the natural length of an edge.
+         *
+         * @param naturalEdgeLength the natural length of an edge.
+         */
         public void setNaturalEdgeLength(double naturalEdgeLength) {
             if (naturalEdgeLength < 0.0) {
                 throw new IllegalArgumentException(
@@ -422,6 +447,11 @@ public class LayoutUtil {
             return this.springConstant;
         }
 
+        /**
+         * Sets the spring constant; higher for more elasticity.
+         *
+         * @param springConstant the spring constant; higher for more elasticity.
+         */
         public void setSpringConstant(double springConstant) {
             if (springConstant < 0.0) {
                 throw new IllegalArgumentException(
@@ -808,6 +838,11 @@ public class LayoutUtil {
 
         //==============================CONSTRUCTORS===========================//
 
+        /**
+         * Constructs a new FruchtermanReingoldLayout for the given graph.
+         *
+         * @param graph the graph to be laid out.
+         */
         public FruchtermanReingoldLayout(Graph graph) {
             if (graph == null) {
                 throw new NullPointerException();
@@ -818,6 +853,9 @@ public class LayoutUtil {
 
         //============================PUBLIC METHODS==========================//
 
+        /**
+         * Lays out the graph.
+         */
         public void doLayout() {
             defaultLayout(this.graph);
 

@@ -761,7 +761,15 @@ public class RandomGraph {
      * @author josephramsey
      */
     public static final class UniformGraphGenerator {
+
+        /**
+         * Any DAG uniformly selected
+         */
         public static final int ANY_DAG = 0;
+
+        /**
+         * Connected DAG uniformly selected
+         */
         public static final int CONNECTED_DAG = 1;
 
         /**
@@ -898,6 +906,11 @@ public class RandomGraph {
             return this.maxInDegree;
         }
 
+        /**
+         * Sets the maximum indegree of any node in the graph.
+         *
+         * @param maxInDegree An integer between 1 and numNodes - 1, inclusively.
+         */
         public void setMaxInDegree(int maxInDegree) {
             if (UniformGraphGenerator.ANY_DAG == getStructure() && getMaxInDegree() < 0) {
                 throw new IllegalArgumentException("Max indegree must be >= 1 " + "when generating DAGs without the assumption of " + "connectedness.");
@@ -912,6 +925,11 @@ public class RandomGraph {
             return this.maxOutDegree;
         }
 
+        /**
+         * Sets the maximum outdegree of any node in the graph.
+         *
+         * @param maxOutDegree An integer between 1 and numNodes - 1, inclusively.
+         */
         public void setMaxOutDegree(int maxOutDegree) {
             if (UniformGraphGenerator.ANY_DAG == getStructure() && getMaxInDegree() < 1) {
                 throw new IllegalArgumentException("Max indegree must be >= 1 " + "when generating DAGs without the assumption of " + "connectedness.");
@@ -928,6 +946,11 @@ public class RandomGraph {
             return this.maxEdges;
         }
 
+        /**
+         * Sets the maximum number of edges in the graph.
+         *
+         * @param maxEdges An integer between 0 and numNodes * (numNodes - 1) / 2, inclusively.
+         */
         public void setMaxEdges(int maxEdges) {
             if (maxEdges < 0) {
                 throw new IllegalArgumentException("Max edges must be >= 0.");
@@ -948,6 +971,11 @@ public class RandomGraph {
             return this.numIterations;
         }
 
+        /**
+         * Sets the number of iterations for the Markov chain process.
+         *
+         * @param numIterations An integer &gt;= 1.
+         */
         public void setNumIterations(int numIterations) {
             this.numIterations = numIterations;
         }
@@ -956,6 +984,9 @@ public class RandomGraph {
             return this.structure;
         }
 
+        /**
+         * Generates a random graph.
+         */
         public void generate() {
             if (UniformGraphGenerator.ANY_DAG == getStructure()) {
                 generateArbitraryDag();
@@ -966,6 +997,11 @@ public class RandomGraph {
             }
         }
 
+        /**
+         * Returns the parent matrix for the graph.
+         *
+         * @return The parent matrix.
+         */
         public Graph getDag() {
             //System.out.println("Converting to DAG");
 
@@ -987,9 +1023,16 @@ public class RandomGraph {
             return getDag(nodes);
         }
 
+        /**
+         * Returns the parent matrix for the graph.
+         *
+         * @param nodes The nodes to use in the graph.
+         * @return The parent matrix.
+         */
         public Graph getDag(List<Node> nodes) {
             if (nodes.size() != getNumNodes()) {
-                throw new IllegalArgumentException("Only " + nodes.size() + " nodes were provided, but the " + "simulated graph has " + getNumNodes() + ".");
+                throw new IllegalArgumentException("Only " + nodes.size() + " nodes were provided, but the "
+                        + "simulated graph has " + getNumNodes() + ".");
             }
 
             Graph dag = new EdgeListGraph(nodes);
@@ -1014,6 +1057,9 @@ public class RandomGraph {
             return dag;
         }
 
+        /**
+         * Prints the parent matrix for the graph.
+         */
         public void printEdges() {
             System.out.println("Edges:");
             for (int i = 0; i < getNumNodes(); i++) {
@@ -1023,6 +1069,9 @@ public class RandomGraph {
             }
         }
 
+        /**
+         * A string representation of the structural information for the generated graph.
+         */
         public String toString() {
             return "\nStructural information for generated graph:" + "\n\tNumber of nodes:" + getNumNodes() + "\n\tMax degree for each node:" + getMaxDegree() + "\n\tMaximum number of incoming edges for each node:" + getMaxInDegree() + "\n\tMaximum number of outgoing edges for each node:" + getMaxOutDegree() + "\n\tMaximum total number of edges:" + getMaxEdges() + " of " + getNumNodes() * getMaxDegree() / 2 + " possibles" + "\n\tNumber of transitions between samples:" + getNumIterations();
         }

@@ -43,15 +43,25 @@ public class SearchWrappers {
      * Abstract class for search algorithm wrappers.
      */
     public static class PcStableWrapper extends DataGraphSearch {
-        //should be one param for the alpha level of the independance test
+        /**
+         * Constructor.
+         *
+         * @param params Parameters. Should be one param for the alpha level of the independence test.
+         */
         public PcStableWrapper(double... params) {
             super(params);
         }
 
+        /**
+         * Copy constructor.
+         */
         public PcStableWrapper copy() {
             return new PcStableWrapper(this.searchParams);
         }
 
+        /**
+         * Search method.
+         */
         public Graph search(DataSet ds) {
             IndTestMultinomialLogisticRegression indTest = new IndTestMultinomialLogisticRegression(ds, this.searchParams[0]);
             Pc pcs = new Pc(indTest);
@@ -95,6 +105,8 @@ public class SearchWrappers {
 
         /**
          * Constructor.
+         *
+         * @param params parameters
          */
         public FgesWrapper(double... params) {
             super(params);
@@ -102,6 +114,8 @@ public class SearchWrappers {
 
         /**
          * Copy constructor.
+         *
+         * @return a copy of the wrapper
          */
         public FgesWrapper copy() {
             return new FgesWrapper(this.searchParams);
@@ -109,6 +123,9 @@ public class SearchWrappers {
 
         /**
          * Search method.
+         *
+         * @param ds data set
+         * @return a graph
          */
         public Graph search(DataSet ds) {
             SemBicScore score = new SemBicScore(new CovarianceMatrix(MixedUtils.makeContinuousData(ds)));

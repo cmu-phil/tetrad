@@ -375,23 +375,52 @@ public class ConditionalGaussianLikelihood {
      * for it.
      */
     public static final class Ret {
+
+        /**
+         * The likelihood.
+         */
         private final double lik;
+
+        /**
+         * The degrees of freedom.
+         */
         private final int dof;
 
+        /**
+         * Constructs a return value for a conditional Gaussian likelihood.
+         *
+         * @param lik The likelihood.
+         * @param dof The degrees of freedom.
+         */
         @Contract(pure = true)
         private Ret(double lik, int dof) {
             this.lik = lik;
             this.dof = dof;
         }
 
+        /**
+         * Returns the likelihood.
+         *
+         * @return The likelihood.
+         */
         public double getLik() {
             return this.lik;
         }
 
+        /**
+         * Returns the degrees of freedom.
+         *
+         * @return The degrees of freedom.
+         */
         public int getDof() {
             return this.dof;
         }
 
+        /**
+         * Returns a string representation of this object.
+         *
+         * @return A string representation of this object.
+         */
         public String toString() {
             return "lik = " + this.lik + " dof = " + this.dof;
         }

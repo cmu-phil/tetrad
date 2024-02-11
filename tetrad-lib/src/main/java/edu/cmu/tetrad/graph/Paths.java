@@ -1992,8 +1992,16 @@ public class Paths implements TetradSerializable {
         return existsSemiDirectedPath(node1, Collections.singleton(node2));
     }
 
+    /**
+     * An algorithm to find all cliques in a graph.
+     */
     public static class AllCliquesAlgorithm {
 
+        /**
+         * Main method.
+         *
+         * @param args the command-line arguments
+         */
         public static void main(String[] args) {
             int[][] graph = {
                     {0, 1, 1, 0, 0},
@@ -2011,6 +2019,13 @@ public class Paths implements TetradSerializable {
             }
         }
 
+        /**
+         * Find all cliques in a graph.
+         *
+         * @param graph the graph
+         * @param n     the number of vertices in the graph
+         * @return a list of cliques
+         */
         public static List<List<Integer>> findCliques(int[][] graph, int n) {
             List<List<Integer>> cliques = new ArrayList<>();
             Set<Integer> candidates = new HashSet<>();

@@ -25,7 +25,7 @@ public class ExploreComparison {
     private void runFromSimulation() {
         ComparisonParameters params = new ComparisonParameters();
         params.setDataType(ComparisonParameters.DataType.Continuous);
-        params.setAlgorithm(ComparisonParameters.Algorithm.FGES2);
+        params.setAlgorithm(ComparisonParameters.Algorithm.FGES);
 //        params.setIndependenceTest(ComparisonParameters.IndependenceTestType.FisherZ);
         params.setScore(ScoreType.SemBic);
 //        params.setOneEdgeFaithfulnessAssumed(false);

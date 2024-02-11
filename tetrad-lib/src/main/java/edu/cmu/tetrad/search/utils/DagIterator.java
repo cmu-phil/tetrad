@@ -77,8 +77,6 @@ public class DagIterator {
      * @return a Graph instead of a DAG because sometimes, due to faulty patterns, a cyclic graph is produced, and the
      * end-user may need to decide what to do with it. The simplest thing is to construct a DAG (Dag(graph)) and catch
      * an exception.
-     *
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph next() {
         if (this.storedDag != null) {

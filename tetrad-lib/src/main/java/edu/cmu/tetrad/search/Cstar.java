@@ -729,16 +729,24 @@ public class Cstar {
      */
     public enum CpdagAlgorithm {
 
-        /** The PC_STABLE algorithm. */
+        /**
+         * The PC_STABLE algorithm.
+         */
         PC_STABLE,
 
-        /** The FGES algorithm. */
+        /**
+         * The FGES algorithm.
+         */
         FGES,
 
-        /** The BOSS algorihtm. */
+        /**
+         * The BOSS algorihtm.
+         */
         BOSS,
 
-        /** The RESTRICTED_BOSS algorithm. */
+        /**
+         * The RESTRICTED_BOSS algorithm.
+         */
         RESTRICTED_BOSS
     }
 
@@ -747,10 +755,14 @@ public class Cstar {
      */
     public enum SampleStyle {
 
-        /** Use bootstrap. */
+        /**
+         * Use bootstrap.
+         */
         BOOTSTRAP,
 
-        /** Use subsample. */
+        /**
+         * Use subsample.
+         */
         SUBSAMPLE
     }
 
@@ -810,37 +822,94 @@ public class Cstar {
             this.numEffects = numEffects;
         }
 
+        /**
+         * <p>getCauseNode.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Node} object
+         */
         public Node getCauseNode() {
             return this.causeNode;
         }
 
+        /**
+         * <p>getEffectNode.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Node} object
+         */
         public Node getEffectNode() {
             return this.target;
         }
 
+        /**
+         * <p>getPi.</p>
+         *
+         * @return a double
+         */
         public double getPi() {
             return this.pi;
         }
 
+        /**
+         * <p>getMinBeta.</p>
+         *
+         * @return a double
+         */
         double getMinBeta() {
             return this.effect;
         }
 
+        /**
+         * <p>getNumCauses.</p>
+         *
+         * @return a int
+         */
         public int getNumCauses() {
             return this.numCauses;
         }
 
+        /**
+         * <p>getNumEffects.</p>
+         *
+         * @return a int
+         */
         public int getNumEffects() {
             return this.numEffects;
         }
     }
 
+    /**
+     * A tuple.
+     */
     private static class Tuple {
+
+        /**
+         * The cause node.
+         */
         private final Node cause;
+
+        /**
+         * The effect node.
+         */
         private final Node effect;
+
+        /**
+         * The percentage of the time the predictor is a cause of the target across subsamples.
+         */
         private final double pi;
+
+        /**
+         * The minimum effect size of the predictor on the target across subsamples calculated by IDA.
+         */
         private final double minBeta;
 
+        /**
+         * For X->Y.
+         *
+         * @param cause    X (the cause)
+         * @param effect   Y (the effect)
+         * @param pi       The percentage of the time the predictor is a cause of the target across subsamples.
+         * @param minBeta  The minimum effect size of the predictor on the target across subsamples calculated by IDA
+         */
         private Tuple(Node cause, Node effect, double pi, double minBeta) {
             this.cause = cause;
             this.effect = effect;
@@ -848,18 +917,38 @@ public class Cstar {
             this.minBeta = minBeta;
         }
 
+        /**
+         * <p>getCauseNode.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Node} object
+         */
         public Node getCauseNode() {
             return this.cause;
         }
 
+        /**
+         * <p>getEffectNode.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Node} object
+         */
         public Node getEffectNode() {
             return this.effect;
         }
 
+        /**
+         * <p>getPi.</p>
+         *
+         * @return a double
+         */
         public double getPi() {
             return this.pi;
         }
 
+        /**
+         * <p>getMinBeta.</p>
+         *
+         * @return a double
+         */
         public double getMinBeta() {
             return this.minBeta;
         }

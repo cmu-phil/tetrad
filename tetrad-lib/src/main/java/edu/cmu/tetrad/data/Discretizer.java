@@ -360,6 +360,9 @@ public class Discretizer {
         return newDataSet;
     }
 
+    /**
+     * A discretization specification for a continuous variable.
+     */
     public static class Discretization {
         /**
          * The variable that was discretized.
@@ -394,6 +397,9 @@ public class Discretizer {
             return this.data;
         }
 
+        /**
+         * @return - string representation of the discretization.
+         */
         public final String toString() {
             StringBuilder buf = new StringBuilder();
             buf.append("\n\nDiscretization:");

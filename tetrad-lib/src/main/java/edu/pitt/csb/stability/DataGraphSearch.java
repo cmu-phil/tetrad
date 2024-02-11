@@ -31,6 +31,10 @@ import edu.cmu.tetrad.graph.Graph;
  * @version $Id: $Id
  */
 public abstract class DataGraphSearch {
+
+    /**
+     * <p>searchParams.</p>
+     */
     public final double[] searchParams;
 
     /**
