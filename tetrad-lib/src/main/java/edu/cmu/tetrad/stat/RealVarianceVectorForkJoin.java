@@ -20,6 +20,7 @@ package edu.cmu.tetrad.stat;
 
 import edu.cmu.tetrad.util.ForkJoinUtils;
 
+import java.io.Serial;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
@@ -76,6 +77,7 @@ public class RealVarianceVectorForkJoin implements RealVariance {
 
     class VarianceAction extends RecursiveAction {
 
+        @Serial
         private static final long serialVersionUID = 8630127061304877790L;
 
         private final double[][] data;
