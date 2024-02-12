@@ -331,7 +331,6 @@ public class RfciBsc implements IGraphSearch {
 
             ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
             pool.invokeAll(tasks);
-            shutdownAndAwaitTermination(pool);
             trial++;
         }
 
@@ -397,7 +396,6 @@ public class RfciBsc implements IGraphSearch {
 
         ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
         pool.invokeAll(tasks);
-        shutdownAndAwaitTermination(pool);
 
         // learn structure of constraints using empirical data => constraint data
         BdeuScore sd = new BdeuScore(depData);
@@ -461,7 +459,6 @@ public class RfciBsc implements IGraphSearch {
 
         pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
         pool.invokeAll(tasks);
-        shutdownAndAwaitTermination(pool);
 
         for (int i = 0; i < this.pAGs.size(); i++) {
             Graph pagOrig = this.pAGs.get(i);

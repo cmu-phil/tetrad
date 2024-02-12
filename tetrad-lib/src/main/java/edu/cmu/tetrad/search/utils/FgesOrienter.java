@@ -859,7 +859,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
                     tasks.add(new AdjTask(this.pairs, this.from, mid));
                     tasks.add(new AdjTask(this.pairs, mid, this.to));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    invokeAll(tasks);
 
                 }
                 return true;

@@ -11,6 +11,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.task.GeneralResamplingSearchRunnable;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
@@ -21,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
@@ -296,60 +296,43 @@ public class GeneralResamplingSearch {
         }
 
         int numNoGraph = 0;
+        List<Future<Graph>> futures = this.pool.invokeAll(tasks);
 
-        if (this.runParallel) {
-            List<Future<Graph>> futures = this.pool.invokeAll(tasks);
-            for (Future<Graph> future : futures) {
-                Graph graph;
-                try {
-                    graph = future.get();
+        for (Future<Graph> future : futures) {
+            try {
+                Graph graph = future.get();
 
-                    if (graph == null) {
-                        numNograph++;
-                    } else {
-                        this.graphs.add(graph);
-                    }
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
+                if (graph == null) {
+                    numNograph++;
+                } else {
+                    this.graphs.add(graph);
                 }
-            }
-        } else {
-            for (Callable<Graph> callable : tasks) {
-                try {
-                    Graph graph = callable.call();
-
-                    if (graph == null) {
-                        numNoGraph++;
-                    } else {
-                        this.graphs.add(graph);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            } catch (Exception e) {
+                TetradLogger.getInstance().forceLogMessage("Error in GeneralResamplingSearch: " + e.getMessage());
             }
         }
 
-        this.parameters.set("numberResampling", this.numberResampling);
-        this.numNograph = numNoGraph;
+        this.parameters.set("numberResampling",this.numberResampling);
+        this.numNograph =numNoGraph;
 
         return this.graphs;
-    }
+}
 
-    /**
-     * Returns the number of no graph.
-     *
-     * @return the number of no graph.
-     */
-    public int getNumNograph() {
-        return numNograph;
-    }
+/**
+ * Returns the number of no graph.
+ *
+ * @return the number of no graph.
+ */
+public int getNumNograph() {
+    return numNograph;
+}
 
-    /**
-     * Returns the score wrapper.
-     *
-     * @param scoreWrapper a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
-     */
-    public void setScoreWrapper(ScoreWrapper scoreWrapper) {
-        this.scoreWrapper = scoreWrapper;
-    }
+/**
+ * Returns the score wrapper.
+ *
+ * @param scoreWrapper a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+ */
+public void setScoreWrapper(ScoreWrapper scoreWrapper) {
+    this.scoreWrapper = scoreWrapper;
+}
 }

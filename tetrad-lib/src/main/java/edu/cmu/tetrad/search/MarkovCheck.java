@@ -11,6 +11,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.RowsSettable;
 import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.SublistGenerator;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
@@ -640,13 +641,8 @@ public class MarkovCheck {
         if (parallelized) {
             ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
 
-            List<Future<Pair<Set<IndependenceFact>, Set<IndependenceFact>>>> theseResults
-                    = null;
-            try {
-                theseResults = pool.invokeAll(tasks);
-            } catch (Exception e) {
-                Thread.currentThread().interrupt();
-            }
+            List<Future<Pair<Set<IndependenceFact>, Set<IndependenceFact>>>> theseResults;
+            theseResults = pool.invokeAll(tasks);
 
             for (Future<Pair<Set<IndependenceFact>, Set<IndependenceFact>>> future : theseResults) {
                 try {
@@ -654,8 +650,7 @@ public class MarkovCheck {
                     msep.addAll(setPair.getFirst());
                     mconn.addAll(setPair.getSecond());
                 } catch (InterruptedException | ExecutionException e) {
-                    ForkJoin.getInstance().getPool().shutdownNow();
-                    Thread.currentThread().interrupt();
+                    TetradLogger.getInstance().forceLogMessage(e.getMessage());
                 }
             }
 
@@ -743,20 +738,14 @@ public class MarkovCheck {
         if (parallelized) {
             ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
             List<Future<Pair<Set<IndependenceResult>, Set<IndependenceResult>>>> theseResults = null;
-            try {
-                theseResults = pool.invokeAll(tasks);
-            } catch (Exception e) {
-                Thread.currentThread().interrupt();
-                throw e;
-            }
+            theseResults = pool.invokeAll(tasks);
 
             for (Future<Pair<Set<IndependenceResult>, Set<IndependenceResult>>> future : theseResults) {
                 try {
                     resultsIndep.addAll(future.get().getFirst());
                     resultsDep.addAll(future.get().getSecond());
                 } catch (InterruptedException | ExecutionException e) {
-                    ForkJoin.getInstance().getPool().shutdownNow();
-                    Thread.currentThread().interrupt();
+                    TetradLogger.getInstance().forceLogMessage(e.getMessage());
                 }
             }
 

@@ -96,7 +96,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
     //    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
-    private final ForkJoinPool pool;
+    private ForkJoinPool pool;
     //    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
     private boolean faithfulnessAssumed = false;
     // Specification of forbidden and required edges.
@@ -135,7 +135,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
     // True, if FGES should run in a single thread, no if parallelized.
-    private boolean parallelized = false;
+    private int numThreads = 1;
 
     /**
      * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
@@ -152,7 +152,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
         setScore(score);
         this.graph = new EdgeListGraph(getVariables());
-        this.pool = new ForkJoinPool(10 * Runtime.getRuntime().availableProcessors());
+        this.pool = new ForkJoinPool(numThreads);
     }
 
 
@@ -403,21 +403,14 @@ public final class Fges implements IGraphSearch, DagScorer {
             }
 
             NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, min(nodes.size(), i + chunkSize), nodes, emptySet);
-
-            if (!parallelized) {
-                task.call();
-            } else {
-                tasks.add(task);
-            }
+            tasks.add(task);
         }
 
-        if (parallelized) {
-            try {
-                pool.invokeAll(tasks);
-            } catch (Exception e) {
-                Thread.currentThread().interrupt();
-                throw e;
-            }
+        try {
+            pool.invokeAll(tasks);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -566,21 +559,14 @@ public final class Fges implements IGraphSearch, DagScorer {
             }
 
             AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
-
-            if (!this.parallelized) {
-                task.call();
-            } else {
-                tasks.add(task);
-            }
+            tasks.add(task);
         }
 
-        if (this.parallelized) {
-            try {
-                pool.invokeAll(tasks);
-            } catch (Exception e) {
-                Thread.currentThread().interrupt();
-                throw e;
-            }
+        try {
+            pool.invokeAll(tasks);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
         }
     }
 
@@ -670,35 +656,23 @@ public final class Fges implements IGraphSearch, DagScorer {
             }
 
             EvalTask task = new EvalTask(TT, i, min(TT.size(), i + chunkSize), hashIndices);
+            tasks.add(task);
+        }
 
-            if (!this.parallelized) {
-                EvalPair pair = task.call();
+        List<Future<EvalPair>> futures = null;
+        futures = pool.invokeAll(tasks);
 
+        for (Future<EvalPair> future : futures) {
+            try {
+                EvalPair pair = future.get();
                 if (pair.bump > maxBump) {
                     maxT = pair.T;
                     maxBump = pair.bump;
                 }
-            } else {
-                tasks.add(task);
-            }
-        }
-
-        if (this.parallelized) {
-            List<Future<EvalPair>> futures = null;
-            futures = pool.invokeAll(tasks);
-
-            for (Future<EvalPair> future : futures) {
-                try {
-                    EvalPair pair = future.get();
-                    if (pair.bump > maxBump) {
-                        maxT = pair.T;
-                        maxBump = pair.bump;
-                    }
-                } catch (InterruptedException | ExecutionException e) {
-                    Thread.currentThread().interrupt();
-                    TetradLogger.getInstance().forceLogMessage(e.getMessage());
-                    return;
-                }
+            } catch (InterruptedException | ExecutionException e) {
+                Thread.currentThread().interrupt();
+                TetradLogger.getInstance().forceLogMessage(e.getMessage());
+                return;
             }
         }
 
@@ -1061,12 +1035,14 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * <p>Setter for the field <code>parallelized</code>.</p>
+     * Sets the number of threads to use. By default, the number of threads is 1.
      *
-     * @param parallelized a boolean
+     * @param numThreads The number of threads to use. Must be at least 1.
      */
-    public void setParallelized(boolean parallelized) {
-        this.parallelized = parallelized;
+    public void setNumThreads(int numThreads) {
+        if (numThreads < 1) throw new IllegalArgumentException("numThreads must be at least 1.");
+        this.numThreads = numThreads;
+        this.pool = ForkJoin.getInstance().newPool(numThreads);
     }
 
     /**

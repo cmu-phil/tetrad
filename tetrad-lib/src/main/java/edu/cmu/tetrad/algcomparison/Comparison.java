@@ -52,8 +52,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 
 /**
  * Script to do a comparison of a list of algorithms using a list of statistics and a list of parameters and their
@@ -1018,21 +1018,15 @@ public class Comparison {
             }
         }
 
-        if (parallelized) {
-//            int parallelism = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
-            ForkJoinPool pool = (ForkJoinPool) Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
+        ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
 
-            try {
-                pool.invokeAll(tasks);
-            } catch (Exception e) {
-                Thread.currentThread().interrupt();
-                throw e;
-            }
-        } else {
-            for (Callable<Boolean> task : tasks) {
-                task.call();
-            }
+        try {
+            pool.invokeAll(tasks);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw  e;
         }
+
         return allStats;
     }
 

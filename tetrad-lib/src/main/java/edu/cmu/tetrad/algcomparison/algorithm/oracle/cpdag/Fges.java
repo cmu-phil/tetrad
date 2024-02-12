@@ -122,7 +122,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
             search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
-            search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
+            search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
 
             Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {

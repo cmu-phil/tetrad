@@ -699,28 +699,16 @@ public class Cstar {
 
         List<double[][]> results = new ArrayList<>();
 
-        if (!parallelized) {
-            for (Callable<double[][]> task : tasks) {
-                try {
-                    results.add(task.call());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+        ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
 
+        List<Future<double[][]>> futures = pool.invokeAll(tasks);
+
+        for (Future<double[][]> future : futures) {
             try {
-                List<Future<double[][]>> futures = pool.invokeAll(tasks);
-
-                for (Future<double[][]> future : futures) {
-                    results.add(future.get());
-                }
+                results.add(future.get());
             } catch (InterruptedException | ExecutionException e) {
-                Thread.currentThread().interrupt();
+                TetradLogger.getInstance().forceLogMessage(e.getMessage());
             }
-
-            pool.shutdown();
         }
 
         return results;

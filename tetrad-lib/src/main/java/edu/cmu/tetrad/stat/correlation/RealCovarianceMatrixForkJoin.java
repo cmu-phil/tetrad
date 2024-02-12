@@ -229,7 +229,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
                 }
-                ForkJoinTask.invokeAll(actions);
+                invokeAll(actions);
             }
         }
 

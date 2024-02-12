@@ -461,7 +461,6 @@ public final class FgesMb implements DagScorer {
             } catch (Exception e) {
                 Thread.currentThread().interrupt();
             }
-            pool.shutdown();
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -623,8 +622,6 @@ public final class FgesMb implements DagScorer {
             } catch (Exception e) {
                 Thread.currentThread().interrupt();
             }
-            ForkJoin.getInstance().getPool().shutdownNow();
-            Thread.currentThread().interrupt();
         }
     }
 

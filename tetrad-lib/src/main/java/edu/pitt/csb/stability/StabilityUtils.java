@@ -144,7 +144,7 @@ public class StabilityUtils {
                     tasks.add(new StabilityAction(this.chunk, this.from, mid));
                     tasks.add(new StabilityAction(this.chunk, mid, this.to));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    invokeAll(tasks);
                 }
             }
         }
