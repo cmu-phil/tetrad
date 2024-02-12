@@ -478,18 +478,46 @@ public class Bes {
         }
     }
 
-
+    /**
+     * An arrow in the search.
+     */
     public static class Arrow implements Comparable<Arrow> {
 
+        /** The bump. */
         private final double bump;
+
+        /** The first node. */
         private final Node a;
+
+        /** The second node. */
         private final Node b;
+
+        /** The set of nodes that are in H or T. */
         private final Set<Node> hOrT;
+
+        /** The set of nodes that are in NaYX. */
         private final Set<Node> naYX;
+
+        /** The index of the arrow. */
         private final Set<Node> parents;
+
+        /** The index of the arrow. */
         private final int index;
+
+        /** The set of nodes that are in TNeighbors. */
         private Set<Node> TNeighbors;
 
+        /**
+         * Constructs an arrow.
+         *
+         * @param bump The bump.
+         * @param a The first node.
+         * @param b The second node.
+         * @param hOrT The set of nodes that are in H or T.
+         * @param naYX The set of nodes that are in NaYX.
+         * @param parents The set of nodes that are in TNeighbors.
+         * @param index The index of the arrow.
+         */
         Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> capTorH, Set<Node> naYX, Set<Node> parents, int index) {
             this.bump = bump;
             this.a = a;
@@ -501,32 +529,59 @@ public class Bes {
             this.parents = parents;
         }
 
+        /**
+         * Returns the bump.
+         *
+         * @return The bump.
+         */
         public double getBump() {
             return bump;
         }
 
+        /**
+         * Returns the first node.
+         *
+         * @return The first node.
+         */
         public Node getA() {
             return a;
         }
 
+        /**
+         * Returns the second node.
+         *
+         * @return The second node.
+         */
         public Node getB() {
             return b;
         }
 
+        /**
+         * Returns the set of nodes that are in H or T.
+         *
+         * @return The set of nodes that are in H or T.
+         */
         Set<Node> getHOrT() {
             return hOrT;
         }
 
+        /**
+         * Returns the set of nodes that are in NaYX.
+         *
+         * @return The set of nodes that are in NaYX.
+         */
         Set<Node> getNaYX() {
             return naYX;
         }
 
-        // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
-        // to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
-        // bump), we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
-        // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
-        // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
-        // not equal to zero by keeping a list. This last part is commened out by default.
+        /**
+         * Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
+         * to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
+         * bump), we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
+         * The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
+         * same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
+         * not equal to zero by keeping a list. This last part is commened out by default.
+         */
         public int compareTo(@NotNull Arrow arrow) {
 
             final int compare = Double.compare(arrow.getBump(), getBump());
@@ -538,22 +593,47 @@ public class Bes {
             return compare;
         }
 
+        /**
+         * Returns the index of the arrow.
+         *
+         * @return The index of the arrow.
+         */
         public String toString() {
             return "Arrow<" + a + "->" + b + " bump = " + bump + " t/h = " + hOrT + " TNeighbors = " + getTNeighbors() + " parents = " + parents + " naYX = " + naYX + ">";
         }
 
+        /**
+         * Returns the index of the arrow.
+         *
+         * @return The index of the arrow.
+         */
         public int getIndex() {
             return index;
         }
 
+        /**
+         * Returns the set of nodes that are in TNeighbors.
+         *
+         * @return The set of nodes that are in TNeighbors.
+         */
         public Set<Node> getTNeighbors() {
             return TNeighbors;
         }
 
+        /**
+         * Sets the set of nodes that are in TNeighbors.
+         *
+         * @param TNeighbors The set of nodes that are in TNeighbors.
+         */
         public void setTNeighbors(Set<Node> TNeighbors) {
             this.TNeighbors = TNeighbors;
         }
 
+        /**
+         * Returns the set of nodes that are in TNeighbors.
+         *
+         * @return The set of nodes that are in TNeighbors.
+         */
         public Set<Node> getParents() {
             return parents;
         }

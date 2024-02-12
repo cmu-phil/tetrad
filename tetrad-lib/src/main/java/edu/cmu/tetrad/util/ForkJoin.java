@@ -50,6 +50,8 @@ public class ForkJoin {
 
     /**
      * Returns the instance of ForkJoinUtils.
+     *
+     * @return the instance of ForkJoinUtils.
      */
     public static ForkJoin getInstance() {
         return instance;
