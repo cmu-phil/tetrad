@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.score.ScoredGraph;
 import edu.cmu.tetrad.search.utils.Bes;
 import edu.cmu.tetrad.search.utils.DagScorer;
 import edu.cmu.tetrad.search.utils.MeekRules;
+import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -395,7 +396,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         for (int i = 0; i < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
             if (Thread.currentThread().isInterrupted()) {
                 if (pool.getParallelism() > 1) {
-                    pool.shutdownNow();
+                    ForkJoin.getInstance().getPool().shutdownNow();
                     Thread.currentThread().interrupt();
                 }
                 break;
@@ -559,7 +560,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
         for (int i = 0; i < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
             if (Thread.currentThread().isInterrupted()) {
-                pool.shutdownNow();
+                ForkJoin.getInstance().getPool().shutdownNow();
                 Thread.currentThread().interrupt();
                 break;
             }
@@ -663,7 +664,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
         for (int i = 0; i < TT.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
             if (Thread.currentThread().isInterrupted()) {
-                pool.shutdownNow();
+                ForkJoin.getInstance().getPool().shutdownNow();
                 Thread.currentThread().interrupt();
                 break;
             }
@@ -808,7 +809,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
         for (Iterator<KnowledgeEdge> it = getKnowledge().requiredEdgesIterator(); it.hasNext() /*&& !Thread.currentThread().isInterrupted()*/; ) {
             if (Thread.currentThread().isInterrupted()) {
-                pool.shutdownNow();
+                ForkJoin.getInstance().getPool().shutdownNow();
                 Thread.currentThread().interrupt();
                 break;
             }
@@ -829,7 +830,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
         for (Edge edge : graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
-                pool.shutdownNow();
+                ForkJoin.getInstance().getPool().shutdownNow();
                 Thread.currentThread().interrupt();
                 break;
             }
@@ -1238,7 +1239,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
                 for (int j = i + 1; j < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; j++) {
                     if (Thread.interrupted()) {
-                        pool.shutdownNow();
+                        ForkJoin.getInstance().getPool().shutdownNow();
                         Thread.currentThread().interrupt();
                         break;
                     }

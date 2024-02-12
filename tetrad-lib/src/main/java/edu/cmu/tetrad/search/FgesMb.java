@@ -623,7 +623,7 @@ public final class FgesMb implements DagScorer {
             } catch (Exception e) {
                 Thread.currentThread().interrupt();
             }
-            pool.shutdownNow();
+            ForkJoin.getInstance().getPool().shutdownNow();
             Thread.currentThread().interrupt();
         }
     }

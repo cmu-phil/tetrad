@@ -654,7 +654,7 @@ public class MarkovCheck {
                     msep.addAll(setPair.getFirst());
                     mconn.addAll(setPair.getSecond());
                 } catch (InterruptedException | ExecutionException e) {
-                    pool.shutdownNow();
+                    ForkJoin.getInstance().getPool().shutdownNow();
                     Thread.currentThread().interrupt();
                 }
             }
@@ -755,7 +755,7 @@ public class MarkovCheck {
                     resultsIndep.addAll(future.get().getFirst());
                     resultsDep.addAll(future.get().getSecond());
                 } catch (InterruptedException | ExecutionException e) {
-                    pool.shutdownNow();
+                    ForkJoin.getInstance().getPool().shutdownNow();
                     Thread.currentThread().interrupt();
                 }
             }

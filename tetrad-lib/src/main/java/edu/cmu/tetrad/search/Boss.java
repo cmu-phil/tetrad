@@ -360,7 +360,7 @@ public class Boss implements SuborderSearch {
 
         for (Node z : suborder) {
             if (Thread.currentThread().isInterrupted()) {
-                pool.shutdownNow();
+                ForkJoin.getInstance().getPool().shutdownNow();
                 Thread.currentThread().interrupt();
                 return false;
             }
@@ -425,7 +425,7 @@ public class Boss implements SuborderSearch {
 
         while (itr.hasNext()) {
             if (Thread.currentThread().isInterrupted()) {
-                pool.shutdownNow();
+                ForkJoin.getInstance().getPool().shutdownNow();
                 Thread.currentThread().interrupt();
                 return false;
             }
