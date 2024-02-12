@@ -156,6 +156,7 @@ public final class ChoiceGenerator {
         while (--i > -1) {
             if (this.choiceLocal[i] < i + this.diff) {
                 if (Thread.currentThread().isInterrupted()) {
+                    ForkJoin.getInstance().getPool().shutdownNow();
                     break;
                 }
 

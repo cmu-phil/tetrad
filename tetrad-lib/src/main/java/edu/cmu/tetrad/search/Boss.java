@@ -560,6 +560,8 @@ public class Boss implements SuborderSearch {
             if (!Thread.currentThread().isInterrupted()) {
                 double score = gst.trace(this.prefix, this.all);
                 this.scores[index] = score;
+            } else {
+                ForkJoin.getInstance().getPool().shutdownNow();
             }
 
             return null;

@@ -443,7 +443,12 @@ public final class FgesMb implements DagScorer {
 
         int chunkSize = getChunkSize(nodes.size());
 
-        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+        for (int i = 0; i < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
+            if (Thread.currentThread().isInterrupted()) {
+                ForkJoin.getInstance().getPool().shutdownNow();
+                break;
+            }
+
             NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, min(nodes.size(), i + chunkSize),
                     nodes, emptySet);
 
@@ -605,7 +610,12 @@ public final class FgesMb implements DagScorer {
 
         int chunkSize = getChunkSize(nodes.size());
 
-        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+        for (int i = 0; i < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
+            if (Thread.currentThread().isInterrupted()) {
+                ForkJoin.getInstance().getPool().shutdownNow();
+                break;
+            }
+
             AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
 
             if (!this.parallelized) {

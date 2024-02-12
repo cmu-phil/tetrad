@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
+import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -454,7 +455,10 @@ public class Grasp {
             }
 
             for (Node x : parents) {
-                if (Thread.currentThread().isInterrupted()) return;
+                if (Thread.currentThread().isInterrupted())  {
+                    ForkJoin.getInstance().getPool().shutdownNow();
+                    return;
+                }
 
                 boolean covered = scorer.coveredEdge(x, y);
                 boolean singular = true;

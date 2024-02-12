@@ -1778,6 +1778,7 @@ public final class GraphUtils {
                                                 SepsetProducer sepsets) {
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
+                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 

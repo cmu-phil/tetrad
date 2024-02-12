@@ -626,7 +626,12 @@ public class MarkovCheck {
 
         List<Callable<Pair<Set<IndependenceFact>, Set<IndependenceFact>>>> tasks = new ArrayList<>();
 
-        for (int i = 0; i < allIndependenceFacts.size() && !Thread.currentThread().isInterrupted(); i++) {
+        for (int i = 0; i < allIndependenceFacts.size() /*&& !Thread.currentThread().isInterrupted()*/; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                ForkJoin.getInstance().getPool().shutdownNow();
+                break;
+            }
+
             IndCheckTask task = new IndCheckTask(i, allIndependenceFacts, msepTest);
 
             if (!parallelized) {
@@ -723,7 +728,12 @@ public class MarkovCheck {
 
         List<Callable<Pair<Set<IndependenceResult>, Set<IndependenceResult>>>> tasks = new ArrayList<>();
 
-        for (int i = 0; i < facts.size() && !Thread.currentThread().isInterrupted(); i++) {
+        for (int i = 0; i < facts.size() /*&& !Thread.currentThread().isInterrupted()*/; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                ForkJoin.getInstance().getPool().shutdownNow();
+                break;
+            }
+
             IndCheckTask task = new IndCheckTask(i, new ArrayList<>(facts), independenceTest);
 
             if (!parallelized) {

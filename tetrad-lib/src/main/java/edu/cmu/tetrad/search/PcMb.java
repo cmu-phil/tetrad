@@ -186,6 +186,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
             for (Node target : getTargets()) {
                 for (Node v : graph.getAdjacentNodes(target)) {
                     if (Thread.currentThread().isInterrupted()) {
+                        ForkJoin.getInstance().getPool().shutdownNow();
                         break;
                     }
 
@@ -199,6 +200,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                     W:
                     for (Node w : graph.getAdjacentNodes(v)) {
                         if (Thread.currentThread().isInterrupted()) {
+                            ForkJoin.getInstance().getPool().shutdownNow();
                             break;
                         }
 

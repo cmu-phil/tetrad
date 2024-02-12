@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -374,6 +375,7 @@ public class Fas implements IFas {
             Node y = edge.getNode2();
 
             if (Thread.currentThread().isInterrupted()) {
+                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 

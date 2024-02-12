@@ -24,10 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
@@ -376,6 +373,7 @@ public class Fofc {
         CHOICE:
         while ((choice = gen.next()) != null) {
             if (Thread.currentThread().isInterrupted()) {
+                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 
@@ -389,6 +387,7 @@ public class Fofc {
 
             for (int o : allVariables) {
                 if (Thread.currentThread().isInterrupted()) {
+                    ForkJoin.getInstance().getPool().shutdownNow();
                     break;
                 }
 
@@ -430,6 +429,7 @@ public class Fofc {
 
             do {
                 if (Thread.currentThread().isInterrupted()) {
+                    ForkJoin.getInstance().getPool().shutdownNow();
                     break;
                 }
 
@@ -442,6 +442,7 @@ public class Fofc {
 
                 for (int o : _variables) {
                     if (Thread.currentThread().isInterrupted()) {
+                        ForkJoin.getInstance().getPool().shutdownNow();
                         break;
                     }
 
@@ -456,6 +457,7 @@ public class Fofc {
 
                     while ((choice = gen.next()) != null) {
                         if (Thread.currentThread().isInterrupted()) {
+                            ForkJoin.getInstance().getPool().shutdownNow();
                             break;
                         }
 
@@ -492,6 +494,7 @@ public class Fofc {
 
                 while ((choice2 = gen2.next()) != null) {
                     if (Thread.currentThread().isInterrupted()) {
+                        ForkJoin.getInstance().getPool().shutdownNow();
                         break;
                     }
 
@@ -536,6 +539,7 @@ public class Fofc {
 
                     while ((choice = gen.next()) != null) {
                         if (Thread.currentThread().isInterrupted()) {
+                            ForkJoin.getInstance().getPool().shutdownNow();
                             break;
                         }
 
@@ -601,6 +605,7 @@ public class Fofc {
 
                     while ((choice = gen.next()) != null) {
                         if (Thread.currentThread().isInterrupted()) {
+                            ForkJoin.getInstance().getPool().shutdownNow();
                             break;
                         }
 
@@ -633,6 +638,7 @@ public class Fofc {
 
                 while ((choice2 = gen2.next()) != null) {
                     if (Thread.currentThread().isInterrupted()) {
+                        ForkJoin.getInstance().getPool().shutdownNow();
                         break;
                     }
 
@@ -663,6 +669,7 @@ public class Fofc {
 
             for (int i = 0; i < clusters.size(); i++) {
                 if (Thread.currentThread().isInterrupted()) {
+                    ForkJoin.getInstance().getPool().shutdownNow();
                     break;
                 }
 
@@ -686,6 +693,7 @@ public class Fofc {
 
                     while ((choice = gen.next()) != null) {
                         if (Thread.currentThread().isInterrupted()) {
+                            ForkJoin.getInstance().getPool().shutdownNow();
                             break;
                         }
 
@@ -757,6 +765,7 @@ public class Fofc {
 
             while ((choice = gen.next()) != null) {
                 if (Thread.currentThread().isInterrupted()) {
+                    ForkJoin.getInstance().getPool().shutdownNow();
                     break;
                 }
 

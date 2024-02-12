@@ -657,6 +657,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                 if (this.to - this.from <= this.chunk) {
                     for (int i = this.from; i < this.to; i++) {
                         if (Thread.currentThread().isInterrupted()) {
+                            ForkJoin.getInstance().getPool().shutdownNow();
                             break;
                         }
 
