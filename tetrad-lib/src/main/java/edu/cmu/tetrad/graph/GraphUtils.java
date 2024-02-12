@@ -27,7 +27,7 @@ import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinUtils;
+import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TextTable;
 
@@ -1260,7 +1260,7 @@ public final class GraphUtils {
 
         List<Edge> edges = new ArrayList<>(edgeSet);
 
-        ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+        ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
 
         CountTask task = new CountTask(500, 0, edges.size(), edges, leftGraph, topGraph, new int[1]);
 

@@ -29,7 +29,7 @@ import edu.cmu.tetrad.search.score.ScoredGraph;
 import edu.cmu.tetrad.search.utils.Bes;
 import edu.cmu.tetrad.search.utils.DagScorer;
 import edu.cmu.tetrad.search.utils.MeekRules;
-import edu.cmu.tetrad.util.ForkJoinUtils;
+import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -455,7 +455,7 @@ public final class FgesMb implements DagScorer {
         }
 
         if (parallelized) {
-            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+            ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
             try {
                 pool.invokeAll(tasks);
             } catch (Exception e) {
@@ -617,7 +617,7 @@ public final class FgesMb implements DagScorer {
         }
 
         if (this.parallelized) {
-            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+            ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
             try {
                 pool.invokeAll(tasks);
             } catch (Exception e) {
@@ -722,7 +722,7 @@ public final class FgesMb implements DagScorer {
         }
 
         if (this.parallelized) {
-            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+            ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
             List<Future<EvalPair>> futures = pool.invokeAll(tasks);
 
             for (Future<EvalPair> future : futures) {

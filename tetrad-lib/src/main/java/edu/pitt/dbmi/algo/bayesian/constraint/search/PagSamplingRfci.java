@@ -7,7 +7,7 @@ import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.util.ForkJoinUtils;
+import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.GraphSampling;
 
 import java.util.LinkedList;
@@ -79,7 +79,7 @@ public class PagSamplingRfci implements IGraphSearch {
     private List<Graph> runSearches() {
         List<Graph> graphs = new LinkedList<>();
 
-        ForkJoinPool pool = ForkJoinUtils.getPool(NUM_THREADS);
+        ForkJoinPool pool = ForkJoin.getInstance().newPool(NUM_THREADS);
         try {
             while (graphs.size() < numRandomizedSearchModels && !Thread.currentThread().isInterrupted()) {
                 List<Callable<Graph>> callableTasks = createTasks(numRandomizedSearchModels - graphs.size());

@@ -18,7 +18,7 @@
  */
 package edu.cmu.tetrad.stat;
 
-import edu.cmu.tetrad.util.ForkJoinUtils;
+import edu.cmu.tetrad.util.ForkJoin;
 
 import java.io.Serial;
 import java.util.concurrent.ForkJoinPool;
@@ -62,7 +62,7 @@ public class VarianceVectorForkJoin implements Variance {
     public float[] compute(boolean biasCorrected) {
         float[] means = new float[this.numOfCols];
 
-        ForkJoinPool pool = ForkJoinUtils.getPool(this.numOfThreads);
+        ForkJoinPool pool = ForkJoin.getInstance().newPool(this.numOfThreads);
 
         try {
             pool.invoke(new MeanAction(this.data, means, 0, this.numOfCols - 1));

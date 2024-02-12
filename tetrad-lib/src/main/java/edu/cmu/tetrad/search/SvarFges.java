@@ -31,7 +31,6 @@ import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
-import org.junit.experimental.theories.Theories;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -69,7 +68,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     // The top n graphs found by the algorithm, where n is numCPDAGsToStore.
     private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
     // The static ForkJoinPool instance.
-    private final ForkJoinPool pool = ForkJoinUtils.getPool(maxThreads);
+    private final ForkJoinPool pool = ForkJoin.getInstance().newPool(maxThreads);
     // The number of graphs searched.
     private final int[] count = new int[1];
     // The set of removed edges.

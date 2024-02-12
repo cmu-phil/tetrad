@@ -708,7 +708,7 @@ public class Cstar {
                 }
             }
         } else {
-            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+            ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
 
             try {
                 List<Future<double[][]>> futures = pool.invokeAll(tasks);

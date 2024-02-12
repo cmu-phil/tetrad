@@ -8,7 +8,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.ForkJoinUtils;
+import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.task.GeneralResamplingSearchRunnable;
@@ -71,7 +71,7 @@ public class GeneralResamplingSearch {
      */
     public GeneralResamplingSearch(DataSet data, int numberResampling) {
         this.data = data;
-        this.pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+        this.pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
         this.numberResampling = numberResampling;
     }
 
@@ -83,7 +83,7 @@ public class GeneralResamplingSearch {
      */
     public GeneralResamplingSearch(List<DataSet> dataSets, int numberResampling) {
         this.dataSets = dataSets;
-        this.pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+        this.pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
         this.numberResampling = numberResampling;
     }
 

@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.BesPermutation;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
-import edu.cmu.tetrad.util.ForkJoinUtils;
+import edu.cmu.tetrad.util.ForkJoin;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -148,7 +148,7 @@ public class Boss implements SuborderSearch {
 
 //        if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
 //        else this.pool = ForkJoinPool.commonPool();
-        this.pool = ForkJoinUtils.getPool(this.numThreads);
+        this.pool = ForkJoin.getInstance().newPool(this.numThreads);
 
         for (int i = 0; i < this.numStarts; i++) {
 

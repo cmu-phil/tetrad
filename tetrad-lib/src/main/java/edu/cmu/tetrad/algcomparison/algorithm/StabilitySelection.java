@@ -7,7 +7,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.ForkJoinUtils;
+import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -58,7 +58,7 @@ public class StabilitySelection implements Algorithm {
 
         List<Graph> graphs = new ArrayList<>();
 
-        ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+        ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
 
         class StabilityAction extends RecursiveAction {
 

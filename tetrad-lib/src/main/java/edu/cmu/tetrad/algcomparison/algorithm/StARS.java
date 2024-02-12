@@ -7,7 +7,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.ForkJoinUtils;
+import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.Parameters;
 import org.apache.commons.math3.util.FastMath;
 
@@ -73,7 +73,7 @@ public class StARS implements Algorithm {
 
         List<Graph> graphs = new ArrayList<>();
 
-        ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+        ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
 
         class StabilityAction extends RecursiveAction {
 

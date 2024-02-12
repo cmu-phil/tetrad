@@ -29,10 +29,19 @@ import java.util.concurrent.ForkJoinPool;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class ForkJoinUtils {
+public class ForkJoin {
+    private static final ForkJoin instance = new ForkJoin();
+    private ForkJoinPool pool = new ForkJoinPool();
 
-    private ForkJoinUtils() {
+    private ForkJoin() {
+        pool = newPool(Runtime.getRuntime().availableProcessors());
+    }
 
+    /**
+     * Returns the instance of ForkJoinUtils.
+     */
+    public static ForkJoin getInstance() {
+        return instance;
     }
 
     /**
@@ -40,12 +49,18 @@ public class ForkJoinUtils {
      *
      * @param parallelism the number of threads to use.
      */
-    public static ForkJoinPool getPool(int parallelism) {
-        if (parallelism == 1) {
-            return ForkJoinPool.commonPool();
-        } else {
-            return new ForkJoinPool(parallelism);
-        }
+    public ForkJoinPool newPool(int parallelism) {
+        pool.shutdownNow();
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
+        this.pool = pool;
+        return pool;
+    }
+
+    /**
+     * Returns the stored ForkJoinPool.
+     */
+    public ForkJoinPool getPool() {
+        return pool;
     }
 }
 

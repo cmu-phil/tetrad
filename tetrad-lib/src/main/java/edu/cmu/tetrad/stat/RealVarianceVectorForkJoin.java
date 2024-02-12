@@ -18,7 +18,7 @@
  */
 package edu.cmu.tetrad.stat;
 
-import edu.cmu.tetrad.util.ForkJoinUtils;
+import edu.cmu.tetrad.util.ForkJoin;
 
 import java.io.Serial;
 import java.util.concurrent.ForkJoinPool;
@@ -62,7 +62,7 @@ public class RealVarianceVectorForkJoin implements RealVariance {
     public double[] compute(boolean biasCorrected) {
         double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = ForkJoinUtils.getPool(this.numOfThreads);
+        ForkJoinPool pool = ForkJoin.getInstance().newPool(this.numOfThreads);
         try {
             pool.invoke(new MeanAction(this.data, means, 0, this.numOfCols - 1));
             pool.invoke(new VarianceAction(this.data, means, biasCorrected, 0, this.numOfCols - 1));

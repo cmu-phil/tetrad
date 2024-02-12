@@ -9,7 +9,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.RowsSettable;
-import edu.cmu.tetrad.util.ForkJoinUtils;
+import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.math3.distribution.BinomialDistribution;
@@ -638,7 +638,7 @@ public class MarkovCheck {
         }
 
         if (parallelized) {
-            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+            ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
 
             List<Future<Pair<Set<IndependenceFact>, Set<IndependenceFact>>>> theseResults
                     = null;
@@ -741,7 +741,7 @@ public class MarkovCheck {
         }
 
         if (parallelized) {
-            ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+            ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
             List<Future<Pair<Set<IndependenceResult>, Set<IndependenceResult>>>> theseResults = null;
             try {
                 theseResults = pool.invokeAll(tasks);

@@ -897,7 +897,7 @@ public class TimeoutComparison {
             }
         }
 
-        ForkJoinPool pool = ForkJoinUtils.getPool(1);
+        ForkJoinPool pool = ForkJoin.getInstance().newPool(1);
         tasks.forEach(task -> {
             Future<Void> future = pool.submit(task);
             try {

@@ -22,7 +22,7 @@ package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ForkJoinUtils;
+import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Vector;
@@ -242,7 +242,7 @@ public final class LargeScaleSimulation {
 
         int chunk = sampleSize / (Runtime.getRuntime().availableProcessors());
 
-        ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+        ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
 
         try {
             pool.invoke(new SimulateTask(0, sampleSize, all, chunk));

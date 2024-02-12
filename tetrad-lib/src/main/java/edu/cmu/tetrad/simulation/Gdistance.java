@@ -2,7 +2,7 @@ package edu.cmu.tetrad.simulation;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ForkJoinUtils;
+import edu.cmu.tetrad.util.ForkJoin;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
@@ -153,7 +153,7 @@ public class Gdistance {
         //let the for loop do its thing, and create a new thread for each task inside of it.
 
         List<Callable<Void>> todo = new ArrayList<>();
-        ForkJoinPool forkJoinPool = ForkJoinUtils.getPool(this.cores);
+        ForkJoinPool forkJoinPool = ForkJoin.getInstance().newPool(this.cores);
 
         List<Edge> taskEdges = new ArrayList<>();
         //can change the times 3.0 part if it seems better to do so
