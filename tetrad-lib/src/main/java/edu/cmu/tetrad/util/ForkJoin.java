@@ -24,15 +24,26 @@ package edu.cmu.tetrad.util;
 import java.util.concurrent.ForkJoinPool;
 
 /**
- * Static instance of a ForkJoinPool. Not sure this is necessary. Created by josephramsey on 2/7/15.
+ * A singleton class for managing a ForkJoinPool.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 public class ForkJoin {
+
+    /**
+     * The singleton instance of ForkJoinUtils.
+     */
     private static final ForkJoin instance = new ForkJoin();
+
+    /**
+     * The ForkJoinPool.
+     */
     private ForkJoinPool pool = new ForkJoinPool();
 
+    /**
+     * Private constructor.
+     */
     private ForkJoin() {
         pool = newPool(Runtime.getRuntime().availableProcessors());
     }
@@ -45,9 +56,11 @@ public class ForkJoin {
     }
 
     /**
-     * Returns a ForkJoinPool with the given parallelism. If parallelism is 1, returns the common pool.
+     * Returns a ForkJoinPool with the given parallelism. If parallelism is 1, returns the common pool. A call to this
+     * method will shut down the current pool and create a new one.
      *
      * @param parallelism the number of threads to use.
+     * @return a new ForkJoinPool with the given parallelism.
      */
     public ForkJoinPool newPool(int parallelism) {
         pool.shutdownNow();
@@ -58,6 +71,8 @@ public class ForkJoin {
 
     /**
      * Returns the stored ForkJoinPool.
+     *
+     * @return the stored ForkJoinPool.
      */
     public ForkJoinPool getPool() {
         return pool;
