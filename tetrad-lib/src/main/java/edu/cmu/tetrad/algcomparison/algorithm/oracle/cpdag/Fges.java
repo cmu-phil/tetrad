@@ -191,7 +191,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.SYMMETRIC_FIRST_STEP);
         parameters.add(Params.MAX_DEGREE);
-        parameters.add(Params.PARALLELIZED);
+        parameters.add(Params.NUM_THREADS);
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.TIME_LAG);
 
