@@ -717,7 +717,6 @@ public class Cstar {
                     results.add(future.get());
                 }
             } catch (InterruptedException | ExecutionException e) {
-                pool.shutdownNow();
                 Thread.currentThread().interrupt();
             }
 

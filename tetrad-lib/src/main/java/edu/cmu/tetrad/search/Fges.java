@@ -411,7 +411,12 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
 
         if (parallelized) {
-            pool.invokeAll(tasks);
+            try {
+                pool.invokeAll(tasks);
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+                throw e;
+            }
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -569,7 +574,12 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
 
         if (this.parallelized) {
-            pool.invokeAll(tasks);
+            try {
+                pool.invokeAll(tasks);
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+                throw e;
+            }
         }
     }
 
@@ -684,9 +694,9 @@ public final class Fges implements IGraphSearch, DagScorer {
                         maxBump = pair.bump;
                     }
                 } catch (InterruptedException | ExecutionException e) {
-                    pool.shutdownNow();
                     Thread.currentThread().interrupt();
-                    e.printStackTrace();
+                    TetradLogger.getInstance().forceLogMessage(e.getMessage());
+                    return;
                 }
             }
         }

@@ -379,7 +379,12 @@ public class Boss implements SuborderSearch {
         }
 
         shuffle(tasks);
-        this.pool.invokeAll(tasks);
+        try {
+            pool.invokeAll(tasks);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
         if (this.resetAfterBM) this.gsts.get(x).reset();
         double runningScore = 0;
 

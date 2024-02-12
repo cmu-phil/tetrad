@@ -417,9 +417,19 @@ public class BesPermutation {
         for (Node r : toProcess) {
             List<Node> adjacentNodes = new ArrayList<>(toProcess);
             ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
-            pool.invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
-                    adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
-            pool.shutdown();
+
+            try {
+                pool.invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
+                        adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+                throw e;
+            }
+
+            if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+                Thread.currentThread().interrupt();
+                return;
+            }
         }
     }
 

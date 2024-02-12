@@ -34,6 +34,7 @@ import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
 /**
@@ -276,7 +277,14 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         int chunk = FastMath.max(_chunk, minChunk);
 
         VarianceTask task = new VarianceTask(chunk, 0, variables.size());
-        ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors()).invoke(task);
+        ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
+
+        try {
+            pool.invoke(task);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
 
         if (verbose) {
             System.out.println("Done with variances.");

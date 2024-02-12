@@ -2,13 +2,13 @@ package edu.cmu.tetrad.simulation;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.ForkJoinUtils;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Created by Erich on 7/3/2016.
@@ -153,7 +153,7 @@ public class Gdistance {
         //let the for loop do its thing, and create a new thread for each task inside of it.
 
         List<Callable<Void>> todo = new ArrayList<>();
-        ExecutorService executorService = Executors.newCachedThreadPool();
+        ForkJoinPool forkJoinPool = ForkJoinUtils.getPool(this.cores);
 
         List<Edge> taskEdges = new ArrayList<>();
         //can change the times 3.0 part if it seems better to do so
@@ -196,10 +196,10 @@ public class Gdistance {
         //invoke all the things!
         try {
             System.out.println("number of parallel tasks being invoked: " + todo.size());
-            executorService.invokeAll(todo);
-            executorService.shutdown();
-        } catch (Exception ignored) {
-
+            forkJoinPool.invokeAll(todo);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
         }
         System.out.println(this.leastList.size());
         return this.leastList;

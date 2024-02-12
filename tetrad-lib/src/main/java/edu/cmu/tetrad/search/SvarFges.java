@@ -31,6 +31,7 @@ import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
+import org.junit.experimental.theories.Theories;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -943,7 +944,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                     tasks.add(new AdjTask(this.chunk, this.nodes, this.from, this.from + mid));
                     tasks.add(new AdjTask(this.chunk, this.nodes, this.from + mid, this.to));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    invokeAll(tasks);
 
                 }
                 return true;
@@ -951,7 +952,17 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
 
         AdjTask task = new AdjTask(getMinChunk(nodes.size()), new ArrayList<>(nodes), 0, nodes.size());
-        this.pool.invoke(task);
+
+        try {
+            pool.invoke(task);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!this.pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     // Calculates the new arrows for an a->b edge.
@@ -1078,7 +1089,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                     tasks.add(new BackwardTask(this.r, this.adj, this.chunk, this.from, this.from + mid, this.hashIndices));
                     tasks.add(new BackwardTask(this.r, this.adj, this.chunk, this.from + mid, this.to, this.hashIndices));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    invokeAll(tasks);
 
                 }
                 return true;
@@ -1088,7 +1099,14 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         for (Node r : toProcess) {
             this.neighbors.put(r, getNeighbors(r));
             List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(r));
-            this.pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0, adjacentNodes.size(), this.hashIndices));
+
+            try {
+                this.pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0,
+                        adjacentNodes.size(), this.hashIndices));
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+                throw e;
+            }
         }
     }
 

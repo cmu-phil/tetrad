@@ -645,7 +645,6 @@ public class MarkovCheck {
             try {
                 theseResults = pool.invokeAll(tasks);
             } catch (Exception e) {
-                pool.shutdownNow();
                 Thread.currentThread().interrupt();
             }
 
@@ -747,8 +746,8 @@ public class MarkovCheck {
             try {
                 theseResults = pool.invokeAll(tasks);
             } catch (Exception e) {
-                pool.shutdownNow();
                 Thread.currentThread().interrupt();
+                throw e;
             }
 
             for (Future<Pair<Set<IndependenceResult>, Set<IndependenceResult>>> future : theseResults) {

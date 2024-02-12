@@ -459,7 +459,6 @@ public final class FgesMb implements DagScorer {
             try {
                 pool.invokeAll(tasks);
             } catch (Exception e) {
-                pool.shutdownNow();
                 Thread.currentThread().interrupt();
             }
             pool.shutdown();
@@ -622,7 +621,6 @@ public final class FgesMb implements DagScorer {
             try {
                 pool.invokeAll(tasks);
             } catch (Exception e) {
-                pool.shutdownNow();
                 Thread.currentThread().interrupt();
             }
             pool.shutdownNow();
@@ -735,7 +733,6 @@ public final class FgesMb implements DagScorer {
                         maxBump = pair.bump;
                     }
                 } catch (InterruptedException | ExecutionException e) {
-                    pool.shutdownNow();
                     Thread.currentThread().interrupt();
                 }
 

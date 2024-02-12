@@ -643,7 +643,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
                     tasks.add(new EffectTask(this.chunk, this.from, mid));
                     tasks.add(new EffectTask(this.chunk, mid, this.to));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    invokeAll(tasks);
 
                 }
                 return true;
@@ -651,7 +651,18 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         }
 
         buildIndexing(nodes);
-        this.pool.invoke(new EffectTask(this.minChunk, 0, nodes.size()));
+
+        try {
+            this.pool.invoke(new EffectTask(this.minChunk, 0, nodes.size()));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!this.pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            Thread.currentThread().interrupt();
+            return effectEdgesGraph;
+        }
 
         long stop = MillisecondTimes.timeMillis();
 
@@ -958,7 +969,12 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
                     tasks.add(new BackwardTask(this.nodes, this.chunk, this.from, mid, this.hashIndices));
                     tasks.add(new BackwardTask(this.nodes, this.chunk, mid, this.to, this.hashIndices));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    try {
+                        ForkJoinTask.invokeAll(tasks);
+                    } catch (Exception e) {
+                        Thread.currentThread().interrupt();
+                        throw e;
+                    }
 
                 }
                 return true;

@@ -1021,8 +1021,13 @@ public class Comparison {
         if (parallelized) {
 //            int parallelism = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
             ForkJoinPool pool = (ForkJoinPool) Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
-            pool.invokeAll(tasks);
-            pool.shutdown();
+
+            try {
+                pool.invokeAll(tasks);
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+                throw e;
+            }
         } else {
             for (Callable<Boolean> task : tasks) {
                 task.call();

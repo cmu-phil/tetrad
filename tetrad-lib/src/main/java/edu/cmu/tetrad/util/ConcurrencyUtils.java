@@ -30,7 +30,13 @@ public class ConcurrencyUtils {
             }
         } else {
             ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
-            pool.invokeAll(tasks);
+
+            try {
+                pool.invokeAll(tasks);
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+                throw e;
+            }
         }
     }
 }

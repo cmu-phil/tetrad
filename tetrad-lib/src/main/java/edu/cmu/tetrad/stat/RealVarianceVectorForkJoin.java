@@ -120,7 +120,14 @@ public class RealVarianceVectorForkJoin implements RealVariance {
                 computeVariance();
             } else {
                 int middle = (this.end + this.start) / 2;
-                ForkJoinTask.invokeAll(new VarianceAction(this.data, this.means, this.biasCorrected, this.start, middle), new VarianceAction(this.data, this.means, this.biasCorrected, middle + 1, this.end));
+
+                try {
+                    ForkJoinTask.invokeAll(new VarianceAction(this.data, this.means, this.biasCorrected, this.start, middle),
+                            new VarianceAction(this.data, this.means, this.biasCorrected, middle + 1, this.end));
+                } catch (Exception e) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
             }
         }
 
@@ -128,6 +135,7 @@ public class RealVarianceVectorForkJoin implements RealVariance {
 
     class MeanAction extends RecursiveAction {
 
+        @Serial
         private static final long serialVersionUID = 3741759201009022262L;
 
         private final double[][] data;
@@ -162,7 +170,14 @@ public class RealVarianceVectorForkJoin implements RealVariance {
                 computeMean();
             } else {
                 int middle = (this.end + this.start) / 2;
-                ForkJoinTask.invokeAll(new MeanAction(this.data, this.means, this.start, middle), new MeanAction(this.data, this.means, middle + 1, this.end));
+
+                try {
+                    ForkJoinTask.invokeAll(new MeanAction(this.data, this.means, this.start, middle),
+                            new MeanAction(this.data, this.means, middle + 1, this.end));
+                } catch (Exception e) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
             }
         }
     }

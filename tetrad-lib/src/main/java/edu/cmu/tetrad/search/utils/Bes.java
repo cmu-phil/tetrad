@@ -376,8 +376,15 @@ public class Bes {
 
         for (Node r : toProcess) {
             List<Node> adjacentNodes = new ArrayList<>(toProcess);
-            BackwardTask task = new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0, adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward);
-            task.invoke();
+            BackwardTask task = new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
+                    adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward);
+
+            try {
+                task.invoke();
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+                throw e;
+            }
         }
     }
 
