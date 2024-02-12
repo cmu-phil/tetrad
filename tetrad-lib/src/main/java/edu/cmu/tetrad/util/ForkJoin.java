@@ -24,7 +24,20 @@ package edu.cmu.tetrad.util;
 import java.util.concurrent.ForkJoinPool;
 
 /**
- * A singleton class for managing a ForkJoinPool.
+ * A singleton class for managing a ForkJoinPool. All uses of ForkJoinPool in Tetrad should go through this class. New
+ * pools can be created with the newPool method, and the stored pool can be retrieved with the getPool method. Every
+ * algorithm run should begin by calling newPool with the number of threads to use, which returns the created pool.
+ * Importantly, when Thread.currentThread().interrupt() is called, ForJoin.getInstance()l.getPool().shutdownNow() should
+ * be called on the stored pool whereever the ForkJoin class is accessible. (In some modules it may not be.)  The effect
+ * of calling this is that the pool will be shut down and all running threads in the pool will be interrupted. It is
+ * important for this that ForkJoinPool.commonPool() NOT be used, calling shutdown() or shutdownNow() on it will have no
+ * effect. (See the documentation for those methods in ForkJoinPool.) These methods are idempotent, so it is safe to
+ * call them even if the pool has already been shut down and threads already interrupted.
+ * <p>
+ * It is important that all time-consuming methods in the Tetrad codebase check Thread.currentThread().isInterrupted(),
+ * call ForkJoin.getInstance().getPool().shutdownNow() if it returns true, and return immediately or break out of the
+ * loop. This will allow the user to interrupt the algorithm and have it shut down gracefully. It will also all the stop
+ * button in the GUI to work correctly.
  *
  * @author josephramsey
  * @version $Id: $Id
