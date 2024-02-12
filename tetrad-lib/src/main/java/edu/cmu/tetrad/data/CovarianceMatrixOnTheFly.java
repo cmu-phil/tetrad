@@ -36,6 +36,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Stores a covariance matrix together with variable names and sample size, intended as a representation of a data set.
@@ -284,6 +285,10 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         } catch (Exception e) {
             Thread.currentThread().interrupt();
             throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
         }
 
         if (verbose) {

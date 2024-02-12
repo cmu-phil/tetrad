@@ -868,8 +868,16 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
         AdjTask task = new AdjTask(pairs, 0, pairs.size());
 
-        this.pool.invoke(task);
+        try {
+            this.pool.invoke(task);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
 
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
     }
 
     // Calculates the new arrows for an a->b edge.
@@ -984,7 +992,16 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         Set<Node> _adj = adjNodes(graph, x, y);
         List<Node> adj = new ArrayList<>(_adj);
 
-        this.pool.invoke(new BackwardTask(adj, this.minChunk, 0, adj.size(), this.hashIndices));
+        try {
+            this.pool.invoke(new BackwardTask(adj, this.minChunk, 0, adj.size(), this.hashIndices));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
     }
 
     // Calculates the arrows for the removal in the backward direction.

@@ -36,6 +36,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Basic graph utilities.
@@ -1262,9 +1263,19 @@ public final class GraphUtils {
         ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
 
         CountTask task = new CountTask(500, 0, edges.size(), edges, leftGraph, topGraph, new int[1]);
-        Counts counts = pool.invoke(task);
 
-        return counts.countArray();
+        try {
+            Counts counts = pool.invoke(task);
+
+            if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+                throw new IllegalStateException("Pool timed out");
+            }
+
+            return counts.countArray();
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
     }
 
     private static int getTypeTop(Edge edgeTop) {

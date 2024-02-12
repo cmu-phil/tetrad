@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.TimeUnit;
 
 /**
  * StARS
@@ -109,7 +110,16 @@ public class StARS implements Algorithm {
 
         final int chunk = 1;
 
-        pool.invoke(new StabilityAction(chunk, 0, samples.size()));
+        try {
+            pool.invoke(new StabilityAction(chunk, 0, samples.size()));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
 
         int p = samples.get(0).getNumColumns();
         List<Node> nodes = graphs.get(0).getNodes();

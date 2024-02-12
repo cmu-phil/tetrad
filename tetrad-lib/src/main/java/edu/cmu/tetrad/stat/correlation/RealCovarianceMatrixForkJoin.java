@@ -73,6 +73,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
             pool.invoke(new CovarianceLowerTriangleAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
         } catch (Exception e) {
             Thread.currentThread().interrupt();
+            throw e;
         }
 
         if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
@@ -98,6 +99,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
             pool.invoke(new CovarianceAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
         } catch (Exception e) {
             Thread.currentThread().interrupt();
+            throw e;
         }
 
         if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {

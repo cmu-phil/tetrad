@@ -40,6 +40,7 @@ import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
@@ -242,7 +243,17 @@ public final class LargeScaleSimulation {
         int chunk = sampleSize / (Runtime.getRuntime().availableProcessors());
 
         ForkJoinPool pool = ForkJoinUtils.getPool(Runtime.getRuntime().availableProcessors());
-        pool.invoke(new SimulateTask(0, sampleSize, all, chunk));
+
+        try {
+            pool.invoke(new SimulateTask(0, sampleSize, all, chunk));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
 
         if (this.graph instanceof TimeLagGraph) {
             int[] rem = new int[200];

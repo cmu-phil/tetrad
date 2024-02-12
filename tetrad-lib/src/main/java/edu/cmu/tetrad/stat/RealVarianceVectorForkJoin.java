@@ -24,6 +24,7 @@ import java.io.Serial;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Feb 9, 2016 3:15:29 PM
@@ -66,11 +67,13 @@ public class RealVarianceVectorForkJoin implements RealVariance {
             pool.invoke(new MeanAction(this.data, means, 0, this.numOfCols - 1));
             pool.invoke(new VarianceAction(this.data, means, biasCorrected, 0, this.numOfCols - 1));
         } catch (Exception e) {
-            pool.shutdownNow();
             Thread.currentThread().interrupt();
+            throw e;
         }
 
-        pool.shutdown();
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
 
         return means;
     }

@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Runs a search algorithm over a N subsamples of size b to asses stability as in "Stability Selection" and "Stability
@@ -150,7 +151,16 @@ public class StabilityUtils {
 
         final int chunk = 2;
 
-        pool.invoke(new StabilityAction(chunk, 0, N));
+        try {
+            pool.invoke(new StabilityAction(chunk, 0, N));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
 
         thetaMat.assign(Functions.mult(1.0 / N));
 

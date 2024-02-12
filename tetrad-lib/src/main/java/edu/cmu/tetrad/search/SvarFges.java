@@ -488,7 +488,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             }
         }
 
-        this.pool.invoke(new InitializeFromEmptyGraphTask());
+        try {
+            this.pool.invoke(new InitializeFromEmptyGraphTask());
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
 
         long stop = MillisecondTimes.timeMillis();
 
@@ -597,7 +606,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             }
         }
 
-        this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        try {
+            this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
     }
 
     private void initializeForwardEdgesFromExistingGraph(List<Node> nodes) {
@@ -688,7 +706,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             }
         }
 
-        this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        try {
+            this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
     }
 
     private void fes() {
@@ -1106,6 +1133,10 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             } catch (Exception e) {
                 Thread.currentThread().interrupt();
                 throw e;
+            }
+
+            if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+                throw new IllegalStateException("Pool timed out");
             }
         }
     }

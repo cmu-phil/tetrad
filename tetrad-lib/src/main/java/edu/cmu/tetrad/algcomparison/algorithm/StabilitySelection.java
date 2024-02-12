@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Stability selection.
@@ -96,7 +97,16 @@ public class StabilitySelection implements Algorithm {
 
         final int chunk = 2;
 
-        pool.invoke(new StabilityAction(chunk, 0, numSubsamples));
+        try {
+            pool.invoke(new StabilityAction(chunk, 0, numSubsamples));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
 
         for (Graph graph : graphs) {
             for (Edge edge : graph.getEdges()) {
