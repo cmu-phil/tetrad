@@ -897,7 +897,7 @@ public class TimeoutComparison {
             }
         }
 
-        ForkJoinPool pool = ForkJoin.getInstance().newPool(1);
+        ForkJoinPool pool = new ForkJoinPool(1);
         tasks.forEach(task -> {
             Future<Void> future = pool.submit(task);
             try {
@@ -932,7 +932,7 @@ public class TimeoutComparison {
         try {
             // Wait a while for existing tasks to terminate
             if (!pool.awaitTermination(1, TimeUnit.SECONDS)) {
-                ForkJoin.getInstance().getPool().shutdownNow(); // Cancel currently executing tasks
+                pool.shutdownNow(); // Cancel currently executing tasks
                 // Wait a while for tasks to respond to being cancelled
                 if (!pool.awaitTermination(1, TimeUnit.SECONDS)) {
                     System.err.println("Pool did not terminate");
@@ -940,7 +940,7 @@ public class TimeoutComparison {
             }
         } catch (InterruptedException ie) {
             // (Re-)Cancel if current thread also interrupted
-            ForkJoin.getInstance().getPool().shutdownNow();
+            pool.shutdownNow();
             // Preserve interrupt status
             Thread.currentThread().interrupt();
         }

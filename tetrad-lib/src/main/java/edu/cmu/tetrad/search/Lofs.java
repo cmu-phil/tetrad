@@ -348,7 +348,6 @@ public class Lofs {
 
         for (Edge edge : skeleton.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 
@@ -368,7 +367,6 @@ public class Lofs {
 
         for (Node node : skeleton.getNodes()) {
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 
@@ -389,7 +387,6 @@ public class Lofs {
 
         for (Edge edge : _graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 
@@ -420,7 +417,6 @@ public class Lofs {
 
         for (Node node : nodes) {
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 
@@ -443,7 +439,6 @@ public class Lofs {
 
             while ((choice = gen.next()) != null) {
                 if (Thread.currentThread().isInterrupted()) {
-                    ForkJoin.getInstance().getPool().shutdownNow();
                     break;
                 }
 
@@ -470,7 +465,6 @@ public class Lofs {
 
             for (Node _node : adj) {
                 if (Thread.currentThread().isInterrupted()) {
-                    ForkJoin.getInstance().getPool().shutdownNow();
                     break;
                 }
 
@@ -486,7 +480,6 @@ public class Lofs {
 
         for (Edge edge : skeleton.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 

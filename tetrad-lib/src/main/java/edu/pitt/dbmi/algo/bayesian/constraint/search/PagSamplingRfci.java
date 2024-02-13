@@ -79,7 +79,7 @@ public class PagSamplingRfci implements IGraphSearch {
     private List<Graph> runSearches() {
         List<Graph> graphs = new LinkedList<>();
 
-        ForkJoinPool pool = ForkJoin.getInstance().newPool(NUM_THREADS);
+        ForkJoinPool pool = new ForkJoinPool(NUM_THREADS);
         try {
             while (graphs.size() < numRandomizedSearchModels && !Thread.currentThread().isInterrupted()) {
                 List<Callable<Graph>> callableTasks = createTasks(numRandomizedSearchModels - graphs.size());
@@ -112,14 +112,14 @@ public class PagSamplingRfci implements IGraphSearch {
         pool.shutdown();
         try {
             if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
-                ForkJoin.getInstance().getPool().shutdownNow();
+                pool.shutdownNow();
                 Thread.currentThread().interrupt();
                 if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
                     System.err.println("Pool did not terminate");
                 }
             }
         } catch (InterruptedException ie) {
-            ForkJoin.getInstance().getPool().shutdownNow();
+            pool.shutdownNow();
             Thread.currentThread().interrupt();
         }
     }

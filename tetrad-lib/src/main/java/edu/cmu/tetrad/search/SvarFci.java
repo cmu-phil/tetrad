@@ -343,7 +343,6 @@ public final class SvarFci implements IGraphSearch {
 
         for (i = 0; i < ntiers - tier_diff; ++i) {
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 

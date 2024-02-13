@@ -68,7 +68,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     // The top n graphs found by the algorithm, where n is numCPDAGsToStore.
     private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
     // The static ForkJoinPool instance.
-    private final ForkJoinPool pool = ForkJoin.getInstance().newPool(maxThreads);
+    private final ForkJoinPool pool = new ForkJoinPool(maxThreads);
     // The number of graphs searched.
     private final int[] count = new int[1];
     // The set of removed edges.
@@ -657,7 +657,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                 if (this.to - this.from <= this.chunk) {
                     for (int i = this.from; i < this.to; i++) {
                         if (Thread.currentThread().isInterrupted()) {
-                            ForkJoin.getInstance().getPool().shutdownNow();
                             break;
                         }
 

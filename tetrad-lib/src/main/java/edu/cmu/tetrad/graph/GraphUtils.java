@@ -1260,7 +1260,8 @@ public final class GraphUtils {
 
         List<Edge> edges = new ArrayList<>(edgeSet);
 
-        ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
 
         CountTask task = new CountTask(500, 0, edges.size(), edges, leftGraph, topGraph, new int[1]);
 
@@ -1778,7 +1779,6 @@ public final class GraphUtils {
                                                 SepsetProducer sepsets) {
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 

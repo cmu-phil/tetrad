@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
 /**
@@ -370,7 +371,8 @@ public final class FciMax implements IGraphSearch {
 
         Task task = new Task(nodes, graph, 0, nodes.size());
 
-        ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors()).invoke(task);
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        new ForkJoinPool(parallelism).invoke(task);
 
         List<Triple> tripleList = new ArrayList<>(scores.keySet());
 

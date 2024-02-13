@@ -58,7 +58,8 @@ public class ForkJoin {
      * Private constructor.
      */
     private ForkJoin() {
-        pool = newPool(Runtime.getRuntime().availableProcessors());
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        pool = new ForkJoinPool(parallelism);
     }
 
     /**
@@ -68,37 +69,6 @@ public class ForkJoin {
      */
     public static ForkJoin getInstance() {
         return instance;
-    }
-
-    /**
-     * Returns a ForkJoinPool with the given parallelism. If parallelism is 1, returns the common pool. A call to this
-     * method will shut down the current pool and create a new one.
-     *
-     * @param parallelism the number of threads to use.
-     * @return a new ForkJoinPool with the given parallelism.
-     */
-    public ForkJoinPool newPool(int parallelism) {
-//        if (parallelism == 1) {
-//            pool = ForkJoinPool.commonPool();
-//            return this.pool;
-//        }
-
-        if (parallelism != pool.getParallelism()) {
-            pool.shutdownNow();
-            this.pool = new ForkJoinPool(parallelism);
-        };
-//        }
-
-        return this.pool;
-    }
-
-    /**
-     * Returns the stored ForkJoinPool.
-     *
-     * @return the stored ForkJoinPool.
-     */
-    public ForkJoinPool getPool() {
-        return pool;
     }
 }
 

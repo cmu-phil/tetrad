@@ -142,7 +142,6 @@ public final class SvarGfci implements IGraphSearch {
 
             while ((combination = cg.next()) != null) {
                 if (Thread.currentThread().isInterrupted()) {
-                    ForkJoin.getInstance().getPool().shutdownNow();
                     break;
                 }
 

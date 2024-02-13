@@ -445,7 +445,6 @@ public final class FgesMb implements DagScorer {
 
         for (int i = 0; i < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 
@@ -460,7 +459,8 @@ public final class FgesMb implements DagScorer {
         }
 
         if (parallelized) {
-            ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+            int parallelism = Runtime.getRuntime().availableProcessors();
+            ForkJoinPool pool = new ForkJoinPool(parallelism);
             try {
                 pool.invokeAll(tasks);
             } catch (Exception e) {
@@ -612,7 +612,6 @@ public final class FgesMb implements DagScorer {
 
         for (int i = 0; i < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 
@@ -626,7 +625,8 @@ public final class FgesMb implements DagScorer {
         }
 
         if (this.parallelized) {
-            ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+            int parallelism = Runtime.getRuntime().availableProcessors();
+            ForkJoinPool pool = new ForkJoinPool(parallelism);
             try {
                 pool.invokeAll(tasks);
             } catch (Exception e) {
@@ -729,7 +729,8 @@ public final class FgesMb implements DagScorer {
         }
 
         if (this.parallelized) {
-            ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+            int parallelism = Runtime.getRuntime().availableProcessors();
+            ForkJoinPool pool = new ForkJoinPool(parallelism);
             List<Future<EvalPair>> futures = pool.invokeAll(tasks);
 
             for (Future<EvalPair> future : futures) {

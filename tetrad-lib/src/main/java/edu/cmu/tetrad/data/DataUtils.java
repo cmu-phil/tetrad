@@ -440,7 +440,8 @@ public final class DataUtils {
 
         int NTHREADS = Runtime.getRuntime().availableProcessors();
 
-        ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
 
         for (int t = 0; t < NTHREADS; t++) {
             int _t = t;

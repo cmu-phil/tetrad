@@ -145,7 +145,6 @@ public final class Fci implements IGraphSearch {
         Set<Node> remVars = new HashSet<>();
         for (Node node1 : this.variables) {
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 

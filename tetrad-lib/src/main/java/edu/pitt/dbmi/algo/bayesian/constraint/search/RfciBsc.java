@@ -329,7 +329,8 @@ public class RfciBsc implements IGraphSearch {
                 tasks.add(new SearchPagTask());
             }
 
-            ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+            int parallelism = Runtime.getRuntime().availableProcessors();
+            ForkJoinPool pool = new ForkJoinPool(parallelism);
             pool.invokeAll(tasks);
             trial++;
         }
@@ -394,7 +395,8 @@ public class RfciBsc implements IGraphSearch {
             tasks.add(new BootstrapDepDataTask(b, rows));
         }
 
-        ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+        int parallelism1 = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool pool = new ForkJoinPool(parallelism1);
         pool.invokeAll(tasks);
 
         // learn structure of constraints using empirical data => constraint data
@@ -457,7 +459,8 @@ public class RfciBsc implements IGraphSearch {
             tasks.add(new CalculateBscScoreTask(pagOrig));
         }
 
-        pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        pool = new ForkJoinPool(parallelism);
         pool.invokeAll(tasks);
 
         for (int i = 0; i < this.pAGs.size(); i++) {
@@ -736,7 +739,7 @@ public class RfciBsc implements IGraphSearch {
         try {
             // Wait a while for existing tasks to terminate
             if (!pool.awaitTermination(1, TimeUnit.SECONDS)) {
-                ForkJoin.getInstance().getPool().shutdownNow(); // Cancel currently executing tasks
+                pool.shutdownNow(); // Cancel currently executing tasks
                 Thread.currentThread().interrupt();
                 // Wait a while for tasks to respond to being cancelled
                 if (!pool.awaitTermination(1, TimeUnit.SECONDS)) {
@@ -745,7 +748,7 @@ public class RfciBsc implements IGraphSearch {
             }
         } catch (InterruptedException ie) {
             // (Re-)Cancel if current thread also interrupted
-            ForkJoin.getInstance().getPool().shutdownNow();
+            pool.shutdownNow();
             // Preserve interrupt status
             Thread.currentThread().interrupt();
         }

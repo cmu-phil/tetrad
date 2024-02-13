@@ -375,7 +375,6 @@ public class Fas implements IFas {
             Node y = edge.getNode2();
 
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 

@@ -53,7 +53,6 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
 
 /**
  * Script to do a comparison of a list of algorithms using a list of statistics and a list of parameters and their
@@ -1018,7 +1017,8 @@ public class Comparison {
             }
         }
 
-        ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
 
         try {
             pool.invokeAll(tasks);

@@ -876,7 +876,7 @@ public final class Params {
     /**
      * Constant <code>BOOTSTRAPPING_NUM_THEADS="bootstrappingNumThreads"</code>
      */
-    private static final String BOOTSTRAPPING_NUM_THEADS = "bootstrappingNumThreads";
+    public static final String BOOTSTRAPPING_NUM_THEADS = "bootstrappingNumThreads";
 
     /**
      * Constant <code>USE_PSEUDOINVERSE="usePseudoinverse"</code>

@@ -456,7 +456,6 @@ public class Grasp {
 
             for (Node x : parents) {
                 if (Thread.currentThread().isInterrupted())  {
-                    ForkJoin.getInstance().getPool().shutdownNow();
                     return;
                 }
 

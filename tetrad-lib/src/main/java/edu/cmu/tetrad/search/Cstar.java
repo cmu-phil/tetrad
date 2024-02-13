@@ -699,7 +699,8 @@ public class Cstar {
 
         List<double[][]> results = new ArrayList<>();
 
-        ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
 
         List<Future<double[][]>> futures = pool.invokeAll(tasks);
 

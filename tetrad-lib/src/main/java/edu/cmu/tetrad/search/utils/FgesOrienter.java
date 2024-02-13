@@ -52,7 +52,13 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
     private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
     // The static ForkJoinPool instance.
-    private final ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+    private final ForkJoinPool pool;
+
+    {
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        pool = new ForkJoinPool(parallelism);
+    }
+
     // The minimum number of operations to do before parallelizing.
     private final int minChunk = 100;
     // A utility map to help with orientation.

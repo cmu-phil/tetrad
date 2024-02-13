@@ -56,6 +56,7 @@ public class GeneralResamplingTest {
      * @param resamplingWithReplacement whether resampling with replacement.
      * @param edgeEnsemble              the edge ensemble.
      * @param addOriginalDataset        whether to add the original dataset.
+     * @param bootstrappingNumThreads   the number of threads to use for bootstrapping.
      */
     public GeneralResamplingTest(
             DataSet data,
@@ -64,12 +65,14 @@ public class GeneralResamplingTest {
             double percentResamplingSize,
             boolean resamplingWithReplacement,
             int edgeEnsemble,
-            boolean addOriginalDataset) {
+            boolean addOriginalDataset,
+            int bootstrappingNumThreads) {
         this.algorithm = algorithm;
         this.resamplingSearch = new GeneralResamplingSearch(data, numberResampling);
         this.resamplingSearch.setPercentResampleSize(percentResamplingSize);
         this.resamplingSearch.setResamplingWithReplacement(resamplingWithReplacement);
         this.resamplingSearch.setAddOriginalDataset(addOriginalDataset);
+        this.numBootstrapThreads = bootstrappingNumThreads;
 
         switch (edgeEnsemble) {
             case 1:
@@ -99,18 +102,22 @@ public class GeneralResamplingTest {
      * @param resamplingWithReplacement whether resampling with replacement.
      * @param edgeEnsemble              the edge ensemble.
      * @param addOriginalDataset        whether to add the original dataset.
+     * @param bootstrappingNumThreads   the number of threads to use for bootstrapping.
      */
     public GeneralResamplingTest(
-            List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm,
+            List<DataSet> dataSets,
+            MultiDataSetAlgorithm multiDataSetAlgorithm,
             int numberResampling,
             double percentResamplingSize,
             boolean resamplingWithReplacement,
-            int edgeEnsemble, boolean addOriginalDataset) {
+            int edgeEnsemble,
+            boolean addOriginalDataset, int bootstrappingNumThreads) {
         this.multiDataSetAlgorithm = multiDataSetAlgorithm;
         this.resamplingSearch = new GeneralResamplingSearch(dataSets, numberResampling);
         this.resamplingSearch.setPercentResampleSize(percentResamplingSize);
         this.resamplingSearch.setResamplingWithReplacement(resamplingWithReplacement);
         this.resamplingSearch.setAddOriginalDataset(addOriginalDataset);
+        this.numBootstrapThreads = bootstrappingNumThreads;
 
         switch (edgeEnsemble) {
             case 1:
@@ -420,8 +427,8 @@ public class GeneralResamplingTest {
 
     /**
      * Sets the number of threads to use for bootstrapping. Must be at least 1. Default is 1. Note that this is the
-     * number of threads to use for bootstrapping, not the number of threads to use for the search itself. The n
-     * umber of threads to use for each search is determined by the algorithm being used.
+     * number of threads to use for bootstrapping, not the number of threads to use for the search itself. The n umber
+     * of threads to use for each search is determined by the algorithm being used.
      *
      * @param numBootstrapThreads the number of threads to use for bootstrapping.
      */

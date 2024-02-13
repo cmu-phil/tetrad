@@ -186,7 +186,7 @@ public class TestGeneralResamplingTest {
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(
                 data, algorithm, numBootstrapSamples, 100.0,
-                true, 1, true);
+                true, 1, true, parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
         bootstrapTest.setVerbose(verbose);
         bootstrapTest.setParameters(parameters);
         Graph resultGraph = bootstrapTest.search();
@@ -238,7 +238,7 @@ public class TestGeneralResamplingTest {
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
                 numBootstrapSamples, 100.0,
-                true, 1, true);
+                true, 1, true, parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
         bootstrapTest.setVerbose(verbose);
         bootstrapTest.setParameters(parameters);
         Graph resultGraph = bootstrapTest.search();
@@ -287,7 +287,7 @@ public class TestGeneralResamplingTest {
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
                 numBootstrapSamples, 100.0,
-                true, 1, true);
+                true, 1, true, parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
         bootstrapTest.setVerbose(verbose);
         bootstrapTest.setParameters(parameters);
         Graph resultGraph = bootstrapTest.search();
@@ -343,7 +343,7 @@ public class TestGeneralResamplingTest {
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
                 numBootstrapSamples, 100.0,
-                true, 1, true);
+                true, 1, true, parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
         bootstrapTest.setVerbose(verbose);
         bootstrapTest.setParameters(parameters);
         Graph resultGraph = bootstrapTest.search();
@@ -397,7 +397,7 @@ public class TestGeneralResamplingTest {
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
                 numBootstrapSamples, 100.0,
-                true, 1, true);
+                true, 1, true, parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
         bootstrapTest.setVerbose(verbose);
         bootstrapTest.setParameters(parameters);
         Graph resultGraph = bootstrapTest.search();

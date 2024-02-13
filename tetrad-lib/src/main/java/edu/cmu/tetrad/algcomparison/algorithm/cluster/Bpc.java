@@ -121,7 +121,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
                     parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT),
-                    parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+                    parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET), parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();

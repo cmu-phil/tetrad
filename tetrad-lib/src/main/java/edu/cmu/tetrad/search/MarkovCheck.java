@@ -628,7 +628,6 @@ public class MarkovCheck {
 
         for (int i = 0; i < allIndependenceFacts.size() /*&& !Thread.currentThread().isInterrupted()*/; i++) {
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 
@@ -644,7 +643,8 @@ public class MarkovCheck {
         }
 
         if (parallelized) {
-            ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+            int parallelism = Runtime.getRuntime().availableProcessors();
+            ForkJoinPool pool = new ForkJoinPool(parallelism);
 
             List<Future<Pair<Set<IndependenceFact>, Set<IndependenceFact>>>> theseResults;
             theseResults = pool.invokeAll(tasks);
@@ -730,7 +730,6 @@ public class MarkovCheck {
 
         for (int i = 0; i < facts.size() /*&& !Thread.currentThread().isInterrupted()*/; i++) {
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
                 break;
             }
 
@@ -746,7 +745,8 @@ public class MarkovCheck {
         }
 
         if (parallelized) {
-            ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+            int parallelism = Runtime.getRuntime().availableProcessors();
+            ForkJoinPool pool = new ForkJoinPool(parallelism);
             List<Future<Pair<Set<IndependenceResult>, Set<IndependenceResult>>>> theseResults = null;
             theseResults = pool.invokeAll(tasks);
 
