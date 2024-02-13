@@ -874,6 +874,11 @@ public final class Params {
      */
     public static final String NUM_THREADS = "numThreads";
     /**
+     * Constant <code>BOOTSTRAPPING_NUM_THEADS="bootstrappingNumThreads"</code>
+     */
+    private static final String BOOTSTRAPPING_NUM_THEADS = "bootstrappingNumThreads";
+
+    /**
      * Constant <code>USE_PSEUDOINVERSE="usePseudoinverse"</code>
      */
     public static final String USE_PSEUDOINVERSE = "usePseudoinverse";
@@ -920,6 +925,7 @@ public final class Params {
             Params.PERCENT_RESAMPLE_SIZE,
 //            Params.RESAMPLING_ENSEMBLE,
             Params.RESAMPLING_WITH_REPLACEMENT,
+            Params.BOOTSTRAPPING_NUM_THEADS,
             Params.SAVE_BOOTSTRAP_GRAPHS,
             Params.SEED
     ));

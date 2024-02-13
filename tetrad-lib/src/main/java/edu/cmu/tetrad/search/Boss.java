@@ -148,7 +148,7 @@ public class Boss implements SuborderSearch {
 
 //        if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
 //        else this.pool = ForkJoinPool.commonPool();
-        this.pool = ForkJoin.getInstance().newPool(this.numThreads);
+        this.pool = new ForkJoinPool(this.numThreads);//  ForkJoin.getInstance().newPool(this.numThreads);
 
         for (int i = 0; i < this.numStarts; i++) {
 
@@ -360,7 +360,7 @@ public class Boss implements SuborderSearch {
 
         for (Node z : suborder) {
             if (Thread.currentThread().isInterrupted()) {
-                ForkJoin.getInstance().getPool().shutdownNow();
+                pool.shutdownNow();
                 Thread.currentThread().interrupt();
                 return false;
             }

@@ -78,10 +78,18 @@ public class ForkJoin {
      * @return a new ForkJoinPool with the given parallelism.
      */
     public ForkJoinPool newPool(int parallelism) {
-        pool.shutdownNow();
-        ForkJoinPool pool = new ForkJoinPool(parallelism);
-        this.pool = pool;
-        return pool;
+//        if (parallelism == 1) {
+//            pool = ForkJoinPool.commonPool();
+//            return this.pool;
+//        }
+
+        if (parallelism != pool.getParallelism()) {
+            pool.shutdownNow();
+            this.pool = new ForkJoinPool(parallelism);
+        };
+//        }
+
+        return this.pool;
     }
 
     /**

@@ -18,8 +18,6 @@
  */
 package edu.cmu.tetrad.stat.correlation;
 
-import edu.cmu.tetrad.util.ForkJoin;
-
 import java.io.Serial;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,7 +33,6 @@ import java.util.concurrent.TimeUnit;
  * @version $Id: $Id
  */
 public class RealCovarianceMatrixForkJoin implements RealCovariance {
-    private static final long serialVersionUID = 23L;
 
     private final double[][] data;
 
@@ -55,7 +52,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         this.data = data;
         this.numOfRows = data.length;
         this.numOfCols = data[0].length;
-        this.numOfThreads = (numOfThreads > this.numOfCols) ? this.numOfCols : numOfThreads;
+        this.numOfThreads = Math.min(numOfThreads, this.numOfCols);
     }
 
     /**
@@ -66,20 +63,10 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         double[] covarianceMatrix = new double[(this.numOfCols * (this.numOfCols + 1)) / 2];
         double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
-
-        try {
-            pool.invoke(new MeanAction(means, this.data, 0, this.numOfCols - 1));
-            pool.invoke(new CovarianceLowerTriangleAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
-        } catch (Exception e) {
-            Thread.currentThread().interrupt();
-            throw e;
-        }
-
-        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Processing timed out.");
-        }
+        ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
+        pool.invoke(new MeanAction(means, this.data, 0, this.numOfCols - 1));
+        pool.invoke(new CovarianceLowerTriangleAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
+        pool.shutdown();
 
         return covarianceMatrix;
     }
@@ -92,13 +79,14 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         double[][] covarianceMatrix = new double[this.numOfCols][this.numOfCols];
         double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+        ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
 
         try {
             pool.invoke(new MeanAction(means, this.data, 0, this.numOfCols - 1));
             pool.invoke(new CovarianceAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
         } catch (Exception e) {
             Thread.currentThread().interrupt();
+            pool.shutdownNow();
             throw e;
         }
 
@@ -167,10 +155,10 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
                 }
-
-                invokeAll(actions);
+                ForkJoinTask.invokeAll(actions);
             }
         }
+
     }
 
     class CovarianceLowerTriangleAction extends RecursiveAction {
@@ -229,7 +217,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
                 }
-                invokeAll(actions);
+                ForkJoinTask.invokeAll(actions);
             }
         }
 
@@ -281,7 +269,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
                     startIndex = endIndex + 1;
                     endIndex = startIndex + delta;
                 }
-                invokeAll(actions);
+                ForkJoinTask.invokeAll(actions);
             }
         }
     }

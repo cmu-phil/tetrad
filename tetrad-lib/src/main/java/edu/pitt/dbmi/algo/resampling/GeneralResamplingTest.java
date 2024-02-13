@@ -41,6 +41,10 @@ public class GeneralResamplingTest {
      * An initial graph to start from.
      */
     private Graph externalGraph;
+    /**
+     * The number of threads to use for bootstrapping. Must be at least 1. Default is 1.
+     */
+    private int numBootstrapThreads = 1;
 
     /**
      * Constructor.
@@ -58,7 +62,9 @@ public class GeneralResamplingTest {
             Algorithm algorithm,
             int numberResampling,
             double percentResamplingSize,
-            boolean resamplingWithReplacement, int edgeEnsemble, boolean addOriginalDataset) {
+            boolean resamplingWithReplacement,
+            int edgeEnsemble,
+            boolean addOriginalDataset) {
         this.algorithm = algorithm;
         this.resamplingSearch = new GeneralResamplingSearch(data, numberResampling);
         this.resamplingSearch.setPercentResampleSize(percentResamplingSize);
@@ -337,8 +343,7 @@ public class GeneralResamplingTest {
         } else {
             this.resamplingSearch.setMultiDataSetAlgorithm(this.multiDataSetAlgorithm);
         }
-        boolean runParallel = true;
-        this.resamplingSearch.setRunParallel(runParallel);
+        this.resamplingSearch.setNumBootstrapThreads(this.numBootstrapThreads);
         this.resamplingSearch.setVerbose(this.verbose);
         this.resamplingSearch.setParameters(this.parameters);
         this.resamplingSearch.setScoreWrapper(scoreWrapper);
@@ -411,5 +416,16 @@ public class GeneralResamplingTest {
      */
     public List<Graph> getGraphs() {
         return graphs == null ? new ArrayList<>() : new ArrayList<>(this.graphs);
+    }
+
+    /**
+     * Sets the number of threads to use for bootstrapping. Must be at least 1. Default is 1. Note that this is the
+     * number of threads to use for bootstrapping, not the number of threads to use for the search itself. The n
+     * umber of threads to use for each search is determined by the algorithm being used.
+     *
+     * @param numBootstrapThreads the number of threads to use for bootstrapping.
+     */
+    public void setNumBootstrapThreads(int numBootstrapThreads) {
+        this.numBootstrapThreads = numBootstrapThreads;
     }
 }

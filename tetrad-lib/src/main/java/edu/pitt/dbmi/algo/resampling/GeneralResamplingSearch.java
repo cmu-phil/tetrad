@@ -8,7 +8,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.ForkJoin;
+import edu.cmu.tetrad.search.utils.Tetrad;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
@@ -40,10 +41,10 @@ public class GeneralResamplingSearch {
     private MultiDataSetAlgorithm multiDataSetAlgorithm;
     private double percentResampleSize = 100.;
     private boolean resamplingWithReplacement = true;
-    private boolean runParallel;
     private boolean addOriginalDataset;
     private boolean verbose;
     private DataSet data;
+    private int numBootstrapThreads = 1;
 
     private List<DataSet> dataSets;
 
@@ -71,7 +72,7 @@ public class GeneralResamplingSearch {
      */
     public GeneralResamplingSearch(DataSet data, int numberResampling) {
         this.data = data;
-        this.pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+        this.pool = new ForkJoinPool(numberResampling);
         this.numberResampling = numberResampling;
     }
 
@@ -83,7 +84,7 @@ public class GeneralResamplingSearch {
      */
     public GeneralResamplingSearch(List<DataSet> dataSets, int numberResampling) {
         this.dataSets = dataSets;
-        this.pool = ForkJoin.getInstance().newPool(Runtime.getRuntime().availableProcessors());
+        this.pool = new ForkJoinPool(numBootstrapThreads);
         this.numberResampling = numberResampling;
     }
 
@@ -123,15 +124,6 @@ public class GeneralResamplingSearch {
      */
     public void setResamplingWithReplacement(boolean resamplingWithReplacement) {
         this.resamplingWithReplacement = resamplingWithReplacement;
-    }
-
-    /**
-     * Sets whether to run in parallel.
-     *
-     * @param runParallel whether to run in parallel.
-     */
-    public void setRunParallel(boolean runParallel) {
-        this.runParallel = runParallel;
     }
 
     /**
@@ -296,43 +288,59 @@ public class GeneralResamplingSearch {
         }
 
         int numNoGraph = 0;
+
         List<Future<Graph>> futures = this.pool.invokeAll(tasks);
 
         for (Future<Graph> future : futures) {
+            Graph graph;
             try {
-                Graph graph = future.get();
+                graph = future.get();
 
                 if (graph == null) {
                     numNograph++;
                 } else {
                     this.graphs.add(graph);
                 }
-            } catch (Exception e) {
-                TetradLogger.getInstance().forceLogMessage("Error in GeneralResamplingSearch: " + e.getMessage());
+            } catch (InterruptedException | ExecutionException e) {
+                TetradLogger.getInstance().forceLogMessage("Skipping a result because of an error in GeneralResamplingSearch: "
+                        + e.getMessage());
             }
         }
 
-        this.parameters.set("numberResampling",this.numberResampling);
-        this.numNograph =numNoGraph;
+        this.parameters.set("numberResampling", this.numberResampling);
+        this.numNograph = numNoGraph;
 
         return this.graphs;
-}
+    }
 
-/**
- * Returns the number of no graph.
- *
- * @return the number of no graph.
- */
-public int getNumNograph() {
-    return numNograph;
-}
+    /**
+     * Returns the number of no graph.
+     *
+     * @return the number of no graph.
+     */
+    public int getNumNograph() {
+        return numNograph;
+    }
 
-/**
- * Returns the score wrapper.
- *
- * @param scoreWrapper a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
- */
-public void setScoreWrapper(ScoreWrapper scoreWrapper) {
-    this.scoreWrapper = scoreWrapper;
-}
+    /**
+     * Returns the score wrapper.
+     *
+     * @param scoreWrapper a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
+    public void setScoreWrapper(ScoreWrapper scoreWrapper) {
+        this.scoreWrapper = scoreWrapper;
+    }
+
+    /**
+     * Sets the number of threads to use for bootstrapping. Must be at least 1. Note that this is the number of threads
+     * used for the bootstrapping itself, not the number of threads used for each search; the latter is determined by the
+     * individual search algorithm.
+     *
+     * @param numBootstrapThreads the number of threads to use for bootstrapping.
+     */
+    public void setNumBootstrapThreads(int numBootstrapThreads) {
+        if (numBootstrapThreads < 1)
+            throw new IllegalArgumentException("Number of bootstrap threads must be at least 1");
+        this.numBootstrapThreads = numBootstrapThreads;
+    }
 }
