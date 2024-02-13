@@ -9,7 +9,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.RowsSettable;
-import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.UniformityTest;

@@ -30,7 +30,6 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 

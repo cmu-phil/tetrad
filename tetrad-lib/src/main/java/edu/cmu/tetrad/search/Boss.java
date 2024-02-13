@@ -6,7 +6,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.BesPermutation;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
-import edu.cmu.tetrad.util.ForkJoin;
 
 import java.util.*;
 import java.util.concurrent.Callable;

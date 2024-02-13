@@ -13,7 +13,6 @@ import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
-import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;

@@ -27,7 +27,6 @@ import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TextTable;
 

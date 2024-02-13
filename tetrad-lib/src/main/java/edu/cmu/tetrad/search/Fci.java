@@ -29,7 +29,6 @@ import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.search.utils.SepsetsSet;
-import edu.cmu.tetrad.util.ForkJoin;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
