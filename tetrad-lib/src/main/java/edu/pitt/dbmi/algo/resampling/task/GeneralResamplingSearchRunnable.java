@@ -64,7 +64,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     /**
      * Whether to print out verbose output.
      */
-    private final boolean verbose;
+    private boolean verbose = false;
 
     /**
      * <p>Constructor for GeneralResamplingSearchRunnable.</p>
@@ -72,10 +72,8 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
      * @param dataModel  a {@link DataModel} object
      * @param algorithm  a {@link Algorithm} object
      * @param parameters a {@link Parameters} object
-     * @param verbose    a boolean
      */
-    public GeneralResamplingSearchRunnable(DataModel dataModel, Algorithm algorithm, Parameters parameters,
-                                           boolean verbose) {
+    public GeneralResamplingSearchRunnable(DataModel dataModel, Algorithm algorithm, Parameters parameters) {
         if (dataModel == null) throw new NullPointerException("Data model null.");
         if (algorithm == null) throw new NullPointerException("Algorithm null.");
         if (parameters == null) throw new NullPointerException("Parameters null.");
@@ -83,7 +81,6 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
         this.dataModel = dataModel.copy();
         this.algorithm = algorithm;
         this.parameters = parameters;
-        this.verbose = verbose;
     }
 
     /**
@@ -92,10 +89,8 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
      * @param dataModel  a {@link List} object
      * @param algorithm  a {@link MultiDataSetAlgorithm} object
      * @param parameters a {@link Parameters} object
-     * @param verbose    a boolean
      */
-    public GeneralResamplingSearchRunnable(List<DataModel> dataModel, MultiDataSetAlgorithm algorithm, Parameters parameters,
-                                           boolean verbose) {
+    public GeneralResamplingSearchRunnable(List<DataModel> dataModel, MultiDataSetAlgorithm algorithm, Parameters parameters) {
         if (dataModel == null) throw new NullPointerException("Data model null.");
         if (algorithm == null) throw new NullPointerException("Algorithm null.");
         if (parameters == null) throw new NullPointerException("Parameters null.");
@@ -103,7 +98,6 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
         this.dataModels = dataModel;
         this.multiDataSetAlgorithm = algorithm;
         this.parameters = parameters;
-        this.verbose = verbose;
     }
 
     /**
@@ -199,5 +193,12 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
      */
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.independenceWrapper = independenceWrapper;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }

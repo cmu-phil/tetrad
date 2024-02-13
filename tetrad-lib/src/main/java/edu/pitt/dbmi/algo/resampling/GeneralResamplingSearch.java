@@ -263,21 +263,23 @@ public class GeneralResamplingSearch {
 
                 dataSet.setKnowledge(data.getKnowledge());
 
-                GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataSet, this.algorithm, this.parameters, this.verbose);
+                GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataSet, this.algorithm, this.parameters);
                 task.setKnowledge(this.knowledge);
                 tasks.add(task);
                 task.setScoreWrapper(scoreWrapper);
                 task.setIndependenceWrapper(independenceWrapper);
+                task.setVerbose(verbose);
             }
 
             if (addOriginalDataset) {
                 GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(data.copy(),
-                        this.algorithm, this.parameters,
-                        this.verbose);
+                        this.algorithm, this.parameters
+                );
                 task.setKnowledge(this.knowledge);
                 tasks.add(task);
                 task.setScoreWrapper(scoreWrapper);
                 task.setIndependenceWrapper(independenceWrapper);
+                task.setVerbose(verbose);
             }
         } else {
             for (int i1 = 0; i1 < this.numberResampling; i1++) {
@@ -299,10 +301,11 @@ public class GeneralResamplingSearch {
                 }
 
                 GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataModels,
-                        this.multiDataSetAlgorithm, this.parameters,
-                        this.verbose);
+                        this.multiDataSetAlgorithm, this.parameters
+                );
                 task.setKnowledge(dataModels.get(0).getKnowledge());
                 task.setScoreWrapper(scoreWrapper);
+                task.setVerbose(verbose);
 
                 tasks.add(task);
             }
