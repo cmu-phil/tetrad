@@ -359,10 +359,6 @@ public class GeneralResamplingTest {
             this.resamplingSearch.setKnowledge(this.knowledge);
         }
 
-        if (this.externalGraph != null) {
-            this.resamplingSearch.setExternalGraph(this.externalGraph);
-        }
-
         if (this.verbose) {
             if (this.algorithm != null) {
                 this.out.println("Resampling on the " + this.algorithm.getDescription());
@@ -372,7 +368,7 @@ public class GeneralResamplingTest {
         }
 
         this.graphs = this.resamplingSearch.search();
-        int numNoGraphs = this.resamplingSearch.getNumNograph();
+        int numNoGraphs = this.resamplingSearch.getNumRunsReturningNullGraph();
 
         TetradLogger.getInstance().forceLogMessage(
                 "Bootstrapping: Number of searches that didn't return a graph = " + numNoGraphs);

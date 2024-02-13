@@ -59,10 +59,6 @@ public class GeneralResamplingSearch {
      */
     private Parameters parameters;
     /**
-     * An initial graph to start from.
-     */
-    private Graph externalGraph;
-    /**
      * The list of returns graphs.
      */
     private final List<Graph> graphs = Collections.synchronizedList(new ArrayList<>());
@@ -99,9 +95,9 @@ public class GeneralResamplingSearch {
      */
     private PrintStream out = System.out;
     /**
-     * The number of algorithm runs that did not return a graph.
+     * The number of algorithms runs that did not return a graph.
      */
-    private int numNograph = 0;
+    private int numRunsReturningNullGraph = 0;
     /**
      * The score wrapper to pass to multi-data set algorithms.
      */
@@ -206,20 +202,11 @@ public class GeneralResamplingSearch {
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
-     * Sets the external graph, for use as an initial graph to start from.
-     *
-     * @param externalGraph the external graph.
-     */
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
-    }
-
-    /**
-     * Sets the output stream that output (except for log output) should be sent to. By default System.out.
+     * Sets the output stream that output (except for log output) should be sent to. By default, System.out.
      *
      * @param out the output stream.
      */
@@ -239,7 +226,7 @@ public class GeneralResamplingSearch {
     /**
      * Performs the search and returns the list of graphs.
      *
-     * @return the list of graphs. Some of these may be null, if the search algorithm did not return a graph.
+     * @return the list of graphs. Some of these may be null if the search algorithm did not return a graph.
      */
     public List<Graph> search() {
 
@@ -259,20 +246,17 @@ public class GeneralResamplingSearch {
             for (int i1 = 0; i1 < this.numberResampling; i1++) {
                 DataSet dataSet;
 
+                int sampleSize = (int) (data.getNumRows() * this.percentResampleSize / 100.0);
                 if (this.resamplingWithReplacement) {
                     if ((randomGenerator == null)) {
-                        int sampleSize = (int) (data.getNumRows() * this.percentResampleSize / 100.0);
                         dataSet = DataTransforms.getBootstrapSample(data, sampleSize);
                     } else {
-                        int sampleSize = (int) (data.getNumRows() * this.percentResampleSize / 100.0);
                         dataSet = DataTransforms.getBootstrapSample(data, sampleSize, randomGenerator);
                     }
                 } else {
                     if ((randomGenerator == null)) {
-                        int sampleSize = (int) (data.getNumRows() * this.percentResampleSize / 100.0);
                         dataSet = DataTransforms.getResamplingDataset(data, sampleSize);
                     } else {
-                        int sampleSize = (int) (data.getNumRows() * this.percentResampleSize / 100.0);
                         dataSet = DataTransforms.getResamplingDataset(data, sampleSize, randomGenerator);
                     }
                 }
@@ -280,7 +264,6 @@ public class GeneralResamplingSearch {
                 dataSet.setKnowledge(data.getKnowledge());
 
                 GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataSet, this.algorithm, this.parameters, this, this.verbose);
-                task.setExternalGraph(this.externalGraph);
                 task.setKnowledge(this.knowledge);
                 tasks.add(task);
                 task.setScoreWrapper(scoreWrapper);
@@ -291,7 +274,6 @@ public class GeneralResamplingSearch {
                 GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(data.copy(),
                         this.algorithm, this.parameters, this,
                         this.verbose);
-                task.setExternalGraph(this.externalGraph);
                 task.setKnowledge(this.knowledge);
                 tasks.add(task);
                 task.setScoreWrapper(scoreWrapper);
@@ -319,7 +301,6 @@ public class GeneralResamplingSearch {
                 GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataModels,
                         this.multiDataSetAlgorithm, this.parameters,
                         this.verbose);
-                task.setExternalGraph(this.externalGraph);
                 task.setKnowledge(dataModels.get(0).getKnowledge());
                 task.setScoreWrapper(scoreWrapper);
 
@@ -337,7 +318,7 @@ public class GeneralResamplingSearch {
                 graph = future.get();
 
                 if (graph == null) {
-                    numNograph++;
+                    numRunsReturningNullGraph++;
                 } else {
                     this.graphs.add(graph);
                 }
@@ -348,7 +329,7 @@ public class GeneralResamplingSearch {
         }
 
         this.parameters.set("numberResampling", this.numberResampling);
-        this.numNograph = numNoGraph;
+        this.numRunsReturningNullGraph = numNoGraph;
 
         return this.graphs;
     }
@@ -356,10 +337,10 @@ public class GeneralResamplingSearch {
     /**
      * Returns the number of algorithm runs that did not return a graph.
      *
-     * @return the number of algorithm runs that did not return a graph.
+     * @return the number of algorithms runs that did not return a graph.
      */
-    public int getNumNograph() {
-        return numNograph;
+    public int getNumRunsReturningNullGraph() {
+        return numRunsReturningNullGraph;
     }
 
     /**
@@ -381,9 +362,9 @@ public class GeneralResamplingSearch {
     }
 
     /**
-     * Sets the number of threads to use for bootstrapping. Must be at least 1. Note that this is the number of threads
-     * used for the bootstrapping itself, not the number of threads used for each search; the latter is determined by
-     * the individual search algorithm.
+     * Sets the number of threads to use for bootstrapping. Must be at least one. Note that this is the number of
+     * threads used for the bootstrapping itself, not the number of threads used for each search; the latter is
+     * determined by the individual search algorithm.
      *
      * @param numBootstrapThreads the number of threads to use for bootstrapping.
      */

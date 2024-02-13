@@ -47,10 +47,6 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
      */
     private MultiDataSetAlgorithm multiDataSetAlgorithm;
     /**
-     * An initial graph to start from.
-     */
-    private Graph externalGraph;
-    /**
      * Specification of forbidden and required edges.
      */
     private Knowledge knowledge = new Knowledge();
@@ -119,16 +115,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    /**
-     * Sets the initial graph to start from.
-     *
-     * @param externalGraph a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
