@@ -10,6 +10,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch;
 
 import java.io.PrintStream;
@@ -199,8 +200,8 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
 
             return graph;
         } catch (Exception e) {
-            e.printStackTrace();
-//            e.printStackTrace();
+            TetradLogger.getInstance().forceLogMessage("Exception in bootstrapping runnable: " + e.getMessage());
+            Thread.currentThread().interrupt();
             return null;
         }
     }
