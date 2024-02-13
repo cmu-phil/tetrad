@@ -8,7 +8,6 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -125,8 +124,6 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
      */
     @Override
     public Graph call() {
-        long start = MillisecondTimes.timeMillis();
-
         if (this.verbose) {
             this.out.println("thread started ... ");
         }
@@ -160,13 +157,6 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
                 }
 
                 graph = this.multiDataSetAlgorithm.search(this.dataModels, this.parameters);
-            }
-
-            long stop = MillisecondTimes.timeMillis();
-
-            if (this.verbose) {
-                this.out.println("processing time of resampling for a thread was: "
-                        + (stop - start) / 1000.0 + " sec");
             }
 
             return graph;
