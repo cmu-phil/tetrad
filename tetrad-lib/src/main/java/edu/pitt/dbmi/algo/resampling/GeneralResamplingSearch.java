@@ -263,7 +263,7 @@ public class GeneralResamplingSearch {
 
                 dataSet.setKnowledge(data.getKnowledge());
 
-                GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataSet, this.algorithm, this.parameters, this, this.verbose);
+                GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataSet, this.algorithm, this.parameters, this.verbose);
                 task.setKnowledge(this.knowledge);
                 tasks.add(task);
                 task.setScoreWrapper(scoreWrapper);
@@ -272,7 +272,7 @@ public class GeneralResamplingSearch {
 
             if (addOriginalDataset) {
                 GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(data.copy(),
-                        this.algorithm, this.parameters, this,
+                        this.algorithm, this.parameters,
                         this.verbose);
                 task.setKnowledge(this.knowledge);
                 tasks.add(task);

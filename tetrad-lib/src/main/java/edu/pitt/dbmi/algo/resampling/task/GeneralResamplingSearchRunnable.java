@@ -11,7 +11,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -70,18 +69,16 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     /**
      * <p>Constructor for GeneralResamplingSearchRunnable.</p>
      *
-     * @param dataModel                 a {@link edu.cmu.tetrad.data.DataModel} object
-     * @param algorithm                 a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithm} object
-     * @param parameters                a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param resamplingAlgorithmSearch a {@link edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch} object
-     * @param verbose                   a boolean
+     * @param dataModel  a {@link DataModel} object
+     * @param algorithm  a {@link Algorithm} object
+     * @param parameters a {@link Parameters} object
+     * @param verbose    a boolean
      */
     public GeneralResamplingSearchRunnable(DataModel dataModel, Algorithm algorithm, Parameters parameters,
-                                           GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
+                                           boolean verbose) {
         if (dataModel == null) throw new NullPointerException("Data model null.");
         if (algorithm == null) throw new NullPointerException("Algorithm null.");
         if (parameters == null) throw new NullPointerException("Parameters null.");
-        if (resamplingAlgorithmSearch == null) throw new NullPointerException("Resampling algorithms search null.");
 
         this.dataModel = dataModel.copy();
         this.algorithm = algorithm;
