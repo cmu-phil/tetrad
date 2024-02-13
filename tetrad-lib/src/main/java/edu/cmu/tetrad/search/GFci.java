@@ -277,7 +277,11 @@ public final class GFci implements IGraphSearch {
         this.depth = depth;
     }
 
-
+    /**
+     * Sets the number of threads to use in the search.
+     *
+     * @param numThreads The number of threads to use. Must be at least 1.
+     */
     public void setNumThreads(int numThreads) {
         if (numThreads < 1) {
             throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
