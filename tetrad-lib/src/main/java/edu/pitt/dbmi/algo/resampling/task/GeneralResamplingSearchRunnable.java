@@ -19,33 +19,57 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * Mar 19, 2017 9:45:44 PM
+ * A runnable for a single search over either a single- or multi-data set algorithm, for use in a thread pool.
  *
  * @author Chirayu (Kong) Wongchokprasitti, PhD
+ * @author josephramsey
  * @version $Id: $Id
  */
 public class GeneralResamplingSearchRunnable implements Callable<Graph> {
-
+    /**
+     * The parameters for the search.
+     */
     private final Parameters parameters;
-    private final GeneralResamplingSearch resamplingAlgorithmSearch;
-    private final boolean verbose;
+    /**
+     * Whether to print out verbose output.
+     */
     private DataModel dataModel;
+    /**
+     * A list of data models to search over, for multi-data set algorithms.
+     */
     private List<DataModel> dataModels = new ArrayList<>();
+    /**
+     * The algorithm to use for the search, for single-data set algorithms.
+     */
     private Algorithm algorithm;
+    /**
+     * The algorithm to use for the search, for multi-data set algorithms.
+     */
     private MultiDataSetAlgorithm multiDataSetAlgorithm;
     /**
      * An initial graph to start from.
      */
     private Graph externalGraph;
-
     /**
      * Specification of forbidden and required edges.
      */
     private Knowledge knowledge = new Knowledge();
-
+    /**
+     * The output stream that output (except for log output) should be sent to.
+     */
     private PrintStream out = System.out;
+    /**
+     * The score wrapper to pass to multi-data set algorithms.
+     */
     private ScoreWrapper scoreWrapper = null;
+    /**
+     * The independence test wrapper to pass to multi-data set algorithms.
+     */
     private IndependenceWrapper independenceWrapper = null;
+    /**
+     * Whether to print out verbose output.
+     */
+    private final boolean verbose;
 
     /**
      * <p>Constructor for GeneralResamplingSearchRunnable.</p>
@@ -66,40 +90,27 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
         this.dataModel = dataModel.copy();
         this.algorithm = algorithm;
         this.parameters = parameters;
-        this.resamplingAlgorithmSearch = resamplingAlgorithmSearch;
         this.verbose = verbose;
     }
 
     /**
      * <p>Constructor for GeneralResamplingSearchRunnable.</p>
      *
-     * @param dataModel                 a {@link java.util.List} object
-     * @param algorithm                 a {@link edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm} object
-     * @param parameters                a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param resamplingAlgorithmSearch a {@link edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch} object
-     * @param verbose                   a boolean
+     * @param dataModel  a {@link List} object
+     * @param algorithm  a {@link MultiDataSetAlgorithm} object
+     * @param parameters a {@link Parameters} object
+     * @param verbose    a boolean
      */
     public GeneralResamplingSearchRunnable(List<DataModel> dataModel, MultiDataSetAlgorithm algorithm, Parameters parameters,
-                                           GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
+                                           boolean verbose) {
         if (dataModel == null) throw new NullPointerException("Data model null.");
         if (algorithm == null) throw new NullPointerException("Algorithm null.");
         if (parameters == null) throw new NullPointerException("Parameters null.");
-        if (resamplingAlgorithmSearch == null) throw new NullPointerException("Resampling algroithms search null.");
 
         this.dataModels = dataModel;
         this.multiDataSetAlgorithm = algorithm;
         this.parameters = parameters;
-        this.resamplingAlgorithmSearch = resamplingAlgorithmSearch;
         this.verbose = verbose;
-    }
-
-    /**
-     * <p>Getter for the field <code>knowledge</code>.</p>
-     *
-     * @return the background knowledge.
-     */
-    public Knowledge getKnowledge() {
-        return this.knowledge;
     }
 
     /**
@@ -112,30 +123,12 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     }
 
     /**
-     * <p>Getter for the field <code>externalGraph</code>.</p>
-     *
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public Graph getExternalGraph() {
-        return this.externalGraph;
-    }
-
-    /**
-     * <p>Setter for the field <code>externalGraph</code>.</p>
+     * Sets the initial graph to start from.
      *
      * @param externalGraph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
-    }
-
-    /**
-     * <p>Getter for the field <code>out</code>.</p>
-     *
-     * @return the output stream that output (except for log output) should be sent to.
-     */
-    public PrintStream getOut() {
-        return this.out;
     }
 
     /**
@@ -148,13 +141,13 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     }
 
     /**
-     * {@inheritDoc}
+     * Runs the search over the data model or data models, using the algorithm and parameters.
+     *
+     * @return The graph discovered by the search.
      */
     @Override
     public Graph call() {
-        long start;
-        long stop;
-        start = MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             this.out.println("thread started ... ");
@@ -191,7 +184,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
                 graph = this.multiDataSetAlgorithm.search(this.dataModels, this.parameters);
             }
 
-            stop = MillisecondTimes.timeMillis();
+            long stop = MillisecondTimes.timeMillis();
 
             if (this.verbose) {
                 this.out.println("processing time of resampling for a thread was: "
@@ -207,11 +200,20 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     }
 
     /**
-     * <p>Setter for the field <code>scoreWrapper</code>.</p>
+     * Sets the score wrapper, for multi-data set algorithms.
      *
      * @param scoreWrapper a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
      */
     public void setScoreWrapper(ScoreWrapper scoreWrapper) {
         this.scoreWrapper = scoreWrapper;
+    }
+
+    /**
+     * Sets the independence wrapper, for multi-data set algorithms.
+     *
+     * @param independenceWrapper a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     */
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.independenceWrapper = independenceWrapper;
     }
 }

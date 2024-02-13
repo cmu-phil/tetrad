@@ -2,13 +2,13 @@ package edu.pitt.dbmi.algo.resampling;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.Tetrad;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -27,45 +27,91 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
 /**
- * Sep 7, 2018 1:38:50 PM
+ * A class for performing a general resampling search.
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  * @version $Id: $Id
  */
 public class GeneralResamplingSearch {
-
-    private final int numberResampling;
-    private final List<Graph> graphs = Collections.synchronizedList(new ArrayList<>());
-    private final ForkJoinPool pool;
-    private Algorithm algorithm;
-    private MultiDataSetAlgorithm multiDataSetAlgorithm;
-    private double percentResampleSize = 100.;
-    private boolean resamplingWithReplacement = true;
-    private boolean addOriginalDataset;
-    private boolean verbose;
-    private DataSet data;
-    private int numBootstrapThreads = 1;
-
-    private List<DataSet> dataSets;
-
     /**
-     * Specification of forbidden and required edges.
+     * The number of resamples to take.
      */
-    private Knowledge knowledge = new Knowledge();
-
-    private PrintStream out = System.out;
-
+    private final int numberResampling;
+    /**
+     * The percentage of the resample size.
+     */
+    private double percentResampleSize = 100.;
+    /**
+     * The number of threads to use for bootstrapping.
+     */
+    private int numBootstrapThreads = 1;
+    /**
+     * The resampling with replacement.
+     */
+    private boolean resamplingWithReplacement = true;
+    /**
+     * Whether to add the original dataset to the list of sampled datasets as an additional sample.
+     */
+    private boolean addOriginalDataset;
+    /**
+     * The parameters for the search.
+     */
     private Parameters parameters;
-
     /**
      * An initial graph to start from.
      */
     private Graph externalGraph;
+    /**
+     * The list of returns graphs.
+     */
+    private final List<Graph> graphs = Collections.synchronizedList(new ArrayList<>());
+    /**
+     * The pool of threads to use for bootstrapping.
+     */
+    private final ForkJoinPool pool;
+    /**
+     * The algorithm to use for the search, for single-data set algorithms.
+     */
+    private Algorithm algorithm;
+    /**
+     * The data set, for single-data set algorithms.
+     */
+    private DataSet data;
+    /**
+     * The data sets, for multi-data set algorithms.
+     */
+    private List<DataSet> dataSets;
+    /**
+     * The multi data set algorithm to use for the search, for multi-data set algorithms.
+     */
+    private MultiDataSetAlgorithm multiDataSetAlgorithm;
+    /**
+     * Specification of forbidden and required edges.
+     */
+    private Knowledge knowledge = new Knowledge();
+    /**
+     * Whether to print out verbose output.
+     */
+    private boolean verbose;
+    /**
+     * The output stream that output (except for log output) should be sent to.
+     */
+    private PrintStream out = System.out;
+    /**
+     * The number of algorithm runs that did not return a graph.
+     */
     private int numNograph = 0;
+    /**
+     * The score wrapper to pass to multi-data set algorithms.
+     */
     private ScoreWrapper scoreWrapper;
+    /**
+     * The independence test wrapper to pass to multi-data set algorithms.
+     */
+    private IndependenceWrapper independenceWrapper;
 
     /**
-     * Constructor.
+     * Constructor for a single data set algorithm.
      *
      * @param data             the data set.
      * @param numberResampling the number of resampling.
@@ -77,7 +123,7 @@ public class GeneralResamplingSearch {
     }
 
     /**
-     * Constructor.
+     * Constructor for a multi data set algorithm.
      *
      * @param dataSets         the data sets.
      * @param numberResampling the number of resampling.
@@ -89,7 +135,7 @@ public class GeneralResamplingSearch {
     }
 
     /**
-     * Constructor.
+     * Sets the algorithm, for single-data set algorithms.
      *
      * @param algorithm the algorithm.
      */
@@ -99,7 +145,7 @@ public class GeneralResamplingSearch {
     }
 
     /**
-     * Constructor.
+     * Sets the multi data set algorithm, for multi-data set algorithms.
      *
      * @param multiDataSetAlgorithm the multi data set algorithm.
      */
@@ -109,43 +155,43 @@ public class GeneralResamplingSearch {
     }
 
     /**
-     * Sets the number of resampling.
+     * Sets the percentage of the resample size for each resampling.
      *
-     * @param percentResampleSize the resampling size.
+     * @param percentResampleSize the resampling size, from 0 to 100.
      */
     public void setPercentResampleSize(double percentResampleSize) {
         this.percentResampleSize = percentResampleSize;
     }
 
     /**
-     * Sets the resampling with replacement.
+     * Sets whether to resample with replacement.
      *
-     * @param resamplingWithReplacement the resampling with replacement.
+     * @param resamplingWithReplacement whether to resample with replacement.
      */
     public void setResamplingWithReplacement(boolean resamplingWithReplacement) {
         this.resamplingWithReplacement = resamplingWithReplacement;
     }
 
     /**
-     * Sets whether to add the original dataset.
+     * Sets whether to add the original dataset as an additional sample.
      *
-     * @param addOriginalDataset whether to add the original dataset.
+     * @param addOriginalDataset whether to add the original dataset as an additional sample.
      */
     public void setAddOriginalDataset(boolean addOriginalDataset) {
         this.addOriginalDataset = addOriginalDataset;
     }
 
     /**
-     * Sets whether to be verbose.
+     * Sets whether to print out verbose output.
      *
-     * @param verbose whether to be verbose.
+     * @param verbose whether to print out verbose output.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Sets the data set.
+     * Sets the data set, for single-data set algorithms.
      *
      * @param data the data set.
      */
@@ -154,7 +200,7 @@ public class GeneralResamplingSearch {
     }
 
     /**
-     * Sets the background knowledge.
+     * Sets the background knowledge to be used for the search.
      *
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
@@ -163,21 +209,12 @@ public class GeneralResamplingSearch {
     }
 
     /**
-     * Sets the external graph.
+     * Sets the external graph, for use as an initial graph to start from.
      *
      * @param externalGraph the external graph.
      */
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
-    }
-
-    /**
-     * <p>Getter for the field <code>out</code>.</p>
-     *
-     * @return the output stream that output (except for log output) should be sent to.
-     */
-    public PrintStream getOut() {
-        return this.out;
     }
 
     /**
@@ -190,7 +227,7 @@ public class GeneralResamplingSearch {
     }
 
     /**
-     * Sets the parameters.
+     * Sets the parameters for the search.
      *
      * @param parameters the parameters.
      */
@@ -199,9 +236,9 @@ public class GeneralResamplingSearch {
     }
 
     /**
-     * Performs the search.
+     * Performs the search and returns the list of graphs.
      *
-     * @return the list of graphs.
+     * @return the list of graphs. Some of these may be null, if the search algorithm did not return a graph.
      */
     public List<Graph> search() {
 
@@ -246,6 +283,7 @@ public class GeneralResamplingSearch {
                 task.setKnowledge(this.knowledge);
                 tasks.add(task);
                 task.setScoreWrapper(scoreWrapper);
+                task.setIndependenceWrapper(independenceWrapper);
             }
 
             if (addOriginalDataset) {
@@ -256,6 +294,7 @@ public class GeneralResamplingSearch {
                 task.setKnowledge(this.knowledge);
                 tasks.add(task);
                 task.setScoreWrapper(scoreWrapper);
+                task.setIndependenceWrapper(independenceWrapper);
             }
         } else {
             for (int i1 = 0; i1 < this.numberResampling; i1++) {
@@ -277,7 +316,7 @@ public class GeneralResamplingSearch {
                 }
 
                 GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataModels,
-                        this.multiDataSetAlgorithm, this.parameters, this,
+                        this.multiDataSetAlgorithm, this.parameters,
                         this.verbose);
                 task.setExternalGraph(this.externalGraph);
                 task.setKnowledge(dataModels.get(0).getKnowledge());
@@ -314,27 +353,36 @@ public class GeneralResamplingSearch {
     }
 
     /**
-     * Returns the number of no graph.
+     * Returns the number of algorithm runs that did not return a graph.
      *
-     * @return the number of no graph.
+     * @return the number of algorithm runs that did not return a graph.
      */
     public int getNumNograph() {
         return numNograph;
     }
 
     /**
-     * Returns the score wrapper.
+     * Sets the score wrapper to pass to multi-data set algorithms.
      *
-     * @param scoreWrapper a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     * @param scoreWrapper the score wrapper.
      */
     public void setScoreWrapper(ScoreWrapper scoreWrapper) {
         this.scoreWrapper = scoreWrapper;
     }
 
     /**
+     * Sets the independence test wrapper to pass to multi-data set algorithms.
+     *
+     * @param independenceWrapper the independence test wrapper.
+     */
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.independenceWrapper = independenceWrapper;
+    }
+
+    /**
      * Sets the number of threads to use for bootstrapping. Must be at least 1. Note that this is the number of threads
-     * used for the bootstrapping itself, not the number of threads used for each search; the latter is determined by the
-     * individual search algorithm.
+     * used for the bootstrapping itself, not the number of threads used for each search; the latter is determined by
+     * the individual search algorithm.
      *
      * @param numBootstrapThreads the number of threads to use for bootstrapping.
      */
