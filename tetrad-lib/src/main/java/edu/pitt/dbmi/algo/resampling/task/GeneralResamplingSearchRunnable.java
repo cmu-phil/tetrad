@@ -81,7 +81,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
         if (dataModel == null) throw new NullPointerException("Data model null.");
         if (algorithm == null) throw new NullPointerException("Algorithm null.");
         if (parameters == null) throw new NullPointerException("Parameters null.");
-        if (resamplingAlgorithmSearch == null) throw new NullPointerException("Resampling algroithms search null.");
+        if (resamplingAlgorithmSearch == null) throw new NullPointerException("Resampling algorithms search null.");
 
         this.dataModel = dataModel.copy();
         this.algorithm = algorithm;
@@ -119,7 +119,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
+     * Sets the output stream that output (except for log output) should be sent to. By default, System.out.
      *
      * @param out a {@link java.io.PrintStream} object
      */
