@@ -33,6 +33,7 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
@@ -184,11 +185,15 @@ public class TestGeneralResamplingTest {
         ScoreWrapper score = new BdeuScore();
         Algorithm algorithm = new Fges(score);
 
+        parameters.set(Params.PERCENT_RESAMPLE_SIZE, 100.0);
+        parameters.set(Params.BOOTSTRAPPING_NUM_THEADS, 1);
+        parameters.set(Params.ADD_ORIGINAL_DATASET, true);
+        parameters.set(Params.NUMBER_RESAMPLING, numBootstrapSamples);
+        parameters.set(Params.RESAMPLING_WITH_REPLACEMENT, true);
+
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(
-                data, algorithm, numBootstrapSamples, 100.0,
-                true, 1, true, parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
+                data, algorithm, new Knowledge(), parameters);
         bootstrapTest.setVerbose(verbose);
-        bootstrapTest.setParameters(parameters);
         Graph resultGraph = bootstrapTest.search();
 
         // Adjacency Confusion Matrix
@@ -236,11 +241,15 @@ public class TestGeneralResamplingTest {
         ScoreWrapper score = new BdeuScore();
         Algorithm algorithm = new Fges(score);
 
+        parameters.set(Params.PERCENT_RESAMPLE_SIZE, 100.0);
+        parameters.set(Params.BOOTSTRAPPING_NUM_THEADS, 1);
+        parameters.set(Params.ADD_ORIGINAL_DATASET, true);
+        parameters.set(Params.NUMBER_RESAMPLING, numBootstrapSamples);
+        parameters.set(Params.RESAMPLING_WITH_REPLACEMENT, true);
+
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
-                numBootstrapSamples, 100.0,
-                true, 1, true, parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
+                new Knowledge(), parameters);
         bootstrapTest.setVerbose(verbose);
-        bootstrapTest.setParameters(parameters);
         Graph resultGraph = bootstrapTest.search();
 
         // Adjacency Confusion Matrix
@@ -285,11 +294,15 @@ public class TestGeneralResamplingTest {
         IndependenceWrapper test = new BdeuTest();
         Algorithm algorithm = new Gfci(test, score);
 
+        parameters.set(Params.PERCENT_RESAMPLE_SIZE, 100.0);
+        parameters.set(Params.BOOTSTRAPPING_NUM_THEADS, 1);
+        parameters.set(Params.ADD_ORIGINAL_DATASET, true);
+        parameters.set(Params.NUMBER_RESAMPLING, numBootstrapSamples);
+        parameters.set(Params.RESAMPLING_WITH_REPLACEMENT, true);
+
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
-                numBootstrapSamples, 100.0,
-                true, 1, true, parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
+                new Knowledge(), parameters);
         bootstrapTest.setVerbose(verbose);
-        bootstrapTest.setParameters(parameters);
         Graph resultGraph = bootstrapTest.search();
         //System.out.println("Estimated PAG_of_the_true_DAG Graph:");
         //System.out.println(resultGraph.toString());
@@ -341,11 +354,15 @@ public class TestGeneralResamplingTest {
         IndependenceWrapper test = new ChiSquare();
         Algorithm algorithm = new Gfci(test, score);
 
+        parameters.set(Params.PERCENT_RESAMPLE_SIZE, 100.0);
+        parameters.set(Params.BOOTSTRAPPING_NUM_THEADS, 1);
+        parameters.set(Params.ADD_ORIGINAL_DATASET, true);
+        parameters.set(Params.NUMBER_RESAMPLING, numBootstrapSamples);
+        parameters.set(Params.RESAMPLING_WITH_REPLACEMENT, true);
+
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
-                numBootstrapSamples, 100.0,
-                true, 1, true, parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
+                new Knowledge(), parameters);
         bootstrapTest.setVerbose(verbose);
-        bootstrapTest.setParameters(parameters);
         Graph resultGraph = bootstrapTest.search();
         //System.out.println("Estimated Bootstrapped PAG_of_the_true_DAG Graph:");
         //System.out.println(resultGraph.toString());
@@ -395,11 +412,15 @@ public class TestGeneralResamplingTest {
         IndependenceWrapper test = new ChiSquare();
         Algorithm algorithm = new Fci(test);
 
+        parameters.set(Params.PERCENT_RESAMPLE_SIZE, 100.0);
+        parameters.set(Params.BOOTSTRAPPING_NUM_THEADS, 1);
+        parameters.set(Params.ADD_ORIGINAL_DATASET, true);
+        parameters.set(Params.NUMBER_RESAMPLING, numBootstrapSamples);
+        parameters.set(Params.RESAMPLING_WITH_REPLACEMENT, true);
+
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
-                numBootstrapSamples, 100.0,
-                true, 1, true, parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
+                new Knowledge(), parameters);
         bootstrapTest.setVerbose(verbose);
-        bootstrapTest.setParameters(parameters);
         Graph resultGraph = bootstrapTest.search();
 
         // Adjacency Confusion Matrix

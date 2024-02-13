@@ -6,10 +6,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.SimpleDataLoader;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.score.Score;
@@ -84,12 +81,13 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
             DirectLingam algorithm = new DirectLingam();
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
-                    parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE),
-                    parameters.getBoolean(Params.ADD_ORIGINAL_DATASET), parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
+            GeneralResamplingTest search = new GeneralResamplingTest(
+                    data,
+                    algorithm,
+                    new Knowledge(),
+                    parameters
+            );
 
-            search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             return search.search();

@@ -95,10 +95,9 @@ public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstra
             FgesMeasurement fgesMeasurement = new FgesMeasurement(this.score);
 
             DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMeasurement, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET), parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
-            search.setKnowledge(this.knowledge);
+            GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMeasurement,
+                    knowledge, parameters);
 
-            search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();
             if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();

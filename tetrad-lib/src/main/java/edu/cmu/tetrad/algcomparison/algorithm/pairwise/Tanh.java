@@ -3,10 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.pairwise;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.SimpleDataLoader;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs;
@@ -79,9 +76,9 @@ public class Tanh implements Algorithm, TakesExternalGraph {
             }
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, tanh, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET), parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, tanh,
+                    new Knowledge(), parameters);
 
-            search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }

@@ -83,7 +83,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     public Graph search(DataModel dataModel, Parameters parameters) {
         long seed = parameters.getLong(Params.SEED);
 
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1 || doingBootstrapping) {
             if (parameters.getInt(Params.TIME_LAG) > 0) {
                 DataSet dataSet = (DataSet) dataModel;
                 DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
@@ -112,12 +112,8 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             return graph;
         } else {
             Boss algorithm = new Boss(this.score);
-
             DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET), parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
-            search.setKnowledge(this.knowledge);
-
-            search.setParameters(parameters);
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, knowledge, parameters);
             Graph graph = search.search();
             if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             return graph;
