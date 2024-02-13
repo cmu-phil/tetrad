@@ -107,6 +107,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             search.setPossibleMsepSearchDone(parameters.getBoolean((Params.POSSIBLE_MSEP_DONE)));
+            search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
 
             Object obj = parameters.get(Params.PRINT_STREAM);
 
@@ -169,6 +170,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
         parameters.add(Params.POSSIBLE_MSEP_DONE);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.NUM_THREADS);
 
         parameters.add(Params.VERBOSE);
         return parameters;

@@ -84,6 +84,7 @@ public final class BFci implements IGraphSearch {
     private boolean doDiscriminatingPathRule = true;
     private boolean bossUseBes = false;
     private long seed = -1;
+    private int numThreads = 1;
 
 
     /**
@@ -123,6 +124,7 @@ public final class BFci implements IGraphSearch {
         Boss subAlg = new Boss(this.score);
         subAlg.setUseBes(bossUseBes);
         subAlg.setNumStarts(this.numStarts);
+        subAlg.setNumThreads(numThreads);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
 
@@ -243,5 +245,12 @@ public final class BFci implements IGraphSearch {
      */
     public void setSeed(long seed) {
         this.seed = seed;
+    }
+
+    public void setNumThreads(int numThreads) {
+        if (numThreads < 1) {
+            throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
+        }
+        this.numThreads = numThreads;
     }
 }

@@ -113,6 +113,7 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             search.setKnowledge(knowledge);
@@ -172,6 +173,7 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);
+        params.add(Params.NUM_THREADS);
         params.add(Params.VERBOSE);
 
         // Parameters

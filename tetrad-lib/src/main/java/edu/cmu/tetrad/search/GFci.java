@@ -94,6 +94,7 @@ public final class GFci implements IGraphSearch {
     private boolean doDiscriminatingPathRule = true;
     // The depth of the search for the possible m-sep search.
     private int depth = -1;
+    private int numThreads = 1;
 
 
     /**
@@ -131,6 +132,7 @@ public final class GFci implements IGraphSearch {
         fges.setFaithfulnessAssumed(this.faithfulnessAssumed);
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
+        fges.setNumThreads(numThreads);
         graph = fges.search();
 
         Knowledge knowledge2 = new Knowledge(knowledge);
@@ -276,4 +278,10 @@ public final class GFci implements IGraphSearch {
     }
 
 
+    public void setNumThreads(int numThreads) {
+        if (numThreads < 1) {
+            throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
+        }
+        this.numThreads = numThreads;
+    }
 }
