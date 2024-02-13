@@ -282,7 +282,7 @@ public class GeneralResamplingSearch {
                 task.setVerbose(verbose);
             }
         } else {
-            for (int i1 = 0; i1 < this.numberResampling; i1++) {
+            for (int i = 0; i < this.numberResampling; i++) {
                 List<DataModel> dataModels = new ArrayList<>();
 
                 for (DataSet data : this.dataSets) {
@@ -312,7 +312,6 @@ public class GeneralResamplingSearch {
         }
 
         int numNoGraph = 0;
-
         List<Future<Graph>> futures = this.pool.invokeAll(tasks);
 
         for (Future<Graph> future : futures) {
