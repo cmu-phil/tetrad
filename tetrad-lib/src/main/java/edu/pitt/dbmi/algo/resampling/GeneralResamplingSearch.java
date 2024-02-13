@@ -30,6 +30,7 @@ import java.util.concurrent.Future;
  * A class for performing a general resampling search.
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ * @author josephramsey Cleanup.
  * @version $Id: $Id
  */
 public class GeneralResamplingSearch {

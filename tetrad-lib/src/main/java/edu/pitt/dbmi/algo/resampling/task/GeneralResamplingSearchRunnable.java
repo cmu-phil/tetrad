@@ -22,7 +22,7 @@ import java.util.concurrent.Callable;
  * A runnable for a single search over either a single- or multi-data set algorithm, for use in a thread pool.
  *
  * @author Chirayu (Kong) Wongchokprasitti, PhD
- * @author josephramsey
+ * @author josephramsey Cleanup.
  * @version $Id: $Id
  */
 public class GeneralResamplingSearchRunnable implements Callable<Graph> {
