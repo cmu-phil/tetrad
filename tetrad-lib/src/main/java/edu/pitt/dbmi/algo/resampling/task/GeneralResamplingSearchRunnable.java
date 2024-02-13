@@ -67,7 +67,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     private boolean verbose = false;
 
     /**
-     * <p>Constructor for GeneralResamplingSearchRunnable.</p>
+     * Constructor for single-data set algorithms.
      *
      * @param dataModel  a {@link DataModel} object
      * @param algorithm  a {@link Algorithm} object
@@ -84,7 +84,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     }
 
     /**
-     * <p>Constructor for GeneralResamplingSearchRunnable.</p>
+     * Constructor for multi-data set algorithms.
      *
      * @param dataModel  a {@link List} object
      * @param algorithm  a {@link MultiDataSetAlgorithm} object
