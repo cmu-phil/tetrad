@@ -245,8 +245,8 @@ public class GeneralResamplingSearch {
             RandomGenerator randomGenerator = (seed == null || seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
             for (int i1 = 0; i1 < this.numberResampling; i1++) {
                 DataSet dataSet;
-
                 int sampleSize = (int) (data.getNumRows() * this.percentResampleSize / 100.0);
+
                 if (this.resamplingWithReplacement) {
                     if ((randomGenerator == null)) {
                         dataSet = DataTransforms.getBootstrapSample(data, sampleSize);
@@ -316,9 +316,8 @@ public class GeneralResamplingSearch {
         List<Future<Graph>> futures = this.pool.invokeAll(tasks);
 
         for (Future<Graph> future : futures) {
-            Graph graph;
             try {
-                graph = future.get();
+                Graph graph = future.get();
 
                 if (graph == null) {
                     numRunsReturningNullGraph++;
