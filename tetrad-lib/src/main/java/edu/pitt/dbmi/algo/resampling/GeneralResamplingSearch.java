@@ -111,6 +111,7 @@ public class GeneralResamplingSearch {
      * Constructor for a single data set algorithm.
      *
      * @param data the data set.
+     * @param algorithm the algorithm.
      */
     public GeneralResamplingSearch(DataSet data, Algorithm algorithm) {
         this.data = data;
@@ -121,7 +122,8 @@ public class GeneralResamplingSearch {
     /**
      * Constructor for a multi data set algorithm.
      *
-     * @param dataSets the data sets.
+     * @param dataSets  the data sets.
+     * @param algorithm the algorithm.
      */
     public GeneralResamplingSearch(List<DataSet> dataSets, MultiDataSetAlgorithm algorithm) {
         this.dataSets = dataSets;

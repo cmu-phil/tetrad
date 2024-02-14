@@ -50,6 +50,8 @@ public class GeneralResamplingTest {
      *
      * @param data      the data set.
      * @param algorithm the algorithm.
+     * @param knowledge the knowledge.
+     * @param parameters the parameters.
      */
     public GeneralResamplingTest(DataSet data, Algorithm algorithm, Knowledge knowledge, Parameters parameters) {
         this.resamplingSearch = new GeneralResamplingSearch(data, algorithm);
@@ -63,13 +65,15 @@ public class GeneralResamplingTest {
     }
 
     /**
-     * Constructor for multi data set algorithms.
+     * Constructor for multiple data set algorithms.
      *
-     * @param dataSets              the data sets.
-     * @param multiDataSetAlgorithm the multi data set algorithm.
+     * @param dataSets  the data sets.
+     * @param multiDataSetAlgorithm the algorithm.
+     * @param knowledge the knowledge.
+     * @param parameters the parameters.
      */
     public GeneralResamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm,
-            Knowledge knowledge, Parameters parameters) {
+                                 Knowledge knowledge, Parameters parameters) {
         this.resamplingSearch = new GeneralResamplingSearch(dataSets, multiDataSetAlgorithm);
         this.resamplingSearch.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
         this.resamplingSearch.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
@@ -281,6 +285,12 @@ public class GeneralResamplingTest {
         return graphs == null ? new ArrayList<>() : new ArrayList<>(this.graphs);
     }
 
+    /**
+     * Sets the score wrapper if not null.
+     *
+     * @param score The wrapper
+     * @see edu.pitt.dbmi.algo.resampling.task.GeneralResamplingSearchRunnable
+     */
     public void setScoreWrapper(ScoreWrapper score) {
         this.setScoreWrapper = score;
     }

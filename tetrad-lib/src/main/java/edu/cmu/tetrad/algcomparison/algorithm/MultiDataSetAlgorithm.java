@@ -18,6 +18,10 @@ public interface MultiDataSetAlgorithm extends Algorithm {
 
     /**
      * Runs the search.
+     *
+     * @param dataSets The data sets.
+     * @param parameters The parameters.
+     * @return The graph.
      */
     Graph search(List<DataModel> dataSets, Parameters parameters);
 

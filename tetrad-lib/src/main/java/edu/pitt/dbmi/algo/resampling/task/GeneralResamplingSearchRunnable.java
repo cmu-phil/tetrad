@@ -187,6 +187,8 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
 
     /**
      * Sets whether verbose output should be printed.
+     *
+     * @param verbose a boolean
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
