@@ -83,7 +83,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     public Graph search(DataModel dataModel, Parameters parameters) {
         long seed = parameters.getLong(Params.SEED);
 
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1 || doingBootstrapping) {
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (parameters.getInt(Params.TIME_LAG) > 0) {
                 DataSet dataSet = (DataSet) dataModel;
                 DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));

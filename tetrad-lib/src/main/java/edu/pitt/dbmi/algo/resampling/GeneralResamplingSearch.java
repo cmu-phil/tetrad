@@ -228,7 +228,11 @@ public class GeneralResamplingSearch {
      */
     public List<Graph> search() {
         this.graphs.clear();
-//        parameters.set(Params.NUMBER_RESAMPLING, 0);
+
+        // We temporarily set NUMBER_RESAMPLING to 0 to avoid the algorithm from running the resampling
+        // when called from the bootstrap search. We will set it back to the original value after the
+        // bootstrap search is done.
+        parameters.set(Params.NUMBER_RESAMPLING, 0);
 
         List<Callable<Graph>> tasks = new ArrayList<>();
 
@@ -280,6 +284,10 @@ public class GeneralResamplingSearch {
                 task.setVerbose(verbose);
             }
         } else {
+
+            // We use the stored value for the number of resamples, since its value in the parameter object
+            // has been temporarily set to 0 to avoid the algorithm from running the resampling when called
+            // from the bootstrap search.
             for (int i = 0; i < this.numberOfResamples; i++) {
                 List<DataModel> dataModels = new ArrayList<>();
 
@@ -328,7 +336,9 @@ public class GeneralResamplingSearch {
         }
 
         this.numRunsReturningNullGraph = numNoGraph;
-//        parameters.set(Params.NUMBER_RESAMPLING, numberOfResamples);
+
+        // Set the NUMBER_RESAMPLING back to the original value, since the bootstrap search is now done.
+        parameters.set(Params.NUMBER_RESAMPLING, numberOfResamples);
 
         return this.graphs;
     }
