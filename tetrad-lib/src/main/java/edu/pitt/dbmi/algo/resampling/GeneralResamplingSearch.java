@@ -231,7 +231,8 @@ public class GeneralResamplingSearch {
 
         // We temporarily set NUMBER_RESAMPLING to 0 to avoid the algorithm from running the resampling
         // when called from the bootstrap search. We will set it back to the original value after the
-        // bootstrap search is done.
+        // bootstrap search is done. Note that using this method only one bootstrap search can be run
+        // at a time, though this bootstrapping search can be parallelized.
         parameters.set(Params.NUMBER_RESAMPLING, 0);
 
         List<Callable<Graph>> tasks = new ArrayList<>();
