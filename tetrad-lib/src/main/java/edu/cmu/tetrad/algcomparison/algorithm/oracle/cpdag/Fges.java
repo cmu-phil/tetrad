@@ -146,11 +146,9 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(
-                    data, fges, parameters.getInt(Params.NUMBER_RESAMPLING),
-                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET), parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
-            search.setKnowledge(this.knowledge);
-            search.setParameters(parameters);
+                    data, fges,
+                    knowledge, parameters);
+
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             Graph graph = search.search();

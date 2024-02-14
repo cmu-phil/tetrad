@@ -37,7 +37,7 @@ public class GeneralResamplingSearch {
     /**
      * The number of resamples to take.
      */
-    private final int numberResampling;
+    private int numberOfResamples = 1;
     /**
      * The percentage of the resample size.
      */
@@ -110,25 +110,23 @@ public class GeneralResamplingSearch {
     /**
      * Constructor for a single data set algorithm.
      *
-     * @param data             the data set.
-     * @param numberResampling the number of resampling.
+     * @param data the data set.
      */
-    public GeneralResamplingSearch(DataSet data, int numberResampling) {
+    public GeneralResamplingSearch(DataSet data, Algorithm algorithm) {
         this.data = data;
-        this.pool = new ForkJoinPool(numberResampling);
-        this.numberResampling = numberResampling;
+        this.algorithm = algorithm;
+        this.pool = new ForkJoinPool(numBootstrapThreads);
     }
 
     /**
      * Constructor for a multi data set algorithm.
      *
-     * @param dataSets         the data sets.
-     * @param numberResampling the number of resampling.
+     * @param dataSets the data sets.
      */
-    public GeneralResamplingSearch(List<DataSet> dataSets, int numberResampling) {
+    public GeneralResamplingSearch(List<DataSet> dataSets, MultiDataSetAlgorithm algorithm) {
         this.dataSets = dataSets;
+        this.multiDataSetAlgorithm = algorithm;
         this.pool = new ForkJoinPool(numBootstrapThreads);
-        this.numberResampling = numberResampling;
     }
 
     /**
@@ -229,21 +227,21 @@ public class GeneralResamplingSearch {
      * @return the list of graphs. Some of these may be null if the search algorithm did not return a graph.
      */
     public List<Graph> search() {
-
         this.graphs.clear();
-        this.parameters.set("numberResampling", 0); // This needs to be set to zero to not loop indefinitely
+//        parameters.set(Params.NUMBER_RESAMPLING, 0);
 
         List<Callable<Graph>> tasks = new ArrayList<>();
 
         // Running in the sequential form
         if (this.verbose) {
-            this.out.println("Running Resamplings in Sequential Mode, numberResampling = " + this.numberResampling);
+            this.out.println("Running Resamplings in Sequential Mode, numberResampling = " + this.numberOfResamples);
         }
 
         if (this.data != null) {
             Long seed = (parameters == null || parameters.get(Params.SEED) == null) ? null : (Long) parameters.get(Params.SEED);
             RandomGenerator randomGenerator = (seed == null || seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
-            for (int i1 = 0; i1 < this.numberResampling; i1++) {
+
+            for (int i = 0; i < this.numberOfResamples; i++) {
                 DataSet dataSet;
                 int sampleSize = (int) (data.getNumRows() * this.percentResampleSize / 100.0);
 
@@ -265,10 +263,10 @@ public class GeneralResamplingSearch {
 
                 GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataSet, this.algorithm, this.parameters);
                 task.setKnowledge(this.knowledge);
-                tasks.add(task);
                 task.setScoreWrapper(scoreWrapper);
-                task.setIndependenceWrapper(independenceWrapper);
                 task.setVerbose(verbose);
+
+                tasks.add(task);
             }
 
             if (addOriginalDataset) {
@@ -282,7 +280,7 @@ public class GeneralResamplingSearch {
                 task.setVerbose(verbose);
             }
         } else {
-            for (int i = 0; i < this.numberResampling; i++) {
+            for (int i = 0; i < this.numberOfResamples; i++) {
                 List<DataModel> dataModels = new ArrayList<>();
 
                 for (DataSet data : this.dataSets) {
@@ -329,8 +327,8 @@ public class GeneralResamplingSearch {
             }
         }
 
-        this.parameters.set("numberResampling", this.numberResampling);
         this.numRunsReturningNullGraph = numNoGraph;
+//        parameters.set(Params.NUMBER_RESAMPLING, numberOfResamples);
 
         return this.graphs;
     }
@@ -367,11 +365,24 @@ public class GeneralResamplingSearch {
      * threads used for the bootstrapping itself, not the number of threads used for each search; the latter is
      * determined by the individual search algorithm.
      *
-     * @param numBootstrapThreads the number of threads to use for bootstrapping.
+     * @param bootstrappingNumThreads the number of threads to use for bootstrapping.
      */
-    public void setNumBootstrapThreads(int numBootstrapThreads) {
-        if (numBootstrapThreads < 1)
+    public void setBootstrappingNumThreads(int bootstrappingNumThreads) {
+        if (bootstrappingNumThreads < 1)
             throw new IllegalArgumentException("Number of bootstrap threads must be at least 1");
-        this.numBootstrapThreads = numBootstrapThreads;
+        this.numBootstrapThreads = bootstrappingNumThreads;
+    }
+
+    /**
+     * Sets the number of resamples to take. Must be at least one. Note that in the interface, the number of resamples
+     * can be zero; this zero value indicates that bootstrapping should not be performed, so a GeneralResamplingSearch
+     * should not be constructed in this case.
+     *
+     * @param numberOfResamples the number of resamples to take.
+     */
+    public void setNumberOfResamples(int numberOfResamples) {
+        if (numberOfResamples < 1)
+            throw new IllegalArgumentException("Number of resamples must be at least 1");
+        this.numberOfResamples = numberOfResamples;
     }
 }

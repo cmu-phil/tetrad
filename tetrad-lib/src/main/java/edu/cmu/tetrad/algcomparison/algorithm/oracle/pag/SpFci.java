@@ -109,9 +109,8 @@ public class SpFci implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         } else {
             SpFci algorithm = new SpFci(this.test, this.score);
             DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET), parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
-            search.setKnowledge(this.knowledge);
-            search.setParameters(parameters);
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
+                    knowledge, parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();
             if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();

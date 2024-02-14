@@ -142,12 +142,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
             GeneralResamplingTest search = new GeneralResamplingTest(
                     dataSets2,
                     imagesSemBic,
-                    parameters.getInt(Params.NUMBER_RESAMPLING),
-                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET), parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
-            search.setParameters(parameters);
+                    knowledge, parameters
+            );
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setKnowledge(this.knowledge);
             search.setScoreWrapper(score);
             return search.search();
         }
@@ -166,17 +163,8 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
             List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
                     images,
-                    parameters.getInt(Params.NUMBER_RESAMPLING),
-                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT),
-                    parameters.getInt(Params.RESAMPLING_ENSEMBLE),
-                    parameters.getBoolean(Params.ADD_ORIGINAL_DATASET), parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
+                    knowledge, parameters);
 
-            if (score == null) {
-                System.out.println();
-            }
-
-            search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setScoreWrapper(score);
             return search.search();

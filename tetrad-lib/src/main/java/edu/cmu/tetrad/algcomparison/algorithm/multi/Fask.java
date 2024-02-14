@@ -16,7 +16,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
@@ -167,11 +166,9 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data,
-                    fask, parameters.getInt(NUMBER_RESAMPLING),
-                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET), parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
-            search.setKnowledge(this.knowledge);
-            search.setParameters(parameters);
+                    fask,
+                    knowledge, parameters);
+
             search.setVerbose(parameters.getBoolean(VERBOSE));
             return search.search();
         }

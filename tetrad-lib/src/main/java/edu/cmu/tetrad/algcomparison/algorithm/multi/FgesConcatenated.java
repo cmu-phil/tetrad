@@ -129,13 +129,8 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
             }
             GeneralResamplingTest search = new GeneralResamplingTest(datasets,
                     fgesConcatenated,
-                    parameters.getInt(Params.NUMBER_RESAMPLING),
-                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET), parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
-            search.setKnowledge(this.knowledge);
+                    knowledge, parameters);
             search.setScoreWrapper(score);
-
-            search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
@@ -171,13 +166,8 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
             List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
                     fgesConcatenated,
-                    parameters.getInt(Params.NUMBER_RESAMPLING),
-                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET), parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
-            search.setKnowledge(this.knowledge);
+                    knowledge, parameters);
             search.setScoreWrapper(score);
-
-            search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }

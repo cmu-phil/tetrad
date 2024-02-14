@@ -2,12 +2,14 @@ package edu.pitt.dbmi.algo.resampling;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.GraphSampling;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -18,123 +20,64 @@ import java.util.List;
  * <p>
  * Updated: Chirayu Kong Wongchokprasitti, PhD on 9/13/2018
  *
- * @author josephramsey
  * @version $Id: $Id
  */
 public class GeneralResamplingTest {
 
+    /**
+     * The resampling search.
+     */
     private final GeneralResamplingSearch resamplingSearch;
-    private final ResamplingEdgeEnsemble edgeEnsemble;
-    private ScoreWrapper scoreWrapper;
-    private IndependenceWrapper independenceWrapper;
+
+    /**
+     * The output stream that output (except for log output) should be sent to.
+     */
     private PrintStream out = System.out;
-    private Parameters parameters;
-    private Algorithm algorithm;
-    private MultiDataSetAlgorithm multiDataSetAlgorithm;
+
+    /**
+     * The individual bootstrap result graphs.
+     */
     private List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * Whether verbose output should be produced.
+     */
     private boolean verbose;
-    /**
-     * Specification of forbidden and required edges.
-     */
-    private Knowledge knowledge = new Knowledge();
-    /**
-     * An initial graph to start from.
-     */
-    private Graph externalGraph;
-    /**
-     * The number of threads to use for bootstrapping. Must be at least 1. Default is 1.
-     */
-    private int numBootstrapThreads = 1;
+    private ScoreWrapper setScoreWrapper = null;
 
     /**
-     * Constructor.
+     * Constructor for single data set algorithms.
      *
-     * @param data                      the data set.
-     * @param algorithm                 the algorithm.
-     * @param numberResampling          the number of resampling.
-     * @param percentResamplingSize     the percent resampling size.
-     * @param resamplingWithReplacement whether resampling with replacement.
-     * @param edgeEnsemble              the edge ensemble.
-     * @param addOriginalDataset        whether to add the original dataset.
-     * @param bootstrappingNumThreads   the number of threads to use for bootstrapping.
+     * @param data      the data set.
+     * @param algorithm the algorithm.
      */
-    public GeneralResamplingTest(
-            DataSet data,
-            Algorithm algorithm,
-            int numberResampling,
-            double percentResamplingSize,
-            boolean resamplingWithReplacement,
-            int edgeEnsemble,
-            boolean addOriginalDataset,
-            int bootstrappingNumThreads) {
-        this.algorithm = algorithm;
-        this.resamplingSearch = new GeneralResamplingSearch(data, numberResampling);
-        this.resamplingSearch.setPercentResampleSize(percentResamplingSize);
-        this.resamplingSearch.setResamplingWithReplacement(resamplingWithReplacement);
-        this.resamplingSearch.setAddOriginalDataset(addOriginalDataset);
-        this.numBootstrapThreads = bootstrappingNumThreads;
-
-        switch (edgeEnsemble) {
-            case 1:
-                this.edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                break;
-            case 2:
-                this.edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                break;
-            case 3:
-                this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-                break;
-            case 4:
-                this.edgeEnsemble = ResamplingEdgeEnsemble.Threshold;
-                break;
-            default:
-                throw new IllegalArgumentException("Expecting 1, 2, 3 or 4.");
-        }
+    public GeneralResamplingTest(DataSet data, Algorithm algorithm, Knowledge knowledge, Parameters parameters) {
+        this.resamplingSearch = new GeneralResamplingSearch(data, algorithm);
+        this.resamplingSearch.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+        this.resamplingSearch.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
+        this.resamplingSearch.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+        this.resamplingSearch.setNumberOfResamples(parameters.getInt(Params.NUMBER_RESAMPLING));
+        this.resamplingSearch.setBootstrappingNumThreads(parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
+        this.resamplingSearch.setKnowledge(knowledge);
+        this.resamplingSearch.setParameters(parameters);
     }
 
     /**
-     * Constructor.
+     * Constructor for multi data set algorithms.
      *
-     * @param dataSets                  the data sets.
-     * @param multiDataSetAlgorithm     the multi data set algorithm.
-     * @param numberResampling          the number of resampling.
-     * @param percentResamplingSize     the percent resampling size.
-     * @param resamplingWithReplacement whether resampling with replacement.
-     * @param edgeEnsemble              the edge ensemble.
-     * @param addOriginalDataset        whether to add the original dataset.
-     * @param bootstrappingNumThreads   the number of threads to use for bootstrapping.
+     * @param dataSets              the data sets.
+     * @param multiDataSetAlgorithm the multi data set algorithm.
      */
-    public GeneralResamplingTest(
-            List<DataSet> dataSets,
-            MultiDataSetAlgorithm multiDataSetAlgorithm,
-            int numberResampling,
-            double percentResamplingSize,
-            boolean resamplingWithReplacement,
-            int edgeEnsemble,
-            boolean addOriginalDataset, int bootstrappingNumThreads) {
-        this.multiDataSetAlgorithm = multiDataSetAlgorithm;
-        this.resamplingSearch = new GeneralResamplingSearch(dataSets, numberResampling);
-        this.resamplingSearch.setPercentResampleSize(percentResamplingSize);
-        this.resamplingSearch.setResamplingWithReplacement(resamplingWithReplacement);
-        this.resamplingSearch.setAddOriginalDataset(addOriginalDataset);
-        this.numBootstrapThreads = bootstrappingNumThreads;
-
-        switch (edgeEnsemble) {
-            case 1:
-                this.edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                break;
-            case 2:
-                this.edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                break;
-            case 3:
-                this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-                break;
-            case 4:
-                this.edgeEnsemble = ResamplingEdgeEnsemble.Threshold;
-                break;
-            default:
-                throw new IllegalArgumentException("Expecting 1, 2, 3, or 4.");
-        }
+    public GeneralResamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm,
+            Knowledge knowledge, Parameters parameters) {
+        this.resamplingSearch = new GeneralResamplingSearch(dataSets, multiDataSetAlgorithm);
+        this.resamplingSearch.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
+        this.resamplingSearch.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
+        this.resamplingSearch.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+        this.resamplingSearch.setNumberOfResamples(parameters.getInt(Params.NUMBER_RESAMPLING));
+        this.resamplingSearch.setBootstrappingNumThreads(parameters.getInt(Params.BOOTSTRAPPING_NUM_THEADS));
+        this.resamplingSearch.setKnowledge(knowledge);
+        this.resamplingSearch.setParameters(parameters);
     }
 
     /**
@@ -296,7 +239,7 @@ public class GeneralResamplingTest {
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent to. By default System.out.
+     * Sets the output stream that output (except for log output) should be sent to. By default, System.out.
      *
      * @param out the output stream that output (except for log output) should be sent to.
      */
@@ -305,68 +248,12 @@ public class GeneralResamplingTest {
     }
 
     /**
-     * Sets the parameters.
-     *
-     * @param parameters the parameters.
-     */
-    public void setParameters(Parameters parameters) {
-        this.parameters = parameters;
-        Object obj = parameters.get(Params.PRINT_STREAM);
-        if (obj instanceof PrintStream) {
-            setOut((PrintStream) obj);
-        }
-    }
-
-    /**
-     * Sets the background knowledge.
-     *
-     * @param knowledge the knowledge object, specifying forbidden and required edges.
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * Sets the initial graph.
-     *
-     * @param externalGraph a {@link edu.cmu.tetrad.graph.Graph} object
-     */
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
-    }
-
-    /**
      * Runs the resampling test.
      *
      * @return the graph.
      */
     public Graph search() {
-        long start, stop;
-
-        start = MillisecondTimes.timeMillis();
-
-        if (this.algorithm != null) {
-            this.resamplingSearch.setAlgorithm(this.algorithm);
-        } else {
-            this.resamplingSearch.setMultiDataSetAlgorithm(this.multiDataSetAlgorithm);
-        }
-        this.resamplingSearch.setNumBootstrapThreads(this.numBootstrapThreads);
-        this.resamplingSearch.setVerbose(this.verbose);
-        this.resamplingSearch.setParameters(this.parameters);
-        this.resamplingSearch.setScoreWrapper(scoreWrapper);
-
-        if (!this.knowledge.isEmpty()) {
-            this.resamplingSearch.setKnowledge(this.knowledge);
-        }
-
-        if (this.verbose) {
-            if (this.algorithm != null) {
-                this.out.println("Resampling on the " + this.algorithm.getDescription());
-            } else if (this.multiDataSetAlgorithm != null) {
-                this.out.println("Resampling on the " + this.multiDataSetAlgorithm.getDescription());
-            }
-        }
-
+        this.resamplingSearch.setScoreWrapper(setScoreWrapper);
         this.graphs = this.resamplingSearch.search();
         int numNoGraphs = this.resamplingSearch.getNumRunsReturningNullGraph();
 
@@ -376,40 +263,13 @@ public class GeneralResamplingTest {
         if (this.verbose) {
             this.out.println("Resampling number is : " + this.graphs.size());
         }
-        stop = MillisecondTimes.timeMillis();
-        if (this.verbose) {
-            this.out.println("Processing time of total resamplings : " + (stop - start) / 1000.0 + " sec");
-        }
 
-        start = MillisecondTimes.timeMillis();
         Graph graph = GraphSampling.createGraphWithHighProbabilityEdges(this.graphs);
-        stop = MillisecondTimes.timeMillis();
 
-//        if (this.verbose) {
         TetradLogger.getInstance().forceLogMessage("Final Resampling Search Result:");
         TetradLogger.getInstance().forceLogMessage(GraphUtils.graphToText(graph, false));
-        TetradLogger.getInstance().forceLogMessage("probDistribution finished in " + (stop - start) + " ms");
-//        }
 
         return graph;
-    }
-
-    /**
-     * Sets the score wrapper.
-     *
-     * @param scoreWrapper the score wrapper.
-     */
-    public void setScoreWrapper(ScoreWrapper scoreWrapper) {
-        this.scoreWrapper = scoreWrapper;
-    }
-
-    /**
-     * Sets the independence wrapper.
-     *
-     * @param independenceWrapper the independence wrapper.
-     */
-    public void setIndTestWrapper(IndependenceWrapper independenceWrapper) {
-        this.independenceWrapper = independenceWrapper;
     }
 
     /**
@@ -421,14 +281,7 @@ public class GeneralResamplingTest {
         return graphs == null ? new ArrayList<>() : new ArrayList<>(this.graphs);
     }
 
-    /**
-     * Sets the number of threads to use for bootstrapping. Must be at least 1. Default is 1. Note that this is the
-     * number of threads to use for bootstrapping, not the number of threads to use for the search itself. The n umber
-     * of threads to use for each search is determined by the algorithm being used.
-     *
-     * @param numBootstrapThreads the number of threads to use for bootstrapping.
-     */
-    public void setNumBootstrapThreads(int numBootstrapThreads) {
-        this.numBootstrapThreads = numBootstrapThreads;
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.setScoreWrapper = score;
     }
 }
