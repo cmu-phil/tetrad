@@ -114,12 +114,14 @@ public class PagSamplingRfci implements IGraphSearch {
                 pool.shutdownNow();
                 Thread.currentThread().interrupt();
                 if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
-                    System.err.println("Pool did not terminate");
+//                    System.err.println("Pool did not terminate");
+                    throw new RuntimeException("Pool did not terminate");
                 }
             }
         } catch (InterruptedException ie) {
             pool.shutdownNow();
             Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted");
         }
     }
 

@@ -449,7 +449,8 @@ public final class Fges implements IGraphSearch, DagScorer {
         for (int i = 0; i < nodes.size(); i += chunkSize) {
             if (Thread.currentThread().isInterrupted()) {
                 this.pool.shutdownNow();
-                break;
+                throw new RuntimeException("Interrupted");
+//                break;
             }
 
             NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, min(nodes.size(), i + chunkSize), nodes, emptySet);
@@ -604,7 +605,8 @@ public final class Fges implements IGraphSearch, DagScorer {
         for (int i = 0; i < nodes.size(); i += chunkSize) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
-                break;
+//                break;
+                throw new RuntimeException("Interrupted");
             }
 
             AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
@@ -700,7 +702,8 @@ public final class Fges implements IGraphSearch, DagScorer {
         for (int i = 0; i < TT.size(); i += chunkSize) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
-                break;
+//                break;
+                throw new RuntimeException("Interrupted");
             }
 
             EvalTask task = new EvalTask(TT, i, min(TT.size(), i + chunkSize), hashIndices);
@@ -831,7 +834,8 @@ public final class Fges implements IGraphSearch, DagScorer {
         for (Iterator<KnowledgeEdge> it = getKnowledge().requiredEdgesIterator(); it.hasNext(); ) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
-                break;
+//                break;
+                throw new RuntimeException("Interrupted");
             }
 
             KnowledgeEdge next = it.next();
@@ -851,7 +855,8 @@ public final class Fges implements IGraphSearch, DagScorer {
         for (Edge edge : graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
-                break;
+//                break;
+                throw new RuntimeException("Interrupted");
             }
 
             final String A = edge.getNode1().getName();
@@ -1261,7 +1266,8 @@ public final class Fges implements IGraphSearch, DagScorer {
                 for (int j = i + 1; j < nodes.size(); j++) {
                     if (Thread.interrupted()) {
                         pool.shutdownNow();
-                        break;
+//                        break;
+                        throw new RuntimeException("Interrupted");
                     }
 
                     Node x = nodes.get(j);

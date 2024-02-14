@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
@@ -24,14 +25,12 @@ import java.util.List;
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  * @version $Id: $Id
  */
-
-// Taking this out for now until we can get a good description for it.
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "RFCI-BSC",
-//        command = "rfci-bsc",
-//        algoType = AlgType.forbid_latent_common_causes,
-//        dataType = DataType.Discrete
-//)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "RFCI-BSC",
+        command = "rfci-bsc",
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Discrete
+)
 @Experimental
 public class RfciBsc implements Algorithm, HasKnowledge {
 

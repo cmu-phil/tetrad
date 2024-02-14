@@ -361,7 +361,7 @@ public class Boss implements SuborderSearch {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
                 Thread.currentThread().interrupt();
-                return false;
+                throw new RuntimeException("Interrupted");
             }
             if (this.knowledge.isRequired(x.getName(), z.getName())) break;
             if (x == z) {
@@ -426,7 +426,7 @@ public class Boss implements SuborderSearch {
             if (Thread.currentThread().isInterrupted()) {
                 pool.shutdownNow();
                 Thread.currentThread().interrupt();
-                return false;
+                throw new RuntimeException("Interrupted");
             }
 
             Node z = itr.next();
