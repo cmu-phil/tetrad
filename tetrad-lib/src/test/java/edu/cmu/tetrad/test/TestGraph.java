@@ -23,6 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.RandomUtil;
 import nu.xom.Element;
 import nu.xom.ParsingException;
@@ -206,6 +207,30 @@ public final class TestGraph {
 
         assertFalse(Edges.directedEdge(x1, x2).isHighlighted());
     }
+
+    @Test
+    public void testValidOrder() {
+        Graph g1 = GraphUtils.convert("X1---X2,X2---X3,X3---X4,X4---X1");
+        assertFalse(g1.paths().isLegalCpdag());
+
+        Graph g2 = RandomGraph.randomDag(10, 0, 10, 100, 100, 100, false);
+        g2 = GraphTransforms.cpdagForDag(g2);
+
+        assertTrue(g2.paths().isLegalCpdag());
+
+        Graph g3 = GraphUtils.convert("X1-->X2,X2-->X3,X3-->X4,X4-->X5,X5-->X6,X2---X7,X7-->X8");
+        assertFalse(g3.paths().isLegalCpdag());
+
+        Graph g4 = GraphUtils.convert("X1-->X2,Xf2---X3,X3<--X4");
+        assertFalse(g4.paths().isLegalCpdag());
+
+        Graph g5 = GraphUtils.convert("X1---X2,X2---X3,X3---X4,X1---X4,X1--X3");
+        assertFalse(g5.paths().isLegalCpdag());
+
+        Graph g6 = GraphUtils.convert("X1-->X2,X2<--X3");
+        assertTrue(g6.paths().isLegalCpdag());
+    }
+
 
     private Triple pickRandomTriple(Graph graph) {
         List<Node> nodes = graph.getNodes();
