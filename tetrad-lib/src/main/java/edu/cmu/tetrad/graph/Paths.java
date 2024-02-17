@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
@@ -118,10 +119,95 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>maxCliques.</p>
+     * Checks if the current graph is a legal CPDAG (completed partially directed acyclic graph).
      *
-     * @return a {@link java.util.Set} object
+     * @return true if the graph is a legal CPDAG, false otherwise.
      */
+    public boolean isLegalCpdag() {
+        Graph g = this.graph;
+
+        for (Edge e : g.getEdges()) {
+            if (!(Edges.isDirectedEdge(e) || Edges.isUndirectedEdge(e))) {
+                return false;
+            }
+        }
+
+        List<Node> pi = new ArrayList<>(g.getNodes());
+
+        try {
+            g.paths().makeValidOrder(pi);
+            MsepTest msepTest = new MsepTest(g);
+            Graph dag = getDag(pi, msepTest);
+            Graph cpdag = GraphTransforms.cpdagForDag(dag);
+            return g.equals(cpdag);
+        } catch (Exception e) {
+
+            // There was no valid sink.
+            return false;
+        }
+    }
+
+    /**
+     * Generates a directed acyclic graph (DAG) based on the given list of nodes using Raskutti and Uhler's method.
+     *
+     * @param pi a list of nodes representing the set of vertices in the graph
+     * @param msep the MsepTest instance for determining d-separation relationships
+     * @return a Graph object representing the generated DAG.
+     */
+    private Graph getDag(List<Node> pi, MsepTest msep) {
+        Graph graph = new EdgeListGraph(pi);
+
+        for (int a = 0; a < pi.size(); a++) {
+            for (Node b : getParents(pi, a, msep)) {
+                graph.addDirectedEdge(b, pi.get(a));
+            }
+        }
+
+        return graph;
+    }
+
+    /**
+     * Returns the parents of the node at index p, calculated using Pearl's method.
+     *
+     * @param p The index.
+     * @return The parents, as a Pair object (parents + score).
+     */
+    private Set<Node> getParents(List<Node> pi, int p, MsepTest msep) {
+        Node x = pi.get(p);
+        Set<Node> parents = new HashSet<>();
+        Set<Node> prefix = getPrefix(pi, p);
+
+        for (Node y : prefix) {
+            Set<Node> minus = new HashSet<>(prefix);
+            minus.remove(y);
+            Set<Node> z = new HashSet<>(minus);
+
+            if (msep.checkIndependence(x, y, z).isDependent()) {
+                parents.add(y);
+            }
+        }
+
+        return parents;
+    }
+
+    /**
+     * Get the prefix for a list of nodes up to a specified index.
+     *
+     * @param pi The list of nodes.
+     * @param i  The index up to which to include nodes in the prefix.
+     * @return A set of nodes representing the prefix.
+     */
+    private static Set<Node> getPrefix(List<Node> pi, int i) {
+        Set<Node> prefix = new HashSet<>();
+
+        for (int j = 0; j < i; j++) {
+            prefix.add(pi.get(j));
+        }
+
+        return prefix;
+    }
+
+
     public Set<Set<Node>> maxCliques() {
         int[][] graph = new int[this.graph.getNumNodes()][this.graph.getNumNodes()];
         List<Node> nodes = this.graph.getNodes();
