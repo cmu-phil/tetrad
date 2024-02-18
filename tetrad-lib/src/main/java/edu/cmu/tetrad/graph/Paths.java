@@ -570,11 +570,11 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>treksIncludingBidirected.</p>
+     * Finds all possible treks between two nodes, including bidirectional treks.
      *
-     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
-     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
-     * @return a {@link java.util.List} object
+     * @param node1 The starting node.
+     * @param node2 The ending node.
+     * @return A List of Lists representing all treks between the given nodes.
      */
     public List<List<Node>> treksIncludingBidirected(Node node1, Node node2) {
         List<List<Node>> paths = new LinkedList<>();
