@@ -158,7 +158,12 @@ public final class Tetrad implements PropertyChangeListener {
 
             @Override
             public Dimension getPreferredSize() {
-                return Toolkit.getDefaultToolkit().getScreenSize();
+                GraphicsDevice graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+                int height = (int) (graphicsDevice.getDisplayMode().getHeight() * 0.75);
+                int width = (int) (height * 1.333333333);
+
+//                return Toolkit.getDefaultToolkit().getScreenSize();
+                return new Dimension(width, height);
             }
 
         };
