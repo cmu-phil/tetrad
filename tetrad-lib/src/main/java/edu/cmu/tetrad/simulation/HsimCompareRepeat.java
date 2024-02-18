@@ -3,12 +3,21 @@ package edu.cmu.tetrad.simulation;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
  * Created by Erich on 7/15/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class HsimCompareRepeat {
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         final int count = 1;
 
@@ -144,7 +153,7 @@ public class HsimCompareRepeat {
         final String paramsLog = "count = " + count + ", numVars = " + numVars + ", edgesPerNode = " + edgesPerNode + ", numCases = " + numCases + ", resimSize = " + resimSize + ", repeat = " + repeat;
 
         try {
-            PrintWriter writer = new PrintWriter("HsimCR-c" + count + "-v" + numVars + "-s" + numCases + "-rs" + resimSize + "-r" + repeat + ".txt", "UTF-8");
+            PrintWriter writer = new PrintWriter("HsimCR-c" + count + "-v" + numVars + "-s" + numCases + "-rs" + resimSize + "-r" + repeat + ".txt", StandardCharsets.UTF_8);
             writer.println(paramsLog + nl + nl + resultsLog);
             writer.close();
         } catch (Exception IOException) {

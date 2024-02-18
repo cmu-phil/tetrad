@@ -25,6 +25,7 @@ import java.util.List;
  * Feb 20, 2017 2:07:27 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public interface DataPreviewer {
 
@@ -35,7 +36,7 @@ public interface DataPreviewer {
      * @param toLine          The ending line number.
      * @param numOfCharacters The number of characters to preview.
      * @return the previews.
-     * @throws IOException if an I/O error occurs.
+     * @throws java.io.IOException if an I/O error occurs.
      */
     List<String> getPreviews(int fromLine, int toLine, int numOfCharacters) throws IOException;
 

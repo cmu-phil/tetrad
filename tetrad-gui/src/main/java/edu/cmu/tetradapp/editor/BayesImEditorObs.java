@@ -28,6 +28,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 
 /**
  * An editor for Bayes net instantiated models. Assumes that the workbench and parameterized model have been established
@@ -36,6 +37,7 @@ import java.awt.*;
  *
  * @author Aaron Powers
  * @author josephramsey
+ * @version $Id: $Id
  */
 /////////////////////////////////////////////////////////////////
 // allow the user to set the probabilities of given combinations
@@ -43,7 +45,12 @@ import java.awt.*;
 //
 public class BayesImEditorObs extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 3600349007912545105L;
+
+    /**
+     * The wrapper for the Bayes IM.
+     */
     private final BayesImWrapperObs wrapper;
     /**
      * The wizard that allows the user to modify parameter values for this IM.
@@ -52,6 +59,9 @@ public class BayesImEditorObs extends JPanel {
 
     /**
      * Constructs a new instanted model editor from a Bayes IM.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapperObs} object
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesImEditorObs(BayesImWrapperObs wrapper, BayesIm bayesIm) {
         if (wrapper == null) {
@@ -64,6 +74,8 @@ public class BayesImEditorObs extends JPanel {
 
     /**
      * Constructs a new instanted model editor from a Bayes IM wrapper.
+     *
+     * @param bayesImWrapperObs a {@link edu.cmu.tetradapp.model.BayesImWrapperObs} object
      */
     public BayesImEditorObs(BayesImWrapperObs bayesImWrapperObs) {
         this(bayesImWrapperObs, bayesImWrapperObs.getBayesIm());
@@ -125,6 +137,8 @@ public class BayesImEditorObs extends JPanel {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     public void setName(String name) {
@@ -140,6 +154,11 @@ public class BayesImEditorObs extends JPanel {
         return this.wizard;
     }
 
+    /**
+     * <p>getBayesIm.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public void getBayesIm(BayesIm bayesIm) {
         this.wrapper.setBayesIm(bayesIm);
         removeAll();

@@ -37,26 +37,77 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the Regression algorithm.
  *
  * @author Frank Wimberly after Joe Ramsey's PcRunner
+ * @version $Id: $Id
  */
 public class RegressionRunner implements AlgorithmRunner, RegressionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The parameters for the algorithm.
+     */
     private final Parameters params;
+
+    /**
+     * The data models to be used in the regression.
+     */
     private final DataModelList dataModels;
+
+    /**
+     * The names of the variables in the data model.
+     */
     private final List<String> variableNames;
+
+    /**
+     * The names of the regressors in the data model.
+     */
     private List<String> regressorNames;
+
+    /**
+     * The name of the target variable in the data model.
+     */
     private String name;
+
+    /**
+     * The name of the target variable in the data model.
+     */
     private String targetName;
+
+    /**
+     * The result of the regression.
+     */
     private Graph outGraph;
+
+    /**
+     * The result of the regression.
+     */
     private RegressionResult result;
+
+    /**
+     * The name of the source of the model.
+     */
     private Map<String, String> allParamsSettings;
+
+    /**
+     * The name of the source of the model.
+     */
     private int numModels = 1;
+
+    /**
+     * The name of the source of the model.
+     */
     private int modelIndex;
+
+    /**
+     * The name of the source of the model.
+     */
     private String modelSourceName;
 
     //=========================CONSTRUCTORS===============================//
@@ -64,6 +115,9 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     /**
      * Constructs a wrapper for the given DataWrapper. The DataWrapper must contain a DataSet that is either a DataSet
      * or a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
+     *
+     * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RegressionRunner(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
@@ -110,6 +164,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.RegressionRunner} object
      * @see TetradSerializableUtils
      */
     public static RegressionRunner serializableInstance() {
@@ -134,15 +189,30 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
 
     //===========================PUBLIC METHODS============================//
 
+    /**
+     * <p>getDataModel.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public DataModel getDataModel() {
         //return (DataModel) this.dataWrapper.getDataModelList().get(0);
         return this.dataModels.get(getModelIndex());
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return this.outGraph;
     }
@@ -151,6 +221,11 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
         this.outGraph = graph;
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return null;
     }
@@ -209,53 +284,101 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
         setResultGraph(this.outGraph);
     }
 
+    /**
+     * <p>supportsKnowledge.</p>
+     *
+     * @return a boolean
+     */
     public boolean supportsKnowledge() {
         return false;
     }
 
+    /**
+     * <p>getMeekRules.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.utils.MeekRules} object
+     */
     public MeekRules getMeekRules() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * <p>getExternalGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getExternalGraph() {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setExternalGraph(Graph graph) {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAlgorithmName() {
         return "Regression";
     }
 
+    /**
+     * <p>Getter for the field <code>result</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.regression.RegressionResult} object
+     */
     public RegressionResult getResult() {
         return this.result;
     }
 
+    /**
+     * <p>Getter for the field <code>outGraph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getOutGraph() {
         return this.outGraph;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getVariableNames() {
         return this.variableNames;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getRegressorNames() {
         return this.regressorNames;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setRegressorName(List<String> predictors) {
         this.regressorNames = predictors;
     }
 
+    /**
+     * <p>Getter for the field <code>targetName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getTargetName() {
         return this.targetName;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setTargetName(String target) {
         this.targetName = target;
@@ -268,6 +391,10 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -279,19 +406,34 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
 
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.outGraph;
     }
 
     /**
+     * <p>getTriplesClassificationTypes.</p>
+     *
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
@@ -299,14 +441,15 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
     }
 
     /**
-     * @param node The node that the classifications are for. All triple from adjacencies to this node to adjacencies to
-     *             this node through the given node will be considered.
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given node.
+     * {@inheritDoc}
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new LinkedList<>();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getParamSettings() {
         Map<String, String> paramSettings = new HashMap<>();
@@ -314,32 +457,61 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
         return paramSettings;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getAllParamSettings() {
         return this.allParamsSettings;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setAllParamSettings(Map<String, String> paramSettings) {
         this.allParamsSettings = paramSettings;
     }
 
+    /**
+     * <p>Getter for the field <code>numModels</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumModels() {
         return this.numModels;
     }
 
+    /**
+     * <p>Getter for the field <code>modelIndex</code>.</p>
+     *
+     * @return a int
+     */
     public int getModelIndex() {
         return this.modelIndex;
     }
 
+    /**
+     * <p>Setter for the field <code>modelIndex</code>.</p>
+     *
+     * @param modelIndex a int
+     */
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
     }
 
+    /**
+     * <p>Getter for the field <code>modelSourceName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getModelSourceName() {
         return this.modelSourceName;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Graph> getGraphs() {
         return null;

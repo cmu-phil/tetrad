@@ -22,6 +22,7 @@ package edu.cmu.tetrad.stat.correlation;
  * Jan 27, 2016 5:35:01 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class RealCovarianceMatrix implements RealCovariance {
 
@@ -31,6 +32,11 @@ public class RealCovarianceMatrix implements RealCovariance {
 
     private final int numOfCols;
 
+    /**
+     * <p>Constructor for RealCovarianceMatrix.</p>
+     *
+     * @param data an array of {@link double} objects
+     */
     public RealCovarianceMatrix(double[][] data) {
         this.data = data;
         this.numOfRows = data.length;
@@ -50,6 +56,9 @@ public class RealCovarianceMatrix implements RealCovariance {
         return mean;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[] computeLowerTriangle(boolean biasCorrected) {
         double[] covarianceMatrix = new double[(this.numOfCols * (this.numOfCols + 1)) / 2];
@@ -75,6 +84,9 @@ public class RealCovarianceMatrix implements RealCovariance {
         return covarianceMatrix;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[][] compute(boolean biasCorrected) {
         double[][] covarianceMatrix = new double[this.numOfCols][this.numOfCols];

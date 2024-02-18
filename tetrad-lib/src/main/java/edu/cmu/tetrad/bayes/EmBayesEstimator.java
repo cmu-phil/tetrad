@@ -39,19 +39,53 @@ import java.util.List;
  * Estimates parameters of the given Bayes net from the given data using maximum likelihood method.
  *
  * @author Frank Wimberly based on related classes by Shane Harwood, Joseph Ramsey
+ * @version $Id: $Id
  */
 public final class EmBayesEstimator {
+
+    /**
+     * The Bayes PM whose graph contains latent and observed variables.
+     */
     private final BayesPm bayesPm;
 
+    /**
+     * The data set of observed variables; missing value codes may be present.
+     */
     private final DataSet dataSet;
+
+    /**
+     * The nodes in the graph of the Bayes PM.
+     */
     private final Node[] nodes;
-    //latents
+
+    /**
+     * The latents.
+     */
     private final Graph graph;
-    //private DataSet ddsNm;
+
+    /**
+     * The data set with missing value columns for latents.
+     */
     private DataSet mixedData;   //Contains all variables with missing value columns for
+
+    /**
+     * Variables in mixedData (observed and latents).
+     */
     private List<Node> allVariables;          //Variables in mixedData (observed and latents)
+
+    /**
+     * The Bayes PM with only observed variables.
+     */
     private BayesPm bayesPmObs;
+
+    /**
+     * The observed Bayes IM.
+     */
     private BayesIm observedIm;
+
+    /**
+     * The estimated Bayes IM.
+     */
     private BayesIm estimatedIm;
 
     /**
@@ -85,6 +119,9 @@ public final class EmBayesEstimator {
      * latter may contain variables which don't occur in the dataset (latent variables). The first argument of the
      * constructoris the BayesPm whose graph contains latent and observed variables.  The second is the dataset of
      * observed variables; missing value codes may be present.
+     *
+     * @param bayesPm a {@link edu.cmu.tetrad.bayes.BayesPm} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public EmBayesEstimator(BayesPm bayesPm, DataSet dataSet) {
 
@@ -133,6 +170,12 @@ public final class EmBayesEstimator {
 
     }
 
+    /**
+     * <p>Constructor for EmBayesEstimator.</p>
+     *
+     * @param inputBayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param dataSet      a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public EmBayesEstimator(BayesIm inputBayesIm, DataSet dataSet) {
         this(inputBayesIm.getBayesPm(), dataSet);
     }
@@ -398,6 +441,9 @@ public final class EmBayesEstimator {
      * parameter sets and when the change is less than the threshhold, the process is considered to have converged.  The
      * distance between successive Bayes nets is the Euclidean distance between vectors of sequences of their
      * parameters.  See the BayesImDistanceFunction class for details.
+     *
+     * @param threshhold a double
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesIm maximization(double threshhold) {
         double distance = Double.MAX_VALUE;
@@ -484,10 +530,20 @@ public final class EmBayesEstimator {
 
     }
 
+    /**
+     * <p>getMixedDataSet.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getMixedDataSet() {
         return this.mixedData;
     }
 
+    /**
+     * <p>Getter for the field <code>estimatedIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getEstimatedIm() {
         return this.estimatedIm;
     }

@@ -52,6 +52,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
+import java.io.Serial;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
@@ -62,18 +63,46 @@ import java.util.*;
  * @author Aaron Powers
  * @author josephramsey
  * @author Zhou Yuan
+ * @version $Id: $Id
  */
 public final class SemGraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, DelegatesEditing, IndTestProducer {
 
+    @Serial
     private static final long serialVersionUID = 6837233499169689575L;
+
+    /**
+     * The semGraphWrapper being edited.
+     */
     private final SemGraphWrapper semGraphWrapper;
+
+    /**
+     * The parameters for the graph.
+     */
     private final Parameters parameters;
+
+    /**
+     * The scroll pane for the graph editor.
+     */
     private final JScrollPane graphEditorScroll = new JScrollPane();
+
+    /**
+     * The edge type table.
+     */
     private final EdgeTypeTable edgeTypeTable;
+
+    /**
+     * The workbench for the graph editor.
+     */
     private GraphWorkbench workbench;
 
     //===========================CONSTRUCTOR========================//
+
+    /**
+     * <p>Constructor for SemGraphEditor.</p>
+     *
+     * @param semGraphWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     */
     public SemGraphEditor(SemGraphWrapper semGraphWrapper) {
         if (semGraphWrapper == null) {
             throw new NullPointerException();
@@ -90,6 +119,8 @@ public final class SemGraphEditor extends JPanel
     //===========================PUBLIC METHODS======================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     @Override
@@ -100,9 +131,7 @@ public final class SemGraphEditor extends JPanel
     }
 
     /**
-     * @return a list of all the SessionNodeWrappers (TetradNodes) and SessionNodeEdges that are model components for
-     * the respective SessionNodes and SessionEdges selected in the workbench. Note that the workbench, not the
-     * SessionEditorNodes themselves, keeps track of the selection.
+     * {@inheritDoc}
      */
     @Override
     public List getSelectedModelComponents() {
@@ -121,6 +150,8 @@ public final class SemGraphEditor extends JPanel
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Pastes list of session elements into the workbench.
      */
     @Override
@@ -139,21 +170,33 @@ public final class SemGraphEditor extends JPanel
         getWorkbench().selectConnectingEdges();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JComponent getEditDelegate() {
         return getWorkbench();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphWorkbench getWorkbench() {
         return this.workbench;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getGraph() {
         return this.workbench.getGraph();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setGraph(Graph graph) {
         try {
@@ -164,26 +207,41 @@ public final class SemGraphEditor extends JPanel
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map getModelEdgesToDisplay() {
         return this.workbench.getModelEdgesToDisplay();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map getModelNodesToDisplay() {
         return this.workbench.getModelNodesToDisplay();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getSourceGraph() {
         return getWorkbench().getGraph();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void layoutByGraph(Graph graph) {
         ((SemGraph) graph).setShowErrorTerms(false);
@@ -191,11 +249,17 @@ public final class SemGraphEditor extends JPanel
         ((SemGraph) graph).resetErrorPositions();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void layoutByKnowledge() {
         // Does nothing.
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Rectangle getVisibleRect() {
         return getWorkbench().getVisibleRect();
@@ -570,6 +634,9 @@ public final class SemGraphEditor extends JPanel
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getIndependenceTest() {
         return new MsepTest(this.workbench.getGraph());

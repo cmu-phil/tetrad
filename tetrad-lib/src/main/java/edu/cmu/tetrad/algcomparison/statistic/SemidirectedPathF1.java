@@ -3,6 +3,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * Calculates the F1 statistic for adjacencies. See
  * <p>
@@ -11,20 +13,31 @@ import edu.cmu.tetrad.graph.Graph;
  * We use what's on this page called the "traditional" F1 statistic.
  *
  * @author Joseh Ramsey
+ * @version $Id: $Id
  */
 public class SemidirectedPathF1 implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "Semidirected-F1";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "F1 statistic for semidirected paths comparing the estimated graph to the true graph";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         double precision = new SemidirectedPrecision().getValue(trueGraph, estGraph, dataModel);
@@ -32,6 +45,9 @@ public class SemidirectedPathF1 implements Statistic {
         return 2 * (precision * recall) / (precision + recall);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

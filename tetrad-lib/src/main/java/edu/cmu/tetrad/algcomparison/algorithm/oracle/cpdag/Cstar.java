@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
+package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -21,30 +21,63 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * <p>Cstar class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CStaR",
         command = "cstar",
         algoType = AlgType.forbid_latent_common_causes
 )
 public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
     private IndependenceWrapper test;
+
+    /**
+     * The score to use.
+     */
     private ScoreWrapper score;
+
+    /**
+     * The records.
+     */
     private LinkedList<edu.cmu.tetrad.search.Cstar.Record> records;
 
     // Don't delete.
+
+    /**
+     * <p>Constructor for Cstar.</p>
+     */
     public Cstar() {
     }
 
+    /**
+     * <p>Constructor for Cstar.</p>
+     *
+     * @param test  a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public Cstar(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
@@ -163,21 +196,33 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         return cStaR.makeGraph(this.getRecords());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "CStaR";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -194,25 +239,42 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         return parameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 
+    /**
+     * <p>Getter for the field <code>records</code>.</p>
+     *
+     * @return a {@link java.util.LinkedList} object
+     */
     public LinkedList<edu.cmu.tetrad.search.Cstar.Record> getRecords() {
         return this.records;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;

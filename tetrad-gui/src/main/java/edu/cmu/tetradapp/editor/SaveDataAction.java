@@ -29,7 +29,6 @@ import edu.cmu.tetradapp.model.EditorUtils;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -57,6 +56,8 @@ final class SaveDataAction extends AbstractAction {
 
     /**
      * Creates a new action to save data.
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
     public SaveDataAction(DataEditor editor) {
         super("Save Data...");
@@ -69,6 +70,11 @@ final class SaveDataAction extends AbstractAction {
     }
 
 
+    /**
+     * <p>Constructor for SaveDataAction.</p>
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.MarkovBlanketSearchEditor} object
+     */
     public SaveDataAction(MarkovBlanketSearchEditor editor) {
         super("Save Data...");
         if (editor == null) {
@@ -79,6 +85,8 @@ final class SaveDataAction extends AbstractAction {
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {

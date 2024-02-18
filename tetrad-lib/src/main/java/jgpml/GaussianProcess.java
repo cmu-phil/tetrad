@@ -40,6 +40,7 @@ import org.apache.commons.math3.util.FastMath;
  * the Hyperparameters and to do predictions.
  *
  * @author jdramsey
+ * @version $Id: $Id
  */
 public class GaussianProcess {
 
@@ -236,6 +237,7 @@ public class GaussianProcess {
      * @param logtheta column <code>Matrix</code> of hyperparameters
      * @param y        output dataset
      * @param df0      returned partial derivatives with respect to the hyperparameters
+     * @param x        a {@link Jama.Matrix} object
      * @return lml minus log marginal likelihood
      */
     public double negativeLogLikelihood(Matrix logtheta, Matrix x, Matrix y, Matrix df0) {
@@ -277,7 +279,6 @@ public class GaussianProcess {
      * @param xstar test dataset
      * @return [ystar Sstar] predicted mean and covariance
      */
-
     public Matrix[] predict(Matrix xstar) {
 
         if (this.alpha == null || this.L == null) {

@@ -2,6 +2,9 @@ package edu.cmu.tetrad.annotation;
 
 /**
  * Author : Jeremy Espino MD Created 6/30/17 10:36 AM
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public enum AlgType {
 

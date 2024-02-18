@@ -13,29 +13,85 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
 import java.util.*;
 
 /**
  * A simulation method based on the conditional Gaussian assumption.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ConditionalGaussianSimulation implements Simulation {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The data type.
+     */
     private DataType dataType;
+
+    /**
+     * The shuffled order.
+     */
     private List<Node> shuffledOrder;
+
+    /**
+     * The low variance.
+     */
     private double varLow = 1;
+
+    /**
+     * The high variance.
+     */
     private double varHigh = 3;
+
+    /**
+     * The low coefficient.
+     */
     private double coefLow = 0.05;
+
+    /**
+     * The high coefficient.
+     */
     private double coefHigh = 1.5;
+
+    /**
+     * Whether coefficients should be drawn equally from positive or negative values.
+     */
     private boolean coefSymmetric = true;
+
+    /**
+     * The low mean for variables.
+     */
     private double meanLow = -1;
+
+    /**
+     * The high mean for variables.
+     */
     private double meanHigh = 1;
 
+    /**
+     * <p>Constructor for ConditionalGaussianSimulation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public ConditionalGaussianSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
@@ -68,6 +124,9 @@ public class ConditionalGaussianSimulation implements Simulation {
         return outG;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -130,21 +189,33 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Conditional Gaussian simulation using " + this.randomGraph.getDescription();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
@@ -169,11 +240,17 @@ public class ConditionalGaussianSimulation implements Simulation {
         return parameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return this.dataType;
@@ -404,30 +481,65 @@ public class ConditionalGaussianSimulation implements Simulation {
         return d;
     }
 
+    /**
+     * <p>Setter for the field <code>varLow</code>.</p>
+     *
+     * @param varLow a double
+     */
     public void setVarLow(double varLow) {
         this.varLow = varLow;
     }
 
+    /**
+     * <p>Setter for the field <code>varHigh</code>.</p>
+     *
+     * @param varHigh a double
+     */
     public void setVarHigh(double varHigh) {
         this.varHigh = varHigh;
     }
 
+    /**
+     * <p>Setter for the field <code>coefLow</code>.</p>
+     *
+     * @param coefLow a double
+     */
     public void setCoefLow(double coefLow) {
         this.coefLow = coefLow;
     }
 
+    /**
+     * <p>Setter for the field <code>coefHigh</code>.</p>
+     *
+     * @param coefHigh a double
+     */
     public void setCoefHigh(double coefHigh) {
         this.coefHigh = coefHigh;
     }
 
+    /**
+     * <p>Setter for the field <code>coefSymmetric</code>.</p>
+     *
+     * @param coefSymmetric a boolean
+     */
     public void setCoefSymmetric(boolean coefSymmetric) {
         this.coefSymmetric = coefSymmetric;
     }
 
+    /**
+     * <p>Setter for the field <code>meanLow</code>.</p>
+     *
+     * @param meanLow a double
+     */
     public void setMeanLow(double meanLow) {
         this.meanLow = meanLow;
     }
 
+    /**
+     * <p>Setter for the field <code>meanHigh</code>.</p>
+     *
+     * @param meanHigh a double
+     */
     public void setMeanHigh(double meanHigh) {
         this.meanHigh = meanHigh;
     }
@@ -458,10 +570,9 @@ public class ConditionalGaussianSimulation implements Simulation {
             if (o == this) {
                 return true;
             }
-            if (!(o instanceof Combination)) {
+            if (!(o instanceof Combination v)) {
                 return false;
             }
-            Combination v = (Combination) o;
             return v.parameter == this.parameter && v.paramValues.equals(this.paramValues);
         }
 
@@ -496,10 +607,9 @@ public class ConditionalGaussianSimulation implements Simulation {
             if (o == this) {
                 return true;
             }
-            if (!(o instanceof VariableValues)) {
+            if (!(o instanceof VariableValues v)) {
                 return false;
             }
-            VariableValues v = (VariableValues) o;
             return v.variable.equals(this.variable) && v.value == this.value;
         }
     }

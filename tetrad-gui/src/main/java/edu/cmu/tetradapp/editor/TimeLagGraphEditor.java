@@ -44,6 +44,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
+import java.io.Serial;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,17 +57,41 @@ import java.util.Map;
  * @author Aaron Powers
  * @author josephramsey
  * @author Zhou Yuan
+ * @version $Id: $Id
  */
 public final class TimeLagGraphEditor extends JPanel
         implements GraphEditable, LayoutEditable, IndTestProducer {
 
+    @Serial
     private static final long serialVersionUID = -2425361202348129265L;
+
+    /**
+     * The layout editable.
+     */
     private final LayoutEditable layoutEditable;
+
+    /**
+     * The graph editor scroll.
+     */
     private final JScrollPane graphEditorScroll = new JScrollPane();
+
+    /**
+     * The edge type table.
+     */
     private final EdgeTypeTable edgeTypeTable;
+
+    /**
+     * The workbench.
+     */
     private TimeLagGraphWorkbench workbench;
 
     //===========================CONSTRUCTOR========================//
+
+    /**
+     * <p>Constructor for TimeLagGraphEditor.</p>
+     *
+     * @param timeLagGraphWrapper a {@link edu.cmu.tetradapp.model.TimeLagGraphWrapper} object
+     */
     public TimeLagGraphEditor(TimeLagGraphWrapper timeLagGraphWrapper) {
         setLayout(new BorderLayout());
         this.layoutEditable = this;
@@ -78,6 +103,8 @@ public final class TimeLagGraphEditor extends JPanel
     //===========================PUBLIC METHODS========================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     @Override
@@ -88,9 +115,7 @@ public final class TimeLagGraphEditor extends JPanel
     }
 
     /**
-     * @return a list of all the SessionNodeWrappers (TetradNodes) and SessionNodeEdges that are model components for
-     * the respective SessionNodes and SessionEdges selected in the workbench. Note that the workbench, not the
-     * SessionEditorNodes themselves, keeps track of the selection.
+     * {@inheritDoc}
      */
     @Override
     public List getSelectedModelComponents() {
@@ -111,6 +136,8 @@ public final class TimeLagGraphEditor extends JPanel
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Pastes list of session elements into the workbench.
      */
     @Override
@@ -129,51 +156,81 @@ public final class TimeLagGraphEditor extends JPanel
         getWorkbench().selectConnectingEdges();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphWorkbench getWorkbench() {
         return this.workbench;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getGraph() {
         return getWorkbench().getGraph();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setGraph(Graph graph) {
         getWorkbench().setGraph(graph);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getSourceGraph() {
         return getWorkbench().getGraph();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void layoutByGraph(Graph graph) {
         getWorkbench().layoutByGraph(graph);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void layoutByKnowledge() {
         // Does nothing.
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Rectangle getVisibleRect() {
         return getWorkbench().getVisibleRect();
@@ -422,6 +479,9 @@ public final class TimeLagGraphEditor extends JPanel
         return edit;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getIndependenceTest() {
         Graph graph = getWorkbench().getGraph();

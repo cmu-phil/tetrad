@@ -41,6 +41,8 @@ class RandomMimParamsEditor extends JPanel {
 
     /**
      * Constructs a dialog to edit the given workbench randomization parameters.
+     *
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RandomMimParamsEditor(Parameters parameters) {
         JComboBox<String> numFactors = new JComboBox<>();

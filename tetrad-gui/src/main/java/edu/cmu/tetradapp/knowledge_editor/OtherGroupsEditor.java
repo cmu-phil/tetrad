@@ -53,6 +53,12 @@ class OtherGroupsEditor extends JPanel {
      */
     private final List<String> variables;
 
+    /**
+     * <p>Constructor for OtherGroupsEditor.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param vars      a {@link java.util.List} object
+     */
     public OtherGroupsEditor(Knowledge knowledge, List<String> vars) {
         if (knowledge == null) {
             throw new NullPointerException("The given knowledge must not be null");

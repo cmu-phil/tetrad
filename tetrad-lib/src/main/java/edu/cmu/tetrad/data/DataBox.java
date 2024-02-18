@@ -28,16 +28,24 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * efficiency.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface DataBox extends TetradSerializable {
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
+     * <p>numRows.</p>
+     *
      * @return the (fixed) number of rows of the dataset.
      */
     int numRows();
 
     /**
+     * <p>numCols.</p>
+     *
      * @return the (fixed) number of columns of the dataset.
      */
     int numCols();
@@ -49,12 +57,14 @@ public interface DataBox extends TetradSerializable {
      * @param row   the row index.
      * @param col   the column index.
      * @param value the value to store.
-     * @throws IllegalArgumentException if the given value cannot be stored (because it's out of range or cannot be
-     *                                  converted or whatever).
+     * @throws java.lang.IllegalArgumentException if the given value cannot be stored (because it's out of range or
+     *                                            cannot be converted or whatever).
      */
     void set(int row, int col, Number value) throws IllegalArgumentException;
 
     /**
+     * <p>get.</p>
+     *
      * @param row the row index.
      * @param col the column index.
      * @return the value at the given row and column as a Number. If the value is missing, null is uniformly returned.
@@ -62,11 +72,15 @@ public interface DataBox extends TetradSerializable {
     Number get(int row, int col);
 
     /**
+     * <p>copy.</p>
+     *
      * @return a copy of this data box.
      */
     DataBox copy();
 
     /**
+     * <p>viewSelection.</p>
+     *
      * @param rows the row indices.
      * @param cols the column indices.
      * @return this data box, restricted to the given rows and columns.

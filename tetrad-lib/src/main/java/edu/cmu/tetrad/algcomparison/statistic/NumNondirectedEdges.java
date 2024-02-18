@@ -9,20 +9,30 @@ import edu.cmu.tetrad.graph.Graph;
  * Number of X---Y in est.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NumNondirectedEdges implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "#Xo-oY";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Number of Xo-oY in est";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -36,6 +46,9 @@ public class NumNondirectedEdges implements Statistic {
         return tp;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

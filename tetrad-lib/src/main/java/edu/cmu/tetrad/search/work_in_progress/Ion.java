@@ -41,6 +41,7 @@ import java.util.*;
  *
  * @author Robert Tillman
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Ion {
 
@@ -111,6 +112,14 @@ public class Ion {
 
     //============================= Public Methods ============================//
 
+    /**
+     * <p>treks.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param node1 a {@link edu.cmu.tetrad.graph.Node} object
+     * @param node2 a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.List} object
+     */
     public static List<List<Node>> treks(Graph graph, Node node1, Node node2) {
         List<List<Node>> paths = new LinkedList<>();
         Ion.treks(graph, node1, node2, new LinkedList<>(), paths);
@@ -594,6 +603,8 @@ public class Ion {
     // return hitting set sizes
 
     /**
+     * <p>Getter for the field <code>runtime</code>.</p>
+     *
      * @return The total runtime and times for hitting set calculations.
      */
     public List<String> getRuntime() {
@@ -618,6 +629,8 @@ public class Ion {
     // summarizes time and hitting set time and size information for latex
 
     /**
+     * <p>getMaxMemUsage.</p>
+     *
      * @return The maximum memory used in a run of ION
      */
     public double getMaxMemUsage() {
@@ -626,6 +639,11 @@ public class Ion {
 
     //============================= Private Methods ============================//
 
+    /**
+     * <p>getIterations.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Integer> getIterations() {
         int totalit = 0;
         int largestit = 0;
@@ -1693,11 +1711,10 @@ public class Ion {
         }
 
         public boolean equals(Object obj) {
-            if (!(obj instanceof IonIndependenceFacts)) {
+            if (!(obj instanceof IonIndependenceFacts fact)) {
                 return false;
             }
 
-            IonIndependenceFacts fact = (IonIndependenceFacts) obj;
             return (this.x.equals(fact.x) && this.y.equals(fact.y) &&
                     this.z.equals(fact.z))
                     || (this.x.equals(fact.y) & this.y.equals(fact.x) &&

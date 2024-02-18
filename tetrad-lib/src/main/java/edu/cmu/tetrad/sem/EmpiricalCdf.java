@@ -30,16 +30,27 @@ import java.util.List;
 
 /**
  * Only the cumulativeProbability, density, setShift methods are implemented.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class EmpiricalCdf implements RealDistribution {
     private final List<Double> data;
 
+    /**
+     * <p>Constructor for EmpiricalCdf.</p>
+     *
+     * @param data a {@link java.util.List} object
+     */
     public EmpiricalCdf(List<Double> data) {
         if (data == null) throw new NullPointerException();
         this.data = data;
         Collections.sort(data);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double cumulativeProbability(double x) {
         int count = 0;
 
@@ -54,11 +65,17 @@ public class EmpiricalCdf implements RealDistribution {
         return count / (double) this.data.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double probability(double v) {
         return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double density(double v) {
         double d1 = v - 0.05;
@@ -68,64 +85,100 @@ public class EmpiricalCdf implements RealDistribution {
         return (n1 - n2) / (d2 - d1);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Deprecated
     public double cumulativeProbability(double v, double v1) throws NumberIsTooLargeException {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double inverseCumulativeProbability(double v) throws OutOfRangeException {
         return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNumericalMean() {
         return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNumericalVariance() {
         return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getSupportLowerBound() {
         return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getSupportUpperBound() {
         return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Deprecated
     public boolean isSupportLowerBoundInclusive() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Deprecated
     public boolean isSupportUpperBoundInclusive() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isSupportConnected() {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void reseedRandomGenerator(long l) {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double sample() {
         return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[] sample(int i) {
         return new double[0];

@@ -32,25 +32,37 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps a DirichletEstimator.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DirichletEstimatorWrapper implements SessionModel {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
     /**
-     * @serial Cannot be null.
+     * The Dirichlet Bayes IM.
      */
     private final DirichletBayesIm dirichletBayesIm;
+
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
     //============================CONSTRUCTORS============================//
+
+    /**
+     * <p>Constructor for DirichletEstimatorWrapper.</p>
+     *
+     * @param dataWrapper           a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param dirichletPriorWrapper a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
+     */
     public DirichletEstimatorWrapper(DataWrapper dataWrapper,
                                      DirichletBayesImWrapper dirichletPriorWrapper) {
         if (dataWrapper == null) {
@@ -81,6 +93,13 @@ public class DirichletEstimatorWrapper implements SessionModel {
         log(dirichletBayesIm);
     }
 
+    /**
+     * <p>Constructor for DirichletEstimatorWrapper.</p>
+     *
+     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public DirichletEstimatorWrapper(DataWrapper dataWrapper,
                                      BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
@@ -124,6 +143,7 @@ public class DirichletEstimatorWrapper implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
@@ -131,6 +151,12 @@ public class DirichletEstimatorWrapper implements SessionModel {
     }
 
     //===============================PUBLIC METHODS=======================//
+
+    /**
+     * <p>getEstimatedBayesIm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.DirichletBayesIm} object
+     */
     public DirichletBayesIm getEstimatedBayesIm() {
         return this.dirichletBayesIm;
     }
@@ -144,6 +170,10 @@ public class DirichletEstimatorWrapper implements SessionModel {
      * help.
      * <p>
      * LogUtils.getInstance().finer("Estimated Bayes IM:");
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -154,14 +184,27 @@ public class DirichletEstimatorWrapper implements SessionModel {
         }
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.dirichletBayesIm.getBayesPm().getDag();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

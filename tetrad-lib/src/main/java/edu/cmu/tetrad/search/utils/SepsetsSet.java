@@ -33,6 +33,7 @@ import java.util.Set;
  * the Sepset map.</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see SepsetProducer
  * @see SepsetMap
  */
@@ -42,17 +43,29 @@ public class SepsetsSet implements SepsetProducer {
     private boolean verbose;
     private IndependenceResult result;
 
+    /**
+     * <p>Constructor for SepsetsSet.</p>
+     *
+     * @param sepsets a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
+     * @param test    a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     */
     public SepsetsSet(SepsetMap sepsets, IndependenceTest test) {
         this.sepsets = sepsets;
         this.test = test;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<Node> getSepset(Node a, Node b) {
         //isIndependent(a, b, sepsets.get(a, b));
         return this.sepsets.get(a, b);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
         Set<Node> sepset = this.sepsets.get(i, k);
@@ -60,6 +73,9 @@ public class SepsetsSet implements SepsetProducer {
         else return !sepset.contains(j);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isIndependent(Node a, Node b, Set<Node> c) {
         IndependenceResult result = this.test.checkIndependence(a, b, c);
@@ -67,20 +83,34 @@ public class SepsetsSet implements SepsetProducer {
         return result.isIndependent();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getScore() {
         return -(this.result.getPValue() - this.test.getAlpha());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getVariables() {
         return this.test.getVariables();
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

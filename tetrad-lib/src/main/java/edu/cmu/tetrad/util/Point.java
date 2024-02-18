@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
  * Implements an n-dimensional point.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Point implements Comparable<Point> {
 
@@ -46,6 +47,8 @@ public class Point implements Comparable<Point> {
     }
 
     /**
+     * <p>getValue.</p>
+     *
      * @param index Ibid.
      * @return Ibid.
      */
@@ -54,6 +57,8 @@ public class Point implements Comparable<Point> {
     }
 
     /**
+     * <p>getSize.</p>
+     *
      * @return Ibid.
      */
     public int getSize() {
@@ -81,6 +86,8 @@ public class Point implements Comparable<Point> {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return Ibid.
      */
     public String toString() {
@@ -101,6 +108,8 @@ public class Point implements Comparable<Point> {
     }
 
     /**
+     * <p>Getter for the field <code>vector</code>.</p>
+     *
      * @return Ibid.
      */
     public Vector getVector() {

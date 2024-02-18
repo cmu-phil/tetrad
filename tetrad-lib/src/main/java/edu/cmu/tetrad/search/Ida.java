@@ -29,6 +29,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * lower-bounded effects on Y.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Cstar
  * @see NodeEffects
  */
@@ -95,6 +96,8 @@ public class Ida {
      * Calculates the true effect of (x, y) given the true DAG (which must be provided).
      *
      * @param trueDag The true DAG.
+     * @param x       a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y       a {@link edu.cmu.tetrad.graph.Node} object
      * @return The true effect of (x, y).
      */
     public double trueEffect(Node x, Node y, Graph trueDag) {
@@ -114,6 +117,8 @@ public class Ida {
     /**
      * Returns the distance between the effects and the true effect.
      *
+     * @param effects    a {@link java.util.LinkedList} object
+     * @param trueEffect a double
      * @return This difference.
      */
     public double distance(LinkedList<Double> effects, double trueEffect) {

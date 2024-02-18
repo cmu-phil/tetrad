@@ -9,8 +9,12 @@ import java.io.Serializable;
  * The interface that each statistic needs to implement.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface Statistic extends Serializable {
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**

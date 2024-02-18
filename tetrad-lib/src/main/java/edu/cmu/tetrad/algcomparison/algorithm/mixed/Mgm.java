@@ -11,6 +11,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import java.util.List;
  * MGM.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "MGM",
@@ -27,18 +29,23 @@ import java.util.List;
 @Bootstrapping
 public class Mgm implements Algorithm {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for Mgm.</p>
+     */
     public Mgm() {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel ds, Parameters parameters) {
-        if (!(ds instanceof DataSet)) {
+        if (!(ds instanceof DataSet _data)) {
             throw new IllegalArgumentException("Expecting tabular data for MGM.");
         }
-
-        DataSet _data = (DataSet) ds;
 
         for (int j = 0; j < _data.getNumColumns(); j++) {
             for (int i = 0; i < _data.getNumRows(); i++) {
@@ -93,30 +100,47 @@ public class Mgm implements Algorithm {
             Mgm algorithm = new Mgm();
 
             DataSet data = (DataSet) ds;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(
+                    data,
+                    algorithm,
+                    new Knowledge(),
+                    parameters
+            );
 
-            search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
 
     // Need to marry the parents on this.
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return GraphUtils.undirectedGraph(graph);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Returns the output of the MGM (Mixed Graphical Model) algorithm (a Markov random field)";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

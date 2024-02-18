@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -36,12 +37,25 @@ import java.util.*;
  * to be a very large table, it might not be a good idea to use this class except for unit testing.&gt; 0
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class StoredCellProbs implements TetradSerializable, DiscreteProbs {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The variables for which this table stores cell probabilities.
+     */
     private final List<Node> variables;
+
+    /**
+     * The parent dimensions of the table.
+     */
     private final int[] parentDims;
+
+    /**
+     * The cell probabilities.
+     */
     private final double[] probs;
 
     //============================CONSTRUCTORS============================//
@@ -84,6 +98,12 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         this.probs = new double[numCells];
     }
 
+    /**
+     * <p>createRandomCellTable.</p>
+     *
+     * @param variables a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.bayes.StoredCellProbs} object
+     */
     public static StoredCellProbs createRandomCellTable(List<Node> variables) {
         StoredCellProbs cellProbs = new StoredCellProbs(variables);
 //        RandomUtil.getInstance().setSeed(39492993L);
@@ -103,6 +123,12 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         return cellProbs;
     }
 
+    /**
+     * <p>createCellTable.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @return a {@link edu.cmu.tetrad.bayes.StoredCellProbs} object
+     */
     public static StoredCellProbs createCellTable(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -123,6 +149,8 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.StoredCellProbs} object
      */
     public static StoredCellProbs serializableInstance() {
         return new StoredCellProbs(new ArrayList<>());
@@ -148,6 +176,9 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
     }
 
     /**
+     * <p>getCellProb.</p>
+     *
+     * @param variableValues an array of {@link int} objects
      * @return the probability for the given cell, specified as a particular combination of variable values, for the
      * list of variables (in order) returned by get
      */
@@ -155,6 +186,9 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         return this.probs[getOffset(variableValues)];
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double getProb(Proposition assertion) {
 
         // Initialize to 0's.
@@ -193,6 +227,9 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         return p;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
         if (assertion.getVariableSource() != condition.getVariableSource()) {
@@ -252,10 +289,20 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         return assertionTrue / conditionTrue;
     }
 
+    /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         StringBuilder buf = new StringBuilder();
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();

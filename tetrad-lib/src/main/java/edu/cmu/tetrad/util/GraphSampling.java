@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
  * Jan 29, 2023 3:28:26 PM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
+ * @version $Id: $Id
  */
 public final class GraphSampling {
 
@@ -39,9 +40,9 @@ public final class GraphSampling {
     /**
      * Create a graph for displaying and print out.
      *
-     * @param graph
-     * @param ensemble
-     * @return
+     * @param graph    a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph createDisplayGraph(Graph graph, ResamplingEdgeEnsemble ensemble) {
         Graph ensembleGraph = new EdgeListGraph(graph.getNodes());
@@ -71,6 +72,13 @@ public final class GraphSampling {
         return ensembleGraph;
     }
 
+    /**
+     * <p>createGraphWithHighProbabilityEdges.</p>
+     *
+     * @param graphs   a {@link java.util.List} object
+     * @param ensemble a {@link edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph createGraphWithHighProbabilityEdges(List<Graph> graphs, ResamplingEdgeEnsemble ensemble) {
         Graph graph = createGraphWithHighProbabilityEdges(graphs);
 
@@ -319,6 +327,12 @@ public final class GraphSampling {
         }
     }
 
+    /**
+     * <p>getEdgeNodePairs.</p>
+     *
+     * @param graphs a {@link java.util.List} object
+     * @return a {@link java.util.Set} object
+     */
     public static Set<NodePair> getEdgeNodePairs(List<Graph> graphs) {
         Set<NodePair> nodePairs = new HashSet<>();
 

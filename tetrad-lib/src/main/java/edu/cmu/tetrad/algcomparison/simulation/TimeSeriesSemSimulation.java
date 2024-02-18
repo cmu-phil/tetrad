@@ -13,6 +13,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -22,15 +23,38 @@ import java.util.List;
  *
  * @author josephramsey
  * @author danielmalinsky
+ * @version $Id: $Id
  */
 public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The data sets.
+     */
     private List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge;
 
+    /**
+     * <p>Constructor for TimeSeriesSemSimulation.</p>
+     *
+     * @param randomGraph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public TimeSeriesSemSimulation(RandomGraph randomGraph) {
         if (randomGraph == null) {
             throw new NullPointerException();
@@ -38,6 +62,11 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         this.randomGraph = randomGraph;
     }
 
+    /**
+     * <p>topToBottomLayout.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.TimeLagGraph} object
+     */
     public static void topToBottomLayout(TimeLagGraph graph) {
 
         final int xStart = 65;
@@ -70,6 +99,9 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
 //        if (parameters.getLong(Params.SEED) != -1L) {
@@ -117,21 +149,33 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Linear, Gaussian Dynamic SEM (1-lag SVAR) simulation";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -157,24 +201,36 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
 }

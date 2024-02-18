@@ -25,12 +25,19 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
  * Initializes a history array.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public interface Initializer extends TetradSerializable {
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
      * Initializes a history array.
+     *
      * @param historyArray the history array to initialize.
      */
     void initialize(double[][] historyArray);

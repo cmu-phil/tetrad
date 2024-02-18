@@ -22,6 +22,7 @@ package edu.pitt.dbmi.data.reader;
  * Dec 10, 2018 3:14:46 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public interface ContinuousData extends Data {
 

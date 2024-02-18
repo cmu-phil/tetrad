@@ -34,6 +34,7 @@ import java.util.List;
  * manipulated.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SemEvidence implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -61,6 +62,8 @@ public final class SemEvidence implements TetradSerializable {
 
     /**
      * Constructs a container for evidence for the given Bayes IM.
+     *
+     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
      */
     public SemEvidence(SemIm semIm) {
         if (semIm == null) {
@@ -72,6 +75,11 @@ public final class SemEvidence implements TetradSerializable {
         this.manipulation = new SemManipulation(semIm);
     }
 
+    /**
+     * <p>Constructor for SemEvidence.</p>
+     *
+     * @param evidence a {@link edu.cmu.tetrad.sem.SemEvidence} object
+     */
     public SemEvidence(SemEvidence evidence) {
         this.semIm = evidence.semIm;
         this.proposition = new SemProposition(evidence.proposition);
@@ -80,18 +88,28 @@ public final class SemEvidence implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemEvidence} object
      */
     public static SemEvidence serializableInstance() {
         return new SemEvidence(SemIm.serializableInstance());
     }
 
     /**
+     * <p>Getter for the field <code>semIm</code>.</p>
+     *
      * @return the Bayes IM that this is evidence for.
      */
     public SemIm getSemIm() {
         return this.semIm;
     }
 
+    /**
+     * <p>getNodeIndex.</p>
+     *
+     * @param nodeName a {@link java.lang.String} object
+     * @return a int
+     */
     public int getNodeIndex(String nodeName) {
         List<Node> nodes = this.semIm.getSemPm().getVariableNodes();
 
@@ -106,6 +124,12 @@ public final class SemEvidence implements TetradSerializable {
         return -1;
     }
 
+    /**
+     * <p>getNodeIndex.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a int
+     */
     public int getNodeIndex(Node node) {
         List<Node> nodes = this.semIm.getSemPm().getVariableNodes();
 
@@ -120,26 +144,59 @@ public final class SemEvidence implements TetradSerializable {
         return -1;
     }
 
+    /**
+     * <p>getNumNodes.</p>
+     *
+     * @return a int
+     */
     public int getNumNodes() {
         return this.semIm.getVariableNodes().size();
     }
 
+    /**
+     * <p>getNode.</p>
+     *
+     * @param nodeIndex a int
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getNode(int nodeIndex) {
         return this.semIm.getVariableNodes().get(nodeIndex);
     }
 
+    /**
+     * <p>Getter for the field <code>proposition</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemProposition} object
+     */
     public SemProposition getProposition() {
         return this.proposition;
     }
 
+    /**
+     * <p>isManipulated.</p>
+     *
+     * @param nodeIndex a int
+     * @return a boolean
+     */
     public boolean isManipulated(int nodeIndex) {
         return this.manipulation.isManipulated(nodeIndex);
     }
 
+    /**
+     * <p>setManipulated.</p>
+     *
+     * @param nodeIndex   a int
+     * @param manipulated a boolean
+     */
     public void setManipulated(int nodeIndex, boolean manipulated) {
         this.manipulation.setManipulated(nodeIndex, manipulated);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         List<Node> nodes = this.semIm.getVariableNodes();
         StringBuilder buf = new StringBuilder();
@@ -159,6 +216,8 @@ public final class SemEvidence implements TetradSerializable {
     }
 
     /**
+     * <p>getNodesInEvidence.</p>
+     *
      * @return the variable for which there is evidence.
      */
     public List<Node> getNodesInEvidence() {
@@ -174,21 +233,27 @@ public final class SemEvidence implements TetradSerializable {
         return nodesInEvidence;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
 
-        if (!(o instanceof SemEvidence)) {
+        if (!(o instanceof SemEvidence evidence)) {
             throw new IllegalArgumentException();
         }
-
-        SemEvidence evidence = (SemEvidence) o;
 
         return this.semIm == evidence.semIm && this.proposition.equals(evidence.proposition) && this.manipulation.equals(evidence.manipulation);
 
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + this.semIm.hashCode();
@@ -204,6 +269,10 @@ public final class SemEvidence implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

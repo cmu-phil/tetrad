@@ -27,16 +27,21 @@ package edu.cmu.tetrad.util;
  * advance to ML programmers.)
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface Function {
 
     /**
+     * <p>valueAt.</p>
+     *
      * @param x the domain value
      * @return the range value
      */
     double valueAt(double x);
 
     /**
+     * <p>toString.</p>
+     *
      * @return this name or description.
      */
     String toString();

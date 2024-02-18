@@ -23,6 +23,8 @@ package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.io.Serial;
+
 /**
  * A class for implementing constraints on the values of the freeParameters of of instances of the SemIm class.  The
  * constraint can either be on the value of a single parameter in relation to a given value (double) or it can constrain
@@ -30,19 +32,40 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * constraint implements an equality, less than or greater than relation.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class ParamConstraint implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
-
+    /**
+     * The number of the constraint.
+     */
     private final double number;
+
+    /**
+     * The first parameter.
+     */
     private final Parameter param2;
+
+    /**
+     * The SEM.
+     */
     private final SemIm semIm;
+
+    /**
+     * The type of the constraint.
+     */
     private ParamConstraintType type;
 
     /**
      * The first constructor specifies the parameter and a number and the type of relation imposed by the constraint.
      * The SemIm is required because the freeParameters' values are determined by it.
+     *
+     * @param semIm  a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @param param1 a {@link edu.cmu.tetrad.sem.Parameter} object
+     * @param type   a {@link edu.cmu.tetrad.sem.ParamConstraintType} object
+     * @param number a double
      */
     public ParamConstraint(SemIm semIm, Parameter param1,
                            ParamConstraintType type, double number) {
@@ -54,24 +77,46 @@ public class ParamConstraint implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.ParamConstraint} object
      */
     public static ParamConstraint serializableInstance() {
         return new ParamConstraint(SemIm.serializableInstance(),
                 Parameter.serializableInstance(), ParamConstraintType.EQ, 1.0);
     }
 
+    /**
+     * <p>Getter for the field <code>type</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.ParamConstraintType} object
+     */
     public ParamConstraintType getType() {
         return this.type;
     }
 
+    /**
+     * <p>Setter for the field <code>type</code>.</p>
+     *
+     * @param type a {@link edu.cmu.tetrad.sem.ParamConstraintType} object
+     */
     public void setType(ParamConstraintType type) {
         this.type = type;
     }
 
+    /**
+     * <p>Getter for the field <code>number</code>.</p>
+     *
+     * @return a double
+     */
     public double getNumber() {
         return this.number;
     }
 
+    /**
+     * <p>Getter for the field <code>param2</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.Parameter} object
+     */
     public Parameter getParam2() {
         return this.param2;
     }
@@ -81,6 +126,7 @@ public class ParamConstraint implements TetradSerializable {
      * useful during a procedure which searches possible values of freeParameters to find that value which is optimal
      * with respect to some measure of fit of the parameterized SEM to some dataset.
      *
+     * @param testValue a double
      * @return true if the value would satisfy the constraint.
      */
     public boolean wouldBeSatisfied(double testValue) {
@@ -88,6 +134,11 @@ public class ParamConstraint implements TetradSerializable {
 
     }
 
+    /**
+     * <p>Getter for the field <code>semIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getSemIm() {
         return this.semIm;
     }

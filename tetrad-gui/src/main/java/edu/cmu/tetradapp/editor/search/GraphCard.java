@@ -40,15 +40,31 @@ import java.net.URL;
  * Apr 15, 2019 4:49:15 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class GraphCard extends JPanel {
-
     private static final long serialVersionUID = -7654484444146823298L;
 
+    /**
+     * The algorithm runner.
+     */
     private final GeneralAlgorithmRunner algorithmRunner;
+
+    /**
+     * The workbench.
+     */
     private GraphWorkbench workbench;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * <p>Constructor for GraphCard.</p>
+     *
+     * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     */
     public GraphCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.knowledge = algorithmRunner.getKnowledge();
@@ -61,6 +77,9 @@ public class GraphCard extends JPanel {
         setPreferredSize(new Dimension(50, 406));
     }
 
+    /**
+     * <p>refresh.</p>
+     */
     public void refresh() {
         removeAll();
 

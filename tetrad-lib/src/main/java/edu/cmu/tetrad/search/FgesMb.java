@@ -73,6 +73,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  *
  * @author Ricardo Silva
  * @author josephramsey
+ * @version $Id: $Id
  * @see Grasp
  * @see Boss
  * @see Sp
@@ -154,15 +155,35 @@ public final class FgesMb implements DagScorer {
         this.graph = new EdgeListGraph(getVariables());
     }
 
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * <p>Setter for the field <code>trimmingStyle</code>.</p>
+     *
+     * @param trimmingStyle a int
+     */
     public void setTrimmingStyle(int trimmingStyle) {
         this.trimmingStyle = trimmingStyle;
     }
-
 
     /**
      * Greedy equivalence search: Start from the empty graph, add edges till the model is significant. Then start
      * deleting edges till a minimum is achieved.
      *
+     * @param targets a {@link java.util.List} object
      * @return the resulting Pattern.
      */
     public Graph search(List<Node> targets) {
@@ -293,7 +314,7 @@ public final class FgesMb implements DagScorer {
     }
 
     /**
-     * @return the score of the given DAG, up to a constant.
+     * {@inheritDoc}
      */
     public double scoreDag(Graph dag) {
         return scoreDag(dag, false);
@@ -320,6 +341,8 @@ public final class FgesMb implements DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>out</code>.</p>
+     *
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
@@ -388,21 +411,6 @@ public final class FgesMb implements DagScorer {
         return modelScore;
     }
 
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-
-        return null;
-    }
-
     //Sets the discrete scoring function to use.
     private void setScore(Score score) {
         this.score = score;
@@ -434,7 +442,11 @@ public final class FgesMb implements DagScorer {
 
         int chunkSize = getChunkSize(nodes.size());
 
-        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+        for (int i = 0; i < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, min(nodes.size(), i + chunkSize),
                     nodes, emptySet);
 
@@ -446,7 +458,13 @@ public final class FgesMb implements DagScorer {
         }
 
         if (parallelized) {
-            ForkJoinPool.commonPool().invokeAll(tasks);
+            int parallelism = Runtime.getRuntime().availableProcessors();
+            ForkJoinPool pool = new ForkJoinPool(parallelism);
+            try {
+                pool.invokeAll(tasks);
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+            }
         }
 
         long stop = MillisecondTimes.timeMillis();
@@ -591,7 +609,11 @@ public final class FgesMb implements DagScorer {
 
         int chunkSize = getChunkSize(nodes.size());
 
-        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+        for (int i = 0; i < nodes.size() /*&& !Thread.currentThread().isInterrupted()*/; i += chunkSize) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
             AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
 
             if (!this.parallelized) {
@@ -602,7 +624,13 @@ public final class FgesMb implements DagScorer {
         }
 
         if (this.parallelized) {
-            ForkJoinPool.commonPool().invokeAll(tasks);
+            int parallelism = Runtime.getRuntime().availableProcessors();
+            ForkJoinPool pool = new ForkJoinPool(parallelism);
+            try {
+                pool.invokeAll(tasks);
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
@@ -700,7 +728,9 @@ public final class FgesMb implements DagScorer {
         }
 
         if (this.parallelized) {
-            List<Future<EvalPair>> futures = ForkJoinPool.commonPool().invokeAll(tasks);
+            int parallelism = Runtime.getRuntime().availableProcessors();
+            ForkJoinPool pool = new ForkJoinPool(parallelism);
+            List<Future<EvalPair>> futures = pool.invokeAll(tasks);
 
             for (Future<EvalPair> future : futures) {
                 try {
@@ -710,8 +740,10 @@ public final class FgesMb implements DagScorer {
                         maxBump = pair.bump;
                     }
                 } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
                 }
+
+                pool.shutdown();
             }
         }
 
@@ -1072,21 +1104,32 @@ public final class FgesMb implements DagScorer {
         return variables;
     }
 
+    /**
+     * <p>Setter for the field <code>parallelized</code>.</p>
+     *
+     * @param parallelized a boolean
+     */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
     }
 
+    /**
+     * <p>Setter for the field <code>initialGraph</code>.</p>
+     *
+     * @param initialGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setInitialGraph(Graph initialGraph) {
         this.initialGraph = initialGraph;
     }
 
+    /**
+     * <p>Setter for the field <code>numExpansions</code>.</p>
+     *
+     * @param numExpansions a int
+     */
     public void setNumExpansions(int numExpansions) {
         if (numExpansions < 1) throw new IllegalArgumentException("Number of expansions must be at least 1.");
         this.numExpansions = numExpansions;
-    }
-
-    public enum TrimmingStyle {
-        NONE, ADJACENT_TO_TARGETS, MARKOV_BLANKET_GRAPH, SEMIDIRECTED_PATHS_TO_TARGETS
     }
 
     /**

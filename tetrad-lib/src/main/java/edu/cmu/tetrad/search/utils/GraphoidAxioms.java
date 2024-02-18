@@ -39,11 +39,29 @@ import java.util.*;
  * Checks the graphoid axioms for a set of Independence Model statements.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphoidAxioms {
+
+    /**
+     * A set of GraphoidIndFacts.
+     */
     private final Set<GraphoidIndFact> facts;
+
+    /**
+     * The list of nodes.
+     */
     private final List<Node> nodes;
+
+    /**
+     * Whether triviality is assumed.
+     */
     private boolean trivialtyAssumed = false;
+
+    /**
+     * A map from GraphoidIndFacts to String text specs. The text specs are used for printing information to the user
+     * about which facts are found or are missing.
+     */
     private Map<GraphoidAxioms.GraphoidIndFact, String> textSpecs = null;
 
     /**
@@ -191,6 +209,8 @@ public class GraphoidAxioms {
     /**
      * Returns the independence facts in the form 1:2|3 for use in various Tetrad algorithms. Assumes decomposition and
      * compositios, so that there are no complex independence facts.
+     *
+     * @return a {@link edu.cmu.tetrad.data.IndependenceFacts} object
      */
     public IndependenceFacts getIndependenceFacts() {
         IndependenceFacts ifFacts = new IndependenceFacts();
@@ -210,6 +230,8 @@ public class GraphoidAxioms {
 
     /**
      * Checks is symmetry holds--i.e., X ⊥⊥ Y | Z ==&gt; Y ⊥⊥ X | Z
+     *
+     * @return a boolean
      */
     public boolean symmetry() {
 
@@ -233,6 +255,8 @@ public class GraphoidAxioms {
 
     /**
      * Checks if decomposition holds, e.g., X ⊥⊥ (Y ∪ W) |Z ==&gt; (X ⊥⊥ Y |Z) ∧ (X ⊥⊥ W |Z)
+     *
+     * @return a boolean
      */
     public boolean decomposition() {
         boolean found0 = false;
@@ -309,6 +333,8 @@ public class GraphoidAxioms {
 
     /**
      * Checks is weak union holds, e.g., X _||_ Y U W | Z ==&gt; X _||_ Y | Z U W
+     *
+     * @return a boolean
      */
     public boolean weakUnion() {
         boolean found0 = false;
@@ -364,6 +390,8 @@ public class GraphoidAxioms {
 
     /**
      * Checks if contraction holds--e.g., (X ⊥⊥ Y |Z) ∧ (X ⊥⊥ W |Z ∪ Y) ==&gt; X ⊥⊥ (Y ∪ W) |Z
+     *
+     * @return a boolean
      */
     public boolean contraction() {
         boolean found0 = false;
@@ -421,6 +449,8 @@ public class GraphoidAxioms {
 
     /**
      * Checks if intersection holds--e.g., (X ⊥⊥ Y | (Z ∪ W)) ∧ (X ⊥⊥ W | (Z ∪ Y)) ==&gt; X ⊥⊥ (Y ∪ W) |Z
+     *
+     * @return a boolean
      */
     public boolean intersection() {
         boolean found0 = false;
@@ -491,6 +521,8 @@ public class GraphoidAxioms {
 
     /**
      * Checks if composition holds--e.g., (X ⊥⊥ Y | Z) ∧ (X ⊥⊥ W |Z) ==&gt; X ⊥⊥ (Y ∪ W) |Z
+     *
+     * @return a boolean
      */
     public boolean composition() {
         boolean found0 = false;
@@ -566,10 +598,29 @@ public class GraphoidAxioms {
      * Represents a graphoid independence fact--i.e., a fact in a general independence model (IM) X _||_Y | Z.
      */
     public static class GraphoidIndFact {
+
+        /**
+         * The set of nodes X.
+         */
         private final Set<Node> X;
+
+        /**
+         * The set of nodes Y.
+         */
         private final Set<Node> Y;
+
+        /**
+         * The set of nodes Z.
+         */
         private final Set<Node> Z;
 
+        /**
+         * Constructor.
+         *
+         * @param X The set of nodes X.
+         * @param Y The set of nodes Y.
+         * @param Z The set of nodes Z.
+         */
         public GraphoidIndFact(Set<Node> X, Set<Node> Y, Set<Node> Z) {
             if (X.isEmpty() || Y.isEmpty()) throw new IllegalArgumentException("X or Y is empty");
             if (!disjoint(X, Y, Z)) throw new IllegalArgumentException();
@@ -579,28 +630,58 @@ public class GraphoidAxioms {
             this.Z = new HashSet<>(Z);
         }
 
+        /**
+         * Returns the set of nodes X.
+         *
+         * @return The set of nodes X.
+         */
         public Set<Node> getX() {
             return new HashSet<>(X);
         }
 
+        /**
+         * Returns the set of nodes Y.
+         *
+         * @return The set of nodes Y.
+         */
         public Set<Node> getY() {
             return new HashSet<>(Y);
         }
 
+        /**
+         * Returns the set of nodes Z.
+         *
+         * @return The set of nodes Z.
+         */
         public Set<Node> getZ() {
             return new HashSet<>(Z);
         }
 
+        /**
+         * Returns the hash code.
+         *
+         * @return The hash code.
+         */
         public int hashCode() {
             return 1;
         }
 
+        /**
+         * Returns whether this object is equal to another.
+         *
+         * @param o The other object.
+         * @return True, if so.
+         */
         public boolean equals(Object o) {
-            if (!(o instanceof GraphoidIndFact)) return false;
-            GraphoidIndFact _fact = (GraphoidIndFact) o;
+            if (!(o instanceof GraphoidIndFact _fact)) return false;
             return X.equals(_fact.X) && Y.equals(_fact.Y) && Z.equals(_fact.Z);
         }
 
+        /**
+         * Returns a string representation of this object.
+         *
+         * @return A string representation of this object.
+         */
         public String toString() {
             return X + " : " + Y + " | " + Z;
         }

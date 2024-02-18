@@ -25,34 +25,31 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Implements the basic machinery used by all history objects.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GeneHistory implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The initializer for the history.
-     *
-     * @serial
      */
     private final Initializer initializer;
 
     /**
      * The update function for the history.
-     *
-     * @serial
      */
     private final UpdateFunction updateFunction;
 
     /**
      * To simulate asynchronous updating, update periods for each factor are allowed to be different. (Note: this was a
      * brilliant idea somebody had a long time ago that has never yet been used. jdramsey 2/22/02)
-     *
-     * @serial
      */
     private final int[] updatePeriods;
 
@@ -60,8 +57,6 @@ public class GeneHistory implements TetradSerializable {
      * The getModel time step, which is the number of steps <i>after</i> the initialization period. In other words, time
      * step 0 is the first update step after the initialization, or the first step at which the Glass updating function
      * has been applied. (Markov process.)
-     *
-     * @serial
      */
     private int step;
 
@@ -69,8 +64,6 @@ public class GeneHistory implements TetradSerializable {
      * A history of time slices of values for each factor, extending back as far as is necessary for the update function
      * to be applied properly (that is, from maxlag up to 0, the getModel time step). Note that the firs subscript is
      * the time slice, whereas the second subscript is the expression level for each gene.
-     *
-     * @serial
      */
     private double[][] historyArray;
 
@@ -79,8 +72,6 @@ public class GeneHistory implements TetradSerializable {
      * the same) set of initial random values are used each time the initialize() method is called. Otherwise, a new set
      * of random values is chosen each time. Note that this is a "first pass" attempt at "shocking" the simulated
      * cells.
-     *
-     * @serial
      */
     private boolean initSync = true;
 
@@ -89,15 +80,11 @@ public class GeneHistory implements TetradSerializable {
      * If synchonized initialization is selected, then on the first pass through the initialization method, this array
      * is calculated, and for each individual simulated, the history array for that individual is initialized using
      * values from this array.
-     *
-     * @serial
      */
     private double[][] syncInitialization;
 
     /**
      * A model of the differences in expression levels due to the particular dish a sample is taken from.
-     *
-     * @serial
      */
     private DishModel dishModel;
 
@@ -105,6 +92,9 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Constructs a new history with the given initializer and the given update function.
+     *
+     * @param initializer    a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.Initializer} object
+     * @param updateFunction a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.UpdateFunction} object
      */
     public GeneHistory(Initializer initializer, UpdateFunction updateFunction) {
         if (initializer == null) {
@@ -125,6 +115,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.GeneHistory} object
      */
     public static GeneHistory serializableInstance() {
         return new GeneHistory(BasalInitializer.serializableInstance(),
@@ -136,6 +128,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Returns the initializer.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.Initializer} object
      */
     public Initializer getInitializer() {
         return this.initializer;
@@ -143,6 +137,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Returns the update function.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.UpdateFunction} object
      */
     public UpdateFunction getUpdateFunction() {
         return this.updateFunction;
@@ -150,6 +146,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Returns the getModel step.
+     *
+     * @return a int
      */
     public int getStep() {
         return this.step;
@@ -177,6 +175,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Sets whether initialization should be synchronized.
+     *
+     * @param initSync a boolean
      */
     public void setInitSync(boolean initSync) {
         this.initSync = initSync;
@@ -191,6 +191,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Gets the dish model.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.DishModel} object
      */
     public DishModel getDishModel() {
         return this.dishModel;
@@ -198,6 +200,8 @@ public class GeneHistory implements TetradSerializable {
 
     /**
      * Sets the dish model.
+     *
+     * @param dishModel a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.DishModel} object
      */
     public void setDishModel(DishModel dishModel) {
         this.dishModel = dishModel;
@@ -286,7 +290,12 @@ public class GeneHistory implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

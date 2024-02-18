@@ -53,6 +53,7 @@ import java.util.*;
  * tiers.
  *
  * @author dmalinsky
+ * @version $Id: $Id
  * @see Fas
  * @see Knowledge
  * @see SvarFci
@@ -152,9 +153,9 @@ public class SvarFas implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the depth--i.e., the maximum number of variables conditioned on in any test, -1 for unlimited.
-     *
-     * @param depth This depth.
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -166,9 +167,9 @@ public class SvarFas implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the knowledge used in the search.
-     *
-     * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
@@ -202,16 +203,16 @@ public class SvarFas implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * @throws UnsupportedOperationException This method is not used.
+     * {@inheritDoc}
      */
     @Override
     public long getElapsedTime() {
@@ -219,9 +220,9 @@ public class SvarFas implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the nodes of the test.
-     *
-     * @return This list.
      */
     @Override
     public List<Node> getNodes() {
@@ -229,7 +230,7 @@ public class SvarFas implements IFas {
     }
 
     /**
-     * @throws UnsupportedOperationException This method is not used.
+     * {@inheritDoc}
      */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
@@ -237,9 +238,10 @@ public class SvarFas implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the output stream for printing, default is System.out.
      *
-     * @param out The print stream.
      * @see PrintStream
      */
     @Override

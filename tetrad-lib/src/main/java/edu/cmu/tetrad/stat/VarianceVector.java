@@ -22,6 +22,7 @@ package edu.cmu.tetrad.stat;
  * Feb 9, 2016 3:18:44 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class VarianceVector implements Variance {
 
@@ -31,6 +32,11 @@ public class VarianceVector implements Variance {
 
     private final int numOfCols;
 
+    /**
+     * <p>Constructor for VarianceVector.</p>
+     *
+     * @param data an array of {@link float} objects
+     */
     public VarianceVector(float[][] data) {
         this.data = data;
         this.numOfRows = data.length;
@@ -50,6 +56,9 @@ public class VarianceVector implements Variance {
         return mean;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public float[] compute(boolean biasCorrected) {
         float[] meanVariance = computeMeans();

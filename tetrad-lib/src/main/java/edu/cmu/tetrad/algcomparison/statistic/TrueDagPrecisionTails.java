@@ -6,26 +6,38 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
  * The bidirected true positives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TrueDagPrecisionTails implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "-->-Prec";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Proportion of X-->Y in estimated for which there is a path X~~>Y in true graph";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -61,6 +73,9 @@ public class TrueDagPrecisionTails implements Statistic {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

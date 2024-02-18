@@ -26,16 +26,39 @@ import edu.cmu.tetrad.graph.Graph;
 
 /**
  * Created by ajsedgewick on 9/4/15.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public abstract class DataGraphSearch {
+
+    /**
+     * <p>searchParams.</p>
+     */
     public final double[] searchParams;
 
+    /**
+     * <p>Constructor for DataGraphSearch.</p>
+     *
+     * @param params a double
+     */
     public DataGraphSearch(double... params) {
         this.searchParams = params;
     }
 
+    /**
+     * <p>copy.</p>
+     *
+     * @return a {@link edu.pitt.csb.stability.DataGraphSearch} object
+     */
     public abstract DataGraphSearch copy();
 
+    /**
+     * <p>search.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public abstract Graph search(DataSet data);
 }
 

@@ -7,8 +7,20 @@ import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * <p>UniformityTest class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class UniformityTest {
 
+    /**
+     * <p>getPValue.</p>
+     *
+     * @param points a {@link java.util.List} object
+     * @return a double
+     */
     public static double getPValue(List<Double> points) {
 
         // Create a uniform distribution with the same range as the data
@@ -18,6 +30,14 @@ public class UniformityTest {
         return getPValue(points, min, max);
     }
 
+    /**
+     * <p>getPValue.</p>
+     *
+     * @param points a {@link java.util.List} object
+     * @param min    a double
+     * @param max    a double
+     * @return a double
+     */
     public static double getPValue(List<Double> points, double min, double max) {
 
         // Create a uniform distribution with the same range as the data
@@ -36,6 +56,11 @@ public class UniformityTest {
 
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         // Generate a list of points (sample data)
         List<Double> points = generatePoints();

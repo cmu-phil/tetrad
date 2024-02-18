@@ -30,17 +30,25 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * will load correctly.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface SessionModel extends TetradSerializable {
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
+     * <p>getName.</p>
+     *
      * @return the name of the session model.
      */
     String getName();
 
     /**
      * Sets the name of the session model.
+     *
+     * @param name the name of the session model.
      */
     void setName(String name);
 

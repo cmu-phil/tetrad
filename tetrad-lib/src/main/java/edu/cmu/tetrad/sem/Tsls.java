@@ -50,6 +50,10 @@ class Tsls {
 
     /**
      * We require a DataSet (with continuous dataSet) and a SemPm with matching variables.
+     *
+     * @param spm     a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param nm      a {@link java.lang.String} object
      */
     public Tsls(SemPm spm, DataSet dataSet, String nm) {
         initialization(spm, dataSet, nm);
@@ -60,6 +64,14 @@ class Tsls {
      * nodes such that their loadings are fixed to 1.
      */
 
+    /**
+     * <p>Constructor for Tsls.</p>
+     *
+     * @param spm           a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param dataSet       a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param nm            a {@link java.lang.String} object
+     * @param fixedLoadings a {@link java.util.List} object
+     */
     public Tsls(SemPm spm, DataSet dataSet, String nm,
                 List<String> fixedLoadings) {
         initialization(spm, dataSet, nm);
@@ -76,12 +88,22 @@ class Tsls {
         this.semIm = null;
     }
 
+    /**
+     * <p>estimate.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm estimate() {
         this.semIm = new SemIm(this.spm);
         estimateCoeffs(this.semIm);
         return this.semIm;
     }
 
+    /**
+     * <p>getEstimatedSem.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemIm getEstimatedSem() {
         return this.semIm;
     }

@@ -30,6 +30,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * Dec 17, 2018 3:28:15 PM
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ * @version $Id: $Id
  */
 public class RfciBsc implements IGraphSearch {
 
@@ -60,6 +61,11 @@ public class RfciBsc implements IGraphSearch {
     private boolean thresholdNoRandomConstrainSearch = true;
     private double cutoffConstrainSearch = 0.5;
 
+    /**
+     * <p>Constructor for RfciBsc.</p>
+     *
+     * @param rfci a {@link edu.cmu.tetrad.search.Rfci} object
+     */
     public RfciBsc(Rfci rfci) {
         this.rfci = rfci;
     }
@@ -221,9 +227,9 @@ public class RfciBsc implements IGraphSearch {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Performs the search.
-     *
-     * @return the graph that was learned.
      */
     @Override
     public Graph search() {
@@ -315,25 +321,16 @@ public class RfciBsc implements IGraphSearch {
         int trial = 0;
 
         int numCandidatePagSearchTrial = 1000;
-        while (vars.size() == 0 && trial < numCandidatePagSearchTrial) {
+        while (vars.isEmpty() && trial < numCandidatePagSearchTrial) {
             tasks.clear();
 
             for (int i = 0; i < this.numRandomizedSearchModels; i++) {
                 tasks.add(new SearchPagTask());
             }
 
-            ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
-
-            try {
-                pool.invokeAll(tasks);
-            } catch (InterruptedException exception) {
-                if (this.verbose) {
-                    this.logger.log("error", "Task has been interrupted");
-                }
-                Thread.currentThread().interrupt();
-            }
-
-            shutdownAndAwaitTermination(pool);
+            int parallelism = Runtime.getRuntime().availableProcessors();
+            ForkJoinPool pool = new ForkJoinPool(parallelism);
+            pool.invokeAll(tasks);
             trial++;
         }
 
@@ -397,18 +394,9 @@ public class RfciBsc implements IGraphSearch {
             tasks.add(new BootstrapDepDataTask(b, rows));
         }
 
-        ExecutorService pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
-
-        try {
-            pool.invokeAll(tasks);
-        } catch (InterruptedException exception) {
-            if (this.verbose) {
-                this.logger.log("error", "Task has been interrupted");
-            }
-            Thread.currentThread().interrupt();
-        }
-
-        shutdownAndAwaitTermination(pool);
+        int parallelism1 = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool pool = new ForkJoinPool(parallelism1);
+        pool.invokeAll(tasks);
 
         // learn structure of constraints using empirical data => constraint data
         BdeuScore sd = new BdeuScore(depData);
@@ -470,18 +458,9 @@ public class RfciBsc implements IGraphSearch {
             tasks.add(new CalculateBscScoreTask(pagOrig));
         }
 
-        pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
-
-        try {
-            pool.invokeAll(tasks);
-        } catch (InterruptedException exception) {
-            if (this.verbose) {
-                this.logger.log("error", "Task has been interrupted");
-            }
-            Thread.currentThread().interrupt();
-        }
-
-        shutdownAndAwaitTermination(pool);
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        pool = new ForkJoinPool(parallelism);
+        pool.invokeAll(tasks);
 
         for (int i = 0; i < this.pAGs.size(); i++) {
             Graph pagOrig = this.pAGs.get(i);
@@ -675,6 +654,7 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * Sets the number of randomized search models.
+     *
      * @param numRandomizedSearchModels the number of randomized search models.
      */
     public void setNumRandomizedSearchModels(int numRandomizedSearchModels) {
@@ -683,6 +663,7 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * Sets the number of bootstrap samples.
+     *
      * @param numBscBootstrapSamples the number of bootstrap samples.
      */
     public void setNumBscBootstrapSamples(int numBscBootstrapSamples) {
@@ -691,6 +672,7 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * Sets the lower bound.
+     *
      * @param lowerBound the lower bound.
      */
     public void setLowerBound(double lowerBound) {
@@ -699,6 +681,7 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * Sets the upper bound.
+     *
      * @param upperBound the upper bound.
      */
     public void setUpperBound(double upperBound) {
@@ -707,6 +690,7 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * Sets whether the output should be RBD.
+     *
      * @param outputRBD true if the output should be RBD.
      */
     public void setOutputRBD(boolean outputRBD) {
@@ -715,7 +699,8 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * Returns the graph that was learned using the BSC-D method.
-     * @return
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph getGraphRBD() {
         return this.graphRBD;
@@ -723,6 +708,7 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * Returns the graph that was learned using the BSC-I method.
+     *
      * @return the graph that was learned using the BSC-I method.
      */
     public Graph getGraphRBI() {
@@ -731,7 +717,8 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * Returns the BSC-D score.
-     * @return  the BSC-D score.
+     *
+     * @return the BSC-D score.
      */
     public double getBscD() {
         return this.bscD;
@@ -739,18 +726,20 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * Returns the BSC-I score.
+     *
      * @return the BSC-I score.
      */
     public double getBscI() {
         return this.bscI;
     }
 
-    private void shutdownAndAwaitTermination(ExecutorService pool) {
+    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
         pool.shutdown(); // Disable new tasks from being submitted
         try {
             // Wait a while for existing tasks to terminate
             if (!pool.awaitTermination(1, TimeUnit.SECONDS)) {
                 pool.shutdownNow(); // Cancel currently executing tasks
+                Thread.currentThread().interrupt();
                 // Wait a while for tasks to respond to being cancelled
                 if (!pool.awaitTermination(1, TimeUnit.SECONDS)) {
                     System.err.println("Pool did not terminate");
@@ -766,13 +755,16 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * Sets whether verbose output should be produced.
-     * @param  verbose true if verbose output should be produced.
+     *
+     * @param verbose true if verbose output should be produced.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
+     * <p>Getter for the field <code>out</code>.</p>
+     *
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
@@ -781,6 +773,7 @@ public class RfciBsc implements IGraphSearch {
 
     /**
      * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
+     *
      * @param out the output stream that output (except for log output) should be sent to.
      */
     public void setOut(PrintStream out) {
@@ -788,6 +781,8 @@ public class RfciBsc implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>thresholdNoRandomDataSearch</code>.</p>
+     *
      * @param thresholdNoRandomDataSearch the thresholdNoRandomDataSearch to set
      */
     public void setThresholdNoRandomDataSearch(boolean thresholdNoRandomDataSearch) {
@@ -795,6 +790,8 @@ public class RfciBsc implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>cutoffDataSearch</code>.</p>
+     *
      * @param cutoffDataSearch the cutoffDataSearch to set
      */
     public void setCutoffDataSearch(double cutoffDataSearch) {
@@ -802,6 +799,8 @@ public class RfciBsc implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>thresholdNoRandomConstrainSearch</code>.</p>
+     *
      * @param thresholdNoRandomConstrainSearch the thresholdNoRandomConstrainSearch to set
      */
     public void setThresholdNoRandomConstrainSearch(boolean thresholdNoRandomConstrainSearch) {
@@ -809,6 +808,8 @@ public class RfciBsc implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>cutoffConstrainSearch</code>.</p>
+     *
      * @param cutoffConstrainSearch the cutoffConstrainSearch to set
      */
     public void setCutoffConstrainSearch(double cutoffConstrainSearch) {

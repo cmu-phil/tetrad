@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,13 +36,20 @@ import java.util.List;
  * were done so that the user doesn't have to keep typing in information over and over again.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class ContinuousDiscretizationSpec implements TetradSerializable, DiscretizationSpec {
     /**
      * The types of discretization
      */
     public static final int EVENLY_DISTRIBUTED_VALUES = 1;
+    /**
+     * Constant <code>EVENLY_DISTRIBUTED_INTERVALS=2</code>
+     */
     public static final int EVENLY_DISTRIBUTED_INTERVALS = 2;
+    /**
+     * Constant <code>NONE=3</code>
+     */
     public static final int NONE = 3;
     private static final long serialVersionUID = 23L;
     /**
@@ -59,12 +67,23 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
      */
     private int method;
 
+    /**
+     * <p>Constructor for ContinuousDiscretizationSpec.</p>
+     *
+     * @param breakpoints an array of {@link double} objects
+     * @param categories  a {@link java.util.List} object
+     */
     public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories) {
         this(breakpoints, categories, ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS);
     }
 
-
-    @SuppressWarnings("SameParameterValue")
+    /**
+     * <p>Constructor for ContinuousDiscretizationSpec.</p>
+     *
+     * @param breakpoints an array of {@link double} objects
+     * @param categories  a {@link java.util.List} object
+     * @param method      a int
+     */
     public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories, int method) {
         if (breakpoints == null) {
             throw new NullPointerException();
@@ -80,16 +99,28 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.DiscretizationSpec} object
      */
     @SuppressWarnings("ZeroLengthArrayAllocation")
     public static DiscretizationSpec serializableInstance() {
         return new ContinuousDiscretizationSpec(new double[0], new ArrayList<>());
     }
 
+    /**
+     * <p>Getter for the field <code>method</code>.</p>
+     *
+     * @return a int
+     */
     public int getMethod() {
         return this.method;
     }
 
+    /**
+     * <p>Setter for the field <code>method</code>.</p>
+     *
+     * @param method a int
+     */
     public void setMethod(int method) {
         if (method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_VALUES && method != ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS && method != ContinuousDiscretizationSpec.NONE) {
             throw new IllegalArgumentException();
@@ -97,10 +128,20 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
         this.method = method;
     }
 
+    /**
+     * <p>Getter for the field <code>categories</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getCategories() {
         return this.categories;
     }
 
+    /**
+     * <p>Getter for the field <code>breakpoints</code>.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[] getBreakpoints() {
         return this.breakpoints;
     }
@@ -112,7 +153,12 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

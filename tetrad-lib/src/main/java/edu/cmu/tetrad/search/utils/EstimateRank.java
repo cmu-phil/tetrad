@@ -31,11 +31,16 @@ import java.util.Arrays;
  * Estimates the rank of a matrix.
  *
  * @author adambrodie
+ * @version $Id: $Id
  */
 public class EstimateRank {
 
     /**
      * Compute canonical correlations from data.
+     *
+     * @param A an array of {@link double} objects
+     * @param B an array of {@link double} objects
+     * @return an array of {@link double} objects
      */
     public static double[] CanCor(double[][] A, double[][] B) {
         RealMatrix Ua = new SingularValueDecomposition(new BlockRealMatrix(A)).getU();
@@ -46,6 +51,11 @@ public class EstimateRank {
 
     /**
      * Compute canonical correlations from covariance matrix.
+     *
+     * @param iA  an array of {@link int} objects
+     * @param iB  an array of {@link int} objects
+     * @param cov an array of {@link double} objects
+     * @return an array of {@link double} objects
      */
     public static double[] CanCor(int[] iA, int[] iB, double[][] cov) {
         RealMatrix covA = new BlockRealMatrix(cov).getSubMatrix(iA, iA);
@@ -64,6 +74,11 @@ public class EstimateRank {
 
     /**
      * Estimate rank from data.
+     *
+     * @param A     an array of {@link double} objects
+     * @param B     an array of {@link double} objects
+     * @param alpha a double
+     * @return a int
      */
     public static int estimate(double[][] A, double[][] B, double alpha) {
         double[] Cors = CanCor(A, B);
@@ -89,6 +104,13 @@ public class EstimateRank {
 
     /**
      * Estimate rank from covariance matrix.
+     *
+     * @param iA    an array of {@link int} objects
+     * @param iB    an array of {@link int} objects
+     * @param cov   an array of {@link double} objects
+     * @param N     a int
+     * @param alpha a double
+     * @return a int
      */
     public static int estimate(int[] iA, int[] iB, double[][] cov, int N, double alpha) {
         double[] Cors = CanCor(iA, iB, cov);

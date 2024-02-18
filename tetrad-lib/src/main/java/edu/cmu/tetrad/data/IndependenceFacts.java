@@ -28,25 +28,51 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 
+import java.io.Serial;
 import java.util.*;
 
 /**
  * Stores a list of independence facts.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class IndependenceFacts implements DataModel {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The nodes in the graph.
+     */
     private List<Node> nodes = new ArrayList<>();
 
+    /**
+     * The unsorted facts.
+     */
     private Set<IndependenceFact> unsortedFacts = new LinkedHashSet<>();
+
+    /**
+     * The name of the independence facts.
+     */
     private String name = "";
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * <p>Constructor for IndependenceFacts.</p>
+     */
     public IndependenceFacts() {
         // blank, used in reflection so don't delete.
     }
 
+    /**
+     * <p>Constructor for IndependenceFacts.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public IndependenceFacts(Graph graph) {
         MsepTest msep = new MsepTest(graph);
 
@@ -82,6 +108,11 @@ public class IndependenceFacts implements DataModel {
         }
     }
 
+    /**
+     * <p>Constructor for IndependenceFacts.</p>
+     *
+     * @param facts a {@link edu.cmu.tetrad.data.IndependenceFacts} object
+     */
     public IndependenceFacts(IndependenceFacts facts) {
         this();
         if (facts == null) throw new NullPointerException("Facts is null.");
@@ -94,15 +125,27 @@ public class IndependenceFacts implements DataModel {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.IndependenceFacts} object
      */
     public static IndependenceFacts serializableInstance() {
         return new IndependenceFacts();
     }
 
+    /**
+     * <p>add.</p>
+     *
+     * @param fact a {@link edu.cmu.tetrad.graph.IndependenceFact} object
+     */
     public void add(IndependenceFact fact) {
         this.unsortedFacts.add(fact);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("\n");
@@ -114,44 +157,80 @@ public class IndependenceFacts implements DataModel {
         return builder.toString();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isContinuous() {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isDiscrete() {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isMixed() {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Node getVariable(String name) {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel copy() {
         return null;
     }
 
+    /**
+     * <p>remove.</p>
+     *
+     * @param fact a {@link edu.cmu.tetrad.graph.IndependenceFact} object
+     */
     public void remove(IndependenceFact fact) {
 //        this.facts.remove(fact);
         this.unsortedFacts.remove(fact);
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>isIndependent.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
+     */
     public boolean isIndependent(Node x, Node y, Node... z) {
         for (IndependenceFact fact : unsortedFacts) {
             if ((fact.getX().equals(x) && fact.getY().equals(y)) || (fact.getX().equals(y) && fact.getY().equals(x))) {
@@ -175,6 +254,14 @@ public class IndependenceFacts implements DataModel {
 //        return unsortedFacts.contains(fact);
     }
 
+    /**
+     * <p>isIndependent.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a boolean
+     */
     public boolean isIndependent(Node x, Node y, Set<Node> z) {
         boolean found = false;
 
@@ -197,15 +284,28 @@ public class IndependenceFacts implements DataModel {
         return found;
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) throw new NullPointerException();
         this.knowledge = knowledge;
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         if (nodes != null && !nodes.isEmpty()) {
             return nodes;
@@ -230,6 +330,11 @@ public class IndependenceFacts implements DataModel {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         List<Node> variables = getVariables();
         List<String> names = new ArrayList<>();
@@ -241,14 +346,29 @@ public class IndependenceFacts implements DataModel {
         return names;
     }
 
+    /**
+     * <p>Setter for the field <code>nodes</code>.</p>
+     *
+     * @param nodes a {@link java.util.List} object
+     */
     public void setNodes(List<Node> nodes) {
         this.nodes = Collections.unmodifiableList(nodes);
     }
 
+    /**
+     * <p>size.</p>
+     *
+     * @return a int
+     */
     public int size() {
         return unsortedFacts.size();
     }
 
+    /**
+     * <p>getFacts.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<IndependenceFact> getFacts() {
         return new ArrayList<>(unsortedFacts);
     }

@@ -30,19 +30,58 @@ import java.util.Set;
  * Provides a covenience interface for classes that can generate and keep track of sepsets.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see SepsetMap
  */
 public interface SepsetProducer {
+    /**
+     * <p>getSepset.</p>
+     *
+     * @param a a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.Set} object
+     */
     Set<Node> getSepset(Node a, Node b);
 
+    /**
+     * <p>isUnshieldedCollider.</p>
+     *
+     * @param i a {@link edu.cmu.tetrad.graph.Node} object
+     * @param j a {@link edu.cmu.tetrad.graph.Node} object
+     * @param k a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
+     */
     boolean isUnshieldedCollider(Node i, Node j, Node k);
 
+    /**
+     * <p>getScore.</p>
+     *
+     * @return a double
+     */
     double getScore();
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     List<Node> getVariables();
 
+    /**
+     * <p>setVerbose.</p>
+     *
+     * @param verbose a boolean
+     */
     void setVerbose(boolean verbose);
 
+    /**
+     * <p>isIndependent.</p>
+     *
+     * @param d    a {@link edu.cmu.tetrad.graph.Node} object
+     * @param c    a {@link edu.cmu.tetrad.graph.Node} object
+     * @param path a {@link java.util.Set} object
+     * @return a boolean
+     */
     boolean isIndependent(Node d, Node c, Set<Node> path);
 }
 

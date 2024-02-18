@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Checks d-separations in structural model using t-separations over indicators.
  *
  * @author Adam Brodie
+ * @version $Id: $Id
  */
 public final class IndTestTrekSep implements IndependenceTest {
     // The variables of the covariance matrix, in order. (Unmodifiable list.)
@@ -84,9 +85,9 @@ public final class IndTestTrekSep implements IndependenceTest {
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Creates a new independence test instance for a sublist of the variables.
-     *
-     * @param vars The sublist.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -113,13 +114,14 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
-     * @param x the one variable being compared.
-     * @param y the second variable being compared.
-     * @param z the list of conditioning variables.
-     * @return True iff x _||_ y | z.
-     * @throws org.apache.commons.math3.linear.SingularMatrixException if a matrix singularity is encountered.
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (facts.containsKey(new IndependenceFact(x, y, z))) {
@@ -185,10 +187,10 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
-     *
-     * @param alpha This significance level.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -221,19 +223,18 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variable with the given name.
-     *
-     * @return This variable.
      */
     public Node getVariable(String name) {
         return this.nameMap.get(name);
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * If isDeterminismAllowed(), defers to IndTestFisherZD; otherwise throws UnsupportedOperationException.
-     *
-     * @return True if so
-     * @throws UnsupportedOperationException If the above condition is not met.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[z.size()];
@@ -270,7 +271,10 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Always.
+     * <p>getData.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.lang.UnsupportedOperationException Always.
      */
     public DataSet getData() {
         throw new UnsupportedOperationException("Dataset not available.");
@@ -295,7 +299,7 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Always.
+     * {@inheritDoc}
      */
     @Override
     public List<DataSet> getDataSets() {
@@ -303,9 +307,9 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the sample size.
-     *
-     * @return This size.
      */
     @Override
     public int getSampleSize() {
@@ -313,9 +317,9 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true if verbose output should be printed.
-     *
-     * @return True, if so.
      */
     @Override
     public boolean isVerbose() {
@@ -323,9 +327,9 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

@@ -44,6 +44,7 @@ import java.text.NumberFormat;
  *
  * @author josephramsey
  * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM Bayes estimator
+ * @version $Id: $Id
  */
 public class LogisticRegressionEditor extends JPanel {
 
@@ -59,6 +60,11 @@ public class LogisticRegressionEditor extends JPanel {
      */
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
+    /**
+     * <p>Constructor for LogisticRegressionEditor.</p>
+     *
+     * @param regressionRunner a {@link edu.cmu.tetradapp.model.LogisticRegressionRunner} object
+     */
     public LogisticRegressionEditor(LogisticRegressionRunner regressionRunner) {
 
         DataSet dataSet = (DataSet) regressionRunner.getDataModel();
@@ -143,6 +149,8 @@ public class LogisticRegressionEditor extends JPanel {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     @Override

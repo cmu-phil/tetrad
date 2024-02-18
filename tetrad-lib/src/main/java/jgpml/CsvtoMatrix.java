@@ -41,6 +41,7 @@ import java.util.StringTokenizer;
  * Simple Class to load the example data from files straight into Matrices.
  *
  * @author jdramsey
+ * @version $Id: $Id
  */
 public class CsvtoMatrix {
 
@@ -48,7 +49,7 @@ public class CsvtoMatrix {
      * Load data
      *
      * @param filename      data file
-     * @param sizeofInputs number of input variables
+     * @param sizeofInputs  number of input variables
      * @param sizeofOutputs number of output variables
      * @return [X, Y]
      */

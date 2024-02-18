@@ -9,20 +9,30 @@ import edu.cmu.tetrad.graph.GraphTransforms;
  * The adjacency precision. The true positives are the number of adjacencies in both the true and estimated graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PagAdjacencyPrecision implements Statistic {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "PAP";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Adjacency Precision compared to true PAG";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = GraphTransforms.dagToPag(trueGraph);
@@ -33,6 +43,9 @@ public class PagAdjacencyPrecision implements Statistic {
         return adjTp / (double) (adjTp + adjFp);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

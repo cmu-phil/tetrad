@@ -45,33 +45,67 @@ import java.text.NumberFormat;
 import java.util.List;
 
 /**
- * Allows the user to choose a variable in a Bayes net and edit the parameters associated with that variable.
+ * Display the updated marginal and joint probabilities Probably do not need the two classes following this main one:
+ * UpdaterEditingTableObs and UpdaterEditingTableModelObs. They are for displaying the conditional probability tables
+ * after updating an MlBayesIm.
  *
  * @author josephramsey
  */
-
-/////////////////////////////////////////////////////////////////////
-// Display the updated marginal and joint probabilities 
-//
-// Probably do not need the two classes following this main one:
-// UpdaterEditingTableObs and UpdaterEditingTableModelObs.
-// They are for displaying the conditional probability tables
-// after updating an MlBayesIm.
-/////////////////////////////////////////////////////////////////////
 public class UpdatedBayesImWizardObs extends JPanel {
+
+    /**
+     * The evidence.
+     */
     private final Evidence evidence;
+
+    /**
+     * The workbench.
+     */
     private final GraphWorkbench workbench;
+
+    /**
+     * The updater wrapper.
+     */
     private final UpdaterWrapper updaterWrapper;
+
+    /**
+     * The variable names combo box.
+     */
     private final JComboBox varNamesComboBox;
+
+    /**
+     * The variable names combo box.
+     */
     private final JComboBox varNamesComboBox2;
+
+    /**
+     * The panel that displays the marginal probabilities.
+     */
     private final JPanel marginalsPanel;
+
     /**
      * Last node selected.
      */
     private Node selectedNode;
+
+    /**
+     * The table for editing conditional probabilities.
+     */
     private UpdaterEditingTableObs editingTable;
+
+    /**
+     * The panel that displays the conditional probabilities.
+     */
     private JPanel tablePanel;
 
+    /**
+     * <p>Constructor for UpdatedBayesImWizardObs.</p>
+     *
+     * @param updaterWrapper a {@link edu.cmu.tetradapp.model.UpdaterWrapper} object
+     * @param workbench      a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     * @param tab            a int
+     * @param selectedNode   a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public UpdatedBayesImWizardObs(UpdaterWrapper updaterWrapper,
                                    GraphWorkbench workbench, int tab, Node selectedNode) {
         if (updaterWrapper == null) {
@@ -501,6 +535,9 @@ public class UpdatedBayesImWizardObs extends JPanel {
         return this.workbench;
     }
 
+    /**
+     * @return the getModel parameter set.
+     */
     public Node getSelectedNode() {
         return this.selectedNode;
     }

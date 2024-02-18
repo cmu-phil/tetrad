@@ -24,6 +24,7 @@ import org.apache.commons.math3.util.FastMath;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.io.Serial;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,9 +32,11 @@ import java.util.stream.Collectors;
  * Apr 30, 2019 2:30:18 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class EdgeTypeTable extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = -9104061917163909746L;
 
     private static final String[] EDGES = {
@@ -64,11 +67,24 @@ public class EdgeTypeTable extends JPanel {
             "<->"
     };
 
+    /**
+     * The title of the table.
+     */
     private final JLabel title = new JLabel();
+
+    /**
+     * The table.
+     */
     private final JTable table = new EdgeInfoTable(new DefaultTableModel());
 
+    /**
+     * The graph.
+     */
     private Graph graph;
 
+    /**
+     * <p>Constructor for EdgeTypeTable.</p>
+     */
     public EdgeTypeTable() {
         initComponents();
     }
@@ -82,6 +98,11 @@ public class EdgeTypeTable extends JPanel {
         add(new JScrollPane(this.table), BorderLayout.CENTER);
     }
 
+    /**
+     * <p>update.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void update(Graph graph) {
         List<Edge> edges = graph.getEdges().stream()
                 .filter(edge -> !edge.isNull())
@@ -261,6 +282,11 @@ public class EdgeTypeTable extends JPanel {
         return false;
     }
 
+    /**
+     * <p>Getter for the field <code>graph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return graph;
     }

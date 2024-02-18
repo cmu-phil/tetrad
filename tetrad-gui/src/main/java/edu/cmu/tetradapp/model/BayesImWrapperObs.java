@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 
 ///////////////////////////////////////////////////////////
@@ -42,17 +43,25 @@ import java.util.List;
 //
 // @author josephramsey
 ///////////////////////////////////////////////////////////
+
+/**
+ * <p>BayesImWrapperObs class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class BayesImWrapperObs implements SessionModel, Memorable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
     /**
-     * @serial Cannot be null.
+     * The Bayes Im.
      */
     private BayesIm bayesIm;
 
@@ -65,6 +74,12 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
     // the marginalized values of the allowUnfaithfulness probability values in
     // the old BayesIm, stored in a JPD
 
+    /**
+     * <p>Constructor for BayesImWrapperObs.</p>
+     *
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
@@ -84,12 +99,14 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
             this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
         }
 
+        assert this.bayesIm != null;
         log(this.bayesIm);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
@@ -97,22 +114,46 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
     }
 
     //=============================PUBLIC METHODS=========================//
+
+    /**
+     * <p>Getter for the field <code>bayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getBayesIm() {
         return this.bayesIm;
     }
 
+    /**
+     * <p>Setter for the field <code>bayesIm</code>.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public void setBayesIm(BayesIm bayesIm) {
         this.bayesIm = bayesIm;
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.bayesIm.getBayesPm().getDag();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -131,7 +172,12 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -141,18 +187,38 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
         }
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getGraph().getNodeNames();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getGraph().getNodes();
     }

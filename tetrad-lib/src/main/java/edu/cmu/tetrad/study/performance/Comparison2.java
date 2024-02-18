@@ -40,12 +40,16 @@ import java.util.List;
  *
  * @author josephramsey 2016.03.24
  * @author dmalinsky 2016.05.20
+ * @version $Id: $Id
  */
 public class Comparison2 {
 
     /**
      * Simulates data from model parameterizing the given DAG, and runs the algorithm on that data, printing out error
      * statistics.
+     *
+     * @param params a {@link edu.cmu.tetrad.study.performance.ComparisonParameters} object
+     * @return a {@link edu.cmu.tetrad.study.performance.ComparisonResult} object
      */
     public static ComparisonResult compare(ComparisonParameters params) {
         DataSet dataSet = null;
@@ -448,6 +452,14 @@ public class Comparison2 {
 //        return null;
 //    }
     // changed return type of 'summarize' to TextTable
+
+    /**
+     * <p>summarize.</p>
+     *
+     * @param results      a {@link java.util.List} object
+     * @param tableColumns a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.util.TextTable} object
+     */
     public static TextTable summarize(List<ComparisonResult> results, List<TableColumn> tableColumns) {
 
         List<Node> variables = new ArrayList<>();
@@ -567,6 +579,12 @@ public class Comparison2 {
         return table;
     }
 
+    /**
+     * <p>getKnowledge.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public static Knowledge getKnowledge(Graph graph) {
 //        System.out.println("Entering getKnowledge ... ");
         int numLags; // need to fix this!
@@ -628,6 +646,12 @@ public class Comparison2 {
         return knowledge;
     }
 
+    /**
+     * <p>getNameNoLag.</p>
+     *
+     * @param obj a {@link java.lang.Object} object
+     * @return a {@link java.lang.String} object
+     */
     public static String getNameNoLag(Object obj) {
         String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
@@ -637,11 +661,23 @@ public class Comparison2 {
         }
     }
 
+    /**
+     * <p>getPrefix.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     * @return a {@link java.lang.String} object
+     */
     public static String getPrefix(String s) {
 
         return s.substring(0, 1);
     }
 
+    /**
+     * <p>getIndex.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     * @return a int
+     */
     public static int getIndex(String s) {
         int y = 0;
         for (int i = s.length() - 1; i >= 0; i--) {
@@ -654,6 +690,12 @@ public class Comparison2 {
         throw new IllegalArgumentException("Not integer suffix.");
     }
 
+    /**
+     * <p>getLag.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     * @return a int
+     */
     public static int getLag(String s) {
         if (s.indexOf(':') == -1) {
             return 0;
@@ -662,8 +704,69 @@ public class Comparison2 {
         return (Integer.parseInt(tmp));
     }
 
+    /**
+     * An enum of table columns.
+     */
     public enum TableColumn {
-        AdjCor, AdjFn, AdjFp, AhdCor, AhdFn, AhdFp, SHD,
-        AdjPrec, AdjRec, AhdPrec, AhdRec, Elapsed
+
+        /**
+         * Constant <code>AdjCor</code>
+         */
+        AdjCor,
+
+        /**
+         * Constant <code>AdjFn</code>
+         */
+        AdjFn,
+
+        /**
+         * Constant <code>AdjFp</code>
+         */
+        AdjFp,
+
+        /**
+         * Constant <code>AhdCor</code>
+         */
+        AhdCor,
+
+        /**
+         * Constant <code>AhdFn</code>
+         */
+        AhdFn,
+
+        /**
+         * Constant <code>AhdFp</code>
+         */
+        AhdFp,
+
+        /**
+         * Constant <code>SHD</code>
+         */
+        SHD,
+
+        /**
+         * Constant <code>AdjPrec</code>
+         */
+        AdjPrec,
+
+        /**
+         * Constant <code>AdjRec</code>
+         */
+        AdjRec,
+
+        /**
+         * Constant <code>AhdPrec</code>
+         */
+        AhdPrec,
+
+        /**
+         * Constant <code>AhdRec</code>
+         */
+        AhdRec,
+
+        /**
+         * Constant <code>Elapsed</code>
+         */
+        Elapsed
     }
 }

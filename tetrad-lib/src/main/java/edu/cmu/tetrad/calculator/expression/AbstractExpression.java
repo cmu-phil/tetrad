@@ -24,6 +24,7 @@ package edu.cmu.tetrad.calculator.expression;
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +35,7 @@ import java.util.List;
  * @author Tyler Gibson
  */
 abstract class AbstractExpression implements Expression {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -51,6 +53,13 @@ abstract class AbstractExpression implements Expression {
      */
     private final String token;
 
+    /**
+     * <p>Constructor for AbstractExpression.</p>
+     *
+     * @param token       a {@link java.lang.String} object
+     * @param position    a {@link edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position} object
+     * @param expressions a {@link edu.cmu.tetrad.calculator.expression.Expression} object
+     */
     public AbstractExpression(String token, ExpressionDescriptor.Position position, Expression... expressions) {
         this.position = position;
         this.token = token;
@@ -58,21 +67,36 @@ abstract class AbstractExpression implements Expression {
     }
 
 
+    /**
+     * <p>Getter for the field <code>token</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getToken() {
         return token;
     }
 
+    /**
+     * <p>Getter for the field <code>position</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position} object
+     */
     public ExpressionDescriptor.Position getPosition() {
         return this.position;
     }
 
     /**
+     * <p>Getter for the field <code>expressions</code>.</p>
+     *
      * @return the sub expressions (unmodifiable).f
      */
     public List<Expression> getExpressions() {
         return this.expressions;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public RealDistribution getRealDistribution(Context context) {
         if (this.expressions.size() == 1) {
@@ -83,6 +107,9 @@ abstract class AbstractExpression implements Expression {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public IntegerDistribution getIntegerDistribution(Context context) {
         if (this.expressions.size() == 1) {
             return this.expressions.get(0).getIntegerDistribution(context);
@@ -92,6 +119,11 @@ abstract class AbstractExpression implements Expression {
 
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         if (getPosition() != null && getToken() != null) {
             return ExpressionUtils.renderExpression(this, getPosition(), getToken());

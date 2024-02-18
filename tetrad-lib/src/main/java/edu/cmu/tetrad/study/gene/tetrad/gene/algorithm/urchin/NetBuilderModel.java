@@ -25,7 +25,19 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 
 import java.text.NumberFormat;
 
+/**
+ * <p>NetBuilderModel class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class NetBuilderModel {
+    /**
+     * <p>Constructor for NetBuilderModel.</p>
+     *
+     * @param exogenousInputs an array of {@link double} objects
+     * @param nhours          a int
+     */
     public NetBuilderModel(double[] exogenousInputs, int nhours) {
 
         NbComponent matCBeta =

@@ -23,6 +23,8 @@ public class HungarianAlgorithm {
 
     /**
      * Trying to find lowest-cost assignment.
+     *
+     * @param costMatrix an array of {@link double} objects
      */
     public HungarianAlgorithm(double[][] costMatrix) {
         if (costMatrix.length != costMatrix[0].length) {
@@ -46,6 +48,11 @@ public class HungarianAlgorithm {
         Arrays.fill(squareInCol, -1);
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
 
         // the problem is written in the form of a matrix

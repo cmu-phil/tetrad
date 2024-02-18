@@ -9,10 +9,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,23 +30,46 @@ import java.util.List;
  * write.matrix(A, file=name, sep="\t") }
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The external directory.
+     */
     private final String extDir;
+
+    /**
+     * Short description of the algorithm.
+     */
     private final String shortDescription;
 
+    /**
+     * <p>Constructor for ExternalAlgorithmPcalgGes.</p>
+     *
+     * @param extDir a {@link java.lang.String} object
+     */
     public ExternalAlgorithmPcalgGes(String extDir) {
         this.extDir = extDir;
         this.shortDescription = new File(extDir).getName().replace("_", " ");
     }
 
+    /**
+     * <p>Constructor for ExternalAlgorithmPcalgGes.</p>
+     *
+     * @param extDir          a {@link java.lang.String} object
+     * @param shortDecription a {@link java.lang.String} object
+     */
     public ExternalAlgorithmPcalgGes(String extDir, String shortDecription) {
         this.extDir = extDir;
         this.shortDescription = shortDecription;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Reads in the relevant graph from the file (see above) and returns it.
      */
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -107,12 +127,19 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         if (this.shortDescription == null) {
             return "Load data from " + this.path + "/" + this.extDir;
@@ -121,11 +148,17 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);

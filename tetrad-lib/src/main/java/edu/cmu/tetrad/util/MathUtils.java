@@ -27,10 +27,13 @@ import org.apache.commons.math3.util.FastMath;
  * Some extra mathematical functions not contained in org.apache.commons.math3.util.FastMath.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MathUtils {
 
     /**
+     * <p>logistic.</p>
+     *
      * @param x a double value.
      * @return the logistic function of x = 1 / (1 + exp(-x)).
      */
@@ -38,6 +41,12 @@ public class MathUtils {
         return 1. / (1. + FastMath.exp(-x));
     }
 
+    /**
+     * <p>factorial.</p>
+     *
+     * @param n a int
+     * @return a int
+     */
     public static int factorial(int n) {
         int i = 1;
 
@@ -48,6 +57,12 @@ public class MathUtils {
         return i;
     }
 
+    /**
+     * <p>logFactorial.</p>
+     *
+     * @param n a int
+     * @return a double
+     */
     public static double logFactorial(int n) {
         double i = 0;
 
@@ -58,6 +73,13 @@ public class MathUtils {
         return i;
     }
 
+    /**
+     * <p>choose.</p>
+     *
+     * @param a a int
+     * @param b a int
+     * @return a int
+     */
     public static int choose(int a, int b) {
         if (a == 0 && b == 0) {
             return 1;
@@ -72,6 +94,13 @@ public class MathUtils {
         }
     }
 
+    /**
+     * <p>logChoose.</p>
+     *
+     * @param a a int
+     * @param b a int
+     * @return a double
+     */
     public static double logChoose(int a, int b) {
         return MathUtils.logFactorial(a) - (MathUtils.logFactorial(b) + MathUtils.logFactorial(a - b));
     }

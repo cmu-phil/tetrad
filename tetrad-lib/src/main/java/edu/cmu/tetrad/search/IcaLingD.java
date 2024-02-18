@@ -93,6 +93,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author gustavolacerda
  * @author patrickhoyer
  * @author josephramsey
+ * @version $Id: $Id
  * @see IcaLingam
  */
 public class IcaLingD {
@@ -111,6 +112,7 @@ public class IcaLingD {
      * Determines whether a BHat matrix parses to an acyclic graph.
      *
      * @param scaledBHat The BHat matrix..
+     * @return a boolean
      */
     public static boolean isAcyclic(Matrix scaledBHat) {
         List<Node> dummyVars = new ArrayList<>();

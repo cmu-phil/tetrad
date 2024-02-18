@@ -22,7 +22,23 @@
 package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin;
 
 
+/**
+ * <p>NbFunctionSum class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class NbFunctionSum extends AbstractNbComponent {
+    /**
+     * <p>Constructor for NbFunctionSum.</p>
+     *
+     * @param factor        a double
+     * @param power         a double
+     * @param parents       an array of {@link edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin.NbComponent}
+     *                      objects
+     * @param inhibitExcite an array of {@link int} objects
+     * @param name          a {@link java.lang.String} object
+     */
     public NbFunctionSum(double factor, double power, NbComponent[] parents,
                          int[] inhibitExcite, String name) {
 
@@ -35,6 +51,9 @@ public class NbFunctionSum extends AbstractNbComponent {
 
     }
 
+    /**
+     * <p>update.</p>
+     */
     public void update() {
         //System.out.println("Updating " + name);
         double sum = 0.0;

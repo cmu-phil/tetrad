@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -33,54 +34,51 @@ import java.util.List;
  * as parent. Contains basic methods for executing algorithm and returning results.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * Keeps a reference to the dataModel source that has been provided (hopefully either a dataModel model or a
      * graph).
-     *
-     * @serial Cannot be null.
      */
     private final transient DataModel dataModel;
+
     /**
-     * @serial Can be null.
+     * The name of the algorithm.
      */
     private String name;
+
     /**
      * The parameters guiding this search (when executed).
-     *
-     * @serial Cannot be null.
      */
     private Parameters params;
 
     /**
      * Clusters resulting from the last run of the algorithm.
-     *
-     * @serial Cannot be null.
      */
     private Clusters clusters = new Clusters();
 
     /**
      * Keeps a reference to the source graph, if there is one.
-     *
-     * @serial Can be null.
      */
     private Graph sourceGraph;
 
     /**
      * Keeps a reference to the result graph for the algorithm.
-     *
-     * @serial Can be null.
      */
     private Graph resultGraph;
 
     /**
      * The result structure graph, if there is one. Otherwise, null.
-     *
-     * @serial Can be null.
      */
     private Graph structureGraph;
+
+    /**
+     * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
+     * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
+     */
     private DataWrapper dataWrapper;
 
     //===========================CONSTRUCTORS===========================//
@@ -145,6 +143,11 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
     //============================PUBLIC METHODS==========================//
 
+    /**
+     * <p>Getter for the field <code>resultGraph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public final Graph getResultGraph() {
         return this.resultGraph;
     }
@@ -153,6 +156,11 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.resultGraph = graph;
     }
 
+    /**
+     * <p>Getter for the field <code>clusters</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Clusters} object
+     */
     public Clusters getClusters() {
         return this.clusters;
     }
@@ -165,6 +173,11 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.clusters = clusters;
     }
 
+    /**
+     * <p>Getter for the field <code>structureGraph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getStructureGraph() {
         return this.structureGraph;
     }
@@ -173,14 +186,29 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.structureGraph = graph;
     }
 
+    /**
+     * <p>getFullGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getFullGraph() {
         return null;
     }
 
+    /**
+     * <p>Getter for the field <code>sourceGraph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public final Graph getSourceGraph() {
         return this.sourceGraph;
     }
 
+    /**
+     * <p>getData.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public final DataModel getData() {
         if (this.dataWrapper != null) {
             DataModelList dataModelList = this.dataWrapper.getDataModelList();
@@ -199,14 +227,27 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
     //===========================PROTECTED METHODS========================//
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public final Parameters getParams() {
         return this.params;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void resetParams(Object params) {
         this.params = (Parameters) params;
     }
 
+    /**
+     * <p>getResettableParams.</p>
+     *
+     * @return a {@link java.lang.Object} object
+     */
     public Object getResettableParams() {
         return this.params;
     }
@@ -252,10 +293,18 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         getParams().set("varNames", names);
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

@@ -32,6 +32,7 @@ import java.util.List;
  * "information matrix" (see Bollen page 135). <p>This class resembles the SemOptimizer implementations.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class SemStdErrorEstimator {
 
@@ -171,6 +172,8 @@ public class SemStdErrorEstimator {
     }
 
     /**
+     * <p>getStdErrors.</p>
+     *
      * @return the array of standard errors for the free paramaeters of the SEM.
      */
     public double[] getStdErrors() {

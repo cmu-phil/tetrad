@@ -31,8 +31,18 @@ import java.util.List;
  * @author josephramsey
  */
 interface MultipleGraphSource {
+    /**
+     * <p>getGraphs.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     List<Graph> getGraphs();
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String getName();
 }
 

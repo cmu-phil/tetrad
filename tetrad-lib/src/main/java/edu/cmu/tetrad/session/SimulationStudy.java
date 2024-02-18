@@ -32,6 +32,7 @@ import java.util.prefs.Preferences;
  * order and executes each node encountered a specified number of times.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SimulationStudy {
 
@@ -54,6 +55,8 @@ public final class SimulationStudy {
 
     /**
      * Constructs a new simulation edu.cmu.tetrad.study for the given session.
+     *
+     * @param session a {@link edu.cmu.tetrad.session.Session} object
      */
     public SimulationStudy(Session session) {
         if (session == null) {
@@ -77,6 +80,8 @@ public final class SimulationStudy {
     /**
      * Gets the repeition of the given node. If the repetition of a node has not been set, it is assumed to be 1.
      *
+     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return a int
      * @see #setRepetition
      */
     public static int getRepetition(SessionNode node) {
@@ -94,6 +99,12 @@ public final class SimulationStudy {
         sessionNode.setRepetition(1);
     }
 
+    /**
+     * <p>getDescendants.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return a {@link java.util.Set} object
+     */
     public static Set getDescendants(SessionNode node) {
         HashSet<SessionNode> descendants = new HashSet<>();
         SimulationStudy.doChildClosureVisit(node, descendants);
@@ -119,6 +130,7 @@ public final class SimulationStudy {
      * a depth first traversal of the tree.
      *
      * @param repetition the repetition, an integer &gt; 0.
+     * @param node       a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public void setRepetition(SessionNode node, int repetition) {
         if (node == null) {
@@ -139,6 +151,8 @@ public final class SimulationStudy {
     /**
      * Executes the given node the specified number of times.
      *
+     * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param overwrite   a boolean
      * @see #getRepetition
      */
     public void execute(SessionNode sessionNode, boolean overwrite) {
@@ -168,6 +182,13 @@ public final class SimulationStudy {
         TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (time2 - time1) / 1000. + " s");
     }
 
+    /**
+     * <p>createDescendantModels.</p>
+     *
+     * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param overwrite   a boolean
+     * @return a boolean
+     */
     public boolean createDescendantModels(SessionNode sessionNode,
                                           boolean overwrite) {
         if (!this.session.contains(sessionNode)) {
@@ -193,6 +214,8 @@ public final class SimulationStudy {
 
     /**
      * Adds a session listener.
+     *
+     * @param l a {@link edu.cmu.tetrad.session.SessionListener} object
      */
     public void addSessionListener(SessionListener l) {
         getSessionSupport().addSessionListener(l);
@@ -357,6 +380,11 @@ public final class SimulationStudy {
         return this.sessionSupport;
     }
 
+    /**
+     * <p>Getter for the field <code>session</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.session.Session} object
+     */
     public Session getSession() {
         return this.session;
     }

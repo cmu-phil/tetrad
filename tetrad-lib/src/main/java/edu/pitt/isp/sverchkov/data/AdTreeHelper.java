@@ -86,8 +86,20 @@ class AdTreeHelper implements Serializable {
      * Constructs an AD tree helper for the given data set.
      */
     protected class CountNode implements Serializable {
+
+        /**
+         * The number of instances in the data set.
+         */
         protected final int count;
+
+        /**
+         * The children of this node.
+         */
         protected final VaryNode[] vary;
+
+        /**
+         * The attribute of this node.
+         */
         private final int attr;
 
         protected CountNode(int attribute, int[][] array) {
@@ -103,7 +115,15 @@ class AdTreeHelper implements Serializable {
      * Constructs an AD tree helper for the given data set.
      */
     protected class VaryNode implements Serializable {
+
+        /**
+         * The values of the attribute.
+         */
         protected final CountNode[] values;
+
+        /**
+         * The most common value of the attribute.
+         */
         protected int mcv = -1;
 
         private VaryNode(int attr, int[][] array) {

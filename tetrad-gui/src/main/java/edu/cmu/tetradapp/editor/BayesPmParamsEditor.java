@@ -31,6 +31,7 @@ import java.awt.*;
  * Edits the parameters for simulating data from Bayes nets.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class BayesPmParamsEditor extends JPanel implements ParameterEditor {
 
@@ -55,10 +56,18 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     public BayesPmParamsEditor() {
     }
 
+    /**
+     * <p>setParentModels.</p>
+     *
+     * @param parentModels an array of {@link java.lang.Object} objects
+     */
     public void setParentModels(Object[] parentModels) {
         // Do nothing.
     }
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         this.lowerBoundField = new IntTextField(getParams().getInt("lowerBoundNumVals", 2), 4);
         this.lowerBoundField.setFilter((value, oldValue) -> {
@@ -171,6 +180,11 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         });
     }
 
+    /**
+     * <p>mustBeShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean mustBeShown() {
         return false;
     }
@@ -185,6 +199,9 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         return this.params;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParams(Parameters params) {
         if (params == null) {
             throw new NullPointerException();

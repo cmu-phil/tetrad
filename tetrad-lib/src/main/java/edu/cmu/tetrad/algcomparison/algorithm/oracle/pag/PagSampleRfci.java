@@ -15,6 +15,7 @@ import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.List;
  * Jan 29, 2023 3:45:09 PM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "PAG-Sampling-RFCI",
@@ -32,9 +34,19 @@ import java.util.List;
 //@Experimental
 public class PagSampleRfci implements Algorithm, HasKnowledge {
 
+    /**
+     * Constant <code>PAG_SAMPLING_RFCI_PARAMETERS</code>
+     */
     public static final List<String> PAG_SAMPLING_RFCI_PARAMETERS = new LinkedList<>();
+    /**
+     * Constant <code>RFCI_PARAMETERS</code>
+     */
     public static final List<String> RFCI_PARAMETERS = new LinkedList<>();
+    /**
+     * Constant <code>PROBABILISTIC_TEST_PARAMETERS</code>
+     */
     public static final List<String> PROBABILISTIC_TEST_PARAMETERS = new LinkedList<>();
+    @Serial
     private static final long serialVersionUID = 23L;
 
     static {
@@ -52,11 +64,22 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
         PROBABILISTIC_TEST_PARAMETERS.add(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE);
     }
 
+    /**
+     * The probabilistic test
+     */
     private final IndependenceWrapper test = new ProbabilisticTest();
+    /**
+     * The bootstrap graphs
+     */
+    private final List<Graph> bootstrapGraphs = new ArrayList<>();
+    /**
+     * The knowledge
+     */
     private Knowledge knowledge;
-    private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.pitt.dbmi.algo.bayesian.constraint.search.PagSamplingRfci pagSamplingRfci = new edu.pitt.dbmi.algo.bayesian.constraint.search.PagSamplingRfci(SimpleDataLoader.getDiscreteDataSet(dataSet));
@@ -78,22 +101,34 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
         return pagSamplingRfci.search();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph trueGraph = new EdgeListGraph(graph);
         return GraphTransforms.dagToPag(trueGraph);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "PAG-Sampling-RFCI " + this.test.getDescription();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Discrete;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new LinkedList<>();
@@ -105,11 +140,17 @@ public class PagSampleRfci implements Algorithm, HasKnowledge {
         return parameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;

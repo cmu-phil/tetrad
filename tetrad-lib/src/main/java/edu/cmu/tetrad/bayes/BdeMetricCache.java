@@ -49,13 +49,38 @@ import java.util.Set;
  * Chickering. Microsoft Technical Report MSR-TR-94-09.&gt; 0
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public final class BdeMetricCache {
+
+    /**
+     * The dataset.
+     */
     private final DataSet dataSet;
+
+    /**
+     * The list of variables (nodes).
+     */
     private final List<Node> variables;
-    private final BayesPm bayesPm;  //Determines the list of variables (nodes)
+
+    /**
+     * The Bayes parameterized network. Determines the list of variables (nodes)
+     */
+    private final BayesPm bayesPm;
+
+    /**
+     * The scores.
+     */
     private final Map<NodeParentsPair, Double> scores;
+
+    /**
+     * The score counts.
+     */
     private final Map<NodeParentsPair, Integer> scoreCounts;
+
+    /**
+     * The observed counts.
+     */
     private double[][] observedCounts;
 
     /**
@@ -549,11 +574,9 @@ public final class BdeMetricCache {
                 return true;
             }
 
-            if (!(other instanceof NodeParentsPair)) {
+            if (!(other instanceof NodeParentsPair npp)) {
                 return false;
             }
-
-            NodeParentsPair npp = (NodeParentsPair) other;
 
             return npp.node.equals(this.node) && npp.parents.equals(this.parents);
 

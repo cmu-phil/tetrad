@@ -47,10 +47,15 @@ import java.util.List;
  *
  * @author josephramsey
  * @author danielmalinsky (some improvements)
+ * @version $Id: $Id
  */
 public class TsUtils {
 
     /**
+     * <p>ar.</p>
+     *
+     * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param numLags    a int
      * @return the VAR residuals of the given time series with the given number of lags. That is, every variable at the
      * model lag is regressed onto every variable at previous lags, up to the given number of lags, and the residuals of
      * these regressions for each variable are returned.
@@ -79,6 +84,13 @@ public class TsUtils {
         return new BoxDataSet(new DoubleDataBox(residuals.toArray()), timeSeries.getVariables());
     }
 
+    /**
+     * <p>ar2.</p>
+     *
+     * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param numLags    a int
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet ar2(DataSet timeSeries, int numLags) {
         List<Node> missingVariables = new ArrayList<>();
 
@@ -137,6 +149,13 @@ public class TsUtils {
         return new BoxDataSet(new DoubleDataBox(residuals.toArray()), timeSeries.getVariables());
     }
 
+    /**
+     * <p>structuralVar.</p>
+     *
+     * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param numLags    a int
+     * @return a {@link edu.cmu.tetrad.search.utils.TsUtils.VarResult} object
+     */
     public static VarResult structuralVar(DataSet timeSeries, int numLags) {
         DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);
         Knowledge knowledge = timeLags.getKnowledge().copy();
@@ -206,6 +225,13 @@ public class TsUtils {
                 collapsedVarGraph);
     }
 
+    /**
+     * <p>createShiftedData.</p>
+     *
+     * @param data   a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param shifts an array of {@link int} objects
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet createShiftedData(DataSet data, int[] shifts) {
         Matrix data2 = data.getDoubleData();
 
@@ -245,6 +271,12 @@ public class TsUtils {
         return new BoxDataSet(new DoubleDataBox(shiftedData.toArray()), data.getVariables());
     }
 
+    /**
+     * <p>getSelfLoopCoefs.</p>
+     *
+     * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return an array of {@link double} objects
+     */
     public static double[] getSelfLoopCoefs(DataSet timeSeries) {
         DataSet timeLags = TsUtils.createLagData(timeSeries, 1);
 
@@ -263,6 +295,13 @@ public class TsUtils {
         return coefs;
     }
 
+    /**
+     * <p>sumOfArCoefficients.</p>
+     *
+     * @param timeSeries a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param numLags    a int
+     * @return a double
+     */
     public static double sumOfArCoefficients(DataSet timeSeries, int numLags) {
         DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);
         List<Node> regressors = new ArrayList<>();
@@ -329,6 +368,10 @@ public class TsUtils {
 
     /**
      * Creates new time series dataset from the given one (fixed to deal with mixed datasets)
+     *
+     * @param data    a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param numLags a int
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet createLagData(DataSet data, int numLags) {
         List<Node> variables = data.getVariables();
@@ -351,8 +394,7 @@ public class TsUtils {
 
                 if (node instanceof ContinuousVariable) {
                     laggedNode = new ContinuousVariable(name);
-                } else if (node instanceof DiscreteVariable) {
-                    DiscreteVariable var = (DiscreteVariable) node;
+                } else if (node instanceof DiscreteVariable var) {
                     laggedNode = new DiscreteVariable(var);
                     laggedNode.setName(name);
                 } else {
@@ -409,6 +451,9 @@ public class TsUtils {
 
     /**
      * Creates new time series dataset from the given one with index variable (e.g., time)
+     *
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet addIndex(DataSet data) {
         data = data.copy();
@@ -425,6 +470,13 @@ public class TsUtils {
 
     }
 
+    /**
+     * <p>graphToLagGraph.</p>
+     *
+     * @param _graph  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param numLags a int
+     * @return a {@link edu.cmu.tetrad.graph.TimeLagGraph} object
+     */
     public static TimeLagGraph graphToLagGraph(Graph _graph, int numLags) {
         TimeLagGraph graph = new TimeLagGraph();
         graph.setMaxLag(numLags);
@@ -479,6 +531,12 @@ public class TsUtils {
         return graph;
     }
 
+    /**
+     * <p>getNameNoLag.</p>
+     *
+     * @param obj a {@link java.lang.Object} object
+     * @return a {@link java.lang.String} object
+     */
     public static String getNameNoLag(Object obj) {
         String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
@@ -488,11 +546,23 @@ public class TsUtils {
         }
     }
 
+    /**
+     * <p>getPrefix.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     * @return a {@link java.lang.String} object
+     */
     public static String getPrefix(String s) {
 
         return s.substring(0, 1);
     }
 
+    /**
+     * <p>getIndex.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     * @return a int
+     */
     public static int getIndex(String s) {
         int y = 0;
         for (int i = s.length() - 1; i >= 0; i--) {
@@ -505,6 +575,12 @@ public class TsUtils {
         throw new IllegalArgumentException("Not integer suffix.");
     }
 
+    /**
+     * <p>getLag.</p>
+     *
+     * @param s a {@link java.lang.String} object
+     * @return a int
+     */
     public static int getLag(String s) {
         if (s.indexOf(':') == -1) {
             return 0;
@@ -513,6 +589,12 @@ public class TsUtils {
         return (Integer.parseInt(tmp));
     }
 
+    /**
+     * <p>getKnowledge.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public static Knowledge getKnowledge(Graph graph) {
 //        System.out.println("Entering getKnowledge ... ");
         int numLags = 1; // need to fix this!
@@ -577,6 +659,12 @@ public class TsUtils {
         return knowledge;
     }
 
+    /**
+     * <p>allEigenvaluesAreSmallerThanOneInModulus.</p>
+     *
+     * @param mat a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a boolean
+     */
     public static boolean allEigenvaluesAreSmallerThanOneInModulus(Matrix mat) {
 
         double[] realEigenvalues = new double[0];
@@ -625,18 +713,41 @@ public class TsUtils {
      */
     public static class VarResult {
 
+        /**
+         * Residuals from the VAR model.
+         */
         private final DataSet residuals;
+
+        /**
+         * Collapsed var graph.
+         */
         private final Graph collapsedVarGraph;
 
+        /**
+         * Constructs a new result.
+         *
+         * @param dataSet           a {@link edu.cmu.tetrad.data.DataSet} object
+         * @param collapsedVarGraph a {@link edu.cmu.tetrad.graph.Graph} object
+         */
         public VarResult(DataSet dataSet, Graph collapsedVarGraph) {
             this.residuals = dataSet;
             this.collapsedVarGraph = collapsedVarGraph;
         }
 
+        /**
+         * <p>Getter for the field <code>residuals</code>.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.data.DataSet} object
+         */
         public DataSet getResiduals() {
             return this.residuals;
         }
 
+        /**
+         * <p>Getter for the field <code>collapsedVarGraph</code>.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Graph} object
+         */
         public Graph getCollapsedVarGraph() {
             return this.collapsedVarGraph;
         }

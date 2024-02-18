@@ -35,6 +35,7 @@ import java.util.Set;
  * Nov 15, 2018 5:22:50 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class TabularDataFileReader extends DatasetFileReader implements TabularDataReader {
 
@@ -49,12 +50,9 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Reads in the data.
-     *
-     * @param dataColumns        the data columns.
-     * @param numberOfCategories maximum number of categories to be considered discrete
-     * @param hasHeader          whether the data file has a header
-     * @throws IOException if an I/O error occurs.
      */
     @Override
     public void determineDiscreteDataColumns(DataColumn[] dataColumns, int numberOfCategories, boolean hasHeader) throws IOException {
@@ -293,6 +291,9 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Data read(DataColumn[] dataColumns, boolean hasHeader) throws IOException {
         if (dataColumns == null) {
@@ -325,6 +326,9 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Data read(DataColumn[] dataColumns, boolean hasHeader, Metadata metadata) throws IOException {
         Data data = read(dataColumns, hasHeader);

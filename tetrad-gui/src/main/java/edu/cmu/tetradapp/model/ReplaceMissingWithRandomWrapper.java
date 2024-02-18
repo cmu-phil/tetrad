@@ -28,14 +28,17 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps a data model so that a random sample will automatically be drawn on construction from a BayesIm.
  *
  * @author josephramsey
  * @author Frank Wimberly based on similar class by Ramsey
+ * @version $Id: $Id
  */
 public class ReplaceMissingWithRandomWrapper extends DataWrapper {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -45,6 +48,11 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
 
     //============================CONSTRUCTORS=============================//
 
+    /**
+     * <p>Constructor for ReplaceMissingWithRandomWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     */
     public ReplaceMissingWithRandomWrapper(DataWrapper wrapper) {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
@@ -60,6 +68,7 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
@@ -75,7 +84,12 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

@@ -53,6 +53,9 @@ class EvidenceWizardMultiple extends JPanel {
      * This is the wizard for the BayesUpdateEditor class.  It allows you to add and remove evidence, and to updater
      * based on it.  Parameters are of the form P(Node=c1|Parent1=c2, Parent2=c2,...); values for these parameters are
      * probabilities ranging from 0.0 to 1.0.
+     *
+     * @param updaterWrapper a {@link edu.cmu.tetradapp.model.UpdaterWrapper} object
+     * @param workbench      a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public EvidenceWizardMultiple(UpdaterWrapper updaterWrapper,
                                   GraphWorkbench workbench) {
@@ -239,6 +242,11 @@ class EvidenceWizardMultiple extends JPanel {
         return this.workbench;
     }
 
+    /**
+     * <p>Getter for the field <code>textArea</code>.</p>
+     *
+     * @return a {@link javax.swing.JTextArea} object
+     */
     public JTextArea getTextArea() {
         return this.textArea;
     }

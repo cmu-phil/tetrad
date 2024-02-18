@@ -35,6 +35,7 @@ import java.util.List;
  * Implements a really simple idea for building pure clusters, just using the Purify algorithm.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BpcTetradPurifyWashdown {
     private final List<Node> variables;

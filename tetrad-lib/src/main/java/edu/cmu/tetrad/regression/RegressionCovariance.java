@@ -39,6 +39,7 @@ import java.util.List;
  * and a list of means.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class RegressionCovariance implements Regression {
 
@@ -136,15 +137,17 @@ public class RegressionCovariance implements Regression {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the cutoff for significance. Parameters with p values less than this will be labeled as significant.
-     *
-     * @param alpha The significance level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
     /**
+     * <p>Getter for the field <code>graph</code>.</p>
+     *
      * @return This graph.
      */
     public Graph getGraph() {
@@ -265,6 +268,13 @@ public class RegressionCovariance implements Regression {
         }
     }
 
+    /**
+     * <p>regress.</p>
+     *
+     * @param target     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param regressors a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.regression.RegressionResult} object
+     */
     public RegressionResult regress(Node target, Node... regressors) {
         List<Node> _regressors = Arrays.asList(regressors);
         return regress(target, _regressors);

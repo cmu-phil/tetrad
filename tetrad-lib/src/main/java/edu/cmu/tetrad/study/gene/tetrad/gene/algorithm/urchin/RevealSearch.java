@@ -30,12 +30,19 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin;
  * measures of mutual information implemented in the RevealEvaluator class.  This approach is described by Liang et al.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class RevealSearch {
     private final int ngenes;
     String[] names;
     RevealEvaluator re;
 
+    /**
+     * <p>Constructor for RevealSearch.</p>
+     *
+     * @param cases an array of {@link int} objects
+     * @param names an array of {@link java.lang.String} objects
+     */
     public RevealSearch(int[][] cases, String[] names) {
         this.names = names;
         int ntimes = cases.length;
@@ -47,6 +54,9 @@ public class RevealSearch {
      * This method computes m/e values for all single regulators, pairs and triples at a given time lag.  The m/e value
      * is the ratio of the mutual information between the regulated gene and the regulator set divided by the entropy of
      * the regulated gene.
+     *
+     * @param lag a int
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin.RevealOutputGraph} object
      */
     public RevealOutputGraph exhaustiveSearch(int lag) {
 
@@ -179,6 +189,10 @@ public class RevealSearch {
      * This method computes m/e values for all single regulators, pairs and triples between two time lags (inclusively).
      * The resulting output graph will specify the parents of each gene as well as the time lag associated with each
      * causal link.
+     *
+     * @param lag1 a int
+     * @param lag2 a int
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin.RevealOutputGraph} object
      */
     public RevealOutputGraph exhaustiveSearch(int lag1, int lag2) {
 

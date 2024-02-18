@@ -39,24 +39,88 @@ import java.util.Set;
  * FAS type, and conflict rule.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class PcCommon implements IGraphSearch {
 
+    /**
+     * The independence test to use.
+     */
     private final IndependenceTest independenceTest;
+
+    /**
+     * The logger.
+     */
     private final TetradLogger logger = TetradLogger.getInstance();
+
+    /**
+     * The knowledge specification to use.
+     */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * The depth of the search.
+     */
     private int depth = 1000;
+
+    /**
+     * The graph.
+     */
     private Graph graph;
+
+    /**
+     * The elapsed time of the search.
+     */
     private long elapsedTime;
+
+    /**
+     * The set of collider triples found during the most recent run of the algorithm.
+     */
     private Set<Triple> colliderTriples;
+
+    /**
+     * The set of noncollider triples found during the most recent run of the algorithm.
+     */
     private Set<Triple> noncolliderTriples;
+
+    /**
+     * The set of ambiguous triples found during the most recent run of the algorithm.
+     */
     private Set<Triple> ambiguousTriples;
+
+    /**
+     * Whether to prevent cycles using Meek's rules.
+     */
     private boolean meekPreventCycles;
+
+    /**
+     * Whether to print verbose output.
+     */
     private boolean verbose = false;
+
+    /**
+     * The max path length for the max p collider orientation heuristic.
+     */
     private int maxPathLength = 3;
+
+    /**
+     * The type of FAS to be used.
+     */
     private FasType fasType = FasType.REGULAR;
+
+    /**
+     * The type of collider discovery to do.
+     */
     private ColliderDiscovery colliderDiscovery = ColliderDiscovery.FAS_SEPSETS;
+
+    /**
+     * The conflict rule to use.
+     */
     private ConflictRule conflictRule = ConflictRule.PRIORITIZE_EXISTING;
+
+    /**
+     * Which PC heuristic to use (see Causation, Prediction and Search). Default is PcHeuristicType.NONE.
+     */
     private PcHeuristicType pcHeuristicType = PcHeuristicType.NONE;
 
     /**
@@ -78,6 +142,9 @@ public final class PcCommon implements IGraphSearch {
      *
      * @param conflictRule The conflict rule to use.
      * @param graph        The graph to orient.
+     * @param x            a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y            a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z            a {@link edu.cmu.tetrad.graph.Node} object
      * @see PcCommon.ConflictRule
      */
     public static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph) {
@@ -104,6 +171,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>maxPathLength</code>.</p>
+     *
      * @param maxPathLength The max path length for the max p collider orientation heuristic.
      */
     public void setMaxPathLength(int maxPathLength) {
@@ -111,6 +180,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>fasType</code>.</p>
+     *
      * @param fasType The type of FAS to be used.
      */
     public void setFasType(FasType fasType) {
@@ -118,6 +189,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>pcHeuristicType</code>.</p>
+     *
      * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search). Default is
      *                    PcHeuristicType.NONE.
      * @see PcHeuristicType
@@ -127,6 +200,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>isMeekPreventCycles.</p>
+     *
      * @return true just in case edges will not be added if they would create cycles.
      */
     public boolean isMeekPreventCycles() {
@@ -266,6 +341,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>elapsedTime</code>.</p>
+     *
      * @return The elapsed time of search in milliseconds, after <code>search()</code> has been run.
      */
     public long getElapsedTime() {
@@ -273,6 +350,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return The knowledge specification used in the search. Non-null.
      */
     public Knowledge getKnowledge() {
@@ -281,12 +360,16 @@ public final class PcCommon implements IGraphSearch {
 
     /**
      * Sets the knowledge specification used in the search. Non-null.
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     /**
+     * <p>Getter for the field <code>independenceTest</code>.</p>
+     *
      * @return the independence test used in the search, set in the constructor. This is not returning a copy, for fear
      * of duplicating the data set!
      */
@@ -295,6 +378,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
      * @return The depth of the search--that is, the maximum number of variables conditioned on in any conditional
      * independence test.
      */
@@ -331,6 +416,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>ambiguousTriples</code>.</p>
+     *
      * @return The set of ambiguous triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
@@ -339,6 +426,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>colliderTriples</code>.</p>
+     *
      * @return The set of collider triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
@@ -347,6 +436,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>noncolliderTriples</code>.</p>
+     *
      * @return The set of noncollider triples found during the most recent run of the algorithm. Non-null after a call
      * to <code>search()</code>.
      */
@@ -581,7 +672,28 @@ public final class PcCommon implements IGraphSearch {
      *
      * <p>Spirtes, P., Glymour, C. N., &amp; Scheines, R. (2000). Causation, prediction, and search. MIT press.</p>
      */
-    public enum PcHeuristicType {NONE, HEURISTIC_1, HEURISTIC_2, HEURISTIC_3}
+    public enum PcHeuristicType {
+
+        /**
+         * No heuristic.
+         */
+        NONE,
+
+        /**
+         * Sort nodes alphabetically.
+         */
+        HEURISTIC_1,
+
+        /**
+         * Sort edges by p-value.
+         */
+        HEURISTIC_2,
+
+        /**
+         * Sort edges in reverse order using p-values of associated independence facts.
+         */
+        HEURISTIC_3
+    }
 
     /**
      * Gives the type of FAS used, regular or stable.
@@ -590,7 +702,18 @@ public final class PcCommon implements IGraphSearch {
      * @see Cpc
      * @see FasType
      */
-    public enum FasType {REGULAR, STABLE}
+    public enum FasType {
+
+        /**
+         * Regular FAS.
+         */
+        REGULAR,
+
+        /**
+         * Stable FAS.
+         */
+        STABLE
+    }
 
     /**
      * <p>Give the options for the collider discovery algroithm to use--FAS with sepsets reasoning, FAS with
@@ -608,7 +731,23 @@ public final class PcCommon implements IGraphSearch {
      * @see Cpc
      * @see ColliderDiscovery
      */
-    public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
+    public enum ColliderDiscovery {
+
+        /**
+         * FAS with sepsets reasoning.
+         */
+        FAS_SEPSETS,
+
+        /**
+         * FAS with conservative reasoning.
+         */
+        CONSERVATIVE,
+
+        /**
+         * FAS with Max P reasoning.
+         */
+        MAX_P
+    }
 
     /**
      * Gives the type of conflict to be used, priority (when there is a conflict, keep the orientation that has already
@@ -619,6 +758,22 @@ public final class PcCommon implements IGraphSearch {
      * @see Cpc
      * @see ConflictRule
      */
-    public enum ConflictRule {PRIORITIZE_EXISTING, ORIENT_BIDIRECTED, OVERWRITE_EXISTING}
+    public enum ConflictRule {
+
+        /**
+         * When there is a conflict, keep the orientation that has already been made.
+         */
+        PRIORITIZE_EXISTING,
+
+        /**
+         * When there is a conflict, orient a bidirected edge.
+         */
+        ORIENT_BIDIRECTED,
+
+        /**
+         * When there is a conflict, use the new orientation.
+         */
+        OVERWRITE_EXISTING
+    }
 }
 

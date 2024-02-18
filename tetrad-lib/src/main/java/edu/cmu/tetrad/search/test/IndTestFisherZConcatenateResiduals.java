@@ -45,6 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Calculates independence from pooled residuals using the Fisher Z method.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see IndTestFisherZ
  */
 public final class IndTestFisherZConcatenateResiduals implements IndependenceTest {
@@ -96,17 +97,21 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * @throws UnsupportedOperationException Not implemented.
+     * {@inheritDoc}
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines whether x _||_ y | z.
      *
-     * @return an independence result
-     * @throws org.apache.commons.math3.linear.SingularMatrixException if a matrix singularity is encountered.
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
@@ -181,12 +186,16 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     /**
      * Gets the getModel significance level.
+     *
+     * @return a double
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -200,6 +209,8 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
      * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
@@ -208,7 +219,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * @throws UnsupportedOperationException Not implemented.
+     * {@inheritDoc}
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
@@ -224,9 +235,9 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns teh covaraince matrix of the concatenated data.
-     *
-     * @return This covariance matrix.
      */
     @Override
     public ICovarianceMatrix getCov() {
@@ -240,6 +251,8 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of this test.
      */
     public String toString() {
@@ -256,9 +269,9 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether verbose output is printed.
-     *
-     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

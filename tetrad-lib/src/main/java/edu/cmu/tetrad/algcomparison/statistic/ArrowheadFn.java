@@ -4,6 +4,8 @@ import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.io.Serial;
+
 /**
  * The arrow precision. This counts arrowheads maniacally, wherever they occur in the graphs. The true positives are the
  * number of arrowheads in both the true and estimated graphs. Thus, if the true contains X*-&gt;Y and estimated graph
@@ -11,8 +13,10 @@ import edu.cmu.tetrad.graph.Graph;
  * false positive is counted. Similarly, for false negatives.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ArrowheadFn implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -22,22 +26,34 @@ public class ArrowheadFn implements Statistic {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "AHFN";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Arrowhead False Negatives";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion confusion = new ArrowConfusion(trueGraph, estGraph);
         return confusion.getFn();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

@@ -34,6 +34,7 @@ import java.awt.event.FocusEvent;
  * marked up text.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NoteEditor extends JPanel {
 
@@ -45,6 +46,8 @@ public class NoteEditor extends JPanel {
 
     /**
      * Constructs the editor given the model
+     *
+     * @param noteModel a {@link edu.cmu.tetradapp.model.NoteModel} object
      */
     public NoteEditor(NoteModel noteModel) {
         this.noteModel = noteModel;

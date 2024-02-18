@@ -40,6 +40,7 @@ import java.util.concurrent.*;
  * graph, using FGES method.
  *
  * @author AJ Sedgewick, 5/2015
+ * @version $Id: $Id
  * @see Fges
  */
 public final class FgesOrienter implements IGraphSearch, DagScorer {
@@ -51,7 +52,13 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
     private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
     // The static ForkJoinPool instance.
-    private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+    private final ForkJoinPool pool;
+
+    {
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        pool = new ForkJoinPool(parallelism);
+    }
+
     // The minimum number of operations to do before parallelizing.
     private final int minChunk = 100;
     // A utility map to help with orientation.
@@ -136,6 +143,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * The data set must either be all continuous or all discrete.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public FgesOrienter(DataSet dataSet) {
         this.out.println("GES constructor");
@@ -243,6 +252,12 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     }
 
     // This will "orient" graph
+
+    /**
+     * <p>orient.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void orient(Graph graph) {
         this.graphToOrient = new EdgeListGraph(graph);
         this.graphToOrient = GraphUtils.undirectedGraph(this.graphToOrient);
@@ -258,6 +273,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>isFaithfulnessAssumed.</p>
+     *
      * @return true if it is assumed that all path pairs with one length 1 path do not cancelAll.
      */
     public boolean isFaithfulnessAssumed() {
@@ -266,6 +283,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * Set to true if it is assumed that all path pairs with one length 1 path do not cancelAll.
+     *
+     * @param faithfulness a boolean
      */
     public void setFaithfulnessAssumed(boolean faithfulness) {
         this.faithfulnessAssumed = faithfulness;
@@ -321,6 +340,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the background knowledge.
      */
     public Knowledge getKnowledge() {
@@ -339,6 +360,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * For BDeu score for discrete search; see Chickering (2002).
+     *
+     * @param structurePrior a double
      */
     public void setStructurePrior(double structurePrior) {
         if (getDiscreteScore() != null) {
@@ -348,6 +371,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * For BDeu score for discrete search; see Chickering (2002).
+     *
+     * @param samplePrior a double
      */
     public void setSamplePrior(double samplePrior) {
         if (getDiscreteScore() != null) {
@@ -355,12 +380,19 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>elapsedTime</code>.</p>
+     *
+     * @return a long
+     */
     public long getElapsedTime() {
         return this.elapsedTime;
     }
 
     /**
      * For BIC score, a multiplier on the penalty term. For continuous searches.
+     *
+     * @return a double
      */
     public double getPenaltyDiscount() {
         return this.penaltyDiscount;
@@ -368,6 +400,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * For BIC score, a multiplier on the penalty term. For continuous searches.
+     *
+     * @param penaltyDiscount a double
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
         if (penaltyDiscount < 0) {
@@ -380,12 +414,17 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * If the true graph is set, askterisks will be printed in log output for the true edges.
+     *
+     * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void setTrueGraph(Graph trueGraph) {
         this.trueGraph = trueGraph;
     }
 
     /**
+     * <p>getScore.</p>
+     *
+     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
      * @return the score of the given DAG, up to a constant.
      */
     public double getScore(Graph dag) {
@@ -393,6 +432,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>getDiscreteScore.</p>
+     *
      * @return the discrete scoring function being used. By default, BDeu.
      */
     public edu.cmu.tetrad.search.score.DiscreteScore getDiscreteScore() {
@@ -401,6 +442,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * Sets the discrete scoring function to use.
+     *
+     * @param DiscreteScore a {@link edu.cmu.tetrad.search.score.DiscreteScore} object
      */
     public void setDiscreteScore(edu.cmu.tetrad.search.score.DiscreteScore DiscreteScore) {
         this.DiscreteScore = DiscreteScore;
@@ -408,6 +451,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * True iff log output should be produced.
+     *
+     * @return a boolean
      */
     public boolean isLog() {
         return this.log;
@@ -415,6 +460,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * Sets whether log output should be produced. Set to false a faster search.
+     *
+     * @param log a boolean
      */
     public void setLog(boolean log) {
         this.log = log;
@@ -422,6 +469,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
 
     /**
+     * <p>Getter for the field <code>externalGraph</code>.</p>
+     *
      * @return the initial graph for the search. The search is initialized to this graph and proceeds from there.
      */
     public Graph getExternalGraph() {
@@ -430,6 +479,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * Sets the initial graph.
+     *
+     * @param externalGraph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void setExternalGraph(Graph externalGraph) {
         externalGraph = GraphUtils.replaceNodes(externalGraph, this.variables);
@@ -446,12 +497,16 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * Sets whether verbose output should be produced.
+     *
+     * @param verbose a boolean
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
+     * <p>Getter for the field <code>out</code>.</p>
+     *
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
@@ -460,12 +515,16 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
+     *
+     * @param out a {@link java.io.PrintStream} object
      */
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
     /**
+     * <p>Getter for the field <code>adjacencies</code>.</p>
+     *
      * @return the set of preset adjacenies for the algorithm; edges not in this adjacencies graph will not be added.
      */
     public Graph getAdjacencies() {
@@ -474,12 +533,16 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * Sets the set of preset adjacenies for the algorithm; edges not in this adjacencies graph will not be added.
+     *
+     * @param adjacencies a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void setAdjacencies(Graph adjacencies) {
         this.adjacencies = adjacencies;
     }
 
     /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
      * @return the depth for the forward reevaluation step.
      */
     public int getDepth() {
@@ -489,6 +552,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     /**
      * -1 for unlimited depth, otherwise a number &gt;= 0. In the forward reevaluation step, subsets of neighbors up to
      * depth in size are considered. Limiting depth can speed up the algorithm.
+     *
+     * @param depth a int
      */
     public void setDepth(int depth) {
         this.depth = depth;
@@ -584,7 +649,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
                     tasks.add(new EffectTask(this.chunk, this.from, mid));
                     tasks.add(new EffectTask(this.chunk, mid, this.to));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    invokeAll(tasks);
 
                 }
                 return true;
@@ -592,7 +657,18 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         }
 
         buildIndexing(nodes);
-        this.pool.invoke(new EffectTask(this.minChunk, 0, nodes.size()));
+
+        try {
+            this.pool.invoke(new EffectTask(this.minChunk, 0, nodes.size()));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!this.pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            Thread.currentThread().interrupt();
+            return effectEdgesGraph;
+        }
 
         long stop = MillisecondTimes.timeMillis();
 
@@ -789,7 +865,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
                     tasks.add(new AdjTask(this.pairs, this.from, mid));
                     tasks.add(new AdjTask(this.pairs, mid, this.to));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    invokeAll(tasks);
 
                 }
                 return true;
@@ -798,8 +874,16 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
         AdjTask task = new AdjTask(pairs, 0, pairs.size());
 
-        this.pool.invoke(task);
+        try {
+            this.pool.invoke(task);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
 
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
     }
 
     // Calculates the new arrows for an a->b edge.
@@ -899,7 +983,12 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
                     tasks.add(new BackwardTask(this.nodes, this.chunk, this.from, mid, this.hashIndices));
                     tasks.add(new BackwardTask(this.nodes, this.chunk, mid, this.to, this.hashIndices));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    try {
+                        ForkJoinTask.invokeAll(tasks);
+                    } catch (Exception e) {
+                        Thread.currentThread().interrupt();
+                        throw e;
+                    }
 
                 }
                 return true;
@@ -909,7 +998,16 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         Set<Node> _adj = adjNodes(graph, x, y);
         List<Node> adj = new ArrayList<>(_adj);
 
-        this.pool.invoke(new BackwardTask(adj, this.minChunk, 0, adj.size(), this.hashIndices));
+        try {
+            this.pool.invoke(new BackwardTask(adj, this.minChunk, 0, adj.size(), this.hashIndices));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
     }
 
     // Calculates the arrows for the removal in the backward direction.
@@ -1352,6 +1450,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Scores the given DAG, up to a constant.
      */
     public double scoreDag(Graph dag) {

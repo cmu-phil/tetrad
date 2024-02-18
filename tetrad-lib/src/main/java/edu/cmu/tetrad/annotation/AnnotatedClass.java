@@ -23,10 +23,11 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 
 /**
- * Sep 5, 2017 11:02:14 AM
+ * Annotated class.
  *
- * @param <T> annotation
- * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @param <T>        annotation type
+ * @param clazz      class
+ * @param annotation annotation
  */
 public record AnnotatedClass<T extends Annotation>(Class clazz, T annotation) implements Serializable {
 

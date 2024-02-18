@@ -56,11 +56,16 @@ import java.util.Map;
 public final class SemPmEditor extends JPanel implements DelegatesEditing,
         LayoutEditable {
 
+    /**
+     * The SemIm being edited.
+     */
     private final SemPmWrapper semPmWrapper;
+
     /**
      * A reference to the error terms menu item so it can be reset.
      */
     private final JMenuItem errorTerms;
+
     /**
      * The graphical editor for the SemPm.
      */
@@ -70,6 +75,8 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
 
     /**
      * Constructs an editor for the given SemIm.
+     *
+     * @param wrapper the SemIm to edit.
      */
     public SemPmEditor(SemPmWrapper wrapper) {
         this.semPmWrapper = wrapper;

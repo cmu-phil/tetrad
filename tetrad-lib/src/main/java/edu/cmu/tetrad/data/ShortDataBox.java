@@ -28,6 +28,9 @@ import java.util.List;
 
 /**
  * Stores a 2D array of short data. Note that the missing value marker for this box is -99.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class ShortDataBox implements DataBox {
     private static final long serialVersionUID = 23L;
@@ -50,6 +53,9 @@ public class ShortDataBox implements DataBox {
 
     /**
      * Constructs an 2D short array consisting entirely of missing values (-99).
+     *
+     * @param rows a int
+     * @param cols a int
      */
     public ShortDataBox(int rows, int cols) {
         this.data = new short[rows][cols];
@@ -66,6 +72,8 @@ public class ShortDataBox implements DataBox {
 
     /**
      * Constructs a new data box using the given 2D short data array as data.
+     *
+     * @param data an array of {@link short} objects
      */
     public ShortDataBox(short[][] data) {
         int length = data[0].length;
@@ -84,6 +92,8 @@ public class ShortDataBox implements DataBox {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.BoxDataSet} object
      */
     public static BoxDataSet serializableInstance() {
         List<Node> vars = new ArrayList<>();
@@ -92,6 +102,8 @@ public class ShortDataBox implements DataBox {
     }
 
     /**
+     * <p>numRows.</p>
+     *
      * @return the number of rows in this data box.
      */
     public int numRows() {
@@ -99,6 +111,8 @@ public class ShortDataBox implements DataBox {
     }
 
     /**
+     * <p>numCols.</p>
+     *
      * @return the number of columns in this data box.n
      */
     public int numCols() {
@@ -106,6 +120,8 @@ public class ShortDataBox implements DataBox {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the value at the given row/column to the given Number value. The value used is number.shortValue().
      */
     public void set(int row, int col, Number value) {
@@ -121,7 +137,7 @@ public class ShortDataBox implements DataBox {
     }
 
     /**
-     * @return the Number value at the given row and column. If the value is missing (-99), null, is returned.
+     * {@inheritDoc}
      */
     public Number get(int row, int col) {
         short datum = this.data[row][col];
@@ -134,6 +150,8 @@ public class ShortDataBox implements DataBox {
     }
 
     /**
+     * <p>copy.</p>
+     *
      * @return a copy of this data box.
      */
     public DataBox copy() {
@@ -149,6 +167,8 @@ public class ShortDataBox implements DataBox {
     }
 
     /**
+     * <p>like.</p>
+     *
      * @return a DataBox of type ShortDataBox, but with the given dimensions.
      */
     public DataBox like() {
@@ -161,6 +181,9 @@ public class ShortDataBox implements DataBox {
         return viewSelection(rows, cols);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataBox viewSelection(int[] rows, int[] cols) {
         DataBox _dataBox = new ShortDataBox(rows.length, cols.length);

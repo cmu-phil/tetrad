@@ -29,6 +29,7 @@ import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,18 +41,49 @@ import java.util.List;
  * conditional on that combination of parent values must sum to 1.0
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class BayesImEditorWizard extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = -588986830104732678L;
 
+    /**
+     * The BayesIm being edited.
+     */
     private final BayesIm bayesIm;
+
+    /**
+     * The combo box that allows the user to choose a variable to edit.
+     */
     private final JComboBox<Node> varNamesComboBox;
+
+    /**
+     * The workbench that contains the Bayes net.
+     */
     private final GraphWorkbench workbench;
+
+    /**
+     * The panel that contains the table.
+     */
     private final JPanel tablePanel;
+
+    /**
+     * The table that allows the user to edit the parameters for a given variable.
+     */
     private BayesImNodeEditingTable editingTable;
+
+    /**
+     * True iff the user is allowed to edit the table.
+     */
     private boolean enableEditing = true;
 
+    /**
+     * <p>Constructor for BayesImEditorWizard.</p>
+     *
+     * @param bayesIm   a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public BayesImEditorWizard(BayesIm bayesIm, GraphWorkbench workbench) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -207,6 +239,11 @@ public final class BayesImEditorWizard extends JPanel {
         this.editingTable.grabFocus();
     }
 
+    /**
+     * <p>Getter for the field <code>bayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getBayesIm() {
         return this.bayesIm;
     }
@@ -215,10 +252,20 @@ public final class BayesImEditorWizard extends JPanel {
         return this.workbench;
     }
 
+    /**
+     * <p>isEnableEditing.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEnableEditing() {
         return this.enableEditing;
     }
 
+    /**
+     * <p>enableEditing.</p>
+     *
+     * @param enableEditing a boolean
+     */
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {

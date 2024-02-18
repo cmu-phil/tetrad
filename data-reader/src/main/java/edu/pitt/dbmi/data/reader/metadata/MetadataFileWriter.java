@@ -31,15 +31,14 @@ import java.nio.file.StandardOpenOption;
  * Dec 18, 2018 2:39:25 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class MetadataFileWriter implements MetadataWriter {
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Writes the metadata as a string.
-     *
-     * @param metadata The metadata.
-     * @return the metadata as a string.
-     * @throws JsonProcessingException if an error occurs while processing the JSON.
      */
     @Override
     public String writeAsString(Metadata metadata) throws JsonProcessingException {
@@ -50,11 +49,9 @@ public class MetadataFileWriter implements MetadataWriter {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Writes the metadata to a file.
-     *
-     * @param metadata   The metadata.
-     * @param outputFile The output file.
-     * @throws IOException if an I/O error occurs.
      */
     @Override
     public void write(Metadata metadata, Path outputFile) throws IOException {

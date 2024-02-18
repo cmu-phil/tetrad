@@ -44,6 +44,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Journal of Machine Learning Research 14:111-152, 2013.
  *
  * @author bryanandrews
+ * @version $Id: $Id
  */
 public class DirectLingam {
     // the data set

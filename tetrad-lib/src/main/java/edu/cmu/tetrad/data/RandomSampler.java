@@ -31,12 +31,17 @@ import java.util.List;
  * supplied by the user.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public final class RandomSampler {
 
     /**
      * This method takes a dataset and a sample size and creates a new dataset containing that number of samples by
      * drawing with replacement from the original dataset.
+     *
+     * @param dataSet       a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param newSampleSize a int
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet sample(DataSet dataSet,
                                  int newSampleSize) {

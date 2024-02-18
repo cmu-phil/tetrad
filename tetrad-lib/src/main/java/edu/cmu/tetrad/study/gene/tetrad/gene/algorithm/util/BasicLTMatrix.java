@@ -29,6 +29,7 @@ import java.io.*;
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * @version $Id: $Id
  */
 public abstract class BasicLTMatrix extends BasicMatrix {
 
@@ -55,7 +56,7 @@ public abstract class BasicLTMatrix extends BasicMatrix {
      * it has more elements an illegal argument exception will be generated.
      *
      * @param fname the name of the file to read the matrix from
-     * @throws IOException if there is an error reading the file
+     * @throws java.io.IOException if there is an error reading the file
      */
     public BasicLTMatrix(String fname)
             throws IOException {
@@ -120,6 +121,8 @@ public abstract class BasicLTMatrix extends BasicMatrix {
 
     /**
      * Returns a specially formatted string with all the contents of this matrix
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         StringBuilder s = new StringBuilder(this.getClass().getName() + " " + this.name + "\n" + this.n +

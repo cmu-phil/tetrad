@@ -28,21 +28,36 @@ import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.io.Serial;
+
 /**
  * Picks a DAG from the given graph.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
-public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldModel {
+public class DagFromCpdagWrapper extends GraphWrapper implements DoNotAddOldModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
-    public DagFromCPDAGWrapper(GraphSource source, Parameters parameters) {
+    /**
+     * <p>Constructor for DagFromCPDAGWrapper.</p>
+     *
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
+    public DagFromCpdagWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
-    public DagFromCPDAGWrapper(Graph graph) {
-        super(DagFromCPDAGWrapper.getGraph(graph), "Choose DAG in CPDAG.");
+    /**
+     * <p>Constructor for DagFromCPDAGWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public DagFromCpdagWrapper(Graph graph) {
+        super(DagFromCpdagWrapper.getGraph(graph), "Choose DAG in CPDAG.");
         TetradLogger.getInstance().log("graph", getGraph() + "");
     }
 
@@ -51,10 +66,18 @@ public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldMode
     }
 
 
-    public static DagFromCPDAGWrapper serializableInstance() {
-        return new DagFromCPDAGWrapper(EdgeListGraph.serializableInstance());
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link DagFromCpdagWrapper} object
+     */
+    public static DagFromCpdagWrapper serializableInstance() {
+        return new DagFromCpdagWrapper(EdgeListGraph.serializableInstance());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

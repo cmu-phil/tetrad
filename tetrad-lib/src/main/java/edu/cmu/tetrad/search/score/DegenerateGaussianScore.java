@@ -46,6 +46,7 @@ import java.util.Map;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author Bryan Andrews
+ * @version $Id: $Id
  */
 public class DegenerateGaussianScore implements Score {
     // The mixed variables of the original dataset.
@@ -142,6 +143,7 @@ public class DegenerateGaussianScore implements Score {
      *
      * @param i       The child indes.
      * @param parents The indices of the parents.
+     * @return a double
      */
     public double localScore(int i, int... parents) {
         double score = 0;
@@ -177,9 +179,9 @@ public class DegenerateGaussianScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the list of variables.
-     *
-     * @return The list of variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -187,10 +189,9 @@ public class DegenerateGaussianScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * True if an edge with the given bump is an effect edge.
-     *
-     * @param bump The bump.
-     * @return True if so.
      */
     @Override
     public boolean isEffectEdge(double bump) {
@@ -198,9 +199,9 @@ public class DegenerateGaussianScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the sample sizE.
-     *
-     * @return The sample size.
      */
     @Override
     public int getSampleSize() {
@@ -208,9 +209,9 @@ public class DegenerateGaussianScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the max degree.
-     *
-     * @return The max degree.
      */
     @Override
     public int getMaxDegree() {
@@ -218,9 +219,9 @@ public class DegenerateGaussianScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a string for this object.
-     *
-     * @return The string.
      */
     @Override
     public String toString() {

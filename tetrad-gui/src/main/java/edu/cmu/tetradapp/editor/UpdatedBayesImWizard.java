@@ -52,19 +52,60 @@ import java.util.List;
  * @author josephramsey
  */
 public final class UpdatedBayesImWizard extends JPanel {
+
+    /**
+     * The evidence.
+     */
     private final Evidence evidence;
+
+    /**
+     * The workbench.
+     */
     private final GraphWorkbench workbench;
+
+    /**
+     * The updater wrapper.
+     */
     private final UpdaterWrapper updaterWrapper;
+
+    /**
+     * The JComboBox containing the names of the variables in the getModel.
+     */
     private final JComboBox varNamesComboBox;
+
+    /**
+     * The JComboBox containing the names of the variables in the getModel.
+     */
     private final JComboBox varNamesComboBox2;
+
+    /**
+     * The JPanel containing the marginal probabilities for the getModel selectedNode.
+     */
     private final JPanel marginalsPanel;
+
     /**
      * Last node selected.
      */
     private Node selectedNode;
+
+    /**
+     * The table for editing the getModel parameters.
+     */
     private UpdaterEditingTable editingTable;
+
+    /**
+     * The JPanel containing the table for editing the getModel parameters.
+     */
     private JPanel tablePanel;
 
+    /**
+     * Constructs a new getModel wizard from a given updater wrapper.
+     *
+     * @param updaterWrapper the updater wrapper
+     * @param workbench      the workbench
+     * @param tab            the tab
+     * @param selectedNode   the selected node
+     */
     public UpdatedBayesImWizard(UpdaterWrapper updaterWrapper,
                                 GraphWorkbench workbench, int tab, Node selectedNode) {
         if (updaterWrapper == null) {
@@ -482,6 +523,9 @@ public final class UpdatedBayesImWizard extends JPanel {
         return this.workbench;
     }
 
+    /**
+     * @return the getModel selectedNode.
+     */
     public Node getSelectedNode() {
         return this.selectedNode;
     }

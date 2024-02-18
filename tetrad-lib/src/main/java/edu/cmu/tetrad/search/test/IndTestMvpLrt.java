@@ -43,6 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * journal of data science and analytics, 6, 3-18.
  *
  * @author Bryan Andrews
+ * @version $Id: $Id
  */
 public class IndTestMvpLrt implements IndependenceTest {
 
@@ -81,9 +82,10 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns an independence test for a sublist of the searchVariables.
      *
-     * @return this test.
      * @see IndependenceTest
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -91,9 +93,14 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns an independence result for x _||_ y | z.
      *
-     * @return This result.
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
@@ -182,7 +189,7 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
-     * @throws javax.help.UnsupportedOperationException Method not implemented.
+     * {@inheritDoc}
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Method not implemented.");
@@ -192,16 +199,16 @@ public class IndTestMvpLrt implements IndependenceTest {
      * Returns the significance level of the independence test.
      *
      * @return This level.
-     * @throws UnsupportedOperationException if there is no significance level.
+     * @throws java.lang.UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the significance level.
-     *
-     * @param alpha This level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -217,9 +224,9 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true if verbose output is printed.
-     *
-     * @return True, if so.
      */
     @Override
     public boolean isVerbose() {
@@ -227,9 +234,9 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

@@ -17,11 +17,15 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  * Estimated BIC score. The BIC is calculated as 2L - k ln N, so "higher is better."
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BicEst implements Statistic {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Whether to precompute covariances.
+     */
     private boolean precomputeCovariances = true;
 
     /**
@@ -31,9 +35,9 @@ public class BicEst implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the name of the statistic.
-     *
-     * @return the name of the statistic.
      */
     @Override
     public String getAbbreviation() {
@@ -41,9 +45,9 @@ public class BicEst implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the description of the statistic.
-     *
-     * @return the description of the statistic.
      */
     @Override
     public String getDescription() {
@@ -51,12 +55,9 @@ public class BicEst implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the value of the statistic.
-     *
-     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
-     * @param estGraph  The estimated graph (same type).
-     * @param dataModel The data model.
-     * @return The value of the statistic.
      */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
@@ -90,10 +91,9 @@ public class BicEst implements Statistic {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the normalized value of the statistic.
-     *
-     * @param value The value of the statistic.
-     * @return The normalized value of the statistic.
      */
     @Override
     public double getNormValue(double value) {

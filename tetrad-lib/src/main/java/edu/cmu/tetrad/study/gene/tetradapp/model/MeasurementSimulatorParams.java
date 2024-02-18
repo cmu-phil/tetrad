@@ -30,19 +30,26 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Wraps MeasurementSimulator so that it may be used as a parameter object.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MeasurementSimulatorParams implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Cannot be null.
+     * The wrapped measurement simulator.
      */
     private final MeasurementSimulator simulator;
+
+    /**
+     * Whether to include dish and chip variables in the simulation.
+     */
     private boolean includeDishAndChipVariables;
 
     //==============================CONSTRUCTORS=========================//
@@ -51,7 +58,8 @@ public class MeasurementSimulatorParams implements TetradSerializable {
      * Constructs a measurement simulator using the given history. The history will be used to do the simulation of each
      * cell.
      *
-     * @throws NullPointerException if the history argument is null.
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @throws java.lang.NullPointerException if the history argument is null.
      */
     public MeasurementSimulatorParams(Parameters parameters) {
         this.simulator = new MeasurementSimulator(parameters);
@@ -59,6 +67,8 @@ public class MeasurementSimulatorParams implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetradapp.model.MeasurementSimulatorParams} object
      */
     public static MeasurementSimulatorParams serializableInstance() {
         MeasurementSimulatorParams params = new MeasurementSimulatorParams(new Parameters());
@@ -70,130 +80,290 @@ public class MeasurementSimulatorParams implements TetradSerializable {
 
     //==============================PUBLIC METHODS======================//
 
+    /**
+     * <p>setHistory.</p>
+     *
+     * @param history a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.GeneHistory} object
+     */
     public void setHistory(GeneHistory history) {
         getSimulator().setHistory(history);
     }
 
+    /**
+     * <p>getDishDishVariability.</p>
+     *
+     * @return a double
+     */
     public double getDishDishVariability() {
         return getSimulator().getDishDishVariability();
     }
 
+    /**
+     * <p>setDishDishVariability.</p>
+     *
+     * @param value a double
+     */
     public void setDishDishVariability(double value) {
         getSimulator().setDishDishVariability(value);
     }
 
+    /**
+     * <p>getSampleSampleVariability.</p>
+     *
+     * @return a double
+     */
     public double getSampleSampleVariability() {
         return getSimulator().getSampleSampleVariability();
     }
 
+    /**
+     * <p>setSampleSampleVariability.</p>
+     *
+     * @param value a double
+     */
     public void setSampleSampleVariability(double value) {
         getSimulator().setSampleSampleVariability(value);
     }
 
+    /**
+     * <p>getChipChipVariability.</p>
+     *
+     * @return a double
+     */
     public double getChipChipVariability() {
         return getSimulator().getChipChipVariability();
     }
 
+    /**
+     * <p>setChipChipVariability.</p>
+     *
+     * @param value a double
+     */
     public void setChipChipVariability(double value) {
         getSimulator().setChipChipVariability(value);
     }
 
+    /**
+     * <p>getPixelDigitalization.</p>
+     *
+     * @return a double
+     */
     public double getPixelDigitalization() {
         return getSimulator().getPixelDigitalization();
     }
 
+    /**
+     * <p>setPixelDigitalization.</p>
+     *
+     * @param value a double
+     */
     public void setPixelDigitalization(double value) {
         getSimulator().setPixelDigitalization(value);
     }
 
+    /**
+     * <p>getNumDishes.</p>
+     *
+     * @return a int
+     */
     public int getNumDishes() {
         return getSimulator().getNumDishes();
     }
 
+    /**
+     * <p>setNumDishes.</p>
+     *
+     * @param value a int
+     */
     public void setNumDishes(int value) {
         getSimulator().setNumDishes(value);
     }
 
+    /**
+     * <p>getNumCellsPerDish.</p>
+     *
+     * @return a int
+     */
     public int getNumCellsPerDish() {
         return getSimulator().getNumCellsPerDish();
     }
 
+    /**
+     * <p>setNumCellsPerDish.</p>
+     *
+     * @param value a int
+     */
     public void setNumCellsPerDish(int value) {
         getSimulator().setNumCellsPerDish(value);
     }
 
+    /**
+     * <p>getNumSamplesPerDish.</p>
+     *
+     * @return a int
+     */
     public int getNumSamplesPerDish() {
         return getSimulator().getNumSamplesPerDish();
     }
 
+    /**
+     * <p>setNumSamplesPerDish.</p>
+     *
+     * @param value a int
+     */
     public void setNumSamplesPerDish(int value) {
         getSimulator().setNumSamplesPerDish(value);
     }
 
+    /**
+     * <p>getStepsGenerated.</p>
+     *
+     * @return a int
+     */
     public int getStepsGenerated() {
         return getSimulator().getStepsGenerated();
     }
 
+    /**
+     * <p>setStepsGenerated.</p>
+     *
+     * @param value a int
+     */
     public void setStepsGenerated(int value) {
         getSimulator().setStepsGenerated(value);
     }
 
+    /**
+     * <p>getFirstStepStored.</p>
+     *
+     * @return a int
+     */
     public int getFirstStepStored() {
         return getSimulator().getFirstStepStored();
     }
 
+    /**
+     * <p>setFirstStepStored.</p>
+     *
+     * @param value a int
+     */
     public void setFirstStepStored(int value) {
         getSimulator().setFirstStepStored(value);
     }
 
+    /**
+     * <p>getInterval.</p>
+     *
+     * @return a int
+     */
     public int getInterval() {
         return getSimulator().getInterval();
     }
 
+    /**
+     * <p>setInterval.</p>
+     *
+     * @param value a int
+     */
     public void setInterval(int value) {
         getSimulator().setInterval(value);
     }
 
+    /**
+     * <p>isInitSync.</p>
+     *
+     * @return a boolean
+     */
     public boolean isInitSync() {
         return getSimulator().isInitSync();
     }
 
+    /**
+     * <p>setInitSync.</p>
+     *
+     * @param selected a boolean
+     */
     public void setInitSync(boolean selected) {
         getSimulator().setInitSync(selected);
     }
 
+    /**
+     * <p>isRawDataSaved.</p>
+     *
+     * @return a boolean
+     */
     public boolean isRawDataSaved() {
         return getSimulator().isRawDataSaved();
     }
 
+    /**
+     * <p>setRawDataSaved.</p>
+     *
+     * @param selected a boolean
+     */
     public void setRawDataSaved(boolean selected) {
         getSimulator().setRawDataSaved(selected);
     }
 
+    /**
+     * <p>isAntilogCalculated.</p>
+     *
+     * @return a boolean
+     */
     public boolean isAntilogCalculated() {
         return getSimulator().isAntilogCalculated();
     }
 
+    /**
+     * <p>setAntilogCalculated.</p>
+     *
+     * @param selected a boolean
+     */
     public void setAntilogCalculated(boolean selected) {
         getSimulator().setAntilogCalculated(selected);
     }
 
+    /**
+     * <p>Getter for the field <code>simulator</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.simulation.MeasurementSimulator} object
+     */
     public MeasurementSimulator getSimulator() {
         return this.simulator;
     }
 
+    /**
+     * <p>simulate.</p>
+     *
+     * @param history a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.GeneHistory} object
+     */
     public void simulate(GeneHistory history) {
         getSimulator().simulate(history);
     }
 
+    /**
+     * <p>getMeasuredData.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[][][] getMeasuredData() {
         return getSimulator().getMeasuredData();
     }
 
+    /**
+     * <p>getTimeSteps.</p>
+     *
+     * @return an array of {@link int} objects
+     */
     public int[] getTimeSteps() {
         return getSimulator().getTimeSteps();
     }
 
+    /**
+     * <p>getRawData.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[][][] getRawData() {
         return getSimulator().getRawData();
     }
@@ -205,20 +375,31 @@ public class MeasurementSimulatorParams implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream from which this object is being deserialized.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (this.simulator == null) {
-            throw new NullPointerException();
-        }
     }
 
+    /**
+     * <p>isIncludeDishAndChipVariables.</p>
+     *
+     * @return a boolean
+     */
     public boolean isIncludeDishAndChipVariables() {
         return getSimulator().isIncludeDishAndChipColumns();
     }
 
+    /**
+     * <p>Setter for the field <code>includeDishAndChipVariables</code>.</p>
+     *
+     * @param includeDishAndChipVariables a boolean
+     */
     public void setIncludeDishAndChipVariables(boolean includeDishAndChipVariables) {
         getSimulator().setIncludeDishAndChipColumns(includeDishAndChipVariables);
     }

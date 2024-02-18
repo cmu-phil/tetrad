@@ -47,12 +47,24 @@ import java.util.*;
  * library.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Ricf {
 
+    /**
+     * <p>Constructor for Ricf.</p>
+     */
     public Ricf() {
     }
 
+    /**
+     * <p>ricf.</p>
+     *
+     * @param mag       a {@link edu.cmu.tetrad.graph.SemGraph} object
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param tolerance a double
+     * @return a {@link edu.cmu.tetrad.sem.Ricf.RicfResult} object
+     */
     public RicfResult ricf(SemGraph mag, ICovarianceMatrix covMatrix, double tolerance) {
         mag.setShowErrorTerms(false);
 
@@ -294,7 +306,12 @@ public class Ricf {
 
     /**
      * same as above but takes a Graph instead of a SemGraph
-     **/
+     *
+     * @param mag       a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @param tolerance a double
+     * @return a {@link edu.cmu.tetrad.sem.Ricf.RicfResult} object
+     */
     public RicfResult ricf2(Graph mag, ICovarianceMatrix covMatrix, double tolerance) {
 //        mag.setShowErrorTerms(false);
 
@@ -535,6 +552,9 @@ public class Ricf {
     }
 
     /**
+     * <p>cliques.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return an enumeration of the cliques of the given graph considered as undirected.
      */
     public List<List<Node>> cliques(Graph graph) {
@@ -835,15 +855,57 @@ public class Ricf {
         return true;
     }
 
+    /**
+     * RICF result.
+     */
     public static class RicfResult {
+
+        /**
+         * The covariance matrix.
+         */
         private final ICovarianceMatrix covMatrix;
+
+        /**
+         * The shat matrix.
+         */
         private final DoubleMatrix2D shat;
+
+        /**
+         * The lhat matrix.
+         */
         private final DoubleMatrix2D lhat;
+
+        /**
+         * The bhat matrix.
+         */
         private final DoubleMatrix2D bhat;
+
+        /**
+         * The ohat matrix.
+         */
         private final DoubleMatrix2D ohat;
+
+        /**
+         * The number of iterations.
+         */
         private final int iterations;
+
+        /**
+         * The diff.
+         */
         private final double diff;
 
+        /**
+         * The result.
+         *
+         * @param shat       The shat matrix.
+         * @param lhat       The laht matrix.
+         * @param bhat       The bhat matrix.
+         * @param ohat       The ohat matrix.
+         * @param iterations The number of iterations.
+         * @param diff       The diff.
+         * @param covMatrix  The covariance matrix.
+         */
         public RicfResult(DoubleMatrix2D shat, DoubleMatrix2D lhat, DoubleMatrix2D bhat,
                           DoubleMatrix2D ohat, int iterations, double diff, ICovarianceMatrix covMatrix) {
             this.shat = shat;
@@ -855,6 +917,9 @@ public class Ricf {
             this.covMatrix = covMatrix;
         }
 
+        /**
+         * A string representation of the result.
+         */
         public String toString() {
 
             return "\nSigma hat\n" +
@@ -870,33 +935,75 @@ public class Ricf {
                     "\n\ndiff = " + this.diff;
         }
 
+        /**
+         * @return shat.
+         */
         public DoubleMatrix2D getShat() {
             return this.shat;
         }
 
+        /**
+         * @return lhat.
+         */
         public DoubleMatrix2D getLhat() {
             return this.lhat;
         }
 
+        /**
+         * @return bhat
+         */
         public DoubleMatrix2D getBhat() {
             return this.bhat;
         }
 
+        /**
+         * @return ohat.
+         */
         public DoubleMatrix2D getOhat() {
             return this.ohat;
         }
 
+        /**
+         * @return the number of iterations.
+         */
         public int getIterations() {
             return this.iterations;
         }
     }
 
+    /**
+     * The fit con graph result.
+     */
     public static class FitConGraphResult {
+
+        /**
+         * The shat matrix
+         */
         private final DoubleMatrix2D shat;
+
+        /**
+         * The deviance
+         */
         double deviance;
+
+        /**
+         * The degrees of freedom.
+         */
         int df;
+
+        /**
+         * The number of iterations.
+         */
         int iterations;
 
+        /**
+         * The result.
+         *
+         * @param shat       The shat matrix.
+         * @param deviance   The deviance.
+         * @param df         The degrees of freedom.
+         * @param iterations The iterations.
+         */
         public FitConGraphResult(DoubleMatrix2D shat, double deviance,
                                  int df, int iterations) {
             this.shat = shat;
@@ -905,6 +1012,9 @@ public class Ricf {
             this.iterations = iterations;
         }
 
+        /**
+         * @return a string representation.
+         */
         public String toString() {
 
             return "\nSigma hat\n" +

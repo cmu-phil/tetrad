@@ -45,6 +45,8 @@ class TetradLogArea extends JPanel {
 
     /**
      * Constructs the log area.
+     *
+     * @param tetradDesktop a {@link edu.cmu.tetradapp.app.TetradDesktop} object
      */
     public TetradLogArea(TetradDesktop tetradDesktop) {
         super(new BorderLayout());
@@ -68,6 +70,8 @@ class TetradLogArea extends JPanel {
     }
 
     /**
+     * <p>getOutputStream.</p>
+     *
      * @return the output stream that is being used to log messages to the log area.
      */
     public OutputStream getOutputStream() {

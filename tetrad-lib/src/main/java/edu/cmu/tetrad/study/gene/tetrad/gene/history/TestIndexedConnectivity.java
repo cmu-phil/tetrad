@@ -30,11 +30,14 @@ import junit.framework.TestSuite;
  * the required properties.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TestIndexedConnectivity extends TestCase {
 
     /**
      * Change the name of this constructor to match the name of the test class.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public TestIndexedConnectivity(String name) {
         super(name);
@@ -43,6 +46,8 @@ public class TestIndexedConnectivity extends TestCase {
     /**
      * This method uses reflection to collect up all of the test methods from this class and return them to the test
      * runner.
+     *
+     * @return a {@link junit.framework.Test} object
      */
     public static Test suite() {
 
@@ -52,7 +57,7 @@ public class TestIndexedConnectivity extends TestCase {
     }
 
     /**
-     *
+     * <p>testConstruction.</p>
      */
     public void testConstruction() {
         LagGraph lagGraph = new BasicLagGraph();

@@ -37,6 +37,7 @@ import java.util.*;
  * Implements a score-based Purify method.
  *
  * @author ricardosilva
+ * @version $Id: $Id
  */
 public class PurifyScoreBased implements IPurify {
     private final boolean outputMessage = true;
@@ -85,12 +86,21 @@ public class PurifyScoreBased implements IPurify {
     boolean modifiedGraph;
 
 
+    /**
+     * <p>Constructor for PurifyScoreBased.</p>
+     *
+     * @param tetradTest    a {@link edu.cmu.tetrad.search.utils.TetradTest} object
+     * @param forbiddenList a {@link java.util.List} object
+     */
     public PurifyScoreBased(TetradTest tetradTest, List<Set<String>> forbiddenList) {
         this.tetradTest = tetradTest;
         this.numVars = tetradTest.getVarNames().length;
         this.forbiddenList = forbiddenList;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public List<List<Node>> purify(List<List<Node>> partition) {
         System.out.println("*** " + partition);
         List<int[]> _partition = convertListToInt(partition);
@@ -125,6 +135,9 @@ public class PurifyScoreBased implements IPurify {
         return convertIntToList(_partition1);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setTrueGraph(Graph mim) {
         throw new UnsupportedOperationException();
     }

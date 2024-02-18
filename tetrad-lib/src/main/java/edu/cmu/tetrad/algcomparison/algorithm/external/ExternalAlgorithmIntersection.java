@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.Set;
 
 /**
@@ -27,19 +28,41 @@ import java.util.Set;
  * write.matrix(A, file=name, sep="\t") }
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The external algorithms to be intersected.
+     */
     private final ExternalAlgorithm[] algorithms;
+
+    /**
+     * Short description of the algorithm.
+     */
     private final String shortDescription;
+
+    /**
+     * Elapsed time.
+     */
     private long elapsed = -99;
 
+    /**
+     * <p>Constructor for ExternalAlgorithmIntersection.</p>
+     *
+     * @param shortDescription a {@link java.lang.String} object
+     * @param algorithms       a {@link edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm} object
+     */
     public ExternalAlgorithmIntersection(String shortDescription, ExternalAlgorithm... algorithms) {
         this.algorithms = algorithms;
         this.shortDescription = shortDescription;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Reads in the relevant graph from the file (see above) and returns it.
      */
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -69,20 +92,35 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
         return this.algorithms[0].getComparisonGraph(graph);
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         return this.shortDescription;
     }
 
+    /**
+     * <p>getDataType.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataType} object
+     */
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         return this.elapsed;
     }

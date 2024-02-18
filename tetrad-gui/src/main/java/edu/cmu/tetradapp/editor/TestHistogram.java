@@ -31,8 +31,14 @@ import junit.framework.TestSuite;
  * Tests data loaders against sample files.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TestHistogram extends TestCase {
+    /**
+     * <p>Constructor for TestHistogram.</p>
+     *
+     * @param name a {@link java.lang.String} object
+     */
     public TestHistogram(String name) {
         super(name);
     }
@@ -41,6 +47,8 @@ public class TestHistogram extends TestCase {
      * This method uses reflection to collect up all of the test methods from this class and return them to
      * <p>
      * the test runner.
+     *
+     * @return a {@link junit.framework.Test} object
      */
     public static Test suite() {
 
@@ -49,6 +57,9 @@ public class TestHistogram extends TestCase {
         return new TestSuite(TestHistogram.class);
     }
 
+    /**
+     * <p>test1.</p>
+     */
     public void test1() {
         Matrix dataMatrix = new Matrix(10, 2);
 

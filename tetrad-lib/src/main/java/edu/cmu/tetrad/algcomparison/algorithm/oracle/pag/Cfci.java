@@ -30,6 +30,7 @@ import java.util.List;
  * common causes.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CFCI",
@@ -42,8 +43,20 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
     private IndependenceWrapper test;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * The bootstrap graphs.
+     */
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     /**
@@ -62,11 +75,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Runs the conservative FCI search.
-     *
-     * @param dataModel  The data set to run to the search on.
-     * @param parameters The paramters of the search.
-     * @return The graph resulting from the search.
      */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
@@ -94,10 +105,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             Cfci algorithm = new Cfci(this.test);
 
             DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(this.knowledge);
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
+                    knowledge, parameters);
 
-            search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();
             if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
@@ -106,10 +116,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the comparison graph.
-     *
-     * @param graph The true directed graph, if there is one.
-     * @return The comparison graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -127,9 +136,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the data type that the algorithm can handle.
-     *
-     * @return The data type that the algorithm can handle.
      */
     @Override
     public DataType getDataType() {
@@ -137,9 +146,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the parameters of the algorithm.
-     *
-     * @return The parameters of the algorithm.
      */
     @Override
     public List<String> getParameters() {
@@ -156,9 +165,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the knowledge.
-     *
-     * @return The knowledge.
      */
     @Override
     public Knowledge getKnowledge() {
@@ -166,9 +175,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the knowledge.
-     *
-     * @param knowledge a knowledge object.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -176,9 +185,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the independence test.
-     *
-     * @return The independence test.
      */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
@@ -186,9 +195,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the independence wrapper.
-     *
-     * @param test the independence wrapper.
      */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
@@ -196,9 +205,9 @@ public class Cfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the bootstrap graphs.
-     *
-     * @return The bootstrap graphs.
      */
     @Override
     public List<Graph> getBootstrapGraphs() {

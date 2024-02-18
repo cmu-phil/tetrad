@@ -19,15 +19,35 @@ import java.util.*;
  * Edits the conditions used for the Plot Matrix.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class VariableConditioningEditor extends JPanel {
+
+    /**
+     * New conditioning variable selector.
+     */
     private final JComboBox<Node> newConditioningVariableSelector;
+
+    /**
+     * New conditioning variable button.
+     */
     private final JButton newConditioningVariableButton;
+
+    /**
+     * Remove conditioning variable button.
+     */
     private final JButton removeConditioningVariableButton;
+
+    /**
+     * Map of conditioning panels.
+     */
     private final Map<Node, ConditioningPanel> conditioningPanelMap = new HashMap<>();
 
     /**
      * Constructs the editor panel given the initial histogram and any previous conditioning panel map.
+     *
+     * @param dataset               a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param _conditioningPanelMap a {@link java.util.Map} object
      */
     public VariableConditioningEditor(DataSet dataset, Map<Node, ConditioningPanel> _conditioningPanelMap) {
         if (_conditioningPanelMap == null) throw new NullPointerException();
@@ -52,9 +72,7 @@ public class VariableConditioningEditor extends JPanel {
         this.newConditioningVariableButton.addActionListener(e -> {
             Node selected = (Node) VariableConditioningEditor.this.newConditioningVariableSelector.getSelectedItem();
 
-            if (selected instanceof ContinuousVariable) {
-                ContinuousVariable _var = (ContinuousVariable) selected;
-
+            if (selected instanceof ContinuousVariable _var) {
                 ContinuousConditioningPanel panel1 = (ContinuousConditioningPanel) VariableConditioningEditor.this.conditioningPanelMap.get(_var);
 
                 if (panel1 == null) {
@@ -73,8 +91,7 @@ public class VariableConditioningEditor extends JPanel {
 
                 ContinuousConditioningPanel panel3 = new ContinuousConditioningPanel(_var, low, high, ntile, ntileIndex, type);
                 VariableConditioningEditor.this.conditioningPanelMap.put(_var, panel3);
-            } else if (selected instanceof DiscreteVariable) {
-                DiscreteVariable _var = (DiscreteVariable) selected;
+            } else if (selected instanceof DiscreteVariable _var) {
                 DiscreteConditioningPanel panel1 = (DiscreteConditioningPanel) VariableConditioningEditor.this.conditioningPanelMap.get(_var);
 
                 if (panel1 == null) {
@@ -181,30 +198,81 @@ public class VariableConditioningEditor extends JPanel {
         repaint();
     }
 
+    /**
+     * <p>Getter for the field <code>conditioningPanelMap</code>.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public Map<Node, ConditioningPanel> getConditioningPanelMap() {
         return new HashMap<>(conditioningPanelMap);
     }
 
-    //========================== Inner classes ===========================//
+    //=======
+    //=================== Inner classes ===========================//
 
+    /**
+     * Inquiry panel for discrete conditioning.
+     */
     public interface ConditioningPanel {
+
+        /**
+         * <p>getBox.</p>
+         *
+         * @return a {@link java.lang.String} object
+         */
         Box getBox();
 
-        // selected for removal.
+        /**
+         * selected for removal.
+         *
+         * @return a boolean
+         */
         boolean isSelected();
 
+        /**
+         * <p>getVariable.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Node} object
+         */
         Node getVariable();
     }
 
+    /**
+     * Discrete inquiry panel.
+     */
     public static class DiscreteConditioningPanel implements ConditioningPanel {
+
+        /**
+         * The variable.
+         */
         private final DiscreteVariable variable;
+
+        /**
+         * The value.
+         */
         private final String value;
+
+        /**
+         * The box.
+         */
         private final Box box;
 
-        // Set selected if this checkbox should be removed.
+        /**
+         * Set selected if this checkbox should be removed.
+         */
         private final JCheckBox checkBox;
+
+        /**
+         * The index.
+         */
         private final int index;
 
+        /**
+         * Constructs a new discrete conditioning panel.
+         *
+         * @param variable   a {@link edu.cmu.tetrad.data.DiscreteVariable} object
+         * @param valueIndex a int
+         */
         public DiscreteConditioningPanel(DiscreteVariable variable, int valueIndex) {
             if (variable == null) throw new NullPointerException();
             if (valueIndex < 0 || valueIndex >= variable.getNumCategories()) {
@@ -225,22 +293,48 @@ public class VariableConditioningEditor extends JPanel {
             this.box = b4;
         }
 
+        /**
+         * <p>getDefault.</p>
+         *
+         * @param var a {@link edu.cmu.tetrad.data.DiscreteVariable} object
+         * @return a {@link edu.cmu.tetradapp.editor.VariableConditioningEditor.DiscreteConditioningPanel} object
+         */
         public static VariableConditioningEditor.DiscreteConditioningPanel getDefault(DiscreteVariable var) {
             return new VariableConditioningEditor.DiscreteConditioningPanel(var, 0);
         }
 
+        /**
+         * <p>getVariable.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.data.DiscreteVariable} object
+         */
         public DiscreteVariable getVariable() {
             return this.variable;
         }
 
+        /**
+         * <p>getValue.</p>
+         *
+         * @return a {@link java.lang.String} object
+         */
         public String getValue() {
             return this.value;
         }
 
+        /**
+         * <p>getIndex.</p>
+         *
+         * @return a int
+         */
         public int getIndex() {
             return this.index;
         }
 
+        /**
+         * <p>getBox.</p>
+         *
+         * @return a {@link javax.swing.Box} object
+         */
         public Box getBox() {
             return this.box;
         }
@@ -250,18 +344,64 @@ public class VariableConditioningEditor extends JPanel {
         }
     }
 
+    /**
+     * Continuous conditioning panel.
+     */
     public static class ContinuousConditioningPanel implements ConditioningPanel {
 
+        /**
+         * The variable.
+         */
         private final ContinuousVariable variable;
+
+        /**
+         * The box.
+         */
         private final Box box;
+
+        /**
+         * The type.
+         */
         private final VariableConditioningEditor.ContinuousConditioningPanel.Type type;
+
+        /**
+         * The low.
+         */
         private final double low;
+
+        /**
+         * The high.
+         */
         private final double high;
+
+        /**
+         * The ntile.
+         */
         private final int ntile;
+
+        /**
+         * The ntile index.
+         */
         private final int ntileIndex;
-        // Mark selected if this panel is to be removed.
+
+        /**
+         * Mark selected if this panel is to be removed.
+         */
         private final JCheckBox checkBox;
 
+        /**
+         * Constructs a new continuous conditioning panel.
+         *
+         * @param variable   a {@link edu.cmu.tetrad.data.ContinuousVariable} object
+         * @param low        a double
+         * @param high       a double
+         * @param ntile      a int
+         * @param ntileIndex a int
+         * @param type       a
+         *                   {@link
+         *                   edu.cmu.tetradapp.editor.VariableConditioningEditor.ContinuousConditioningPanel.Type}
+         *                   object
+         */
         public ContinuousConditioningPanel(ContinuousVariable variable, double low, double high, int ntile, int ntileIndex, VariableConditioningEditor.ContinuousConditioningPanel.Type type) {
             if (variable == null) throw new NullPointerException();
             if (low >= high) {
@@ -298,6 +438,13 @@ public class VariableConditioningEditor extends JPanel {
             this.box = b4;
         }
 
+        /**
+         * <p>getDefault.</p>
+         *
+         * @param variable a {@link edu.cmu.tetrad.data.ContinuousVariable} object
+         * @param dataSet  a {@link edu.cmu.tetrad.data.DataSet} object
+         * @return a {@link edu.cmu.tetradapp.editor.VariableConditioningEditor.ContinuousConditioningPanel} object
+         */
         public static VariableConditioningEditor.ContinuousConditioningPanel getDefault(ContinuousVariable variable, DataSet dataSet) {
             double[] data = getContinuousData(variable.getName(), dataSet);
             double max = StatUtils.max(data);
@@ -305,6 +452,13 @@ public class VariableConditioningEditor extends JPanel {
             return new VariableConditioningEditor.ContinuousConditioningPanel(variable, avg, max, 2, 1, VariableConditioningEditor.ContinuousConditioningPanel.Type.AboveAverage);
         }
 
+        /**
+         * <p>getContinuousData.</p>
+         *
+         * @param variable a {@link java.lang.String} object
+         * @param dataSet  a {@link edu.cmu.tetrad.data.DataSet} object
+         * @return an array of double
+         */
         public static double[] getContinuousData(String variable, DataSet dataSet) {
             int index = dataSet.getColumn(dataSet.getVariable(variable));
             List<Double> _data = new ArrayList<>();
@@ -322,48 +476,143 @@ public class VariableConditioningEditor extends JPanel {
             return _data;
         }
 
+        /**
+         * <p>getNtile.</p>
+         *
+         * @return a int
+         */
         public int getNtile() {
             return this.ntile;
         }
 
+        /**
+         * <p>getNtileIndex.</p>
+         *
+         * @return a int
+         */
         public int getNtileIndex() {
             return this.ntileIndex;
         }
 
+        /**
+         * <p>getVariable.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.data.ContinuousVariable} object
+         */
         public ContinuousVariable getVariable() {
             return this.variable;
         }
 
+        /**
+         * <p>getType.</p>
+         *
+         * @return a {@link edu.cmu.tetradapp.editor.VariableConditioningEditor.ContinuousConditioningPanel.Type} object
+         */
         public VariableConditioningEditor.ContinuousConditioningPanel.Type getType() {
             return this.type;
         }
 
+        /**
+         * <p>getBox.</p>
+         *
+         * @return a {@link javax.swing.Box} object
+         */
         public Box getBox() {
             return this.box;
         }
 
+        /**
+         * <p>isSelected.</p>
+         *
+         * @return a boolean
+         */
         public boolean isSelected() {
             return this.checkBox.isSelected();
         }
 
+        /**
+         * <p>getLow.</p>
+         *
+         * @return a double
+         */
         public double getLow() {
             return this.low;
         }
 
+        /**
+         * <p>getHigh.</p>
+         *
+         * @return a double
+         */
         public double getHigh() {
             return this.high;
         }
 
-        public enum Type {Range, Ntile, AboveAverage, BelowAverage}
+        /**
+         * An enum for the type of conditioning.
+         */
+        public enum Type {
+
+            /**
+             * Range.
+             */
+            Range,
+
+            /**
+             * Ntile.
+             */
+            Ntile,
+
+            /**
+             * Above average.
+             */
+            AboveAverage,
+
+            /**
+             * Below average.
+             */
+            BelowAverage
+        }
     }
 
+    /**
+     * Continuous inquiry panel.
+     */
     static class ContinuousInquiryPanel extends JPanel {
+
+        /**
+         * The combo box for ntile.
+         */
         private final JComboBox<String> ntileCombo;
+
+        /**
+         * The combo box for ntile index.
+         */
         private final JComboBox<Integer> ntileIndexCombo;
+
+        /**
+         * The field1.
+         */
         private final DoubleTextField field1;
+
+        /**
+         * The field2.
+         */
         private final DoubleTextField field2;
+
+        /**
+         * The ntile map.
+         */
         private final Map<String, Integer> ntileMap = new HashMap<>();
+
+        /**
+         * The data.
+         */
         private final double[] data;
+
+        /**
+         * The type.
+         */
         private ContinuousConditioningPanel.Type type;
 
         /**
@@ -589,23 +838,38 @@ public class VariableConditioningEditor extends JPanel {
             return breakpoints;
         }
 
+        /**
+         * @return the type of conditioning.
+         */
         public ContinuousConditioningPanel.Type getType() {
             return this.type;
         }
 
+        /**
+         * @return the low value for the range.
+         */
         public double getLow() {
             return this.field1.getValue();
         }
 
+        /**
+         * @return the high value for the range.
+         */
         public double getHigh() {
             return this.field2.getValue();
         }
 
+        /**
+         * @return the ntile.
+         */
         public int getNtile() {
             String selectedItem = (String) this.ntileCombo.getSelectedItem();
             return this.ntileMap.get(selectedItem);
         }
 
+        /**
+         * @return the index of the ntile.
+         */
         public int getNtileIndex() {
             Object selectedItem = this.ntileIndexCombo.getSelectedItem();
             return selectedItem == null ? 1 : (Integer) selectedItem;
@@ -632,9 +896,20 @@ public class VariableConditioningEditor extends JPanel {
         }
     }
 
+    /**
+     * Discrete inquiry panel.
+     */
     static class DiscreteInquiryPanel extends JPanel {
+
+        /**
+         * The combo box for values.
+         */
         private final JComboBox<String> valuesDropdown;
 
+        /**
+         * @param var   The variable being conditioned on.
+         * @param panel The conditioning panel for this variable.
+         */
         public DiscreteInquiryPanel(DiscreteVariable var, DiscreteConditioningPanel panel) {
             this.valuesDropdown = new JComboBox<>();
 
@@ -660,6 +935,9 @@ public class VariableConditioningEditor extends JPanel {
             add(main, BorderLayout.CENTER);
         }
 
+        /**
+         * @return the selected value.
+         */
         public JComboBox<String> getValuesDropdown() {
             return this.valuesDropdown;
         }

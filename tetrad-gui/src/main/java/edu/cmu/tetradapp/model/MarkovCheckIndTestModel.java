@@ -46,24 +46,39 @@ import java.util.List;
  * of the form X _||_ Y | Z, X and Y should be in the last tier of the knowledge, and Z should be in previous tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MarkovCheckIndTestModel implements SessionModel, GraphSource, KnowledgeBoxInput {
     @Serial
     private static final long serialVersionUID = 23L;
-    // The data model to check.
+    /**
+     * The data model to check.
+     */
     private final DataModel dataModel;
-    // The graph to check.
+    /**
+     * The graph to check.
+     */
     private final Graph graph;
-    // The parameters.
+    /**
+     * The parameters.
+     */
     private final Parameters parameters;
-    // The name of this model.
+    /**
+     * The name of this model.
+     */
     private String name = "";
-    // The variables to check.
+    /**
+     * The variables to check.
+     */
     private List<String> vars = new LinkedList<>();
-    // The Markov check object.
+    /**
+     * The Markov check object.
+     */
     private transient MarkovCheck markovCheck = null;
-    // The knowledge to use. This will be passed to the underlying Markov check object. For facts odf the form
-    // X _||_ Y | Z, X and Y should be in the last tier, and Z should be in previous tiers.
+    /**
+     * The knowledge to use. This will be passed to the underlying Markov check object. For facts odf the form X _||_ Y
+     * | Z, X and Y should be in the last tier, and Z should be in previous tiers.
+     */
     private Knowledge knowledge;
 
     /**
@@ -83,6 +98,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * @param dataModel   the data model.
      * @param graphSource the graph source.
      * @param parameters  the parameters.
+     * @param knowlegeBox a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
      */
     public MarkovCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, KnowledgeBoxModel knowlegeBox,
                                    Parameters parameters) {
@@ -98,6 +114,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
      * @see TetradSerializableUtils
      */
     public static Knowledge serializableInstance() {
@@ -127,9 +144,9 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the graph.
-     *
-     * @return the graph.
      */
     @Override
     public Graph getGraph() {
@@ -155,9 +172,9 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the name of this model.
-     *
-     * @return the name of this model.
      */
     @Override
     public String getName() {
@@ -165,9 +182,9 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this model.
-     *
-     * @param name the name of this model.
      */
     @Override
     public void setName(String name) {
@@ -227,9 +244,9 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the source graph.
-     *
-     * @return the source graph.
      */
     @Override
     public Graph getSourceGraph() {
@@ -237,9 +254,9 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the result graph.
-     *
-     * @return the result graph.
      */
     @Override
     public Graph getResultGraph() {
@@ -247,9 +264,9 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variables.
-     *
-     * @return the variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -257,9 +274,9 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variable names.
-     *
-     * @return the variable names.
      */
     @Override
     public List<String> getVariableNames() {

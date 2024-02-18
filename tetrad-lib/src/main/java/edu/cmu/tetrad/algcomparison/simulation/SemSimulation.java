@@ -2,7 +2,10 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.SemGraph;
@@ -13,6 +16,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,22 +24,62 @@ import java.util.List;
  * SEM simulation.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemSimulation implements Simulation {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The SEM PM.
+     */
     private SemPm pm;
+
+    /**
+     * The SEM IM.
+     */
     private SemIm im;
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The SEM IMs.
+     */
     private List<SemIm> ims = new ArrayList<>();
+
+    /**
+     * The seed.
+     */
     private long seed = -1L;
 
+    /**
+     * <p>Constructor for SemSimulation.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public SemSimulation(RandomGraph graph) {
         this.randomGraph = graph;
     }
 
+    /**
+     * <p>Constructor for SemSimulation.</p>
+     *
+     * @param pm a {@link edu.cmu.tetrad.sem.SemPm} object
+     */
     public SemSimulation(SemPm pm) {
         SemGraph graph = pm.getGraph();
         graph.setShowErrorTerms(false);
@@ -43,6 +87,11 @@ public class SemSimulation implements Simulation {
         this.pm = pm;
     }
 
+    /**
+     * <p>Constructor for SemSimulation.</p>
+     *
+     * @param im a {@link edu.cmu.tetrad.sem.SemIm} object
+     */
     public SemSimulation(SemIm im) {
         SemGraph graph = im.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
@@ -54,6 +103,9 @@ public class SemSimulation implements Simulation {
         this.ims.add(im);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -105,21 +157,33 @@ public class SemSimulation implements Simulation {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Linear, Gaussian SEM simulation using " + this.randomGraph.getDescription();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -148,11 +212,17 @@ public class SemSimulation implements Simulation {
         return parameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
@@ -201,6 +271,11 @@ public class SemSimulation implements Simulation {
         return this.im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
     }
 
+    /**
+     * <p>getSemIms.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<SemIm> getSemIms() {
         return ims;
     }

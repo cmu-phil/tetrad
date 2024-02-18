@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
  * Gives an interface that can be used by various discrete scores.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface DiscreteScore extends Score {
 

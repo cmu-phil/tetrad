@@ -8,9 +8,8 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.Parameters;
-import edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -18,67 +17,86 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * Mar 19, 2017 9:45:44 PM
+ * A runnable for a single search over either a single- or multi-data set algorithm, for use in a thread pool.
  *
  * @author Chirayu (Kong) Wongchokprasitti, PhD
+ * @author josephramsey Cleanup.
+ * @version $Id: $Id
  */
 public class GeneralResamplingSearchRunnable implements Callable<Graph> {
-
-    private final Parameters parameters;
-    private final GeneralResamplingSearch resamplingAlgorithmSearch;
-    private final boolean verbose;
-    private DataModel dataModel;
-    private List<DataModel> dataModels = new ArrayList<>();
-    private Algorithm algorithm;
-    private MultiDataSetAlgorithm multiDataSetAlgorithm;
     /**
-     * An initial graph to start from.
+     * The parameters for the search.
      */
-    private Graph externalGraph;
-
+    private final Parameters parameters;
+    /**
+     * Whether to print out verbose output.
+     */
+    private DataModel dataModel;
+    /**
+     * A list of data models to search over, for multi-data set algorithms.
+     */
+    private List<DataModel> dataModels = new ArrayList<>();
+    /**
+     * The algorithm to use for the search, for single-data set algorithms.
+     */
+    private Algorithm algorithm;
+    /**
+     * The algorithm to use for the search, for multi-data set algorithms.
+     */
+    private MultiDataSetAlgorithm multiDataSetAlgorithm;
     /**
      * Specification of forbidden and required edges.
      */
     private Knowledge knowledge = new Knowledge();
-
+    /**
+     * The output stream that output (except for log output) should be sent to.
+     */
     private PrintStream out = System.out;
+    /**
+     * The score wrapper to pass to multi-data set algorithms.
+     */
     private ScoreWrapper scoreWrapper = null;
+    /**
+     * The independence test wrapper to pass to multi-data set algorithms.
+     */
     private IndependenceWrapper independenceWrapper = null;
+    /**
+     * Whether to print out verbose output.
+     */
+    private boolean verbose = false;
 
-    public GeneralResamplingSearchRunnable(DataModel dataModel, Algorithm algorithm, Parameters parameters,
-                                           GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
+    /**
+     * Constructor for single-data set algorithms.
+     *
+     * @param dataModel  a {@link DataModel} object
+     * @param algorithm  a {@link Algorithm} object
+     * @param parameters a {@link Parameters} object
+     */
+    public GeneralResamplingSearchRunnable(DataModel dataModel, Algorithm algorithm, Parameters parameters) {
         if (dataModel == null) throw new NullPointerException("Data model null.");
         if (algorithm == null) throw new NullPointerException("Algorithm null.");
         if (parameters == null) throw new NullPointerException("Parameters null.");
-        if (resamplingAlgorithmSearch == null) throw new NullPointerException("Resampling algroithms search null.");
 
         this.dataModel = dataModel.copy();
         this.algorithm = algorithm;
         this.parameters = parameters;
-        this.resamplingAlgorithmSearch = resamplingAlgorithmSearch;
-        this.verbose = verbose;
     }
 
-    public GeneralResamplingSearchRunnable(List<DataModel> dataModel, MultiDataSetAlgorithm algorithm, Parameters parameters,
-                                           GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
+    /**
+     * Constructor for multi-data set algorithms.
+     *
+     * @param dataModel  a {@link List} object
+     * @param algorithm  a {@link MultiDataSetAlgorithm} object
+     * @param parameters a {@link Parameters} object
+     */
+    public GeneralResamplingSearchRunnable(List<DataModel> dataModel, MultiDataSetAlgorithm algorithm, Parameters parameters) {
         if (dataModel == null) throw new NullPointerException("Data model null.");
         if (algorithm == null) throw new NullPointerException("Algorithm null.");
         if (parameters == null) throw new NullPointerException("Parameters null.");
-        if (resamplingAlgorithmSearch == null) throw new NullPointerException("Resampling algroithms search null.");
 
         this.dataModels = dataModel;
         this.multiDataSetAlgorithm = algorithm;
         this.parameters = parameters;
-        this.resamplingAlgorithmSearch = resamplingAlgorithmSearch;
-        this.verbose = verbose;
-    }
-
-    /**
-     * @return the background knowledge.
-     */
-
-    public Knowledge getKnowledge() {
-        return this.knowledge;
     }
 
     /**
@@ -87,37 +105,25 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    public Graph getExternalGraph() {
-        return this.externalGraph;
-    }
-
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
-     * @return the output stream that output (except for log output) should be sent to.
-     */
-    public PrintStream getOut() {
-        return this.out;
-    }
-
-    /**
-     * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
+     * Sets the output stream that output (except for log output) should be sent to. By default, System.out.
+     *
+     * @param out a {@link java.io.PrintStream} object
      */
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
+    /**
+     * Runs the search over the data model or data models, using the algorithm and parameters.
+     *
+     * @return The graph discovered by the search.
+     */
     @Override
     public Graph call() {
-        long start;
-        long stop;
-        start = MillisecondTimes.timeMillis();
-
         if (this.verbose) {
             this.out.println("thread started ... ");
         }
@@ -153,22 +159,38 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
                 graph = this.multiDataSetAlgorithm.search(this.dataModels, this.parameters);
             }
 
-            stop = MillisecondTimes.timeMillis();
-
-            if (this.verbose) {
-                this.out.println("processing time of resampling for a thread was: "
-                        + (stop - start) / 1000.0 + " sec");
-            }
-
             return graph;
         } catch (Exception e) {
-            e.printStackTrace();
-//            e.printStackTrace();
+            TetradLogger.getInstance().forceLogMessage("Exception in bootstrapping runnable: " + e.getMessage());
+            Thread.currentThread().interrupt();
             return null;
         }
     }
 
+    /**
+     * Sets the score wrapper, for multi-data set algorithms.
+     *
+     * @param scoreWrapper a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public void setScoreWrapper(ScoreWrapper scoreWrapper) {
         this.scoreWrapper = scoreWrapper;
+    }
+
+    /**
+     * Sets the independence wrapper, for multi-data set algorithms.
+     *
+     * @param independenceWrapper a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     */
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.independenceWrapper = independenceWrapper;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose a boolean
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }

@@ -32,9 +32,24 @@ import java.util.*;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  * @see PermutationSearch
  * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
  * @see SpFci
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
+ * @see Knowledge
  * @see Knowledge
  */
 public class Sp implements SuborderSearch {
@@ -65,13 +80,9 @@ public class Sp implements SuborderSearch {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * This is the method called by PermutationSearch per tier.
-     *
-     * @param prefix   The variable preceding the suborder variables in the permutation, including all variables from
-     *                 previous tiers.
-     * @param suborder The suborder of the variable list beign searched over. Only the order of the variables in this
-     *                 suborder will be modified.
-     * @param gsts     The GrowShrinkTree used for the search. This is an optimized score-caching class.
      */
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
@@ -112,9 +123,9 @@ public class Sp implements SuborderSearch {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variables being searched over.
-     *
-     * @return The variables being searched over.
      */
     @Override
     public List<Node> getVariables() {
@@ -122,9 +133,9 @@ public class Sp implements SuborderSearch {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the parents of each variable.
-     *
-     * @return The parents of each variable.
      */
     @Override
     public Map<Node, Set<Node>> getParents() {
@@ -132,9 +143,9 @@ public class Sp implements SuborderSearch {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the score being used.
-     *
-     * @return The score being used.
      */
     @Override
     public Score getScore() {
@@ -142,6 +153,8 @@ public class Sp implements SuborderSearch {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Set the knowledge to used.
      */
     @Override

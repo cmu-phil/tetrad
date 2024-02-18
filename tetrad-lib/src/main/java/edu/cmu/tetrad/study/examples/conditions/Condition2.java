@@ -36,12 +36,21 @@ import edu.cmu.tetrad.util.Parameters;
  * saves them. For other formats, specialty data loaders can be written to implement the Simulation interface.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Condition2 {
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         new Condition2().compileTable();
     }
 
+    /**
+     * <p>generateTetradResults.</p>
+     */
     public void generateTetradResults() {
         Parameters parameters = new Parameters();
 
@@ -82,6 +91,9 @@ public class Condition2 {
                 algorithms, statistics, parameters);
     }
 
+    /**
+     * <p>compileTable.</p>
+     */
     public void compileTable() {
         Parameters parameters = new Parameters();
 

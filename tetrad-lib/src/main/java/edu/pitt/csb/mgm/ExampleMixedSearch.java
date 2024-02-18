@@ -31,8 +31,16 @@ import java.io.IOException;
 
 /**
  * Created by ajsedgewick on 8/18/15.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class ExampleMixedSearch {
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         try {
             String path = args[0];

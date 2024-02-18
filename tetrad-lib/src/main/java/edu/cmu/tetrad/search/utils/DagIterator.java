@@ -33,20 +33,26 @@ import java.util.LinkedList;
  * a Meek-algorithm-type method.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DagIterator {
 
-    // The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether
-    //these edges have already been oriented left and/or right.
+    /**
+     * The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether these edges
+     * have already been oriented left and/or right.
+     */
     private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
-    // The DAG that is returned by the next() method.
+    /**
+     * The DAG that is returned by the next() method.
+     */
     private Graph storedDag;
 
     /**
      * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it is
      * not acyclic, it is rejected.
      *
-     * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
+     * @param CPDAG a {@link edu.cmu.tetrad.graph.Graph} object
+     * @throws java.lang.IllegalArgumentException if the CPDAG is not a CPDAG.
      */
     public DagIterator(Graph CPDAG) {
 
@@ -67,7 +73,6 @@ public class DagIterator {
      * them in which an arbitrary undirected edge is picked, oriented one way, Meek rules applied, then a remaining
      * unoriented edge is picked, oriented one way, and so on, until a DAG is obtained, and then by backtracking the
      * other orientation of each chosen edge is tried. Nonrecursive, obviously.
-     * <p>
      *
      * @return a Graph instead of a DAG because sometimes, due to faulty patterns, a cyclic graph is produced, and the
      * end-user may need to decide what to do with it. The simplest thing is to construct a DAG (Dag(graph)) and catch

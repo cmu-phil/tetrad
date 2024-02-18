@@ -30,12 +30,17 @@ import java.util.List;
  * Estimates parameters of the given Bayes net from the given data using maximum likelihood method.
  *
  * @author Shane Harwood, Joseph Ramsey
+ * @version $Id: $Id
  */
 public final class MlBayesEstimator {
 
     /**
      * 33 Estimates a Bayes IM using the variables, graph, and parameters in the given Bayes PM and the data columns in
      * the given data set. Each variable in the given Bayes PM must be equal to a variable in the given data set.
+     *
+     * @param bayesPm a {@link edu.cmu.tetrad.bayes.BayesPm} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesIm estimate(BayesPm bayesPm, DataSet dataSet) {
         if (bayesPm == null) {

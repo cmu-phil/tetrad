@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * so that the hashcode of (a1, b1) == the hashcode of (a2, b2) just in case a1 == a2 and b1 == b2.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ParameterPair implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -67,6 +68,8 @@ public class ParameterPair implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.ParameterPair} object
      */
     public static ParameterPair serializableInstance() {
         return new ParameterPair();
@@ -91,26 +94,26 @@ public class ParameterPair implements TetradSerializable {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Tests whether this object pair is equal to a second object pair by looking to see whether each element a and b is
      * equal to its corresponding element.
-     *
-     * @param object the object pair putatively equal to this one.
-     * @return true if the object pairs are equals, false if not.
      */
     public boolean equals(Object object) {
         if (object == null) {
             return false;
         }
 
-        if (!(object instanceof ParameterPair)) {
+        if (!(object instanceof ParameterPair pair)) {
             return false;
         }
 
-        ParameterPair pair = (ParameterPair) object;
         return this.a.equals(pair.a) && this.b.equals(pair.b);
     }
 
     /**
+     * <p>hashCode.</p>
+     *
      * @return this hashcode.
      */
     public int hashCode() {

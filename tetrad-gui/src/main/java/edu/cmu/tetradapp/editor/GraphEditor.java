@@ -51,6 +51,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
+import java.io.Serial;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
@@ -61,9 +62,11 @@ import java.util.*;
  * @author Aaron Powers
  * @author josephramsey
  * @author Zhou Yuan 8/22/2018
+ * @version $Id: $Id
  */
 public final class GraphEditor extends JPanel implements GraphEditable, LayoutEditable, IndTestProducer {
 
+    @Serial
     private static final long serialVersionUID = 5123725895449927539L;
 
     private static final Set<String> EVENTS = new HashSet<>(Arrays.asList(
@@ -72,18 +75,44 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             "edgeRemoved",
             "nodeRemoved"
     ));
+
+    /**
+     * The parameters for the graph.
+     */
     private final Parameters parameters;
+
+    /**
+     * The scroll pane for the graph editor.
+     */
     private final JScrollPane graphEditorScroll = new JScrollPane();
+
+    /**
+     * The table for the edge types.
+     */
     private final EdgeTypeTable edgeTypeTable;
+
+    /**
+     * The workbench for the graph.
+     */
     private GraphWorkbench workbench;
+
     /**
      * Flag to indicate if interventional variables are in the graph - Zhou
      */
     private boolean hasInterventional;
 
+    /**
+     * Flag to indicate if editing is enabled.
+     */
     private boolean enableEditing = true;
 
     //===========================CONSTRUCTOR========================//
+
+    /**
+     * <p>Constructor for GraphEditor.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     */
     public GraphEditor(GraphWrapper graphWrapper) {
         // Check if this graph has interventional nodes - Zhou
         boolean result = graphWrapper.getGraph().getNodes().stream()
@@ -101,6 +130,8 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     //===========================PUBLIC METHODS======================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     @Override
@@ -111,9 +142,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     }
 
     /**
-     * @return a list of all the SessionNodeWrappers (TetradNodes) and SessionNodeEdges that are model components for
-     * the respective SessionNodes and SessionEdges selected in the workbench. Note that the workbench, not the
-     * SessionEditorNodes themselves, keeps track of the selection.
+     * {@inheritDoc}
      */
     @Override
     public List getSelectedModelComponents() {
@@ -136,6 +165,8 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Pastes list of session elements into the workbench.
      */
     @Override
@@ -153,51 +184,81 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         getWorkbench().selectConnectingEdges();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphWorkbench getWorkbench() {
         return this.workbench;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getGraph() {
         return getWorkbench().getGraph();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setGraph(Graph graph) {
         getWorkbench().setGraph(graph);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map getModelEdgesToDisplay() {
         return getWorkbench().getModelEdgesToDisplay();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map getModelNodesToDisplay() {
         return getWorkbench().getModelNodesToDisplay();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getSourceGraph() {
         return getWorkbench().getGraph();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void layoutByGraph(Graph graph) {
         getWorkbench().layoutByGraph(graph);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void layoutByKnowledge() {
         // Does nothing.
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Rectangle getVisibleRect() {
         return getWorkbench().getVisibleRect();
@@ -375,10 +436,20 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         }
     }
 
+    /**
+     * <p>isEnableEditing.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEnableEditing() {
         return this.enableEditing;
     }
 
+    /**
+     * <p>enableEditing.</p>
+     *
+     * @param enableEditing a boolean
+     */
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {
@@ -592,6 +663,9 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceTest getIndependenceTest() {
         Graph graph = getWorkbench().getGraph();
@@ -599,10 +673,20 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         return new MsepTest(listGraph);
     }
 
+    /**
+     * <p>isHasInterventional.</p>
+     *
+     * @return a boolean
+     */
     public boolean isHasInterventional() {
         return this.hasInterventional;
     }
 
+    /**
+     * <p>Setter for the field <code>hasInterventional</code>.</p>
+     *
+     * @param hasInterventional a boolean
+     */
     public void setHasInterventional(boolean hasInterventional) {
         this.hasInterventional = hasInterventional;
     }

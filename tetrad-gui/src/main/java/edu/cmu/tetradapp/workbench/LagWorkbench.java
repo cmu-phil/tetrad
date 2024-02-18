@@ -35,6 +35,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @author Willie Wheeler
+ * @version $Id: $Id
  * @see edu.cmu.tetradapp.workbench.AbstractWorkbench
  */
 public class LagWorkbench extends AbstractWorkbench {
@@ -48,7 +49,15 @@ public class LagWorkbench extends AbstractWorkbench {
     private static final int BIDIRECTED_EDGE = 4;
 
     //====================PRIVATE FIELDS=================================//
+
+    /**
+     * The type of node to be drawn next.
+     */
     private int nodeType = LagWorkbench.MEASURED_NODE;
+
+    /**
+     * The type of edge to be drawn next.
+     */
     private int edgeMode = LagWorkbench.DIRECTED_EDGE;
 
     //========================CONSTRUCTORS===============================//
@@ -94,6 +103,8 @@ public class LagWorkbench extends AbstractWorkbench {
 
     /**
      * Sets the edge mode to the given mode.
+     *
+     * @param edgeMode a int
      */
     public void setEdgeMode(int edgeMode) {
         switch (edgeMode) {
@@ -113,6 +124,8 @@ public class LagWorkbench extends AbstractWorkbench {
 
     /**
      * Creates a new model node for the workbench.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
      */
     public Node getNewModelNode() {
 
@@ -141,10 +154,9 @@ public class LagWorkbench extends AbstractWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Creates a new display node for the workbench based on the given model node.
-     *
-     * @param modelNode the model node.
-     * @return the new display node.
      */
     public DisplayNode getNewDisplayNode(Node modelNode) {
         DisplayNode displayNode;
@@ -175,10 +187,9 @@ public class LagWorkbench extends AbstractWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Creates a new display edge for the workbench based on the given model edge.
-     *
-     * @param modelEdge the model edge.
-     * @return the new display edge.
      */
     public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
         Node node1 = modelEdge.getNode1();
@@ -199,12 +210,10 @@ public class LagWorkbench extends AbstractWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Creates a new model edge for the workbench connecting the two given model nodes and using the edge type from
      * #getEdgeType().
-     *
-     * @param node1 the one model node.
-     * @param node2 the other model node.
-     * @return the new model edge.
      */
     public Edge getNewModelEdge(Node node1, Node node2) {
         switch (this.edgeMode) {
@@ -226,12 +235,10 @@ public class LagWorkbench extends AbstractWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Gets a new "tracking edge"--that is, an edge which is anchored at one end to a node but tracks the mouse at the
      * other end.  Used for drawing new edges.
-     *
-     * @param node     the node to anchor to.
-     * @param mouseLoc the location of the mouse.
-     * @return the new tracking edge (a display edge).
      */
     public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
         switch (this.edgeMode) {
@@ -295,6 +302,8 @@ public class LagWorkbench extends AbstractWorkbench {
 
     /**
      * Sets the type of this node to the given type.
+     *
+     * @param nodeType a int
      */
     public void setNodeType(int nodeType) {
         if (nodeType == LagWorkbench.MEASURED_NODE || nodeType == LagWorkbench.LATENT_NODE) {
@@ -309,6 +318,9 @@ public class LagWorkbench extends AbstractWorkbench {
 
     /**
      * Pastes a list of session elements (SessionNodeWrappers and SessionEdges) into the workbench.
+     *
+     * @param graphElements a {@link java.util.List} object
+     * @param upperLeft     a {@link java.awt.Point} object
      */
     public void pasteSubgraph(List graphElements, Point upperLeft) {
 

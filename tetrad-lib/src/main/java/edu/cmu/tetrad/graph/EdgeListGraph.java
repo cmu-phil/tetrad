@@ -20,8 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.data.DataBox;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -41,6 +39,7 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
  *
  * @author josephramsey
  * @author Erin Korber additions summer 2004
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.graph.Endpoint
  */
 public class EdgeListGraph implements Graph, TripleClassifier {
@@ -49,20 +48,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     private static final long serialVersionUID = 23L;
     /**
      * The edges in the graph.
-     *
-     * @serial
      */
     final Set<Edge> edgesSet;
     /**
-     * Map from each node to the List of edges connected to that node.
-     *
-     * @serial
-     */
-    Map<Node, Set<Edge>> edgeLists;
-    /**
      * A list of the nodes in the graph, in the order in which they were added.
-     *
-     * @serial
      */
     private final List<Node> nodes;
     /**
@@ -70,15 +59,39 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     private final Map<String, Node> namesHash;
 
-//    private final Paths paths;
-
+    /**
+     * The attributes.
+     */
     private final Map<String, Object> attributes = new HashMap<>();
 
+    /**
+     * Map from each node to the List of edges connected to that node.
+     */
+    Map<Node, Set<Edge>> edgeLists;
+
+    /**
+     * The property change support.
+     */
     private transient PropertyChangeSupport pcs;
 
+    /**
+     * The underline triples.
+     */
     private Set<Triple> underLineTriples = new HashSet<>();
+
+    /**
+     * The dotted underline triples.
+     */
     private Set<Triple> dottedUnderLineTriples = new HashSet<>();
+
+    /**
+     * The ambiguous triples.
+     */
     private Set<Triple> ambiguousTriples = new HashSet<>();
+
+    /**
+     * The parents hash.
+     */
     private Map<Node, List<Node>> parentsHash = new HashMap<>();
 
     //==============================CONSTUCTORS===========================//
@@ -104,7 +117,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * new graph.
      *
      * @param graph the graph from which nodes and edges are is to be extracted.
-     * @throws IllegalArgumentException if a duplicate edge is added.
+     * @throws java.lang.IllegalArgumentException if a duplicate edge is added.
      */
     public EdgeListGraph(Graph graph) throws IllegalArgumentException {
         this();
@@ -127,6 +140,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.ambiguousTriples = graph.getAmbiguousTriples();
     }
 
+    /**
+     * <p>Constructor for EdgeListGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.EdgeListGraph} object
+     * @throws java.lang.IllegalArgumentException if any.
+     */
     public EdgeListGraph(EdgeListGraph graph) throws IllegalArgumentException {
         this.nodes = new ArrayList<>(graph.nodes);
         this.edgeLists = new HashMap<>();
@@ -146,6 +165,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     /**
      * Constructs a new graph, with no edges, using the given variable names.
+     *
+     * @param nodes a {@link java.util.List} object
      */
     public EdgeListGraph(List<Node> nodes) {
         this();
@@ -167,16 +188,17 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.EdgeListGraph} object
      */
     public static EdgeListGraph serializableInstance() {
         return new EdgeListGraph();
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Adds a directed edge to the graph from node A to node B.
-     *
-     * @param node1 the "from" node.
-     * @param node2 the "to" node.
      */
     @Override
     public boolean addDirectedEdge(Node node1, Node node2) {
@@ -185,10 +207,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Adds an undirected edge to the graph from node A to node B.
-     *
-     * @param node1 the "from" node.
-     * @param node2 the "to" node.
      */
     @Override
     public boolean addUndirectedEdge(Node node1, Node node2) {
@@ -197,10 +218,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Adds a nondirected edge to the graph from node A to node B.
-     *
-     * @param node1 the "from" node.
-     * @param node2 the "to" node.
      */
     @Override
     public boolean addNondirectedEdge(Node node1, Node node2) {
@@ -209,10 +229,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Adds a partially oriented edge to the graph from node A to node B.
-     *
-     * @param node1 the "from" node.
-     * @param node2 the "to" node.
      */
     @Override
     public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
@@ -221,10 +240,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Adds a bidirected edge to the graph from node A to node B.
-     *
-     * @param node1 the "from" node.
-     * @param node2 the "to" node.
      */
     @Override
     public boolean addBidirectedEdge(Node node1, Node node2) {
@@ -233,6 +251,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * IllegalArgument exception raised (by isDirectedFromTo(getEndpoint) or by getEdge) if there are multiple edges
      * between any of the node pairs.
      */
@@ -268,6 +288,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isDefCollider(Node node1, Node node2, Node node3) {
         if (node1 == null || node2 == null || node3 == null) return false;
@@ -281,7 +304,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the list of children for a node.
+     * {@inheritDoc}
      */
     @Override
     public List<Node> getChildren(Node node) {
@@ -300,6 +323,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return children;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getDegree() {
         int connectivity = 0;
@@ -317,7 +343,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the edge connecting node1 and node2, provided a unique such edge exists.
+     * {@inheritDoc}
      */
     @Override
     public Edge getEdge(Node node1, Node node2) {
@@ -338,6 +364,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Edge getDirectedEdge(Node node1, Node node2) {
         List<Edge> edges = getEdges(node1, node2);
@@ -360,7 +389,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the list of parents for a node.
+     * {@inheritDoc}
      */
     @Override
     public List<Node> getParents(Node node) {
@@ -390,20 +419,23 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the number of edges into the given node.
+     * {@inheritDoc}
      */
     @Override
     public int getIndegree(Node node) {
         return getParents(node).size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getDegree(Node node) {
         return this.edgeLists.get(node).size();
     }
 
     /**
-     * @return the number of edges out of the given node.
+     * {@inheritDoc}
      */
     @Override
     public int getOutdegree(Node node) {
@@ -411,17 +443,18 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines whether some edge or other exists between two nodes.
      */
     @Override
     public boolean isAdjacentTo(Node node1, Node node2) {
-        if (node1 == null || node2 == null || this.edgeLists.get(node1) == null || this.edgeLists.get(node2) == null) {
+        if (!this.edgeLists.containsKey(node1) || !this.edgeLists.containsKey(node2)) {
             return false;
         }
 
-        // Trying to fix a concurency problem.
         for (Edge edge : this.edgeLists.get(node1)) {
-            if (Edges.traverse(node1, edge) == node2 && Edges.traverse(node2, edge) == node1) {
+            if (Edges.traverse(node1, edge) == node2) {
                 return true;
             }
         }
@@ -430,6 +463,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines whether one node is a child of another.
      */
     @Override
@@ -444,6 +479,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<Node> getSepset(Node x, Node y) {
         return new Paths(this).getSepset(x, y);
@@ -452,6 +490,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     /**
      * Determines whether x and y are d-separated given z.
      *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
      * @return True if the nodes in x are all d-separated from nodes in y given  nodes in z, false if not.
      */
     public boolean isMSeparatedFrom(Node x, Node y, Set<Node> z) {
@@ -461,6 +502,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     /**
      * Determines whether two nodes are d-separated given z.
      *
+     * @param x a {@link java.util.Set} object
+     * @param y a {@link java.util.Set} object
+     * @param z a {@link java.util.Set} object
      * @return True if the nodes in x are all d-separated from nodes in y given  nodes in z, false if not.
      */
     public boolean isMSeparatedFrom(Set<Node> x, Set<Node> y, Set<Node> z) {
@@ -471,6 +515,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * Determines whether two nodes are d-separated given z.
      *
      * @param ancestors A map of ancestors for each node.
+     * @param x         a {@link java.util.Set} object
+     * @param y         a {@link java.util.Set} object
+     * @param z         a {@link java.util.Set} object
      * @return True if the nodes are d-separated given z, false if not.
      */
     public boolean isMSeparatedFrom(Set<Node> x, Set<Node> y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
@@ -478,11 +525,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines whether one node is a parent of another.
      *
-     * @param node1 the first node.
-     * @param node2 the second node.
-     * @return true if node1 is a parent of node2, false if not.
      * @see #isChildOf
      * @see #getParents
      * @see #getChildren
@@ -501,13 +547,11 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Transfers nodes and edges from one graph to another. One way this is used is to change graph types. One
      * constructs a new graph based on the old graph, and this method is called to transfer the nodes and edges of the
      * old graph to the new graph.
-     *
-     * @param graph the graph from which nodes and edges are to be pilfered.
-     * @throws IllegalArgumentException This exception is thrown if adding some node or edge violates one of the
-     *                                  basicConstraints of this graph.
      */
     @Override
     public void transferNodesAndEdges(Graph graph)
@@ -529,6 +573,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void transferAttributes(Graph graph)
             throws IllegalArgumentException {
@@ -539,12 +586,17 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.attributes.putAll(graph.getAllAttributes());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Paths paths() {
         return new Paths(this);
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines whether a node in a graph is exogenous.
      */
     @Override
@@ -553,9 +605,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the set of nodes adjacent to the given node. If there are multiple edges between X and Y, Y will show up
-     * twice in the list of adjacencies for X, for optimality; simply create a list an and array from these to eliminate
-     * the duplication.
+     * {@inheritDoc}
      */
     @Override
     public List<Node> getAdjacentNodes(Node node) {
@@ -574,6 +624,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Removes the edge connecting the two given nodes.
      */
     @Override
@@ -595,7 +647,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the endpoint along the edge from node to node2 at the node2 end.
+     * {@inheritDoc}
      */
     @Override
     public Endpoint getEndpoint(Node node1, Node node2) {
@@ -611,12 +663,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * If there is currently an edge from node1 to node2, sets the endpoint at node2 to the given endpoint; if there is
      * no such edge, adds an edge --# where # is the given endpoint. Setting an endpoint to null, provided there is
      * exactly one edge connecting the given nodes, removes the edge. (If there is more than one edge, an exception is
      * thrown.)
-     *
-     * @throws IllegalArgumentException if the edge with the revised endpoint cannot be added to the graph.
      */
     @Override
     public boolean setEndpoint(Node from, Node to, Endpoint endPoint)
@@ -634,6 +686,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Nodes adjacent to the given node with the given proximal endpoint.
      */
     @Override
@@ -651,6 +705,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Nodes adjacent to the given node with the given distal endpoint.
      */
     @Override
@@ -668,10 +724,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Adds an edge to the graph.
-     *
-     * @param edge the edge to be added
-     * @return true if the edge was added, false if not.
      */
     @Override
     public boolean addEdge(Edge edge) {
@@ -711,11 +766,10 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Adds a node to the graph. Precondition: The proposed name of the node cannot already be used by any other node in
      * the same graph.
-     *
-     * @param node the node to be added.
-     * @return true if the node was added, false if not.
      */
     @Override
     public boolean addNode(Node node) {
@@ -749,7 +803,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the set of edges in the graph. No particular ordering of the edges in the list is guaranteed.
+     * {@inheritDoc}
      */
     @Override
     public Set<Edge> getEdges() {
@@ -757,6 +811,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines if the graph contains a particular edge.
      */
     @Override
@@ -765,6 +821,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines whether the graph contains a particular node.
      */
     @Override
@@ -773,8 +831,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the set of edges connected to a particular node. No particular ordering of the edges in the list is
-     * guaranteed.
+     * {@inheritDoc}
      */
     @Override
     public List<Edge> getEdges(Node node) {
@@ -785,6 +842,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return new ArrayList<>(list);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         int hashCode = 0;
@@ -797,8 +857,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return true iff the given object is a graph that is equal to this graph, in the sense that it contains the same
-     * nodes and the edges are isomorphic.
+     * {@inheritDoc}
      */
     @Override
     public boolean equals(Object o) {
@@ -806,8 +865,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             return false;
         }
 
-        if (o instanceof EdgeListGraph) {
-            EdgeListGraph _o = (EdgeListGraph) o;
+        if (o instanceof EdgeListGraph _o) {
             boolean nodesEqual = new HashSet<>(_o.nodes).equals(new HashSet<>(this.nodes));
             boolean edgesEqual = new HashSet<>(_o.edgesSet).equals(new HashSet<>(this.edgesSet));
             return (nodesEqual && edgesEqual);
@@ -820,6 +878,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Resets the graph so that it is fully connects it using #-# edges, where # is the given endpoint.
      */
     @Override
@@ -843,6 +903,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void reorientAllWith(Endpoint endpoint) {
         for (Edge edge : getEdges()) {
@@ -855,7 +918,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the node with the given name, or null if no such node exists.
+     * {@inheritDoc}
      */
     @Override
     public Node getNode(String name) {
@@ -863,7 +926,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the number of nodes in the graph.
+     * {@inheritDoc}
      */
     @Override
     public int getNumNodes() {
@@ -871,7 +934,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the number of edges in the (entire) graph.
+     * {@inheritDoc}
      */
     @Override
     public int getNumEdges() {
@@ -879,7 +942,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the number of edges connected to a particular node in the graph.
+     * {@inheritDoc}
      */
     @Override
     public int getNumEdges(Node node) {
@@ -887,11 +950,17 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return (list == null) ? 0 : list.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getNodes() {
         return new ArrayList<>(this.nodes);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNodes(List<Node> nodes) {
         if (nodes.size() != this.nodes.size()) {
@@ -904,6 +973,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Removes all nodes (and therefore all edges) from the graph.
      */
     @Override
@@ -929,13 +1000,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Removes an edge from the graph. (Note: It is dangerous to make a recursive call to this method (as it stands)
      * from a method containing certain types of iterators. The problem is that if one uses an iterator that iterates
      * over the edges of node A or node B, and tries in the process to remove those edges using this method, a
      * concurrent modification exception will be thrown.)
-     *
-     * @param edge the edge to remove.
-     * @return true if the edge was removed, false if not.
      */
     @Override
     public boolean removeEdge(Edge edge) {
@@ -966,10 +1036,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Removes any relevant edge objects found in this collection. G
-     *
-     * @param edges the collection of edges to remove.
-     * @return true if any edges in the collection were removed, false if not.
      */
     @Override
     public boolean removeEdges(Collection<Edge> edges) {
@@ -984,11 +1053,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Removes all edges connecting node A to node B.
-     *
-     * @param node1 the first node.,
-     * @param node2 the second node.
-     * @return true if edges were removed between A and B, false if not.
      */
     @Override
     public boolean removeEdges(Node node1, Node node2) {
@@ -996,6 +1063,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Removes a node from the graph.
      */
     @Override
@@ -1038,10 +1107,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Removes any relevant node objects found in this collection.
-     *
-     * @param newNodes the collection of nodes to remove.
-     * @return true if nodes from the collection were removed, false if not.
      */
     @Override
     public boolean removeNodes(List<Node> newNodes) {
@@ -1056,13 +1124,16 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return a string representation of the graph.
+     * {@inheritDoc}
      */
     @Override
     public String toString() {
         return GraphUtils.graphToText(this, false);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph subgraph(List<Node> nodes) {
         Graph graph = new EdgeListGraph(nodes);
@@ -1079,7 +1150,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the edges connecting node1 and node2.
+     * {@inheritDoc}
      */
     @Override
     public List<Edge> getEdges(Node node1, Node node2) {
@@ -1100,6 +1171,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getNodeNames() {
         List<String> names = new ArrayList<>();
@@ -1114,6 +1188,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     //===============================PRIVATE METHODS======================//
 
     /**
+     * <p>Getter for the field <code>pcs</code>.</p>
+     *
      * @return this object.
      */
     protected PropertyChangeSupport getPcs() {
@@ -1123,16 +1199,25 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         return this.pcs;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isParameterizable(Node node) {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isTimeLagModel() {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public TimeLagGraph getTimeLagGraph() {
         return null;
@@ -1145,7 +1230,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -1163,6 +1253,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
     }
 
+    /**
+     * <p>changeName.</p>
+     *
+     * @param name    a {@link java.lang.String} object
+     * @param newName a {@link java.lang.String} object
+     */
     public void changeName(String name, String newName) {
         Node node = this.namesHash.get(name);
         this.namesHash.remove(name);
@@ -1170,35 +1266,58 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.namesHash.put(newName, node);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getAttribute(String key) {
         return this.attributes.get(key);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeAttribute(String key) {
         this.attributes.remove(key);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         getPcs().addPropertyChangeListener(l);
     }
 
+    /**
+     * <p>Getter for the field <code>ambiguousTriples</code>.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Triple> getAmbiguousTriples() {
         return new HashSet<>(this.ambiguousTriples);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setAmbiguousTriples(Set<Triple> triples) {
         this.ambiguousTriples.clear();
 
@@ -1207,15 +1326,27 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
     }
 
+    /**
+     * <p>getUnderLines.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Triple> getUnderLines() {
         return new HashSet<>(this.underLineTriples);
     }
 
+    /**
+     * <p>getDottedUnderlines.</p>
+     *
+     * @return a {@link java.util.Set} object
+     */
     public Set<Triple> getDottedUnderlines() {
         return new HashSet<>(this.dottedUnderLineTriples);
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * States whether r-s-r is an underline triple or not.
      */
     public boolean isAmbiguousTriple(Node x, Node y, Node z) {
@@ -1223,16 +1354,24 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * States whether r-s-r is an underline triple or not.
      */
     public boolean isUnderlineTriple(Node x, Node y, Node z) {
         return this.underLineTriples.contains(new Triple(x, y, z));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void addAmbiguousTriple(Node x, Node y, Node z) {
         this.ambiguousTriples.add(new Triple(x, y, z));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void addUnderlineTriple(Node x, Node y, Node z) {
         Triple triple = new Triple(x, y, z);
 
@@ -1243,6 +1382,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.underLineTriples.add(new Triple(x, y, z));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void addDottedUnderlineTriple(Node x, Node y, Node z) {
         Triple triple = new Triple(x, y, z);
 
@@ -1253,18 +1395,30 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.dottedUnderLineTriples.add(triple);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void removeAmbiguousTriple(Node x, Node y, Node z) {
         this.ambiguousTriples.remove(new Triple(x, y, z));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void removeUnderlineTriple(Node x, Node y, Node z) {
         this.underLineTriples.remove(new Triple(x, y, z));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
         this.dottedUnderLineTriples.remove(new Triple(x, y, z));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setUnderLineTriples(Set<Triple> triples) {
         this.underLineTriples.clear();
 
@@ -1273,6 +1427,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setDottedUnderLineTriples(Set<Triple> triples) {
         this.dottedUnderLineTriples.clear();
 
@@ -1281,6 +1438,9 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         }
     }
 
+    /**
+     * <p>removeTriplesNotInGraph.</p>
+     */
     public void removeTriplesNotInGraph() {
         for (Triple triple : new HashSet<>(this.ambiguousTriples)) {
             if (!containsNode(triple.getX()) || !containsNode(triple.getY())
@@ -1321,6 +1481,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
 
     /**
+     * <p>getTriplesClassificationTypes.</p>
+     *
      * @return the names of the triple classifications. Coordinates with
      * <code>getTriplesList</code>
      */
@@ -1334,8 +1496,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
 
     /**
-     * @return the list of triples corresponding to
-     * <code>getTripleClassificationNames</code> for the given node.
+     * {@inheritDoc}
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();

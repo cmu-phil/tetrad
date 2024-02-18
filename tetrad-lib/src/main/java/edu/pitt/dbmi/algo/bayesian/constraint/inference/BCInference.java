@@ -31,6 +31,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * Feb 26, 2014 8:07:20 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class BCInference {
 

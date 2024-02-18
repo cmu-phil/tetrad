@@ -17,10 +17,26 @@ import java.util.List;
  * resimulated and hsim data compare errors across all data sets. which simulated data errors are closest to original?
  * <p>
  * Created by Erich on 6/19/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class HsimRobustCompare {
 
     //*************Public Methods*****************8//
+
+    /**
+     * <p>run.</p>
+     *
+     * @param numVars         a int
+     * @param edgesPerNode    a double
+     * @param numCases        a int
+     * @param penaltyDiscount a double
+     * @param resimSize       a int
+     * @param repeat          a int
+     * @param verbose         a boolean
+     * @return a {@link java.util.List} object
+     */
     public static List<double[]> run(int numVars, double edgesPerNode, int numCases, double penaltyDiscount,
                                      int resimSize, int repeat, boolean verbose) {
         //public static void main(String[] args) {

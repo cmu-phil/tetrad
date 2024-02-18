@@ -38,12 +38,17 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
     private final NumberFormat nf;
     private String emptyString = "";
 
+    /**
+     * <p>Constructor for NumberCellRenderer.</p>
+     */
     public NumberCellRenderer() {
         this(NumberFormatUtil.getInstance().getNumberFormat());
     }
 
     /**
      * Constructs a new number cell renderer.
+     *
+     * @param nf a {@link java.text.NumberFormat} object
      */
     public NumberCellRenderer(NumberFormat nf) {
         if (nf == null) {
@@ -57,9 +62,9 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the value to the formatted version of the stored numerical value.
-     *
-     * @param value the stored numerical value.
      */
     public void setValue(Object value) {
         if (value == null) {
@@ -82,6 +87,11 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
         return this.emptyString;
     }
 
+    /**
+     * <p>Setter for the field <code>emptyString</code>.</p>
+     *
+     * @param emptyString a {@link java.lang.String} object
+     */
     public void setEmptyString(String emptyString) {
         if (emptyString == null) {
             throw new NullPointerException();

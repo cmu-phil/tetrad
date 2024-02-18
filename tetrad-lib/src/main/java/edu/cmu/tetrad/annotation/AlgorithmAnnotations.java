@@ -28,10 +28,11 @@ import java.util.List;
 
 /**
  * Annotations for algorithms.
- *
+ * <p>
  * Sep 26, 2017 12:19:41 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
 
@@ -43,6 +44,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
 
     /**
      * Gets the instance of this class.
+     *
      * @return instance of this class
      */
     public static AlgorithmAnnotations getInstance() {
@@ -51,6 +53,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
 
     /**
      * Filters out algorithms that are not for the given data type.
+     *
      * @param list list of algorithms
      * @return list of algorithms that are not for the given data type
      */
@@ -60,6 +63,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
 
     /**
      * Checks if the algorithm takes multiple data sets.
+     *
      * @param clazz algorithm class
      * @return true if the algorithm takes multiple data sets
      */
@@ -69,6 +73,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
 
     /**
      * Checks if the algorithm takes knowledge.
+     *
      * @param clazz algorithm class
      * @return true if the algorithm takes knowledge
      */
@@ -78,6 +83,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
 
     /**
      * Checks if the algorithm takes an external graph.
+     *
      * @param clazz algorithm class
      * @return true if the algorithm takes an external graph
      */
@@ -87,6 +93,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
 
     /**
      * Checks if the algorithm requires independence test.
+     *
      * @param clazz algorithm class
      * @return true if the algorithm requires independence test
      */
@@ -96,6 +103,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
 
     /**
      * Checks if the algorithm requires a score.
+     *
      * @param clazz algorithm class
      * @return true if the algorithm requires a score
      */

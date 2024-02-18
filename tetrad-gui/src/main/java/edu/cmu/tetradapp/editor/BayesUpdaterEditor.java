@@ -38,6 +38,7 @@ import java.beans.PropertyChangeEvent;
  * Lets the user calculate updated probabilities for a Bayes net.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
 
@@ -123,6 +124,8 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
 
     /**
      * Constructs a new instantiated model editor from a Bayes IM wrapper.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.RowSummingExactWrapper} object
      */
     public BayesUpdaterEditor(RowSummingExactWrapper wrapper) {
         this((UpdaterWrapper) wrapper);
@@ -130,6 +133,8 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
 
     /**
      * Constructs a new instantiated model editor from a Bayes IM wrapper.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper} object
      */
     public BayesUpdaterEditor(CptInvariantUpdaterWrapper wrapper) {
         this((UpdaterWrapper) wrapper);
@@ -137,11 +142,18 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
 
     /**
      * Constructs a new instantiated model editor from a Bayes IM wrapper.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.ApproximateUpdaterWrapper} object
      */
     public BayesUpdaterEditor(ApproximateUpdaterWrapper wrapper) {
         this((UpdaterWrapper) wrapper);
     }
 
+    /**
+     * <p>Constructor for BayesUpdaterEditor.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.JunctionTreeWrapper} object
+     */
     public BayesUpdaterEditor(JunctionTreeWrapper wrapper) {
         this((UpdaterWrapper) wrapper);
     }
@@ -149,6 +161,8 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
     //================================PUBLIC METHODS========================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     public void setName(String name) {
@@ -165,6 +179,11 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
         return this.evidenceWizardMultiple;
     }
 
+    /**
+     * <p>getEditDelegate.</p>
+     *
+     * @return a {@link javax.swing.JComponent} object
+     */
     public JComponent getEditDelegate() {
         return this.evidenceWizardSingle;
     }
@@ -179,6 +198,8 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
 
     /**
      * Reacts to property change events.
+     *
+     * @param e a {@link java.beans.PropertyChangeEvent} object
      */
     public void propertyChange(PropertyChangeEvent e) {
         if ("editorClosing".equals(e.getPropertyName())) {

@@ -26,23 +26,24 @@ import java.util.concurrent.ConcurrentHashMap;
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static org.apache.commons.math3.util.FastMath.*;
 
-/***
- * Gives an implementation of the Kernal Independence Test (KCI) by Kun Zhang, which is a
- * general test of conditional independence. The reference is here:
+/**
+ * Gives an implementation of the Kernal Independence Test (KCI) by Kun Zhang, which is a general test of conditional
+ * independence. The reference is here:
  * <p>
- * Zhang, K., Peters, J., Janzing, D., and Schölkopf, B. (2012). Kernel-based conditional independence
- * test and application in causal discovery. arXiv preprint arXiv:1202.3775.
+ * Zhang, K., Peters, J., Janzing, D., and Schölkopf, B. (2012). Kernel-based conditional independence test and
+ * application in causal discovery. arXiv preprint arXiv:1202.3775.
  * <p>
  * Please see that paper, especially Theorem 4 and Proposition 5.
  * <p>
  * Using optimal kernel bandwidths suggested by Bowman and Azzalini (1997):
  * <p>
- * Bowman, A. W., and Azzalini, A. (1997). Applied smoothing techniques for data analysis: the kernel
- * approach with S-Plus illustrations (Vol. 18). OUP Oxford.
+ * Bowman, A. W., and Azzalini, A. (1997). Applied smoothing techniques for data analysis: the kernel approach with
+ * S-Plus illustrations (Vol. 18). OUP Oxford.
  *
  * @author kunzhang
  * @author Vineet Raghu on 7/3/2016
  * @author josephramsey refactoring 7/4/2018
+ * @version $Id: $Id
  */
 public class Kci implements IndependenceTest {
 
@@ -106,18 +107,23 @@ public class Kci implements IndependenceTest {
 
 
     /**
-     * @throws javax.help.UnsupportedOperationException Method not implemented.
+     * {@inheritDoc}
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns True if the given independence question is judged true, false if not. The independence question is of the
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      *
-     * @return The independence result.
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
@@ -247,18 +253,18 @@ public class Kci implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variable by the given name.
-     *
-     * @return This variable.
      */
     public Node getVariable(String name) {
         return this.data.getVariable(name);
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true if y is determined the variable in z.
-     *
-     * @return True, if so.
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException();
@@ -274,9 +280,9 @@ public class Kci implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the significance level.
-     *
-     * @param alpha This alpha.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -302,7 +308,10 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Method not implemented.
+     * <p>getCov.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @throws java.lang.UnsupportedOperationException Method not implemented.
      */
     public ICovarianceMatrix getCov() {
         throw new UnsupportedOperationException("Method not implemented.");
@@ -331,6 +340,7 @@ public class Kci implements IndependenceTest {
     /**
      * Returns alpha - p.
      *
+     * @param result a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      * @return This number.
      */
     public double getScore(IndependenceResult result) {
@@ -386,9 +396,9 @@ public class Kci implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true if verbose output is printed.
-     *
-     * @return True, if so.
      */
     @Override
     public boolean isVerbose() {
@@ -396,9 +406,9 @@ public class Kci implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether verbose output is printed.
-     *
-     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

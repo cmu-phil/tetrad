@@ -26,18 +26,39 @@ import java.lang.annotation.*;
  * Aug 31, 2017 4:42:08 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface TestOfIndependence {
 
+    /**
+     * Name of the test.
+     *
+     * @return name of the test
+     */
     String name();
 
+    /**
+     * Command of the test.
+     *
+     * @return command of the test
+     */
     String command();
 
+    /**
+     * Description of the test.
+     *
+     * @return description of the test
+     */
     String description() default "";
 
+    /**
+     * Type of the test.
+     *
+     * @return type of the test
+     */
     DataType[] dataType();
 
 }

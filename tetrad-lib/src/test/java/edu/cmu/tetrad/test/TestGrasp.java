@@ -1471,11 +1471,6 @@ public final class TestGrasp {
                     boss.setNonSingularDepth(1);
                     boss.setUncoveredDepth(1);
 
-//                    OtherPermAlgs spAlg = new OtherPermAlgs(test);
-//                    spAlg.setUsePearl(true);
-//                    spAlg.setMethod(OtherPermAlgs.Method.SP);
-//                    spAlg.setUseDataOrder(true);
-//                    spAlg.setNumVariables(numVars);
                     List<Node> spPi = boss.bestOrder(variables);
                     Graph spGraph = boss.getGraph(true);
                     int spNumEdges = spGraph.getNumEdges();
@@ -3357,30 +3352,6 @@ public final class TestGrasp {
         }
     }
 
-    private static class Ret {
-        private final String label;
-        private final IndependenceFacts facts;
-        private int truth;
-
-        public Ret(String label, IndependenceFacts facts, int truth) {
-            this.label = label;
-            this.facts = facts;
-            this.truth = truth;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public IndependenceFacts getFacts() {
-            return facts;
-        }
-
-        public int getTruth() {
-            return truth;
-        }
-    }
-
     public void testJaime() {
         try {
 //            String path = "/Users/josephramsey/Downloads/sample100genes.csv1.imputed.txt";
@@ -3403,10 +3374,34 @@ public final class TestGrasp {
             parameters.set(Params.SAMPLE_STYLE, 1);
 
 //            RestrictedBoss alg = new RestrictedBoss(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
-            edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+            Cstar alg = new Cstar(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore());
             Graph graph = alg.search(data, parameters);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static class Ret {
+        private final String label;
+        private final IndependenceFacts facts;
+        private int truth;
+
+        public Ret(String label, IndependenceFacts facts, int truth) {
+            this.label = label;
+            this.facts = facts;
+            this.truth = truth;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public IndependenceFacts getFacts() {
+            return facts;
+        }
+
+        public int getTruth() {
+            return truth;
         }
     }
 }

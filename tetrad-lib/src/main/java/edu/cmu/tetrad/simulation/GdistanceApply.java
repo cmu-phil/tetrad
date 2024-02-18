@@ -9,15 +9,24 @@ import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
 /**
  * Created by Erich on 7/14/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class GdistanceApply {
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         final double xdist = 2.4;
         final double ydist = 2.4;
@@ -67,7 +76,7 @@ public class GdistanceApply {
             System.out.println("Done running Distance. Elapsed time: " + (System.nanoTime() - timegraph3) / 1000000000 + "s");
             System.out.println("Total elapsed time: " + (System.nanoTime() - timestart) / 1000000000 + "s");
 
-            PrintWriter writer = new PrintWriter("Gdistances.txt", "UTF-8");
+            PrintWriter writer = new PrintWriter("Gdistances.txt", StandardCharsets.UTF_8);
             writer.println(distance);
             writer.close();
         } catch (Exception IOException) {

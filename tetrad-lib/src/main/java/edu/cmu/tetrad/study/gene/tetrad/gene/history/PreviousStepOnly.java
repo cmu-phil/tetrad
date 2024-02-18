@@ -28,12 +28,18 @@ import java.util.List;
  * Initializes a graph by adding the previous time step only of each variable.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PreviousStepOnly implements GraphInitializer {
+    /**
+     * <p>Constructor for PreviousStepOnly.</p>
+     */
     public PreviousStepOnly() {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Randomizes the graph.
      */
     public void initialize(LagGraph lagGraph) {

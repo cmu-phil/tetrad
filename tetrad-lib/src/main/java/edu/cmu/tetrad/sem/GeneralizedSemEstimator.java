@@ -45,6 +45,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * Estimates a Generalized SEM I'M given a Generalized SEM PM and a data set.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GeneralizedSemEstimator {
 
@@ -136,6 +137,10 @@ public class GeneralizedSemEstimator {
     /**
      * Maximizes likelihood equation by equation. Assumes the equations are recursive and that each has exactly one
      * error term.
+     *
+     * @param pm   a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemIm} object
      */
     public GeneralizedSemIm estimate(GeneralizedSemPm pm, DataSet data) {
         StringBuilder builder = new StringBuilder();
@@ -201,10 +206,20 @@ public class GeneralizedSemEstimator {
         return estIm;
     }
 
+    /**
+     * <p>Getter for the field <code>report</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getReport() {
         return this.report;
     }
 
+    /**
+     * <p>Getter for the field <code>aSquaredStar</code>.</p>
+     *
+     * @return a double
+     */
     public double getaSquaredStar() {
         return this.aSquaredStar;
     }
@@ -227,10 +242,24 @@ public class GeneralizedSemEstimator {
         return pair.getPoint();
     }
 
+    /**
+     * Context.
+     */
     public static class MyContext implements Context {
+
+        /**
+         * The variable values.
+         */
         final Map<String, Double> variableValues = new HashMap<>();
+
+        /**
+         * The parameter values.
+         */
         final Map<String, Double> parameterValues = new HashMap<>();
 
+        /**
+         * Get the value of a variable or parameter.
+         */
         public Double getValue(String term) {
             Double value = this.parameterValues.get(term);
 
@@ -247,20 +276,55 @@ public class GeneralizedSemEstimator {
             throw new IllegalArgumentException("No value recorded for '" + term + "'");
         }
 
+        /**
+         * <p>putParameterValue.</p>
+         *
+         * @param s         a {@link java.lang.String} object
+         * @param parameter a double
+         */
         public void putParameterValue(String s, double parameter) {
             this.parameterValues.put(s, parameter);
         }
 
+        /**
+         * <p>putVariableValue.</p>
+         *
+         * @param s     a {@link java.lang.String} object
+         * @param value a double
+         */
         public void putVariableValue(String s, double value) {
             this.variableValues.put(s, value);
         }
     }
 
+    /**
+     * Fitting function for the likelihood.
+     */
     static class LikelihoodFittingFunction implements MultivariateFunction {
+
+        /**
+         * The pm.
+         */
         private final GeneralizedSemPm pm;
+
+        /**
+         * The context.
+         */
         private final MyContext context;
+
+        /**
+         * The parameters.
+         */
         private final List<String> parameters;
+
+        /**
+         * The tier ordering.
+         */
         private final List<Node> tierOrdering;
+
+        /**
+         * The data values.
+         */
         private final double[][] dataValues;
 
         /**
@@ -275,6 +339,12 @@ public class GeneralizedSemEstimator {
             this.dataValues = GeneralizedSemEstimator.getDataValues(data, tierOrdering);
         }
 
+        /**
+         * <p>value.</p>
+         *
+         * @param parameters an array of double.
+         * @return a double
+         */
         @Override
         public double value(double[] parameters) {
             for (double parameter : parameters) {
@@ -339,18 +409,61 @@ public class GeneralizedSemEstimator {
         }
     }
 
+    /**
+     * Fitting function for the likelihood.
+     */
     static class LikelihoodFittingFunction2 implements MultivariateFunction {
 
+        /**
+         * The pm.
+         */
         private final GeneralizedSemPm pm;
+
+        /**
+         * The data.
+         */
         private final DataSet data;
+
+        /**
+         * The parameters.
+         */
         private final List<String> parameters;
+
+        /**
+         * The tier ordering.
+         */
         private final List<Node> tierOrdering;
+
+        /**
+         * The index.
+         */
         private final int index;
+
+        /**
+         * The context.
+         */
         private final MyContext context;
 
+        /**
+         * The disturbances.
+         */
         private List<Double> disturbances;
+
+        /**
+         * The distribution.
+         */
         private RealDistribution distribution;
 
+        /**
+         * Constructs a new CoefFittingFunction for the given Sem.
+         *
+         * @param index        a int
+         * @param pm           a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+         * @param parameters   a {@link java.util.List} object
+         * @param tierOrdering a {@link java.util.List} object
+         * @param data         a {@link edu.cmu.tetrad.data.DataSet} object
+         * @
+         */
         public LikelihoodFittingFunction2(int index, GeneralizedSemPm pm, List<String> parameters,
                                           List<Node> tierOrdering, DataSet data, MyContext context) {
             this.pm = pm;
@@ -364,6 +477,12 @@ public class GeneralizedSemEstimator {
 
         }
 
+        /**
+         * <p>value.</p>
+         *
+         * @param values an array of double.
+         * @return a double
+         */
         @Override
         public double value(double[] values) {
             for (double value : values) {
@@ -434,15 +553,30 @@ public class GeneralizedSemEstimator {
             return sum;
         }
 
+        /**
+         * <p>Getter for the field <code>disturbances</code>.</p>
+         *
+         * @return a {@link java.util.List} object
+         */
         public List<Node> getTierOrdering() {
             return this.tierOrdering;
         }
 
 
+        /**
+         * <p>Getter for the field <code>disturbances</code>.</p>
+         *
+         * @return a {@link java.util.List} object
+         */
         public List<Double> getResiduals() {
             return this.disturbances;
         }
 
+        /**
+         * <p>Getter for the field <code>distribution</code>.</p>
+         *
+         * @return a {@link org.apache.commons.math3.distribution.RealDistribution} object
+         */
         public RealDistribution getDistribution() {
             return this.distribution;
         }

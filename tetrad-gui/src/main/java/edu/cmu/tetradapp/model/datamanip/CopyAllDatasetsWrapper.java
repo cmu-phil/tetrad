@@ -34,11 +34,18 @@ import edu.cmu.tetradapp.model.PcRunner;
  * Tyler was lazy and didn't document this....
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class CopyAllDatasetsWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
 
+    /**
+     * <p>Constructor for CopyAllDatasetsWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public CopyAllDatasetsWrapper(DataWrapper wrapper, Parameters params) {
         LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", getDataModelList());
 
@@ -63,6 +70,7 @@ public class CopyAllDatasetsWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

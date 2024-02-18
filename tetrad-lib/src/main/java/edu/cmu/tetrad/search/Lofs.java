@@ -54,42 +54,75 @@ import static org.apache.commons.math3.util.FastMath.*;
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Score
  * @see Rule
  * @see Knowledge
  */
 public class Lofs {
-    // The graph to be oriented.
+    /**
+     * The graph to be oriented.
+     */
     private final Graph cpdag;
-    // The square root of 2 * pi.
+    /**
+     * The square root of 2 * pi.
+     */
     private final double SQRT = sqrt(2. * PI);
-    // The data to use to do the orientation.
+    /**
+     * The data to use to do the orientation.
+     */
     Matrix _data;
-    // The data to use to do the orientation.
+    /**
+     * The data to use to do the orientation.
+     */
     private List<DataSet> dataSets;
-    // The matrices to use to do the orientation.
+    /**
+     * The matrices to use to do the orientation.
+     */
     private List<Matrix> matrices;
-    // The alpha to use, where applicable.
+    /**
+     * The alpha to use, where applicable.
+     */
     private double alpha = 1.1;
-    // The regressions to use to do the orientation.
+    /**
+     * The regressions to use to do the orientation.
+     */
     private List<Regression> regressions;
-    // The variables to use to do the orientation.
+    /**
+     * The variables to use to do the orientation.
+     */
     private List<Node> variables;
-    // Whether orientation should be done in the stronger direction, where applicable.
+    /**
+     * Whether orientation should be done in the stronger direction, where applicable.
+     */
     private boolean orientStrongerDirection;
-    // For R2, whether cycles should be oriented.
+    /**
+     * For R2, whether cycles should be oriented.
+     */
     private boolean r2Orient2Cycles = true;
-    // The (LoFS) score to use.
+    /**
+     * The (LoFS) score to use.
+     */
     private Lofs.Score score = Lofs.Score.andersonDarling;
-    // The self-loop strength, if applicable.
+    /**
+     * The self-loop strength, if applicable.
+     */
     private double epsilon = 1.0;
-    // The knowledge to use to do the orientation.
+    /**
+     * The knowledge to use to do the orientation.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The rule to use to do the orientation.
+    /**
+     * The rule to use to do the orientation.
+     */
     private Rule rule = Rule.R1;
-    // The number of variables.
+    /**
+     * The number of variables.
+     */
     private double selfLoopStrength;
-    // The number of variables.
+    /**
+     * The number of variables.
+     */
     private double[] col;
 
     /**
@@ -98,6 +131,7 @@ public class Lofs {
      * @param graph    The graph to be oriented. Orientations for the graph will be overwritten.
      * @param dataSets A list of datasets to use to do the orientation. This may be just one dataset. If more than one
      *                 dataset are given, the data will be concatenated (pooled).
+     * @throws java.lang.IllegalArgumentException if any.
      */
     public Lofs(Graph graph, List<DataSet> dataSets)
             throws IllegalArgumentException {
@@ -768,6 +802,16 @@ public class Lofs {
     }
 
     // rowIndex is for the W matrix, not for the data.
+
+    /**
+     * <p>scoreRow.</p>
+     *
+     * @param rowIndex   a int
+     * @param data       a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param rows       a {@link java.util.List} object
+     * @param parameters a {@link java.util.List} object
+     * @return a double
+     */
     public double scoreRow(int rowIndex, Matrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
         if (this.col == null) {
             this.col = new double[data.getNumRows()];
@@ -1274,10 +1318,20 @@ public class Lofs {
         return false;
     }
 
+    /**
+     * <p>Setter for the field <code>epsilon</code>.</p>
+     *
+     * @param epsilon a double
+     */
     public void setEpsilon(double epsilon) {
         this.epsilon = epsilon;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -1287,6 +1341,9 @@ public class Lofs {
     }
 
     /**
+     * <p>getPValue.</p>
+     *
+     * @param fisherZ a double
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue(double fisherZ) {
@@ -1813,52 +1870,114 @@ public class Lofs {
         return median(g) / 0.6745 * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
+    /**
+     * <p>kernel.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel(double z) {
         return kernel1(z);
     }
 
     // Gaussian
+
+    /**
+     * <p>kernel1.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel1(double z) {
         return exp(-(z * z) / 2.) / this.SQRT; //(sqrt(2. * PI));
     }
 
     // Uniform
+
+    /**
+     * <p>kernel2.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel2(double z) {
         if (abs(z) > 1) return 0;
         else return .5;
     }
 
     // Triangular
+
+    /**
+     * <p>kernel3.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel3(double z) {
         if (abs(z) > 1) return 0;
         else return 1 - abs(z);
     }
 
     // Epanechnikov
+
+    /**
+     * <p>kernel4.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel4(double z) {
         if (abs(z) > 1) return 0;
         else return (3. / 4.) * (1. - z * z);
     }
 
     // Quartic
+
+    /**
+     * <p>kernel5.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel5(double z) {
         if (abs(z) > 1) return 0;
         else return 15. / 16. * pow(1. - z * z, 2.);
     }
 
     // Triweight
+
+    /**
+     * <p>kernel6.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel6(double z) {
         if (abs(z) > 1) return 0;
         else return 35. / 32. * pow(1. - z * z, 3.);
     }
 
     // Tricube
+
+    /**
+     * <p>kernel7.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel7(double z) {
         if (abs(z) > 1) return 0;
         else return 70. / 81. * pow(1. - z * z * z, 3.);
     }
 
     // Cosine
+
+    /**
+     * <p>kernel8.</p>
+     *
+     * @param z a double
+     * @return a double
+     */
     public double kernel8(double z) {
         if (abs(z) > 1) return 0;
         else return (PI / 4.) * cos((PI / 2.) * z);
@@ -1931,16 +2050,132 @@ public class Lofs {
      * Gives a list of options for non-Gaussian transformations that can be used for some scores.
      */
     public enum Score {
-        andersonDarling, skew, kurtosis, fifthMoment, absoluteValue,
-        exp, expUnstandardized, expUnstandardizedInverted, other, logcosh, entropy
+        /**
+         * The  Anderson-Darling score.
+         */
+        andersonDarling,
+        /**
+         * The skew.
+         */
+        skew,
+        /**
+         * The kurtosis.
+         */
+        kurtosis,
+
+        /**
+         * The fifth moment.
+         */
+        fifthMoment,
+        /**
+         * The absolute value.
+         */
+        absoluteValue,
+        /**
+         * The exp.
+         */
+        exp,
+        /**
+         * The exp unstandardized.
+         */
+        expUnstandardized,
+        /**
+         * The exp unstandardized inverted.
+         */
+        expUnstandardizedInverted,
+        /**
+         * Other score.
+         */
+        other,
+
+        /**
+         * The logcosh.
+         */
+        logcosh,
+
+        /**
+         * The  entropy.
+         */
+        entropy
     }
 
     /**
      * Give a list of options for rules for doing the non-Gaussian orientations.
      */
     public enum Rule {
-        IGCI, R1TimeLag, R1, R2, R3, Tanh, EB, Skew, SkewE, RSkew, RSkewE,
-        Patel, Patel25, Patel50, Patel75, Patel90, FastICA, RC
+        /**
+         * The IGCI rule.
+         */
+        IGCI,
+        /**
+         * The R1 Time Lag rule.
+         */
+        R1TimeLag,
+        /**
+         * The R1 rule.
+         */
+        R1,
+        /**
+         * The R2 rule.
+         */
+        R2,
+        /**
+         * The R3 rule.
+         */
+        R3,
+        /**
+         * The Tahn rule.
+         */
+        Tanh,
+        /**
+         * The EB rule.
+         */
+        EB,
+        /**
+         * The Skew rule.
+         */
+        Skew,
+        /**
+         * The SkewE rule.
+         */
+        SkewE,
+        /**
+         * The RSkew rule.
+         */
+        RSkew,
+        /**
+         * The RSkewE rule.
+         */
+        RSkewE,
+        /**
+         * The Patel rule.
+         */
+        Patel,
+        /**
+         * The Patel25 rule.
+         */
+        Patel25,
+
+        /**
+         * The Patel50 rule.
+         */
+        Patel50,
+        /**
+         * The Patel75 rule.
+         */
+        Patel75,
+        /**
+         * The Patel90 rule.
+         */
+        Patel90,
+        /**
+         * The FastICA rule.
+         */
+        FastICA,
+        /**
+         * The RC rule.
+         */
+        RC
     }
 
 }

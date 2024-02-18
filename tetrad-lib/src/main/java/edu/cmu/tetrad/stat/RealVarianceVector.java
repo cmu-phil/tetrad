@@ -22,6 +22,7 @@ package edu.cmu.tetrad.stat;
  * Feb 9, 2016 3:14:08 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class RealVarianceVector implements RealVariance {
 
@@ -31,6 +32,11 @@ public class RealVarianceVector implements RealVariance {
 
     private final int numOfCols;
 
+    /**
+     * <p>Constructor for RealVarianceVector.</p>
+     *
+     * @param data an array of {@link double} objects
+     */
     public RealVarianceVector(double[][] data) {
         this.data = data;
         this.numOfRows = data.length;
@@ -50,6 +56,9 @@ public class RealVarianceVector implements RealVariance {
         return mean;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double[] compute(boolean biasCorrected) {
         double[] meanVariance = computeMeans();

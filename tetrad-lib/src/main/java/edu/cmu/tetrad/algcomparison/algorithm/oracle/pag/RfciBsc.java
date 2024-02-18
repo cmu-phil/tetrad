@@ -23,29 +23,32 @@ import java.util.List;
  * Runs RFCI-BSC, which is RFCI with bootstrap sampling of PAGs.
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ * @version $Id: $Id
  */
-
-// Taking this out for now until we can get a good description for it.
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "RFCI-BSC",
-//        command = "rfci-bsc",
-//        algoType = AlgType.forbid_latent_common_causes,
-//        dataType = DataType.Discrete
-//)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "RFCI-BSC",
+        command = "rfci-bsc",
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.Discrete
+)
 @Experimental
 public class RfciBsc implements Algorithm, HasKnowledge {
 
     @Serial
     private static final long serialVersionUID = 23L;
-    // Independence test; must the ProbabilisticTest.
+    /**
+     * Independence test; must the ProbabilisticTest.
+     */
     private final IndependenceWrapper test = new ProbabilisticTest();
-    // Knowledge
+    /**
+     * Knowledge
+     */
     private Knowledge knowledge = new Knowledge();
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the knowledge.
-     *
-     * @return the knowledge
      */
     @Override
     public Knowledge getKnowledge() {
@@ -53,21 +56,19 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the knowledge.
-     *
-     * @param knowledge a knowledge object.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Performs the RFCI-BSC search.
-     *
-     * @param dataSet    The data set to run to the search on.
-     * @param parameters The paramters of the search.
-     * @return the graph
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -94,10 +95,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the comparison graph.
-     *
-     * @param graph The true directed graph, if there is one.
-     * @return the comparison graph
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -106,9 +106,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the description of the algorithm.
-     *
-     * @return the description of the algorithm
      */
     @Override
     public String getDescription() {
@@ -116,9 +116,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the data type that the algorithm can handle, which is discrete.
-     *
-     * @return the data type that the algorithm can handle, which is discrete.
      */
     @Override
     public DataType getDataType() {
@@ -126,9 +126,9 @@ public class RfciBsc implements Algorithm, HasKnowledge {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the parameters of the algorithm.
-     *
-     * @return the parameters of the algorithm
      */
     @Override
     public List<String> getParameters() {

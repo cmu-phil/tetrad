@@ -29,21 +29,37 @@ import java.awt.geom.Ellipse2D;
  * The display component for measured nodes--an opaque rounded rectangle.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp {
+
+    /**
+     * True iff this display node is selected.
+     */
     private boolean selected;
 
+    /**
+     * <p>Constructor for MeasuredDisplaySmallComp.</p>
+     *
+     * @param name a {@link java.lang.String} object
+     */
     public MeasuredDisplaySmallComp(String name) {
         setBackground(DisplayNodeUtils.getNodeFillColor());
         setFont(DisplayNodeUtils.getFont());
         setName(name);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         super.setName(name);
         setSize(getPreferredSize());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
@@ -57,9 +73,9 @@ public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp 
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Paints the component.
-     *
-     * @param g the graphics context.
      */
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
@@ -84,6 +100,8 @@ public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp 
 
     /**
      * Calculates the size of the component based on its name.
+     *
+     * @return a {@link java.awt.Dimension} object
      */
     public Dimension getPreferredSize() {
         return new Dimension(30, 30);
@@ -93,6 +111,9 @@ public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp 
         return this.selected;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setSelected(boolean selected) {
         this.selected = selected;
     }

@@ -7,6 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * <p>GrowShrinkTree class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class GrowShrinkTree {
     private final Score score;
     private final Map<Node, Integer> index;
@@ -16,6 +22,13 @@ public class GrowShrinkTree {
     private List<Node> forbidden;
     private GSTNode root;
 
+    /**
+     * <p>Constructor for GrowShrinkTree.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
+     * @param index a {@link java.util.Map} object
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public GrowShrinkTree(Score score, Map<Node, Integer> index, Node node) {
         this.score = score;
         this.index = index;
@@ -27,31 +40,62 @@ public class GrowShrinkTree {
         this.root = new GSTNode(this);
     }
 
+    /**
+     * <p>trace.</p>
+     *
+     * @param prefix a {@link java.util.Set} object
+     * @param all    a {@link java.util.Set} object
+     * @return a double
+     */
     public double trace(Set<Node> prefix, Set<Node> all) {
         Set<Node> available = new HashSet<>(all);
         available.remove(this.node);
-        available.removeAll(this.forbidden);
+        this.forbidden.forEach(available::remove);
         Set<Node> parents = new HashSet<>();
         return this.root.trace(prefix, available, parents);
     }
 
+    /**
+     * <p>trace.</p>
+     *
+     * @param prefix  a {@link java.util.Set} object
+     * @param all     a {@link java.util.Set} object
+     * @param parents a {@link java.util.Set} object
+     * @return a double
+     */
     public double trace(Set<Node> prefix, Set<Node> all, Set<Node> parents) {
         Set<Node> available = new HashSet<>(all);
         available.remove(this.node);
-        available.removeAll(this.forbidden);
+        this.forbidden.forEach(available::remove);
         return this.root.trace(prefix, available, parents);
     }
 
+    /**
+     * <p>Getter for the field <code>node</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getNode() {
         return this.node;
     }
 
+    /**
+     * <p>getFirstLayer.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getFirstLayer() {
         List<Node> firstLayer = new ArrayList<>();
         for (GSTNode branch : this.root.branches) firstLayer.add(branch.getAdd());
         return firstLayer;
     }
 
+    /**
+     * <p>Getter for the field <code>index</code>.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.lang.Integer} object
+     */
     public Integer getIndex(Node node) {
         return this.index.get(node);
     }
@@ -64,42 +108,89 @@ public class GrowShrinkTree {
 //        return this.score.localScore(this.nodeIndex, X);
 //    }
 
+    /**
+     * <p>localScore.</p>
+     *
+     * @return a {@link java.lang.Double} object
+     */
     public Double localScore() {
         double score = this.score.localScore(this.nodeIndex);
         return Double.isNaN(score) ? 0 : score;
     }
 
+    /**
+     * <p>localScore.</p>
+     *
+     * @param X an array of {@link int} objects
+     * @return a {@link java.lang.Double} object
+     */
     public Double localScore(int[] X) {
         double score = this.score.localScore(this.nodeIndex, X);
         return Double.isNaN(score) ? Double.NEGATIVE_INFINITY : score;
     }
 
+    /**
+     * <p>isRequired.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
+     */
     public boolean isRequired(Node node) {
         return this.required.contains(node);
     }
 
+    /**
+     * <p>isForbidden.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
+     */
     public boolean isForbidden(Node node) {
         return this.forbidden.contains(node);
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return this.score.getVariables();
     }
 
+    /**
+     * <p>Getter for the field <code>required</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getRequired() {
         return this.required;
     }
 
+    /**
+     * <p>Getter for the field <code>forbidden</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getForbidden() {
         return this.forbidden;
     }
 
+    /**
+     * <p>setKnowledge.</p>
+     *
+     * @param required  a {@link java.util.List} object
+     * @param forbidden a {@link java.util.List} object
+     */
     public void setKnowledge(List<Node> required, List<Node> forbidden) {
         this.required = required;
         this.forbidden = forbidden;
         this.reset();
     }
 
+    /**
+     * <p>reset.</p>
+     */
     public void reset() {
         this.root = new GSTNode(this);
     }

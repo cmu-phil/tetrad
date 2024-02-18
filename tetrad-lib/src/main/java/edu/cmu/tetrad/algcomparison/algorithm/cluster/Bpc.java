@@ -14,6 +14,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +22,7 @@ import java.util.List;
  * Build Pure Clusters.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "BPC",
@@ -30,11 +32,20 @@ import java.util.List;
 @Bootstrapping
 public class Bpc implements Algorithm, ClusterAlgorithm {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs a new BPC algorithm.
+     */
     public Bpc() {
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Runs the BPC algorithm.
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -108,31 +119,48 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
-                    parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT),
-                    parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setParameters(parameters);
+                    new Knowledge(), parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the true graph if there is one.
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Graph dag = new EdgeListGraph(graph);
         return GraphTransforms.cpdagForDag(dag);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the description of the algorithm.
+     */
     @Override
     public String getDescription() {
         return "BPC (Build Pure Clusters)";
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the data type that the algorithm can handle.
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the parameters for the algorithm.
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

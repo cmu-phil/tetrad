@@ -28,6 +28,7 @@ import java.awt.*;
  * Stores some utility items for displaying JOptionPane messages.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class JOptionUtils {
     private static JComponent COMPONENT;
@@ -42,12 +43,19 @@ public class JOptionUtils {
     }
 
     /**
+     * <p>centeringComp.</p>
+     *
      * @return Ibid.
      */
     public static JComponent centeringComp() {
         return JOptionUtils.COMPONENT;
     }
 
+    /**
+     * <p>getCenteringFrame.</p>
+     *
+     * @return a {@link java.awt.Frame} object
+     */
     public static Frame getCenteringFrame() {
         for (Container c = JOptionUtils.COMPONENT; c != null; c = c.getParent()) {
             if (c instanceof Frame) {

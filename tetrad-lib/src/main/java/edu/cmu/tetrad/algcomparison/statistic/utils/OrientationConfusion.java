@@ -9,13 +9,36 @@ import edu.cmu.tetrad.graph.Node;
  * A confusion matrix for orientations:
  *
  * @author bryanandrews, josephramsey
+ * @version $Id: $Id
  */
 public class OrientationConfusion {
+
+    /**
+     * The true positive count.
+     */
     private int tp;
+
+    /**
+     * The false positive count.
+     */
     private int fp;
+
+    /**
+     * The false negative count.
+     */
     private int fn;
+
+    /**
+     * The true negative count.
+     */
     private int tn;
 
+    /**
+     * <p>Constructor for OrientationConfusion.</p>
+     *
+     * @param truth a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param est   a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public OrientationConfusion(Graph truth, Graph est) {
         this.tp = 0;
         this.fp = 0;
@@ -62,18 +85,38 @@ public class OrientationConfusion {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>tp</code>.</p>
+     *
+     * @return a int
+     */
     public int getTp() {
         return this.tp;
     }
 
+    /**
+     * <p>Getter for the field <code>fp</code>.</p>
+     *
+     * @return a int
+     */
     public int getFp() {
         return this.fp;
     }
 
+    /**
+     * <p>Getter for the field <code>fn</code>.</p>
+     *
+     * @return a int
+     */
     public int getFn() {
         return this.fn;
     }
 
+    /**
+     * <p>Getter for the field <code>tn</code>.</p>
+     *
+     * @return a int
+     */
     public int getTn() {
         return this.tn;
     }

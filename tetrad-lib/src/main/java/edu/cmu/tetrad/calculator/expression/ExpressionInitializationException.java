@@ -25,10 +25,16 @@ package edu.cmu.tetrad.calculator.expression;
  * Thrown if the expression can't be parsed, for instance, if it has the wrong number of arguments.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class ExpressionInitializationException extends Exception {
 
 
+    /**
+     * <p>Constructor for ExpressionInitializationException.</p>
+     *
+     * @param message a {@link java.lang.String} object
+     */
     public ExpressionInitializationException(String message) {
         super(message);
     }

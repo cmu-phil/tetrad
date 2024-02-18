@@ -24,12 +24,32 @@ package edu.cmu.tetradapp.workbench;
 /**
  * Created by IntelliJ IDEA. User: jdramsey Date: Apr 4, 2006 Time: 4:39:38 PM To change this template use File |
  * Settings | File Templates.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public interface DisplayComp {
+    /**
+     * <p>setName.</p>
+     *
+     * @param name a {@link java.lang.String} object
+     */
     void setName(String name);
 
+    /**
+     * <p>contains.</p>
+     *
+     * @param x a int
+     * @param y a int
+     * @return a boolean
+     */
     boolean contains(int x, int y);
 
+    /**
+     * <p>setSelected.</p>
+     *
+     * @param selected a boolean
+     */
     void setSelected(boolean selected);
 }
 

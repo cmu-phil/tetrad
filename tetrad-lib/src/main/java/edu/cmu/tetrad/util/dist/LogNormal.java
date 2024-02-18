@@ -24,16 +24,28 @@ package edu.cmu.tetrad.util.dist;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
+
 /**
  * Represents a lognormal distribution for purposes of sampling.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LogNormal implements Distribution {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The standard deviation.
+     */
     private double sd;
 
+    /**
+     * <p>Constructor for LogNormal.</p>
+     *
+     * @param sd a double
+     */
     public LogNormal(double sd) {
         this.sd = sd;
     }
@@ -47,14 +59,27 @@ public class LogNormal implements Distribution {
         return new LogNormal(.5);
     }
 
+    /**
+     * <p>getNumParameters.</p>
+     *
+     * @return a int
+     */
     public int getNumParameters() {
         return 1;
     }
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return "LogNormal";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.sd = value;
@@ -63,6 +88,9 @@ public class LogNormal implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.sd;
@@ -71,15 +99,28 @@ public class LogNormal implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         return "Standard Deviation";
     }
 
+    /**
+     * <p>nextRandom.</p>
+     *
+     * @return a double
+     */
     public double nextRandom() {
         double random = RandomUtil.getInstance().nextNormal(0, this.sd);
         return FastMath.exp(random);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "LogNormal";
     }

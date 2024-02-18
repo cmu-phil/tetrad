@@ -35,19 +35,30 @@ import java.beans.PropertyChangeListener;
  * Extends AbstractWorkbench in the ways needed to display required and forbidden edges and edit a Knowledge object.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetradapp.workbench.AbstractWorkbench
  */
 public class KnowledgeWorkbench extends AbstractWorkbench {
 
-    //=================PUBLIC STATIC FINAL FIELDS=========================//
+    /**
+     * Marks forbidden edges.
+     */
     public static final int FORBIDDEN_EDGE = 0;
+
+    /**
+     * Marks required edges.
+     */
     public static final int REQUIRED_EDGE = 2;
 
-    //====================PRIVATE FIELDS=================================//
+    /**
+     * The type of edge to be drawn next.
+     */
     private int edgeMode = KnowledgeWorkbench.FORBIDDEN_EDGE;
 
     /**
-     * Constructs a new workbench workbench for the given workbench model.
+     * Constructs a new workbench for the given workbench model.
+     *
+     * @param graph a {@link edu.cmu.tetradapp.knowledge_editor.KnowledgeGraph} object
      */
     public KnowledgeWorkbench(KnowledgeGraph graph) {
         super(graph);
@@ -69,6 +80,8 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
 
     /**
      * Sets the edge mode to the given mode.
+     *
+     * @param edgeMode a int
      */
     public void setEdgeMode(int edgeMode) {
         switch (edgeMode) {
@@ -84,6 +97,8 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
 
     /**
      * Creates a new model node for the workbench.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
      */
     public Node getNewModelNode() {
         throw new UnsupportedOperationException();
@@ -91,10 +106,9 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Creates a new display node for the workbench based on the given model node.
-     *
-     * @param modelNode the model node.
-     * @return the new display node.
      */
     public DisplayNode getNewDisplayNode(Node modelNode) {
         DisplayNode displayNode = new KnowledgeDisplayNode(modelNode);
@@ -113,12 +127,10 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Creates a new model edge for the workbench connecting the two given model nodes and using the edge type from
      * #getEdgeType().
-     *
-     * @param node1 the one model node.
-     * @param node2 the other model node.
-     * @return the new model edge.
      */
     public Edge getNewModelEdge(Node node1, Node node2) {
         KnowledgeModelNode _node1 = (KnowledgeModelNode) node1;
@@ -137,10 +149,9 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Creates a new display edge for the workbench based on the given model edge.
-     *
-     * @param modelEdge the model edge.
-     * @return the new display edge.
      */
     public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
         Node node1 = modelEdge.getNode1();
@@ -161,12 +172,10 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Gets a new "tracking edge"--that is, an edge which is anchored at one end to a node but tracks the mouse at the
      * other end.  Used for drawing new edges.
-     *
-     * @param node     the node to anchor to.
-     * @param mouseLoc the location of the mouse.
-     * @return the new tracking edge (a display edge).
      */
     public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
         switch (this.edgeMode) {

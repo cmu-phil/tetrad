@@ -27,10 +27,22 @@ import java.awt.geom.Ellipse2D;
 
 /**
  * Eliptical variable display for a latent.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class LatentDisplayComp extends JComponent implements DisplayComp {
+
+    /**
+     * True iff this display node is selected.
+     */
     private boolean selected;
 
+    /**
+     * <p>Constructor for LatentDisplayComp.</p>
+     *
+     * @param name a {@link java.lang.String} object
+     */
     public LatentDisplayComp(String name) {
         setBackground(DisplayNodeUtils.getNodeFillColor());
         setFont(DisplayNodeUtils.getFont());
@@ -38,11 +50,17 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
         this.setSize(getPreferredSize());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         super.setName(name);
         setSize(getPreferredSize());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
@@ -56,9 +74,9 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Paints the component.
-     *
-     * @param g the graphics context.
      */
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
@@ -81,6 +99,8 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
 
     /**
      * Calculates the size of the component based on its name.
+     *
+     * @return a {@link java.awt.Dimension} object
      */
     public Dimension getPreferredSize() {
         FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
@@ -99,6 +119,9 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
         return this.selected;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setSelected(boolean selected) {
         this.selected = selected;
     }

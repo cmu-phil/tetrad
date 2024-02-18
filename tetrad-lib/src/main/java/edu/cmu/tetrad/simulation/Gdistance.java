@@ -7,8 +7,7 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Created by Erich on 7/3/2016.
@@ -18,6 +17,9 @@ import java.util.concurrent.Executors;
  * between their endpoints the distance between edges calculated this way is a true distance the distance between two
  * graphs is not a true distance because it is not symmetric this version allows for non-cubic voxels, and parallelizes
  * the most expensive loop
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class Gdistance {
 
@@ -33,6 +35,15 @@ public class Gdistance {
     private final int cores = Runtime.getRuntime().availableProcessors();
 
     //With the parallel version, it is better to make a constructor for central data like locationMap
+
+    /**
+     * <p>Constructor for Gdistance.</p>
+     *
+     * @param locationMap a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param xDist       a double
+     * @param yDist       a double
+     * @param zDist       a double
+     */
     public Gdistance(DataSet locationMap, double xDist, double yDist, double zDist) {
         this.locationMap = locationMap;
         this.xDist = xDist;
@@ -105,6 +116,13 @@ public class Gdistance {
 
     }
 
+    /**
+     * <p>distances.</p>
+     *
+     * @param graph1 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph2 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.util.List} object
+     */
     public List<Double> distances(Graph graph1, Graph graph2) {
         // needs to calculate distances for non-cubic voxels.
         //dimensions along each dimension should be given as input: xdist, ydist, zdist
@@ -134,7 +152,7 @@ public class Gdistance {
         //let the for loop do its thing, and create a new thread for each task inside of it.
 
         List<Callable<Void>> todo = new ArrayList<>();
-        ExecutorService executorService = Executors.newCachedThreadPool();
+        ForkJoinPool forkJoinPool = new ForkJoinPool(this.cores);
 
         List<Edge> taskEdges = new ArrayList<>();
         //can change the times 3.0 part if it seems better to do so
@@ -177,10 +195,10 @@ public class Gdistance {
         //invoke all the things!
         try {
             System.out.println("number of parallel tasks being invoked: " + todo.size());
-            executorService.invokeAll(todo);
-            executorService.shutdown();
-        } catch (Exception ignored) {
-
+            forkJoinPool.invokeAll(todo);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
         }
         System.out.println(this.leastList.size());
         return this.leastList;

@@ -5,7 +5,13 @@ package edu.cmu.tetrad.algcomparison.statistic.utils;
  * output.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface SimulationPath {
+    /**
+     * <p>getPath.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String getPath();
 }

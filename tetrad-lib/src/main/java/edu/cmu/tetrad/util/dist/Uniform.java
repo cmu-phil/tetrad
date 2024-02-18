@@ -26,30 +26,35 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 
 /**
  * For given a, b (a &lt; b), returns a point chosen uniformly from [a, b]. The parameters are 0 = a, 1 = b.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Uniform implements Distribution {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The lower bound of the range from which numbers are drawn uniformly.
-     *
-     * @serial
      */
     private double a;
 
     /**
      * The upper bound of the range from which numbers are drawn uniformly.
-     *
-     * @serial
      */
     private double b;
 
+    /**
+     * <p>Constructor for Uniform.</p>
+     *
+     * @param a a double
+     * @param b a double
+     */
     public Uniform(double a, double b) {
         if (!(a <= b)) {
             throw new IllegalArgumentException("a must be less than or equal to b.");
@@ -61,12 +66,16 @@ public class Uniform implements Distribution {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.util.dist.Uniform} object
      */
     public static Uniform serializableInstance() {
         return new Uniform(0, 1);
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the value of the i'th parameter.
      */
     public void setParameter(int index, double value) {
@@ -81,7 +90,7 @@ public class Uniform implements Distribution {
     }
 
     /**
-     * @return the value of the ith parameter.
+     * {@inheritDoc}
      */
     public double getParameter(int index) {
         if (index == 0) {
@@ -93,6 +102,9 @@ public class Uniform implements Distribution {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Lower Bound";
@@ -104,6 +116,8 @@ public class Uniform implements Distribution {
     }
 
     /**
+     * <p>getNumParameters.</p>
+     *
      * @return the number of parameters = 2.
      */
     public int getNumParameters() {
@@ -111,6 +125,8 @@ public class Uniform implements Distribution {
     }
 
     /**
+     * <p>nextRandom.</p>
+     *
      * @return the next random sample from the distribution.
      */
     public double nextRandom() {
@@ -118,10 +134,20 @@ public class Uniform implements Distribution {
     }
 
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return "Uniform";
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         return "U(" + nf.format(getParameter(0)) + ", " + nf.format(getParameter(1)) + ")";
@@ -136,7 +162,12 @@ public class Uniform implements Distribution {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream from which this object is being deserialized.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

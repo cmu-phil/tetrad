@@ -33,6 +33,7 @@ import nu.xom.Text;
  * Renders Bayes nets and related models in XML.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class BayesXmlRenderer {
 

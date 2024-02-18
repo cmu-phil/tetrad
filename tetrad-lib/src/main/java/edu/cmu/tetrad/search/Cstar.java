@@ -32,23 +32,71 @@ import java.util.concurrent.*;
  * This class is not configured to respect knowledge of forbidden and required edges.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Ida
  */
 public class Cstar {
+
+    /**
+     * The type of CPDAG algorithm to use.
+     */
     private final IndependenceWrapper test;
+
+    /**
+     * The type of score to use.
+     */
     private final ScoreWrapper score;
+
+    /**
+     * The parameters.
+     */
     private final Parameters parameters;
+
+    /**
+     * Whether the algorithm should be parallelized. Different runs of the algorithms can be run in different threads in
+     * parallel.
+     */
     private boolean parallelized = false;
+
+    /**
+     * The number of subsamples.
+     */
     private int numSubsamples = 30;
+
+
     private int topBracket = 5;
+
+    /**
+     * The selection alpha.
+     */
     private double selectionAlpha = 0.0;
+
+    /**
+     * The CPDAG algorithm.
+     */
     private CpdagAlgorithm cpdagAlgorithm = CpdagAlgorithm.PC_STABLE;
+
+    /**
+     * The sample style.
+     */
     private SampleStyle sampleStyle = SampleStyle.SUBSAMPLE;
+
+    /**
+     * The number of subsamples.
+     */
     private boolean verbose;
+
+    /**
+     * The number of subsamples.
+     */
     private File newDir = null;
 
     /**
      * Constructor.
+     *
+     * @param test       a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param score      a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Cstar(IndependenceWrapper test, ScoreWrapper score, Parameters parameters) {
         this.test = test;
@@ -128,6 +176,8 @@ public class Cstar {
      * @param path            A path where interim results are to be stored. If null, interim results will not be
      *                        stored. If the path is specified, then if the process is stopped and restarted, previously
      *                        computed interim results will be loaded.
+     * @param topBracket      a int
+     * @return a {@link java.util.LinkedList} object
      * @see Record
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, int topBracket, String path) {
@@ -402,6 +452,7 @@ public class Cstar {
      * Makes a graph of the estimated predictors to the effect.
      *
      * @param records The list of records obtained from a method above.
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph makeGraph(List<Record> records) {
         List<Node> outNodes = new ArrayList<>();
@@ -466,6 +517,11 @@ public class Cstar {
         this.numSubsamples = numSubsamples;
     }
 
+    /**
+     * <p>getDir.</p>
+     *
+     * @return a {@link java.io.File} object
+     */
     public File getDir() {
         return newDir;
     }
@@ -535,6 +591,9 @@ public class Cstar {
 
     /**
      * Returns a text table from the given records
+     *
+     * @param records a {@link java.util.LinkedList} object
+     * @return a {@link java.lang.String} object
      */
     public String makeTable(LinkedList<Record> records) {
         String header = "# Potential Causes = " + records.get(0).getNumCauses() + "\n"
@@ -640,25 +699,16 @@ public class Cstar {
 
         List<double[][]> results = new ArrayList<>();
 
-        if (!parallelized) {
-            for (Callable<double[][]> task : tasks) {
-                try {
-                    results.add(task.call());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            ForkJoinPool executorService = ForkJoinPool.commonPool();
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
 
+        List<Future<double[][]>> futures = pool.invokeAll(tasks);
+
+        for (Future<double[][]> future : futures) {
             try {
-                List<Future<double[][]>> futures = executorService.invokeAll(tasks);
-
-                for (Future<double[][]> future : futures) {
-                    results.add(future.get());
-                }
+                results.add(future.get());
             } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+                TetradLogger.getInstance().forceLogMessage(e.getMessage());
             }
         }
 
@@ -668,30 +718,87 @@ public class Cstar {
     /**
      * An enumeration of the options available for determining the CPDAG used for the algorithm.
      */
-    public enum CpdagAlgorithm {PC_STABLE, FGES, BOSS, RESTRICTED_BOSS}
+    public enum CpdagAlgorithm {
+
+        /**
+         * The PC_STABLE algorithm.
+         */
+        PC_STABLE,
+
+        /**
+         * The FGES algorithm.
+         */
+        FGES,
+
+        /**
+         * The BOSS algorihtm.
+         */
+        BOSS,
+
+        /**
+         * The RESTRICTED_BOSS algorithm.
+         */
+        RESTRICTED_BOSS
+    }
 
     /**
      * An enumeration of the methods for selecting samples from the full dataset.
      */
-    public enum SampleStyle {BOOTSTRAP, SUBSAMPLE}
+    public enum SampleStyle {
+
+        /**
+         * Use bootstrap.
+         */
+        BOOTSTRAP,
+
+        /**
+         * Use subsample.
+         */
+        SUBSAMPLE
+    }
 
     /**
      * Represents a single record in the returned table for CSTaR.
      */
     public static class Record implements TetradSerializable {
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The cause node.
+         */
         private final Node causeNode;
+
+        /**
+         * The effect node.
+         */
         private final Node target;
+
+        /**
+         * The percentage of the time the predictor is a cause of the target across subsamples.
+         */
         private final double pi;
+
+        /**
+         * The minimum effect size of the predictor on the target across subsamples calculated by IDA.
+         */
         private final double effect;
+
+        /**
+         * The number of possible causes of the target.
+         */
         private final int numCauses;
+
+        /**
+         * The number of possible effects of the target.
+         */
         private final int numEffects;
 
         /**
          * For X->Y.
          *
-         * @param predictor  X
-         * @param target     Y
+         * @param predictor  X (the cause)
+         * @param target     Y (the effect)
          * @param pi         The percentage of the time the predictor is a cause of the target across subsamples.
          * @param minEffect  The minimum effect size of the predictor on the target across subsamples calculated by IDA
          * @param numCauses  The number of possible causes of the target.
@@ -706,37 +813,94 @@ public class Cstar {
             this.numEffects = numEffects;
         }
 
+        /**
+         * <p>getCauseNode.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Node} object
+         */
         public Node getCauseNode() {
             return this.causeNode;
         }
 
+        /**
+         * <p>getEffectNode.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Node} object
+         */
         public Node getEffectNode() {
             return this.target;
         }
 
+        /**
+         * <p>getPi.</p>
+         *
+         * @return a double
+         */
         public double getPi() {
             return this.pi;
         }
 
+        /**
+         * <p>getMinBeta.</p>
+         *
+         * @return a double
+         */
         double getMinBeta() {
             return this.effect;
         }
 
+        /**
+         * <p>getNumCauses.</p>
+         *
+         * @return a int
+         */
         public int getNumCauses() {
             return this.numCauses;
         }
 
+        /**
+         * <p>getNumEffects.</p>
+         *
+         * @return a int
+         */
         public int getNumEffects() {
             return this.numEffects;
         }
     }
 
+    /**
+     * A tuple.
+     */
     private static class Tuple {
+
+        /**
+         * The cause node.
+         */
         private final Node cause;
+
+        /**
+         * The effect node.
+         */
         private final Node effect;
+
+        /**
+         * The percentage of the time the predictor is a cause of the target across subsamples.
+         */
         private final double pi;
+
+        /**
+         * The minimum effect size of the predictor on the target across subsamples calculated by IDA.
+         */
         private final double minBeta;
 
+        /**
+         * For X->Y.
+         *
+         * @param cause   X (the cause)
+         * @param effect  Y (the effect)
+         * @param pi      The percentage of the time the predictor is a cause of the target across subsamples.
+         * @param minBeta The minimum effect size of the predictor on the target across subsamples calculated by IDA
+         */
         private Tuple(Node cause, Node effect, double pi, double minBeta) {
             this.cause = cause;
             this.effect = effect;
@@ -744,18 +908,38 @@ public class Cstar {
             this.minBeta = minBeta;
         }
 
+        /**
+         * <p>getCauseNode.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Node} object
+         */
         public Node getCauseNode() {
             return this.cause;
         }
 
+        /**
+         * <p>getEffectNode.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.graph.Node} object
+         */
         public Node getEffectNode() {
             return this.effect;
         }
 
+        /**
+         * <p>getPi.</p>
+         *
+         * @return a double
+         */
         public double getPi() {
             return this.pi;
         }
 
+        /**
+         * <p>getMinBeta.</p>
+         *
+         * @return a double
+         */
         public double getMinBeta() {
             return this.minBeta;
         }

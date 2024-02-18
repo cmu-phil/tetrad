@@ -29,7 +29,18 @@ import java.io.*;
 import java.text.NumberFormat;
 import java.util.StringTokenizer;
 
+/**
+ * <p>LTestSsys1 class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class LTestSsys1 {
+    /**
+     * <p>main.</p>
+     *
+     * @param argv an array of {@link java.lang.String} objects
+     */
     public static void main(String[] argv) {
 
         String fileName = argv[0];

@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
  * May 14, 2019 11:25:02 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class IndependenceTestDescriptions {
 
@@ -64,10 +65,21 @@ public final class IndependenceTestDescriptions {
         }
     }
 
+    /**
+     * <p>getInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.IndependenceTestDescriptions} object
+     */
     public static IndependenceTestDescriptions getInstance() {
         return IndependenceTestDescriptions.INSTANCE;
     }
 
+    /**
+     * <p>get.</p>
+     *
+     * @param shortName a {@link java.lang.String} object
+     * @return a {@link java.lang.String} object
+     */
     public String get(String shortName) {
         String description = this.descriptions.get(shortName);
 

@@ -32,6 +32,9 @@ import org.apache.commons.math3.util.FastMath;
 
 /**
  * Some useful operations defined over Matrices
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class MatrixOperations {
 
@@ -58,7 +61,6 @@ public class MatrixOperations {
      * @param A input <code>Matrix</code>
      * @return result
      */
-
     public static Matrix sumRows(Matrix A) {
         Matrix sum = new Matrix(A.getRowDimension(), 1);
         for (int i = 0; i < A.getColumnDimension(); i++)
@@ -145,6 +147,12 @@ public class MatrixOperations {
     }
 
 
+    /**
+     * <p>mean.</p>
+     *
+     * @param A a {@link Jama.Matrix} object
+     * @return a {@link Jama.Matrix} object
+     */
     public static Matrix mean(Matrix A) {
 
         if (A.getRowDimension() == 1) {
@@ -167,6 +175,12 @@ public class MatrixOperations {
         }
     }
 
+    /**
+     * <p>std.</p>
+     *
+     * @param A a {@link Jama.Matrix} object
+     * @return a {@link Jama.Matrix} object
+     */
     public static Matrix std(Matrix A) {
 
         if (A.getRowDimension() == 1) {

@@ -36,12 +36,33 @@ import edu.cmu.tetrad.graph.Node;
  * @author Frank Wimberly
  */
 final class BdeMetric {
+
+    /**
+     * The dataset.
+     */
     private final DataSet dataSet;
+
+    /**
+     * The Bayes parameterized network.
+     */
     private final BayesPm bayesPm;
+
+    /**
+     * The BayesIm.
+     */
     private BayesIm bayesIm;
 
+    /**
+     * The observed counts.
+     */
     private int[][][] observedCounts;
 
+    /**
+     * <p>Constructor for BdeMetric.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param bayesPm a {@link edu.cmu.tetrad.bayes.BayesPm} object
+     */
     public BdeMetric(DataSet dataSet, BayesPm bayesPm) {
 
         this.dataSet = dataSet;
@@ -51,6 +72,8 @@ final class BdeMetric {
     /**
      * This method computes the BDe score, which is the probability of the data given the model and the priors.  See
      * (35) in the above-referenced paper.
+     *
+     * @return a double
      */
     public double score() {
 

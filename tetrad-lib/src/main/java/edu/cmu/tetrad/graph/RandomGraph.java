@@ -8,7 +8,25 @@ import java.util.*;
 
 import static org.apache.commons.math3.util.FastMath.min;
 
+/**
+ * <p>RandomGraph class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class RandomGraph {
+    /**
+     * <p>randomDag.</p>
+     *
+     * @param numNodes             a int
+     * @param numLatentConfounders a int
+     * @param maxNumEdges          a int
+     * @param maxDegree            a int
+     * @param maxIndegree          a int
+     * @param maxOutdegree         a int
+     * @param connected            a boolean
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph randomDag(int numNodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
         List<Node> nodes = new ArrayList<>();
 
@@ -19,10 +37,34 @@ public class RandomGraph {
         return randomDag(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected);
     }
 
+    /**
+     * <p>randomDag.</p>
+     *
+     * @param nodes                a {@link java.util.List} object
+     * @param numLatentConfounders a int
+     * @param maxNumEdges          a int
+     * @param maxDegree            a int
+     * @param maxIndegree          a int
+     * @param maxOutdegree         a int
+     * @param connected            a boolean
+     * @return a {@link edu.cmu.tetrad.graph.Dag} object
+     */
     public static Dag randomDag(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
         return new Dag(randomGraph(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected));
     }
 
+    /**
+     * <p>randomGraph.</p>
+     *
+     * @param numNodes             a int
+     * @param numLatentConfounders a int
+     * @param numEdges             a int
+     * @param maxDegree            a int
+     * @param maxIndegree          a int
+     * @param maxOutdegree         a int
+     * @param connected            a boolean
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph randomGraph(int numNodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
         List<Node> nodes = new ArrayList<>();
 
@@ -35,11 +77,33 @@ public class RandomGraph {
 
     /**
      * Defaults to random forward graphs.
+     *
+     * @param nodes                a {@link java.util.List} object
+     * @param numLatentConfounders a int
+     * @param maxNumEdges          a int
+     * @param maxDegree            a int
+     * @param maxIndegree          a int
+     * @param maxOutdegree         a int
+     * @param connected            a boolean
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph randomGraph(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
         return randomGraphRandomForwardEdges(nodes, numLatentConfounders, maxNumEdges, maxDegree, maxIndegree, maxOutdegree, connected, true);
     }
 
+    /**
+     * <p>randomGraphUniform.</p>
+     *
+     * @param nodes                a {@link java.util.List} object
+     * @param numLatentConfounders a int
+     * @param maxNumEdges          a int
+     * @param maxDegree            a int
+     * @param maxIndegree          a int
+     * @param maxOutdegree         a int
+     * @param connected            a boolean
+     * @param numIterations        a int
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph randomGraphUniform(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected, int numIterations) {
         int numNodes = nodes.size();
 
@@ -100,6 +164,18 @@ public class RandomGraph {
         return commonCauses;
     }
 
+    /**
+     * <p>randomGraphRandomForwardEdges.</p>
+     *
+     * @param numNodes             a int
+     * @param numLatentConfounders a int
+     * @param numEdges             a int
+     * @param maxDegree            a int
+     * @param maxIndegree          a int
+     * @param maxOutdegree         a int
+     * @param connected            a boolean
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph randomGraphRandomForwardEdges(int numNodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
 
         List<Node> nodes = new ArrayList<>();
@@ -111,10 +187,35 @@ public class RandomGraph {
         return randomGraph(nodes, numLatentConfounders, numEdges, maxDegree, maxIndegree, maxOutdegree, connected);
     }
 
+    /**
+     * <p>randomGraphRandomForwardEdges.</p>
+     *
+     * @param nodes                a {@link java.util.List} object
+     * @param numLatentConfounders a int
+     * @param numEdges             a int
+     * @param maxDegree            a int
+     * @param maxIndegree          a int
+     * @param maxOutdegree         a int
+     * @param connected            a boolean
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
         return randomGraphRandomForwardEdges(nodes, numLatentConfounders, numEdges, maxDegree, maxIndegree, maxOutdegree, connected, true);
     }
 
+    /**
+     * <p>randomGraphRandomForwardEdges.</p>
+     *
+     * @param nodes                a {@link java.util.List} object
+     * @param numLatentConfounders a int
+     * @param numEdges             a int
+     * @param maxDegree            a int
+     * @param maxIndegree          a int
+     * @param maxOutdegree         a int
+     * @param connected            a boolean
+     * @param layoutAsCircle       a boolean
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected, boolean layoutAsCircle) {
         if (nodes.size() == 0) {
             throw new IllegalArgumentException("NumNodes most be > 0");
@@ -186,6 +287,17 @@ public class RandomGraph {
         return dag;
     }
 
+    /**
+     * <p>randomScaleFreeGraph.</p>
+     *
+     * @param numNodes             a int
+     * @param numLatentConfounders a int
+     * @param alpha                a double
+     * @param beta                 a double
+     * @param delta_in             a double
+     * @param delta_out            a double
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph randomScaleFreeGraph(int numNodes, int numLatentConfounders, double alpha, double beta, double delta_in, double delta_out) {
         List<Node> nodes = new ArrayList<>();
 
@@ -323,6 +435,12 @@ public class RandomGraph {
         return outdegrees;
     }
 
+    /**
+     * <p>fixLatents1.</p>
+     *
+     * @param numLatentConfounders a int
+     * @param graph                a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static void fixLatents1(int numLatentConfounders, Graph graph) {
         List<Node> commonCauses = getCommonCauses(graph);
         int index = 0;
@@ -339,6 +457,13 @@ public class RandomGraph {
     }
 
     // JMO's method for fixing latents
+
+    /**
+     * <p>fixLatents4.</p>
+     *
+     * @param numLatentConfounders a int
+     * @param graph                a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static void fixLatents4(int numLatentConfounders, Graph graph) {
         if (numLatentConfounders == 0) {
             return;
@@ -394,6 +519,11 @@ public class RandomGraph {
     /**
      * Makes a cyclic graph by repeatedly adding cycles of length of 3, 4, or 5 to the graph, then finally adding two
      * cycles.
+     *
+     * @param numNodes  a int
+     * @param numEdges  a int
+     * @param maxDegree a int
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph randomCyclicGraph2(int numNodes, int numEdges, int maxDegree) {
 
@@ -482,6 +612,13 @@ public class RandomGraph {
     /**
      * Makes a cyclic graph by repeatedly adding cycles of length of 3, 4, or 5 to the graph, then finally adding two
      * cycles.
+     *
+     * @param numNodes     a int
+     * @param numEdges     a int
+     * @param maxDegree    a int
+     * @param probCycle    a double
+     * @param probTwoCycle a double
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph randomCyclicGraph3(int numNodes, int numEdges, int maxDegree, double probCycle, double probTwoCycle) {
 
@@ -583,6 +720,12 @@ public class RandomGraph {
         return graph;
     }
 
+    /**
+     * <p>addTwoCycles.</p>
+     *
+     * @param graph        a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param numTwoCycles a int
+     */
     public static void addTwoCycles(Graph graph, int numTwoCycles) {
         List<Edge> edges = new ArrayList<>(graph.getEdges());
         RandomUtil.shuffle(edges);
@@ -618,7 +761,15 @@ public class RandomGraph {
      * @author josephramsey
      */
     public static final class UniformGraphGenerator {
+
+        /**
+         * Any DAG uniformly selected
+         */
         public static final int ANY_DAG = 0;
+
+        /**
+         * Connected DAG uniformly selected
+         */
         public static final int CONNECTED_DAG = 1;
 
         /**
@@ -755,6 +906,11 @@ public class RandomGraph {
             return this.maxInDegree;
         }
 
+        /**
+         * Sets the maximum indegree of any node in the graph.
+         *
+         * @param maxInDegree An integer between 1 and numNodes - 1, inclusively.
+         */
         public void setMaxInDegree(int maxInDegree) {
             if (UniformGraphGenerator.ANY_DAG == getStructure() && getMaxInDegree() < 0) {
                 throw new IllegalArgumentException("Max indegree must be >= 1 " + "when generating DAGs without the assumption of " + "connectedness.");
@@ -769,6 +925,11 @@ public class RandomGraph {
             return this.maxOutDegree;
         }
 
+        /**
+         * Sets the maximum outdegree of any node in the graph.
+         *
+         * @param maxOutDegree An integer between 1 and numNodes - 1, inclusively.
+         */
         public void setMaxOutDegree(int maxOutDegree) {
             if (UniformGraphGenerator.ANY_DAG == getStructure() && getMaxInDegree() < 1) {
                 throw new IllegalArgumentException("Max indegree must be >= 1 " + "when generating DAGs without the assumption of " + "connectedness.");
@@ -785,6 +946,11 @@ public class RandomGraph {
             return this.maxEdges;
         }
 
+        /**
+         * Sets the maximum number of edges in the graph.
+         *
+         * @param maxEdges An integer between 0 and numNodes * (numNodes - 1) / 2, inclusively.
+         */
         public void setMaxEdges(int maxEdges) {
             if (maxEdges < 0) {
                 throw new IllegalArgumentException("Max edges must be >= 0.");
@@ -805,6 +971,11 @@ public class RandomGraph {
             return this.numIterations;
         }
 
+        /**
+         * Sets the number of iterations for the Markov chain process.
+         *
+         * @param numIterations An integer &gt;= 1.
+         */
         public void setNumIterations(int numIterations) {
             this.numIterations = numIterations;
         }
@@ -813,6 +984,9 @@ public class RandomGraph {
             return this.structure;
         }
 
+        /**
+         * Generates a random graph.
+         */
         public void generate() {
             if (UniformGraphGenerator.ANY_DAG == getStructure()) {
                 generateArbitraryDag();
@@ -823,6 +997,11 @@ public class RandomGraph {
             }
         }
 
+        /**
+         * Returns the parent matrix for the graph.
+         *
+         * @return The parent matrix.
+         */
         public Graph getDag() {
             //System.out.println("Converting to DAG");
 
@@ -844,9 +1023,16 @@ public class RandomGraph {
             return getDag(nodes);
         }
 
+        /**
+         * Returns the parent matrix for the graph.
+         *
+         * @param nodes The nodes to use in the graph.
+         * @return The parent matrix.
+         */
         public Graph getDag(List<Node> nodes) {
             if (nodes.size() != getNumNodes()) {
-                throw new IllegalArgumentException("Only " + nodes.size() + " nodes were provided, but the " + "simulated graph has " + getNumNodes() + ".");
+                throw new IllegalArgumentException("Only " + nodes.size() + " nodes were provided, but the "
+                        + "simulated graph has " + getNumNodes() + ".");
             }
 
             Graph dag = new EdgeListGraph(nodes);
@@ -871,6 +1057,9 @@ public class RandomGraph {
             return dag;
         }
 
+        /**
+         * Prints the parent matrix for the graph.
+         */
         public void printEdges() {
             System.out.println("Edges:");
             for (int i = 0; i < getNumNodes(); i++) {
@@ -880,6 +1069,9 @@ public class RandomGraph {
             }
         }
 
+        /**
+         * A string representation of the structural information for the generated graph.
+         */
         public String toString() {
             return "\nStructural information for generated graph:" + "\n\tNumber of nodes:" + getNumNodes() + "\n\tMax degree for each node:" + getMaxDegree() + "\n\tMaximum number of incoming edges for each node:" + getMaxInDegree() + "\n\tMaximum number of outgoing edges for each node:" + getMaxOutDegree() + "\n\tMaximum total number of edges:" + getMaxEdges() + " of " + getNumNodes() * getMaxDegree() / 2 + " possibles" + "\n\tNumber of transitions between samples:" + getNumIterations();
         }

@@ -31,8 +31,12 @@ import java.util.List;
  * Calculates a ROC curve and AUC (area under curve) for a list of scored cases whose inclusion in category C is known.
  *
  * @author josephramsey and Frank Wimberly
+ * @version $Id: $Id
  */
 public class RocCalculator {
+    /**
+     * Constant <code>ASCENDING=0</code>
+     */
     public static final int ASCENDING = 0;
     private static final int DESCENDING = 1;
 
@@ -139,6 +143,11 @@ public class RocCalculator {
         }
     }
 
+    /**
+     * <p>getScaledRocPlot.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[][] getScaledRocPlot() {
         if (this.points == null) {
             getUnscaledRocPlot();

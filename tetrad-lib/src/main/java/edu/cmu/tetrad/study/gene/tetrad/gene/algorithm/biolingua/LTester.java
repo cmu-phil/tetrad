@@ -27,8 +27,14 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.*;
  * <p>Class that makes some very simple tests on the classes LtMatrix, Graph, and Biolingua</p>
  *
  * @author Raul Saavedra, rsaavedr@ai.uwf.edu
+ * @version $Id: $Id
  */
 public class LTester {
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         LTMatrix ltm;
         LTMatrixF ltmf;

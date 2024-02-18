@@ -27,6 +27,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 
 /**
  * An editor for Bayes net instantiated models. Assumes that the workbench and parameterized model have been established
@@ -36,13 +37,23 @@ import java.awt.*;
  *
  * @author Aaron Powers
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesImEditor extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The panel that contains the workbench and the wizard.
+     */
     private final JPanel targetPanel;
+
+    /**
+     * The wrapper for the Bayes IM.
+     */
     private final BayesImWrapper wrapper;
+
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */
@@ -50,6 +61,8 @@ public class BayesImEditor extends JPanel {
 
     /**
      * Constructs a new instanted model editor from a Bayes IM.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
      */
     public BayesImEditor(BayesImWrapper wrapper) {
         this.wrapper = wrapper;
@@ -153,6 +166,8 @@ public class BayesImEditor extends JPanel {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     public void setName(String name) {
@@ -162,12 +177,17 @@ public class BayesImEditor extends JPanel {
     }
 
     /**
+     * <p>Getter for the field <code>wizard</code>.</p>
+     *
      * @return a reference to this editor.
      */
     public BayesImEditorWizard getWizard() {
         return this.wizard;
     }
 
+    /**
+     * <p>getBayesIm.</p>
+     */
     public void getBayesIm() {
         removeAll();
         setEditorPanel();

@@ -29,11 +29,19 @@ import javax.swing.*;
  *
  * @author Aaron Powers
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class GraphFileMenu extends JMenu {
 
     private static final long serialVersionUID = 8003709852565658589L;
 
+    /**
+     * <p>Constructor for GraphFileMenu.</p>
+     *
+     * @param editable a {@link edu.cmu.tetradapp.editor.GraphEditable} object
+     * @param comp     a {@link javax.swing.JComponent} object
+     * @param saveOnly a boolean
+     */
     public GraphFileMenu(GraphEditable editable, JComponent comp, boolean saveOnly) {
         super("File");
 

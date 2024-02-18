@@ -25,6 +25,7 @@ package edu.cmu.tetrad.util.dist;
  * A pretend distribution that always returns the given value when nextRandom() is called.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SingleValue implements Distribution {
     private static final long serialVersionUID = 23L;
@@ -54,6 +55,9 @@ public class SingleValue implements Distribution {
         return new SingleValue(0.5);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.value = value;
@@ -62,6 +66,9 @@ public class SingleValue implements Distribution {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.value;
@@ -70,6 +77,9 @@ public class SingleValue implements Distribution {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Value";
@@ -78,6 +88,11 @@ public class SingleValue implements Distribution {
         }
     }
 
+    /**
+     * <p>getNumParameters.</p>
+     *
+     * @return a int
+     */
     public int getNumParameters() {
         return 1;
     }
@@ -85,12 +100,19 @@ public class SingleValue implements Distribution {
     //============================PUBLIC METHODS========================//
 
     /**
+     * <p>nextRandom.</p>
+     *
      * @return the value that was set.
      */
     public double nextRandom() {
         return getValue();
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "[" + getValue() + "]";
     }
@@ -100,6 +122,11 @@ public class SingleValue implements Distribution {
     }
 
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return "Single Value";
     }

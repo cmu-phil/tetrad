@@ -62,6 +62,13 @@ class DescriptiveStatsModel extends AbstractTableModel {
         }
     }
 
+    /**
+     * <p>generateDescriptiveStats.</p>
+     *
+     * @param dataSet  a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param variable a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetradapp.editor.DescriptiveStatsModel.Ret} object
+     */
     public static Ret generateDescriptiveStats(DataSet dataSet, Node variable) {
         List<String> names = new ArrayList<>();
         List<Object> stats = new ArrayList<>();
@@ -172,6 +179,8 @@ class DescriptiveStatsModel extends AbstractTableModel {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Note that returning null here has two effects. First, it
      */
     public String getColumnName(int col) {
@@ -180,6 +189,8 @@ class DescriptiveStatsModel extends AbstractTableModel {
     }
 
     /**
+     * <p>getRowCount.</p>
+     *
      * @return the number of rows in the wrapper table model. Guarantees that this number will be at least 100.
      */
     public int getRowCount() {
@@ -187,12 +198,17 @@ class DescriptiveStatsModel extends AbstractTableModel {
     }
 
     /**
+     * <p>getColumnCount.</p>
+     *
      * @return the number of columns in the wrapper table model. Guarantees that this number will be at least 30.
      */
     public int getColumnCount() {
         return stats.get(0).stats.size() + 1;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Object getValueAt(int row, int col) {
         if (col == 0) return vars.get(row).getName();
         else {
@@ -213,6 +229,11 @@ class DescriptiveStatsModel extends AbstractTableModel {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return dataSet;
     }

@@ -25,8 +25,17 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 /**
  * Sundry methods for logging data.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class LogDataUtils {
+    /**
+     * <p>logDataModelList.</p>
+     *
+     * @param info a {@link java.lang.String} object
+     * @param list a {@link edu.cmu.tetrad.data.DataModelList} object
+     */
     public static void logDataModelList(String info, DataModelList list) {
         TetradLogger.getInstance().log("info", info);
 

@@ -10,10 +10,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.*;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static org.apache.commons.math3.util.FastMath.min;
@@ -32,6 +29,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fges
  * @see Bes
  * @see Boss
@@ -417,7 +415,21 @@ public class BesPermutation {
 
         for (Node r : toProcess) {
             List<Node> adjacentNodes = new ArrayList<>(toProcess);
-            ForkJoinPool.commonPool().invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0, adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
+            int parallelism = Runtime.getRuntime().availableProcessors();
+            ForkJoinPool pool = new ForkJoinPool(parallelism);
+
+            try {
+                pool.invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
+                        adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+                throw e;
+            }
+
+            if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+                Thread.currentThread().interrupt();
+                return;
+            }
         }
     }
 

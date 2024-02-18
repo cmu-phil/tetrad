@@ -33,11 +33,18 @@ import edu.cmu.tetradapp.model.PcRunner;
  * Add description
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class RemoveSelectedVariablesWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
 
+    /**
+     * <p>Constructor for RemoveSelectedVariablesWrapper.</p>
+     *
+     * @param data   a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public RemoveSelectedVariablesWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
@@ -64,6 +71,7 @@ public class RemoveSelectedVariablesWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

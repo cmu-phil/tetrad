@@ -24,6 +24,7 @@ import java.awt.event.ActionEvent;
  * Jan 8, 2019 11:26:23 AM
  *
  * @author Zhou Yuan zhy19@pitt.edu
+ * @version $Id: $Id
  */
 public class SelectInterventionalAction extends AbstractAction implements ClipboardOwner {
 
@@ -37,7 +38,7 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
     /**
      * Creates a new copy subsession action for the given desktop and clipboard.
      *
-     * @param workbench
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public SelectInterventionalAction(GraphWorkbench workbench) {
         super("Highlight Interventional Nodes");
@@ -50,9 +51,9 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
-     *
-     * @param e
      */
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -78,6 +79,8 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     @Override

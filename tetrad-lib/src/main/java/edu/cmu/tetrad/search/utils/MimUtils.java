@@ -32,9 +32,16 @@ import java.util.List;
  * Provides some utility methods for Purify, Build Clusters, and Mimbuild.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class MimUtils {
 
+    /**
+     * <p>convertToClusters.</p>
+     *
+     * @param clusterGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.data.Clusters} object
+     */
     public static Clusters convertToClusters(Graph clusterGraph) {
         List<Node> measuredVariables = new ArrayList<>();
 
@@ -47,6 +54,12 @@ public final class MimUtils {
         return MimUtils.convertToClusters(clusterGraph, measuredVariables);
     }
 
+    /**
+     * <p>convertToClusters2.</p>
+     *
+     * @param clusterGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.util.List} object
+     */
     public static List<List<Node>> convertToClusters2(Graph clusterGraph) {
         Clusters clusters = MimUtils.convertToClusters(clusterGraph);
 
@@ -70,6 +83,10 @@ public final class MimUtils {
      * Converts a disconnected multiple indicator model into a set of clusters. Assumes the given graph contains a
      * number of latents Li, i = 0,...,n-1, for each of which there is a list of indicators Wj, j = 0,...,m_i-1, such
      * that , Li--&gt;Wj. Returns a Clusters object mapping i to Wj. The name for cluster i is set to Li.
+     *
+     * @param clusterGraph      a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param measuredVariables a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.data.Clusters} object
      */
     public static Clusters convertToClusters(Graph clusterGraph, List<Node> measuredVariables) {
         List<String> latents = new ArrayList<>();

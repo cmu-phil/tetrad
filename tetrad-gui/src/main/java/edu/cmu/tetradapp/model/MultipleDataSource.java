@@ -31,6 +31,11 @@ import java.util.List;
  * @author josephramsey
  */
 interface MultipleDataSource {
+    /**
+     * <p>getDataModels.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     List<DataModel> getDataModels();
 }
 

@@ -5,26 +5,38 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
  * The proportion of X*->Y in the estimated graph for which there is no path Y~~>X in the true graph.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TrueDagPrecisionArrow implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "*->-Prec";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Proportion of X*->Y in the estimated graph for which there is no path Y~~>X in the true graph";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
@@ -48,6 +60,9 @@ public class TrueDagPrecisionArrow implements Statistic {
         return tp / (double) (tp + fp);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

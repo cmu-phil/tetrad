@@ -42,6 +42,7 @@ import java.util.Set;
  * discrete. This test is valid for both ordinal and non-ordinal discrete searchVariables.
  *
  * @author bryanandrews
+ * @version $Id: $Id
  */
 public class IndTestMnlrLr implements IndependenceTest {
     private final DataSet data;
@@ -51,6 +52,12 @@ public class IndTestMnlrLr implements IndependenceTest {
     private double alpha;
     private boolean verbose;
 
+    /**
+     * <p>Constructor for IndTestMnlrLr.</p>
+     *
+     * @param data  a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param alpha a double
+     */
     public IndTestMnlrLr(DataSet data, double alpha) {
         this.data = data;
         this.likelihood = new MnlrLikelihood(data, -1, 1);
@@ -67,16 +74,19 @@ public class IndTestMnlrLr implements IndependenceTest {
     }
 
     /**
-     * @return an Independence test for a subset of the searchVariables.
+     * {@inheritDoc}
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * @return True if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
-     * getVariableNames().
+     * {@inheritDoc}
+     *
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
 
@@ -148,6 +158,8 @@ public class IndTestMnlrLr implements IndependenceTest {
     }
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the list of searchVariables over which this independence checker is capable of determinining independence
      * relations.
      */
@@ -157,21 +169,25 @@ public class IndTestMnlrLr implements IndependenceTest {
 
 
     /**
-     * @return true if y is determined the variable in z.
+     * {@inheritDoc}
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
     }
 
     /**
+     * <p>Getter for the field <code>alpha</code>.</p>
+     *
      * @return the significance level of the independence test.
-     * @throws UnsupportedOperationException if there is no significance level.
+     * @throws java.lang.UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
@@ -188,9 +204,9 @@ public class IndTestMnlrLr implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns whether verbose output should be printed.
-     *
-     * @return True is so.
      */
     @Override
     public boolean isVerbose() {
@@ -198,15 +214,20 @@ public class IndTestMnlrLr implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether this test will print verbose output.
-     *
-     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "IndTestMnlrLr";
     }

@@ -32,10 +32,17 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * Wraps a data model so that a random sample will automatically be drawn on construction from a BayesIm.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ModeInterpolatorWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for ModeInterpolatorWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ModeInterpolatorWrapper(DataWrapper wrapper, Parameters params) {
         DataFilter interpolator = new ModeInterpolator();
         DataSet dataSet =
@@ -50,6 +57,7 @@ public class ModeInterpolatorWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

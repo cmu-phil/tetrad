@@ -5,26 +5,38 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
  * Proportion of semi(X, Y) in estimated graph for which there is no semi(Y, X) in true graph.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ProportionSemidirectedPathsNotReversedEst implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "semi(X,Y,est)==>!semi(Y,X,true)";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Proportion of semi(X, Y) in estimated graph for which there is no semi(Y, X) in true graph";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         List<Node> nodes = estGraph.getNodes();
@@ -50,6 +62,9 @@ public class ProportionSemidirectedPathsNotReversedEst implements Statistic {
         return tp / (double) (tp + fp);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

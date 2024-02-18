@@ -24,45 +24,86 @@ package edu.cmu.tetrad.util;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 
+import java.io.Serial;
+
 /**
  * Vector wrapping matrix library.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class Vector implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The data.
+     */
     private final RealVector data;
 
+    /**
+     * <p>Constructor for Vector.</p>
+     *
+     * @param data an array of {@link double} objects
+     */
     public Vector(double[] data) {
         this.data = new ArrayRealVector(data);
     }
 
+    /**
+     * <p>Constructor for Vector.</p>
+     *
+     * @param size a int
+     */
     public Vector(int size) {
         this.data = new ArrayRealVector(size);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
      */
     public static Vector serializableInstance() {
         return new Vector(0);
     }
 
+    /**
+     * <p>assign.</p>
+     *
+     * @param value a double
+     */
     public void assign(double value) {
         for (int i = 0; i < this.data.getDimension(); i++) {
             this.data.setEntry(i, value);
         }
     }
 
+    /**
+     * <p>assign.</p>
+     *
+     * @param vector a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public void assign(Vector vector) {
         for (int i = 0; i < this.data.getDimension(); i++) {
             this.data.setEntry(i, vector.get(i));
         }
     }
 
+    /**
+     * <p>copy.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public Vector copy() {
         return new Vector(this.data.copy().toArray());
     }
 
+    /**
+     * <p>diag.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public Matrix diag() {
         Matrix m = new Matrix(this.data.getDimension(), this.data.getDimension());
 
@@ -73,26 +114,61 @@ public class Vector implements TetradSerializable {
         return m;
     }
 
+    /**
+     * <p>dotProduct.</p>
+     *
+     * @param v2 a {@link edu.cmu.tetrad.util.Vector} object
+     * @return a double
+     */
     public double dotProduct(Vector v2) {
         return this.data.dotProduct(v2.data);
     }
 
+    /**
+     * <p>get.</p>
+     *
+     * @param i a int
+     * @return a double
+     */
     public double get(int i) {
         return this.data.getEntry(i);
     }
 
+    /**
+     * <p>like.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public Vector like() {
         return new Vector(size());
     }
 
+    /**
+     * <p>minus.</p>
+     *
+     * @param mb a {@link edu.cmu.tetrad.util.Vector} object
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public Vector minus(Vector mb) {
         return new Vector(this.data.subtract(mb.data).toArray());
     }
 
+    /**
+     * <p>plus.</p>
+     *
+     * @param mb a {@link edu.cmu.tetrad.util.Vector} object
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public Vector plus(Vector mb) {
         return new Vector(this.data.add(mb.data).toArray());
     }
 
+    /**
+     * <p>scalarMult.</p>
+     *
+     * @param scalar a double
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public Vector scalarMult(double scalar) {
         Vector newMatrix = copy();
         for (int i = 0; i < size(); i++) {
@@ -102,22 +178,49 @@ public class Vector implements TetradSerializable {
         return newMatrix;
     }
 
+    /**
+     * <p>set.</p>
+     *
+     * @param j a int
+     * @param v a double
+     */
     public void set(int j, double v) {
         this.data.setEntry(j, v);
     }
 
+    /**
+     * <p>size.</p>
+     *
+     * @return a int
+     */
     public int size() {
         return this.data.getDimension();
     }
 
+    /**
+     * <p>toArray.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[] toArray() {
         return this.data.toArray();
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return MatrixUtils.toString(this.data.toArray());
     }
 
+    /**
+     * <p>viewSelection.</p>
+     *
+     * @param selection an array of {@link int} objects
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public Vector viewSelection(int[] selection) {
         double[] _selection = new double[selection.length];
 
@@ -128,16 +231,23 @@ public class Vector implements TetradSerializable {
         return new Vector(_selection);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == this) return true;
 
-        if (!(o instanceof Vector)) return false;
-
-        Vector v = (Vector) o;
+        if (!(o instanceof Vector v)) return false;
 
         return MatrixUtils.equals(v.toArray(), this.toArray());
     }
 
+    /**
+     * <p>dot.</p>
+     *
+     * @param v2 a {@link edu.cmu.tetrad.util.Vector} object
+     * @return a double
+     */
     public double dot(Vector v2) {
         double sum = 0;
         for (int i = 0; i < size(); i++) {

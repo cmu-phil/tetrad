@@ -35,6 +35,7 @@ import java.text.NumberFormat;
  * functions like keeping the textbox the right size and listening to itself.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DoubleTextField extends JTextField {
 
@@ -78,6 +79,15 @@ public class DoubleTextField extends JTextField {
         setup(value, format, format, 1e-4);
     }
 
+    /**
+     * <p>Constructor for DoubleTextField.</p>
+     *
+     * @param value             a double
+     * @param width             a int
+     * @param format            a {@link java.text.NumberFormat} object
+     * @param smallNumberFormat a {@link java.text.NumberFormat} object
+     * @param smallNumberCutoff a double
+     */
     public DoubleTextField(double value, int width, NumberFormat format, NumberFormat smallNumberFormat,
                            double smallNumberCutoff) {
         super(width);
@@ -116,6 +126,8 @@ public class DoubleTextField extends JTextField {
 
     /**
      * Sets whether the given value should be accepted.
+     *
+     * @param filter a {@link edu.cmu.tetradapp.util.DoubleTextField.Filter} object
      */
     public void setFilter(Filter filter) {
         this.filter = filter;
@@ -219,6 +231,7 @@ public class DoubleTextField extends JTextField {
          *
          * @param value    The value entered by the user.
          * @param oldValue The value previously displayed, in case it needs to be reverted to.
+         * @return The value that should be displayed.
          */
         double filter(double value, double oldValue);
     }

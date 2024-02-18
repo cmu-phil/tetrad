@@ -27,6 +27,9 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 /**
  * A sample class to be wrapped in a SessionNode as a model.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class Type5 implements SessionModel, TetradSerializableExcluded {
     private static final long serialVersionUID = 23L;
@@ -34,20 +37,34 @@ public class Type5 implements SessionModel, TetradSerializableExcluded {
     /**
      * It should not be possible to constuct Type5, because it contains two arguments of the same type. There is in
      * principle no way to decide which argument should be passed in which position.
+     *
+     * @param model1     a {@link edu.cmu.tetrad.session.Type1} object
+     * @param model2     a {@link edu.cmu.tetrad.session.Type1} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Type5(Type1 model1, Type1 model2, Parameters parameters) {
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.session.Type5} object
+     */
     public static Type5 serializableInstance() {
         return new Type5(Type1.serializableInstance(),
                 Type1.serializableInstance(), new Parameters());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         return (o instanceof Type5);
     }
 
     /**
+     * <p>getName.</p>
+     *
      * @return the name of the session model.
      */
     public String getName() {
@@ -55,6 +72,8 @@ public class Type5 implements SessionModel, TetradSerializableExcluded {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of the session model.
      */
     public void setName(String name) {

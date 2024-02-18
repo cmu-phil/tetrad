@@ -28,14 +28,22 @@ import edu.cmu.tetrad.util.Parameters;
  * Stuff the GUI needs to know. Wrapped so that the GUI can access the params.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface UpdaterWrapper {
 
     /**
      * Makes the params object accessible to the GUI.
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
      */
     Parameters getParams();
 
+    /**
+     * <p>getBayesUpdater.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.ManipulatingBayesUpdater} object
+     */
     ManipulatingBayesUpdater getBayesUpdater();
 }
 

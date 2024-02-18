@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.ParseException;
 import java.util.HashSet;
 import java.util.List;
@@ -41,26 +42,35 @@ import java.util.Set;
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
     /**
      * The wrapped SemPm.
-     *
-     * @serial Cannot be null.
      */
     private final GeneralizedSemPm semPm;
+
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
+
     /**
      * True iff errors should be shown in teh editor.
      */
     private boolean showErrors;
 
     //==============================CONSTRUCTORS==========================//
+
+    /**
+     * <p>Constructor for GeneralizedSemPmWrapper.</p>
+     *
+     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
+     */
     public GeneralizedSemPmWrapper(Simulation simulation) {
         GeneralizedSemPm semPm = null;
 
@@ -89,6 +99,11 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
         this.semPm = semPm;
     }
 
+    /**
+     * <p>Constructor for GeneralizedSemPmWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public GeneralizedSemPmWrapper(Graph graph) {
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");
@@ -107,6 +122,12 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
         log(this.semPm);
     }
 
+    /**
+     * <p>Constructor for GeneralizedSemPmWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param oldPm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     */
     public GeneralizedSemPmWrapper(Graph graph, GeneralizedSemPm oldPm) {
         this(graph);
 
@@ -194,6 +215,11 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
         }
     }
 
+    /**
+     * <p>Constructor for GeneralizedSemPmWrapper.</p>
+     *
+     * @param pmWrapper a {@link edu.cmu.tetradapp.model.SemPmWrapper} object
+     */
     public GeneralizedSemPmWrapper(SemPmWrapper pmWrapper) {
         if (pmWrapper == null) {
             throw new NullPointerException();
@@ -204,17 +230,28 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
 
     /**
      * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
      */
     public GeneralizedSemPmWrapper(GraphSource graphWrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
+    /**
+     * <p>Constructor for GeneralizedSemPmWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     */
     public GeneralizedSemPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()));
     }
 
     /**
      * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param wrapper      a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
      */
     public GeneralizedSemPmWrapper(GraphSource graphWrapper, GeneralizedSemPmWrapper wrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()), wrapper.getSemPm());
@@ -222,6 +259,9 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
 
     /**
      * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
+     *
+     * @param dagWrapper a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
      */
     public GeneralizedSemPmWrapper(DagWrapper dagWrapper, GeneralizedSemPmWrapper wrapper) {
         this(new EdgeListGraph(dagWrapper.getDag()), wrapper.getSemPm());
@@ -229,22 +269,37 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
 
     /**
      * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
+     *
+     * @param semGraphWrapper a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     * @param wrapper         a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
      */
     public GeneralizedSemPmWrapper(SemGraphWrapper semGraphWrapper, GeneralizedSemPmWrapper wrapper) {
         this(semGraphWrapper.getSemGraph(), wrapper.getSemPm());
     }
 
+    /**
+     * <p>Constructor for GeneralizedSemPmWrapper.</p>
+     *
+     * @param pmWrapper a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
+     */
     public GeneralizedSemPmWrapper(GeneralizedSemPmWrapper pmWrapper) {
         this.semPm = new GeneralizedSemPm(pmWrapper.getSemPm());
     }
 
     /**
      * Creates a new SemPm from the given workbench and uses it to construct a new BayesPm.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.TimeLagGraphWrapper} object
      */
     public GeneralizedSemPmWrapper(TimeLagGraphWrapper wrapper) {
         this(wrapper.getGraph());
     }
 
+    /**
+     * <p>Constructor for GeneralizedSemPmWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     */
     public GeneralizedSemPmWrapper(SemEstimatorWrapper wrapper) {
         try {
             SemPm oldSemPm = wrapper.getSemEstimator().getEstimatedSem()
@@ -256,18 +311,33 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
         log(this.semPm);
     }
 
+    /**
+     * <p>Constructor for GeneralizedSemPmWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemImWrapper} object
+     */
     public GeneralizedSemPmWrapper(SemImWrapper wrapper) {
         SemPm oldSemPm = wrapper.getSemIm().getSemPm();
         this.semPm = new GeneralizedSemPm(oldSemPm);
         log(this.semPm);
     }
 
+    /**
+     * <p>Constructor for GeneralizedSemPmWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.MimBuildRunner} object
+     */
     public GeneralizedSemPmWrapper(MimBuildRunner wrapper) {
         SemPm oldSemPm = wrapper.getSemPm();
         this.semPm = new GeneralizedSemPm(oldSemPm);
         log(this.semPm);
     }
 
+    /**
+     * <p>Constructor for GeneralizedSemPmWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.BuildPureClustersRunner} object
+     */
     public GeneralizedSemPmWrapper(BuildPureClustersRunner wrapper) {
         Graph graph = wrapper.getResultGraph();
         if (graph == null) {
@@ -278,6 +348,11 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
         log(this.semPm);
     }
 
+    /**
+     * <p>Constructor for GeneralizedSemPmWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.AlgorithmRunner} object
+     */
     public GeneralizedSemPmWrapper(AlgorithmRunner wrapper) {
         this(new EdgeListGraph(wrapper.getGraph()));
     }
@@ -285,12 +360,20 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
      * @see TetradSerializableUtils
      */
     public static GeneralizedSemPmWrapper serializableInstance() {
         return new GeneralizedSemPmWrapper(Dag.serializableInstance());
     }
 
+    /**
+     * <p>setReferencedParameters.</p>
+     *
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param oldPm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @param newPm a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     */
     public void setReferencedParameters(Node node, GeneralizedSemPm oldPm, GeneralizedSemPm newPm) {
         Set<String> parameters = this.semPm.getReferencedParameters(node);
 
@@ -300,6 +383,12 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
     }
 
     //============================PUBLIC METHODS=========================//
+
+    /**
+     * <p>Getter for the field <code>semPm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     */
     public GeneralizedSemPm getSemPm() {
         return this.semPm;
     }
@@ -311,7 +400,12 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -321,22 +415,45 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
         }
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.semPm.getGraph();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>isShowErrors.</p>
+     *
+     * @return a boolean
+     */
     public boolean isShowErrors() {
         return this.showErrors;
     }
 
+    /**
+     * <p>Setter for the field <code>showErrors</code>.</p>
+     *
+     * @param showErrors a boolean
+     */
     public void setShowErrors(boolean showErrors) {
         this.showErrors = showErrors;
     }
@@ -347,18 +464,38 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
         TetradLogger.getInstance().log("pm", pm.toString());
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getGraph().getNodeNames();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getGraph().getNodes();
     }

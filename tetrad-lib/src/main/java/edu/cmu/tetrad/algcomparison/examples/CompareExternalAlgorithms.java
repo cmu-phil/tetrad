@@ -40,8 +40,15 @@ import edu.cmu.tetrad.util.Parameters;
  * saves them. For other formats, specialty data loaders can be written to implement the Simulation interface.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CompareExternalAlgorithms {
+
+    /**
+     * Run the example.
+     *
+     * @param args not used
+     */
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 

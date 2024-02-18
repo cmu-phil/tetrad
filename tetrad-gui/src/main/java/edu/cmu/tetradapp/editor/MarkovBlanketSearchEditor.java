@@ -51,6 +51,7 @@ import java.util.prefs.Preferences;
  * Editor + param editor for markov blanket searches.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, IndTestTypeSetter {
 
@@ -81,6 +82,8 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 
     /**
      * Constructs the eidtor.
+     *
+     * @param algorithmRunner a {@link edu.cmu.tetradapp.model.MarkovBlanketSearchRunner} object
      */
     public MarkovBlanketSearchEditor(MarkovBlanketSearchRunner algorithmRunner) {
         if (algorithmRunner == null) {
@@ -107,6 +110,8 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 
 
     /**
+     * <p>getDataModel.</p>
+     *
      * @return the data model being viewed.
      */
     public DataModel getDataModel() {
@@ -117,6 +122,11 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         return this.algorithmRunner.getSource();
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link java.lang.Object} object
+     */
     public Object getSourceGraph() {
         return getParams().get("sourceGraph", null);
     }
@@ -336,19 +346,34 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         return this.workbenchScroll;
     }
 
+    /**
+     * <p>getSelectedModelComponents.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List getSelectedModelComponents() {
         throw new UnsupportedOperationException("Cannot return selected components.");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         throw new UnsupportedOperationException("Cannot paste subsessions on a search editor.");
     }
 
+    /**
+     * <p>getWorkbench.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public GraphWorkbench getWorkbench() {
         return null;
     }
 
     /**
+     * <p>getGraph.</p>
+     *
      * @return the graph.
      */
     public Graph getGraph() {
@@ -359,16 +384,26 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Not supported.
      */
     public void setGraph(Graph g) {
         throw new UnsupportedOperationException("Cannot set the graph on a search editor.");
     }
 
+    /**
+     * <p>getTestType.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.util.IndTestType} object
+     */
     public IndTestType getTestType() {
         return (IndTestType) getParams().get("indTestType", IndTestType.FISHER_Z);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setTestType(IndTestType testType) {
         getParams().set("indTestType", testType);
     }

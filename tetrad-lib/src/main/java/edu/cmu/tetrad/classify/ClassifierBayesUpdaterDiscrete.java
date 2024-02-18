@@ -45,31 +45,49 @@ import java.util.List;
  * stored. Note that the variables must be the same in the dataset and the Bayes net.
  *
  * @author Frank Wimberly based on a specification by Clark Glymour
+ * @version $Id: $Id
  */
 public final class ClassifierBayesUpdaterDiscrete implements ClassifierDiscrete, TetradSerializable {
     @Serial
     private static final long serialVersionUID = 23L;
 
-    // The BayesIm instance used to create an updater.  Supplied as an argument to the constructor.
+    /**
+     * The BayesIm instance used to create an updater.  Supplied as an argument to the constructor.
+     */
     private final BayesIm bayesIm;
-    // The dataset to be classified.
+    /**
+     * The dataset to be classified.
+     */
     private final DataSet testData;
-    // The variables in the dataset to be classified.  These should be
-    // the same variables as in the training dataset according to the
-    // "equals" method of DiscreteVariable.
+    /**
+     * The variables in the dataset to be classified.  These should be the same variables as in the training dataset
+     * according to the "equals" method of DiscreteVariable.
+     */
     private final List<Node> bayesImVars;
-    // The percentage of correct estimates of the target variable.  This will be set to a meaningful value upon
-    // completion of the crossTabulate method.
+    /**
+     * The percentage of correct estimates of the target variable.  This will be set to a meaningful value upon
+     * completion of the crossTabulate method.
+     */
     private double percentCorrect;
-    // The target variable (inferred from its name).
+    /**
+     * The target variable (inferred from its name).
+     */
     private DiscreteVariable targetVariable;
-    // The classifications of the target variable.
+    /**
+     * The classifications of the target variable.
+     */
     private int[] classifications;
-    // The marginals.
+    /**
+     * The marginals.
+     */
     private double[][] marginals;
-    // The number of cases in the dataset.
+    /**
+     * The number of cases in the dataset.
+     */
     private int numCases = -1;
-    // The number of usable cases in the dataset.
+    /**
+     * The number of usable cases in the dataset.
+     */
     private int totalUsableCases;
 
     //===========================CONSTRUCTORS==========================//
@@ -322,6 +340,8 @@ public final class ClassifierBayesUpdaterDiscrete implements ClassifierDiscrete,
     }
 
     /**
+     * <p>Getter for the field <code>percentCorrect</code>.</p>
+     *
      * @return the percentage of cases in which the target variable is correctly classified.
      */
     public double getPercentCorrect() {
@@ -332,6 +352,8 @@ public final class ClassifierBayesUpdaterDiscrete implements ClassifierDiscrete,
     }
 
     /**
+     * <p>Getter for the field <code>targetVariable</code>.</p>
+     *
      * @return the discrete variables which is the target variable.
      * @see DiscreteVariable
      */
@@ -411,6 +433,10 @@ public final class ClassifierBayesUpdaterDiscrete implements ClassifierDiscrete,
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
+     *
+     * @param s The input stream.
+     * @throws IOException            If an IO error occurs.
+     * @throws ClassNotFoundException If a class is not found.
      */
     @Serial
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {

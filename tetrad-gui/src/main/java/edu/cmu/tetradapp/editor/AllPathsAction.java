@@ -47,6 +47,8 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and clipboard.
+     *
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public AllPathsAction(GraphWorkbench workbench) {
         super("All Paths");
@@ -54,6 +56,8 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
@@ -132,6 +136,8 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

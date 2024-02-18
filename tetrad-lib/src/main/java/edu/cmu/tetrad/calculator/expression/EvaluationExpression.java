@@ -24,6 +24,7 @@ package edu.cmu.tetrad.calculator.expression;
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 
+import java.io.Serial;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,8 +32,10 @@ import java.util.List;
  * An equation expression.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class EvaluationExpression implements Expression {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -47,6 +50,12 @@ public class EvaluationExpression implements Expression {
     private final String string;
 
 
+    /**
+     * <p>Constructor for EvaluationExpression.</p>
+     *
+     * @param exp a {@link edu.cmu.tetrad.calculator.expression.VariableExpression} object
+     * @param s   a {@link java.lang.String} object
+     */
     public EvaluationExpression(VariableExpression exp, String s) {
         if (exp == null) {
             throw new NullPointerException("Variable must not be null.");
@@ -58,10 +67,18 @@ public class EvaluationExpression implements Expression {
         this.string = s;
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.calculator.expression.EvaluationExpression} object
+     */
     public static EvaluationExpression serializableInstance() {
         return new EvaluationExpression(VariableExpression.serializableInstance(), "a");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double evaluate(Context context) {
         Object o = this.variable.evaluateGeneric(context);
         if (o != null && this.string.equals(o.toString())) {
@@ -70,23 +87,44 @@ public class EvaluationExpression implements Expression {
         return 0.0;
     }
 
+    /**
+     * <p>getToken.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getToken() {
         return "Eval";
     }
 
+    /**
+     * <p>getPosition.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position} object
+     */
     public ExpressionDescriptor.Position getPosition() {
         return ExpressionDescriptor.Position.NEITHER;
     }
 
+    /**
+     * <p>getExpressions.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Expression> getExpressions() {
         return Collections.singletonList(this.variable);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public RealDistribution getRealDistribution(Context context) {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public IntegerDistribution getIntegerDistribution(Context context) {
         return null;
     }

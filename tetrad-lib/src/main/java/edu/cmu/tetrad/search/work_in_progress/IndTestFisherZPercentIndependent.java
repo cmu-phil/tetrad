@@ -21,7 +21,10 @@
 
 package edu.cmu.tetrad.search.work_in_progress;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -41,21 +44,68 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Calculates independence from pooled residuals.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndTestFisherZPercentIndependent implements IndependenceTest {
+
+    /**
+     * The variables.
+     */
     private final List<Node> variables;
+
+    /**
+     * The data sets.
+     */
     private final List<DataSet> dataSets;
+
+    /**
+     * The rows.
+     */
     private final int[] rows;
+
+    /**
+     * The data.
+     */
     private final List<Matrix> data;
+
+    /**
+     * The ncov.
+     */
     private final List<Matrix> ncov;
+
+    /**
+     * The alpha.
+     */
     private final Map<Node, Integer> variablesMap;
+
+    /**
+     * The alpha.
+     */
     private double alpha;
+
+    /**
+     * The percent.
+     */
     private double percent = .75;
+
+    /**
+     * The fdr.
+     */
     private boolean fdr = true;
+
+    /**
+     * whether to print verbose output
+     */
     private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
 
+    /**
+     * <p>Constructor for IndTestFisherZPercentIndependent.</p>
+     *
+     * @param dataSets a {@link java.util.List} object
+     * @param alpha    a double
+     */
     public IndTestFisherZPercentIndependent(List<DataSet> dataSets, double alpha) {
         this.dataSets = dataSets;
         this.variables = dataSets.get(0).getVariables();
@@ -87,10 +137,21 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
     //==========================PUBLIC METHODS=============================//
 
+    /**
+     * {@inheritDoc}
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
+     */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         try {
             List<Node> z = new ArrayList<>(_z);
@@ -156,12 +217,16 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
     /**
      * Gets the getModel significance level.
+     *
+     * @return a double
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -174,6 +239,8 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     }
 
     /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
      * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
@@ -187,19 +254,27 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
 
     /**
-     * @throws UnsupportedOperationException
+     * {@inheritDoc}
      */
     public boolean determines(List z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * @throws UnsupportedOperationException
+     * <p>Getter for the field <code>data</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.lang.UnsupportedOperationException if any.
      */
     public DataSet getData() {
         return DataTransforms.concatenate(this.dataSets);
     }
 
+    /**
+     * <p>getCov.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public ICovarianceMatrix getCov() {
         List<DataSet> _dataSets = new ArrayList<>();
 
@@ -210,44 +285,80 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         return new CovarianceMatrix(DataTransforms.concatenate(this.dataSets));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<DataSet> getDataSets() {
         return this.dataSets;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getSampleSize() {
         return this.dataSets.get(0).getNumRows();
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of this test.
      */
     public String toString() {
         return "Fisher Z, Percent Independent";
     }
 
+    /**
+     * <p>Getter for the field <code>rows</code>.</p>
+     *
+     * @return an array of {@link int} objects
+     */
     public int[] getRows() {
         return this.rows;
     }
 
+    /**
+     * <p>Getter for the field <code>percent</code>.</p>
+     *
+     * @return a double
+     */
     public double getPercent() {
         return this.percent;
     }
 
+    /**
+     * <p>Setter for the field <code>percent</code>.</p>
+     *
+     * @param percent a double
+     */
     public void setPercent(double percent) {
         if (percent < 0.0 || percent > 1.0) throw new IllegalArgumentException();
         this.percent = percent;
     }
 
+    /**
+     * <p>Setter for the field <code>fdr</code>.</p>
+     *
+     * @param fdr a boolean
+     */
     public void setFdr(boolean fdr) {
         this.fdr = fdr;
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

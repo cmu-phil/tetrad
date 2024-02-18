@@ -26,6 +26,7 @@ package edu.cmu.tetrad.util;
  * justified, with a given number of spaces between columns.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TextTable {
 
@@ -53,10 +54,17 @@ public class TextTable {
      * The number of spaces between columns. By default, 2.
      */
     private int columnSpacing = 2;
+
+    /**
+     * The delimiter to use when printing the table.
+     */
     private Delimiter delimiter = Delimiter.JUSTIFIED;
 
     /**
      * Construct the text table; the table has a fixed number of rows and columns, each greater than zero.
+     *
+     * @param rows    a int
+     * @param columns a int
      */
     public TextTable(int rows, int columns) {
         if (rows <= 0 || columns <= 0) {
@@ -77,6 +85,10 @@ public class TextTable {
     /**
      * Sets the token at the given row and column, each of which must be &gt;= 0 and less than the number of rows or
      * columns, respectively.
+     *
+     * @param row    a int
+     * @param column a int
+     * @param token  a {@link java.lang.String} object
      */
     public void setToken(int row, int column, String token) {
         if (token == null) {
@@ -95,6 +107,10 @@ public class TextTable {
     }
 
     /**
+     * <p>getTokenAt.</p>
+     *
+     * @param row    a int
+     * @param column a int
      * @return the token at the given row and column.
      */
     public String getTokenAt(int row, int column) {
@@ -102,6 +118,8 @@ public class TextTable {
     }
 
     /**
+     * <p>getNumRows.</p>
+     *
      * @return the number of rows, as set in the constructor.
      */
     public int getNumRows() {
@@ -109,6 +127,8 @@ public class TextTable {
     }
 
     /**
+     * <p>getNumColumns.</p>
+     *
      * @return the number of rows, as set in the constructor.
      */
     public int getNumColumns() {
@@ -124,6 +144,8 @@ public class TextTable {
 
     /**
      * Sets the number of spaces between columns, to some number &gt;= 0.
+     *
+     * @param numSpaces a int
      */
     public void setColumnSpacing(int numSpaces) {
         if (numSpaces < 0) {
@@ -142,6 +164,8 @@ public class TextTable {
 
     /**
      * Sets the justification, either LEFT_JUSTIFIED or RIGHT_JUSTIFIED.
+     *
+     * @param justification a int
      */
     public void setJustification(int justification) {
         if (!(justification == TextTable.LEFT_JUSTIFIED || justification == TextTable.RIGHT_JUSTIFIED)) {
@@ -151,6 +175,11 @@ public class TextTable {
         this.justification = justification;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         StringBuilder buffer = new StringBuilder();
 
@@ -214,11 +243,37 @@ public class TextTable {
         return buffer.toString();
     }
 
+    /**
+     * <p>Setter for the field <code>delimiter</code>.</p>
+     *
+     * @param delimiter a {@link edu.cmu.tetrad.util.TextTable.Delimiter} object
+     */
     public void setDelimiter(Delimiter delimiter) {
         this.delimiter = delimiter;
     }
 
-    public enum Delimiter {JUSTIFIED, COMMA, TAB, SPACE}
+    /**
+     * An enum of delimiters.
+     */
+    public enum Delimiter {
+        /**
+         * Constant <code>JUSTIFIED</code>
+         */
+        JUSTIFIED,
+        /**
+         * Constant <code>COMMA</code>
+         */
+        COMMA,
+        /**
+         * Constant <code>TAB</code>
+         */
+        TAB,
+        /**
+         * Constant <code>SPACE</code>
+         */
+        SPACE
+    }
+
 }
 
 

@@ -15,6 +15,7 @@ import java.util.Map;
  * Scores an entire DAG using the SemBicScore.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see SemBicScore
  */
 public class SemBicScorer {
@@ -22,8 +23,9 @@ public class SemBicScorer {
     /**
      * Scores the given DAG using the given data model, usimg a BIC score.
      *
-     * @param dag  The DAG.
-     * @param data a continuous dataset or a covariance matrix.
+     * @param dag                   The DAG.
+     * @param data                  a continuous dataset or a covariance matrix.
+     * @param precomputeCovariances a boolean
      * @return The BIC score of the DAG.
      */
     public static double scoreDag(Graph dag, DataModel data, boolean precomputeCovariances) {
@@ -33,9 +35,10 @@ public class SemBicScorer {
     /**
      * Scores the given DAG using the given data model, usimg a BIC score.
      *
-     * @param dag             The DAG.
-     * @param data            a continuous dataset or a covariance matrix.
-     * @param penaltyDiscount The penalty discount.
+     * @param dag                   The DAG.
+     * @param data                  a continuous dataset or a covariance matrix.
+     * @param penaltyDiscount       The penalty discount.
+     * @param precomputeCovariances a boolean
      * @return The BIC score of the DAG.
      */
     public static double scoreDag(Graph dag, DataModel data, double penaltyDiscount, boolean precomputeCovariances) {

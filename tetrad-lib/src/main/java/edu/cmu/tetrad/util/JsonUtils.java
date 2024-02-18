@@ -15,13 +15,26 @@ import java.util.Set;
  * Dec 9, 2016 5:43:47 PM
  *
  * @author Chirayu (Kong) Wongchokprasitti, PhD
+ * @version $Id: $Id
  */
 public class JsonUtils {
 
+    /**
+     * <p>parseJSONObjectToTetradGraph.</p>
+     *
+     * @param jsonResponse a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph parseJSONObjectToTetradGraph(String jsonResponse) {
         return JsonUtils.parseJSONObjectToTetradGraph(new JSONObject(jsonResponse));
     }
 
+    /**
+     * <p>parseJSONObjectToTetradGraph.</p>
+     *
+     * @param jObj a {@link org.json.JSONObject} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph parseJSONObjectToTetradGraph(JSONObject jObj) {
         if (!jObj.isNull("graph")) {
             return JsonUtils.parseJSONObjectToTetradGraph(jObj.getJSONObject("graph"));
@@ -67,6 +80,12 @@ public class JsonUtils {
         return graph;
     }
 
+    /**
+     * <p>parseJSONArrayToTetradTriples.</p>
+     *
+     * @param jArray a {@link org.json.JSONArray} object
+     * @return a {@link java.util.Set} object
+     */
     public static Set<Triple> parseJSONArrayToTetradTriples(JSONArray jArray) {
         Set<Triple> triples = new HashSet<>();
 
@@ -78,6 +97,12 @@ public class JsonUtils {
         return triples;
     }
 
+    /**
+     * <p>parseJSONArrayToTetradTriple.</p>
+     *
+     * @param jObj a {@link org.json.JSONObject} object
+     * @return a {@link edu.cmu.tetrad.graph.Triple} object
+     */
     public static Triple parseJSONArrayToTetradTriple(JSONObject jObj) {
         Node x = JsonUtils.parseJSONObjectToTetradNode(jObj.getJSONObject("x"));
         Node y = JsonUtils.parseJSONObjectToTetradNode(jObj.getJSONObject("y"));
@@ -86,6 +111,13 @@ public class JsonUtils {
         return new Triple(x, y, z);
     }
 
+    /**
+     * <p>parseJSONArrayToTetradEdges.</p>
+     *
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param jArray a {@link org.json.JSONArray} object
+     * @return a {@link java.util.Set} object
+     */
     public static Set<Edge> parseJSONArrayToTetradEdges(Graph graph, JSONArray jArray) {
         Set<Edge> edges = new HashSet<>();
 
@@ -97,6 +129,13 @@ public class JsonUtils {
         return edges;
     }
 
+    /**
+     * <p>parseJSONObjectToTetradEdge.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param jObj  a {@link org.json.JSONObject} object
+     * @return a {@link edu.cmu.tetrad.graph.Edge} object
+     */
     public static Edge parseJSONObjectToTetradEdge(Graph graph, JSONObject jObj) {
 //        Endpoint[] TYPES = new Endpoint[]{Endpoint.TAIL, Endpoint.ARROW, Endpoint.CIRCLE, Endpoint.STAR, Endpoint.NULL};
 
@@ -135,6 +174,12 @@ public class JsonUtils {
         return edge;
     }
 
+    /**
+     * <p>parseJSONObjectToEdgeTypeProperty.</p>
+     *
+     * @param jObj a {@link org.json.JSONObject} object
+     * @return a {@link edu.cmu.tetrad.graph.EdgeTypeProbability} object
+     */
     public static EdgeTypeProbability parseJSONObjectToEdgeTypeProperty(JSONObject jObj) {
         String _edgeType = jObj.getString("edgeType");
         EdgeType edgeType = EdgeType.nil;
@@ -179,6 +224,12 @@ public class JsonUtils {
         return edgeTypeProbability;
     }
 
+    /**
+     * <p>parseJSONObjectToEdgeProperty.</p>
+     *
+     * @param prop a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.graph.Edge.Property} object
+     */
     public static Edge.Property parseJSONObjectToEdgeProperty(String prop) {
         if (prop.equalsIgnoreCase("dd")) {
             return Edge.Property.dd;
@@ -195,6 +246,12 @@ public class JsonUtils {
         return null;
     }
 
+    /**
+     * <p>parseJSONArrayToTetradNodes.</p>
+     *
+     * @param jArray a {@link org.json.JSONArray} object
+     * @return a {@link java.util.List} object
+     */
     public static List<Node> parseJSONArrayToTetradNodes(JSONArray jArray) {
         List<Node> nodes = new ArrayList<>();
 
@@ -206,6 +263,12 @@ public class JsonUtils {
         return nodes;
     }
 
+    /**
+     * <p>parseJSONObjectToTetradNode.</p>
+     *
+     * @param jObj a {@link org.json.JSONObject} object
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public static Node parseJSONObjectToTetradNode(JSONObject jObj) {
         JSONObject nodeType = jObj.getJSONObject("nodeType");
         int ordinal = nodeType.getInt("ordinal");

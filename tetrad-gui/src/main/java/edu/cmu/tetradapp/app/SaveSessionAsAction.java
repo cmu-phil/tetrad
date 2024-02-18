@@ -41,19 +41,28 @@ import java.util.prefs.Preferences;
  * Saves a session from a file.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SaveSessionAsAction extends AbstractAction {
 
     @Serial
     private static final long serialVersionUID = 2798487128341621686L;
 
+    /**
+     * Constant <code>saved=false</code>
+     */
     public static boolean saved = false;
 
+    /**
+     * <p>Constructor for SaveSessionAsAction.</p>
+     */
     public SaveSessionAsAction() {
         super("Save Session As...");
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Performs the action of saving a session to a file.
      */
     @Override

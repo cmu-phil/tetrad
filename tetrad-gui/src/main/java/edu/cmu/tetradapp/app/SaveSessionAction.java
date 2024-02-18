@@ -42,18 +42,28 @@ import java.util.prefs.Preferences;
  *
  * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class SaveSessionAction extends AbstractAction {
 
     @Serial
     private static final long serialVersionUID = -1812370698394158108L;
 
+    /**
+     * Constant <code>saved=false</code>
+     */
     public static boolean saved = false;
 
+    /**
+     * <p>Constructor for SaveSessionAction.</p>
+     */
     public SaveSessionAction() {
         super("Save Session");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         // Get the frontmost SessionWrapper.

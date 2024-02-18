@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.dist.Normal;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 
 /**
  * Models the manner in which gene models are initialized differentially depending on the dishes that the cells are in.
@@ -35,31 +36,34 @@ import java.io.ObjectInputStream;
  * differentiation may be nutrition, temperature, etc.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DishModel implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
+
     /**
      * An array of dish bumps for each dish.
-     *
-     * @serial
      */
     private final double[] dishBumps;
     /**
      * The number of the getModel dish.
-     *
-     * @serial
      */
     private int dishNumber;
     /**
      * The standard deviation of the normal distribution from which dish bump values are drawn, in percent. The
      * distribution has a mean of 100%.
-     *
-     * @serial
      */
     private double dishBumpStDev = 10.0;
 
     //===============================CONSTRUCTORS========================//
 
+    /**
+     * <p>Constructor for DishModel.</p>
+     *
+     * @param numDishes     a int
+     * @param dishBumpStDev a double
+     */
     public DishModel(int numDishes, double dishBumpStDev) {
 
         if (numDishes < 1) {
@@ -87,6 +91,8 @@ public class DishModel implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.DishModel} object
      */
     public static DishModel serializableInstance() {
         return new DishModel(1, 1.0);
@@ -96,6 +102,8 @@ public class DishModel implements TetradSerializable {
 
     /**
      * Returns the number of the getModel dish.
+     *
+     * @return a int
      */
     public int getDishNumber() {
         return this.dishNumber;
@@ -103,6 +111,8 @@ public class DishModel implements TetradSerializable {
 
     /**
      * Sets the number of the getModel dish.
+     *
+     * @param dishNumber a int
      */
     public void setDishNumber(int dishNumber) {
 
@@ -116,6 +126,9 @@ public class DishModel implements TetradSerializable {
 
     /**
      * Bumps the given expression value in the manner prescribed for the getModel dish.
+     *
+     * @param expressionLevel a double
+     * @return a double
      */
     public double bumpInitialization(double expressionLevel) {
 
@@ -123,10 +136,20 @@ public class DishModel implements TetradSerializable {
         return expressionLevel * this.dishBumps[this.dishNumber] / 100.0;
     }
 
+    /**
+     * <p>Getter for the field <code>dishBumpStDev</code>.</p>
+     *
+     * @return a double
+     */
     public double getDishBumpStDev() {
         return this.dishBumpStDev;
     }
 
+    /**
+     * <p>Setter for the field <code>dishBumpStDev</code>.</p>
+     *
+     * @param dishBumpStDev a double
+     */
     public void setDishBumpStDev(double dishBumpStDev) {
         this.dishBumpStDev = dishBumpStDev;
     }
@@ -138,7 +161,12 @@ public class DishModel implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s an {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

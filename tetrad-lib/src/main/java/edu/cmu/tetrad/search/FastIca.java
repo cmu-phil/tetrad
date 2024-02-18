@@ -122,64 +122,96 @@ import static org.apache.commons.math3.util.FastMath.*;
  * *13(4-5)*:411-430
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class FastIca {
 
-    // The algorithm type where all components are extracted simultaneously.
+    /**
+     * The algorithm type where all components are extracted simultaneously.
+     */
     public static int PARALLEL;
 
-    // The algorithm type where the components are extracted one at a time.
+    /**
+     * The algorithm type where the components are extracted one at a time.
+     */
     public static int DEFLATION = 1;
 
-    // One of the function types that can be used to approximate negative entropy.
+    /**
+     * One of the function types that can be used to approximate negative entropy.
+     */
     public static int LOGCOSH = 2;
 
-    // The other function type that can be used to approximate negative entropy.
+    /**
+     * The other function type that can be used to approximate negative entropy.
+     */
     public static int EXP = 3;
 
-    // A data matrix with n rows representing observations and p columns representing variables.
+    /**
+     * A data matrix with n rows representing observations and p columns representing variables.
+     */
     private final Matrix X;
 
-    // The number of independent components to be extracted.
+    /**
+     * The number of independent components to be extracted.
+     */
     private int numComponents;
 
-    // If algorithmType == PARALLEL, the components are extracted simultaneously (the default). if algorithmType ==
-    // DEFLATION, the components are extracted one at a time.
-    private int algorithmType = FastIca.PARALLEL;
+    /**
+     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default). if algorithmType ==
+     * DEFLATION, the components are extracted one at a time.
+     */
+    private int algorithmType;
 
-    // The function type to be used, either LOGCOSH or EXP.
+    /**
+     * The function type to be used, either LOGCOSH or EXP.
+     */
     private int function = FastIca.LOGCOSH;
 
-    // Constant in range [1, 2] used in approximation to neg-entropy when 'fun == "logcosh". Default = 1.0.
+    /**
+     * Constant in range [1, 2] used in approximation to neg-entropy when 'fun == "logcosh". Default = 1.0.
+     */
     private double alpha = 1.1;
 
-    // A logical value indicating whether rows of the data matrix 'X' should be standardized beforehand. Default =
-    // false.
+    /**
+     * A logical value indicating whether rows of the data matrix 'X' should be standardized beforehand. Default =
+     * false.
+     */
     private boolean rowNorm;
 
-    // Maximum number of iterations to perform. Default = 200.
+    /**
+     * Maximum number of iterations to perform. Default = 200.
+     */
     private int maxIterations = 200;
 
-    // A positive scalar giving the tolerance at which the un-mixing matrix is considered to have converged. Default =
-    // 1e-04.
+    /**
+     * A positive scalar giving the tolerance at which the un-mixing matrix is considered to have converged. Default =
+     * 1e-04.
+     */
     private double tolerance = 1e-04;
 
-    // A logical value indicating the level of output as the algorithm runs. Default = false.
+    /**
+     * A logical value indicating the level of output as the algorithm runs. Default = false.
+     */
     private boolean verbose;
 
-    // Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default), then a matrix of normal r.v.'s is
-    // used.
+    /**
+     * Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default), then a matrix of normal r.v.'s is
+     * used.
+     */
     private Matrix wInit;
 
     /**
      * Constructs an instance of the Fast ICA algorithm, taking as arguments the two arguments that cannot be defaulted:
      * the data matrix itself and the number of components to be extracted.
      *
-     * @param X A 2D matrix, rows being cases, columns being variables. It is assumed that there are no missing values.
+     * @param X             A 2D matrix, rows being cases, columns being variables. It is assumed that there are no
+     *                      missing values.
+     * @param numComponents a int
      */
     public FastIca(Matrix X, int numComponents) {
         this.X = X;
         this.numComponents = numComponents;
+        algorithmType = FastIca.PARALLEL;
     }
 
     /**
@@ -626,11 +658,36 @@ public class FastIca {
      * S: estimated source matrix
      */
     public static class IcaResult {
+
+        /**
+         * The pre-processed data matrix.
+         */
         private final Matrix X;
+
+        /**
+         * The pre-whitening matrix that projects data onto the first n.comp principal components.
+         */
         private final Matrix K;
+
+        /**
+         * The estimated un-mixing matrix.
+         */
         private final Matrix W;
+
+        /**
+         * The estimated source matrix.
+         */
         private final Matrix S;
 
+        /**
+         * Constructs an instance of the IcaResult class, taking as arguments the four matrices that are the result of
+         * the Fast ICA algorithm.
+         *
+         * @param X The pre-processed data matrix.
+         * @param K The pre-whitening matrix that projects data onto the first n.comp principal components.
+         * @param W The estimated un-mixing matrix.
+         * @param S The estimated source matrix.
+         */
         public IcaResult(Matrix X, Matrix K, Matrix W,
                          Matrix S) {
             this.X = X;
@@ -639,22 +696,47 @@ public class FastIca {
             this.S = S;
         }
 
+        /**
+         * Returns the pre-processed data matrix.
+         *
+         * @return this matrix.
+         */
         public Matrix getX() {
             return this.X;
         }
 
+        /**
+         * Returns the pre-whitening matrix that projects data onto the first n.comp principal components.
+         *
+         * @return this matrix.
+         */
         public Matrix getK() {
             return this.K;
         }
 
+        /**
+         * Returns the estimated un-mixing matrix.
+         *
+         * @return this matrix.
+         */
         public Matrix getW() {
             return this.W;
         }
 
+        /**
+         * Returns the estimated source matrix.
+         *
+         * @return this matrix.
+         */
         public Matrix getS() {
             return this.S;
         }
 
+        /**
+         * Returns a string representation of this IcaResult object.
+         *
+         * @return this string.
+         */
         public String toString() {
             return "\n\nX:\n" +
                     this.X +

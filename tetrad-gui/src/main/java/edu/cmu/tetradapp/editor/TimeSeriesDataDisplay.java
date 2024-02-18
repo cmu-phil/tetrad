@@ -31,13 +31,20 @@ import java.awt.*;
  * Displays a DataSet object as a JTable.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TimeSeriesDataDisplay extends JPanel
         implements DataModelContainer {
+
+    /**
+     * The JTable that displays the DataSet.
+     */
     private final TimeSeriesDataDisplayJTable timeSerieaDataDisplayJTable;
 
     /**
      * Constructor. Takes a DataSet as a model.
+     *
+     * @param model a {@link edu.cmu.tetrad.data.TimeSeriesData} object
      */
     public TimeSeriesDataDisplay(TimeSeriesData model) {
         this.timeSerieaDataDisplayJTable = new TimeSeriesDataDisplayJTable(model);
@@ -45,6 +52,11 @@ public class TimeSeriesDataDisplay extends JPanel
         add(new JScrollPane(this.timeSerieaDataDisplayJTable), BorderLayout.CENTER);
     }
 
+    /**
+     * <p>getDataModel.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public DataModel getDataModel() {
         return this.timeSerieaDataDisplayJTable.getDataModel();
     }

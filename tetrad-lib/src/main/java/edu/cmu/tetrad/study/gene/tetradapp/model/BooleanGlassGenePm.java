@@ -25,42 +25,68 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.study.gene.tetrad.gene.graph.ManualActiveLagGraph;
 import edu.cmu.tetrad.study.gene.tetrad.gene.graph.RandomActiveLagGraph;
 
+import java.io.Serial;
+
 /**
  * Implements a parametric model for Boolean Glass gene PM's, which in this case just presents the underlying workbench.
  * There are no additional parameters to the PM.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BooleanGlassGenePm extends GenePm implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Can be null.n
+     * The name of the model.
      */
     private String name;
 
     //============================CONSTRUCTORS===============================//
 
+    /**
+     * Construct a new gene pm, wrapping the given lag graph.
+     *
+     * @param lagGraph The lag graph to wrap.
+     */
     public BooleanGlassGenePm(ManualActiveLagGraph lagGraph) {
         super(lagGraph);
     }
 
+    /**
+     * Construct a new gene pm, wrapping the given lag graph.
+     *
+     * @param lagGraph The lag graph to wrap.
+     */
     public BooleanGlassGenePm(RandomActiveLagGraph lagGraph) {
         super(lagGraph);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return A simple exemplar of this class to test serialization.
      */
     public static BooleanGlassGenePm serializableInstance() {
         return new BooleanGlassGenePm(
                 (ManualActiveLagGraph) ManualActiveLagGraph.serializableInstance());
     }
 
+    /**
+     * Returns the name of the model.
+     *
+     * @return the name of the model.
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Sets the name of the model.
+     */
     public void setName(String name) {
         this.name = name;
     }

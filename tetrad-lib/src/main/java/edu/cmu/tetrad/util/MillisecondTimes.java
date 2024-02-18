@@ -9,22 +9,46 @@ import java.lang.management.ManagementFactory;
  * particular times.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MillisecondTimes {
+    /**
+     * Constant <code>type</code>
+     */
     public static Type type = Type.CPU;
 
+    /**
+     * <p>wallTimeMillis.</p>
+     *
+     * @return a long
+     */
     public static long wallTimeMillis() {
         return MillisecondTimes.timeMillis();
     }
 
+    /**
+     * <p>userTimeMillis.</p>
+     *
+     * @return a long
+     */
     public static long userTimeMillis() {
         return ManagementFactory.getThreadMXBean().getCurrentThreadUserTime() / 1000000L;
     }
 
+    /**
+     * <p>cpuTimeMillis.</p>
+     *
+     * @return a long
+     */
     public static long cpuTimeMillis() {
         return ManagementFactory.getThreadMXBean().getCurrentThreadUserTime() / 1000000L;
     }
 
+    /**
+     * <p>timeMillis.</p>
+     *
+     * @return a long
+     */
     public static long timeMillis() {
         switch (type) {
             case Wall:
@@ -38,5 +62,24 @@ public class MillisecondTimes {
         }
     }
 
-    public enum Type {Wall, User, CPU}
+    /**
+     * An enum for the type of time.
+     */
+    public enum Type {
+
+        /**
+         * Wall time.
+         */
+        Wall,
+
+        /**
+         * User time.
+         */
+        User,
+
+        /**
+         * CPU time.
+         */
+        CPU
+    }
 }

@@ -21,6 +21,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -33,6 +34,7 @@ import java.util.List;
  * (randomly). This cannot given multiple values.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "IMaGES",
@@ -43,18 +45,37 @@ import java.util.List;
 @Bootstrapping
 public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * The score to use.
+     */
     private ScoreWrapper score = new SemBicScore();
 
+    /**
+     * <p>Constructor for Images.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public Images(ScoreWrapper score) {
         this.score = score;
     }
 
+    /**
+     * <p>Constructor for Images.</p>
+     */
     public Images() {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
         int meta = parameters.getInt(Params.IMAGES_META_ALG);
@@ -121,17 +142,17 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
             GeneralResamplingTest search = new GeneralResamplingTest(
                     dataSets2,
                     imagesSemBic,
-                    parameters.getInt(Params.NUMBER_RESAMPLING),
-                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setParameters(parameters);
+                    knowledge, parameters
+            );
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setKnowledge(this.knowledge);
             search.setScoreWrapper(score);
             return search.search();
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -142,38 +163,41 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
             List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
                     images,
-                    parameters.getInt(Params.NUMBER_RESAMPLING),
-                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT),
-                    parameters.getInt(Params.RESAMPLING_ENSEMBLE),
-                    parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+                    knowledge, parameters);
 
-            if (score == null) {
-                System.out.println();
-            }
-
-            search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setScoreWrapper(score);
             return search.search();
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "IMaGES";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.All;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new LinkedList<>();
@@ -189,26 +213,41 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
         return parameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setIndTestWrapper(IndependenceWrapper test) {
         // Not used.

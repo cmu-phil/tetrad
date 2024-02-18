@@ -50,21 +50,70 @@ import java.util.*;
  *
  * @author Frank Wimberly
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ClassifierMbDiscrete implements ClassifierDiscrete {
+
+    /**
+     * Train data.
+     */
     private DataSet train;
+
+    /**
+     * Test data.
+     */
     private DataSet test;
+
+    /**
+     * Target variable.
+     */
     private Node target;
     private double alpha;
+
+    /**
+     * Depth for PC-MB search.
+     */
     private int depth;
+
+    /**
+     * Prior for Dirichlet estimator.
+     */
     private double prior;
+
+    /**
+     * Maximum number of missing values for a test case.
+     */
     private int maxMissing;
+
+    /**
+     * Target variable.
+     */
     private DiscreteVariable targetVariable;
+
+    /**
+     * Percent correct.
+     */
     private double percentCorrect;
+
+    /**
+     * Cross-tabulation.
+     */
     private int[][] crossTabulation;
 
     //============================CONSTRUCTOR===========================//
 
+    /**
+     * Constructs a new ClassifierMbDiscrete object using the given training and test data, target variable, alpha
+     * value,
+     *
+     * @param trainPath        the path to the training data file
+     * @param testPath         the path to the test data file
+     * @param targetString     the name of the target variable
+     * @param alphaString      the alpha value for the Dirichlet estimator
+     * @param depthString      the depth for the PC-MB search
+     * @param priorString      the prior for the Dirichlet estimator
+     * @param maxMissingString the maximum number of missing values for a test case
+     */
     public ClassifierMbDiscrete(String trainPath, String testPath, String targetString,
                                 String alphaString, String depthString, String priorString, String maxMissingString) {
         try {
@@ -375,6 +424,8 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
     }
 
     /**
+     * <p>crossTabulation.</p>
+     *
      * @return the cross-tabulation from the classify method. The classify method must be run first.
      */
     public int[][] crossTabulation() {
@@ -382,6 +433,8 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
     }
 
     /**
+     * <p>Getter for the field <code>percentCorrect</code>.</p>
+     *
      * @return the percent correct from the classify method. The classify method must be run first.
      */
     public double getPercentCorrect() {

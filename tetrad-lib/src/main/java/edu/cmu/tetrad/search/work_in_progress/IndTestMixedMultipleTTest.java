@@ -50,6 +50,7 @@ import java.util.*;
  *
  * @author josephramsey
  * @author Augustus Mayo.
+ * @version $Id: $Id
  */
 public class IndTestMixedMultipleTTest implements IndependenceTest {
     private final DataSet originalData;
@@ -64,6 +65,12 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     private boolean verbose;
     private boolean preferLinear = true;
 
+    /**
+     * <p>Constructor for IndTestMixedMultipleTTest.</p>
+     *
+     * @param data  a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param alpha a double
+     */
     public IndTestMixedMultipleTTest(DataSet data, double alpha) {
         this.searchVariables = data.getVariables();
         this.originalData = data.copy();
@@ -82,21 +89,29 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         this.regression = new RegressionDataset(internalData);
     }
 
+    /**
+     * <p>Setter for the field <code>preferLinear</code>.</p>
+     *
+     * @param preferLinear a boolean
+     */
     public void setPreferLinear(boolean preferLinear) {
         this.preferLinear = preferLinear;
     }
 
     /**
-     * @return an Independence test for a subset of the searchVariables.
+     * {@inheritDoc}
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * @return True if the given independence question is judged true, False if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
-     * getVariableNames().
+     * {@inheritDoc}
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
@@ -117,6 +132,8 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
+     * <p>getPValue.</p>
+     *
      * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
      * not meaningful for tis test.
      */
@@ -125,6 +142,8 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the list of searchVariables over which this independence checker is capable of determinining independence
      * relations.
      */
@@ -133,20 +152,25 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     * @throws javax.help.UnsupportedOperationException Method not implemented.
+     * {@inheritDoc}
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
-     * @throws UnsupportedOperationException if there is no significance level.
+     * <p>Getter for the field <code>alpha</code>.</p>
+     *
+     * @return a double
+     * @throws java.lang.UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
@@ -163,6 +187,8 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of this test.
      */
     public String toString() {
@@ -180,9 +206,9 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

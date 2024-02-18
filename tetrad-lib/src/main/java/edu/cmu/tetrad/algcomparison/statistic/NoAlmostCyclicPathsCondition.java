@@ -6,24 +6,37 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import java.io.Serial;
+
 /**
  * No almost cyclic paths condition.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NoAlmostCyclicPathsCondition implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "NoAlmostCyclic";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "1 if the no almost cyclic paths condition passes, 0 if not";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = estGraph;
@@ -44,6 +57,9 @@ public class NoAlmostCyclicPathsCondition implements Statistic {
         return 1;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return value;

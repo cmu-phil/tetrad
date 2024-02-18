@@ -30,12 +30,32 @@ import edu.cmu.tetradapp.util.IndTestType;
  * @author josephramsey
  */
 interface IndTestTypeSetter {
+    /**
+     * <p>getTestType.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.util.IndTestType} object
+     */
     IndTestType getTestType();
 
+    /**
+     * <p>setTestType.</p>
+     *
+     * @param testType a {@link edu.cmu.tetradapp.util.IndTestType} object
+     */
     void setTestType(IndTestType testType);
 
+    /**
+     * <p>getDataModel.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     DataModel getDataModel();
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link java.lang.Object} object
+     */
     Object getSourceGraph();
 }
 

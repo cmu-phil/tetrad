@@ -26,6 +26,7 @@ package edu.cmu.tetrad.util;
  * Integrates under a function from one endpoint to another.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Integrator {
 

@@ -32,6 +32,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -40,14 +41,16 @@ import java.util.List;
 /**
  * Implements a logistic regression algorithm based on a Javascript implementation by John Pezzullo.  That
  * implementation together with a description of logistic regression and some examples appear on his web page
- * http://members.aol.com/johnp71/logistic.html
+ * <a href="http://members.aol.com/johnp71/logistic.html">...</a>
  * <p>
  * See also  Applied Logistic Regression, by D.W. Hosmer and S. Lemeshow. 1989, John Wiley and Sons, New York which
  * Pezzullo references.  In particular see pages 27-29.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class LogisticRegression implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -62,11 +65,17 @@ public class LogisticRegression implements TetradSerializable {
      * The default alpha level which may be specified otherwise in the GUI
      */
     private double alpha = 0.05;
+
+    /**
+     * The rows in the data used for regression.
+     */
     private int[] rows;
 
     /**
      * A mixed data set. The targets of regresson must be binary. Regressors must be continuous or binary. Other
      * variables don't matter.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public LogisticRegression(DataSet dataSet) {
         this.dataSet = dataSet;
@@ -77,6 +86,8 @@ public class LogisticRegression implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.regression.LogisticRegression} object
      */
     public static LogisticRegression serializableInstance() {
         return new LogisticRegression(BoxDataSet.serializableInstance());
@@ -84,6 +95,10 @@ public class LogisticRegression implements TetradSerializable {
 
     /**
      * x must be binary; regressors must be continuous or binary.
+     *
+     * @param x          a {@link edu.cmu.tetrad.data.DiscreteVariable} object
+     * @param regressors a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.regression.LogisticRegression.Result} object
      */
     public Result regress(DiscreteVariable x, List<Node> regressors) {
         if (!binary(x)) {
@@ -347,6 +362,8 @@ public class LogisticRegression implements TetradSerializable {
     }
 
     /**
+     * <p>Getter for the field <code>alpha</code>.</p>
+     *
      * @return the alpha level.
      */
     public double getAlpha() {
@@ -355,6 +372,8 @@ public class LogisticRegression implements TetradSerializable {
 
     /**
      * Sets the alpha level.
+     *
+     * @param alpha a double
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -367,6 +386,11 @@ public class LogisticRegression implements TetradSerializable {
         return this.rows;
     }
 
+    /**
+     * <p>Setter for the field <code>rows</code>.</p>
+     *
+     * @param rows an array of {@link int} objects
+     */
     public void setRows(int[] rows) {
         this.rows = rows;
     }
@@ -378,7 +402,12 @@ public class LogisticRegression implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            if an error occurs
+     * @throws ClassNotFoundException if an error occurs
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -386,33 +415,101 @@ public class LogisticRegression implements TetradSerializable {
 
     //================================== Public Methods =======================================//
 
+    /**
+     * The result of a logistic regression.
+     */
     public static class Result implements TetradSerializable {
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The chi square statistic.
+         */
         private final double chiSq;
+
+        /**
+         * The alpha level.
+         */
         private final double alpha;
+
+        /**
+         * The names of the regressors.
+         */
         private final List<String> regressorNames;
+
+        /**
+         * The target.
+         */
         private final String target;
+
+        /**
+         * The number of cases with target = 0.
+         */
         private final int ny0;
+
+        /**
+         * The number of cases with target = 1.
+         */
         private final int ny1;
+
+        /**
+         * The number of regressors.
+         */
         private final int numRegressors;
+
+        /**
+         * The array of regression coefficients.
+         */
         private final double[] coefs;
+
+        /**
+         * The array of standard errors for the regression coefficients.
+         */
         private final double[] stdErrs;
+
+        /**
+         * The array of coefP-values for the regression coefficients.
+         */
         private final double[] probs;
+
+        /**
+         * The array of means.
+         */
         private final double[] xMeans;
+
+        /**
+         * The array of standard devs.
+         */
         private final double[] xStdDevs;
+
+        /**
+         * The intercept.
+         */
         private final double intercept;
+
+        /**
+         * The log likelihood of the regression.
+         */
         private final double logLikelihood;
 
 
         /**
          * Constructs a new LinRegrResult.
          *
-         * @param numRegressors the number of regressors
-         * @param ny0           the number of cases with target = 0.
-         * @param ny1           the number of cases with target = 1.
-         * @param coefs         the array of regression coefficients.
-         * @param stdErrs       the array of std errors of the coefficients.
-         * @param probs         the array of P-values for the regression
+         * @param target         the target variable
+         * @param regressorNames the names of the regressors
+         * @param xMeans         the array of means
+         * @param xStdDevs       the array of standard devs
+         * @param numRegressors  the number of regressors
+         * @param ny0            the number of cases with target = 0.
+         * @param ny1            the number of cases with target = 1.
+         * @param coefs          the array of regression coefficients.
+         * @param stdErrs        the array of std errors of the coefficients.
+         * @param probs          the array of P-values for the regression
+         * @param intercept      the intercept
+         * @param logLikelihood  the log likelihood of the regression
+         * @param chiSq          the chi square statistic
+         * @param alpha          the alpha level
          */
         public Result(String target, List<String> regressorNames, double[] xMeans, double[] xStdDevs,
                       int numRegressors, int ny0, int ny1, double[] coefs,
@@ -465,6 +562,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * Generates a simple exemplar of this class to test serialization.
+         *
+         * @return a {@link edu.cmu.tetrad.regression.LogisticRegression.Result} object
          */
         public static Result serializableInstance() {
             return new Result("X1", new ArrayList<>(), new double[1], new double[1], 0, 0, 0,
@@ -473,6 +572,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The variables.
+         *
+         * @return a {@link java.util.List} object
          */
         public List<String> getRegressorNames() {
             return this.regressorNames;
@@ -480,6 +581,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The target.
+         *
+         * @return a {@link java.lang.String} object
          */
         public String getTarget() {
             return this.target;
@@ -487,6 +590,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The number of data points with target = 0.
+         *
+         * @return a int
          */
         public int getNy0() {
             return this.ny0;
@@ -494,6 +599,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The number of data points with target = 1.
+         *
+         * @return a int
          */
         public int getNy1() {
             return this.ny1;
@@ -501,6 +608,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The number of regressors.
+         *
+         * @return a int
          */
         public int getNumRegressors() {
             return this.numRegressors;
@@ -508,6 +617,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The array of regression coefficients.
+         *
+         * @return an array of double
          */
         public double[] getCoefs() {
             return this.coefs;
@@ -515,6 +626,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The array of standard errors for the regression coefficients.
+         *
+         * @return an array of double
          */
         public double[] getStdErrs() {
             return this.stdErrs;
@@ -522,6 +635,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The array of coefP-values for the regression coefficients.
+         *
+         * @return an array of double
          */
         public double[] getProbs() {
             return this.probs;
@@ -529,6 +644,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * THe array of means.
+         *
+         * @return an array of double
          */
         public double[] getxMeans() {
             return this.xMeans;
@@ -536,22 +653,34 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * The array of standard devs.
+         *
+         * @return an array of double
          */
         public double[] getxStdDevs() {
             return this.xStdDevs;
         }
 
+        /**
+         * The intercept.
+         *
+         * @return a double
+         */
         public double getIntercept() {
             return this.intercept;
         }
 
         /**
          * The log likelihood of the regression
+         *
+         * @return a double
          */
         public double getLogLikelihood() {
             return this.logLikelihood;
         }
 
+        /**
+         * Returns a string representation of the regression results.
+         */
         public String toString() {
             NumberFormat nf = new DecimalFormat("0.0000");
             StringBuilder report = new StringBuilder();

@@ -79,6 +79,8 @@ final class RangeEditor extends JComponent {
     /**
      * Contructs the range editor given the variable that is being edited and the continuous discreitization spec to
      * base initial values on.
+     *
+     * @param spec a {@link edu.cmu.tetrad.data.ContinuousDiscretizationSpec} object
      */
     public RangeEditor(ContinuousDiscretizationSpec spec) {
         this.breakpoints = spec.getBreakpoints();
@@ -91,6 +93,8 @@ final class RangeEditor extends JComponent {
 
 
     /**
+     * <p>getDiscretizationSpec.</p>
+     *
      * @return the <code>ContinuousDiscretizationSpec</code> that has been created by the user.
      */
     public ContinuousDiscretizationSpec getDiscretizationSpec() {

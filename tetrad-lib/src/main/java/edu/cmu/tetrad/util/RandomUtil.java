@@ -42,6 +42,7 @@ import java.util.*;
  * To see what distributions are currently supported, look at the methods of the class. These many change over time.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class RandomUtil {
 
@@ -62,6 +63,8 @@ public class RandomUtil {
     }
 
     /**
+     * <p>getInstance.</p>
+     *
      * @return the singleton instance of this class.
      */
     public static RandomUtil getInstance() {
@@ -134,11 +137,18 @@ public class RandomUtil {
         System.out.println(deterministic ? "Deterministic" : "Not deterministic");
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         testDeterminism();
     }
 
     /**
+     * <p>nextInt.</p>
+     *
      * @param n Ibid.
      * @return Ibid.
      */
@@ -146,11 +156,18 @@ public class RandomUtil {
         return this.randomGenerator.nextInt(n);
     }
 
+    /**
+     * <p>nextDouble.</p>
+     *
+     * @return a double
+     */
     public double nextDouble() {
         return this.randomGenerator.nextDouble();
     }
 
     /**
+     * <p>nextUniform.</p>
+     *
      * @param low  Ibid.
      * @param high Ibid.
      * @return Ibid.
@@ -163,6 +180,8 @@ public class RandomUtil {
     }
 
     /**
+     * <p>nextNormal.</p>
+     *
      * @param mean The mean of the Normal.
      * @param sd   The standard deviation of the Normal.
      * @return Ibid.
@@ -172,8 +191,12 @@ public class RandomUtil {
     }
 
     /**
+     * <p>nextTruncatedNormal.</p>
+     *
      * @param mean The mean of the Normal.
      * @param sd   The standard deviation of the Normal.
+     * @param low  a double
+     * @param high a double
      * @return Ibid.
      */
     public double nextTruncatedNormal(double mean, double sd, double low, double high) {
@@ -194,11 +217,18 @@ public class RandomUtil {
         return d;
     }
 
+    /**
+     * <p>revertSeed.</p>
+     *
+     * @param seed a long
+     */
     public void revertSeed(long seed) {
         this.randomGenerator = new Well44497b(seed);
     }
 
     /**
+     * <p>nextPoisson.</p>
+     *
      * @param lambda A positive real number equal to the expected number of occurrences during a given interval. See
      *               Wikipedia.
      * @return Ibid.
@@ -208,6 +238,8 @@ public class RandomUtil {
     }
 
     /**
+     * <p>normalPdf.</p>
+     *
      * @param mean  The mean of the normal to be used.
      * @param sd    The standard deviation of the normal to be used.
      * @param value The domain value for the PDF.
@@ -218,6 +250,8 @@ public class RandomUtil {
     }
 
     /**
+     * <p>normalCdf.</p>
+     *
      * @param mean  The mean of the normal to be used.
      * @param sd    The standard deviation of the normal to be used.
      * @param value The domain value for the CDF.
@@ -228,6 +262,8 @@ public class RandomUtil {
     }
 
     /**
+     * <p>nextBeta.</p>
+     *
      * @param alpha See Wikipedia. This is the first parameter.
      * @param beta  See Wikipedia. This is the second parameter.
      * @return Ibid.
@@ -237,6 +273,8 @@ public class RandomUtil {
     }
 
     /**
+     * <p>nextT.</p>
+     *
      * @param df The degrees of freedom. See any stats book.
      * @return Ibid.
      */
@@ -245,6 +283,8 @@ public class RandomUtil {
     }
 
     /**
+     * <p>nextExponential.</p>
+     *
      * @param lambda The rate parameter. See Wikipedia.
      * @return Ibid.
      */
@@ -253,6 +293,10 @@ public class RandomUtil {
     }
 
     /**
+     * <p>nextGumbel.</p>
+     *
+     * @param mu   a double
+     * @param beta a double
      * @return Ibid.
      */
     public double nextGumbel(double mu, double beta) {
@@ -260,6 +304,8 @@ public class RandomUtil {
     }
 
     /**
+     * <p>nextChiSquare.</p>
+     *
      * @param df The degrees of freedom.
      * @return Ibid.
      */
@@ -268,6 +314,8 @@ public class RandomUtil {
     }
 
     /**
+     * <p>nextGamma.</p>
+     *
      * @param shape The shape parameter.
      * @param scale The scale parameter.
      * @return Ibid.
@@ -287,10 +335,20 @@ public class RandomUtil {
 //        this.randomGenerator = new SynchronizedRandomGenerator(new JDKRandomGenerator((int) seed));
     }
 
+    /**
+     * <p>Getter for the field <code>randomGenerator</code>.</p>
+     *
+     * @return a {@link org.apache.commons.math3.random.RandomGenerator} object
+     */
     public RandomGenerator getRandomGenerator() {
         return this.randomGenerator;
     }
 
+    /**
+     * <p>nextLong.</p>
+     *
+     * @return a long
+     */
     public long nextLong() {
         return this.randomGenerator.nextLong();
     }

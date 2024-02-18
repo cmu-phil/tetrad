@@ -116,6 +116,52 @@ public class TestFges {
         }
     }
 
+    @NotNull
+    private static Parameters getParameters() {
+        Parameters parameters = new Parameters();
+
+        parameters.set(Params.NUM_MEASURES, 10);
+        parameters.set(Params.NUM_LATENTS, 0);
+        parameters.set(Params.COEF_LOW, 0.2);
+        parameters.set(Params.COEF_HIGH, 0.8);
+        parameters.set(Params.AVG_DEGREE, 2);
+        parameters.set(Params.MAX_DEGREE, 100);
+        parameters.set(Params.MAX_INDEGREE, 100);
+        parameters.set(Params.MAX_OUTDEGREE, 100);
+        parameters.set(Params.CONNECTED, false);
+
+        parameters.set(Params.NUM_RUNS, 1);
+        parameters.set(Params.DIFFERENT_GRAPHS, false);
+        parameters.set(Params.SAMPLE_SIZE, 1000);
+
+        parameters.set(Params.FAITHFULNESS_ASSUMED, false);
+        parameters.set(Params.MAX_DEGREE, -1);
+        parameters.set(Params.VERBOSE, false);
+
+        parameters.set(Params.ALPHA, 0.01);
+        return parameters;
+    }
+
+    private static Graph getGraph(ICovarianceMatrix cov) {
+        Knowledge knowledge = new Knowledge();
+
+        knowledge.addToTier(1, "ABILITY");
+        knowledge.addToTier(2, "GPQ");
+        knowledge.addToTier(3, "QFJ");
+        knowledge.addToTier(3, "PREPROD");
+        knowledge.addToTier(4, "SEX");
+        knowledge.addToTier(5, "PUBS");
+        knowledge.addToTier(6, "CITES");
+
+        SemBicScore score = new SemBicScore(cov);
+        edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
+        fges.setKnowledge(knowledge);
+
+        fges.setVerbose(true);
+
+        return fges.search();
+    }
+
     @Test
     public void explore1() {
         RandomUtil.getInstance().setSeed(1450184147770L);
@@ -313,32 +359,6 @@ public class TestFges {
 
     }
 
-    @NotNull
-    private static Parameters getParameters() {
-        Parameters parameters = new Parameters();
-
-        parameters.set(Params.NUM_MEASURES, 10);
-        parameters.set(Params.NUM_LATENTS, 0);
-        parameters.set(Params.COEF_LOW, 0.2);
-        parameters.set(Params.COEF_HIGH, 0.8);
-        parameters.set(Params.AVG_DEGREE, 2);
-        parameters.set(Params.MAX_DEGREE, 100);
-        parameters.set(Params.MAX_INDEGREE, 100);
-        parameters.set(Params.MAX_OUTDEGREE, 100);
-        parameters.set(Params.CONNECTED, false);
-
-        parameters.set(Params.NUM_RUNS, 1);
-        parameters.set(Params.DIFFERENT_GRAPHS, false);
-        parameters.set(Params.SAMPLE_SIZE, 1000);
-
-        parameters.set(Params.FAITHFULNESS_ASSUMED, false);
-        parameters.set(Params.MAX_DEGREE, -1);
-        parameters.set(Params.VERBOSE, false);
-
-        parameters.set(Params.ALPHA, 0.01);
-        return parameters;
-    }
-
     private void clarkTestForAlpha(double alpha, Parameters parameters, DataSet dataSet, Graph trueGraph,
                                    Graph CPDAG, IndependenceWrapper test) {
         parameters.set(Params.ALPHA, alpha);
@@ -515,26 +535,6 @@ public class TestFges {
         }
     }
 
-    private static Graph getGraph(ICovarianceMatrix cov) {
-        Knowledge knowledge = new Knowledge();
-
-        knowledge.addToTier(1, "ABILITY");
-        knowledge.addToTier(2, "GPQ");
-        knowledge.addToTier(3, "QFJ");
-        knowledge.addToTier(3, "PREPROD");
-        knowledge.addToTier(4, "SEX");
-        knowledge.addToTier(5, "PUBS");
-        knowledge.addToTier(6, "CITES");
-
-        SemBicScore score = new SemBicScore(cov);
-        edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
-        fges.setKnowledge(knowledge);
-
-        fges.setVerbose(true);
-
-        return fges.search();
-    }
-
     /**
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
@@ -597,7 +597,7 @@ public class TestFges {
             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
             fges.setVerbose(true);
-            fges.setParallelized(true);
+            fges.setNumThreads(10);
             Graph CPDAG1 = fges.search();
             Graph CPDAG2 = GraphTransforms.cpdagForDag(dag);
             assertEquals(CPDAG2, CPDAG1);

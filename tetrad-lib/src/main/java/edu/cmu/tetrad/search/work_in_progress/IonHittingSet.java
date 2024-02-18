@@ -45,11 +45,15 @@ import java.util.Set;
  * </p>
  *
  * @author Trevor Burns
+ * @version $Id: $Id
  */
 public class IonHittingSet {
 
     /**
      * takes a List of HashSets of GraphChanges, and returns a List of GraphChanges.
+     *
+     * @param Forig a {@link java.util.List} object
+     * @return a {@link java.util.List} object
      */
     public static List<GraphChange> findHittingSet(List<Set<GraphChange>> Forig) {
 

@@ -33,7 +33,10 @@ import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.work_in_progress.IndTestCramerT;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -46,9 +49,16 @@ import java.util.List;
  * steps, which raises question about the time interval used to decide whether there is an adjacency between two
  * variables (= gene/time pairs).
  * <p>Also all the GA code has been removed.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
-
 public class YeastPcCcdSearchWrapper {
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         int[][] yeastReg = {{1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0},
                 {0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0},

@@ -41,6 +41,7 @@ import java.beans.PropertyChangeListener;
  *
  * @author Donald Crimbchin
  * @author josephramsey
+ * @version $Id: $Id
  * @see GraphEditor
  */
 public class GraphToolbar extends JPanel implements PropertyChangeListener {
@@ -55,14 +56,44 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      */
     private final Box buttonsPanel = Box.createVerticalBox();
 
-    // The buttons in the toolbar.
+    /**
+     * The buttons in the toolbar.
+     */
     private final JToggleButton move;
+
+    /**
+     * The add observed button.
+     */
     private final JToggleButton addObserved;
+
+    /**
+     * The add latent button.
+     */
     private final JToggleButton addLatent;
+
+    /**
+     * The add directed edge button.
+     */
     private final JToggleButton addDirectedEdge;
+
+    /**
+     * The add nondirected edge button.
+     */
     private final JToggleButton addNondirectedEdge;
+
+    /**
+     * The add undirected edge button.
+     */
     private final JToggleButton addUndirectedEdge;
+
+    /**
+     * The add partially oriented edge button.
+     */
     private final JToggleButton addPartiallyOrientedEdge;
+
+    /**
+     * The add bidirected edge button.
+     */
     private final JToggleButton addBidirectedEdge;
 
     /**
@@ -72,6 +103,8 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
 
     /**
      * Constructs a new Graph toolbar governing the modes of the given GraphWorkbench.
+     *
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public GraphToolbar(GraphWorkbench workbench) {
         if (workbench == null) {
@@ -222,6 +255,8 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Responds to property change events.
      */
     public void propertyChange(PropertyChangeEvent e) {

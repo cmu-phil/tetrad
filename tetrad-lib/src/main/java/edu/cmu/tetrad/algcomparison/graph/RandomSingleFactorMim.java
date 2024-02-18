@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,10 +12,15 @@ import java.util.List;
  * Creates a random graph by adding forward edges.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class RandomSingleFactorMim implements RandomGraph {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph createGraph(Parameters parameters) {
         int numStructuralNodes = parameters.getInt("numStructuralNodes", 3);
@@ -29,11 +35,17 @@ public class RandomSingleFactorMim implements RandomGraph {
                 numMeasuredMeasuredImpureAssociations);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Random single-factor MIM (Multiple Indicator Model)";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();

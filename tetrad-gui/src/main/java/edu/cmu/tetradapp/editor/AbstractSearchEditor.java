@@ -56,6 +56,7 @@ import java.util.ArrayList;
  * button used must be getExecuteButton(), or else logging won't work.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public abstract class AbstractSearchEditor extends JPanel implements GraphEditable, IndTestTypeSetter {
 
@@ -107,6 +108,8 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     public final void setName(String name) {
@@ -119,6 +122,8 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
 
     /**
+     * <p>Getter for the field <code>workbench</code>.</p>
+     *
      * @return the work bench of null if there isn't one.
      */
     public GraphWorkbench getWorkbench() {
@@ -130,6 +135,8 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     }
 
     /**
+     * <p>getGraph.</p>
+     *
      * @return the graph.
      */
     public Graph getGraph() {
@@ -140,6 +147,8 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Not supported.
      */
     public void setGraph(Graph g) {
@@ -176,6 +185,8 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     //===========================PROTECTED METHODS==========================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Not supported.
      */
     public void pasteSubsession(java.util.List<Object> sessionElements, Point upperLeft) {
@@ -184,12 +195,16 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
     /**
      * Constructs the toolbar panel. For the execute button, must use getExecuteButton() in order for logging to work.
+     *
+     * @return a {@link javax.swing.JPanel} object
      */
     protected abstract JPanel getToolbar();
 
     /**
      * Adds any special menus needed for a particular search editor. These will be added to the right of the normal
      * ones.
+     *
+     * @param menuBar a {@link javax.swing.JMenuBar} object
      */
     protected abstract void addSpecialMenus(JMenuBar menuBar);
 
@@ -298,6 +313,11 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         // Do nothing for abstract search editor.
     }
 
+    /**
+     * <p>doDefaultArrangement.</p>
+     *
+     * @param resultGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     protected abstract void doDefaultArrangement(Graph resultGraph);
 
     JButton getExecuteButton() {
@@ -463,18 +483,36 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         return this.graphHistory;
     }
 
+    /**
+     * <p>getTestType.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.util.IndTestType} object
+     */
     public IndTestType getTestType() {
         return (IndTestType) getAlgorithmRunner().getParams().get("indTestType", IndTestType.FISHER_Z);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setTestType(IndTestType testType) {
         getAlgorithmRunner().getParams().set("indTestType", testType);
     }
 
+    /**
+     * <p>getDataModel.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public DataModel getDataModel() {
         return getAlgorithmRunner().getDataModel();
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link java.lang.Object} object
+     */
     public Object getSourceGraph() {
         return getAlgorithmRunner().getParams().get("sourceGraph", null);
     }

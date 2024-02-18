@@ -41,6 +41,7 @@ import java.util.List;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see BdeScore
  */
 public class BdeuScore implements DiscreteScore {
@@ -111,11 +112,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Calculates the BDeu score of a node given its parents.
-     *
-     * @param node    The index of the node.
-     * @param parents The indices of the node's parents.
-     * @return The score.
      */
     @Override
     public double localScore(int node, int[] parents) {
@@ -199,12 +198,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Calculates localScore(y | z, x) - localScore(y | z).
-     *
-     * @param x The index of x.
-     * @param y The index of y.
-     * @param z The indices of the z variables.
-     * @return The score difference.
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -212,9 +208,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variables of the data.
-     *
-     * @return These variables as a list.
      */
     @Override
     public List<Node> getVariables() {
@@ -231,10 +227,10 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * For FGES, this determines whether an edge counts as an effect edge.
      *
-     * @param bump The bump for the edge.
-     * @return True, if so.
      * @see Fges
      */
     public boolean isEffectEdge(double bump) {
@@ -242,9 +238,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the dataset being analyzed.
-     *
-     * @return This dataset
      */
     @Override
     public DataSet getDataSet() {
@@ -261,9 +257,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the structure prior
-     *
-     * @param structurePrior This prior.
      */
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
@@ -279,9 +275,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Set the sample prior
-     *
-     * @param samplePrior This prior.
      */
     @Override
     public void setSamplePrior(double samplePrior) {
@@ -289,9 +285,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a string representation of this score.
-     *
-     * @return This string.
      */
     @Override
     public String toString() {
@@ -300,9 +296,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the needed max degree for some searches.
-     *
-     * @return This max degree.
      */
     @Override
     public int getMaxDegree() {
@@ -310,12 +306,9 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * This score does not implement a method to decide whether a node is determined by its parents.
-     *
-     * @param z The parents.
-     * @param y The node.
-     * @return This determination
-     * @throws UnsupportedOperationException Since this method not implemented for this core.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {

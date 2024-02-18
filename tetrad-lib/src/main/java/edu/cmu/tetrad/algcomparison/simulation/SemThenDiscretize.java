@@ -10,6 +10,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,25 +18,61 @@ import java.util.List;
  * SEM the discretize.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemThenDiscretize implements Simulation {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The data sets.
+     */
     private List<Graph> graphs = new ArrayList<>();
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The data type.
+     */
     private DataType dataType;
+
+    /**
+     * The shuffled order.
+     */
     private List<Node> shuffledOrder;
 
+    /**
+     * <p>Constructor for SemThenDiscretize.</p>
+     *
+     * @param randomGraph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public SemThenDiscretize(RandomGraph randomGraph) {
         this.randomGraph = randomGraph;
         this.dataType = DataType.Mixed;
     }
 
+    /**
+     * <p>Constructor for SemThenDiscretize.</p>
+     *
+     * @param randomGraph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     * @param dataType    a {@link edu.cmu.tetrad.data.DataType} object
+     */
     public SemThenDiscretize(RandomGraph randomGraph, DataType dataType) {
         this.randomGraph = randomGraph;
         this.dataType = dataType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -83,17 +120,26 @@ public class SemThenDiscretize implements Simulation {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Simulation SEM data then discretizing some variables, using " +
                 this.randomGraph.getDescription();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
@@ -107,16 +153,25 @@ public class SemThenDiscretize implements Simulation {
         return parameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return this.dataType;

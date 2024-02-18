@@ -35,14 +35,29 @@ import java.util.*;
  *
  * @author josephramsey
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class Discretizer {
+
+    /**
+     * The dataset to be discretized.
+     */
     private final DataSet sourceDataSet;
+
+    /**
+     * The discretization specifications for each variable.
+     */
     private final Map<Node, DiscretizationSpec> specs;
+
+    /**
+     * Whether to copy the variables that are not discretized.
+     */
     private boolean variablesCopied = true;
 
     /**
      * Constructs a new discretizer that discretizes every variable as binary, using evenly distributed values.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public Discretizer(DataSet dataSet) {
         this.sourceDataSet = dataSet;
@@ -50,11 +65,24 @@ public class Discretizer {
         this.specs = new HashMap<>();
     }
 
+    /**
+     * <p>Constructor for Discretizer.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param specs   a {@link java.util.Map} object
+     */
     public Discretizer(DataSet dataSet, Map<Node, DiscretizationSpec> specs) {
         this.sourceDataSet = dataSet;
         this.specs = specs;
     }
 
+    /**
+     * <p>getEqualFrequencyBreakPoints.</p>
+     *
+     * @param _data              an array of {@link double} objects
+     * @param numberOfCategories a int
+     * @return an array of {@link double} objects
+     */
     public static double[] getEqualFrequencyBreakPoints(double[] _data, int numberOfCategories) {
         double[] data = new double[_data.length];
         System.arraycopy(_data, 0, data, 0, data.length);
@@ -85,6 +113,7 @@ public class Discretizer {
      *                     returned will use these category names. If this is non-null, it must have length c, where c
      *                     is the number of categories for the discretized data. If any category names are null, default
      *                     category names will be used for those.
+     * @param _data        an array of {@link double} objects
      * @return The discretized column.
      */
     public static Discretization discretize(double[] _data, double[] cutoffs,
@@ -149,6 +178,9 @@ public class Discretizer {
 
     /**
      * Sets the given node to discretized using evenly distributed values using the given number of categories.
+     *
+     * @param node          a {@link edu.cmu.tetrad.graph.Node} object
+     * @param numCategories a int
      */
     public void equalCounts(Node node, int numCategories) {
         if (node instanceof DiscreteVariable) return;
@@ -168,6 +200,9 @@ public class Discretizer {
 
     /**
      * Sets the given node to discretized using evenly spaced intervals using the given number of categories.
+     *
+     * @param node          a {@link edu.cmu.tetrad.graph.Node} object
+     * @param numCategories a int
      */
     public void equalIntervals(Node node, int numCategories) {
         if (node instanceof DiscreteVariable) return;
@@ -201,11 +236,18 @@ public class Discretizer {
         return this.variablesCopied;
     }
 
+    /**
+     * <p>Setter for the field <code>variablesCopied</code>.</p>
+     *
+     * @param unselectedVariabledCopied a boolean
+     */
     public void setVariablesCopied(boolean unselectedVariabledCopied) {
         this.variablesCopied = unselectedVariabledCopied;
     }
 
     /**
+     * <p>discretize.</p>
+     *
      * @return - Discretized dataset.
      */
     public DataSet discretize() {
@@ -318,6 +360,9 @@ public class Discretizer {
         return newDataSet;
     }
 
+    /**
+     * A discretization specification for a continuous variable.
+     */
     public static class Discretization {
         /**
          * The variable that was discretized.
@@ -352,6 +397,9 @@ public class Discretizer {
             return this.data;
         }
 
+        /**
+         * @return - string representation of the discretization.
+         */
         public final String toString() {
             StringBuilder buf = new StringBuilder();
             buf.append("\n\nDiscretization:");

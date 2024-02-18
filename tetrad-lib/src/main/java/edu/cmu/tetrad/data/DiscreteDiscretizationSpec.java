@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,22 +36,28 @@ import java.util.List;
  * were done so that the user doesn't have to keep typing in information over and over again.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class DiscreteDiscretizationSpec implements TetradSerializable, DiscretizationSpec {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * Discrete remapping of categories, for discrete data.
-     *
-     * @serial
      */
     private final int[] remap;
 
     /**
-     * @serial
+     * Categories, for discrete data.
      */
     private final List<String> categories;
 
+    /**
+     * <p>Constructor for DiscreteDiscretizationSpec.</p>
+     *
+     * @param remap      an array of {@link int} objects
+     * @param categories a {@link java.util.List} object
+     */
     public DiscreteDiscretizationSpec(int[] remap, List<String> categories) {
         if (remap == null) {
             throw new NullPointerException();
@@ -66,16 +73,28 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.DiscreteDiscretizationSpec} object
      */
     public static DiscreteDiscretizationSpec serializableInstance() {
         return new DiscreteDiscretizationSpec(new int[0],
                 new ArrayList<>());
     }
 
+    /**
+     * <p>Getter for the field <code>categories</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getCategories() {
         return this.categories;
     }
 
+    /**
+     * <p>Getter for the field <code>remap</code>.</p>
+     *
+     * @return an array of {@link int} objects
+     */
     public int[] getRemap() {
         return this.remap;
     }
@@ -87,7 +106,12 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

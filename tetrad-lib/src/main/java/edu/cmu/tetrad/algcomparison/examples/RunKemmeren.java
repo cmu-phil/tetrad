@@ -21,7 +21,18 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * <p>RunKemmeren class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class RunKemmeren {
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
 
 //        Path path = Paths.get("/home/bandrews/Desktop/Kemmeren/data_kemmeren_centered.txt");

@@ -65,6 +65,8 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Note that returning null here has two effects. First, it
      */
     public String getColumnName(int col) {
@@ -72,6 +74,8 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     /**
+     * <p>getRowCount.</p>
+     *
      * @return the number of rows in the wrapper table model. Guarantees that this number will be at least 100.
      */
     public int getRowCount() {
@@ -80,6 +84,8 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     /**
+     * <p>getColumnCount.</p>
+     *
      * @return the number of columns in the wrapper table model. Guarantees that this number will be at least 30.
      */
     public int getColumnCount() {
@@ -88,10 +94,7 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     /**
-     * @return the value at the given (row, col) coordinates of the table as an Object. If the variable for the col is a
-     * DiscreteVariable, the String value (as opposed to the integer index value) is extracted and returned. If the
-     * coordinates are out of range of the wrapped table model, 'null' is returned. Otherwise, the value stored in the
-     * wrapped table model at the given coordinates is returned.
+     * {@inheritDoc}
      */
     @Override
     public Object getValueAt(int row, int col) {
@@ -162,11 +165,16 @@ class TabularDataTable extends AbstractTableModel {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean isCellEditable(int row, int col) {
         return row > 0 && col >= 1;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the value at the given (row, col) coordinates of the table as an Object. If the variable for the col is a
      * DiscreteVariable, the String value (as opposed to the integer index value) is extracted and returned. If the
      * coordinates are out of range of the wrapped table model, 'null' is returned. Otherwise, the value stored in the
@@ -292,12 +300,19 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
      * @return the DataSet being presented.
      */
     public DataSet getDataSet() {
         return this.dataSet;
     }
 
+    /**
+     * <p>Setter for the field <code>dataSet</code>.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public void setDataSet(DataSet data) {
         if (data == null) {
             throw new NullPointerException("Data set was null.");
@@ -322,15 +337,30 @@ class TabularDataTable extends AbstractTableModel {
         return 1;
     }
 
+    /**
+     * <p>isCategoryNamesShown.</p>
+     *
+     * @return a boolean
+     */
     public boolean isCategoryNamesShown() {
         return this.categoryNamesShown;
     }
 
+    /**
+     * <p>Setter for the field <code>categoryNamesShown</code>.</p>
+     *
+     * @param selected a boolean
+     */
     public void setCategoryNamesShown(boolean selected) {
         this.categoryNamesShown = selected;
         fireTableDataChanged();
     }
 
+    /**
+     * <p>addPropertyChangeListener.</p>
+     *
+     * @param listener a {@link java.beans.PropertyChangeListener} object
+     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.pcs.addPropertyChangeListener(listener);
     }

@@ -26,12 +26,23 @@ import org.apache.commons.math3.util.FastMath;
 import java.io.*;
 import java.util.StringTokenizer;
 
+/**
+ * <p>LTestReveal class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class LTestReveal {
     static int ngenes = 6;
     static int ntimes = 400;
 
     static int[][] cases = new int[LTestReveal.ntimes][LTestReveal.ngenes];
 
+    /**
+     * <p>main.</p>
+     *
+     * @param argv an array of {@link java.lang.String} objects
+     */
     public static void main(String[] argv) {
 
         String fileName = argv[0];
@@ -117,6 +128,14 @@ public class LTestReveal {
         }
     }
 
+    /**
+     * <p>mutualInformation.</p>
+     *
+     * @param child   a int
+     * @param parents an array of {@link int} objects
+     * @param lag     a int
+     * @return a double
+     */
     public static double mutualInformation(int child, int[] parents, int lag) {
 
         //make sure child is not in parents etc.
@@ -170,6 +189,12 @@ public class LTestReveal {
         return M;
     }
 
+    /**
+     * <p>entropy.</p>
+     *
+     * @param x an array of {@link int} objects
+     * @return a double
+     */
     public static double entropy(int[] x) {
         double h = 0.0;
         int n = x.length;
@@ -192,6 +217,13 @@ public class LTestReveal {
         return h;
     }
 
+    /**
+     * <p>entropy.</p>
+     *
+     * @param g   a int
+     * @param lag a int
+     * @return a double
+     */
     public static double entropy(int g, int lag) {
         double h = 0.0;
         int n = LTestReveal.cases.length - lag;
@@ -215,6 +247,13 @@ public class LTestReveal {
         return h;
     }
 
+    /**
+     * <p>jointEntropy.</p>
+     *
+     * @param x an array of {@link int} objects
+     * @param y an array of {@link int} objects
+     * @return a double
+     */
     public static double jointEntropy(int[] x, int[] y) {
         double h = 0.0;
         int[][] ns = new int[2][2];
@@ -271,6 +310,13 @@ public class LTestReveal {
         return h;
     }
 
+    /**
+     * <p>jointEntropy.</p>
+     *
+     * @param x an array of {@link int} objects
+     * @param y an array of {@link int} objects
+     * @return a double
+     */
     public static double jointEntropy(int[] x, int[][] y) {
         double h = 0.0;
         int m = y.length;
@@ -328,6 +374,10 @@ public class LTestReveal {
     /**
      * Computes a byte vector which corresponds to the argument ind.  rep[0] is the high order bit. E.g.  if n=3 and
      * ind=6 the vector will be (1, 1, 0).
+     *
+     * @param ind a int
+     * @param n   a int
+     * @return an array of {@link byte} objects
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];

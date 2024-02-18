@@ -54,6 +54,9 @@ class BayesImNodeEditingTable extends JTable {
 
     /**
      * Constructs a new editing table from a given editing table model.
+     *
+     * @param node    a {@link edu.cmu.tetrad.graph.Node} object
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesImNodeEditingTable(Node node, BayesIm bayesIm) {
         if (node == null) {
@@ -113,6 +116,9 @@ class BayesImNodeEditingTable extends JTable {
         setFocusColumn(0);
     }
 
+    /**
+     * <p>createDefaultColumnsFromModel.</p>
+     */
     public void createDefaultColumnsFromModel() {
         super.createDefaultColumnsFromModel();
 
@@ -345,6 +351,9 @@ class BayesImNodeEditingTable extends JTable {
         return existsCompleteRow;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setModel(@NotNull TableModel model) {
         super.setModel(model);
     }

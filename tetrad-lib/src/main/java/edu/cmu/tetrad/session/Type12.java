@@ -27,21 +27,43 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 /**
  * A sample class to be wrapped in a SessionNode as a model.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class Type12 implements SessionModel, TetradSerializableExcluded {
     private static final long serialVersionUID = 23L;
 
+    /**
+     * <p>Constructor for Type12.</p>
+     *
+     * @param a          a {@link edu.cmu.tetrad.session.Type11} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Type12(Type11 a, Parameters parameters) {
     }
 
+    /**
+     * <p>Constructor for Type12.</p>
+     *
+     * @param a          a {@link edu.cmu.tetrad.session.Type12} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Type12(Type12 a, Parameters parameters) {
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.session.Type12} object
+     */
     public static Type12 serializableInstance() {
         return new Type12(Type11.serializableInstance(), new Parameters());
     }
 
     /**
+     * <p>getName.</p>
+     *
      * @return the name of the session model.
      */
     public String getName() {
@@ -49,6 +71,8 @@ public class Type12 implements SessionModel, TetradSerializableExcluded {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of the session model.
      */
     public void setName(String name) {

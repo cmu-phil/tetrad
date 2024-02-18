@@ -42,12 +42,12 @@ import java.util.Set;
  * arXiv preprint arXiv:1206.6843.</p>
  *
  * <p>Conservative triple orientation is a method for orienting unshielded triples X*-*Y*-*Z as one of the following:
- * (a) Collider, X-&gt;Y&lt;-Z, (b) Noncollider, X--&gt;Y--&gt;Z, or X&lt;-Y&lt;-Z, or X&lt;-Y-&gt;Z, (c) ambiguous between (a) or (b). One does
- * this by conditioning on subsets of adj(X) or adj(Z). One first checks conditional independence of X and Z conditional
- * on each of these subsets, then lists all of these subsets conditional on which X and Z are *independent*, then looks
- * thoough this list to see if Y is in them. If Y is in all of these subset, the triple is judged to be a noncollider;
- * if it is in none of these subsets, the triple is judged to be a collider, and if it is in some of these subsets and
- * not in others of the subsets, then it is judged to be ambiguous.</p>
+ * (a) Collider, X-&gt;Y&lt;-Z, (b) Noncollider, X--&gt;Y--&gt;Z, or X&lt;-Y&lt;-Z, or X&lt;-Y-&gt;Z, (c) ambiguous
+ * between (a) or (b). One does this by conditioning on subsets of adj(X) or adj(Z). One first checks conditional
+ * independence of X and Z conditional on each of these subsets, then lists all of these subsets conditional on which X
+ * and Z are *independent*, then looks thoough this list to see if Y is in them. If Y is in all of these subset, the
+ * triple is judged to be a noncollider; if it is in none of these subsets, the triple is judged to be a collider, and
+ * if it is in some of these subsets and not in others of the subsets, then it is judged to be ambiguous.</p>
  *
  * <p>Ambiguous triple are marked in the final graph using an underline, and the final graph is called an "e-pattern",
  * and represents a collection of CPDAGs. To find an element of this collection, one first needs to choose for each
@@ -60,6 +60,7 @@ import java.util.Set;
  * tiers.</p>
  *
  * @author josephramsey (this version).
+ * @version $Id: $Id
  * @see Pc
  * @see Knowledge
  * @see edu.cmu.tetrad.search.utils.MeekRules
@@ -283,8 +284,8 @@ public final class Cpc implements IGraphSearch {
      * <p>Sets whether the stable adjacency search should be used. Default is false. Default is false. See the
      * following reference for this:</p>
      *
-     * <p>Colombo, D., &amp; Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J. Mach.
-     * Learn. Res., 15(1), 3741-3782.</p>
+     * <p>Colombo, D., &amp; Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J.
+     * Mach. Learn. Res., 15(1), 3741-3782.</p>
      *
      * @param stable True iff the case.
      */

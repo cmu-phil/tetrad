@@ -34,6 +34,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.rmi.MarshalledObject;
 import java.util.*;
 
@@ -62,54 +63,42 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author Frank Wimberly
  * @author Ricardo Silva
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SemIm implements Im, ISemIm {
 
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * The Sem PM containing the graph and the freeParameters to be estimated. For now a defensive copy of this is not
      * being constructed, since it is not used anywhere in the code except in the the constructor and in its accessor
      * method. If somebody changes it, it's their own fault, but it won't affect this class.
-     *
-     * @serial Cannot be null.
      */
     private final SemPm semPm;
     /**
      * The list of measured and latent variableNodes for the semPm. (Unmodifiable.)
-     *
-     * @serial Cannot be null.
      */
     private final List<Node> variableNodes;
     /**
      * The list of measured variableNodes from the semPm. (Unmodifiable.)
-     *
-     * @serial Cannot be null.
      */
     private final List<Node> measuredNodes;
     /**
      * Matrix of edge coefficients. edgeCoefC[i][j] is the coefficient of the edge from getVariableNodes().get(i) to
      * getVariableNodes().get(j), or 0.0 if this edge is not in the graph. The values of these may be changed, but the
      * array itself may not.
-     *
-     * @serial Cannot be null.
      */
     private final Matrix edgeCoef;
     /**
      * Standard Deviations of means. Needed to calculate standard errors.
-     *
-     * @serial Cannot be null.
      */
     private final double[] variableMeansStdDev;
     /**
      * The list of free freeParameters (Unmodifiable). This must be in the same order as this.freeMappings.
-     *
-     * @serial Cannot be null.
      */
     private List<Parameter> freeParameters;
     /**
      * The list of fixed freeParameters (Unmodifiable). This must be in the same order as this.fixedMappings.
-     *
-     * @serial Cannot be null.
      */
     private List<Parameter> fixedParameters;
     /**
@@ -120,65 +109,45 @@ public final class SemIm implements Im, ISemIm {
      * Matrix of error covariances. errCovar[i][j] is the covariance of the error term of getExoNodes().get(i) and
      * getExoNodes().get(j), with the special case (duh!) that errCovar[i][i] is the variance of getExoNodes.get(i). The
      * values of these may be changed, but the array itself may not.
-     *
-     * @serial Cannot be null.
      */
     private Matrix errCovar;
     /**
      * Means of variables. These will not be counted for purposes of calculating degrees of freedom, since the increase
      * in dof is exactly balanced by a decrease in dof.
-     *
-     * @serial Cannot be null.
      */
     private double[] variableMeans;
     /**
      * Replaced by sampleCovar. Please do not delete. Required for serialization backward compatibility.
-     *
-     * @serial
      */
     private Matrix sampleCovarC;
     /**
      * The sample size.
-     *
-     * @serial Range &gt;= 0.
      */
     private int sampleSize;
     /**
      * Replaced by implCovarC. Please do not delete. Required for serialization backward compatibility.
-     *
-     * @serial
      */
     private Matrix implCovar;
     /**
      * The list of freeMappings. This is an unmodifiable list. It is fixed (up to order) by the SemPm. This must be in
      * the same order as this.freeParameters.
-     *
-     * @serial Cannot be null.
      */
     private List<Mapping> freeMappings;
     /**
      * The list of fixed freeParameters (Unmodifiable). This must be in the same order as this.fixedParameters.
-     *
-     * @serial Cannot be null.
      */
     private List<Mapping> fixedMappings;
     /**
      * Stores the standard errors for the freeParameters. May be null.
-     *
-     * @serial Can be null.
      */
     private double[] standardErrors;
     /**
      * True iff setting freeParameters to out-of-bound values throws exceptions.
-     *
-     * @serial Any value.
      */
     private boolean parameterBoundsEnforced = true;
 
     /**
      * True iff this SemIm is estimated.
-     *
-     * @serial Any value.
      */
     private boolean estimated;
     /**
@@ -203,16 +172,40 @@ public final class SemIm implements Im, ISemIm {
      * Stores the connection functions of specified nodes.
      */
     private Map<Node, ConnectionFunction> functions;
+
+    /**
+     * The type of score to use for estimation.
+     */
     private Map<Node, Integer> variablesHash;
+
+    /**
+     * The type of score to use for estimation.
+     */
     private Matrix sampleCovInv;
-    // Types of scores that yield a chi square value when minimized.
+    /**
+     * Types of scores that yield a chi square value when minimized.
+     */
     private ScoreType scoreType = ScoreType.Fml;
+
+    /**
+     * Error distribution parameters.
+     */
     private double errorParam1;
+
+    /**
+     * Error distribution parameters.
+     */
     private double errorParam2 = 1.0;
+
+    /**
+     * Number of random calls.
+     */
     private int numRandomCalls = 0;
 
     /**
      * Constructs a new SEM IM from a SEM PM.
+     *
+     * @param semPm a {@link edu.cmu.tetrad.sem.SemPm} object
      */
     public SemIm(SemPm semPm) {
         this(semPm, null, new Parameters());
@@ -221,6 +214,9 @@ public final class SemIm implements Im, ISemIm {
     /**
      * Constructs a new SEM IM from the given SEM PM, using the given params object to guide the choice of parameter
      * values.
+     *
+     * @param semPm  a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemIm(SemPm semPm, Parameters params) {
         this(semPm, null, params);
@@ -229,6 +225,10 @@ public final class SemIm implements Im, ISemIm {
     /**
      * Constructs a new SEM IM from the given SEM PM, using the old SEM IM and params object to guide the choice of
      * parameter values. If old values are retained, they are gotten from the old SEM IM.
+     *
+     * @param semPm      a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param oldSemIm   a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemIm(SemPm semPm, SemIm oldSemIm, Parameters parameters) {
         if (semPm == null) {
@@ -292,6 +292,9 @@ public final class SemIm implements Im, ISemIm {
 
     /**
      * Constructs a SEM model using the given SEM PM and sample covariance matrix.
+     *
+     * @param semPm     a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
     public SemIm(SemPm semPm, ICovarianceMatrix covMatrix) {
         this(semPm);
@@ -338,7 +341,8 @@ public final class SemIm implements Im, ISemIm {
     /**
      * Copy constructor.
      *
-     * @throws RuntimeException if the given SemIm cannot be serialized and deserialized correctly.
+     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @throws java.lang.RuntimeException if the given SemIm cannot be serialized and deserialized correctly.
      */
     public SemIm(SemIm semIm) {
         try {
@@ -374,6 +378,15 @@ public final class SemIm implements Im, ISemIm {
         }
     }
 
+    /**
+     * <p>Constructor for SemIm.</p>
+     *
+     * @param semPm               a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param variableNodes       a {@link java.util.List} object
+     * @param measuredNodes       a {@link java.util.List} object
+     * @param edgeCoef            a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param variableMeansStdDev an array of {@link double} objects
+     */
     public SemIm(SemPm semPm, List<Node> variableNodes, List<Node> measuredNodes, Matrix edgeCoef, double[] variableMeansStdDev) {
         this.semPm = semPm;
         this.variableNodes = new ArrayList<>(variableNodes);
@@ -382,6 +395,11 @@ public final class SemIm implements Im, ISemIm {
         this.variableMeansStdDev = Arrays.copyOf(variableMeansStdDev, variableMeansStdDev.length);
     }
 
+    /**
+     * <p>getParameterNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public static List<String> getParameterNames() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.COEF_LOW);
@@ -424,12 +442,18 @@ public final class SemIm implements Im, ISemIm {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemIm} object
      */
     public static SemIm serializableInstance() {
         return new SemIm(SemPm.serializableInstance());
     }
 
     /**
+     * <p>updatedIm.</p>
+     *
+     * @param covariances a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param means       a {@link edu.cmu.tetrad.util.Vector} object
      * @return a variant of the getModel model with the given covariance matrix and means. Used for updating.
      */
     public SemIm updatedIm(Matrix covariances, Vector means) {
@@ -439,6 +463,8 @@ public final class SemIm implements Im, ISemIm {
     /**
      * Sets the sample covariance matrix for this Sem as a submatrix of the given matrix. The variable names used in the
      * SemPm for this model must all appear in this CovarianceMatrix.
+     *
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
     public void setCovMatrix(ICovarianceMatrix covMatrix) {
         if (covMatrix == null) {
@@ -461,12 +487,16 @@ public final class SemIm implements Im, ISemIm {
     /**
      * Calculates the covariance matrix of the given DataSet and sets the sample covariance matrix for this model to a
      * subset of it. The measured variable names used in the SemPm for this model must all appear in this data set.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public void setDataSet(DataSet dataSet) {
         setCovMatrix(new CovarianceMatrix(dataSet));
     }
 
     /**
+     * <p>Getter for the field <code>semPm</code>.</p>
+     *
      * @return the Digraph which describes the causal structure of the Sem.
      */
     public SemPm getSemPm() {
@@ -474,6 +504,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>getFreeParamValues.</p>
+     *
      * @return an array containing the getModel values for the free freeParameters, in the order in which the
      * freeParameters appear in getFreeParameters(). That is, getFreeParamValues()[i] is the value for
      * getFreeParameters()[i].
@@ -492,6 +524,8 @@ public final class SemIm implements Im, ISemIm {
     /**
      * Sets the values of the free freeParameters (in the order in which they appear in getFreeParameters()) to the
      * values contained in the given array. That is, params[i] is the value for getFreeParameters()[i].
+     *
+     * @param params an array of {@link double} objects
      */
     public void setFreeParamValues(double[] params) {
         if (params.length != getNumFreeParams()) {
@@ -506,9 +540,9 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Gets the value of a single free parameter, or Double.NaN if the parameter is not in this
-     *
-     * @throws IllegalArgumentException if the given parameter is not a free parameter in this model.
      */
     public double getParamValue(Parameter parameter) {
         if (parameter == null) {
@@ -534,9 +568,9 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the value of a single free parameter to the given value.
-     *
-     * @throws IllegalArgumentException if the given parameter is not a free parameter in this model.
      */
     public void setParamValue(Parameter parameter, double value) {
         if (getFreeParameters().contains(parameter)) {
@@ -555,9 +589,9 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the value of a single free parameter to the given value.
-     *
-     * @throws IllegalArgumentException if the given parameter is not a free parameter in this model.
      */
     public void setFixedParamValue(Parameter parameter, double value) {
         if (!getFixedParameters().contains(parameter)) {
@@ -572,21 +606,47 @@ public final class SemIm implements Im, ISemIm {
         mapping.setValue(value);
     }
 
+    /**
+     * <p>getErrVar.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a double
+     */
     public double getErrVar(Node x) {
         Parameter param = this.semPm.getVarianceParameter(x);
         return getParamValue(param);
     }
 
+    /**
+     * <p>Getter for the field <code>errCovar</code>.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a double
+     */
     public double getErrCovar(Node x, Node y) {
         Parameter param = this.semPm.getCovarianceParameter(x, y);
         return getParamValue(param);
     }
 
+    /**
+     * <p>Getter for the field <code>edgeCoef</code>.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a double
+     */
     public double getEdgeCoef(Node x, Node y) {
         Parameter param = this.semPm.getCoefficientParameter(x, y);
         return getParamValue(param);
     }
 
+    /**
+     * <p>Getter for the field <code>edgeCoef</code>.</p>
+     *
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a double
+     */
     public double getEdgeCoef(Edge edge) {
         if (!Edges.isDirectedEdge(edge)) {
             throw new IllegalArgumentException("Only directed edges have 'edge coefficients'");
@@ -594,32 +654,60 @@ public final class SemIm implements Im, ISemIm {
         return getEdgeCoef(edge.getNode1(), edge.getNode2());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setErrVar(Node x, double value) {
         Parameter param = this.semPm.getVarianceParameter(x);
         setParamValue(param, value);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setEdgeCoef(Node x, Node y, double value) {
         Parameter param = this.semPm.getCoefficientParameter(x, y);
         setParamValue(param, value);
     }
 
+    /**
+     * <p>existsEdgeCoef.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a boolean
+     */
     public boolean existsEdgeCoef(Node x, Node y) {
         return x != y && this.semPm.getCoefficientParameter(x, y) != null;
     }
 
+    /**
+     * <p>Setter for the field <code>errCovar</code>.</p>
+     *
+     * @param x     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param value a double
+     */
     public void setErrCovar(Node x, double value) {
         SemGraph graph = getSemPm().getGraph();
         Node exogenousX = graph.getExogenous(x);
         setParamValue(exogenousX, exogenousX, value);
     }
 
+    /**
+     * <p>Setter for the field <code>errCovar</code>.</p>
+     *
+     * @param x     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y     a {@link edu.cmu.tetrad.graph.Node} object
+     * @param value a double
+     */
     public void setErrCovar(Node x, Node y, double value) {
         Parameter param = this.semPm.getCovarianceParameter(x, y);
         setParamValue(param, value);
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the mean associated with the given node.
      */
     public void setMean(Node node, double mean) {
@@ -629,6 +717,9 @@ public final class SemIm implements Im, ISemIm {
 
     /**
      * Sets the mean associated with the given node.
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param mean a double
      */
     public void setMeanStandardDeviation(Node node, double mean) {
         int index = this.variableNodes.indexOf(node);
@@ -636,9 +727,9 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the intercept. For acyclic SEMs only.
-     *
-     * @throws UnsupportedOperationException if called on a cyclic SEM.
      */
     public void setIntercept(Node node, double intercept) {
         if (isCyclic()) {
@@ -690,8 +781,7 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return the intercept, for acyclic models, or Double.NaN otherwise.
-     * @throws UnsupportedOperationException if called on a cyclic SEM.
+     * {@inheritDoc}
      */
     public double getIntercept(Node node) {
         node = this.semPm.getGraph().getNode(node.getName());
@@ -720,7 +810,7 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return the value of the mean assoc iated with the given node.
+     * {@inheritDoc}
      */
     public double getMean(Node node) {
         int index = this.variableNodes.indexOf(node);
@@ -734,6 +824,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>getMeans.</p>
+     *
      * @return the means for variables in order.
      */
     public double[] getMeans() {
@@ -743,7 +835,7 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return the value of the mean associated with the given node.
+     * {@inheritDoc}
      */
     public double getMeanStdDev(Node node) {
         int index = this.variableNodes.indexOf(node);
@@ -751,7 +843,7 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return the value of the variance associated with the given node.
+     * {@inheritDoc}
      */
     public double getVariance(Node node, Matrix implCovar) {
         if (getSemPm().getGraph().isExogenous(node)) {
@@ -773,20 +865,19 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return the value of the standard deviation associated with the given node.
+     * {@inheritDoc}
      */
     public double getStdDev(Node node, Matrix implCovar) {
         return sqrt(getVariance(node, implCovar));
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Gets the value of a single free parameter to the given value, where the free parameter is specified by the
      * endpoint nodes of its edge in the w graph. Note that coefficient freeParameters connect elements of
      * getVariableNodes(), whereas variance and covariance freeParameters connect elements of getExogenousNodes(). (For
      * variance freeParameters, nodeA and nodeB are the same.)
-     *
-     * @throws IllegalArgumentException if the given parameter is not a free parameter in this model or if there is no
-     *                                  parameter connecting nodeA with nodeB in this model.
      */
     public double getParamValue(Node nodeA, Node nodeB) {
         Parameter parameter = null;
@@ -815,13 +906,12 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the value of a single free parameter to the given value, where the free parameter is specified by the
      * endpoint nodes of its edge in the graph. Note that coefficient freeParameters connect elements of
      * getVariableNodes(), whereas variance and covariance freeParameters connect elements of getExogenousNodes(). (For
      * variance freeParameters, nodeA and nodeB are the same.)
-     *
-     * @throws IllegalArgumentException if the given parameter is not a free parameter in this model or if there is no
-     *                                  parameter connecting nodeA with nodeB in this model, or if value is Double.NaN.
      */
     public void setParamValue(Node nodeA, Node nodeB, double value) {
         if (Double.isNaN(value)) {
@@ -860,6 +950,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>Getter for the field <code>freeParameters</code>.</p>
+     *
      * @return the (unmodifiable) list of free freeParameters in the model.
      */
     public List<Parameter> getFreeParameters() {
@@ -867,6 +959,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>getNumFreeParams.</p>
+     *
      * @return the number of free freeParameters.
      */
     public int getNumFreeParams() {
@@ -874,6 +968,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>Getter for the field <code>fixedParameters</code>.</p>
+     *
      * @return the (unmodifiable) list of fixed freeParameters in the model.
      */
     public List<Parameter> getFixedParameters() {
@@ -885,6 +981,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>getNumFixedParams.</p>
+     *
      * @return the number of free freeParameters.
      */
     public int getNumFixedParams() {
@@ -893,6 +991,8 @@ public final class SemIm implements Im, ISemIm {
 
     /**
      * The list of measured and latent nodes for the semPm. (Unmodifiable.)
+     *
+     * @return a {@link java.util.List} object
      */
     public List<Node> getVariableNodes() {
         return this.variableNodes;
@@ -900,12 +1000,16 @@ public final class SemIm implements Im, ISemIm {
 
     /**
      * The list of measured nodes for the semPm. (Unmodifiable.)
+     *
+     * @return a {@link java.util.List} object
      */
     public List<Node> getMeasuredNodes() {
         return this.measuredNodes;
     }
 
     /**
+     * <p>Getter for the field <code>sampleSize</code>.</p>
+     *
      * @return the sample size (that is, the sample size of the CovarianceMatrix provided at construction time).
      */
     public int getSampleSize() {
@@ -913,6 +1017,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>Getter for the field <code>edgeCoef</code>.</p>
+     *
      * @return a copy of the matrix of edge coefficients. Note that edgeCoefC[i][j] is the coefficient of the edge from
      * getVariableNodes().get(i) to getVariableNodes().get(j), or 0.0 if this edge is not in the graph. The values of
      * these may be changed, but the array itself may not.
@@ -922,6 +1028,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>Getter for the field <code>errCovar</code>.</p>
+     *
      * @return a copy of the matrix of error covariances. Note that errCovar[i][j] is the covariance of the error term
      * of getExoNodes().get(i) and getExoNodes().get(j), with the special case (duh!) that errCovar[i][i] is the
      * variance of getExoNodes.get(i). The values of these may be changed, but the array itself may not.
@@ -931,7 +1039,7 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
-     * @return a copy of the implied covariance matrix over all the variables.
+     * {@inheritDoc}
      */
     public Matrix getImplCovar(boolean recalculate) {
         if (!recalculate && this.implCovar != null) {
@@ -942,6 +1050,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>getImplCovarMeas.</p>
+     *
      * @return a copy of the implied covariance matrix over the measured variables only.
      */
     public Matrix getImplCovarMeas() {
@@ -949,6 +1059,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>getSampleCovar.</p>
+     *
      * @return a copy of the sample covariance matrix, or null if no sample covar has been set.
      */
     public Matrix getSampleCovar() {
@@ -958,6 +1070,8 @@ public final class SemIm implements Im, ISemIm {
     /**
      * The value of the maximum likelihood function for the getModel the model (Bollen 107). To optimize, this should be
      * minimized.
+     *
+     * @return a double
      */
     public double getScore() {
         if (this.scoreType == ScoreType.Fml) {
@@ -1015,6 +1129,8 @@ public final class SemIm implements Im, ISemIm {
      * The negative of the log likelihood function for the getModel model, with the constant chopped off. (Bollen 134).
      * This is an alternative, more efficient, optimization function to Fml which produces the same result when
      * minimized.
+     *
+     * @return a double
      */
     public double getTruncLL() {
         // Formula Bollen p. 263.
@@ -1029,6 +1145,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>getBicScore.</p>
+     *
      * @return BIC score, calculated as chisq - dof. This is equal to getFullBicScore() up to a constant.
      */
     public double getBicScore() {
@@ -1037,6 +1155,9 @@ public final class SemIm implements Im, ISemIm {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getRmsea() {
         double v = getChiSquare() - this.semPm.getDof();
@@ -1044,6 +1165,9 @@ public final class SemIm implements Im, ISemIm {
         return sqrt(v) / sqrt(v1);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getCfi() {
         if (getSampleCovar() == null) {
@@ -1067,6 +1191,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>getChiSquare.</p>
+     *
      * @return the chi square value for the model.
      */
     public double getChiSquare() {
@@ -1074,6 +1200,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>getPValue.</p>
+     *
      * @return the p-value for the model.
      */
     public double getPValue() {
@@ -1089,6 +1217,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * This simulate method uses the implied covariance metrix directly to simulate data, instead of going tier by tier.
      * It should work for cyclic graphs as well as acyclic graphs.
      */
@@ -1100,6 +1230,11 @@ public final class SemIm implements Im, ISemIm {
         return simulateDataReducedForm(sampleSize, latentDataSaved);
     }
 
+    /**
+     * <p>Setter for the field <code>scoreType</code>.</p>
+     *
+     * @param scoreType a {@link edu.cmu.tetrad.sem.ScoreType} object
+     */
     public void setScoreType(ScoreType scoreType) {
         if (scoreType == null) {
             scoreType = ScoreType.Fgls;
@@ -1200,6 +1335,7 @@ public final class SemIm implements Im, ISemIm {
      *
      * @param sampleSize      the number of rows of data to simulate.
      * @param latentDataSaved True iff data for latents should be saved.
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSet simulateDataCholesky(int sampleSize, boolean latentDataSaved) {
         List<Node> variables = new LinkedList<>();
@@ -1273,6 +1409,13 @@ public final class SemIm implements Im, ISemIm {
         }
     }
 
+    /**
+     * <p>simulateDataRecursive.</p>
+     *
+     * @param sampleSize      a int
+     * @param latentDataSaved a boolean
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet simulateDataRecursive(int sampleSize,
                                          boolean latentDataSaved) {
         return simulateDataRecursive(sampleSize, null, latentDataSaved);
@@ -1468,6 +1611,13 @@ public final class SemIm implements Im, ISemIm {
         return RandomUtil.getInstance().nextUniform(this.errorParam1, this.errorParam2);
     }
 
+    /**
+     * <p>simulateDataReducedForm.</p>
+     *
+     * @param sampleSize      a int
+     * @param latentDataSaved a boolean
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
         double errorParam1 = params.getDouble(Params.SIMULATION_PARAM1);
@@ -1503,7 +1653,7 @@ public final class SemIm implements Im, ISemIm {
                 } else if (errorType == 4) {
                     e.set(i, RandomUtil.getInstance().nextGumbel(errorParam1, errorParam2));
                 } else if (errorType == 5) {
-                   e.set(i, RandomUtil.getInstance().nextGamma(errorParam1, errorParam2));
+                    e.set(i, RandomUtil.getInstance().nextGamma(errorParam1, errorParam2));
                 }
             }
 
@@ -1541,6 +1691,13 @@ public final class SemIm implements Im, ISemIm {
     }
 
     // For testing.
+
+    /**
+     * <p>simulateOneRecord.</p>
+     *
+     * @param e a {@link edu.cmu.tetrad.util.Vector} object
+     * @return a {@link edu.cmu.tetrad.util.Vector} object
+     */
     public Vector simulateOneRecord(Vector e) {
         // Calculate inv(I - edgeCoefC)
         Matrix edgeCoef = edgeCoef().copy().transpose();
@@ -1567,6 +1724,9 @@ public final class SemIm implements Im, ISemIm {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double getStandardError(Parameter parameter, int maxFreeParams) {
         Matrix sampleCovar = getSampleCovar();
 
@@ -1643,38 +1803,72 @@ public final class SemIm implements Im, ISemIm {
         return false;
     }
 
+    /**
+     * <p>listUnmeasuredLatents.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> listUnmeasuredLatents() {
         return unmeasuredLatents(getSemPm());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double getTValue(Parameter parameter, int maxFreeParams) {
         return getParamValue(parameter)
                 / getStandardError(parameter, maxFreeParams);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double getPValue(Parameter parameter, int maxFreeParams) {
         double tValue = getTValue(parameter, maxFreeParams);
         int df = getSampleSize() - 1;
         return 2.0 * (1.0 - ProbUtils.tCdf(FastMath.abs(tValue), df));
     }
 
+    /**
+     * <p>isParameterBoundsEnforced.</p>
+     *
+     * @return a boolean
+     */
     public boolean isParameterBoundsEnforced() {
         return this.parameterBoundsEnforced;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParameterBoundsEnforced(
             boolean parameterBoundsEnforced) {
         this.parameterBoundsEnforced = parameterBoundsEnforced;
     }
 
+    /**
+     * <p>isEstimated.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEstimated() {
         return this.estimated;
     }
 
+    /**
+     * <p>Setter for the field <code>estimated</code>.</p>
+     *
+     * @param estimated a boolean
+     */
     public void setEstimated(boolean estimated) {
         this.estimated = estimated;
     }
 
+    /**
+     * <p>isCyclic.</p>
+     *
+     * @return a boolean
+     */
     public boolean isCyclic() {
         if (!this.cyclicChecked) {
             this.cyclic = this.semPm.getGraph().paths().existsDirectedCycle();
@@ -1685,8 +1879,11 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>getVariableNode.</p>
+     *
+     * @param name a {@link java.lang.String} object
      * @return the variable by the given name, or null if none exists.
-     * @throws NullPointerException if name is null.
+     * @throws java.lang.NullPointerException if name is null.
      */
     public Node getVariableNode(String name) {
         if (name == null) {
@@ -1705,6 +1902,8 @@ public final class SemIm implements Im, ISemIm {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of the Sem (pretty detailed).
      */
     public String toString() {
@@ -2083,7 +2282,12 @@ public final class SemIm implements Im, ISemIm {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -2138,22 +2342,48 @@ public final class SemIm implements Im, ISemIm {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }
 
+    /**
+     * <p>Setter for the field <code>params</code>.</p>
+     *
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public void setParams(Parameters params) {
         this.params = params;
     }
 
+    /**
+     * <p>Getter for the field <code>variableMeans</code>.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[] getVariableMeans() {
         return this.variableMeans;
     }
 
+    /**
+     * <p>isSimulatedPositiveDataOnly.</p>
+     *
+     * @return a boolean
+     */
     public boolean isSimulatedPositiveDataOnly() {
         return false;
     }
 
+    /**
+     * <p>Getter for the field <code>implCovar</code>.</p>
+     *
+     * @param nodes a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public Matrix getImplCovar(List<Node> nodes) {
         computeImpliedCovar();
         // Submatrix of implied covar for listed nodes only
@@ -2181,6 +2411,11 @@ public final class SemIm implements Im, ISemIm {
         return implCovarMeas;
     }
 
+    /**
+     * <p>Getter for the field <code>numRandomCalls</code>.</p>
+     *
+     * @return a int
+     */
     public int getNumRandomCalls() {
         return numRandomCalls;
     }

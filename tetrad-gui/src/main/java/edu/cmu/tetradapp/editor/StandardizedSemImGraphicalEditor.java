@@ -105,6 +105,8 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
 
     /**
      * Constructs a SemIm graphical editor for the given SemIm.
+     *
+     * @param semIm a {@link edu.cmu.tetrad.sem.StandardizedSemIm} object
      */
     public StandardizedSemImGraphicalEditor(StandardizedSemIm semIm) {
         this.semIm = semIm;
@@ -235,6 +237,12 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     }
 
     //=================================PUBLIC METHODS=======================================//
+
+    /**
+     * <p>Getter for the field <code>workbench</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public GraphWorkbench getWorkbench() {
         return this.workbench;
     }
@@ -326,6 +334,9 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
         return this.lastEditedObject;
     }
 
+    /**
+     * <p>resetLabels.</p>
+     */
     public void resetLabels() {
         for (Edge o : graph().getEdges()) {
             resetEdgeLabel(o);
@@ -476,6 +487,11 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
         return this.editable;
     }
 
+    /**
+     * <p>Setter for the field <code>editable</code>.</p>
+     *
+     * @param editable a boolean
+     */
     public void setEditable(boolean editable) {
         workbench().setAllowEdgeReorientations(editable);
         workbench().setAllowDoubleClickActions(editable);
@@ -483,10 +499,20 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
         this.editable = editable;
     }
 
+    /**
+     * <p>isEnableEditing.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEnableEditing() {
         return this.enableEditing;
     }
 
+    /**
+     * <p>enableEditing.</p>
+     *
+     * @param enableEditing a boolean
+     */
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {

@@ -28,8 +28,14 @@ import edu.cmu.tetrad.util.Version;
  * Some utilities for loading license-related files and making sure they get the right versions stamped in them.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class LicenseUtils {
+    /**
+     * <p>copyright.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public static String copyright() {
         String copyright =
                 FileLoadingUtils.fromResources("/resources/copyright");
@@ -38,6 +44,11 @@ public final class LicenseUtils {
         return copyright;
     }
 
+    /**
+     * <p>license.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public static String license() {
         return FileLoadingUtils.fromResources("/resources/license");
     }

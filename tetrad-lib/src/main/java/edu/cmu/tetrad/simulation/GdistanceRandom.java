@@ -10,6 +10,9 @@ import java.util.List;
 
 /**
  * Created by Erich on 8/6/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class GdistanceRandom {
     private static DataSet locationMap;
@@ -21,12 +24,24 @@ public class GdistanceRandom {
     private boolean verbose;
 
     //**************CONSTRUCTORS*********************//
+
+    /**
+     * <p>Constructor for GdistanceRandom.</p>
+     *
+     * @param inMap a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public GdistanceRandom(DataSet inMap) {
         setLocationMap(inMap);
     }
 
     //*************PUBLIC METHODS*******************//
 
+    /**
+     * <p>randomSimulation.</p>
+     *
+     * @param repeat a int
+     * @return a {@link java.util.List} object
+     */
     public List<List<Double>> randomSimulation(int repeat) {
         List<List<Double>> simdata = new ArrayList<>();
         if (this.verbose) System.out.println("starting simulation loop");
@@ -62,18 +77,39 @@ public class GdistanceRandom {
     }
 
     //**********Methods for setting values of private variables**************//
+
+    /**
+     * <p>Setter for the field <code>locationMap</code>.</p>
+     *
+     * @param map a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public void setLocationMap(DataSet map) {
         GdistanceRandom.locationMap = map;
     }
 
+    /**
+     * <p>Setter for the field <code>numEdges1</code>.</p>
+     *
+     * @param edges a int
+     */
     public void setNumEdges1(int edges) {
         this.numEdges1 = edges;
     }
 
+    /**
+     * <p>Setter for the field <code>numEdges2</code>.</p>
+     *
+     * @param edges a int
+     */
     public void setNumEdges2(int edges) {
         this.numEdges2 = edges;
     }
 
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param wantverbose a boolean
+     */
     public void setVerbose(boolean wantverbose) {
         this.verbose = wantverbose;
     }

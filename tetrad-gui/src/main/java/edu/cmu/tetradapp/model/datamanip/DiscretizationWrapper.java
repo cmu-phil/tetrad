@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
@@ -40,6 +39,7 @@ import java.util.prefs.Preferences;
  * Created by IntelliJ IDEA.
  *
  * @author Tyler
+ * @version $Id: $Id
  */
 public class DiscretizationWrapper extends DataWrapper {
     @Serial
@@ -48,6 +48,9 @@ public class DiscretizationWrapper extends DataWrapper {
     /**
      * Constructs the <code>DiscretizationWrapper</code> by discretizing the select
      * <code>DataModel</code>.
+     *
+     * @param data   a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public DiscretizationWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
@@ -61,11 +64,9 @@ public class DiscretizationWrapper extends DataWrapper {
         DataModelList discretizedDataSets = new DataModelList();
 
         for (DataModel dataModel : dataSets) {
-            if (!(dataModel instanceof DataSet)) {
+            if (!(dataModel instanceof DataSet originalData)) {
                 throw new IllegalArgumentException("Only tabular data sets can be converted to time lagged form.");
             }
-
-            DataSet originalData = (DataSet) dataModel;
 
             Map<Node, DiscretizationSpec> discretizationSpecs = (Map<Node, DiscretizationSpec>) params.get("discretizationSpecs", new HashMap<Node, DiscretizationSpec>());
             Discretizer discretizer = new Discretizer(originalData, discretizationSpecs);
@@ -86,6 +87,7 @@ public class DiscretizationWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
@@ -99,7 +101,12 @@ public class DiscretizationWrapper extends DataWrapper {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

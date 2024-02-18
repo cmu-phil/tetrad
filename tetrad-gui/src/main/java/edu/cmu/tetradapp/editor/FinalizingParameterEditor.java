@@ -31,6 +31,7 @@ package edu.cmu.tetradapp.editor;
  * Dialog is modal and is handling matters on the users behalf.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public interface FinalizingParameterEditor extends ParameterEditor {
 

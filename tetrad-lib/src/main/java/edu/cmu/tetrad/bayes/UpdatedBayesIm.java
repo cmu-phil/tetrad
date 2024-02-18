@@ -28,6 +28,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -38,38 +39,36 @@ import java.util.*;
  * parents are not calculated; rather, these are simply looked up in the underlying Bayes IM and returned.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class UpdatedBayesIm implements BayesIm {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The tolerance.
+     */
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;
 
     /**
      * The wrapped BayesIm. Unmodified conditional probability values will be retrieved from here.
-     *
-     * @serial Cannot be null; must be evidence.getEstIm().
      */
     private final BayesIm bayesIm;
 
     /**
      * The evidence updated on.
-     *
-     * @serial Cannot be null.
      */
     private final Evidence evidence;
 
     /**
      * Stores probs that change with respect to the underlying bayesIm, calculated on the fly.
-     *
-     * @serial Cannot be null.
      */
     private final double[][][] changedProbs;
 
     /**
      * A boolean array that is true at a position if the node at that index is an ancestor or a child of one of the
      * evidence variables.
-     *
-     * @serial Cannot be null.
      */
     private final boolean[] affectedVars;
 
@@ -77,6 +76,8 @@ public final class UpdatedBayesIm implements BayesIm {
 
     /**
      * Constructs Bayes net in which CPT's updated for the given evidence are calculated on the fly.
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public UpdatedBayesIm(BayesIm bayesIm) {
 
@@ -85,6 +86,9 @@ public final class UpdatedBayesIm implements BayesIm {
 
     /**
      * Constructs Bayes net in which CPT's updated for the given evidence are calculated on the fly.
+     *
+     * @param bayesIm  a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
      */
     public UpdatedBayesIm(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) {
@@ -109,6 +113,8 @@ public final class UpdatedBayesIm implements BayesIm {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.UpdatedBayesIm} object
      */
     public static UpdatedBayesIm serializableInstance() {
         return new UpdatedBayesIm(MlBayesIm.serializableInstance());
@@ -132,6 +138,12 @@ public final class UpdatedBayesIm implements BayesIm {
     }
 
     //===============================PUBLIC METHODS=======================//
+
+    /**
+     * <p>getBayesPm.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesPm} object
+     */
     public BayesPm getBayesPm() {
         return getBayesIm().getBayesPm();
     }
@@ -140,63 +152,114 @@ public final class UpdatedBayesIm implements BayesIm {
         return this.bayesIm;
     }
 
+    /**
+     * <p>getDag.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getDag() {
         return getBayesIm().getDag();
     }
 
+    /**
+     * <p>getNumNodes.</p>
+     *
+     * @return a int
+     */
     public int getNumNodes() {
         return getBayesIm().getNumNodes();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Node getNode(int nodeIndex) {
         return getBayesIm().getNode(nodeIndex);
     }
 
+    /**
+     * <p>getNode.</p>
+     *
+     * @param name a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public Node getNode(String name) {
         return getBayesIm().getNode(name);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int getNodeIndex(Node node) {
         return getBayesIm().getNodeIndex(node);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int getNumColumns(int nodeIndex) {
         return getBayesIm().getNumColumns(nodeIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int getNumRows(int nodeIndex) {
         return getBayesIm().getNumRows(nodeIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int getNumParents(int nodeIndex) {
         return getBayesIm().getNumParents(nodeIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int getParent(int nodeIndex, int parentIndex) {
         return getBayesIm().getParent(nodeIndex, parentIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int getParentDim(int nodeIndex, int parentIndex) {
         return getBayesIm().getParentDim(nodeIndex, parentIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int[] getParentDims(int nodeIndex) {
         return getBayesIm().getParentDims(nodeIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int[] getParents(int nodeIndex) {
         return getBayesIm().getParents(nodeIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int[] getParentValues(int nodeIndex, int rowIndex) {
         return getBayesIm().getParentValues(nodeIndex, rowIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int getParentValue(int nodeIndex, int rowIndex, int colIndex) {
         return getBayesIm().getParentValue(nodeIndex, rowIndex, colIndex);
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Calculates the probability for the given node, at the given row and column of the conditional probability table
      * (CPT), updated for the evidence provided in the constuctor.
      */
@@ -225,55 +288,101 @@ public final class UpdatedBayesIm implements BayesIm {
         return this.changedProbs[nodeIndex][rowIndex][colIndex];
     }
 
+    /**
+     * <p>getRowIndex.</p>
+     *
+     * @param nodeIndex a int
+     * @param values    an array of {@link int} objects
+     * @return a int
+     */
     public int getRowIndex(int nodeIndex, int[] values) {
         return getBayesIm().getRowIndex(nodeIndex, values);
     }
 
+    /**
+     * <p>normalizeAll.</p>
+     */
     public void normalizeAll() {
         getBayesIm().normalizeAll();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void normalizeNode(int nodeIndex) {
         getBayesIm().normalizeNode(nodeIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void normalizeRow(int nodeIndex, int rowIndex) {
         getBayesIm().normalizeRow(nodeIndex, rowIndex);
     }
 
+    /**
+     * <p>setProbability.</p>
+     *
+     * @param nodeIndex  a int
+     * @param probMatrix an array of {@link double} objects
+     */
     public void setProbability(int nodeIndex, double[][] probMatrix) {
         getBayesIm().setProbability(nodeIndex, probMatrix);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setProbability(int nodeIndex, int rowIndex, int colIndex,
                                double value) {
         getBayesIm().setProbability(nodeIndex, rowIndex, colIndex, value);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int getCorrespondingNodeIndex(int nodeIndex, BayesIm otherBayesIm) {
         return getBayesIm().getCorrespondingNodeIndex(nodeIndex, otherBayesIm);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void clearRow(int nodeIndex, int rowIndex) {
         getBayesIm().clearRow(nodeIndex, rowIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void randomizeRow(int nodeIndex, int rowIndex) {
         getBayesIm().randomizeRow(nodeIndex, rowIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void randomizeIncompleteRows(int nodeIndex) {
         getBayesIm().randomizeIncompleteRows(nodeIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void randomizeTable(int nodeIndex) {
         getBayesIm().randomizeTable(nodeIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void clearTable(int nodeIndex) {
         getBayesIm().clearTable(nodeIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean isIncomplete(int nodeIndex, int rowIndex) {
         return getBayesIm().isIncomplete(nodeIndex, rowIndex);
     }
@@ -282,40 +391,65 @@ public final class UpdatedBayesIm implements BayesIm {
 //        return getBayesIm().simulateData(sampleSize, seed, latentDataSaved);
 //    }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean isIncomplete(int nodeIndex) {
         return getBayesIm().isIncomplete(nodeIndex);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         return getBayesIm().simulateData(sampleSize, latentDataSaved);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getBayesIm().getVariables();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getBayesIm().getVariableNames();
     }
 
+    /**
+     * <p>getMeasuredNodes.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getMeasuredNodes() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
 
-        if (!(o instanceof BayesIm)) {
+        if (!(o instanceof BayesIm otherIm)) {
             return false;
         }
-
-        BayesIm otherIm = (BayesIm) o;
 
         if (getNumNodes() != otherIm.getNumNodes()) {
             return false;
@@ -357,6 +491,8 @@ public final class UpdatedBayesIm implements BayesIm {
 
     /**
      * Prints out the probability table for each variable.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
@@ -389,6 +525,11 @@ public final class UpdatedBayesIm implements BayesIm {
         return buf.toString();
     }
 
+    /**
+     * <p>Getter for the field <code>evidence</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.Evidence} object
+     */
     public Evidence getEvidence() {
         return new Evidence(this.evidence, this);
     }
@@ -574,7 +715,12 @@ public final class UpdatedBayesIm implements BayesIm {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

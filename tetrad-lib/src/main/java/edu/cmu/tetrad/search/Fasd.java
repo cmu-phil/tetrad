@@ -44,6 +44,7 @@ import java.util.*;
  *
  * @author peterspirtes
  * @author josephramsey.
+ * @version $Id: $Id
  * @see Fas
  * @see Knowledge
  */
@@ -145,9 +146,9 @@ public class Fasd implements IFas {
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the maximum number of variables conditioned on in any test.
-     *
-     * @param depth This maximum.
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -159,9 +160,9 @@ public class Fasd implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the knowledge to be used in the search.
-     *
-     * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -198,23 +199,28 @@ public class Fasd implements IFas {
         this.externalGraph = externalGraph;
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether verbose output will be printed.
-     *
-     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the elapsed time.
-     *
-     * @return This time.
      */
     @Override
     public long getElapsedTime() {
@@ -222,9 +228,9 @@ public class Fasd implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the nodes being searched over.
-     *
-     * @return This list.
      */
     @Override
     public List<Node> getNodes() {
@@ -232,10 +238,9 @@ public class Fasd implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns an empty list. Not used.
-     *
-     * @param node Whichever node.
-     * @return An empty list.
      */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
@@ -243,9 +248,9 @@ public class Fasd implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the output to send prints to.
-     *
-     * @param out This print stream.
      */
     @Override
     public void setOut(PrintStream out) {

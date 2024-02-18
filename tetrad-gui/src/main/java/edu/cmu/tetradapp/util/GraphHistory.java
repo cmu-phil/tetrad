@@ -30,6 +30,7 @@ import java.util.LinkedList;
  * Stores a history of graph objects.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphHistory {
 
@@ -51,6 +52,11 @@ public class GraphHistory {
         this.index = -1;
     }
 
+    /**
+     * <p>add.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void add(Graph graph) {
         if (graph == null) {
             throw new NullPointerException();
@@ -64,6 +70,11 @@ public class GraphHistory {
         this.index++;
     }
 
+    /**
+     * <p>next.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph next() {
         if (this.index == -1) {
             throw new IllegalArgumentException("Graph history has not been " +
@@ -77,6 +88,11 @@ public class GraphHistory {
         return this.graphs.get(this.index);
     }
 
+    /**
+     * <p>previous.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph previous() {
         if (this.index == -1) {
             throw new IllegalArgumentException("Graph history has not been " +
@@ -90,6 +106,9 @@ public class GraphHistory {
         return this.graphs.get(this.index);
     }
 
+    /**
+     * <p>clear.</p>
+     */
     public void clear() {
         this.graphs.clear();
         this.index = -1;

@@ -36,6 +36,7 @@ import java.util.*;
  * Sample Efficient Discovery of Markov Blankets and Direct Causal Relations (KDD 2003).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class Mmmb implements IMbSearch {
 
@@ -101,10 +102,9 @@ public final class Mmmb implements IMbSearch {
     //=============================PUBLIC METHODS=========================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Searches for the Markov blanket of the node by the given name.
-     *
-     * @param target The name of the target node.
-     * @return The Markov blanket of the target.
      */
     public Set<Node> findMb(Node target) {
         TetradLogger.getInstance().log("info", "target = " + target);
@@ -244,6 +244,9 @@ public final class Mmmb implements IMbSearch {
     }
 
     /**
+     * <p>Getter for the field <code>pc</code>.</p>
+     *
+     * @param t a {@link edu.cmu.tetrad.graph.Node} object
      * @return a supserset of PC, or, if the symmetric algorithm is used, PC.
      */
     public List<Node> getPc(Node t) {
@@ -367,10 +370,20 @@ public final class Mmmb implements IMbSearch {
         return 1.0 - result.getPValue();
     }
 
+    /**
+     * <p>getAlgorithmName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getAlgorithmName() {
         return this.symmetric ? "MMMB-SYM" : "MMMB";
     }
 
+    /**
+     * <p>getNumIndependenceTests.</p>
+     *
+     * @return a int
+     */
     public int getNumIndependenceTests() {
         return this.numIndTests;
     }

@@ -43,6 +43,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GicScores implements Score {
 
@@ -115,12 +116,9 @@ public class GicScores implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Calculates the sample likelihood and BIC score for index i given its parents in a simple SEM model.
-     *
-     * @param x A node.
-     * @param y TAhe node.
-     * @param z A set of nodes.
-     * @return The score difference.
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -221,10 +219,9 @@ public class GicScores implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true if an edge with this bump is an effect edge.
-     *
-     * @param bump The bump.
-     * @return True if so.
      */
     @Override
     public boolean isEffectEdge(double bump) {
@@ -259,9 +256,9 @@ public class GicScores implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variables of the dataset.
-     *
-     * @return These variables as  list.
      */
     @Override
     public List<Node> getVariables() {
@@ -282,9 +279,9 @@ public class GicScores implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the max degree of the graph for some algorithms.
-     *
-     * @return This max degree.
      */
     @Override
     public int getMaxDegree() {
@@ -292,11 +289,9 @@ public class GicScores implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a judgment of whether the variable in z determine y exactly.
-     *
-     * @param z The set of nodes.
-     * @param y The node.
-     * @return This judgment
      */
     @Override
     public boolean determines(List<Node> z, Node y) {
@@ -374,7 +369,48 @@ public class GicScores implements Score {
      *
      * @see GicScores
      */
-    public enum RuleType {MANUAL, BIC, NANDY, GIC2, RIC, RICc, GIC5, GIC6}
+    public enum RuleType {
+
+        /**
+         * The lambda is set manually.
+         */
+        MANUAL,
+
+        /**
+         * The Bayesian Information Criterion.
+         */
+        BIC,
+
+        /**
+         * BIC using Nandy et al.'s formulation.
+         */
+        NANDY,
+
+        /**
+         * The GIC2 rule.
+         */
+        GIC2,
+
+        /**
+         * The RIC rule.
+         */
+        RIC,
+
+        /**
+         * The RICc rule.
+         */
+        RICc,
+
+        /**
+         * The GIC5 rule.
+         */
+        GIC5,
+
+        /**
+         * The GIC6 rule.
+         */
+        GIC6
+    }
 }
 
 

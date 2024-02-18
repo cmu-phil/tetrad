@@ -46,6 +46,8 @@ class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
 
     /**
      * Constucts an action for loading the session in the given '.tet' file into the desktop.
+     *
+     * @param graphEditor a {@link edu.cmu.tetradapp.editor.GraphEditable} object
      */
     public PasteSubgraphAction(GraphEditable graphEditor) {
         super("Paste Selected Graph");
@@ -58,6 +60,8 @@ class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
@@ -84,10 +88,9 @@ class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Notifies this object that it is no longer the owner of the contents of the clipboard.
-     *
-     * @param clipboard the clipboard that is no longer owned
-     * @param contents  the contents which this owner had placed on the clipboard
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

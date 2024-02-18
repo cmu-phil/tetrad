@@ -34,6 +34,7 @@ import java.util.List;
  *
  * @author josephramsey
  * @author Willie Wheeler
+ * @version $Id: $Id
  * @see edu.cmu.tetradapp.workbench.AbstractWorkbench
  */
 public class TimeLagGraphWorkbench extends GraphWorkbench {
@@ -47,8 +48,20 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     private static final int BIDIRECTED_EDGE = 4;
 
     //====================PRIVATE FIELDS=================================//
+
+    /**
+     * The type of node to be drawn next.
+     */
     private int nodeType = TimeLagGraphWorkbench.MEASURED_NODE;
+
+    /**
+     * The type of edge to be drawn next.
+     */
     private int edgeMode = TimeLagGraphWorkbench.DIRECTED_EDGE;
+
+    /**
+     * The nodes remembered from the last layout.
+     */
     private List<Node> rememberedNodes = new ArrayList<>();
 
     //========================CONSTRUCTORS===============================//
@@ -62,6 +75,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     /**
      * Constructs a new workbench workbench for the given workbench model.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.TimeLagGraph} object
      */
     public TimeLagGraphWorkbench(TimeLagGraph graph) {
         super(graph);
@@ -192,6 +207,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the edge mode to the given mode.
      */
     public void setEdgeMode(int edgeMode) {
@@ -212,6 +229,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
 
     /**
      * Creates a new model node for the workbench.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
      */
     public Node getNewModelNode() {
 
@@ -240,10 +259,9 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Creates a new display node for the workbench based on the given model node.
-     *
-     * @param modelNode the model node.
-     * @return the new display node.
      */
     public DisplayNode getNewDisplayNode(Node modelNode) {
         DisplayNode displayNode;
@@ -272,10 +290,9 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Creates a new display edge for the workbench based on the given model edge.
-     *
-     * @param modelEdge the model edge.
-     * @return the new display edge.
      */
     public IDisplayEdge getNewDisplayEdge(Edge modelEdge) {
         Node node1 = modelEdge.getNode1();
@@ -296,12 +313,10 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Creates a new model edge for the workbench connecting the two given model nodes and using the edge type from
      * #getEdgeType().
-     *
-     * @param node1 the one model node.
-     * @param node2 the other model node.
-     * @return the new model edge.
      */
     public Edge getNewModelEdge(Node node1, Node node2) {
         switch (this.edgeMode) {
@@ -323,12 +338,10 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Gets a new "tracking edge"--that is, an edge which is anchored at one end to a node but tracks the mouse at the
      * other end.  Used for drawing new edges.
-     *
-     * @param node     the node to anchor to.
-     * @param mouseLoc the location of the mouse.
-     * @return the new tracking edge (a display edge).
      */
     public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
         switch (this.edgeMode) {
@@ -362,11 +375,10 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Given base b (a String), returns the first node in the sequence "b1", "b2", "b3", etc., which is not already the
      * name of a node in the workbench.
-     *
-     * @param base the base string.
-     * @return the first string in the sequence not already being used.
      */
     public String nextVariableName(String base) {
 
@@ -395,6 +407,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the type of this node to the given type.
      */
     public void setNodeType(int nodeType) {
@@ -409,6 +423,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     //===========================PRIVATE METHODS==========================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Pastes a list of session elements (SessionNodeWrappers and SessionEdges) into the workbench.
      */
     public void pasteSubgraph(List graphElements, Point upperLeft) {

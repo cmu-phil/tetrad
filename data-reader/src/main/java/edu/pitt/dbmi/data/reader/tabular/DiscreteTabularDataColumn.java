@@ -27,6 +27,7 @@ import java.util.*;
  * Dec 31, 2018 1:20:24 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class DiscreteTabularDataColumn implements DiscreteDataColumn {
 
@@ -45,9 +46,9 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a string representation of the object.
-     *
-     * @return a string representation of the object.
      */
     @Override
     public String toString() {
@@ -55,10 +56,9 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Gets the encode value of the given value.
-     *
-     * @param value The value.
-     * @return the encode value of the given value.
      */
     @Override
     public Integer getEncodeValue(String value) {
@@ -66,6 +66,8 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Does a recategorization of the data column.
      */
     @Override
@@ -80,9 +82,9 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Gets the value of the given encode value.
-     *
-     * @param value The encode value.
      */
     @Override
     public void setValue(String value) {
@@ -90,9 +92,9 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Gets the data column.
-     *
-     * @return the data column.
      */
     @Override
     public DataColumn getDataColumn() {
@@ -109,9 +111,9 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Gets the categories.
-     *
-     * @return the categories.
      */
     @Override
     public List<String> getCategories() {

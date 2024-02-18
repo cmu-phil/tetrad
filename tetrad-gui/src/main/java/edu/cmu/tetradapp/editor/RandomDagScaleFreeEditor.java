@@ -184,6 +184,11 @@ class RandomDagScaleFreeEditor extends JPanel {
         this.scaleFreeGammaField.setValue(getScaleFreeGamma());
     }
 
+    /**
+     * <p>getNumNodes.</p>
+     *
+     * @return a int
+     */
     public int getNumNodes() {
         return getNumMeasuredNodes() + getNumLatents();
     }
@@ -200,6 +205,11 @@ class RandomDagScaleFreeEditor extends JPanel {
         Preferences.userRoot().putInt("newGraphNumMeasuredNodes", numMeasuredNodes);
     }
 
+    /**
+     * <p>getNumLatents.</p>
+     *
+     * @return a int
+     */
     public int getNumLatents() {
         return Preferences.userRoot().getInt("newGraphNumLatents", 0);
     }
@@ -214,10 +224,20 @@ class RandomDagScaleFreeEditor extends JPanel {
         Preferences.userRoot().putInt("newGraphNumLatents", numLatentNodes);
     }
 
+    /**
+     * <p>isConnected.</p>
+     *
+     * @return a boolean
+     */
     public boolean isConnected() {
         return Preferences.userRoot().getBoolean("randomGraphConnected", false);
     }
 
+    /**
+     * <p>getScaleFreeAlpha.</p>
+     *
+     * @return a double
+     */
     public double getScaleFreeAlpha() {
         return Preferences.userRoot().getDouble("scaleFreeAlpha", 0.2);
     }
@@ -226,6 +246,11 @@ class RandomDagScaleFreeEditor extends JPanel {
         Preferences.userRoot().putDouble("scaleFreeAlpha", scaleFreeAlpha);
     }
 
+    /**
+     * <p>getScaleFreeBeta.</p>
+     *
+     * @return a double
+     */
     public double getScaleFreeBeta() {
         return Preferences.userRoot().getDouble("scaleFreeBeta", 0.6);
     }
@@ -238,6 +263,11 @@ class RandomDagScaleFreeEditor extends JPanel {
         return 1.0 - getScaleFreeAlpha() - getScaleFreeBeta();
     }
 
+    /**
+     * <p>getScaleFreeDeltaIn.</p>
+     *
+     * @return a double
+     */
     public double getScaleFreeDeltaIn() {
         return Preferences.userRoot().getDouble("scaleFreeDeltaIn", 0.2);
     }
@@ -246,6 +276,11 @@ class RandomDagScaleFreeEditor extends JPanel {
         Preferences.userRoot().putDouble("scaleFreeDeltaIn", scaleFreeDeltaIn);
     }
 
+    /**
+     * <p>getScaleFreeDeltaOut.</p>
+     *
+     * @return a double
+     */
     public double getScaleFreeDeltaOut() {
         return Preferences.userRoot().getDouble("scaleFreeDeltaOut", 0.2);
     }

@@ -32,6 +32,7 @@ import java.util.Set;
  * modifications of the graph.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public final class ModelGenerator {
 
@@ -39,6 +40,9 @@ public final class ModelGenerator {
      * This method takes an acyclic graph as input and returns a list of graphs each of which is a modification of the
      * original graph with either an edge deleted, added or reversed.  Edges are not added or reversed if a cycle would
      * result.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.util.List} object
      */
     public static List<Graph> generate(Graph graph) {
 

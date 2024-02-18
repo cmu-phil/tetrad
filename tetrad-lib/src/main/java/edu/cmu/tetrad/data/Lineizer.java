@@ -50,6 +50,9 @@ final class Lineizer {
 
     /**
      * Constructs a tokenizer for the given input line, using the given Pattern as delimiter.
+     *
+     * @param reader        a {@link java.io.Reader} object
+     * @param commentMarker a {@link java.lang.String} object
      */
     public Lineizer(Reader reader, String commentMarker) {
         if (reader == null) {
@@ -65,6 +68,8 @@ final class Lineizer {
     }
 
     /**
+     * <p>hasMoreLines.</p>
+     *
      * @return true iff more tokens exist in the line.
      */
     public boolean hasMoreLines() {
@@ -82,6 +87,8 @@ final class Lineizer {
 
     /**
      * Return the next token in the line.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String nextLine() {
         this.lineNumber++;
@@ -117,6 +124,11 @@ final class Lineizer {
         return null;
     }
 
+    /**
+     * <p>Getter for the field <code>lineNumber</code>.</p>
+     *
+     * @return a int
+     */
     public int getLineNumber() {
         return this.lineNumber;
     }

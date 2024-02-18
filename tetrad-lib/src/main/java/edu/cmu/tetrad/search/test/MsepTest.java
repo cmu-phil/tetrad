@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * of a statistical conditional independence test in algorithms to provide oracle information.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MsepTest implements IndependenceTest {
 
@@ -130,9 +131,9 @@ public class MsepTest implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a test over a subset of the variables.
-     *
-     * @return This test.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -174,9 +175,14 @@ public class MsepTest implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Checks the indicated m-separation fact, msep(x , y | z).
      *
-     * @return An independence result for msep(x, y | z).
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
@@ -246,6 +252,9 @@ public class MsepTest implements IndependenceTest {
     /**
      * Auxiliary method to calculate msep(x, y | z) directly from nodes instead of from variables.
      *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
      * @return True, if so.
      */
     public boolean isMSeparated(Node x, Node y, Set<Node> z) {
@@ -273,7 +282,7 @@ public class MsepTest implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Since this method is not feasible.
+     * {@inheritDoc}
      */
     public boolean determines(List<Node> z, Node x1) {
         throw new UnsupportedOperationException("The 'determines' method is not implemented");
@@ -290,19 +299,16 @@ public class MsepTest implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException it makes no sense to set an alpha level for a d-separation test away from
-     *                                       the default.
-     * @see #getAlpha()
+     * {@inheritDoc}
      */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException("Method mot implemented.");
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variable with the given name.
-     *
-     * @param name The name.
-     * @return The variable.
      */
     public Node getVariable(String name) {
         for (Node variable : observedVars) {
@@ -333,7 +339,10 @@ public class MsepTest implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Method doesn't make sense here.
+     * <p>getData.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.lang.UnsupportedOperationException Method doesn't make sense here.
      */
     public DataSet getData() {
         throw new UnsupportedOperationException("This is a m-separation test, no data available.");
@@ -349,9 +358,9 @@ public class MsepTest implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

@@ -10,20 +10,56 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.io.Serial;
 
 import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
 
+/**
+ * <p>StatsListEditor class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class StatsListEditor extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 8455624852328328919L;
 
+    /**
+     * The comparison being edited.
+     */
     private final TabularComparison comparison;
+
+    /**
+     * The parameters for the comparison.
+     */
     private final Parameters params;
+
+    /**
+     * The data model for the comparison.
+     */
     private final DataModel dataModel;
+
+    /**
+     * The target graph for the comparison.
+     */
     private final Graph targetGraph;
+
+    /**
+     * The reference graph for the comparison.
+     */
     private Graph referenceGraph;
+
+    /**
+     * The text area for the table.
+     */
     private JTextArea area;
 
+    /**
+     * <p>Constructor for StatsListEditor.</p>
+     *
+     * @param comparison a {@link edu.cmu.tetradapp.model.TabularComparison} object
+     */
     public StatsListEditor(TabularComparison comparison) {
         this.comparison = comparison;
         this.params = comparison.getParams();
@@ -69,7 +105,7 @@ public class StatsListEditor extends JPanel {
 
     @NotNull
     private String tableTextWithHeader() {
-        String table = CompareTwoGraphs.getStatsListTable(this.referenceGraph, this.targetGraph, this.dataModel);
+        String table = CompareTwoGraphs.getStatsListTable(this.referenceGraph, this.targetGraph, this.dataModel, this.comparison.getElapsedTime());
         return "True graph from " + this.comparison.getReferenceName() + "\nTarget graph from " + this.comparison.getTargetName()
                 + "\n\n" + table;
     }

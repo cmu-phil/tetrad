@@ -67,6 +67,8 @@ final class ConstructTemplateAction extends AbstractAction {
 
     /**
      * Constucts an action for adding a new template to the frontmost session.
+     *
+     * @param templateName a {@link java.lang.String} object
      */
     public ConstructTemplateAction(String templateName) {
         super(templateName);
@@ -80,6 +82,8 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     /**
+     * <p>getTemplateNames.</p>
+     *
      * @return a copy of the template names. Must be public.
      */
     public static String[] getTemplateNames() {
@@ -180,6 +184,8 @@ final class ConstructTemplateAction extends AbstractAction {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Performs the action of adding the specified templatew into the frontmost session. It is assumed that all example
      * sessions will be located in directory "example_sessions".
      */
@@ -207,6 +213,12 @@ final class ConstructTemplateAction extends AbstractAction {
         }
     }
 
+    /**
+     * <p>addParent.</p>
+     *
+     * @param thisNode a {@link edu.cmu.tetradapp.app.SessionEditorNode} object
+     * @param type     a {@link java.lang.String} object
+     */
     public void addParent(SessionEditorNode thisNode, String type) {
         String name = ConstructTemplateAction.nextName(type);
         addNode(type, name, thisNode.getX() - 50, thisNode.getY() - 50);
@@ -417,6 +429,12 @@ final class ConstructTemplateAction extends AbstractAction {
         return node;
     }
 
+    /**
+     * <p>addEdge.</p>
+     *
+     * @param nodeName1 a {@link java.lang.String} object
+     * @param nodeName2 a {@link java.lang.String} object
+     */
     public void addEdge(String nodeName1, String nodeName2) {
 
         // Retrieve the nodes from the session wrapper.

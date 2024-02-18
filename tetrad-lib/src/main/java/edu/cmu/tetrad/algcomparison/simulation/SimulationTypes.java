@@ -22,19 +22,53 @@ package edu.cmu.tetrad.algcomparison.simulation;
  * Jun 4, 2019 3:10:49 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class SimulationTypes {
 
+    /**
+     * Constant <code>BAYS_NET="Bayes Net (Multinomial)"</code>
+     */
     public static final String BAYS_NET = "Bayes Net (Multinomial)";
+    /**
+     * Constant <code>STRUCTURAL_EQUATION_MODEL="Linear Structural Equation Model"</code>
+     */
     public static final String STRUCTURAL_EQUATION_MODEL = "Linear Structural Equation Model";
+    /**
+     * Constant <code>LINEAR_FISHER_MODEL="Linear Fisher Model"</code>
+     */
     public static final String LINEAR_FISHER_MODEL = "Linear Fisher Model";
+    /**
+     * Constant <code>NON_LINEAR_STRUCTURAL_EQUATION_MODEL="Non-Linear Structural Equation Model"</code>
+     */
     public static final String NON_LINEAR_STRUCTURAL_EQUATION_MODEL = "Non-Linear Structural Equation Model";
+    /**
+     * Constant <code>LEE_AND_HASTIE="Mixed Lee &amp; Hastie"</code>
+     */
     public static final String LEE_AND_HASTIE = "Mixed Lee & Hastie";
+    /**
+     * Constant <code>CONDITIONAL_GAUSSIAN="Mixed Conditional Gaussian"</code>
+     */
     public static final String CONDITIONAL_GAUSSIAN = "Mixed Conditional Gaussian";
+    /**
+     * Constant <code>TIME_SERIES="Time Series"</code>
+     */
     public static final String TIME_SERIES = "Time Series";
+    /**
+     * Constant <code>STANDARDIZED_STRUCTURAL_EQUATION_MODEL="Standardized Structural Equation Model"</code>
+     */
     public static final String STANDARDIZED_STRUCTURAL_EQUATION_MODEL = "Standardized Structural Equation Model";
+    /**
+     * Constant <code>GENERAL_STRUCTURAL_EQUATION_MODEL="General Structural Equation Model"</code>
+     */
     public static final String GENERAL_STRUCTURAL_EQUATION_MODEL = "General Structural Equation Model";
+    /**
+     * Constant <code>LOADED_FROM_FILES="Loaded From Files"</code>
+     */
     public static final String LOADED_FROM_FILES = "Loaded From Files";
+    /**
+     * Constant <code>BOOLEAN_GLASS_SIMULATION="Boolean Glass Simulation"</code>
+     */
     public static final String BOOLEAN_GLASS_SIMULATION = "Boolean Glass Simulation";
 
     private SimulationTypes() {

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,19 +36,19 @@ import java.util.List;
  * were done so that the user doesn't have to keep typing in information over and over again.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SplitCasesSpec implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * Breakpoints, for continuous data.
-     *
-     * @serial
      */
     private final int[] breakpoints;
 
     /**
-     * @serial
+     * Split names.
      */
     private final List<String> splitNames;
 
@@ -56,6 +57,13 @@ public final class SplitCasesSpec implements TetradSerializable {
      */
     private final int sampleSize;
 
+    /**
+     * <p>Constructor for SplitCasesSpec.</p>
+     *
+     * @param sampleSize  a int
+     * @param breakpoints an array of {@link int} objects
+     * @param splits      a {@link java.util.List} object
+     */
     public SplitCasesSpec(int sampleSize, int[] breakpoints,
                           List<String> splits) {
         this.sampleSize = sampleSize;
@@ -65,15 +73,27 @@ public final class SplitCasesSpec implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.SplitCasesSpec} object
      */
     public static SplitCasesSpec serializableInstance() {
         return new SplitCasesSpec(0, new int[0], new ArrayList<>());
     }
 
+    /**
+     * <p>Getter for the field <code>splitNames</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getSplitNames() {
         return this.splitNames;
     }
 
+    /**
+     * <p>Getter for the field <code>breakpoints</code>.</p>
+     *
+     * @return an array of {@link int} objects
+     */
     public int[] getBreakpoints() {
         return this.breakpoints;
     }
@@ -85,7 +105,12 @@ public final class SplitCasesSpec implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -99,6 +124,11 @@ public final class SplitCasesSpec implements TetradSerializable {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>sampleSize</code>.</p>
+     *
+     * @return a int
+     */
     public int getSampleSize() {
         return this.sampleSize;
     }

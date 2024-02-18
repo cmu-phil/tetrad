@@ -50,17 +50,50 @@ import java.util.*;
  * with correlation information over the variables.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
-    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private GraphWorkbench workbench;
-    private boolean showHighestScoreOnly;
-    private Map<Graph, Double> dagsToScores;
-    private List<Graph> dags;
-    private JLabel scoreLabel;
-    private ScoredGraphsWrapper scoredGraphsWrapper;
-//    private Indexable indexable;
 
+    /**
+     * The number format for displaying scores.
+     */
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+    /**
+     * The workbench for displaying the graphs.
+     */
+    private GraphWorkbench workbench;
+
+    /**
+     * Whether to show only the highest scoring graph.
+     */
+    private boolean showHighestScoreOnly;
+
+    /**
+     * The DAGs to scores.
+     */
+    private Map<Graph, Double> dagsToScores;
+
+    /**
+     * The DAGs.
+     */
+    private List<Graph> dags;
+
+    /**
+     * The label for the score.
+     */
+    private JLabel scoreLabel;
+
+    /**
+     * The scored graphs wrapper.
+     */
+    private ScoredGraphsWrapper scoredGraphsWrapper;
+
+    /**
+     * <p>Constructor for ScoredGraphsDisplay.</p>
+     *
+     * @param scoredGraphsWrapper a {@link edu.cmu.tetradapp.model.ScoredGraphsWrapper} object
+     */
     public ScoredGraphsDisplay(ScoredGraphsWrapper scoredGraphsWrapper) {
         if (scoredGraphsWrapper == null) {
             throw new NullPointerException();
@@ -71,6 +104,12 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         setup();
     }
 
+    /**
+     * <p>Constructor for ScoredGraphsDisplay.</p>
+     *
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param scorer a {@link edu.cmu.tetrad.search.utils.DagScorer} object
+     */
     public ScoredGraphsDisplay(Graph graph, DagScorer scorer) {
         List<Graph> _dags = GraphTransforms.generateCpdagDags(graph, true);
 
@@ -213,6 +252,11 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         this.scoreLabel.setText(text);
     }
 
+    /**
+     * <p>getSelectedModelComponents.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List getSelectedModelComponents() {
         Component[] components = getWorkbench().getComponents();
         List<TetradSerializable> selectedModelComponents =
@@ -231,6 +275,9 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         return selectedModelComponents;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
@@ -246,14 +293,27 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         getWorkbench().selectConnectingEdges();
     }
 
+    /**
+     * <p>Getter for the field <code>workbench</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public GraphWorkbench getWorkbench() {
         return this.workbench;
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.workbench.getGraph();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setGraph(Graph graph) {
         this.workbench.setGraph(graph);
     }
@@ -276,6 +336,11 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         return menuBar;
     }
 
+    /**
+     * <p>Setter for the field <code>showHighestScoreOnly</code>.</p>
+     *
+     * @param showHighestScoreOnly a boolean
+     */
     public void setShowHighestScoreOnly(boolean showHighestScoreOnly) {
         this.showHighestScoreOnly = showHighestScoreOnly;
 

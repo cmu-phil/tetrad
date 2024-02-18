@@ -28,6 +28,7 @@ import java.util.Set;
  * Dec 28, 2018 2:44:19 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public interface TabularColumnReader extends DataReader {
 
@@ -36,7 +37,7 @@ public interface TabularColumnReader extends DataReader {
      *
      * @param isDiscrete whether the data is discrete.
      * @return the data columns.
-     * @throws IOException if an I/O error occurs.
+     * @throws java.io.IOException if an I/O error occurs.
      */
     DataColumn[] readInDataColumns(boolean isDiscrete) throws IOException;
 
@@ -46,7 +47,7 @@ public interface TabularColumnReader extends DataReader {
      * @param namesOfColumnsToExclude the names of columns to exclude.
      * @param isDiscrete              whether the data is discrete.
      * @return the data columns.
-     * @throws IOException if an I/O error occurs.
+     * @throws java.io.IOException if an I/O error occurs.
      */
     DataColumn[] readInDataColumns(Set<String> namesOfColumnsToExclude, boolean isDiscrete) throws IOException;
 
@@ -56,7 +57,7 @@ public interface TabularColumnReader extends DataReader {
      * @param columnsToExclude the columns to exclude.
      * @param isDiscrete       whether the data is discrete.
      * @return the data columns.
-     * @throws IOException if an I/O error occurs.
+     * @throws java.io.IOException if an I/O error occurs.
      */
     DataColumn[] readInDataColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException;
 
@@ -66,7 +67,7 @@ public interface TabularColumnReader extends DataReader {
      * @param isDiscrete       whether the data is discrete.
      * @param columnsToExclude the columns to exclude.
      * @return the data columns.
-     * @throws IOException if an I/O error occurs.
+     * @throws java.io.IOException if an I/O error occurs.
      */
     DataColumn[] generateColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException;
 

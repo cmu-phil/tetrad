@@ -38,10 +38,18 @@ import java.awt.*;
  *
  * @author Aaron Powers
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DirichletBayesImEditor extends JPanel {
 
+    /**
+     * The wizard for editing the probabilities.
+     */
     private final DirichletBayesImProbsWizard probsWizard;
+
+    /**
+     * The wizard for editing the pseudocounts.
+     */
     private final DirichletBayesImCountsWizard countsWizard;
 
     /**
@@ -124,6 +132,8 @@ public class DirichletBayesImEditor extends JPanel {
 
     /**
      * Constructs a new instanted model editor from a Bayes IM wrapper.
+     *
+     * @param dirichletBayesImWrapper a {@link edu.cmu.tetradapp.model.DirichletBayesImWrapper} object
      */
     public DirichletBayesImEditor(
             DirichletBayesImWrapper dirichletBayesImWrapper) {
@@ -132,6 +142,8 @@ public class DirichletBayesImEditor extends JPanel {
 
     /**
      * Constructs a new Bayes IM Editor from a Dirichlet Prior.
+     *
+     * @param dirichletEstWrapper a {@link edu.cmu.tetradapp.model.DirichletEstimatorWrapper} object
      */
     public DirichletBayesImEditor(
             DirichletEstimatorWrapper dirichletEstWrapper) {
@@ -139,6 +151,8 @@ public class DirichletBayesImEditor extends JPanel {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     public void setName(String name) {

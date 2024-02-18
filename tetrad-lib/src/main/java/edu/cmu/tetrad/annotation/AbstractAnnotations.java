@@ -28,11 +28,12 @@ import java.util.stream.Collectors;
 
 /**
  * Abstract class for annotations.
- *
+ * <p>
  * Sep 20, 2017 10:59:43 AM
  *
  * @param <T> annotation type
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public abstract class AbstractAnnotations<T extends Annotation> {
 
@@ -43,8 +44,9 @@ public abstract class AbstractAnnotations<T extends Annotation> {
 
     /**
      * Constructor.
+     *
      * @param packageName package name
-     * @param type annotation type
+     * @param type        annotation type
      */
     public AbstractAnnotations(String packageName, Class<T> type) {
         Reflections reflections = new Reflections(packageName);
@@ -57,6 +59,7 @@ public abstract class AbstractAnnotations<T extends Annotation> {
 
     /**
      * Get annotated classes.
+     *
      * @return annotated classes
      */
     public List<AnnotatedClass<T>> getAnnotatedClasses() {
@@ -65,8 +68,9 @@ public abstract class AbstractAnnotations<T extends Annotation> {
 
     /**
      * Filter annotated classes by annotation type.
+     *
      * @param annoClasses annotated classes
-     * @param type annotation type
+     * @param type        annotation type
      * @return filtered annotated classes
      */
     public List<AnnotatedClass<T>> filterByAnnotation(List<AnnotatedClass<T>> annoClasses, Class<? extends Annotation> type) {
@@ -83,8 +87,9 @@ public abstract class AbstractAnnotations<T extends Annotation> {
 
     /**
      * Filter out annotated classes by annotation type.
+     *
      * @param annoClasses annotated classes
-     * @param type annotation type
+     * @param type        annotation type
      * @return filtered annotated classes
      */
     public List<AnnotatedClass<T>> filterOutByAnnotation(List<AnnotatedClass<T>> annoClasses, Class<? extends Annotation> type) {

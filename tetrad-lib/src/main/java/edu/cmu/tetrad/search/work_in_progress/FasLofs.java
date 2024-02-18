@@ -48,6 +48,7 @@ import java.util.Collections;
  * arXiv:1206.3260.</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fas
  * @see Fask
  */
@@ -69,7 +70,10 @@ public final class FasLofs implements IGraphSearch {
     private Knowledge knowledge = new Knowledge();
 
     /**
+     * <p>Constructor for FasLofs.</p>
+     *
      * @param dataSet These datasets to analyze.
+     * @param rule    a {@link edu.cmu.tetrad.search.Lofs.Rule} object
      */
     public FasLofs(DataSet dataSet, Lofs.Rule rule) {
         this.dataSet = dataSet;
@@ -119,6 +123,8 @@ public final class FasLofs implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
      * @return The depth of search for the Fast Adjacency Search (FAS).
      */
     public int getDepth() {
@@ -126,6 +132,8 @@ public final class FasLofs implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
      * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1. unlimited. Making this too
      *              high may results in statistical errors.
      */
@@ -134,6 +142,8 @@ public final class FasLofs implements IGraphSearch {
     }
 
     /**
+     * <p>getElapsedTime.</p>
+     *
      * @return The elapsed time in milliseconds.
      */
     public long getElapsedTime() {
@@ -141,6 +151,8 @@ public final class FasLofs implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>penaltyDiscount</code>.</p>
+     *
      * @return Returns the penalty discount used for the adjacency search. The default is 1, though a higher value is
      * recommended, say, 2, 3, or 4.
      */
@@ -149,6 +161,8 @@ public final class FasLofs implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>penaltyDiscount</code>.</p>
+     *
      * @param penaltyDiscount Sets the penalty discount used for the adjacency search. The default is 1, though a higher
      *                        value is recommended, say, 2, 3, or 4.
      */
@@ -157,6 +171,8 @@ public final class FasLofs implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the current knowledge.
      */
     public Knowledge getKnowledge() {
@@ -164,10 +180,12 @@ public final class FasLofs implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
      * @param knowledge Knowledge of forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 }
 

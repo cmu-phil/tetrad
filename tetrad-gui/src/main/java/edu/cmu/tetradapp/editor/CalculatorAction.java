@@ -70,6 +70,8 @@ class CalculatorAction extends AbstractAction {
 
     /**
      * Constructs the calculator given the data editor its attached to.
+     *
+     * @param editor a {@link edu.cmu.tetradapp.editor.DataEditor} object
      */
     public CalculatorAction(DataEditor editor) {
         this(editor.getDataWrapper());
@@ -78,6 +80,8 @@ class CalculatorAction extends AbstractAction {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Launches the calculator editoir.
      */
     public void actionPerformed(ActionEvent e) {

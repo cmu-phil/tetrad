@@ -30,6 +30,7 @@ import java.util.*;
  * Parses a string into a tree-like expression.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class ExpressionParser {
 
@@ -69,6 +70,9 @@ public class ExpressionParser {
 
     /**
      * Constructs the parser given a collection of allowable parameters.
+     *
+     * @param parameters a {@link java.util.Collection} object
+     * @param type       a {@link edu.cmu.tetrad.calculator.parser.ExpressionParser.RestrictionType} object
      */
     public ExpressionParser(Collection<String> parameters, RestrictionType type) {
         if (parameters == null) {
@@ -88,6 +92,10 @@ public class ExpressionParser {
 
     /**
      * Parses the given expression, or throws an exception if its not possible.
+     *
+     * @param expression a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.calculator.expression.Expression} object
+     * @throws java.text.ParseException if any.
      */
     public Expression parseExpression(String expression) throws ParseException {
         this.lexer = new ExpressionLexer(expression);
@@ -101,6 +109,10 @@ public class ExpressionParser {
 
     /**
      * Parses an equation of the form Variable = Expression.
+     *
+     * @param equation a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.calculator.expression.Equation} object
+     * @throws java.text.ParseException if any.
      */
     public Equation parseEquation(String equation) throws ParseException {
         int index = equation.indexOf("=");
@@ -115,6 +127,11 @@ public class ExpressionParser {
         return new Equation(variable, parseExpression(equation.substring(index + 1).trim()), equation);
     }
 
+    /**
+     * <p>getNextOffset.</p>
+     *
+     * @return a int
+     */
     public int getNextOffset() {
         return this.lexer.getNextOffset();
     }
@@ -463,6 +480,11 @@ public class ExpressionParser {
         return this.restrictionType;
     }
 
+    /**
+     * <p>Getter for the field <code>parameters</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getParameters() {
         return new LinkedList<>(this.parameters);
     }
@@ -477,7 +499,21 @@ public class ExpressionParser {
      * parameters occur in the expression are OK.
      */
     public enum RestrictionType {
-        MAY_ONLY_CONTAIN, MAY_NOT_CONTAIN, NONE
+
+        /**
+         * The expression may only contain parameters in the given list.
+         */
+        MAY_ONLY_CONTAIN,
+
+        /**
+         * The expression may not contain parameters in the given list.
+         */
+        MAY_NOT_CONTAIN,
+
+        /**
+         * The expression may contain any parameters.
+         */
+        NONE
     }
 }
 

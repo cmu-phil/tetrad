@@ -39,9 +39,22 @@ import java.util.Map;
  * @author josephramsey
  */
 class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEditor {
+
+    /**
+     * The variable.
+     */
     private final DiscreteVariable variable;
+
+    /**
+     * The remap editor.
+     */
     private RemapEditor remapEditor;
 
+    /**
+     * <p>Constructor for DiscreteDiscretizationEditor.</p>
+     *
+     * @param variable a {@link edu.cmu.tetrad.data.DiscreteVariable} object
+     */
     public DiscreteDiscretizationEditor(DiscreteVariable variable) {
         if (variable == null) {
             throw new NullPointerException();
@@ -91,10 +104,20 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
 
     //===========================PRIVATE METHODS=========================//
 
+    /**
+     * <p>getDiscretizationSpec.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DiscretizationSpec} object
+     */
     public DiscretizationSpec getDiscretizationSpec() {
         return this.remapEditor.getDiscretizationSpec();
     }
 
+    /**
+     * <p>setDiscretizationSpec.</p>
+     *
+     * @param spec a {@link edu.cmu.tetrad.data.DiscretizationSpec} object
+     */
     public void setDiscretizationSpec(DiscretizationSpec spec) {
         this.remapEditor.setDiscretizationSpec((DiscreteDiscretizationSpec) spec);
     }

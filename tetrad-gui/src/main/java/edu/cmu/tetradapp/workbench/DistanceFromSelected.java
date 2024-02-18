@@ -56,6 +56,11 @@ final class DistanceFromSelected {
 
     //==============================CONSTRUCTORS===========================//
 
+    /**
+     * <p>Constructor for DistanceFromSelected.</p>
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
     public DistanceFromSelected(LayoutEditable layoutEditable) {
         this.graph = layoutEditable.getGraph();
 
@@ -96,6 +101,9 @@ final class DistanceFromSelected {
 
     //============================PUBLIC METHODS==========================//
 
+    /**
+     * <p>doLayout.</p>
+     */
     public void doLayout() {
         if (this.selected.isEmpty()) {
             new LayoutUtil.FruchtermanReingoldLayout(this.graph).doLayout();

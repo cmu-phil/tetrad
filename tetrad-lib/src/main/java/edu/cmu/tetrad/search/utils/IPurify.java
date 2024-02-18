@@ -30,10 +30,22 @@ import java.util.List;
  * Provides an interface for Purify algorithm.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface IPurify {
+    /**
+     * <p>purify.</p>
+     *
+     * @param partition a {@link java.util.List} object
+     * @return a {@link java.util.List} object
+     */
     List<List<Node>> purify(List<List<Node>> partition);
 
+    /**
+     * <p>setTrueGraph.</p>
+     *
+     * @param mim a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     void setTrueGraph(Graph mim);
 }
 

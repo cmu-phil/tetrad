@@ -29,6 +29,7 @@ import java.util.Iterator;
  * to be confused with a combinatorial (taking n values from m possible values).
  *
  * @author Juan Casares
+ * @version $Id: $Id
  */
 public class CombinationIterator implements Iterator {
     private final int[] values;
@@ -49,6 +50,8 @@ public class CombinationIterator implements Iterator {
     }
 
     /**
+     * <p>hasNext.</p>
+     *
      * @return true iff there is still a combination that has not been returned by the next() method.
      */
     public boolean hasNext() {
@@ -56,6 +59,8 @@ public class CombinationIterator implements Iterator {
     }
 
     /**
+     * <p>next.</p>
+     *
      * @return an int[] array with the next combination.
      */
     public int[] next() {
@@ -82,7 +87,7 @@ public class CombinationIterator implements Iterator {
     }
 
     /**
-     *
+     * <p>remove.</p>
      */
     public void remove() {
         throw new UnsupportedOperationException();

@@ -39,14 +39,41 @@ import java.util.Map;
  * Calculates some scores for Bayes nets as a whole.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class EmBayesProperties {
+
+    /**
+     * The data set.
+     */
     private DataSet dataSet;
+
+    /**
+     * The BayesPm.
+     */
     private BayesPm bayesPm;
+
+    /**
+     * The graph.
+     */
     private Graph graph;
+
+    /**
+     * The blank BayesIm.
+     */
     private MlBayesIm blankBayesIm;
+
+    /**
+     * Degrees of freedom for the p-value.
+     */
     private int pValueDf;
+
+    /**
+     * The chi-squared value.
+     */
     private double chisq;
+
+
     private Estimator estimator = (bayesPm, dataSet) -> {
         EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
         this.dataSet = estimator.getMixedDataSet();
@@ -62,6 +89,12 @@ public final class EmBayesProperties {
         }
     };
 
+    /**
+     * <p>Constructor for EmBayesProperties.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param graph   a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public EmBayesProperties(DataSet dataSet, Graph graph) {
         setDataSet(dataSet);
         setGraph(graph);
@@ -70,6 +103,8 @@ public final class EmBayesProperties {
     /**
      * Calculates the BIC (Bayes Information Criterion) score for a BayesPM with respect to a given discrete data set.
      * Following formulas of Andrew Moore, www.cs.cmu.edu/~awm.
+     *
+     * @return a double
      */
     public double getBic() {
         return logProbDataGivenStructure() - parameterPenalty();
@@ -77,6 +112,8 @@ public final class EmBayesProperties {
 
     /**
      * Calculates the p-value of the graph with respect to the given data.
+     *
+     * @return a double
      */
     public double getLikelihoodRatioP() {
         Graph graph1 = getGraph();
@@ -110,22 +147,47 @@ public final class EmBayesProperties {
         return pValue;
     }
 
+    /**
+     * <p>Getter for the field <code>bayesPm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesPm} object
+     */
     public BayesPm getBayesPm() {
         return this.bayesPm;
     }
 
+    /**
+     * <p>Getter for the field <code>pValueDf</code>.</p>
+     *
+     * @return a int
+     */
     public int getPValueDf() {
         return this.pValueDf;
     }
 
+    /**
+     * <p>getPValueChisq.</p>
+     *
+     * @return a double
+     */
     public double getPValueChisq() {
         return this.chisq;
     }
 
+    /**
+     * <p>Getter for the field <code>estimator</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.EmBayesProperties.Estimator} object
+     */
     public Estimator getEstimator() {
         return this.estimator;
     }
 
+    /**
+     * <p>Setter for the field <code>estimator</code>.</p>
+     *
+     * @param estimator a {@link edu.cmu.tetrad.bayes.EmBayesProperties.Estimator} object
+     */
     public void setEstimator(Estimator estimator) {
         this.estimator = estimator;
     }
@@ -185,6 +247,11 @@ public final class EmBayesProperties {
         return this.graph;
     }
 
+    /**
+     * <p>Setter for the field <code>graph</code>.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setGraph(Graph graph) {
         if (graph == null) {
             throw new NullPointerException();
@@ -237,7 +304,18 @@ public final class EmBayesProperties {
         this.dataSet = dataSet;
     }
 
+    /**
+     * Interface for an estimator.
+     */
     public interface Estimator {
+
+        /**
+         * <p>estimate.</p>
+         *
+         * @param bayesPm a {@link edu.cmu.tetrad.bayes.BayesPm} object
+         * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+         * @return a {@link edu.cmu.tetrad.bayes.MlBayesIm} object
+         */
         BayesIm estimate(BayesPm bayesPm, DataSet dataSet);
     }
 

@@ -33,12 +33,19 @@ import java.util.List;
  * Standardizes all columns in a continuous data set.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DataStandardizer extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS==============================//
 
+    /**
+     * <p>Constructor for DataStandardizer.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public DataStandardizer(DataWrapper wrapper, Parameters params) {
         DataModelList inList = wrapper.getDataModelList();
         DataModelList outList = new DataModelList();
@@ -72,6 +79,7 @@ public class DataStandardizer extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

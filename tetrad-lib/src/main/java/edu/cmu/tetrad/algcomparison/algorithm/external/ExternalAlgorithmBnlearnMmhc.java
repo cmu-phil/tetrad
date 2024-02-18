@@ -6,10 +6,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * An API to allow results from external algorithms to be included in a report through the algrorithm comparison tool.
@@ -28,23 +25,46 @@ import java.io.IOException;
  * write.matrix(A, file=name, sep="\t") }
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * External directory.
+     */
     private final String extDir;
+
+    /**
+     * Short description of the algorithm.
+     */
     private final String shortDescription;
 
+    /**
+     * <p>Constructor for ExternalAlgorithmBnlearnMmhc.</p>
+     *
+     * @param extDir a {@link java.lang.String} object
+     */
     public ExternalAlgorithmBnlearnMmhc(String extDir) {
         this.extDir = extDir;
         this.shortDescription = new File(extDir).getName().replace("_", " ");
     }
 
+    /**
+     * <p>Constructor for ExternalAlgorithmBnlearnMmhc.</p>
+     *
+     * @param extDir          a {@link java.lang.String} object
+     * @param shortDecription a {@link java.lang.String} object
+     */
     public ExternalAlgorithmBnlearnMmhc(String extDir, String shortDecription) {
         this.extDir = extDir;
         this.shortDescription = shortDecription;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Reads in the relevant graph from the file (see above) and returns it.
      */
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -96,6 +116,8 @@ public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
@@ -103,6 +125,11 @@ public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
 //        return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         if (this.shortDescription == null) {
             return "Load data from " + this.path + "/" + this.extDir;
@@ -111,18 +138,22 @@ public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);
 
         File file = new File(this.path, "/elapsed/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
-
-//        System.out.println(file.getAbsolutePath());
 
         try {
             BufferedReader r = new BufferedReader(new FileReader(file));

@@ -32,11 +32,14 @@ import java.util.List;
  * Tests the Polynomial class.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TestPolynomial extends TestCase {
 
     /**
      * Standard constructor for JUnit test cases.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public TestPolynomial(String name) {
         super(name);
@@ -45,6 +48,8 @@ public class TestPolynomial extends TestCase {
     /**
      * This method uses reflection to collect up all of the test methods from this class and return them to the test
      * runner.
+     *
+     * @return a {@link junit.framework.Test} object
      */
     public static Test suite() {
 

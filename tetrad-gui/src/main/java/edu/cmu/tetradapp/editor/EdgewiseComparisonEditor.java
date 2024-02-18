@@ -26,26 +26,39 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 
 /**
  * Provides a little display/editor for notes in the session workbench. This may be elaborated in the future to allow
  * marked up text.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class EdgewiseComparisonEditor extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 7921819261142670181L;
 
     /**
      * The model for the note.
      */
     private final EdgewiseComparisonModel comparison;
+
+    /**
+     * The parameters for the comparison.
+     */
     private final Parameters params;
+
+    /**
+     * The text area for the note.
+     */
     private JTextArea area;
 
     /**
      * Constructs the editor given the model
+     *
+     * @param comparison a {@link edu.cmu.tetradapp.model.EdgewiseComparisonModel} object
      */
     public EdgewiseComparisonEditor(EdgewiseComparisonModel comparison) {
         this.comparison = comparison;

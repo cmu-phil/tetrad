@@ -24,10 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
@@ -53,27 +50,65 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author peterspirtes
  * @author erichkummerfeld
  * @author josephramsey
+ * @version $Id: $Id
  * @see Ftfc
  * @see Bpc
  */
 public class Fofc {
 
+    /**
+     * The type of test used.
+     */
     private final CorrelationMatrix corr;
-    // The list of all variables.
+    /**
+     * The list of all variables.
+     */
     private final List<Node> variables;
-    // The significance level.
+    /**
+     * The significance level.
+     */
     private final double alpha;
-    // The Delta test. Testing two tetrads simultaneously.
+    /**
+     * The Delta test. Testing two tetrads simultaneously.
+     */
     private final DeltaTetradTest test;
-    // The tetrad test--using Ricardo's. Used only for Wishart.
+    /**
+     * The tetrad test--using Ricardo's. Used only for Wishart.
+     */
     private final TetradTestContinuous test2;
-    // The data.
+    /**
+     * The data.
+     */
     private final transient DataModel dataModel;
+
+    /**
+     * The type of test used.
+     */
     private final BpcTestType testType;
+
+    /**
+     * The type of FOFC algorithm used.
+     */
     private final Algorithm algorithm;
+
+    /**
+     * The clusters that are output by the algorithm from the last call to search().
+     */
     private List<List<Node>> clusters;
+
+    /**
+     * Whether verbose output is desired.
+     */
     private boolean verbose;
+
+    /**
+     * Whether the significance of the cluster should be checked for each cluster.
+     */
     private boolean significanceChecked;
+
+    /**
+     * The type of cluster check should be performed.
+     */
     private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
 
     /**
@@ -175,11 +210,18 @@ public class Fofc {
 
     /**
      * The clusters that are output by the algorithm from the last call to search().
+     *
+     * @return a {@link java.util.List} object
      */
     public List<List<Node>> getClusters() {
         return this.clusters;
     }
 
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbose a boolean
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
@@ -1027,7 +1069,18 @@ public class Fofc {
      * time. GAP (Grow and Pick) grows out all the cluster initially and then just picks from among these. SAG is
      * generally faster; GAP is generally slower but more accurate.
      */
-    public enum Algorithm {SAG, GAP}
+    public enum Algorithm {
+
+        /**
+         * The SAG algorithm.
+         */
+        SAG,
+
+        /**
+         * The GAP algorithm.
+         */
+        GAP
+    }
 }
 
 

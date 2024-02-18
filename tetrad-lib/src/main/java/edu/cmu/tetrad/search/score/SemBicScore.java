@@ -65,6 +65,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.search.Fges
  * @see edu.cmu.tetrad.search.Sp
  * @see edu.cmu.tetrad.search.Grasp
@@ -158,7 +159,10 @@ public class SemBicScore implements Score {
      * @param parents             The indices of the parents.
      * @param covariances         The covariance matrix.
      * @param calculateRowSubsets True if row subsets should be calculated.
+     * @param data                a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param usePseudoInverse    a boolean
      * @return The variance of the residual of the regression of the ith variable on its parents.
+     * @throws org.apache.commons.math3.linear.SingularMatrixException if any.
      */
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances,
                                   boolean calculateRowSubsets, boolean usePseudoInverse)
@@ -303,6 +307,9 @@ public class SemBicScore implements Score {
         this.usePseudoInverse = usePseudoInverse;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         if (this.ruleType == RuleType.NANDY) {
@@ -312,6 +319,14 @@ public class SemBicScore implements Score {
         }
     }
 
+    /**
+     * <p>nandyBic.</p>
+     *
+     * @param x a int
+     * @param y a int
+     * @param z an array of {@link int} objects
+     * @return a double
+     */
     public double nandyBic(int x, int y, int[] z) {
         double sp1 = getStructurePrior(z.length + 1);
         double sp2 = getStructurePrior(z.length);
@@ -438,10 +453,9 @@ public class SemBicScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true if the given bump is an effect edge.
-     *
-     * @param bump The bump.
-     * @return True if the given bump is an effect edge.
      */
     @Override
     public boolean isEffectEdge(double bump) {
@@ -476,9 +490,9 @@ public class SemBicScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variables of the covariance matrix.
-     *
-     * @return The variables of the covariance matrix.
      */
     @Override
     public List<Node> getVariables() {
@@ -499,9 +513,9 @@ public class SemBicScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the maximum degree of the score.
-     *
-     * @return The maximum degree of the score.
      */
     @Override
     public int getMaxDegree() {
@@ -509,11 +523,9 @@ public class SemBicScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true is the variables in z determine the variable y.
-     *
-     * @param z The set of nodes.
-     * @param y The node.
-     * @return True is the variables in z determine the variable y.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {
@@ -707,8 +719,22 @@ public class SemBicScore implements Score {
     /**
      * Gives two options for calculating the BIC score, one describe by Chickering and the other due to Nandy et al.
      */
-    public enum RuleType {CHICKERING, NANDY}
+    public enum RuleType {
 
+        /**
+         * The standard linear, Gaussian BIC score.
+         */
+        CHICKERING,
+
+        /**
+         * The formulation of the standard BIC score given in Nandy et al.
+         */
+        NANDY
+    }
+
+    /**
+     * A record for the covariance matrix and the regression coefficients.
+     */
     public record CovAndCoefs(Matrix cov, Matrix b) {
     }
 }

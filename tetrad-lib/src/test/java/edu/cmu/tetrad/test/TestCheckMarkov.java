@@ -5,12 +5,16 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.Kci;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import org.junit.Test;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -81,5 +85,29 @@ public class TestCheckMarkov {
         System.out.println("Alpha = " + alpha + " % Dependent = " +
                 NumberFormatUtil.getInstance().getNumberFormat().format(
                         1d - numIndep / (double) total));
+    }
+
+    /**
+     * Test of getMarkovCheckRecordString method, of class MarkovCheck.
+     */
+    @Test
+    public void test2() {
+        Graph dag = RandomGraph.randomDag(10, 0, 10, 100, 100,
+                100, false);
+        SemPm pm = new SemPm(dag);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(500, false);
+
+        SemBicScore score = new SemBicScore(data, true);
+
+        PermutationSearch search = new PermutationSearch(new Boss(score));
+        Graph cpdag = search.search();
+
+        IndependenceTest test = new IndTestFisherZ(data, 0.05);
+
+        MarkovCheck markovCheck = new MarkovCheck(cpdag, test, ConditioningSetType.LOCAL_MARKOV);
+        markovCheck.setPercentResample(0.7);
+
+        System.out.println(markovCheck.getMarkovCheckRecordString());
     }
 }

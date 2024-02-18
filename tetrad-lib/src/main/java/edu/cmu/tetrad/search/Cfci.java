@@ -41,6 +41,7 @@ import java.util.*;
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fci
  * @see Cpc
  * @see #getAmbiguousTriples()
@@ -404,6 +405,8 @@ public final class Cfci implements IGraphSearch {
 
     /**
      * Whether verbose output (about independencies) is output.
+     *
+     * @return True iff verbose output (about independencies) is output.
      */
     public boolean isVerbose() {
         return this.verbose;

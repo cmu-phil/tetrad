@@ -47,6 +47,7 @@ import static java.util.Collections.shuffle;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fges
  * @see Boss
  * @see Sp
@@ -454,7 +455,9 @@ public class Grasp {
             }
 
             for (Node x : parents) {
-                if (Thread.currentThread().isInterrupted()) return;
+                if (Thread.currentThread().isInterrupted())  {
+                    return;
+                }
 
                 boolean covered = scorer.coveredEdge(x, y);
                 boolean singular = true;
@@ -528,6 +531,11 @@ public class Grasp {
         }
     }
 
+    /**
+     * <p>Setter for the field <code>seed</code>.</p>
+     *
+     * @param seed a long
+     */
     public void setSeed(long seed) {
         this.seed = seed;
     }

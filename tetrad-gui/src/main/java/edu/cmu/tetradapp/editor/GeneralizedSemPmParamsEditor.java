@@ -64,6 +64,9 @@ class GeneralizedSemPmParamsEditor extends JPanel {
 
     /**
      * Constructs a SemPm graphical editor for the given SemIm.
+     *
+     * @param semPm           a {@link edu.cmu.tetrad.sem.GeneralizedSemPm} object
+     * @param launchedEditors a {@link java.util.Map} object
      */
     public GeneralizedSemPmParamsEditor(GeneralizedSemPm semPm, Map<Object, EditorWindow> launchedEditors) {
         this.semPm = semPm;
@@ -85,6 +88,9 @@ class GeneralizedSemPmParamsEditor extends JPanel {
         return this.formulasBox;
     }
 
+    /**
+     * <p>refreshLabels.</p>
+     */
     public void refreshLabels() {
         this.formulasBox.removeAll();
 

@@ -42,6 +42,7 @@ import java.util.Set;
  *
  * @author Frank Wimberly
  * @author Robert Tillman (changes since 5-12-2008)
+ * @version $Id: $Id
  */
 public final class FactoredBayesStructuralEM {
 
@@ -61,11 +62,32 @@ public final class FactoredBayesStructuralEM {
     // *
     // * <p>The iterate and iterate1 methods have been replaced by iterate2.&gt; 0
 
+    /**
+     * The BayesPm that is used to initialize the iterative procedure.
+     */
     private final BayesPm bayesPmM0;
+
+    /**
+     * The data set that the iterative procedure is based on.
+     */
     private final DataSet dataSet;
+
+    /**
+     * The number of categories for each variable in the data set.
+     */
     private final int[] ncategories;
+
+    /**
+     * The tolerance parameter used in Bayes EM estimation.
+     */
     private double tolerance;
 
+    /**
+     * <p>Constructor for FactoredBayesStructuralEM.</p>
+     *
+     * @param dataSet   a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param bayesPmM0 a {@link edu.cmu.tetrad.bayes.BayesPm} object
+     */
     public FactoredBayesStructuralEM(DataSet dataSet,
                                      BayesPm bayesPmM0) {
 
@@ -105,6 +127,9 @@ public final class FactoredBayesStructuralEM {
 
     /**
      * This method allows specification of the tolerance parameter used in Bayes EM estimation.
+     *
+     * @param tolerance a double
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
      */
     public BayesIm maximization(double tolerance) {
         TetradLogger.getInstance().log("details", "FactoredBayesStructuralEM.maximization()");
@@ -156,6 +181,9 @@ public final class FactoredBayesStructuralEM {
      * indicates which variables are latent.
      */
 
+    /**
+     * <p>scoreTest.</p>
+     */
     public void scoreTest() {
         TetradLogger.getInstance().log("details", "scoreTest");
         //System.out.println(bayesPmM0.getGraph());
@@ -249,6 +277,11 @@ public final class FactoredBayesStructuralEM {
 
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }

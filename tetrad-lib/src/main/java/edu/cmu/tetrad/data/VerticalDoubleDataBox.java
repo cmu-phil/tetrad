@@ -30,6 +30,7 @@ import java.util.List;
  * Stores a 2D array of double data.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class VerticalDoubleDataBox implements DataBox {
     private static final long serialVersionUID = 23L;
@@ -51,6 +52,9 @@ public class VerticalDoubleDataBox implements DataBox {
 
     /**
      * Constructs an 2D double array consisting entirely of missing values (Double.NaN).
+     *
+     * @param rows a int
+     * @param cols a int
      */
     public VerticalDoubleDataBox(int rows, int cols) {
         this.data = new double[cols][rows];
@@ -67,6 +71,8 @@ public class VerticalDoubleDataBox implements DataBox {
 
     /**
      * Constructs a new data box using the given 2D double data array as data.
+     *
+     * @param data an array of {@link double} objects
      */
     public VerticalDoubleDataBox(double[][] data) {
         int length = data[0].length;
@@ -84,6 +90,8 @@ public class VerticalDoubleDataBox implements DataBox {
 
     /**
      * Copies the data from the given data box into this one.
+     *
+     * @param dataBox a {@link edu.cmu.tetrad.data.DataBox} object
      */
     public VerticalDoubleDataBox(DataBox dataBox) {
         this.data = new double[dataBox.numCols()][dataBox.numRows()];
@@ -100,6 +108,8 @@ public class VerticalDoubleDataBox implements DataBox {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.BoxDataSet} object
      */
     public static BoxDataSet serializableInstance() {
         List<Node> vars = new ArrayList<>();
@@ -108,6 +118,8 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     /**
+     * <p>numRows.</p>
+     *
      * @return the number of rows in this data box.
      */
     public int numRows() {
@@ -115,6 +127,8 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     /**
+     * <p>numCols.</p>
+     *
      * @return the number of columns in this data box.
      */
     public int numCols() {
@@ -122,6 +136,8 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the value at the given row/column to the given Number value. The value used is number.doubleValue().
      */
     public void set(int row, int col, Number value) {
@@ -137,12 +153,17 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     /**
-     * @return the Number value at the given row and column. If the value is missing (-99), null, is returned.
+     * {@inheritDoc}
      */
     public Number get(int row, int col) {
         return this.data[col][row];
     }
 
+    /**
+     * <p>getVariableVectors.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[][] getVariableVectors() {
         if (this.numCols == 0 || this.numRows == 0) {
             return new double[0][0];
@@ -152,6 +173,8 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     /**
+     * <p>copy.</p>
+     *
      * @return a copy of this data box.
      */
     public DataBox copy() {
@@ -165,6 +188,8 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     /**
+     * <p>like.</p>
+     *
      * @return a DataBox of type DoubleDataBox, but with the given dimensions.
      */
     public DataBox like() {
@@ -177,6 +202,9 @@ public class VerticalDoubleDataBox implements DataBox {
         return viewSelection(rows, cols);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataBox viewSelection(int[] rows, int[] cols) {
         DataBox _dataBox = new VerticalDoubleDataBox(rows.length, cols.length);

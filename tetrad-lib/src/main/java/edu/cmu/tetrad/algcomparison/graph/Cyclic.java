@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.graph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,10 +11,15 @@ import java.util.List;
  * Returns a cyclic graph build up from small cyclic graph components.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Cyclic implements RandomGraph {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph createGraph(Parameters parameters) {
         return edu.cmu.tetrad.graph.RandomGraph.randomCyclicGraph3(parameters.getInt("numMeasures"),
@@ -22,11 +28,17 @@ public class Cyclic implements RandomGraph {
                 parameters.getInt("probTwoCycle"));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Cyclic graph built from small cyclic components";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> paramDescriptions = new ArrayList<>();

@@ -31,6 +31,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -38,10 +39,15 @@ import java.util.List;
  *
  * @author Ricardo Silva
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemOptimizerPowell implements SemOptimizer {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The number of restarts.
+     */
     private int numRestarts;
 
     /**
@@ -52,12 +58,17 @@ public class SemOptimizerPowell implements SemOptimizer {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemOptimizerPowell} object
      */
     public static SemOptimizerPowell serializableInstance() {
         return new SemOptimizerPowell();
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     public void optimize(SemIm semIm) {
         double min = Double.POSITIVE_INFINITY;
         double[] point = null;
@@ -104,6 +115,11 @@ public class SemOptimizerPowell implements SemOptimizer {
         System.arraycopy(point, 0, semIm.getFreeParamValues(), 0, point.length);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Sem Optimizer PAL Powell";
     }
@@ -112,11 +128,17 @@ public class SemOptimizerPowell implements SemOptimizer {
         return new FittingFunction(sem);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;

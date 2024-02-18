@@ -19,11 +19,23 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * <p>DataTransforms class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class DataTransforms {
 
 
     /**
      * Log or unlog data
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param a       a double
+     * @param isUnlog a boolean
+     * @param base    a int
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet logData(DataSet dataSet, double a, boolean isUnlog, int base) {
         Matrix data = dataSet.getDoubleData();
@@ -61,6 +73,12 @@ public class DataTransforms {
         return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
     }
 
+    /**
+     * <p>standardizeData.</p>
+     *
+     * @param dataSets a {@link java.util.List} object
+     * @return a {@link java.util.List} object
+     */
     public static List<DataSet> standardizeData(List<DataSet> dataSets) {
         List<DataSet> outList = new ArrayList<>();
 
@@ -78,12 +96,24 @@ public class DataTransforms {
         return outList;
     }
 
+    /**
+     * <p>standardizeData.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet standardizeData(DataSet dataSet) {
         List<DataSet> dataSets = Collections.singletonList(dataSet);
         List<DataSet> outList = standardizeData(dataSets);
         return outList.get(0);
     }
 
+    /**
+     * <p>center.</p>
+     *
+     * @param dataList a {@link java.util.List} object
+     * @return a {@link java.util.List} object
+     */
     public static List<DataSet> center(List<DataSet> dataList) {
         List<DataSet> dataSets = new ArrayList<>(dataList);
         List<DataSet> outList = new ArrayList<>();
@@ -108,6 +138,14 @@ public class DataTransforms {
         return outList;
     }
 
+    /**
+     * <p>discretize.</p>
+     *
+     * @param dataSet         a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param numCategories   a int
+     * @param variablesCopied a boolean
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet discretize(DataSet dataSet, int numCategories, boolean variablesCopied) {
         Discretizer discretizer = new Discretizer(dataSet);
         discretizer.setVariablesCopied(variablesCopied);
@@ -121,6 +159,13 @@ public class DataTransforms {
         return discretizer.discretize();
     }
 
+    /**
+     * <p>convertNumericalDiscreteToContinuous.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     * @throws java.lang.NumberFormatException if any.
+     */
     public static DataSet convertNumericalDiscreteToContinuous(
             DataSet dataSet) throws NumberFormatException {
         List<Node> variables = new ArrayList<>();
@@ -180,6 +225,13 @@ public class DataTransforms {
         return continuousData;
     }
 
+    /**
+     * <p>concatenate.</p>
+     *
+     * @param dataSet1 a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dataSet2 a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet concatenate(DataSet dataSet1, DataSet dataSet2) {
         List<Node> vars1 = dataSet1.getVariables();
         List<Node> vars2 = dataSet2.getVariables();
@@ -208,6 +260,12 @@ public class DataTransforms {
         return new BoxDataSet(new VerticalDoubleDataBox(concatMatrix.transpose().toArray()), vars1);
     }
 
+    /**
+     * <p>concatenate.</p>
+     *
+     * @param dataSets a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet concatenate(DataSet... dataSets) {
         List<DataSet> _dataSets = new ArrayList<>();
 
@@ -217,6 +275,13 @@ public class DataTransforms {
     }
 
     // Trying to optimize some.
+
+    /**
+     * <p>concatenate.</p>
+     *
+     * @param dataSets a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet concatenate(List<DataSet> dataSets) {
         int totalSampleSize = 0;
 
@@ -245,6 +310,12 @@ public class DataTransforms {
         return new BoxDataSet(new VerticalDoubleDataBox(allData.transpose().toArray()), dataSets.get(0).getVariables());
     }
 
+    /**
+     * <p>restrictToMeasured.</p>
+     *
+     * @param fullDataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet restrictToMeasured(DataSet fullDataSet) {
         List<Node> measuredVars = new ArrayList<>();
         List<Node> latentVars = new ArrayList<>();
@@ -261,6 +332,10 @@ public class DataTransforms {
     }
 
     /**
+     * <p>getResamplingDataset.</p>
+     *
+     * @param data       a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param sampleSize a int
      * @return a sample without replacement with the given sample size from the given dataset.
      */
     public static DataSet getResamplingDataset(DataSet data, int sampleSize) {
@@ -342,6 +417,10 @@ public class DataTransforms {
     }
 
     /**
+     * <p>getBootstrapSample.</p>
+     *
+     * @param data       a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param sampleSize a int
      * @return a sample with replacement with the given sample size from the given dataset.
      */
     public static DataSet getBootstrapSample(DataSet data, int sampleSize) {
@@ -390,6 +469,13 @@ public class DataTransforms {
         return boxDataSet;
     }
 
+    /**
+     * <p>split.</p>
+     *
+     * @param data        a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param percentTest a double
+     * @return a {@link java.util.List} object
+     */
     public static List<DataSet> split(DataSet data, double percentTest) {
         if (percentTest <= 0 || percentTest >= 1) throw new IllegalArgumentException();
 
@@ -438,6 +524,9 @@ public class DataTransforms {
 
     /**
      * Subtracts the mean of each column from each datum that column.
+     *
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet center(DataSet data) {
         DataSet _data = data.copy();
@@ -465,6 +554,12 @@ public class DataTransforms {
         return _data;
     }
 
+    /**
+     * <p>shuffleColumns.</p>
+     *
+     * @param dataModel a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet shuffleColumns(DataSet dataModel) {
         String name = dataModel.getName();
         int numVariables = dataModel.getNumColumns();
@@ -484,6 +579,12 @@ public class DataTransforms {
         return dataSet;
     }
 
+    /**
+     * <p>shuffleColumns2.</p>
+     *
+     * @param dataSets a {@link java.util.List} object
+     * @return a {@link java.util.List} object
+     */
     public static List<DataSet> shuffleColumns2(List<DataSet> dataSets) {
         List<Node> vars = new ArrayList<>();
 
@@ -509,6 +610,12 @@ public class DataTransforms {
         return ret;
     }
 
+    /**
+     * <p>covarianceNonparanormalDrton.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     public static ICovarianceMatrix covarianceNonparanormalDrton(DataSet dataSet) {
         CovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
         Matrix data = dataSet.getDoubleData();
@@ -569,6 +676,12 @@ public class DataTransforms {
         return covMatrix;
     }
 
+    /**
+     * <p>getNonparanormalTransformed.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet getNonparanormalTransformed(DataSet dataSet) {
         try {
             Matrix data = dataSet.getDoubleData();
@@ -650,6 +763,12 @@ public class DataTransforms {
         }
     }
 
+    /**
+     * <p>removeConstantColumns.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet removeConstantColumns(DataSet dataSet) {
         int columns = dataSet.getNumColumns();
         int rows = dataSet.getNumRows();
@@ -689,6 +808,12 @@ public class DataTransforms {
         return dataSet.subsetColumns(newCols);
     }
 
+    /**
+     * <p>getConstantColumns.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link java.util.List} object
+     */
     public static List<Node> getConstantColumns(DataSet dataSet) {
         List<Node> constantColumns = new ArrayList<>();
         int rows = dataSet.getNumRows();
@@ -713,6 +838,13 @@ public class DataTransforms {
         return constantColumns;
     }
 
+    /**
+     * <p>removeRandomColumns.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param aDouble a double
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet removeRandomColumns(DataSet dataSet, double aDouble) {
         int columns = dataSet.getNumColumns();
         int rows = dataSet.getNumRows();
@@ -734,6 +866,12 @@ public class DataTransforms {
         return dataSet.subsetColumns(newCols);
     }
 
+    /**
+     * <p>standardizeData.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public static Matrix standardizeData(Matrix data) {
         Matrix data2 = data.copy();
 
@@ -767,6 +905,12 @@ public class DataTransforms {
         return data2;
     }
 
+    /**
+     * <p>standardizeData.</p>
+     *
+     * @param data an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] standardizeData(double[] data) {
         double[] data2 = new double[data.length];
 
@@ -797,6 +941,12 @@ public class DataTransforms {
         return data2;
     }
 
+    /**
+     * <p>standardizeData.</p>
+     *
+     * @param data a {@link cern.colt.list.DoubleArrayList} object
+     * @return a {@link cern.colt.list.DoubleArrayList} object
+     */
     public static DoubleArrayList standardizeData(DoubleArrayList data) {
         DoubleArrayList data2 = new DoubleArrayList(data.size());
 
@@ -828,6 +978,12 @@ public class DataTransforms {
         return data2;
     }
 
+    /**
+     * <p>center.</p>
+     *
+     * @param d an array of {@link double} objects
+     * @return an array of {@link double} objects
+     */
     public static double[] center(double[] d) {
         double sum = 0.0;
 
@@ -845,6 +1001,12 @@ public class DataTransforms {
         return d2;
     }
 
+    /**
+     * <p>centerData.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public static Matrix centerData(Matrix data) {
         Matrix data2 = data.copy();
 
@@ -865,6 +1027,12 @@ public class DataTransforms {
         return data2;
     }
 
+    /**
+     * <p>concatenate.</p>
+     *
+     * @param dataSets a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     */
     public static Matrix concatenate(Matrix... dataSets) {
         int totalSampleSize = 0;
 
@@ -893,6 +1061,10 @@ public class DataTransforms {
     }
 
     /**
+     * <p>getBootstrapSample.</p>
+     *
+     * @param data       a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param sampleSize a int
      * @return a sample with replacement with the given sample size from the given dataset.
      */
     public static Matrix getBootstrapSample(Matrix data, int sampleSize) {
@@ -910,6 +1082,13 @@ public class DataTransforms {
         return data.getSelection(rows, cols);
     }
 
+    /**
+     * <p>copyColumn.</p>
+     *
+     * @param node   a {@link edu.cmu.tetrad.graph.Node} object
+     * @param source a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param dest   a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static void copyColumn(Node node, DataSet source, DataSet dest) {
         int sourceColumn = source.getColumn(node);
         int destColumn = dest.getColumn(node);
@@ -983,6 +1162,12 @@ public class DataTransforms {
         return outData;
     }
 
+    /**
+     * <p>replaceMissingWithRandom.</p>
+     *
+     * @param inData a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public static DataSet replaceMissingWithRandom(DataSet inData) {
         DataSet outData;
 

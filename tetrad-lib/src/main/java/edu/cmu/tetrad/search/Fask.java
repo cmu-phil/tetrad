@@ -129,6 +129,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  *
  * @author josephramsey
  * @author rubensanchez
+ * @version $Id: $Id
  * @see Knowledge
  * @see Lofs
  */
@@ -181,6 +182,7 @@ public final class Fask implements IGraphSearch {
      *
      * @param dataSet A continuous dataset over variables V.
      * @param test    An independence test over variables V. (Used for FAS.)
+     * @param score   a {@link edu.cmu.tetrad.search.score.Score} object
      */
     public Fask(DataSet dataSet, Score score, IndependenceTest test) {
         if (dataSet == null) {
@@ -201,6 +203,15 @@ public final class Fask implements IGraphSearch {
     }
 
 
+    /**
+     * <p>faskLeftRightV2.</p>
+     *
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
+     * @param empirical a boolean
+     * @param delta     a double
+     * @return a double
+     */
     public static double faskLeftRightV2(double[] x, double[] y, boolean empirical, double delta) {
         double sx = skewness(x);
         double sy = skewness(y);
@@ -218,6 +229,15 @@ public final class Fask implements IGraphSearch {
         return lr;
     }
 
+    /**
+     * <p>faskLeftRightV1.</p>
+     *
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
+     * @param empirical a boolean
+     * @param delta     a double
+     * @return a double
+     */
     public static double faskLeftRightV1(double[] x, double[] y, boolean empirical, double delta) {
         double left = Fask.cu(x, y, x) / (sqrt(Fask.cu(x, x, x) * Fask.cu(y, y, x)));
         double right = Fask.cu(x, y, y) / (sqrt(Fask.cu(x, x, y) * Fask.cu(y, y, y)));
@@ -237,6 +257,14 @@ public final class Fask implements IGraphSearch {
         return lr;
     }
 
+    /**
+     * <p>robustSkew.</p>
+     *
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
+     * @param empirical a boolean
+     * @return a double
+     */
     public static double robustSkew(double[] x, double[] y, boolean empirical) {
 
         if (empirical) {
@@ -253,6 +281,14 @@ public final class Fask implements IGraphSearch {
         return correlation(x, y) * mean(lr);
     }
 
+    /**
+     * <p>skew.</p>
+     *
+     * @param x         an array of {@link double} objects
+     * @param y         an array of {@link double} objects
+     * @param empirical a boolean
+     * @return a double
+     */
     public static double skew(double[] x, double[] y, boolean empirical) {
 
         if (empirical) {
@@ -269,14 +305,62 @@ public final class Fask implements IGraphSearch {
         return correlation(x, y) * mean(lr);
     }
 
+    /**
+     * <p>g.</p>
+     *
+     * @param x a double
+     * @return a double
+     */
     public static double g(double x) {
         return log(cosh(FastMath.max(x, 0)));
     }
 
+    /**
+     * <p>correctSkewness.</p>
+     *
+     * @param data an array of {@link double} objects
+     * @param sk   a double
+     * @return an array of {@link double} objects
+     */
     public static double[] correctSkewness(double[] data, double sk) {
         double[] data2 = new double[data.length];
         for (int i = 0; i < data.length; i++) data2[i] = data[i] * signum(sk);
         return data2;
+    }
+
+    private static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    // Returns E(XY | Z > 0); Z is typically either X or Y.
+    private static double E(double[] x, double[] y, double[] z) {
+        double exy = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (z[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
+    private static double correxp(double[] x, double[] y, double[] z) {
+        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
     }
 
     /**
@@ -536,6 +620,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
      * @return The depth of search for the Fast Adjacency Search (FAS).
      */
     public int getDepth() {
@@ -543,6 +629,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
      * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1. Unlimited. Making this too
      *              high may result in statistical errors.
      */
@@ -551,6 +639,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>getElapsedTime.</p>
+     *
      * @return The elapsed time in milliseconds.
      */
     public long getElapsedTime() {
@@ -558,6 +648,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the current knowledge.
      */
     public Knowledge getKnowledge() {
@@ -565,6 +657,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
      * @param knowledge Knowledge of forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -673,43 +767,6 @@ public final class Fask implements IGraphSearch {
         }
 
         throw new IllegalStateException("Left right rule not configured: " + this.leftRight);
-    }
-
-
-    private static double cu(double[] x, double[] y, double[] condition) {
-        double exy = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-    // Returns E(XY | Z > 0); Z is typically either X or Y.
-    private static double E(double[] x, double[] y, double[] z) {
-        double exy = 0.0;
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (z[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-
-    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
-    private static double correxp(double[] x, double[] y, double[] z) {
-        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
     }
 
     private double tanh(double[] x, double[] y, boolean empirical) {
@@ -856,6 +913,11 @@ public final class Fask implements IGraphSearch {
         );
     }
 
+    /**
+     * <p>Setter for the field <code>seed</code>.</p>
+     *
+     * @param seed a long
+     */
     public void setSeed(long seed) {
         this.seed = seed;
     }
@@ -866,12 +928,68 @@ public final class Fask implements IGraphSearch {
      * paper, "empirical" versions were given in which the variables are multiplied through by the signs of the
      * skewnesses; we follow this advice here (with good results). These others are provided for those who prefer them.
      */
-    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
+    public enum LeftRight {
+        /**
+         * The original FASK left-right rule.
+         */
+        FASK1,
+
+        /**
+         * The modified FASK left-right rule.
+         */
+        FASK2,
+
+        /**
+         * The robust skew rule from the Hyvarinen and Smith paper.
+         */
+        RSKEW,
+
+        /**
+         * The skew rule from the Hyvarinen and Smith paper.
+         */
+        SKEW,
+
+        /**
+         * The tanh rule from the Hyvarinen and Smith paper.
+         */
+        TANH
+    }
 
     /**
      * Enumerates the alternatives to use for finding the initial adjacencies for FASK.
      */
-    public enum AdjacencyMethod {FAS_STABLE, FGES, BOSS, GRASP, EXTERNAL_GRAPH, NONE}
+    public enum AdjacencyMethod {
+
+        /**
+         * Fast Adjacency Search (FAS) with the stable option.
+         */
+        FAS_STABLE,
+
+        /**
+         * FGES with the BIC score.
+         */
+        FGES,
+
+        /**
+         * A permutation search with the BOSS algorithm.
+         */
+        BOSS,
+
+        /**
+         * A permutation search with the GRASP algorithm.
+         */
+        GRASP,
+
+        /**
+         * Use an external graph.
+         */
+        EXTERNAL_GRAPH,
+
+        /**
+         * No initial adjacencies.
+         */
+        NONE
+    }
 }
 
 

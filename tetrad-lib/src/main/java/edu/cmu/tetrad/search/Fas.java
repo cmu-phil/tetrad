@@ -57,6 +57,7 @@ import java.util.*;
  * @author peterspirtes
  * @author clarkglymour
  * @author josephramsey.
+ * @version $Id: $Id
  * @see Pc
  * @see Fci
  * @see Knowledge
@@ -96,9 +97,9 @@ public class Fas implements IFas {
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Runs the search and returns the resulting (undirected) graph.
-     *
-     * @return This graph.
      */
     @Override
     public Graph search() {
@@ -231,10 +232,10 @@ public class Fas implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the depth of the search, which is the maximum number of variables that ben be conditioned on in any
      * conditional independence test.
-     *
-     * @param depth This maximum.
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -246,9 +247,10 @@ public class Fas implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the knowledge to be used in the search.
      *
-     * @param knowledge This knowledge.
      * @see Knowledge
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -275,9 +277,9 @@ public class Fas implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether verbose output should be printed.
-     *
-     * @param verbose True iff the case.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -293,9 +295,9 @@ public class Fas implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the nodes from the test.
-     *
-     * @return These nodes.
      */
     @Override
     public List<Node> getNodes() {
@@ -303,10 +305,9 @@ public class Fas implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * There are no ambiguous triples for this search, for any nodes.
-     *
-     * @param node The nodes in question.
-     * @return An empty list.
      */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
@@ -314,7 +315,7 @@ public class Fas implements IFas {
     }
 
     /**
-     * @param out This print stream.
+     * {@inheritDoc}
      */
     @Override
     public void setOut(PrintStream out) {
@@ -322,6 +323,8 @@ public class Fas implements IFas {
     }
 
     /**
+     * <p>setPcHeuristicType.</p>
+     *
      * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search). Default is
      *                    PcHeuristicType.NONE.
      * @see PcCommon.PcHeuristicType

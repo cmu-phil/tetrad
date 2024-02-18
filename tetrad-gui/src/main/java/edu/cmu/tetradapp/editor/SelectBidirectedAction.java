@@ -37,6 +37,7 @@ import java.awt.event.ActionEvent;
  * Highlights all bidirected edges in the given display graph.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SelectBidirectedAction extends AbstractAction implements ClipboardOwner {
 
@@ -61,9 +62,9 @@ public class SelectBidirectedAction extends AbstractAction implements ClipboardO
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Highlights all bidirected edges in the given display graph.
-     *
-     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();
@@ -79,6 +80,8 @@ public class SelectBidirectedAction extends AbstractAction implements ClipboardO
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

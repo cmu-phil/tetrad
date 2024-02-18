@@ -52,6 +52,8 @@ final class TetradMenuBar extends JMenuBar {
 
     /**
      * Creates the main menubar for Tetrad.
+     *
+     * @param desktop a {@link edu.cmu.tetradapp.app.TetradDesktop} object
      */
     public TetradMenuBar(TetradDesktop desktop) {
         this.desktop = desktop;

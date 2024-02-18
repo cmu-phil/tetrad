@@ -67,6 +67,7 @@ import java.util.*;
  * This class is not configured to respect knowledge of forbidden and required edges.
  *
  * @author Ricardo Silva
+ * @version $Id: $Id
  * @see Fofc
  * @see Ftfc
  */

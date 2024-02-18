@@ -32,9 +32,11 @@ import java.util.regex.Pattern;
  * subversion, and "d" is the incremental release number for subversions.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @SuppressWarnings("RedundantIfStatement")
 public class Version implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -151,6 +153,8 @@ public class Version implements TetradSerializable {
     }
 
     /**
+     * <p>currentRepositoryVersion.</p>
+     *
      * @return the model version as stored in project/resources/version. This will be the same as the getModel viewable
      * version when the ejar and task is run. (The file is copied over.)
      */
@@ -173,6 +177,8 @@ public class Version implements TetradSerializable {
     }
 
     /**
+     * <p>currentViewableVersion.</p>
+     *
      * @return the model version as stored in the ejar. To sync this with the version at project/resources/version, run
      * the ejar ant task.
      */
@@ -212,6 +218,8 @@ public class Version implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.util.Version} object
      */
     public static Version serializableInstance() {
         return new Version("1.2.3");
@@ -235,6 +243,11 @@ public class Version implements TetradSerializable {
         return this.incrementalRelease;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         int hashCode = 61;
         hashCode += 61 * this.majorVersion;
@@ -244,16 +257,17 @@ public class Version implements TetradSerializable {
         return hashCode;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
 
-        if (!(o instanceof Version)) {
+        if (!(o instanceof Version other)) {
             return false;
         }
-
-        Version other = (Version) o;
 
         if (!(this.majorVersion == other.majorVersion)) {
             return false;
@@ -275,6 +289,11 @@ public class Version implements TetradSerializable {
     }
 
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return majorVersion() + "." + minorVersion() + "." + minorSubversion()
                 + "-" + incrementalRelease();
@@ -289,6 +308,10 @@ public class Version implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -311,6 +334,11 @@ public class Version implements TetradSerializable {
         }
     }
 
+    /**
+     * <p>nextMajorVersion.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Version} object
+     */
     public Version nextMajorVersion() {
         int majorVersion = this.majorVersion + 1;
         final int minorVersion = 0;
@@ -321,6 +349,11 @@ public class Version implements TetradSerializable {
                 incrementalRelease);
     }
 
+    /**
+     * <p>nextMinorVersion.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Version} object
+     */
     public Version nextMinorVersion() {
         int majorVersion = this.majorVersion;
         int minorVersion = this.minorVersion + 1;
@@ -331,6 +364,11 @@ public class Version implements TetradSerializable {
                 incrementalRelease);
     }
 
+    /**
+     * <p>nextMinorSubversion.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Version} object
+     */
     public Version nextMinorSubversion() {
         int majorVersion = this.majorVersion;
         int minorVersion = this.minorVersion;
@@ -341,6 +379,11 @@ public class Version implements TetradSerializable {
                 incrementalRelease);
     }
 
+    /**
+     * <p>nextIncrementalRelease.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Version} object
+     */
     public Version nextIncrementalRelease() {
         int majorVersion = this.majorVersion;
         int minorVersion = this.minorVersion;

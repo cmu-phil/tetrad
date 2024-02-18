@@ -25,8 +25,12 @@ package edu.cmu.tetrad.data;
  * Returns a data set in which missing values in each column are filled using the mean of that column.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class MeanInterpolator implements DataFilter {
+    /**
+     * {@inheritDoc}
+     */
     public DataSet filter(DataSet dataSet) {
         DataSet newDataSet = dataSet.copy();
 

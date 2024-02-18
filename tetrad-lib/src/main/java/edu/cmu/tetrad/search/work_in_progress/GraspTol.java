@@ -8,11 +8,9 @@ import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.NumberFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
@@ -24,6 +22,7 @@ import static java.lang.Double.NEGATIVE_INFINITY;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraspTol {
     private final List<Node> variables;
@@ -47,28 +46,55 @@ public class GraspTol {
     private int depth = 4;
     private int numStarts = 1;
 
+    /**
+     * <p>Constructor for GraspTol.</p>
+     *
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
+     */
     public GraspTol(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
     }
 
+    /**
+     * <p>Constructor for GraspTol.</p>
+     *
+     * @param test a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     */
     public GraspTol(@NotNull IndependenceTest test) {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
     }
 
+    /**
+     * <p>Constructor for GraspTol.</p>
+     *
+     * @param test  a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
+     */
     public GraspTol(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
     }
 
+    /**
+     * <p>Constructor for GraspTol.</p>
+     *
+     * @param variables a {@link java.util.List} object
+     */
     public GraspTol(List<Node> variables) {
         this.variables = variables;
     }
 
+    /**
+     * <p>bestOrder.</p>
+     *
+     * @param order a {@link java.util.List} object
+     * @return a {@link java.util.List} object
+     */
     public List<Node> bestOrder(@NotNull List<Node> order) {
         long start = MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
@@ -128,6 +154,11 @@ public class GraspTol {
         return bestPerm;
     }
 
+    /**
+     * <p>betterMutation.</p>
+     *
+     * @param scorer a {@link edu.cmu.tetrad.search.utils.TeyssierScorer} object
+     */
     public void betterMutation(@NotNull TeyssierScorer scorer) {
         List<Node> pi = scorer.getPi();
         double s;
@@ -212,6 +243,11 @@ public class GraspTol {
     }
 
 
+    /**
+     * <p>getNumEdges.</p>
+     *
+     * @return a int
+     */
     public int getNumEdges() {
         return this.scorer.getNumEdges();
     }
@@ -236,6 +272,12 @@ public class GraspTol {
         }
     }
 
+    /**
+     * <p>grasp.</p>
+     *
+     * @param scorer a {@link edu.cmu.tetrad.search.utils.TeyssierScorer} object
+     * @return a {@link java.util.List} object
+     */
     public List<Node> grasp(@NotNull TeyssierScorer scorer) {
         scorer.clearBookmarks();
         List<int[]> depths = new ArrayList<>();
@@ -379,6 +421,12 @@ public class GraspTol {
         }
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @param cpDag a boolean
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     @NotNull
     public Graph getGraph(boolean cpDag) {
         if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
@@ -389,42 +437,87 @@ public class GraspTol {
         return graph;
     }
 
+    /**
+     * <p>Setter for the field <code>numStarts</code>.</p>
+     *
+     * @param numStarts a int
+     */
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
     }
 
+    /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbose a boolean
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
         this.test.setVerbose(verbose);
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
+    /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
+     * @param depth a int
+     */
     public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
         this.depth = depth;
     }
 
+    /**
+     * <p>Setter for the field <code>uncoveredDepth</code>.</p>
+     *
+     * @param uncoveredDepth a int
+     */
     public void setUncoveredDepth(int uncoveredDepth) {
         if (this.depth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
         this.uncoveredDepth = uncoveredDepth;
     }
 
+    /**
+     * <p>Setter for the field <code>nonSingularDepth</code>.</p>
+     *
+     * @param nonSingularDepth a int
+     */
     public void setNonSingularDepth(int nonSingularDepth) {
         if (this.depth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
         this.nonSingularDepth = nonSingularDepth;
     }
 
+    /**
+     * <p>Setter for the field <code>useScore</code>.</p>
+     *
+     * @param useScore a boolean
+     */
     public void setUseScore(boolean useScore) {
         this.useScore = useScore;
     }
@@ -443,22 +536,47 @@ public class GraspTol {
         return false;
     }
 
+    /**
+     * <p>Setter for the field <code>ordered</code>.</p>
+     *
+     * @param ordered a boolean
+     */
     public void setOrdered(boolean ordered) {
         this.ordered = ordered;
     }
 
+    /**
+     * <p>setUseRaskuttiUhler.</p>
+     *
+     * @param usePearl a boolean
+     */
     public void setUseRaskuttiUhler(boolean usePearl) {
         this.usePearl = usePearl;
     }
 
+    /**
+     * <p>Setter for the field <code>useDataOrder</code>.</p>
+     *
+     * @param useDataOrder a boolean
+     */
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
     }
 
+    /**
+     * <p>Setter for the field <code>allowRandomnessInsideAlgorithm</code>.</p>
+     *
+     * @param allowRandomnessInsideAlgorithm a boolean
+     */
     public void setAllowRandomnessInsideAlgorithm(boolean allowRandomnessInsideAlgorithm) {
         this.allowRandomnessInsideAlgorithm = allowRandomnessInsideAlgorithm;
     }
 
+    /**
+     * <p>Setter for the field <code>toleranceDepth</code>.</p>
+     *
+     * @param toleranceDepth a int
+     */
     public void setToleranceDepth(int toleranceDepth) {
         this.toleranceDepth = toleranceDepth;
     }

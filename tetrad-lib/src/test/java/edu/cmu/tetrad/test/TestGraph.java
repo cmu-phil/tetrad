@@ -209,7 +209,7 @@ public final class TestGraph {
     }
 
     @Test
-    public void testValidOrder() {
+    public void testLegalCpdag() {
         Graph g1 = GraphUtils.convert("X1---X2,X2---X3,X3---X4,X4---X1");
         assertFalse(g1.paths().isLegalCpdag());
 
@@ -221,7 +221,7 @@ public final class TestGraph {
         Graph g3 = GraphUtils.convert("X1-->X2,X2-->X3,X3-->X4,X4-->X5,X5-->X6,X2---X7,X7-->X8");
         assertFalse(g3.paths().isLegalCpdag());
 
-        Graph g4 = GraphUtils.convert("X1-->X2,Xf2---X3,X3<--X4");
+        Graph g4 = GraphUtils.convert("X1-->X2,X2---X3,X3<--X4");
         assertFalse(g4.paths().isLegalCpdag());
 
         Graph g5 = GraphUtils.convert("X1---X2,X2---X3,X3---X4,X1---X4,X1--X3");

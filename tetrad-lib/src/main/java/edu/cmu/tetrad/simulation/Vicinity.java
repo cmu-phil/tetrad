@@ -16,6 +16,7 @@ import java.util.*;
  *
  * @author josephramsey
  * @author Erich Kummerfeld
+ * @version $Id: $Id
  */
 public class Vicinity {
     //these are value ranges, used to constrain searches at the edges
@@ -38,6 +39,21 @@ public class Vicinity {
     private final Map<List<Integer>, Set<Edge>> Coords1 = new HashMap<>();
     private final Map<List<Integer>, Set<Edge>> Coords2 = new HashMap<>();
 
+    /**
+     * <p>Constructor for Vicinity.</p>
+     *
+     * @param edges       a {@link java.util.List} object
+     * @param locationMap a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param xLow        a int
+     * @param xHigh       a int
+     * @param yLow        a int
+     * @param yHigh       a int
+     * @param zLow        a int
+     * @param zHigh       a int
+     * @param xDist       a double
+     * @param yDist       a double
+     * @param zDist       a double
+     */
     public Vicinity(List<Edge> edges, DataSet locationMap, int xLow, int xHigh, int yLow, int yHigh, int zLow, int zHigh,
                     double xDist, double yDist, double zDist) {
         //EK: the xLow etc. ints are the bounds on the coordinates in the location space, I think
@@ -66,6 +82,14 @@ public class Vicinity {
 
     //chunk basically establishes how quickly the search grows for a nearest edge. It should be small for
     //graphs that are dense in the location space, and large for graphs that are sparse in the location space
+
+    /**
+     * <p>getVicinity.</p>
+     *
+     * @param edge  a {@link edu.cmu.tetrad.graph.Edge} object
+     * @param chunk a int
+     * @return a {@link java.util.List} object
+     */
     public List<Edge> getVicinity(Edge edge, int chunk) {
         //the strategy employed here is to start from the input edge nodes, and expand the search from there
         //the rate of expansion is based on the chunk parameter

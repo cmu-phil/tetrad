@@ -59,6 +59,7 @@ import java.util.Set;
  * @author chrismeek
  * @author clarkglymour
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fci
  * @see Knowledge
  */
@@ -108,15 +109,14 @@ public class Pc implements IGraphSearch {
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Runs PC starting with a complete graph over all nodes of the given conditional independence test, using the given
      * independence test and knowledge and returns the resultant graph. The returned graph will be a CPDAG if the
      * independence information is consistent with the hypothesis that there are no latent common causes. It may,
      * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      *
-     * @return The found CPDAG. In some cases, there may be some errant bidirected edges or cycles, depending on the
-     * settings and whether the faithfulness assumption holds. If the faithfulness assumption holds, bidirected edges
-     * will indicate the existence of latent variables, so a latent variable search like FCI should be run.
      * @see Fci
      */
     @Override

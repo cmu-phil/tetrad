@@ -24,11 +24,9 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.score.DiscreteScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.ScoredGraph;
 import edu.cmu.tetrad.search.utils.DagScorer;
-import edu.cmu.tetrad.search.utils.HasPenaltyDiscount;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
@@ -56,6 +54,7 @@ import java.util.concurrent.*;
  * tiers.
  *
  * @author danielmalinsky
+ * @version $Id: $Id
  * @see Fges
  * @see Knowledge
  * @see SvarFci
@@ -63,20 +62,20 @@ import java.util.concurrent.*;
 public final class SvarFges implements IGraphSearch, DagScorer {
 
     // The number of threads to use.
-    final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
+    final int maxThreads = Runtime.getRuntime().availableProcessors();
     // The logger for this class. The config needs to be set.
     private final TetradLogger logger = TetradLogger.getInstance();
     // The top n graphs found by the algorithm, where n is numCPDAGsToStore.
     private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
     // The static ForkJoinPool instance.
-    private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+    private final ForkJoinPool pool = new ForkJoinPool(maxThreads);
     // The number of graphs searched.
     private final int[] count = new int[1];
+    // The set of removed edges.
+    private final Set<Edge> removedEdges = new HashSet<>();
     // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
     // The ordering doesn't matter; it just has to be transitive.
     private int arrowIndex;
-    // The set of removed edges.
-    private Set<Edge> removedEdges = new HashSet<>();
     // Specification of forbidden and required edges.
     private Knowledge knowledge = new Knowledge();
     // List of variables in the data set, in order.
@@ -123,6 +122,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
      * Construct a Score and pass it in here. The totalScore should return a positive value in case of conditional
      * dependence and a negative values in case of conditional independence. See Chickering (2002), locally consistent
      * scoring criterion.
+     *
+     * @param score a {@link edu.cmu.tetrad.search.score.Score} object
      */
     public SvarFges(Score score) {
         if (score == null) throw new NullPointerException();
@@ -208,12 +209,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
+     *
+     * @param faithfulnessAssumed a boolean
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
         this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the background knowledge.
      */
     public Knowledge getKnowledge() {
@@ -258,6 +263,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>numCPDAGsToStore</code>.</p>
+     *
      * @return the number of patterns to store.
      */
     public int getnumCPDAGsToStore() {
@@ -266,6 +273,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Sets the number of patterns to store. This should be set to zero for fast search.
+     *
+     * @param numCPDAGsToStore a int
      */
     public void setNumCPDAGsToStore(int numCPDAGsToStore) {
         if (numCPDAGsToStore < 0) {
@@ -276,6 +285,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>externalGraph</code>.</p>
+     *
      * @return the initial graph for the search. The search is initialized to this graph and proceeds from there.
      */
     public Graph getExternalGraph() {
@@ -306,6 +317,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Sets whether verbose output should be produced.
+     *
      * @param verbose true if verbose output should be produced.
      */
     public void setVerbose(boolean verbose) {
@@ -313,6 +325,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>out</code>.</p>
+     *
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
@@ -321,6 +335,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
+     *
      * @param out the output stream.
      */
     public void setOut(PrintStream out) {
@@ -328,6 +343,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>Getter for the field <code>adjacencies</code>.</p>
+     *
      * @return the set of preset adjacencies for the algorithm; edges not in this adjacency graph will not be added.
      */
     public Graph getAdjacencies() {
@@ -336,6 +353,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Sets the set of preset adjacencies for the algorithm; edges not in this adjacencies graph will not be added.
+     *
      * @param adjacencies the adjacencies graph.
      */
     public void setAdjacencies(Graph adjacencies) {
@@ -362,6 +380,9 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * <p>getMinChunk.</p>
+     *
+     * @param n a int
      * @return the graph being constructed.
      */
     public int getMinChunk(int n) {
@@ -371,6 +392,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Scores the given DAG, up to a constant.
      */
     public double scoreDag(Graph dag) {
@@ -464,7 +487,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             }
         }
 
-        this.pool.invoke(new InitializeFromEmptyGraphTask());
+        try {
+            this.pool.invoke(new InitializeFromEmptyGraphTask());
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
 
         long stop = MillisecondTimes.timeMillis();
 
@@ -573,7 +605,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             }
         }
 
-        this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        try {
+            this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
     }
 
     private void initializeForwardEdgesFromExistingGraph(List<Node> nodes) {
@@ -664,7 +705,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             }
         }
 
-        this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        try {
+            this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            throw new IllegalStateException("Pool timed out");
+        }
     }
 
     private void fes() {
@@ -920,7 +970,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                     tasks.add(new AdjTask(this.chunk, this.nodes, this.from, this.from + mid));
                     tasks.add(new AdjTask(this.chunk, this.nodes, this.from + mid, this.to));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    invokeAll(tasks);
 
                 }
                 return true;
@@ -928,7 +978,17 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
 
         AdjTask task = new AdjTask(getMinChunk(nodes.size()), new ArrayList<>(nodes), 0, nodes.size());
-        this.pool.invoke(task);
+
+        try {
+            pool.invoke(task);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
+
+        if (!this.pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     // Calculates the new arrows for an a->b edge.
@@ -1055,7 +1115,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                     tasks.add(new BackwardTask(this.r, this.adj, this.chunk, this.from, this.from + mid, this.hashIndices));
                     tasks.add(new BackwardTask(this.r, this.adj, this.chunk, this.from + mid, this.to, this.hashIndices));
 
-                    ForkJoinTask.invokeAll(tasks);
+                    invokeAll(tasks);
 
                 }
                 return true;
@@ -1065,7 +1125,18 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         for (Node r : toProcess) {
             this.neighbors.put(r, getNeighbors(r));
             List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(r));
-            this.pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0, adjacentNodes.size(), this.hashIndices));
+
+            try {
+                this.pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0,
+                        adjacentNodes.size(), this.hashIndices));
+            } catch (Exception e) {
+                Thread.currentThread().interrupt();
+                throw e;
+            }
+
+            if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+                throw new IllegalStateException("Pool timed out");
+            }
         }
     }
 
@@ -1638,6 +1709,12 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return (pairList);
     }
 
+    /**
+     * <p>getNameNoLag.</p>
+     *
+     * @param obj a {@link java.lang.Object} object
+     * @return a {@link java.lang.String} object
+     */
     public String getNameNoLag(Object obj) {
         String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
@@ -1645,6 +1722,12 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         } else return tempS.substring(0, tempS.indexOf(':'));
     }
 
+    /**
+     * <p>addSimilarEdges.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public void addSimilarEdges(Node x, Node y) {
         List<List<Node>> simList = returnSimilarPairs(x, y);
         if (simList.isEmpty()) return;
@@ -1661,6 +1744,12 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
     }
 
+    /**
+     * <p>removeSimilarEdges.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public void removeSimilarEdges(Node x, Node y) {
         List<List<Node>> simList = returnSimilarPairs(x, y);
         if (simList.isEmpty()) return;

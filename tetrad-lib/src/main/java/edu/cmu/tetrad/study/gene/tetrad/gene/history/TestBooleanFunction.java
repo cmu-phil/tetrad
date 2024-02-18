@@ -33,11 +33,14 @@ import java.util.List;
  * Tests the BooleanFunction class.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TestBooleanFunction extends TestCase {
 
     /**
      * Standard constructor for JUnit test cases.
+     *
+     * @param name a {@link java.lang.String} object
      */
     public TestBooleanFunction(String name) {
         super(name);
@@ -46,6 +49,8 @@ public class TestBooleanFunction extends TestCase {
     /**
      * This method uses reflection to collect up all of the test methods from this class and return them to the test
      * runner.
+     *
+     * @return a {@link junit.framework.Test} object
      */
     public static Test suite() {
 
@@ -136,10 +141,10 @@ public class TestBooleanFunction extends TestCase {
         function.setValue(row, false);
 
         // Now see if the values are in the right order.
-        TestCase.assertEquals(true, function.getValue(0));
-        TestCase.assertEquals(false, function.getValue(1));
-        TestCase.assertEquals(false, function.getValue(2));
-        TestCase.assertEquals(false, function.getValue(3));
+        TestCase.assertTrue(function.getValue(0));
+        TestCase.assertFalse(function.getValue(1));
+        TestCase.assertFalse(function.getValue(2));
+        TestCase.assertFalse(function.getValue(3));
     }
 
     /**
@@ -177,7 +182,7 @@ public class TestBooleanFunction extends TestCase {
         function.setValue(6, false);
         function.setValue(7, true);
 
-        TestCase.assertTrue(!(function.isEffective()));
+        TestCase.assertFalse(function.isEffective());
     }
 
     /**
@@ -217,7 +222,7 @@ public class TestBooleanFunction extends TestCase {
         function.setValue(2, true);
         function.setValue(3, false);
 
-        TestCase.assertTrue(!(function.isCanalyzing()));
+        TestCase.assertFalse(function.isCanalyzing());
 
         // The following 3-parent function should fail for y and z but
         // pass for x, thereby passing.
@@ -245,7 +250,7 @@ public class TestBooleanFunction extends TestCase {
         function.setValue(6, false);
         function.setValue(7, true);
 
-        TestCase.assertTrue(!(function.isCanalyzing()));
+        TestCase.assertFalse(function.isCanalyzing());
     }
 }
 

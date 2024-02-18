@@ -40,6 +40,7 @@ import java.util.Map;
  * Lets the user calculate updated probabilities for a SEM.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemUpdaterEditor extends JPanel {
 
@@ -50,14 +51,35 @@ public class SemUpdaterEditor extends JPanel {
      */
     private final SemUpdater semUpdater;
 
+    /**
+     * Maps check boxes to variables.
+     */
     private final Map<JCheckBox, Integer> checkBoxesToVariables = new HashMap<>();
+
+    /**
+     * Maps variables to text fields.
+     */
     private final Map<Integer, DoubleTextField> variablesToTextFields = new HashMap<>();
+
+    /**
+     * The SEM IM editor.
+     */
     private final SemImEditor semImEditor;
+
+    /**
+     * The focus traversal order.
+     */
     private final LinkedList<DoubleTextField> focusTraversalOrder = new LinkedList<>();
+
+    /**
+     * Maps text fields to labels.
+     */
     private final Map<DoubleTextField, Integer> labels = new HashMap<>();
 
     /**
      * Constructs a new instantiated model editor from a SEM Updater.
+     *
+     * @param semUpdater a {@link edu.cmu.tetrad.sem.SemUpdater} object
      */
     public SemUpdaterEditor(SemUpdater semUpdater) {
         if (semUpdater == null) {
@@ -81,6 +103,8 @@ public class SemUpdaterEditor extends JPanel {
 
     /**
      * Constructs a new instantiated model editor from a SEM IM wrapper.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemUpdaterWrapper} object
      */
     public SemUpdaterEditor(SemUpdaterWrapper wrapper) {
         this(wrapper.getSemUpdater());
@@ -264,6 +288,8 @@ public class SemUpdaterEditor extends JPanel {
     //================================PUBLIC METHODS========================//
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this editor.
      */
     @Override

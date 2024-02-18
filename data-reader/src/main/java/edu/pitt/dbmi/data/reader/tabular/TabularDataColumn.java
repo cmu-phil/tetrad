@@ -24,6 +24,7 @@ import edu.pitt.dbmi.data.reader.DataColumn;
  * Dec 29, 2018 12:44:43 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class TabularDataColumn implements DataColumn {
 
@@ -61,9 +62,9 @@ public class TabularDataColumn implements DataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a string representation of the object.
-     *
-     * @return a string representation of the object.
      */
     @Override
     public String toString() {
@@ -71,9 +72,9 @@ public class TabularDataColumn implements DataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Get the name of the column.
-     *
-     * @return the name of the column.
      */
     @Override
     public String getName() {
@@ -81,9 +82,9 @@ public class TabularDataColumn implements DataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Get the column number.
-     *
-     * @return the column number.
      */
     @Override
     public int getColumnNumber() {
@@ -91,9 +92,9 @@ public class TabularDataColumn implements DataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Is the column generated?
-     *
-     * @return true if the column is generated, false otherwise.
      */
     @Override
     public boolean isGenerated() {
@@ -101,9 +102,9 @@ public class TabularDataColumn implements DataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Is the column discrete?
-     *
-     * @return true if the column is discrete, false otherwise.
      */
     @Override
     public boolean isDiscrete() {
@@ -111,9 +112,9 @@ public class TabularDataColumn implements DataColumn {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Set the discrete status of the column.
-     *
-     * @param discrete true if the column is discrete, false otherwise.
      */
     @Override
     public void setDiscrete(boolean discrete) {

@@ -22,7 +22,18 @@
 package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.ideker;
 
 
+/**
+ * <p>LTestPredictorSearch class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class LTestPredictorSearch {
+    /**
+     * <p>main.</p>
+     *
+     * @param argv an array of {@link java.lang.String} objects
+     */
     public static void main(String[] argv) {
 
         final int ngenes = 4;

@@ -35,6 +35,7 @@ import java.text.NumberFormat;
  * Implements a particular simulation for experimental purposes.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LinearSimExp1 {
 
@@ -43,6 +44,11 @@ public class LinearSimExp1 {
      */
     private final MeasurementSimulator simulator;
 
+    /**
+     * <p>Constructor for LinearSimExp1.</p>
+     *
+     * @param stub a {@link java.lang.String} object
+     */
     public LinearSimExp1(String stub) {
         this.simulator = new MeasurementSimulator(new Parameters());
         UpdateFunction function = createFunction();
@@ -66,6 +72,11 @@ public class LinearSimExp1 {
         }
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         new LinearSimExp1(args[0]);
     }

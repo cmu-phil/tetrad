@@ -53,6 +53,9 @@ final class WindowMenuListener implements MenuListener, ActionListener {
     /**
      * Constructs the window menu listener.  Requires to be told which object the window menu is and which object the
      * desktop pane is.
+     *
+     * @param windowMenu a {@link javax.swing.JMenu} object
+     * @param desktop    a {@link edu.cmu.tetradapp.app.TetradDesktop} object
      */
     public WindowMenuListener(JMenu windowMenu, TetradDesktop desktop) {
 
@@ -71,24 +74,26 @@ final class WindowMenuListener implements MenuListener, ActionListener {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Required for the MenuListener interface; unused.
-     *
-     * @param e the menu event.
      */
     public void menuCanceled(MenuEvent e) {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Required for the MenuListener interface; unused.
      */
     public void menuDeselected(MenuEvent e) {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Reacts when the window menu is selected by constructing a menu on the fly consisting of an alphabetized list of
      * sessoin editors. The user can navigate to any session editor by selecting its name from the list.
-     *
-     * @param e the menu event indicating that the window menu has been selected.
      */
     public void menuSelected(MenuEvent e) {
 
@@ -118,10 +123,10 @@ final class WindowMenuListener implements MenuListener, ActionListener {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Reacts to selections of menu items in the window menu by moving their corresponding internal frames to the
      * front.
-     *
-     * @param e the action event indicating which internal frame should be moved to the front.
      */
     public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());
@@ -135,6 +140,8 @@ final class WindowMenuListener implements MenuListener, ActionListener {
 
     /**
      * ???
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return "Some WindowMenuListener.";

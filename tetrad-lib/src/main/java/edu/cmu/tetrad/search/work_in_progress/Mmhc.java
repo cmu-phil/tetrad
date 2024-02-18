@@ -38,6 +38,7 @@ import java.util.Map;
  * Implements the MMHC algorithm.
  *
  * @author josephramsey (this version).
+ * @version $Id: $Id
  */
 public class Mmhc implements IGraphSearch {
 
@@ -54,6 +55,12 @@ public class Mmhc implements IGraphSearch {
 
     //=============================CONSTRUCTORS==========================//
 
+    /**
+     * <p>Constructor for Mmhc.</p>
+     *
+     * @param test    a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public Mmhc(IndependenceTest test, DataSet dataSet) {
         this.depth = -1;
         this.independenceTest = test;
@@ -63,24 +70,46 @@ public class Mmhc implements IGraphSearch {
     //==============================PUBLIC METHODS========================//
 
 
+    /**
+     * <p>Getter for the field <code>independenceTest</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
     }
 
+    /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
+     * @return a int
+     */
     public int getDepth() {
         return this.depth;
     }
 
+    /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
+     * @param depth a int
+     */
     public void setDepth(int depth) {
         this.depth = depth;
     }
 
+    /**
+     * <p>getElapsedTime.</p>
+     *
+     * @return a long
+     */
     public long getElapsedTime() {
         return 0;
     }
 
     /**
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search() {
         List<Node> variables = this.independenceTest.getVariables();
@@ -110,12 +139,22 @@ public class Mmhc implements IGraphSearch {
         return graph;
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 }
 

@@ -34,6 +34,7 @@ import java.util.List;
  * journal of data science and analytics, 6, 3-18.
  *
  * @author Bryan Andrews
+ * @version $Id: $Id
  */
 public class MvpScore implements Score {
     // The mixed variables of the original dataset.
@@ -51,6 +52,7 @@ public class MvpScore implements Score {
      * @param dataSet        The mixed dataset being analyzed.
      * @param structurePrior The structure prior
      * @param fDegree        The f degree.
+     * @param discretize     a boolean
      */
     public MvpScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 
@@ -112,10 +114,10 @@ public class MvpScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * A method for FGES returning a judgment of whether an edge with a given bump counts as a effect edge.
      *
-     * @param bump The bump.
-     * @return True, if so.
      * @see edu.cmu.tetrad.search.Fges
      */
     @Override
@@ -124,9 +126,9 @@ public class MvpScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the list of variables.
-     *
-     * @return This list.
      */
     @Override
     public List<Node> getVariables() {
@@ -134,9 +136,9 @@ public class MvpScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns an estimate of the maximum degree of the graph for some algorithms.
-     *
-     * @return This maximum.
      */
     @Override
     public int getMaxDegree() {
@@ -144,10 +146,9 @@ public class MvpScore implements Score {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a judgment of whether the variable in z determine y exactly.
-     * @param z The set of nodes.
-     * @param y The node.
-     * @return This judgment.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {

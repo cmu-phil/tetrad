@@ -34,9 +34,9 @@ import java.util.List;
  * Estimates maximum likelihood probabilities directly from data on the fly.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class DataSetProbs implements DiscreteProbs {
-    private static final long serialVersionUID = 23L;
 
     /**
      * The data set that this is a cell count table for.
@@ -71,6 +71,8 @@ public final class DataSetProbs implements DiscreteProbs {
 
     /**
      * Creates a cell count table for the given data set.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public DataSetProbs(DataSet dataSet) {
         if (dataSet == null) {
@@ -92,6 +94,9 @@ public final class DataSetProbs implements DiscreteProbs {
     //===========================PUBLIC METHODS=========================//
 
     /**
+     * <p>getCellProb.</p>
+     *
+     * @param variableValues an array of {@link int} objects
      * @return the estimated probability for the given cell. The order of the variable values is the order of the
      * variables in getVariable().
      */
@@ -121,7 +126,7 @@ public final class DataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated probability of the given proposition.
+     * {@inheritDoc}
      */
     public double getProb(Proposition assertion) {
         int[] point = new int[this.dims.length];
@@ -149,7 +154,7 @@ public final class DataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated conditional probability for the given assertion conditional on the given condition.
+     * {@inheritDoc}
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
@@ -201,6 +206,8 @@ public final class DataSetProbs implements DiscreteProbs {
     }
 
     /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
      * @return the dataset that this is estimating probabilities for.
      */
     public DataSet getDataSet() {
@@ -208,6 +215,8 @@ public final class DataSetProbs implements DiscreteProbs {
     }
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the list of variables for the dataset that this is estimating probabilities for.
      */
     public List<Node> getVariables() {

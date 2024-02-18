@@ -27,6 +27,7 @@ import java.awt.*;
  * Holds a pair of points representing a line segment.
  *
  * @author Pucktada Treeratpituk
+ * @version $Id: $Id
  */
 public class PointPair {
 
@@ -64,14 +65,29 @@ public class PointPair {
         this.to = p2;
     }
 
+    /**
+     * <p>Getter for the field <code>from</code>.</p>
+     *
+     * @return a {@link java.awt.Point} object
+     */
     public Point getFrom() {
         return this.from;
     }
 
+    /**
+     * <p>Getter for the field <code>to</code>.</p>
+     *
+     * @return a {@link java.awt.Point} object
+     */
     public Point getTo() {
         return this.to;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "<From " + this.from + " to " + this.to + ">";
     }

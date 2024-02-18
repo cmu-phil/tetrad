@@ -47,6 +47,7 @@ import java.util.Set;
  *
  * @author peterspirtes
  * @author josephramsey.
+ * @version $Id: $Id
  * @see Fasd
  * @see Pc
  * @see Knowledge
@@ -96,6 +97,8 @@ public class Pcd implements IGraphSearch {
 
 
     /**
+     * <p>isMeekPreventCycles.</p>
+     *
      * @return true, iff edges will not be added if they would create cycles.
      */
     public boolean isMeekPreventCycles() {
@@ -103,6 +106,8 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
+     * <p>Setter for the field <code>meekPreventCycles</code>.</p>
+     *
      * @param meekPreventCycles Set to true just in case edges will not be added if they would create cycles.
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
@@ -110,6 +115,8 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>independenceTest</code>.</p>
+     *
      * @return the independence test being used in the search.
      */
     public IndependenceTest getIndependenceTest() {
@@ -117,6 +124,8 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
      * @return the knowledge specification used in the search. Non-null.
      */
     public Knowledge getKnowledge() {
@@ -125,6 +134,8 @@ public class Pcd implements IGraphSearch {
 
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -135,6 +146,8 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>sepsets</code>.</p>
+     *
      * @return the sepset map from the most recent search. Non-null after the first call to <code>search()</code>.
      */
     public SepsetMap getSepsets() {
@@ -142,6 +155,8 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>depth</code>.</p>
+     *
      * @return the current depth of search--that is, the maximum number of conditioning nodes for any conditional
      * independence checked.
      */
@@ -175,6 +190,8 @@ public class Pcd implements IGraphSearch {
      * independence information is consistent with the hypothesis that there are no latent common causes. It may,
      * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
      * of latent common causes, or due to statistical errors in conditional independence judgments.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search() {
         return search(this.independenceTest.getVariables());
@@ -188,6 +205,9 @@ public class Pcd implements IGraphSearch {
      * or due to statistical errors in conditional independence judgments.
      * <p>
      * All the given nodes must be in the domain of the given conditional independence test.
+     *
+     * @param nodes a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
@@ -195,6 +215,13 @@ public class Pcd implements IGraphSearch {
         return search(new Fas(getIndependenceTest()), nodes);
     }
 
+    /**
+     * <p>search.</p>
+     *
+     * @param fas   a {@link edu.cmu.tetrad.search.IFas} object
+     * @param nodes a {@link java.util.List} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph search(IFas fas, List<Node> nodes) {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
@@ -243,6 +270,8 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>elapsedTime</code>.</p>
+     *
      * @return the elapsed time of the search, in milliseconds.
      */
     public long getElapsedTime() {
@@ -250,6 +279,8 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>unshieldedColliders</code>.</p>
+     *
      * @return the set of unshielded colliders in the graph returned by <code>search()</code>. Non-null after
      * <code>search</code> is called.
      */
@@ -258,6 +289,8 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>unshieldedNoncolliders</code>.</p>
+     *
      * @return the set of unshielded noncolliders in the graph returned by <code>search()</code>. Non-null after
      * <code>search</code> is called.
      */
@@ -266,6 +299,8 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
+     * <p>getAdjacencies.</p>
+     *
      * @return the graph returned by <code>search()</code>. Non-null after <code>search</code> is called.
      */
     public Set<Edge> getAdjacencies() {
@@ -273,6 +308,8 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
+     * <p>Getter for the field <code>numIndependenceTests</code>.</p>
+     *
      * @return the number of independence tests performed in the last search.
      */
     public int getNumIndependenceTests() {
@@ -280,6 +317,8 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
+     * <p>getNodes.</p>
+     *
      * @return the list of nodes in the graph returned by <code>search()</code>. Non-null after <code>search</code> is
      * called.
      */

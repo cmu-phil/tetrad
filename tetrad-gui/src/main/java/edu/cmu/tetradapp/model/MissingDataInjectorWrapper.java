@@ -36,6 +36,7 @@ import java.util.Arrays;
  *
  * @author josephramsey
  * @author Frank Wimberly based on similar class by Ramsey
+ * @version $Id: $Id
  */
 public class MissingDataInjectorWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
@@ -47,6 +48,12 @@ public class MissingDataInjectorWrapper extends DataWrapper {
 
     //============================CONSTRUCTORS=============================//
 
+    /**
+     * <p>Constructor for MissingDataInjectorWrapper.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public MissingDataInjectorWrapper(DataWrapper wrapper,
                                       Parameters params) {
         DataSet dataSet =
@@ -70,6 +77,7 @@ public class MissingDataInjectorWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
@@ -78,6 +86,11 @@ public class MissingDataInjectorWrapper extends DataWrapper {
 
     //==========================PUBLIC METHODS============================//
 
+    /**
+     * <p>getOutputDataset.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getOutputDataset() {
         return this.outputDataSet;
     }
@@ -89,6 +102,10 @@ public class MissingDataInjectorWrapper extends DataWrapper {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

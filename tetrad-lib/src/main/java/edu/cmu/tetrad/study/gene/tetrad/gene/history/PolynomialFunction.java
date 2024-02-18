@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.dist.Normal;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 
 /**
@@ -33,21 +34,19 @@ import java.util.ArrayList;
  * where P is a polynomial function and ei is a random noise term.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class PolynomialFunction implements UpdateFunction {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The "snapshot" indexed connectivity of the initial lag graph.
-     *
-     * @serial
      */
     private final IndexedLagGraph connectivity;
 
     /**
      * The polynomials of each factor given its parents.
-     *
-     * @serial
      */
     private final Polynomial[] polynomials;
 
@@ -62,6 +61,8 @@ public class PolynomialFunction implements UpdateFunction {
 
     /**
      * Constructs a polyomial function where each factor is given a zero polynomial.
+     *
+     * @param lagGraph a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.LagGraph} object
      */
     public PolynomialFunction(LagGraph lagGraph) {
 
@@ -90,6 +91,8 @@ public class PolynomialFunction implements UpdateFunction {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.PolynomialFunction} object
      */
     public static PolynomialFunction serializableInstance() {
         return new PolynomialFunction(BasicLagGraph.serializableInstance());
@@ -99,6 +102,10 @@ public class PolynomialFunction implements UpdateFunction {
 
     /**
      * Returns the value of the function.
+     *
+     * @param factorIndex a int
+     * @param history     an array of {@link double} objects
+     * @return a double
      */
     public double getValue(int factorIndex, double[][] history) {
 
@@ -114,6 +121,8 @@ public class PolynomialFunction implements UpdateFunction {
 
     /**
      * Returns the indexed connectivity.
+     *
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.IndexedLagGraph} object
      */
     public IndexedLagGraph getIndexedLagGraph() {
         return this.connectivity;
@@ -122,8 +131,8 @@ public class PolynomialFunction implements UpdateFunction {
     /**
      * Method setIntenalNoiseModel
      *
-     * @param factor
-     * @param distribution
+     * @param factor       a int
+     * @param distribution a {@link edu.cmu.tetrad.util.dist.Distribution} object
      */
     public void setErrorDistribution(int factor, Distribution distribution) {
         if (distribution != null) {
@@ -145,6 +154,9 @@ public class PolynomialFunction implements UpdateFunction {
 
     /**
      * Sets the polynomial for the given factor.
+     *
+     * @param factor     a int
+     * @param polynomial a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.Polynomial} object
      */
     public void setPolynomial(int factor, Polynomial polynomial) {
 
@@ -157,6 +169,9 @@ public class PolynomialFunction implements UpdateFunction {
 
     /**
      * Returns the polynomial for the given factor.
+     *
+     * @param factor a int
+     * @return a {@link edu.cmu.tetrad.study.gene.tetrad.gene.history.Polynomial} object
      */
     public Polynomial getPolynomial(int factor) {
         return this.polynomials[factor];
@@ -164,6 +179,8 @@ public class PolynomialFunction implements UpdateFunction {
 
     /**
      * Returns the number of factors in the history. This is used to set up the initial history array.
+     *
+     * @return a int
      */
     public int getNumFactors() {
         return this.connectivity.getNumFactors();
@@ -171,6 +188,8 @@ public class PolynomialFunction implements UpdateFunction {
 
     /**
      * Returns the max lag of the history. This is used to set up the initial history array.
+     *
+     * @return a int
      */
     public int getMaxLag() {
         int maxLag = 0;
@@ -192,7 +211,12 @@ public class PolynomialFunction implements UpdateFunction {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream from which this object is being deserialized.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

@@ -2,7 +2,10 @@ package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesData;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
@@ -13,6 +16,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,20 +24,49 @@ import java.util.List;
  * Linear Fisher Model.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LinearFisherModel implements Simulation, TakesData {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The random graph.
+     */
     private final RandomGraph randomGraph;
+
+    /**
+     * The shocks.
+     */
     private final List<DataModel> shocks;
+
+    /**
+     * The data sets.
+     */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * The graphs.
+     */
     private List<Graph> graphs = new ArrayList<>();
 
+    /**
+     * <p>Constructor for LinearFisherModel.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     */
     public LinearFisherModel(RandomGraph graph) {
         this.randomGraph = graph;
         this.shocks = null;
     }
 
+    /**
+     * <p>Constructor for LinearFisherModel.</p>
+     *
+     * @param graph  a {@link edu.cmu.tetrad.algcomparison.graph.RandomGraph} object
+     * @param shocks a {@link java.util.List} object
+     */
     public LinearFisherModel(RandomGraph graph, List<DataModel> shocks) {
         this.randomGraph = graph;
         this.shocks = shocks;
@@ -55,6 +88,9 @@ public class LinearFisherModel implements Simulation, TakesData {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createData(Parameters parameters, boolean newModel) {
 //        if (parameters.getLong(Params.SEED) != -1L) {
@@ -157,21 +193,33 @@ public class LinearFisherModel implements Simulation, TakesData {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel getDataModel(int index) {
         return this.dataSets.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getTrueGraph(int index) {
         return this.graphs.get(index);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Linear Fisher model simulation";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>(this.randomGraph.getParameters());
@@ -207,11 +255,17 @@ public class LinearFisherModel implements Simulation, TakesData {
         return parameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumDataModels() {
         return this.dataSets.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;

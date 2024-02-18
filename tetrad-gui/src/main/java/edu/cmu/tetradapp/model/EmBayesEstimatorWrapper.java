@@ -40,30 +40,36 @@ import java.io.Serial;
  *
  * @author josephramsey
  * @author Frank Wimberly adapted for EM Bayes estimator and structural EM Bayes estimator
+ * @version $Id: $Id
  */
 public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Can be null.
+     * The name of the model.
      */
     private String name;
 
     /**
-     * @serial Cannot be null.
+     * The data model.
      */
     private DataSet dataSet;
 
     /**
      * Contains the estimated BayesIm, or null if it hasn't been estimated yet.
-     *
-     * @serial Can be null.
      */
     private BayesIm estimateBayesIm;
 
     //============================CONSTRUCTORS==========================//
 
+    /**
+     * <p>Constructor for EmBayesEstimatorWrapper.</p>
+     *
+     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
                                    BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
@@ -100,6 +106,7 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
@@ -108,6 +115,11 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
 
     //================================PUBLIC METHODS======================//
 
+    /**
+     * <p>Getter for the field <code>estimateBayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getEstimateBayesIm() {
         return this.estimateBayesIm;
     }
@@ -124,10 +136,27 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
 
+    /**
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
+     */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -137,14 +166,27 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         }
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.estimateBayesIm.getBayesPm().getDag();
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Pools together a set of independence tests using a specified method.
  *
  * @author Robert Tillman
+ * @version $Id: $Id
  */
 public final class IndTestMulti implements IndependenceTest {
 
@@ -74,20 +75,21 @@ public final class IndTestMulti implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Method not implemented.
+     * {@inheritDoc}
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
-     * @param x the one variable being compared.
-     * @param y the second variable being compared.
-     * @param z the list of conditioning variables.
-     * @return True iff x _||_ y | z.
-     * @throws RuntimeException if a matrix singularity is encountered.
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (facts.containsKey(new IndependenceFact(x, y, z))) {
@@ -110,16 +112,23 @@ public final class IndTestMulti implements IndependenceTest {
 
     /**
      * Gets the getModel significance level.
+     *
+     * @return a double
      */
     public double getAlpha() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
     /**
+     * <p>Getter for the field <code>variables</code>.</p>
+     *
      * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
@@ -128,13 +137,16 @@ public final class IndTestMulti implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Method not implemented.
+     * {@inheritDoc}
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
     /**
+     * <p>getData.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      * @throws javax.help.UnsupportedOperationException Method not implemented.
      */
     public DataSet getData() {
@@ -142,6 +154,8 @@ public final class IndTestMulti implements IndependenceTest {
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of this test.
      */
     public String toString() {
@@ -149,9 +163,9 @@ public final class IndTestMulti implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true if the test prints verbose output.
-     *
-     * @return True if the case.
      */
     @Override
     public boolean isVerbose() {
@@ -159,9 +173,9 @@ public final class IndTestMulti implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether this test will print verbose output.
-     *
-     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

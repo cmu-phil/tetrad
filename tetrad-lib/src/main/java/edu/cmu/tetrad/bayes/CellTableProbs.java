@@ -31,19 +31,28 @@ import java.util.List;
  * Estimates probabilities from data by constructing the entire cell count table for the data.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class CellTableProbs implements DiscreteProbs {
 
-    // The data set that this is a cell count table for.
+    /**
+     * The data set that this is a cell count table for.
+     */
     private final DataSet dataSet;
-    // An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
-    // numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
+    /**
+     * An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
+     * numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
+     */
     private final int[] dims;
-    // A single-dimension array containing all the cells of the table. Must be at least long enough to contain data
-    // for each cell allowed for by the given dimension array--in other words, the length must be greater than or equal
-    // to dims[0] & dims[1] ... * dims[dims.length - 1].
+    /**
+     * A single-dimension array containing all the cells of the table. Must be at least long enough to contain data for
+     * each cell allowed for by the given dimension array--in other words, the length must be greater than or equal to
+     * dims[0] & dims[1] ... * dims[dims.length - 1].
+     */
     private final int[] cells;
-    // The total number of points in the cell count table.
+    /**
+     * The total number of points in the cell count table.
+     */
     private int numPoints;
 
     //============================CONSTRUCTORS===========================//
@@ -115,6 +124,9 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     /**
+     * <p>getCellProb.</p>
+     *
+     * @param variableValues an array of {@link int} objects
      * @return the estimated probability for the given cell. The order of the variable values is the order of the
      * variables in getVariable().
      */
@@ -125,7 +137,7 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated probability of the given proposition.
+     * {@inheritDoc}
      */
     public double getProb(Proposition assertion) {
 
@@ -167,7 +179,7 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated conditional probability for the given assertion conditional on the given condition.
+     * {@inheritDoc}
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
@@ -241,6 +253,8 @@ public final class CellTableProbs implements DiscreteProbs {
     }
 
     /**
+     * <p>Getter for the field <code>dataSet</code>.</p>
+     *
      * @return the dataset that this is estimating probabilities for.
      */
     public DataSet getDataSet() {
@@ -250,6 +264,8 @@ public final class CellTableProbs implements DiscreteProbs {
     //===========================PRIVATE METHODS===========================//
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the list of variables for the dataset that this is estimating probabilities for.
      */
     public List<Node> getVariables() {

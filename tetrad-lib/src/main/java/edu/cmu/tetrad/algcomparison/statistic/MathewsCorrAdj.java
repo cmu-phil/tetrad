@@ -5,28 +5,41 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
+
 /**
  * Calculates the Matthew's correlation coefficient for adjacencies. See this page in Wikipedia:
  * <p>
- * https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
+ * <a href="https://en.wikipedia.org/wiki/Matthews_correlation_coefficient">...</a>
  * <p>
  * We calculate the correlation directly from the confusion matrix.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MathewsCorrAdj implements Statistic {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAbbreviation() {
         return "McAdj";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "Matthew's correlation coefficient for adjacencies";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
@@ -37,6 +50,9 @@ public class MathewsCorrAdj implements Statistic {
         return mcc(adjTp, adjFp, adjTn, adjFn);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getNormValue(double value) {
         return 0.5 + 0.5 * value;

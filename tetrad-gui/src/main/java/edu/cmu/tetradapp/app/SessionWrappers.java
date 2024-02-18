@@ -35,6 +35,16 @@ import edu.cmu.tetradapp.model.SessionWrapper;
  */
 final class SessionWrappers {
 
+    /**
+     * <p>addNode.</p>
+     *
+     * @param sessionWrapper a {@link edu.cmu.tetradapp.model.SessionWrapper} object
+     * @param nodeType       a {@link java.lang.String} object
+     * @param nodeName       a {@link java.lang.String} object
+     * @param centerX        a int
+     * @param centerY        a int
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public static Node addNode(SessionWrapper sessionWrapper, String nodeType,
                                String nodeName, int centerX, int centerY) {
         SessionNodeWrapper node = SessionWrappers.getNewModelNode(nodeType, nodeName);
@@ -43,6 +53,13 @@ final class SessionWrappers {
         return node;
     }
 
+    /**
+     * <p>addEdge.</p>
+     *
+     * @param sessionWrapper a {@link edu.cmu.tetradapp.model.SessionWrapper} object
+     * @param nodeName1      a {@link java.lang.String} object
+     * @param nodeName2      a {@link java.lang.String} object
+     */
     public static void addEdge(SessionWrapper sessionWrapper, String nodeName1,
                                String nodeName2) {
 

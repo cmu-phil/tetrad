@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,29 +40,46 @@ import java.util.List;
  * Holds a tetrad dag with all of the constructors necessary for it to serve as a model for the tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * @serial Can be null.
+     * The name of the wrapper.
      */
     private String name;
 
     /**
-     * @serial Cannot be null.
+     * The graph.
      */
     private TimeLagGraph graph;
+
+    /**
+     * The parameters.
+     */
     private Parameters parameters;
 
     //=============================CONSTRUCTORS==========================//
 
+    /**
+     * <p>Constructor for TimeLagGraphWrapper.</p>
+     *
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public TimeLagGraphWrapper(Parameters parameters) {
         this.graph = new TimeLagGraph();
         this.parameters = parameters;
         log();
     }
 
+    /**
+     * <p>Constructor for TimeLagGraphWrapper.</p>
+     *
+     * @param graph      a {@link edu.cmu.tetrad.graph.TimeLagGraph} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public TimeLagGraphWrapper(TimeLagGraph graph, Parameters parameters) {
         if (graph == null) {
             throw new NullPointerException("Tetrad dag must not be null.");
@@ -71,6 +89,11 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         log();
     }
 
+    /**
+     * <p>Constructor for TimeLagGraphWrapper.</p>
+     *
+     * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     */
     public TimeLagGraphWrapper(GraphWrapper graphWrapper) {
         if (graphWrapper == null) {
             throw new NullPointerException("No graph wrapper.");
@@ -136,6 +159,9 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         System.out.println("Knowledge in graph = " + knowledge1);
     }
 
+    /**
+     * <p>Constructor for TimeLagGraphWrapper.</p>
+     */
     public TimeLagGraphWrapper() {
         this.graph = new TimeLagGraph();
         log();
@@ -144,6 +170,7 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.TimeLagGraphWrapper} object
      * @see TetradSerializableUtils
      */
     public static TimeLagGraphWrapper serializableInstance() {
@@ -166,7 +193,12 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            if any.
+     * @throws ClassNotFoundException if any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -176,38 +208,81 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>graph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return this.graph;
     }
 
+    /**
+     * <p>Setter for the field <code>graph</code>.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.TimeLagGraph} object
+     */
     public void setGraph(TimeLagGraph graph) {
         this.graph = graph;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return getGraph();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return getGraph().getNodeNames();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return getGraph().getNodes();
     }
 
+    /**
+     * <p>getKnowledge.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         int numLags = 1; // need to fix this!
         List<Node> variables = this.graph.getNodes();
@@ -243,6 +318,11 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         return knowledge1;
     }
 
+    /**
+     * <p>Getter for the field <code>parameters</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParameters() {
         return this.parameters;
     }

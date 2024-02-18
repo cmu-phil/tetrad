@@ -25,6 +25,7 @@ import edu.cmu.tetrad.stat.correlation.RealCovarianceMatrixForkJoin;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  * @author Joseph D. Ramsey
+ * @version $Id: $Id
  */
 public class CovariancesDoubleForkJoin {
     private static final long serialVersionUID = 23L;
@@ -32,26 +33,56 @@ public class CovariancesDoubleForkJoin {
     private final int numOfCols;
     private final double[][] covariances;
 
+    /**
+     * <p>Constructor for CovariancesDoubleForkJoin.</p>
+     *
+     * @param data          an array of {@link double} objects
+     * @param biasCorrected a boolean
+     */
     public CovariancesDoubleForkJoin(double[][] data, boolean biasCorrected) {
         this.numOfCols = data[0].length;
         RealCovarianceMatrixForkJoin cov = new RealCovarianceMatrixForkJoin(data, 10 * Runtime.getRuntime().availableProcessors());
         this.covariances = cov.compute(biasCorrected);
     }
 
+    /**
+     * <p>covariance.</p>
+     *
+     * @param i a int
+     * @param j a int
+     * @return a double
+     */
     public double covariance(int i, int j) {
         return this.covariances[i][j];
     }
 
+    /**
+     * <p>size.</p>
+     *
+     * @return a int
+     */
     public int size() {
         return this.numOfCols;
     }
 
+    /**
+     * <p>getMatrix.</p>
+     *
+     * @return an array of {@link double} objects
+     */
     public double[][] getMatrix() {
         int[] rows = new int[size()];
         for (int i = 0; i < rows.length; i++) rows[i] = i;
         return getSubMatrix(rows, rows);
     }
 
+    /**
+     * <p>getSubMatrix.</p>
+     *
+     * @param rows an array of {@link int} objects
+     * @param cols an array of {@link int} objects
+     * @return an array of {@link double} objects
+     */
     public double[][] getSubMatrix(int[] rows, int[] cols) {
         double[][] submatrix = new double[rows.length][cols.length];
 

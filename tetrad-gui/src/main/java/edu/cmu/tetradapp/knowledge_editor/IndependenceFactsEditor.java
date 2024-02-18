@@ -41,17 +41,26 @@ import java.util.prefs.Preferences;
  * structures among the tiers may be set as well.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class IndependenceFactsEditor extends JPanel {
+
+    /**
+     * The knowledge to be edited.
+     */
     private final IndependenceFactsModel facts;
 
-
+    /**
+     * The text area in which the knowledge is displayed and edited.
+     */
     private JTextArea textArea;
 
     /**
      * Constructs a Knowledge editor for the given knowledge, variable names (that is, the list of all variable names to
      * be considered, which may vary from object to object even for the same knowledge), and possible source graph. The
      * source graph is used only to arrange nodes in the edge panel.
+     *
+     * @param facts a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
      */
     public IndependenceFactsEditor(IndependenceFactsModel facts) {
         if (facts == null) {

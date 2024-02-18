@@ -28,26 +28,77 @@ import java.util.EventObject;
  * added or removed, a model has been created or destroyed.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SessionEvent extends EventObject {
+    /**
+     * Constant <code>NODE_ADDED=0</code>
+     */
     public static final int NODE_ADDED = 0;
+    /**
+     * Constant <code>NODE_REMOVED=1</code>
+     */
     public static final int NODE_REMOVED = 1;
+    /**
+     * Constant <code>PARENT_ADDED=2</code>
+     */
     public static final int PARENT_ADDED = 2;
+    /**
+     * Constant <code>PARENT_REMOVED=3</code>
+     */
     public static final int PARENT_REMOVED = 3;
+    /**
+     * Constant <code>MODEL_CREATED=4</code>
+     */
     public static final int MODEL_CREATED = 4;
+    /**
+     * Constant <code>MODEL_DESTROYED=5</code>
+     */
     public static final int MODEL_DESTROYED = 5;
+    /**
+     * Constant <code>MODEL_UNCLEAR=6</code>
+     */
     public static final int MODEL_UNCLEAR = 6;
+    /**
+     * Constant <code>EXECUTION_STARTED=7</code>
+     */
     public static final int EXECUTION_STARTED = 7;
+    /**
+     * Constant <code>REPETITION_CHANGED=8</code>
+     */
     public static final int REPETITION_CHANGED = 8;
+    /**
+     * Constant <code>ADDING_EDGE=9</code>
+     */
     public static final int ADDING_EDGE = 9;
+
+    /**
+     * The session node set, if this event was constructed using one session node.
+     */
     private SessionNode node;
+
+    /**
+     * The parent session node set, if this is an event constructed using two session nodes.
+     */
     private SessionNode parent;
+
+    /**
+     * The child session node set, if this is an event constructed using two session nodes
+     */
     private SessionNode child;
+
+    /**
+     * The type of this event--one of NODE_ADDED, NODE_REMOVED, PARENT_ADDED, PARENT_REMOVED, MODEL_CREATED,
+     * MODEL_DESTROYED, MODEL_UNCLEAR.
+     */
     private int type = -1;
 
     /**
      * Constructs an event where one session node is involved--session node added or removed, model created or
      * destroyed.
+     *
+     * @param source a {@link java.lang.Object} object
+     * @param type   a int
      */
     public SessionEvent(Object source, int type) {
         super(source);
@@ -72,6 +123,10 @@ public class SessionEvent extends EventObject {
     /**
      * Constructs an event where one session node is involved--session node added or removed, model created or
      * destroyed.
+     *
+     * @param source a {@link java.lang.Object} object
+     * @param node   a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param type   a int
      */
     public SessionEvent(Object source, SessionNode node, int type) {
         super(source);
@@ -111,6 +166,11 @@ public class SessionEvent extends EventObject {
 
     /**
      * Constructs an event where two session nodes are involved--parent added or removed.
+     *
+     * @param source a {@link java.lang.Object} object
+     * @param parent a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param child  a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param type   a int
      */
     public SessionEvent(Object source, SessionNode parent, SessionNode child,
                         int type) {
@@ -138,6 +198,9 @@ public class SessionEvent extends EventObject {
 
     /**
      * Creates a new SessionEvent with the same information as the given event but with a new source.
+     *
+     * @param source a {@link java.lang.Object} object
+     * @param event  a {@link edu.cmu.tetrad.session.SessionEvent} object
      */
     public SessionEvent(Object source, SessionEvent event) {
 
@@ -150,6 +213,8 @@ public class SessionEvent extends EventObject {
     }
 
     /**
+     * <p>Getter for the field <code>node</code>.</p>
+     *
      * @return the session node set, if this event was constructed using one session node.
      */
     public SessionNode getNode() {
@@ -157,6 +222,8 @@ public class SessionEvent extends EventObject {
     }
 
     /**
+     * <p>Getter for the field <code>parent</code>.</p>
+     *
      * @return the parent session node set, if this is an event constructed using two session nodes.
      */
     public SessionNode getParent() {
@@ -164,6 +231,8 @@ public class SessionEvent extends EventObject {
     }
 
     /**
+     * <p>Getter for the field <code>child</code>.</p>
+     *
      * @return the child session node set, if this is an event constructed using two session nodes
      */
     public SessionNode getChild() {
@@ -171,6 +240,8 @@ public class SessionEvent extends EventObject {
     }
 
     /**
+     * <p>Getter for the field <code>type</code>.</p>
+     *
      * @return the type of this event--one of NODE_ADDED, NODE_REMOVED, PARENT_ADDED, PARENT_REMOVED, MODEL_CREATED,
      * MODEL_DESTROYED, MODEL_UNCLEAR.
      */

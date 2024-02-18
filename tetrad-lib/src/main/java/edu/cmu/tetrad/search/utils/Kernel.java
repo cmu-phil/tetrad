@@ -28,21 +28,31 @@ import edu.cmu.tetrad.graph.Node;
  * Gives an implemented  that is implemented by classes that evaluate scalar valued kernels
  *
  * @author Robert Tillman
+ * @version $Id: $Id
  */
 public interface Kernel {
 
     /**
      * Evaluates the kernel at two points in the input space
+     *
+     * @param i a double
+     * @param j a double
+     * @return a double
      */
     double eval(double i, double j);
 
     /**
      * Sets bandwidth from data using default method
+     *
+     * @param dataset a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param node    a {@link edu.cmu.tetrad.graph.Node} object
      */
     void setDefaultBw(DataSet dataset, Node node);
 
     /**
      * Gets kernel bandwidth
+     *
+     * @return a double
      */
     double getBandwidth();
 

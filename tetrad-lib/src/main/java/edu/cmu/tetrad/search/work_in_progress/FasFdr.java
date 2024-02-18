@@ -51,6 +51,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * acceptance, and rerunning using the specified cutoff.
  *
  * @author josephramsey.
+ * @version $Id: $Id
  */
 public class FasFdr implements IFas {
     private final Matrix cov;
@@ -173,39 +174,51 @@ public class FasFdr implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether verbose output will be printed.
-     *
-     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long getElapsedTime() {
         return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getNodes() {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the depth of the search--i.e., the maximum number of variables conditioned on for any conditional
      * independence test.
-     *
-     * @param depth This maximum.
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -217,12 +230,12 @@ public class FasFdr implements IFas {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the knowledge to be used in the search.
-     *
-     * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     private Map<Node, Set<Node>> emptyGraph(List<Node> nodes) {

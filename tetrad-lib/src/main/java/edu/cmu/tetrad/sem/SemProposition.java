@@ -38,6 +38,7 @@ import java.util.List;
  * all variables--i.e. it is a tautology.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SemProposition implements TetradSerializable {
     private static final long serialVersionUID = 23L;
@@ -54,6 +55,8 @@ public final class SemProposition implements TetradSerializable {
 
     /**
      * Creates a new Proposition which allows all values.
+     *
+     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
      */
     public SemProposition(SemIm semIm) {
         if (semIm == null) {
@@ -66,23 +69,38 @@ public final class SemProposition implements TetradSerializable {
         Arrays.fill(this.values, Double.NaN);
     }
 
+    /**
+     * <p>Constructor for SemProposition.</p>
+     *
+     * @param proposition a {@link edu.cmu.tetrad.sem.SemProposition} object
+     */
     public SemProposition(SemProposition proposition) {
         this.semIm = proposition.semIm;
         this.values = Arrays.copyOf(proposition.values, proposition.values.length);
     }
 
+    /**
+     * <p>tautology.</p>
+     *
+     * @param semIm a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @return a {@link edu.cmu.tetrad.sem.SemProposition} object
+     */
     public static SemProposition tautology(SemIm semIm) {
         return new SemProposition(semIm);
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemProposition} object
      */
     public static SemProposition serializableInstance() {
         return new SemProposition(SemIm.serializableInstance());
     }
 
     /**
+     * <p>Getter for the field <code>semIm</code>.</p>
+     *
      * @return the Bayes IM that this is a proposition for.
      */
     public SemIm getSemIm() {
@@ -90,6 +108,8 @@ public final class SemProposition implements TetradSerializable {
     }
 
     /**
+     * <p>getNumVariables.</p>
+     *
      * @return the number of variables for the proposition.
      */
     public int getNumVariables() {
@@ -97,6 +117,8 @@ public final class SemProposition implements TetradSerializable {
     }
 
     /**
+     * <p>getNodeIndex.</p>
+     *
      * @return the index of the variable with the given name, or -1 if such a variable does not exist.
      */
     public int getNodeIndex() {
@@ -104,16 +126,17 @@ public final class SemProposition implements TetradSerializable {
         return -1;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
 
-        if (!(o instanceof SemProposition)) {
+        if (!(o instanceof SemProposition proposition)) {
             throw new IllegalArgumentException();
         }
-
-        SemProposition proposition = (SemProposition) o;
 
         if (!(this.semIm == proposition.semIm)) {
             return false;
@@ -130,6 +153,11 @@ public final class SemProposition implements TetradSerializable {
         return true;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + this.semIm.hashCode();
@@ -137,6 +165,11 @@ public final class SemProposition implements TetradSerializable {
         return hashCode;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         List<Node> nodes = this.semIm.getVariableNodes();
         StringBuilder buf = new StringBuilder();
@@ -157,25 +190,53 @@ public final class SemProposition implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
+    /**
+     * <p>getValue.</p>
+     *
+     * @param i a int
+     * @return a double
+     */
     public double getValue(int i) {
         return this.values[i];
     }
 
+    /**
+     * <p>setValue.</p>
+     *
+     * @param i     a int
+     * @param value a double
+     */
     public void setValue(int i, double value) {
         this.values[i] = value;
     }
 
+    /**
+     * <p>getValue.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a double
+     */
     public double getValue(Node node) {
         List<Node> nodes = this.semIm.getVariableNodes();
         return this.values[nodes.indexOf(node)];
     }
 
+    /**
+     * <p>setValue.</p>
+     *
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param value a double
+     */
     public void setValue(Node node, double value) {
         List<Node> nodes = this.semIm.getVariableNodes();
         this.values[nodes.indexOf(node)] = value;

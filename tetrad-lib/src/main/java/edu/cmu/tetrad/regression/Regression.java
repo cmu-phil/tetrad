@@ -31,6 +31,7 @@ import java.util.List;
  * matrix plus list of means.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface Regression {
 
@@ -42,6 +43,8 @@ public interface Regression {
     void setAlpha(double alpha);
 
     /**
+     * <p>getGraph.</p>
+     *
      * @return This graph.
      */
     Graph getGraph();

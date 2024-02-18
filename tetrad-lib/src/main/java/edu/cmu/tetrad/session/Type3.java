@@ -27,31 +27,50 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 /**
  * A sample class to be wrapped in a SessionNode as a model.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class Type3 implements SessionModel, TetradSerializableExcluded {
     private static final long serialVersionUID = 23L;
 
     /**
      * It should be possible to construct a Type3-model with a Type1-node as parent.
+     *
+     * @param model1     a {@link edu.cmu.tetrad.session.Type2} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Type3(Type2 model1, Parameters parameters) {
     }
 
     /**
      * It should also be possible to construct a Type3-model with two parents: a Type1-node and a Type2-node.
+     *
+     * @param model1 a {@link edu.cmu.tetrad.session.Type2} object
+     * @param model2 a {@link edu.cmu.tetrad.session.Type4} object
      */
     public Type3(Type2 model1, Type4 model2) {
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.session.Type3} object
+     */
     public static Type3 serializableInstance() {
         return new Type3(Type2.serializableInstance(), new Parameters());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         return (o instanceof Type3);
     }
 
     /**
+     * <p>getName.</p>
+     *
      * @return the name of the session model.
      */
     public String getName() {
@@ -59,6 +78,8 @@ public class Type3 implements SessionModel, TetradSerializableExcluded {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of the session model.
      */
     public void setName(String name) {

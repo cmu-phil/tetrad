@@ -35,12 +35,15 @@ import java.util.List;
  * set.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class CorrelationMatrix extends CovarianceMatrix {
     private static final long serialVersionUID = 23L;
 
     /**
      * Constructs a new correlation matrix using the covariances in the given covariance matrix.
+     *
+     * @param matrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
     public CorrelationMatrix(ICovarianceMatrix matrix) {
         this(matrix.getVariables(), MatrixUtils.convertCovToCorr(matrix.getMatrix()), matrix.getSampleSize());
@@ -48,6 +51,8 @@ public final class CorrelationMatrix extends CovarianceMatrix {
 
     /**
      * Constructs a new correlation matrix from the the given DataSet.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public CorrelationMatrix(DataSet dataSet) {
         super(Collections.unmodifiableList(dataSet.getVariables()),
@@ -60,6 +65,10 @@ public final class CorrelationMatrix extends CovarianceMatrix {
     /**
      * Constructs a correlation matrix data set using the given information. The matrix matrix is internally converted
      * to a correlation matrix.
+     *
+     * @param variables  a {@link java.util.List} object
+     * @param matrix     a {@link edu.cmu.tetrad.util.Matrix} object
+     * @param sampleSize a int
      */
     public CorrelationMatrix(List<Node> variables, Matrix matrix,
                              int sampleSize) {
@@ -68,12 +77,17 @@ public final class CorrelationMatrix extends CovarianceMatrix {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.CorrelationMatrix} object
      */
     public static CorrelationMatrix serializableInstance() {
         return new CorrelationMatrix(new LinkedList<>(),
                 new Matrix(0, 0), 1);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setMatrix(Matrix matrix) {
         if (!matrix.isSquare()) {
             throw new IllegalArgumentException("Matrix must be square.");
@@ -90,12 +104,18 @@ public final class CorrelationMatrix extends CovarianceMatrix {
         super.setMatrix(matrix);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Matrix getSelection(int[] rows, int[] cols) {
         return getMatrix().getSelection(rows, cols);
     }
 
     /**
+     * <p>getSubCorrMatrix.</p>
+     *
+     * @param submatrixVarNames an array of {@link java.lang.String} objects
      * @return a submatrix, returning as a correlation matrix, with variables in the given order.
      */
     public CorrelationMatrix getSubCorrMatrix(String[] submatrixVarNames) {

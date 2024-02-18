@@ -66,6 +66,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @version $Id: $Id
  * @see PermutationSearch
  * @see Grasp
  * @see Knowledge
@@ -123,13 +124,12 @@ public class Boss implements SuborderSearch {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Searches a suborder of the variables. The prefix is the set of variables that must precede the suborder. The
      * suborder is the set of variables to be ordered. The gsts is a map from variables to GrowShrinkTrees, which are
      * used to cache scores for the variables. The searchSuborder method will update the suborder to be the best
      * ordering found.
-     * @param prefix   The prefix of the suborder.
-     * @param suborder The suborder.
-     * @param gsts     The GrowShrinkTree being used to do caching of scores.
      */
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
@@ -145,8 +145,9 @@ public class Boss implements SuborderSearch {
         double score, bestScore = Double.NEGATIVE_INFINITY;
         boolean improved;
 
-        if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
-        else if (this.numThreads != 1) this.pool = ForkJoinPool.commonPool();
+//        if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
+//        else this.pool = ForkJoinPool.commonPool();
+        this.pool = new ForkJoinPool(this.numThreads);//  ForkJoin.getInstance().newPool(this.numThreads);
 
         for (int i = 0; i < this.numStarts; i++) {
 
@@ -225,8 +226,9 @@ public class Boss implements SuborderSearch {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the knowledge to be used for the search.
-     * @param knowledge This knowledge. If null, no knowledge will be used.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -248,6 +250,7 @@ public class Boss implements SuborderSearch {
 
     /**
      * Sets whether the grow-shrink trees should be reset after each best-mutation step.
+     *
      * @param reset True if so.
      */
     public void setResetAfterBM(boolean reset) {
@@ -256,39 +259,76 @@ public class Boss implements SuborderSearch {
 
     /**
      * Sets whether the grow-shrink trees should be reset after each restart.
+     *
      * @param reset True if so.
      */
     public void setResetAfterRS(boolean reset) {
         this.resetAfterRS = reset;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the number of threads to use.
+     *
+     * @param numThreads The number of threads to use. Must be at least 1.
+     */
     public void setNumThreads(int numThreads) {
+        if (numThreads < 1) throw new IllegalArgumentException("The number of threads must be at least 1.");
         this.numThreads = numThreads;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the variables.
+     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the map from nodes to the sets of their parents.
+     */
     @Override
     public Map<Node, Set<Node>> getParents() {
         return this.parents;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the score being used for the search.
+     */
     @Override
     public Score getScore() {
         return this.score;
     }
 
+    /**
+     * Returns the BIC scores.
+     *
+     * @return This list.
+     */
     public List<Double> getBics() {
         return this.bics;
     }
 
+    /**
+     * Returns the times.
+     *
+     * @return This list.
+     */
     public List<Double> getTimes() {
         return this.times;
     }
@@ -318,6 +358,11 @@ public class Boss implements SuborderSearch {
         tasks.add(new Trace(this.gsts.get(x), this.all, Z, scores, i));
 
         for (Node z : suborder) {
+            if (Thread.currentThread().isInterrupted()) {
+                pool.shutdownNow();
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Interrupted");
+            }
             if (this.knowledge.isRequired(x.getName(), z.getName())) break;
             if (x == z) {
                 curr = i;
@@ -333,7 +378,12 @@ public class Boss implements SuborderSearch {
         }
 
         shuffle(tasks);
-        this.pool.invokeAll(tasks);
+        try {
+            pool.invokeAll(tasks);
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
         if (this.resetAfterBM) this.gsts.get(x).reset();
         double runningScore = 0;
 
@@ -373,7 +423,11 @@ public class Boss implements SuborderSearch {
         int curr = 0;
 
         while (itr.hasNext()) {
-            if (Thread.currentThread().isInterrupted()) return false;
+            if (Thread.currentThread().isInterrupted()) {
+                pool.shutdownNow();
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Interrupted");
+            }
 
             Node z = itr.next();
 
@@ -495,10 +549,17 @@ public class Boss implements SuborderSearch {
             this.index = index;
         }
 
+        /**
+         * Computes the score for the given set of variables.
+         *
+         * @return The score.
+         */
         @Override
         public Void call() {
-            double score = gst.trace(this.prefix, this.all);
-            this.scores[index] = score;
+            if (!Thread.currentThread().isInterrupted()) {
+                double score = gst.trace(this.prefix, this.all);
+                this.scores[index] = score;
+            }
 
             return null;
         }

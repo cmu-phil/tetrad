@@ -41,6 +41,8 @@ class RunSimulationAction extends AbstractAction {
 
     /**
      * Constructs a new action to open sessions.
+     *
+     * @param sessionEditorNode a {@link edu.cmu.tetradapp.app.SessionEditorNode} object
      */
     public RunSimulationAction(SessionEditorNode sessionEditorNode) {
         super("Run Simulation...");
@@ -48,6 +50,9 @@ class RunSimulationAction extends AbstractAction {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     public void actionPerformed(ActionEvent e) {
         executeNode();
     }

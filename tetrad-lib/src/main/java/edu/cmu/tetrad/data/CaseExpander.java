@@ -27,6 +27,7 @@ package edu.cmu.tetrad.data;
  * copied out n times. This increases the number of rows in the data set.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class CaseExpander implements DataFilter {
 
@@ -70,6 +71,8 @@ public final class CaseExpander implements DataFilter {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Expands cases for the given dataset.
      */
     public DataSet filter(DataSet dataSet) {

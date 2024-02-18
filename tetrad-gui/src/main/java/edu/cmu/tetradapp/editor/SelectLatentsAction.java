@@ -39,6 +39,7 @@ import java.awt.event.ActionEvent;
  * Highlights all latent variables in the given display graph.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SelectLatentsAction extends AbstractAction implements ClipboardOwner {
 
@@ -63,9 +64,9 @@ public class SelectLatentsAction extends AbstractAction implements ClipboardOwne
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Highlights all latent variables in the given display graph.
-     *
-     * @param e the event to be processed
      */
     public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();
@@ -92,6 +93,8 @@ public class SelectLatentsAction extends AbstractAction implements ClipboardOwne
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Required by the AbstractAction interface; does nothing.
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {

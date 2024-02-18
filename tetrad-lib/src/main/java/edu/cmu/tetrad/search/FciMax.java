@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
 /**
@@ -59,41 +60,70 @@ import java.util.concurrent.RecursiveTask;
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fci
  * @see Fas
  * @see FciOrient
  * @see Knowledge
  */
 public final class FciMax implements IGraphSearch {
-    // The independence test.
+    /**
+     * The independence test.
+     */
     private final IndependenceTest independenceTest;
-    // The logger.
+    /**
+     * The logger.
+     */
     private final TetradLogger logger = TetradLogger.getInstance();
-    // The sepsets from the FAS search.
+    /**
+     * The sepsets from the FAS search.
+     */
     private SepsetMap sepsets;
-    // The background knowledge.
+    /**
+     * The background knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The elapsed time of search.
+    /**
+     * The elapsed time of search.
+     */
     private long elapsedTime;
-    // The PC heuristic from PC used in search.
+    /**
+     * The PC heuristic from PC used in search.
+     */
     private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
-    // Whether the stable option will be used for search.
+    /**
+     * Whether the stable option will be used for search.
+     */
     private boolean stable = false;
-    // Whether the discriminating path rule will be used in search.
+    /**
+     * Whether the discriminating path rule will be used in search.
+     */
     private boolean completeRuleSetUsed = true;
-    // Whether the discriminating path rule will be used in search.
+    /**
+     * Whether the discriminating path rule will be used in search.
+     */
     private boolean doDiscriminatingPathRule = false;
-    // Whether the discriminating path rule will be used in search.
+    /**
+     * Whether the discriminating path rule will be used in search.
+     */
     private boolean possibleMsepSearchDone = true;
-    // The maximum length of any discriminating path, or -1 if unlimited.
+    /**
+     * The maximum length of any discriminating path, or -1 if unlimited.
+     */
     private int maxPathLength = -1;
-    // The maximum number of variables conditioned in any test.
+    /**
+     * The maximum number of variables conditioned in any test.
+     */
     private int depth = -1;
-    // Whether verbose output should be printed.
+    /**
+     * Whether verbose output should be printed.
+     */
     private boolean verbose = false;
 
     /**
      * Constructor.
+     *
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
      */
     public FciMax(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -341,7 +371,8 @@ public final class FciMax implements IGraphSearch {
 
         Task task = new Task(nodes, graph, 0, nodes.size());
 
-        ForkJoinPoolInstance.getInstance().getPool().invoke(task);
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        new ForkJoinPool(parallelism).invoke(task);
 
         List<Triple> tripleList = new ArrayList<>(scores.keySet());
 

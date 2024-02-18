@@ -24,6 +24,7 @@ import java.util.*;
  * tiers.
  *
  * @author bryanandrews
+ * @version $Id: $Id
  * @see SuborderSearch
  * @see Boss
  * @see Sp
@@ -75,11 +76,11 @@ public class PermutationSearch {
     // TO DO: moved to a better place like GraphUtils
 
     /**
-     * Construct a graph given a specification of the parents for each node.
+     * Constructs a graph given a specification of the parents for each node.
      *
      * @param nodes     The nodes.
      * @param parents   A map from each node to its parents.
-     * @param knowledge the knoweldge to use to construct the graph.
+     * @param knowledge the knowledge to use to construct the graph.
      * @param cpDag     Whether a CPDAG is wanted, if false, a DAG.
      * @return The construted graph.
      */
@@ -130,7 +131,6 @@ public class PermutationSearch {
                     if (!this.knowledge.isTierForbiddenWithin(i)) continue;
                     suborder = this.order.subList(start++, this.order.size());
                     this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
-                    ;
                 }
 
                 if (this.knowledge.isTierForbiddenWithin(i)) continue;
@@ -146,16 +146,32 @@ public class PermutationSearch {
         return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
     }
 
+    /**
+     * <p>Getter for the field <code>order</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getOrder() {
         return this.order;
     }
 
+    /**
+     * <p>Setter for the field <code>order</code>.</p>
+     *
+     * @param order a {@link java.util.List} object
+     */
     public void setOrder(List<Node> order) {
         assert new HashSet<>(order).containsAll(this.variables);
         this.order.clear();
         this.order.addAll(order);
     }
 
+    /**
+     * <p>getGST.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.search.utils.GrowShrinkTree} object
+     */
     public GrowShrinkTree getGST(Node node) {
         return this.gsts.get(node);
     }
@@ -190,6 +206,11 @@ public class PermutationSearch {
         }
     }
 
+    /**
+     * <p>Setter for the field <code>seed</code>.</p>
+     *
+     * @param seed a long
+     */
     public void setSeed(long seed) {
         this.seed = seed;
     }

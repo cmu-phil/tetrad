@@ -10,6 +10,7 @@ import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -17,9 +18,17 @@ import java.util.List;
 
 /**
  * Created by Erich on 7/6/2016.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class GdistanceTest {
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         //first generate a couple random graphs
         final int numVars = 16;
@@ -50,7 +59,7 @@ public class GdistanceTest {
 
             System.out.println(output);
 
-            PrintWriter writer = new PrintWriter("Gdistances.txt", "UTF-8");
+            PrintWriter writer = new PrintWriter("Gdistances.txt", StandardCharsets.UTF_8);
             writer.println(output);
             writer.close();
         } catch (Exception IOException) {

@@ -23,21 +23,53 @@ package edu.cmu.tetrad.util.dist;
 
 import edu.cmu.tetrad.util.RandomUtil;
 
+import java.io.Serial;
+
 /**
  * Wraps a chi square distribution for purposes of drawing random samples. Methods are provided to allow parameters to
  * be manipulated in an interface.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class MixtureOfGaussians implements Distribution {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The mixing parameter.
+     */
     private double a;
+
+    /**
+     * The mean of the first Gaussian.
+     */
     private double mean1;
+
+    /**
+     * The standard deviation of the first Gaussian.
+     */
     private double sd1;
+
+    /**
+     * The mean of the second Gaussian.
+     */
     private double mean2;
+
+    /**
+     * The standard deviation of the second Gaussian.
+     */
     private double sd2;
 
+    /**
+     * <p>Constructor for MixtureOfGaussians.</p>
+     *
+     * @param a     a double
+     * @param mean1 a double
+     * @param sd1   a double
+     * @param mean2 a double
+     * @param sd2   a double
+     */
     public MixtureOfGaussians(double a, double mean1, double sd1, double mean2, double sd2) {
         if (a < 0 || a > 1) {
             throw new IllegalArgumentException();
@@ -68,14 +100,27 @@ public class MixtureOfGaussians implements Distribution {
         return new MixtureOfGaussians(.5, -2, 2, 2, 2);
     }
 
+    /**
+     * <p>getNumParameters.</p>
+     *
+     * @return a int
+     */
     public int getNumParameters() {
         return 5;
     }
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return "Mixture of Gaussians";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0) {
             this.a = value;
@@ -92,6 +137,9 @@ public class MixtureOfGaussians implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.a;
@@ -108,6 +156,9 @@ public class MixtureOfGaussians implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Ratio";
@@ -124,6 +175,11 @@ public class MixtureOfGaussians implements Distribution {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * <p>nextRandom.</p>
+     *
+     * @return a double
+     */
     public double nextRandom() {
         double r = RandomUtil.getInstance().nextDouble();
 
@@ -134,6 +190,11 @@ public class MixtureOfGaussians implements Distribution {
         }
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "MixtureOfGaussians(" + this.a + ", " + this.mean1 + ", " + this.sd1 + ", " + this.mean2 + ", " + this.sd2 + ")";
     }

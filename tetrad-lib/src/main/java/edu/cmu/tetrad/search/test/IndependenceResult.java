@@ -6,19 +6,44 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
+import java.io.Serial;
+
 /**
  * Stores a single conditional independence result, e.g., whether X _||_ Y | Z1,..,Zn holds or does not, and the p-value
  * of the test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndependenceResult implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The fact itself.
+     */
     private final IndependenceFact fact;
+
+    /**
+     * The conditional independence result, true if the fact holds, false if not.
+     */
     private final boolean indep;
+
+    /**
+     * The p-values of the independence result, under the null (independence) hypothesis.
+     */
     private final double pValue;
+
+    /**
+     * The score of the test, which is alpha - p if the test returns a p-value or else a bump if the test is based on a
+     * score.
+     */
     private final double score;
+
+    /**
+     * Whether the result is valid or not. A test is not valid if the test is not able to determine whether the fact
+     * holds or not.
+     */
     private final boolean isValid;
 
     /**
@@ -58,6 +83,7 @@ public final class IndependenceResult implements TetradSerializable {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      * @see TetradSerializableUtils
      */
     public static IndependenceResult serializableInstance() {

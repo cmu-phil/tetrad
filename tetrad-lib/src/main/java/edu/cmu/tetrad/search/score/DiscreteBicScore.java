@@ -42,6 +42,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DiscreteBicScore implements DiscreteScore {
     // The discrete dataset.
@@ -110,11 +111,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the score of the given nodes given its parents.
-     *
-     * @param node    The index of the node.
-     * @param parents The indices of the node's parents.
-     * @return The score.
      */
     @Override
     public double localScore(int node, int[] parents) {
@@ -215,6 +214,7 @@ public class DiscreteBicScore implements DiscreteScore {
      *
      * @param node    The index of the node.
      * @param parents The indices of the node's parents.
+     * @return a int
      */
     public int numParameters(int node, int[] parents) {
         if (!(this.variables.get(node) instanceof DiscreteVariable)) {
@@ -282,9 +282,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns localScore(y | z, x) - localScore(y | z).
-     *
-     * @return This score.
      */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -292,9 +292,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variables.
-     *
-     * @return This list.
      */
     @Override
     public List<Node> getVariables() {
@@ -327,9 +327,10 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Must be called directly after the corresponding scoring call. Used in FGES.
      *
-     * @param bump The score bump.
      * @see Fges
      */
     public boolean isEffectEdge(double bump) {
@@ -337,9 +338,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the dataset being analyzed.
-     *
-     * @return this dataset.
      */
     @Override
     public DataSet getDataSet() {
@@ -347,9 +348,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the structure prior.
-     *
-     * @param structurePrior This prior.
      */
     @Override
     public void setStructurePrior(double structurePrior) {
@@ -357,9 +358,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * This method is not used for this score.
-     *
-     * @throws UnsupportedOperationException Since this method is not used.
      */
     @Override
     public void setSamplePrior(double samplePrior) {
@@ -376,9 +377,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the maximum degree for some algorithms.
-     *
-     * @return 1000.
      */
     @Override
     public int getMaxDegree() {
@@ -386,9 +387,9 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns a string representation of this score.
-     *
-     * @return This string.
      */
     @Override
     public String toString() {

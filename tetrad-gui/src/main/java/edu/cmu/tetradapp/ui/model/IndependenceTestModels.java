@@ -33,6 +33,7 @@ import java.util.stream.Stream;
  * Dec 1, 2017 11:49:55 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class IndependenceTestModels {
 
@@ -57,6 +58,11 @@ public final class IndependenceTestModels {
         initDefaultModelMap();
     }
 
+    /**
+     * <p>getInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.ui.model.IndependenceTestModels} object
+     */
     public static IndependenceTestModels getInstance() {
         return IndependenceTestModels.INSTANCE;
     }
@@ -128,14 +134,31 @@ public final class IndependenceTestModels {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>models</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<IndependenceTestModel> getModels() {
         return this.models;
     }
 
+    /**
+     * <p>Getter for the field <code>models</code>.</p>
+     *
+     * @param dataType a {@link edu.cmu.tetrad.data.DataType} object
+     * @return a {@link java.util.List} object
+     */
     public List<IndependenceTestModel> getModels(DataType dataType) {
         return this.modelMap.getOrDefault(dataType, Collections.EMPTY_LIST);
     }
 
+    /**
+     * <p>getDefaultModel.</p>
+     *
+     * @param dataType a {@link edu.cmu.tetrad.data.DataType} object
+     * @return a {@link edu.cmu.tetradapp.ui.model.IndependenceTestModel} object
+     */
     public IndependenceTestModel getDefaultModel(DataType dataType) {
         return this.defaultModelMap.get(dataType);
     }

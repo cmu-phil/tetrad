@@ -31,6 +31,7 @@ import java.io.IOException;
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * @version $Id: $Id
  */
 public class BiolinguaDigraph extends Digraph implements OutputGraph {
 
@@ -49,7 +50,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
      * Creates a BiolinguaDigraph reading it from file <code>fname</code>.
      *
      * @param fname the name of the file to read the graph from.
-     * @throws IOException if an error occurs while reading the file.
+     * @throws java.io.IOException if an error occurs while reading the file.
      */
     public BiolinguaDigraph(String fname) throws IOException {
         super(fname);
@@ -100,6 +101,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
 
     /**
      * Returns a string with the indexes of all parents of node i separated by spaces (useful for printouts)
+     *
      * @param i the node whose parents are requested
      * @return a string with the indexes of all parents of node i separated by spaces
      */
@@ -115,9 +117,9 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns null (no lag information is stored in a BiolinguaDigraph).
-     * @param i the node whose parents are requested
-     * @return null (no lag information is stored in a BiolinguaDigraph).
      */
     public int[] getLags(int i) {
         return null;
@@ -126,6 +128,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     /**
      * Returns a specially formatted string with all the contents of this Graph. Actually this string is compliant with
      * the same format expected when reading the graph from a file.
+     *
      * @return a specially formatted string with all the contents of this Graph.
      */
     public String toString() {

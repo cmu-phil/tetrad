@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,11 +42,23 @@ import java.util.concurrent.ConcurrentHashMap;
  * independence in models ideally should be.&gt; 0
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SepsetMap implements TetradSerializable {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The map from pairs of nodes to separating sets.
+     */
     private final Map<Node, HashSet<Node>> parents = new HashMap<>();
+    /**
+     * The map from pairs of nodes to separating sets.
+     */
     private Map<Set<Node>, Set<Node>> sepsets = new ConcurrentHashMap<>();
+    /**
+     * The map from pairs of nodes to p-values.
+     */
     private Map<Set<Node>, Double> pValues = new ConcurrentHashMap<>();
 
 
@@ -67,6 +80,8 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
      */
     public static SepsetMap serializableInstance() {
         return new SepsetMap();
@@ -75,6 +90,10 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Sets the sepset for {x, y} to be z. Note that {x, y} is unordered.
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
      */
     public void set(Node x, Node y, Set<Node> z) {
         Set<Node> pair = new HashSet<>(2);
@@ -89,6 +108,10 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Retrieves the sepset previously set for {a, b}, or null if no such set was previously set.
+     *
+     * @param a a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.Set} object
      */
     public Set<Node> get(Node a, Node b) {
         Set<Node> pair = new HashSet<>(2);
@@ -100,6 +123,10 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Looks up the p-value for {x, y}
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a double
      */
     public double getPValue(Node x, Node y) {
         Set<Node> pair = new HashSet<>(2);
@@ -111,6 +138,9 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Sets the parents of x to the (ordered) set z.
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.LinkedHashSet} object
      */
     public void set(Node x, LinkedHashSet<Node> z) {
         if (this.parents.get(x) != null) {
@@ -122,12 +152,17 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Returns the parents of the node x.
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.HashSet} object
      */
     public HashSet<Node> get(Node x) {
         return this.parents.get(x) == null ? new HashSet<>() : this.parents.get(x);
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Checks equality of this to another sepset map.
      */
     public boolean equals(Object o) {
@@ -135,11 +170,10 @@ public final class SepsetMap implements TetradSerializable {
             return false;
         }
 
-        if (!(o instanceof SepsetMap)) {
+        if (!(o instanceof SepsetMap _sepset)) {
             return false;
         }
 
-        SepsetMap _sepset = (SepsetMap) o;
         return this.sepsets.equals(_sepset.sepsets);
     }
 
@@ -150,7 +184,12 @@ public final class SepsetMap implements TetradSerializable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help).
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            if an error occurs
+     * @throws ClassNotFoundException if an error occurs
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -162,6 +201,8 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Returns the number of {x, y} in the key set of the map.
+     *
+     * @return a int
      */
     public int size() {
         return this.sepsets.keySet().size();
@@ -169,6 +210,8 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Returns a string representation of this sepset map.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return this.sepsets.toString();
@@ -176,6 +219,8 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Adds all entries in the given sepset map to the current one.
+     *
+     * @param newSepsets a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
      */
     public void addAll(SepsetMap newSepsets) {
         this.sepsets.putAll(newSepsets.sepsets);

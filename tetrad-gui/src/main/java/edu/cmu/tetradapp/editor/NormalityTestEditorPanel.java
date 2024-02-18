@@ -52,6 +52,9 @@ class NormalityTestEditorPanel extends JPanel {
 
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
+     *
+     * @param qqPlot  a {@link edu.cmu.tetradapp.editor.QQPlot} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public NormalityTestEditorPanel(QQPlot qqPlot, DataSet dataSet) {
         //   construct components

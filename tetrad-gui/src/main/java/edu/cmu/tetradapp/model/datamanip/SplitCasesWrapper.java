@@ -36,6 +36,7 @@ import java.util.List;
  * Tyler was lazy and didn't document this....
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class SplitCasesWrapper extends DataWrapper {
     @Serial
@@ -43,6 +44,9 @@ public class SplitCasesWrapper extends DataWrapper {
 
     /**
      * Constructs the wrapper given some data and the params.
+     *
+     * @param data   a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SplitCasesWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
@@ -64,6 +68,7 @@ public class SplitCasesWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

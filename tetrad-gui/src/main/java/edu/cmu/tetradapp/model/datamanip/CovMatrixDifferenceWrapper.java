@@ -36,12 +36,17 @@ import org.apache.commons.math3.util.FastMath;
  * Splits continuous data sets by collinear columns.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class CovMatrixDifferenceWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
      * Splits the given data set by collinear columns.
+     *
+     * @param wrapper1 a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param wrapper2 a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params   a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public CovMatrixDifferenceWrapper(DataWrapper wrapper1, DataWrapper wrapper2, Parameters params) {
         if (wrapper1 == null || wrapper2 == null) {
@@ -75,6 +80,7 @@ public class CovMatrixDifferenceWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

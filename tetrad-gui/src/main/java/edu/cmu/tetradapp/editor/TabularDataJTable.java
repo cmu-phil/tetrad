@@ -50,10 +50,14 @@ import java.util.Map;
  * Displays a DataSet object as a JTable.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class TabularDataJTable extends JTable implements DataModelContainer,
         PropertyChangeListener {
 
+    /**
+     * The underlying DataSet model.
+     */
     private Map<String, String> columnToTooltip;
 
     /**
@@ -61,14 +65,21 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
      */
     private boolean editable = true;
 
+    /**
+     * <p>Constructor for TabularDataJTable.</p>
+     *
+     * @param model           a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param columnToTooltip a {@link java.util.Map} object
+     */
     public TabularDataJTable(DataSet model, Map<String, String> columnToTooltip) {
         this(model);
-//		System.out.println("setting columnToTooltip " + columnToTooltip);
         this.columnToTooltip = columnToTooltip;
     }
 
     /**
      * Constructor. Takes a DataSet as a model.
+     *
+     * @param model a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public TabularDataJTable(DataSet model) {
 
@@ -77,7 +88,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         dataModel.addPropertyChangeListener(this);
         setModel(dataModel);
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-//		System.out.println("dataModel: "+model.getColumnToTooltip());
         this.columnToTooltip
                 = model.getColumnToTooltip() != null ? model.getColumnToTooltip() : new Hashtable<>();
         int rowCount = this.dataModel.getRowCount();
@@ -87,15 +97,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
             rowCount /= 10;
             max++;
         }
-
-        // add cell renderer for columns 2-7
-        // int vColIndex = 2;
-        // TableColumn col = this.getColumnModel().getColumn(vColIndex);
-        // Map<String, String> columnToTooltip = new Hashtable<String,
-        // String>();
-        // columnToTooltip.put("ADJ_COR", "This is a tooltip.");
-        // col.setCellRenderer(new
-        // GraphComparisonTableCellRenderer(columnToTooltip));
 
         // provide cell renderer the tooltip.
         addMouseListener(new MouseAdapter() {
@@ -119,7 +120,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         FontMetrics metrics = getFontMetrics(getFont());
 
         getColumnModel().getColumn(0).setMaxWidth(9 * max);
-//		getColumnModel().getColumn(1).setMaxWidth(9 * 4);
         setRowHeight(metrics.getHeight() + 3);
 
         setRowSelectionAllowed(true);
@@ -182,6 +182,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         });
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int rowIndex, int vColIndex) {
         Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
@@ -201,10 +204,18 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         return c;
     }
 
+    /**
+     * <p>Setter for the field <code>editable</code>.</p>
+     *
+     * @param editable a boolean
+     */
     public void setEditable(boolean editable) {
         this.editable = editable;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setValueAt(Object aValue, int row, int column) {
         try {
             super.setValueAt(aValue, row, column);
@@ -214,6 +225,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public TableCellEditor getCellEditor(int row, int column) {
         if (!this.editable) {
             return new DoNothingEditor();
@@ -230,6 +244,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public TableCellRenderer getCellRenderer(int row, int column) {
         if (column == 0) {
             return new RowNumberRenderer();
@@ -246,6 +263,8 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
     }
 
     /**
+     * <p>getDataSet.</p>
+     *
      * @return the underlying DataSet model.
      */
     public DataSet getDataSet() {
@@ -253,15 +272,28 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         return tableModelTabularData.getDataSet();
     }
 
+    /**
+     * <p>setDataSet.</p>
+     *
+     * @param data a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public void setDataSet(DataSet data) {
         TabularDataTable tableModelTabularData = (TabularDataTable) getModel();
         tableModelTabularData.setDataSet(data);
     }
 
+    /**
+     * <p>getDataModel.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public DataModel getDataModel() {
         return getDataSet();
     }
 
+    /**
+     * <p>deleteSelected.</p>
+     */
     public void deleteSelected() {
         TabularDataTable model = (TabularDataTable) getModel();
         DataSet dataSet = model.getDataSet();
@@ -309,6 +341,9 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         model.fireTableDataChanged();
     }
 
+    /**
+     * <p>clearSelected.</p>
+     */
     public void clearSelected() {
         TabularDataTable model = (TabularDataTable) getModel();
         DataSet dataSet = model.getDataSet();
@@ -436,6 +471,8 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
     }
 
     /**
+     * @param token a {@link java.lang.String} object
+     * @param col   a int
      * @return true iff the given token is a legitimate value for the cell at (row, col) in the table.
      */
     public boolean checkValueAt(String token, int col) {
@@ -449,22 +486,39 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 
         if (dataCol < dataSet.getNumColumns()) {
             Node variable = dataSet.getVariable(dataCol);
+            /** {@inheritDoc} */
             return ((Variable) variable).checkValue(token);
         } else {
             return true;
         }
     }
 
+    /**
+     * <p>isShowCategoryNames.</p>
+     *
+     * @return a boolean
+     */
     public boolean isShowCategoryNames() {
         TabularDataTable table = (TabularDataTable) getModel();
         return table.isCategoryNamesShown();
     }
 
+    /**
+     * <p>Constructor for DoNothingEditor.</p>
+     */
+    /**
+     * <p>setShowCategoryNames.</p>
+     *
+     * @param selected a boolean
+     */
     public void setShowCategoryNames(boolean selected) {
         TabularDataTable table = (TabularDataTable) getModel();
         table.setCategoryNamesShown(selected);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
     }
@@ -509,6 +563,12 @@ class DoNothingEditor extends DefaultCellEditor {
 
     public DoNothingEditor() {
         super(new JTextField());
+        /**
+         * <p>Constructor for DataCellRenderer.</p>
+         *
+         * @param tableTabular a {@link edu.cmu.tetradapp.editor.TabularDataJTable} object
+         * @param numLeadingCols a int
+         */
     }
 
     public boolean isCellEditable(EventObject anEvent) {
@@ -516,6 +576,9 @@ class DoNothingEditor extends DefaultCellEditor {
     }
 }
 
+/**
+ * {@inheritDoc}
+ */
 class VariableNameEditor extends DefaultCellEditor {
 
     private final JTextField textField;

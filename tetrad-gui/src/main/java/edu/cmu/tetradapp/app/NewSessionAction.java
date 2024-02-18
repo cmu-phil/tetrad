@@ -41,6 +41,8 @@ final class NewSessionAction extends AbstractAction {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Performs the action of opening a session from a file.
      */
     public void actionPerformed(ActionEvent e) {

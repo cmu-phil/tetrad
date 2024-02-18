@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.Node;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -33,44 +34,46 @@ import java.util.List;
  * Stores a list of data models and keeps track of which one is selected.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see DataModel
  */
 public final class DataModelList extends AbstractList<DataModel>
         implements DataModel {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
      * The list of models.
-     *
-     * @serial
      */
     private List<DataModel> modelList = new LinkedList<>();
 
     /**
      * The selected model (may be null).
-     *
-     * @serial
      */
     private DataModel selectedModel;
 
     /**
      * The name of the DataModelList.
-     *
-     * @serial
      */
     private String name;
 
     /**
      * The knowledge for this data.
-     *
-     * @serial
      */
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * <p>Constructor for DataModelList.</p>
+     */
     public DataModelList() {
     }
 
+    /**
+     * <p>Constructor for DataModelList.</p>
+     *
+     * @param dataModelList a {@link edu.cmu.tetrad.data.DataModelList} object
+     */
     public DataModelList(DataModelList dataModelList) {
 
         try {
@@ -87,26 +90,33 @@ public final class DataModelList extends AbstractList<DataModel>
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModelList} object
      */
     public static DataModelList serializableInstance() {
         return new DataModelList();
     }
 
     /**
-     * @return this model, as an Object.
+     * {@inheritDoc}
      */
     public DataModel get(int index) {
         return this.modelList.get(index);
     }
 
     /**
-     * @return the size of the getModel list. Required for AbstractList.
+     * {@inheritDoc}
      */
     @Override
     public int size() {
         return this.modelList.size();
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         if (getSelectedModel() == null) {
             throw new NullPointerException();
@@ -114,10 +124,18 @@ public final class DataModelList extends AbstractList<DataModel>
         return getSelectedModel().getVariables();
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge.copy();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -127,6 +145,8 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
+     * <p>getVariableNames.</p>
+     *
      * @return the list of variable names for columns, in order.
      */
     public List<String> getVariableNames() {
@@ -147,6 +167,8 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Check if the modeList is empty Need to override this since this class is extending AbstractList.
      */
     @Override
@@ -157,6 +179,8 @@ public final class DataModelList extends AbstractList<DataModel>
     /**
      * Use this to check if the dataModelList only contains the default empty dataset that is being used to populat the
      * empty spreadsheet - Added by Kevin
+     *
+     * @return a boolean
      */
     public boolean containsEmptyData() {
         if (this.modelList.isEmpty()) {
@@ -166,15 +190,19 @@ public final class DataModelList extends AbstractList<DataModel>
         }
     }
 
+    /**
+     * <p>Getter for the field <code>modelList</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<DataModel> getModelList() {
         return this.modelList;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Removes the DataModel at the given index. Required for AbstractList. Required for AbstractList.
-     *
-     * @param index the index of the DataModel to remove.
-     * @return the DataModel just removed.
      */
     public DataModel remove(int index) {
         DataModel removedObject = this.modelList.remove(index);
@@ -187,6 +215,8 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
+     * <p>Getter for the field <code>selectedModel</code>.</p>
+     *
      * @return the model that is currently selected. The default is the first model. If there are no models in the list,
      * null is returned.
      */
@@ -200,6 +230,11 @@ public final class DataModelList extends AbstractList<DataModel>
         }
     }
 
+    /**
+     * <p>Setter for the field <code>selectedModel</code>.</p>
+     *
+     * @param model a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public void setSelectedModel(DataModel model) {
         if (model == null) {
             throw new NullPointerException();
@@ -212,12 +247,16 @@ public final class DataModelList extends AbstractList<DataModel>
 
     /**
      * Gets the name of the data model list.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String getName() {
         return this.name;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of the data model list..
      */
     public void setName(String name) {
@@ -225,6 +264,8 @@ public final class DataModelList extends AbstractList<DataModel>
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of the data model list.
      */
     public String toString() {
@@ -237,47 +278,68 @@ public final class DataModelList extends AbstractList<DataModel>
         return buf.toString();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isContinuous() {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isDiscrete() {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isMixed() {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Node getVariable(String name) {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataModel copy() {
         return null;
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public int hashCode() {
         int hashcode = 17;
         hashcode += 17 * this.name.hashCode();
         return hashcode;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
         }
 
-        if (!(o instanceof DataModelList)) {
+        if (!(o instanceof DataModelList list)) {
             return false;
         }
-
-        DataModelList list = (DataModelList) o;
 
         return this.name.equals(list.name) && this.modelList.equals(list.modelList) && this.knowledge.equals(list.knowledge) && this.selectedModel.equals(list.selectedModel);
 
@@ -290,7 +352,12 @@ public final class DataModelList extends AbstractList<DataModel>
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream to read from.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

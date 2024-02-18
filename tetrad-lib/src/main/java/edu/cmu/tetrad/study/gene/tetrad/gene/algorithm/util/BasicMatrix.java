@@ -29,6 +29,7 @@ import java.io.*;
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * @version $Id: $Id
  */
 public abstract class BasicMatrix {
     /**
@@ -102,7 +103,7 @@ public abstract class BasicMatrix {
      * generated.
      *
      * @param fname name of the file to read the matrix from
-     * @throws IOException if there is an error reading the file
+     * @throws java.io.IOException if there is an error reading the file
      */
     public BasicMatrix(String fname) throws IOException {
         // Create and prepare stream tokenizer

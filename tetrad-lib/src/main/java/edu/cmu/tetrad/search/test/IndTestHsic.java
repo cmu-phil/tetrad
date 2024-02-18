@@ -50,9 +50,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * The Kpc algorithm by Tillman had run PC using this test; to run Kpc, simply select this test for PC.
  *
  * @author Robert Tillman
+ * @version $Id: $Id
  * @see edu.cmu.tetrad.search.work_in_progress.Kpc
  */
-
 public final class IndTestHsic implements IndependenceTest {
 
     // Number format for printing p-values.
@@ -116,9 +116,9 @@ public final class IndTestHsic implements IndependenceTest {
 
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Creates a new IndTestHsic instance for a subset of the variables.
-     *
-     * @return This sublist.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -143,12 +143,14 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
-     * @param x  the one variable being compared.
-     * @param y  the second variable being compared.
-     * @param _z the list of conditioning variables.
-     * @return True iff x _||_ y | z.
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node y, Node x, Set<Node> _z) {
         if (facts.containsKey(new IndependenceFact(x, y, _z))) {
@@ -333,6 +335,7 @@ public final class IndTestHsic implements IndependenceTest {
      * @param Ky centralized Gram matrix for Y
      * @param Kx centralized Gram matrix for X
      * @param m  sample size
+     * @return a double
      */
     public double empiricalHSIC(Matrix Ky, Matrix Kx, int m) {
         Matrix Kyx = Ky.times(Kx);
@@ -351,6 +354,7 @@ public final class IndTestHsic implements IndependenceTest {
      * @param Gy Choleksy approximate Gram matrix for Y
      * @param Gx Choleksy approximate Gram matrix for X
      * @param m  sample size
+     * @return a double
      */
     public double empiricalHSICincompleteCholesky(Matrix Gy, Matrix Gx, int m) {
         // centralized Choleksy
@@ -425,6 +429,7 @@ public final class IndTestHsic implements IndependenceTest {
      * @param Gx Choleksy approximate Gram matrix for X
      * @param Gz Choleksy approximate Gram matrix for Z
      * @param m  sample size
+     * @return a double
      */
     public double empiricalHSICincompleteCholesky(Matrix Gy, Matrix Gx, Matrix Gz, int m) {
         // centralize Choleksy
@@ -541,9 +546,9 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the significance level at which independence judgments should be made.
-     *
-     * @param alpha This alpha.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -565,9 +570,9 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the variable with the given name.
-     *
-     * @return This string.
      */
     public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
@@ -599,7 +604,7 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Method not supported.
+     * {@inheritDoc}
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Method not implemented");
@@ -618,10 +623,18 @@ public final class IndTestHsic implements IndependenceTest {
         return entry;
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

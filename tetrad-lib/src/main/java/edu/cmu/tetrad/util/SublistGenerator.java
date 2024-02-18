@@ -39,6 +39,7 @@ import static org.apache.commons.math3.util.FastMath.round;
  * To see what this class does, try calling ChoiceGenerator.testPrint(5, 3), for instance.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SublistGenerator {
 
@@ -99,6 +100,13 @@ public final class SublistGenerator {
         initialize();
     }
 
+    /**
+     * <p>getNumCombinations.</p>
+     *
+     * @param a a int
+     * @param b a int
+     * @return a int
+     */
     public static int getNumCombinations(int a, int b) {
         int numCombinations = 0;
 
@@ -161,6 +169,8 @@ public final class SublistGenerator {
     }
 
     /**
+     * <p>next.</p>
+     *
      * @return the next combination in the series, or null if the series is finished.
      */
     public synchronized int[] next() {
@@ -196,11 +206,18 @@ public final class SublistGenerator {
         }
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Depth choice generator: a = " + this.a + " depth = " + this.depth;
     }
 
     /**
+     * <p>Getter for the field <code>a</code>.</p>
+     *
      * @return Ibid.
      */
     @SuppressWarnings("UnusedDeclaration")

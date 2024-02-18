@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import java.util.List;
  * Wrapper for Fisher Z test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "BDeu Score",
@@ -23,9 +25,17 @@ import java.util.List;
 )
 public class BdeuScore implements ScoreWrapper {
 
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The data set.
+     */
     private DataModel dataSet;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
@@ -36,16 +46,25 @@ public class BdeuScore implements ScoreWrapper {
         return score;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "BDeu Score";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Discrete;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -54,6 +73,9 @@ public class BdeuScore implements ScoreWrapper {
         return parameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);

@@ -33,6 +33,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IonInput;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -43,54 +44,150 @@ import java.util.List;
  * Extends AbstractAlgorithmRunner to produce a wrapper for the FCI algorithm.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class IonRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, DoNotAddOldModel, IonInput {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The list of graphs.
+     */
     private List<Graph> graphs;
 
     //=========================CONSTRUCTORS================================//
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag    a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag, Parameters params) {
         super(params, pag.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph(), pag7.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag8   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8, Parameters params) {
         super(params, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph(), pag7.getGraph(), pag8.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag8   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag9   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8,
                      IonInput pag9, Parameters params) {
@@ -99,6 +196,21 @@ public class IonRunner extends AbstractAlgorithmRunner
                 pag9.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag8   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag9   a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag10  a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8,
                      IonInput pag9, IonInput pag10, Parameters params) {
@@ -107,46 +219,145 @@ public class IonRunner extends AbstractAlgorithmRunner
                 pag9.getGraph(), pag10.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag       a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph(), pag7.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag8      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8, KnowledgeBoxModel knowledge, Parameters params) {
         super(params, knowledge, pag1.getGraph(), pag2.getGraph(), pag3.getGraph(), pag4.getGraph(),
                 pag5.getGraph(), pag6.getGraph(), pag7.getGraph(), pag8.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag8      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag9      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8,
                      IonInput pag9, KnowledgeBoxModel knowledge, Parameters params) {
@@ -155,6 +366,22 @@ public class IonRunner extends AbstractAlgorithmRunner
                 pag9.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param pag1      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag2      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag3      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag4      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag5      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag6      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag7      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag8      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag9      a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param pag10     a {@link edu.cmu.tetradapp.util.IonInput} object
+     * @param knowledge a {@link edu.cmu.tetradapp.model.KnowledgeBoxModel} object
+     * @param params    a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(IonInput pag1, IonInput pag2, IonInput pag3, IonInput pag4,
                      IonInput pag5, IonInput pag6, IonInput pag7, IonInput pag8,
                      IonInput pag9, IonInput pag10, KnowledgeBoxModel knowledge, Parameters params) {
@@ -163,18 +390,48 @@ public class IonRunner extends AbstractAlgorithmRunner
                 pag9.getGraph(), pag10.getGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param fci    a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(FciRunner fci, Parameters params) {
         super(params, fci.getResultGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param fci1   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci2   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(FciRunner fci1, FciRunner fci2, Parameters params) {
         super(params, fci1.getResultGraph(), fci2.getResultGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param fci1   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci2   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci3   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(FciRunner fci1, FciRunner fci2, FciRunner fci3, Parameters params) {
         super(params, fci1.getResultGraph(), fci2.getResultGraph(), fci3.getResultGraph());
     }
 
+    /**
+     * <p>Constructor for IonRunner.</p>
+     *
+     * @param fci1   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci2   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci3   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param fci4   a {@link edu.cmu.tetradapp.model.FciRunner} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public IonRunner(FciRunner fci1, FciRunner fci2, FciRunner fci3, FciRunner fci4, Parameters params) {
         super(params, fci1.getResultGraph(), fci2.getResultGraph(), fci3.getResultGraph(), fci4.getResultGraph());
     }
@@ -182,6 +439,7 @@ public class IonRunner extends AbstractAlgorithmRunner
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.IonRunner} object
      * @see TetradSerializableUtils
      */
     public static IonRunner serializableInstance() {
@@ -225,6 +483,11 @@ public class IonRunner extends AbstractAlgorithmRunner
         this.graphs = graphs;
     }
 
+    /**
+     * <p>getIndependenceTest.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     */
     public IndependenceTest getIndependenceTest() {
         Object dataModel = getDataModel();
 
@@ -235,12 +498,19 @@ public class IonRunner extends AbstractAlgorithmRunner
         return new IndTestChooser().getTest(dataModel, getParams());
     }
 
+    /**
+     * <p>getGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getGraph() {
         return getResultGraph();
     }
 
 
     /**
+     * <p>getTriplesClassificationTypes.</p>
+     *
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
@@ -248,21 +518,34 @@ public class IonRunner extends AbstractAlgorithmRunner
     }
 
     /**
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
+     * {@inheritDoc}
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new ArrayList<>();
     }
 
+    /**
+     * <p>supportsKnowledge.</p>
+     *
+     * @return a boolean
+     */
     public boolean supportsKnowledge() {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getAlgorithmName() {
         return "ION";
     }
 
+    /**
+     * <p>getStoredGraphs.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Graph> getStoredGraphs() {
         if (this.graphs == null) {
             return new ArrayList<>();

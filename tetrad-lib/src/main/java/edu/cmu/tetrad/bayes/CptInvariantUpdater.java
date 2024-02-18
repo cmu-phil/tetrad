@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -35,8 +36,10 @@ import java.util.List;
  * probabilities of variables with respect to their parents that change from non-updated to updated values.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -76,6 +79,11 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
 
     //==============================CONSTRUCTORS===========================//
 
+    /**
+     * <p>Constructor for CptInvariantUpdater.</p>
+     *
+     * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public CptInvariantUpdater(BayesIm bayesIm) {
         if (bayesIm == null) {
             throw new NullPointerException();
@@ -87,6 +95,9 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Constructs a new updater for the given Bayes net.
+     *
+     * @param bayesIm  a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param evidence a {@link edu.cmu.tetrad.bayes.Evidence} object
      */
     public CptInvariantUpdater(BayesIm bayesIm, Evidence evidence) {
         if (bayesIm == null) {
@@ -99,6 +110,8 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.CptInvariantUpdater} object
      */
     public static CptInvariantUpdater serializableInstance() {
         return new CptInvariantUpdater(MlBayesIm.serializableInstance());
@@ -106,26 +119,54 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
 
     //============================PUBLIC METHODS==========================//
 
+    /**
+     * <p>Getter for the field <code>bayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getBayesIm() {
         return this.bayesIm;
     }
 
+    /**
+     * <p>Getter for the field <code>manipulatedBayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getManipulatedBayesIm() {
         return this.manipulatedBayesIm;
     }
 
+    /**
+     * <p>getManipulatedGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getManipulatedGraph() {
         return getManipulatedBayesIm().getDag();
     }
 
+    /**
+     * <p>Getter for the field <code>updatedBayesIm</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     */
     public BayesIm getUpdatedBayesIm() {
         return this.updatedBayesIm;
     }
 
+    /**
+     * <p>Getter for the field <code>evidence</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.bayes.Evidence} object
+     */
     public Evidence getEvidence() {
         return new Evidence(this.evidence);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setEvidence(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
@@ -154,18 +195,36 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
                         evidence2);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double getMarginal(int variable, int value) {
         return this.cptInvariantMarginalCalculator.getMarginal(variable, value);
     }
 
+    /**
+     * <p>isJointMarginalSupported.</p>
+     *
+     * @return a boolean
+     */
     public boolean isJointMarginalSupported() {
         return false;
     }
 
+    /**
+     * <p>getJointMarginal.</p>
+     *
+     * @param variables an array of {@link int} objects
+     * @param values    an array of {@link int} objects
+     * @return a double
+     */
     public double getJointMarginal(int[] variables, int[] values) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculatePriorMarginals(int nodeIndex) {
         Evidence evidence = getEvidence();
         setEvidence(Evidence.tautology(evidence.getVariableSource()));
@@ -181,6 +240,9 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double[] calculateUpdatedMarginals(int nodeIndex) {
         double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
 
@@ -194,6 +256,8 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
 
     /**
      * Prints out the most recent marginal.
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         return "CPT Invariant Updater, evidence = " + this.evidence;
@@ -234,7 +298,12 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

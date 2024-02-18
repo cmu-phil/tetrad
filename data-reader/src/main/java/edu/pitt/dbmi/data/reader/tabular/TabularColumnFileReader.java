@@ -37,6 +37,7 @@ import java.util.*;
  * Nov 7, 2018 2:24:23 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class TabularColumnFileReader extends AbstractTabularColumnFileReader implements TabularColumnReader {
 
@@ -51,11 +52,9 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Reads in the data columns.
-     *
-     * @param isDiscrete Whether the data is discrete.
-     * @return The data columns.
-     * @throws IOException If an I/O error occurs.
      */
     @Override
     public DataColumn[] readInDataColumns(boolean isDiscrete) throws IOException {
@@ -63,12 +62,9 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Reads in the data columns.
-     *
-     * @param namesOfColumnsToExclude the names of columns to exclude
-     * @param isDiscrete              Whether the data is discrete.
-     * @return The data columns.
-     * @throws IOException If an I/O error occurs.
      */
     @Override
     public DataColumn[] readInDataColumns(Set<String> namesOfColumnsToExclude, boolean isDiscrete) throws IOException {
@@ -98,12 +94,9 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Reads in the data columns.
-     *
-     * @param columnsToExclude the columns to exclude
-     * @param isDiscrete       Whether the data is discrete.
-     * @return The data columns.
-     * @throws IOException If an I/O error occurs.
      */
     @Override
     public DataColumn[] readInDataColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException {
@@ -115,12 +108,9 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Generates the data columns.
-     *
-     * @param columnsToExclude the columns to exclude
-     * @param isDiscrete       Whether the data is discrete.
-     * @return The data columns.
-     * @throws IOException If an I/O error occurs.
      */
     @Override
     public DataColumn[] generateColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException {

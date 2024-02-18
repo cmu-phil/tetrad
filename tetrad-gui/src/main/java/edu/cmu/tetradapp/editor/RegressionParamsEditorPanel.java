@@ -83,6 +83,11 @@ class RegressionParamsEditorPanel extends JPanel {
     /**
      * Constructs the editor given the <code>Parameters</code> and the
      * <code>DataModel</code> that should be used.
+     *
+     * @param regressionModel a {@link edu.cmu.tetradapp.model.RegressionModel} object
+     * @param parameters      a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param model           a {@link edu.cmu.tetrad.data.DataModel} object
+     * @param logistic        a boolean
      */
     public RegressionParamsEditorPanel(RegressionModel regressionModel, Parameters parameters,
                                        DataModel model, boolean logistic) {
@@ -401,6 +406,11 @@ class RegressionParamsEditorPanel extends JPanel {
 
     //========================== Inner classes (a lot of'em) =========================================//
 
+    /**
+     * <p>Getter for the field <code>params</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public Parameters getParams() {
         return this.params;
     }

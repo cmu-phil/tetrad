@@ -22,6 +22,7 @@ package edu.pitt.dbmi.data.reader;
  * Dec 8, 2018 4:14:30 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public interface DataColumn {
 

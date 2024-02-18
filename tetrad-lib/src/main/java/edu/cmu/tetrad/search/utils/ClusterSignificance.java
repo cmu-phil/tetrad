@@ -23,6 +23,7 @@ import java.util.Set;
  * Significance of these models is returned.</p>
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ClusterSignificance {
     // The variables in the model.
@@ -295,5 +296,21 @@ public class ClusterSignificance {
      * Gives the options for checking significance of clusters--could check the significance using a regression model,
      * or could check to see if the cluster is a clique, or could not do the check.
      */
-    public enum CheckType {Significance, Clique, None}
+    public enum CheckType {
+
+        /**
+         * Check the significance using a regression model.
+         */
+        Significance,
+
+        /**
+         * Check to see if the cluster is a clique.
+         */
+        Clique,
+
+        /**
+         * Do not do the check.
+         */
+        None
+    }
 }

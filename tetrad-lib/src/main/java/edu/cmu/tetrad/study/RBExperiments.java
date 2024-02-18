@@ -33,12 +33,24 @@ import java.util.regex.Pattern;
 import static org.apache.commons.math3.util.FastMath.exp;
 import static org.apache.commons.math3.util.FastMath.log;
 
+/**
+ * <p>RBExperiments class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class RBExperiments {
 
     private static final int MININUM_EXPONENT = -1022;
     private final int depth = 5;
     private String directory;
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     * @throws java.io.IOException if any.
+     */
     public static void main(String[] args) throws IOException {
 
         // read and process input arguments
@@ -113,6 +125,22 @@ public class RBExperiments {
         return latents;
     }
 
+    /**
+     * <p>experiment.</p>
+     *
+     * @param modelName            a {@link java.lang.String} object
+     * @param numCases             a int
+     * @param numModels            a int
+     * @param numBootstrapSamples  a int
+     * @param alpha                a double
+     * @param numLatentConfounders a double
+     * @param threshold1           a boolean
+     * @param threshold2           a boolean
+     * @param lower                a double
+     * @param upper                a double
+     * @param filePath             a {@link java.lang.String} object
+     * @param round                a int
+     */
     public void experiment(String modelName, int numCases, int numModels, int numBootstrapSamples, double alpha,
                            double numLatentConfounders, boolean threshold1, boolean threshold2, double lower, double upper,
                            String filePath, int round) {
@@ -186,8 +214,8 @@ public class RBExperiments {
         System.out.println("Dep data creation done!");
 
         // learn structure of constraints using empirical data
-        Graph depCPDAG = runFGS(depData);
-        Graph estDepBN = GraphTransforms.dagFromCpdag(depCPDAG, null);
+        Graph depCpdag = runFGS(depData);
+        Graph estDepBN = GraphTransforms.dagFromCpdag(depCpdag, null);
         System.out.println("estDepBN: " + estDepBN.getEdges());
         out.println("DepGraph(nodes,edges):" + estDepBN.getNumNodes() + "," + estDepBN.getNumEdges());
         System.out.println("Dependency graph done!");
@@ -592,6 +620,13 @@ public class RBExperiments {
         }
     }
 
+    /**
+     * <p>lnXplusY.</p>
+     *
+     * @param lnX a double
+     * @param lnY a double
+     * @return a double
+     */
     protected double lnXplusY(double lnX, double lnY) {
         double lnYminusLnX;
         double temp;

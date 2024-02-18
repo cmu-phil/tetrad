@@ -12,10 +12,7 @@ import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * An API to allow results from external algorithms to be included in a report through the algrorithm comparison tool.
@@ -34,23 +31,46 @@ import java.io.IOException;
  * write.matrix(A, file=name, sep="\t") }
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * External directory.
+     */
     private final String extDir;
+
+    /**
+     * Short description of the algorithm.
+     */
     private final String shortDescription;
 
+    /**
+     * <p>Constructor for ExternalAlgorithmBNTPc.</p>
+     *
+     * @param extDir a {@link java.lang.String} object
+     */
     public ExternalAlgorithmBNTPc(String extDir) {
         this.extDir = extDir;
         this.shortDescription = new File(extDir).getName().replace("_", " ");
     }
 
+    /**
+     * <p>Constructor for ExternalAlgorithmBNTPc.</p>
+     *
+     * @param extDir          a {@link java.lang.String} object
+     * @param shortDecription a {@link java.lang.String} object
+     */
     public ExternalAlgorithmBNTPc(String extDir, String shortDecription) {
         this.extDir = extDir;
         this.shortDescription = shortDecription;
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Reads in the relevant graph from the file (see above) and returns it.
      */
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -75,12 +95,19 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /**
+     * <p>getDescription.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getDescription() {
         if (this.shortDescription == null) {
             return "Load data from " + this.path + "/" + this.extDir;
@@ -89,11 +116,17 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);

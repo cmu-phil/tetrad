@@ -53,6 +53,9 @@ class EvidenceWizardMultipleObs extends JPanel {
     /**
      * This is the wizard for the BayesUpdateEditor class.  It allows you to add and remove evidence, and to updater
      * based on it.
+     *
+     * @param updaterWrapper a {@link edu.cmu.tetradapp.model.UpdaterWrapper} object
+     * @param workbench      a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
      */
     public EvidenceWizardMultipleObs(UpdaterWrapper updaterWrapper,
                                      GraphWorkbench workbench) {
@@ -257,6 +260,11 @@ class EvidenceWizardMultipleObs extends JPanel {
         return this.workbench;
     }
 
+    /**
+     * <p>Getter for the field <code>textArea</code>.</p>
+     *
+     * @return a {@link javax.swing.JTextArea} object
+     */
     public JTextArea getTextArea() {
         return this.textArea;
     }

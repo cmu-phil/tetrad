@@ -29,6 +29,7 @@ import org.apache.commons.math3.util.FastMath;
  * Soces the Gaussian kernel for a given bandwidth. Default bandwidth is set using the median distance heuristic.
  *
  * @author Robert Tillman
+ * @version $Id: $Id
  */
 public final class KernelGaussian implements Kernel {
 
@@ -59,6 +60,8 @@ public final class KernelGaussian implements Kernel {
     }
 
     /**
+     * <p>getBandwidth.</p>
+     *
      * @return the bandwidth
      */
     public double getBandwidth() {
@@ -66,16 +69,17 @@ public final class KernelGaussian implements Kernel {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Evaluates the kernel at two given points
-     *
-     * @param i first point
-     * @param j second point
      */
     public double eval(double i, double j) {
         return FastMath.exp(-.5 * (FastMath.pow((i - j), 2) / FastMath.pow(this.sigma, 2)));
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Default setting of bandwidth based on median distance heuristic
      */
     public void setDefaultBw(DataSet dataset, Node node) {

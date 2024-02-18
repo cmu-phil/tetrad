@@ -10,11 +10,17 @@ import java.util.List;
  * An interface to represent a random graph of some sort.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface RandomGraph extends TetradSerializable {
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**
+     * <p>createGraph.</p>
+     *
      * @param parameters Whatever parameters are need for the given graph. See getParameters().
      * @return Returns a random graph using the given parameters.
      */

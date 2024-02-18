@@ -18,6 +18,7 @@ import java.util.List;
  * Wrapper for linear, Gaussian Extended BIC score (Chen and Chen).
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "EBIC Score",
@@ -29,8 +30,15 @@ public class EbicScore implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The data set.
+     */
     private DataModel dataSet;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
@@ -50,16 +58,25 @@ public class EbicScore implements ScoreWrapper {
         return score;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return "EBIC Score";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -69,6 +86,9 @@ public class EbicScore implements ScoreWrapper {
         return parameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Node getVariable(String name) {
         return this.dataSet.getVariable(name);

@@ -51,6 +51,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -61,30 +62,77 @@ import java.util.Map;
  * Lets the user interact with a SEM estimator.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class SemEstimatorEditor extends JPanel {
-
+    @Serial
     private static final long serialVersionUID = 960988184083427499L;
 
+    /**
+     * The panel to which the editor is added.
+     */
     private final JPanel targetPanel;
+
+    /**
+     * The number format for displaying numbers.
+     */
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+    /**
+     * The data set for the SEM estimator.
+     */
     private final DataSet dataSet;
+
+    /**
+     * The SEM estimator wrapper.
+     */
     private final SemEstimatorWrapper wrapper;
+
+    /**
+     * The title for the graphical editor tab.
+     */
     private final String graphicalEditorTitle = "Graphical Editor";
+
+    /**
+     * The title for the tabular editor tab.
+     */
     private final String tabularEditorTitle = "Tabular Editor";
+
+    /**
+     * True iff the SEM estimator is editable.
+     */
     private final boolean editable = true;
+
+    /**
+     * The SEM estimator being edited.
+     */
     private OneEditor oneEditorPanel;
 
-
+    /**
+     * <p>Constructor for SemEstimatorEditor.</p>
+     *
+     * @param semIm   a {@link edu.cmu.tetrad.sem.SemIm} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public SemEstimatorEditor(SemIm semIm, DataSet dataSet) {
         this(new SemEstimatorWrapper(dataSet, semIm.getSemPm(), new Parameters()));
     }
 
-
+    /**
+     * <p>Constructor for SemEstimatorEditor.</p>
+     *
+     * @param semPm   a {@link edu.cmu.tetrad.sem.SemPm} object
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public SemEstimatorEditor(SemPm semPm, DataSet dataSet) {
         this(new SemEstimatorWrapper(dataSet, semPm, new Parameters()));
     }
 
+    /**
+     * <p>Constructor for SemEstimatorEditor.</p>
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.SemEstimatorWrapper} object
+     */
     public SemEstimatorEditor(SemEstimatorWrapper wrapper) {
         setLayout(new BorderLayout());
         this.targetPanel = new JPanel();
@@ -361,8 +409,35 @@ public final class SemEstimatorEditor extends JPanel {
         }
     }
 
+    /**
+     * Which tab is selected in the editor.
+     */
     public enum TabbedPaneDefault {
-        GRAPHICAL, TABULAR, COVMATRIX, tabbedPanedDefault, STATS
+
+        /**
+         * The graphical editor is selected.
+         */
+        GRAPHICAL,
+
+        /**
+         * The tabular editor is selected.
+         */
+        TABULAR,
+
+        /**
+         * The implied covariance matrix is selected.
+         */
+        COVMATRIX,
+
+        /**
+         * The statistics are selected.
+         */
+        tabbedPanedDefault,
+
+        /**
+         * The statistics are selected.
+         */
+        STATS
     }
 
     /**

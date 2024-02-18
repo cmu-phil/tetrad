@@ -28,15 +28,22 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
  * Optimizes a SEM by randomly selecting points in cubes of decreasing size about a given point.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemOptimizerScattershot implements SemOptimizer {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The number of restarts to use.
+     */
     private int numRestarts;
 
     /**
@@ -47,12 +54,16 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemOptimizerScattershot} object
      */
     public static SemOptimizerScattershot serializableInstance() {
         return new SemOptimizerScattershot();
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Optimizes the fitting function of the given Sem using the Powell method from Numerical Recipes by adjusting the
      * freeParameters of the Sem.
      */
@@ -115,16 +126,27 @@ public class SemOptimizerScattershot implements SemOptimizer {
 //        optimize2(semIm);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Sem Optimizer Scattershot";
     }

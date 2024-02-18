@@ -72,10 +72,18 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
 
     }
 
+    /**
+     * <p>Getter for the field <code>title</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getTitle() {
         return this.title;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setTitle(String title) {
         if (title == null) {
             throw new NullPointerException("The given title must not be null");
@@ -83,11 +91,19 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         this.title = title;
     }
 
+    /**
+     * <p>getSelectedModel.</p>
+     *
+     * @return a {@link java.lang.Class} object
+     */
     public Class getSelectedModel() {
         ClassWrapper wrapper = (ClassWrapper) this.modelClassesBox.getSelectedItem();
         return wrapper.getWrappedClass();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setModelConfigs(List<SessionNodeModelConfig> configs) {
         List<ClassWrapper> wrapperList = new LinkedList<>();
 
@@ -121,6 +137,9 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setNodeId(String id) {
         if (id == null) {
             throw new NullPointerException("The given id must not be null");
@@ -128,6 +147,9 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         this.id = id;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setSessionNode(SessionNode sessionNode) {
         /*(
       The session node for the getModel node.
@@ -135,6 +157,9 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         this.nodeName = sessionNode.getDisplayName();
     }
 
+    /**
+     * <p>setup.</p>
+     */
     public void setup() {
         JButton info = new JButton("Help");
 

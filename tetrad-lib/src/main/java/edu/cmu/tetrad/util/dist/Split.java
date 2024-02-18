@@ -33,6 +33,7 @@ import java.text.NumberFormat;
  * be manipulated in an interface.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @SuppressWarnings("WeakerAccess")
 public class Split implements Distribution {
@@ -80,6 +81,8 @@ public class Split implements Distribution {
     }
 
     /**
+     * <p>nextRandom.</p>
+     *
      * @return a random value from [-b, -a] U [a, b].
      */
     public double nextRandom() {
@@ -93,25 +96,48 @@ public class Split implements Distribution {
         return value;
     }
 
+    /**
+     * <p>Getter for the field <code>a</code>.</p>
+     *
+     * @return a double
+     */
     public double getA() {
         return this.a;
     }
 
+    /**
+     * <p>Getter for the field <code>b</code>.</p>
+     *
+     * @return a double
+     */
     public double getB() {
         return this.b;
     }
 
 
+    /**
+     * <p>getName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return "Split Distribution";
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         return "Split(" + nf.format(this.a) + ", " + nf.format(this.b) + ", " + ")";
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     public void setParameter(int index, double value) {
         if (index == 0 && value < this.b) {
             this.a = value;
@@ -122,6 +148,9 @@ public class Split implements Distribution {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public double getParameter(int index) {
         if (index == 0) {
             return this.a;
@@ -132,6 +161,9 @@ public class Split implements Distribution {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String getParameterName(int index) {
         if (index == 0) {
             return "Lower bound (> 0)";
@@ -142,6 +174,11 @@ public class Split implements Distribution {
         }
     }
 
+    /**
+     * <p>getNumParameters.</p>
+     *
+     * @return a int
+     */
     public int getNumParameters() {
         return 2;
     }

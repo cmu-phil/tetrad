@@ -35,8 +35,13 @@ import java.util.*;
  * Parses Bayes elements back to objects.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class BayesXmlParser {
+
+    /**
+     * The names of the variables in the Bayes net.
+     */
     private Map<String, Node> namesToVars;
 
     private static BayesIm makeBayesIm(BayesPm bayesPm, Element element2) {

@@ -40,6 +40,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  *
  * @author frankwimberly
  * @author josephramsey
+ * @version $Id: $Id
  * @see TestType
  */
 public class ChiSquareTest {

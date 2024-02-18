@@ -27,23 +27,29 @@ import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Basic graph utilities.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class GraphUtils {
 
     /**
+     * <p>getAssociatedNode.</p>
+     *
+     * @param errorNode a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      * @return the node associated with a given error node. This should be the only child of the error node, E --&gt; N.
      */
     public static Node getAssociatedNode(Node errorNode, Graph graph) {
@@ -64,6 +70,10 @@ public final class GraphUtils {
     }
 
     /**
+     * <p>isClique.</p>
+     *
+     * @param set   a {@link java.util.Collection} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return true if <code>set</code> is a clique in <code>graph</code>. R. Silva, June 2004
      */
     public static boolean isClique(Collection<Node> set, Graph graph) {
@@ -83,6 +93,7 @@ public final class GraphUtils {
      *
      * @param target a node in the given graph.
      * @param graph  a DAG, CPDAG, MAG, or PAG.
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph markovBlanketSubgraph(Node target, Graph graph) {
         Set<Node> mb = markovBlanket(target, graph);
@@ -107,6 +118,12 @@ public final class GraphUtils {
         return mbGraph;
     }
 
+    /**
+     * <p>removeBidirectedOrientations.</p>
+     *
+     * @param estCpdag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph removeBidirectedOrientations(Graph estCpdag) {
         estCpdag = new EdgeListGraph(estCpdag);
 
@@ -121,6 +138,12 @@ public final class GraphUtils {
         return estCpdag;
     }
 
+    /**
+     * <p>undirectedGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph undirectedGraph(Graph graph) {
         Graph graph2 = new EdgeListGraph(graph.getNodes());
 
@@ -133,6 +156,12 @@ public final class GraphUtils {
         return graph2;
     }
 
+    /**
+     * <p>completeGraph.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph completeGraph(Graph graph) {
         Graph graph2 = new EdgeListGraph(graph.getNodes());
 
@@ -152,6 +181,9 @@ public final class GraphUtils {
     }
 
     /**
+     * <p>bidirectedToUndirected.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a new graph in which the bidirectred edges of the given graph have been changed to undirected edges.
      */
     public static Graph bidirectedToUndirected(Graph graph) {
@@ -168,6 +200,9 @@ public final class GraphUtils {
     }
 
     /**
+     * <p>undirectedToBidirected.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return a new graph in which the undirectred edges of the given graph have been changed to bidirected edges.
      */
     public static Graph undirectedToBidirected(Graph graph) {
@@ -183,10 +218,24 @@ public final class GraphUtils {
         return newGraph;
     }
 
+    /**
+     * <p>pathString.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param path  a {@link java.util.List} object
+     * @return a {@link java.lang.String} object
+     */
     public static String pathString(Graph graph, List<Node> path) {
         return GraphUtils.pathString(graph, path, new LinkedList<>());
     }
 
+    /**
+     * <p>pathString.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param x     a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.lang.String} object
+     */
     public static String pathString(Graph graph, Node... x) {
         List<Node> path = new ArrayList<>();
         Collections.addAll(path, x);
@@ -328,6 +377,12 @@ public final class GraphUtils {
         return convertedGraph;
     }
 
+    /**
+     * <p>restrictToMeasured.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph restrictToMeasured(Graph graph) {
         graph = new EdgeListGraph(graph);
 
@@ -375,7 +430,10 @@ public final class GraphUtils {
     /**
      * Counts the adjacencies that are in graph1 but not in graph2.
      *
-     * @throws IllegalArgumentException if graph1 and graph2 are not namewise isomorphic.
+     * @param graph1 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph2 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a int
+     * @throws java.lang.IllegalArgumentException if graph1 and graph2 are not namewise isomorphic.
      */
     public static int countAdjErrors(Graph graph1, Graph graph2) {
         if (graph1 == null) {
@@ -403,6 +461,10 @@ public final class GraphUtils {
 
     /**
      * Counts the arrowheads that are in graph1 but not in graph2.
+     *
+     * @param graph1 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph2 a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a int
      */
     public static int countArrowptErrors(Graph graph1, Graph graph2) {
         if (graph1 == null) {
@@ -466,6 +528,13 @@ public final class GraphUtils {
         return count;
     }
 
+    /**
+     * <p>getNumCorrectArrowpts.</p>
+     *
+     * @param correct   a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param estimated a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a int
+     */
     public static int getNumCorrectArrowpts(Graph correct, Graph estimated) {
         correct = GraphUtils.replaceNodes(correct, estimated.getNodes());
 
@@ -510,6 +579,9 @@ public final class GraphUtils {
     }
 
     /**
+     * <p>emptyGraph.</p>
+     *
+     * @param numNodes a int
      * @return an empty graph with the given number of nodes.
      */
     public static Graph emptyGraph(int numNodes) {
@@ -523,6 +595,10 @@ public final class GraphUtils {
     }
 
     /**
+     * <p>getAmbiguousTriplesFromGraph.</p>
+     *
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
      * given graph.
      */
@@ -550,6 +626,10 @@ public final class GraphUtils {
     }
 
     /**
+     * <p>getUnderlinedTriplesFromGraph.</p>
+     *
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
      * given graph.
      */
@@ -578,6 +658,10 @@ public final class GraphUtils {
     }
 
     /**
+     * <p>getDottedUnderlinedTriplesFromGraph.</p>
+     *
+     * @param node  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
      * given graph.
      */
@@ -605,6 +689,12 @@ public final class GraphUtils {
         return dottedUnderlinedTriples;
     }
 
+    /**
+     * <p>containsBidirectedEdge.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a boolean
+     */
     public static boolean containsBidirectedEdge(Graph graph) {
         boolean containsBidirected = false;
 
@@ -618,6 +708,12 @@ public final class GraphUtils {
     }
 
 
+    /**
+     * <p>listColliderTriples.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.util.LinkedList} object
+     */
     public static LinkedList<Triple> listColliderTriples(Graph graph) {
         LinkedList<Triple> colliders = new LinkedList<>();
 
@@ -659,6 +755,13 @@ public final class GraphUtils {
         return list;
     }
 
+    /**
+     * <p>asSet.</p>
+     *
+     * @param indices an array of {@link int} objects
+     * @param nodes   a {@link java.util.List} object
+     * @return a {@link java.util.Set} object
+     */
     public static Set<Node> asSet(int[] indices, List<Node> nodes) {
         Set<Node> set = new HashSet<>();
 
@@ -672,12 +775,24 @@ public final class GraphUtils {
         return set;
     }
 
+    /**
+     * <p>asSet.</p>
+     *
+     * @param nodes a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.util.Set} object
+     */
     public static Set<Node> asSet(Node... nodes) {
         Set<Node> set = new HashSet<>();
         Collections.addAll(set, nodes);
         return set;
     }
 
+    /**
+     * <p>degree.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a int
+     */
     public static int degree(Graph graph) {
         int maxDegree = 0;
 
@@ -691,6 +806,12 @@ public final class GraphUtils {
         return maxDegree;
     }
 
+    /**
+     * <p>getIntersectionComparisonString.</p>
+     *
+     * @param graphs a {@link java.util.List} object
+     * @return a {@link java.lang.String} object
+     */
     public static String getIntersectionComparisonString(List<Graph> graphs) {
         if (graphs == null || graphs.isEmpty()) {
             return "";
@@ -898,6 +1019,13 @@ public final class GraphUtils {
         return b;
     }
 
+    /**
+     * <p>edgeMisclassifications.</p>
+     *
+     * @param counts an array of {@link double} objects
+     * @param nf     a {@link java.text.NumberFormat} object
+     * @return a {@link java.lang.String} object
+     */
     public static String edgeMisclassifications(double[][] counts, NumberFormat nf) {
         StringBuilder builder = new StringBuilder();
 
@@ -923,7 +1051,7 @@ public final class GraphUtils {
                 if (i == 7 && j == 5) {
                     table2.setToken(7 + 1, 5 + 1, "*");
                 } else {
-                    table2.setToken(i + 1, j + 1, "" + nf.format(counts[i][j]));
+                    table2.setToken(i + 1, j + 1, nf.format(counts[i][j]));
                 }
             }
         }
@@ -950,6 +1078,12 @@ public final class GraphUtils {
         return builder.toString();
     }
 
+    /**
+     * <p>edgeMisclassifications.</p>
+     *
+     * @param counts an array of {@link int} objects
+     * @return a {@link java.lang.String} object
+     */
     public static String edgeMisclassifications(int[][] counts) {
         StringBuilder builder = new StringBuilder();
 
@@ -1002,6 +1136,11 @@ public final class GraphUtils {
         return builder.toString();
     }
 
+    /**
+     * <p>addPagColoring.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static void addPagColoring(Graph graph) {
         for (Edge edge : graph.getEdges()) {
             edge.getProperties().clear();
@@ -1035,6 +1174,14 @@ public final class GraphUtils {
         }
     }
 
+    /**
+     * <p>edgeMisclassificationCounts.</p>
+     *
+     * @param leftGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param topGraph  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param print     a boolean
+     * @return an array of {@link int} objects
+     */
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
         class CountTask extends RecursiveTask<Counts> {
 
@@ -1112,12 +1259,23 @@ public final class GraphUtils {
 
         List<Edge> edges = new ArrayList<>(edgeSet);
 
-        ForkJoinPoolInstance pool = ForkJoinPoolInstance.getInstance();
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
 
         CountTask task = new CountTask(500, 0, edges.size(), edges, leftGraph, topGraph, new int[1]);
-        Counts counts = pool.getPool().invoke(task);
 
-        return counts.countArray();
+        try {
+            Counts counts = pool.invoke(task);
+
+            if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
+                throw new IllegalStateException("Pool timed out");
+            }
+
+            return counts.countArray();
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        }
     }
 
     private static int getTypeTop(Edge edgeTop) {
@@ -1191,6 +1349,13 @@ public final class GraphUtils {
         throw new IllegalArgumentException("Unsupported edge type : " + edgeLeft);
     }
 
+    /**
+     * <p>maximalCliques.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param nodes a {@link java.util.List} object
+     * @return a {@link java.util.Set} object
+     */
     public static Set<Set<Node>> maximalCliques(Graph graph, List<Node> nodes) {
         Set<Set<Node>> report = new HashSet<>();
         GraphUtils.brokKerbosh1(new HashSet<>(), new HashSet<>(nodes), new HashSet<>(), report, graph);
@@ -1215,6 +1380,13 @@ public final class GraphUtils {
         }
     }
 
+    /**
+     * <p>graphToText.</p>
+     *
+     * @param graph         a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param doPagColoring a boolean
+     * @return a {@link java.lang.String} object
+     */
     public static String graphToText(Graph graph, boolean doPagColoring) {
         if (doPagColoring) {
             GraphUtils.addPagColoring(graph);
@@ -1256,6 +1428,14 @@ public final class GraphUtils {
         return fmt.toString();
     }
 
+    /**
+     * <p>graphNodeAttributesToText.</p>
+     *
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param title     a {@link java.lang.String} object
+     * @param delimiter a char
+     * @return a {@link java.lang.String} object
+     */
     public static String graphNodeAttributesToText(Graph graph, String title, char delimiter) {
         List<Node> nodes = graph.getNodes();
 
@@ -1310,6 +1490,13 @@ public final class GraphUtils {
         return null;
     }
 
+    /**
+     * <p>graphAttributesToText.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param title a {@link java.lang.String} object
+     * @return a {@link java.lang.String} object
+     */
     public static String graphAttributesToText(Graph graph, String title) {
         Map<String, Object> attributes = graph.getAllAttributes();
         if (!attributes.isEmpty()) {
@@ -1333,6 +1520,14 @@ public final class GraphUtils {
         return null;
     }
 
+    /**
+     * <p>graphNodesToText.</p>
+     *
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param title     a {@link java.lang.String} object
+     * @param delimiter a char
+     * @return a {@link java.lang.String} object
+     */
     public static String graphNodesToText(Graph graph, String title, char delimiter) {
         StringBuilder sb = (title == null || title.length() == 0) ? new StringBuilder() : new StringBuilder(String.format("%s%n", title));
 
@@ -1356,6 +1551,13 @@ public final class GraphUtils {
         return sb.toString();
     }
 
+    /**
+     * <p>graphEdgesToText.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param title a {@link java.lang.String} object
+     * @return a {@link java.lang.String} object
+     */
     public static String graphEdgesToText(Graph graph, String title) {
         Formatter fmt = new Formatter();
 
@@ -1385,6 +1587,13 @@ public final class GraphUtils {
         return fmt.toString();
     }
 
+    /**
+     * <p>triplesToText.</p>
+     *
+     * @param triples a {@link java.util.Set} object
+     * @param title   a {@link java.lang.String} object
+     * @return a {@link java.lang.String} object
+     */
     public static String triplesToText(Set<Triple> triples, String title) {
         Formatter fmt = new Formatter();
 
@@ -1408,6 +1617,13 @@ public final class GraphUtils {
         return fmt.toString();
     }
 
+    /**
+     * <p>getTwoCycleErrors.</p>
+     *
+     * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param estGraph  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link edu.cmu.tetrad.graph.GraphUtils.TwoCycleErrors} object
+     */
     public static TwoCycleErrors getTwoCycleErrors(Graph trueGraph, Graph estGraph) {
         Set<Edge> trueEdges = trueGraph.getEdges();
         Set<Edge> trueTwoCycle = new HashSet<>();
@@ -1466,6 +1682,12 @@ public final class GraphUtils {
         return new TwoCycleErrors(adjCorrect, adjFn, adjFp);
     }
 
+    /**
+     * <p>getDegree.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a int
+     */
     public static int getDegree(Graph graph) {
         int max = 0;
 
@@ -1478,6 +1700,12 @@ public final class GraphUtils {
         return max;
     }
 
+    /**
+     * <p>getIndegree.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a int
+     */
     public static int getIndegree(Graph graph) {
         int max = 0;
 
@@ -1491,6 +1719,14 @@ public final class GraphUtils {
     }
 
     // Used to find semidirected paths for cycle checking.
+
+    /**
+     * <p>traverseSemiDirected.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public static Node traverseSemiDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if (edge.getEndpoint1() == Endpoint.TAIL || edge.getEndpoint1() == Endpoint.CIRCLE) {
@@ -1504,6 +1740,13 @@ public final class GraphUtils {
         return null;
     }
 
+    /**
+     * <p>getComparisonGraph.</p>
+     *
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param params a {@link edu.cmu.tetrad.util.Parameters} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph getComparisonGraph(Graph graph, Parameters params) {
         String type = params.getString("graphComparisonType");
 
@@ -1565,6 +1808,12 @@ public final class GraphUtils {
         }
     }
 
+    /**
+     * <p>addForbiddenReverseEdgesForDirectedEdges.</p>
+     *
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public static void addForbiddenReverseEdgesForDirectedEdges(Graph graph, Knowledge knowledge) {
         List<Node> nodes = graph.getNodes();
 
@@ -1578,6 +1827,12 @@ public final class GraphUtils {
         }
     }
 
+    /**
+     * <p>removeNonSkeletonEdges.</p>
+     *
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public static void removeNonSkeletonEdges(Graph graph, Knowledge knowledge) {
         List<Node> nodes = graph.getNodes();
 
@@ -1604,6 +1859,13 @@ public final class GraphUtils {
         }
     }
 
+    /**
+     * <p>compatible.</p>
+     *
+     * @param edge1 a {@link edu.cmu.tetrad.graph.Edge} object
+     * @param edge2 a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a boolean
+     */
     public static boolean compatible(Edge edge1, Edge edge2) {
         if (edge1 == null || edge2 == null) return true;
 
@@ -1665,6 +1927,13 @@ public final class GraphUtils {
         path.remove(a);
     }
 
+    /**
+     * <p>district.</p>
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param G a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a {@link java.util.Set} object
+     */
     public static Set<Node> district(Node x, Graph G) {
         Set<Node> district = new HashSet<>();
         Set<Node> boundary = new HashSet<>();
@@ -1700,6 +1969,12 @@ public final class GraphUtils {
         return district;
     }
 
+    /**
+     * <p>isDag.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return a boolean
+     */
     public static boolean isDag(Graph graph) {
         boolean allDirected = true;
 
@@ -1717,6 +1992,9 @@ public final class GraphUtils {
      * spec consists of a comma separated list of edge specs of the forms just used in the previous sentence.
      * Unconnected nodes may be listed separately--example: "X,Y-&gt;Z". To specify a node as latent, use "Latent()."
      * Example: "Latent(L1),Y-&gt;L1."
+     *
+     * @param spec a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static Graph convert(String spec) {
         Graph graph = new EdgeListGraph();
@@ -1787,6 +2065,15 @@ public final class GraphUtils {
     }
 
     // Due to Spirtes.
+
+    /**
+     * <p>gfciR0.</p>
+     *
+     * @param graph          a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param referenceCpdag a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param sepsets        a {@link edu.cmu.tetrad.search.utils.SepsetProducer} object
+     * @param knowledge      a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public static void gfciR0(Graph graph, Graph referenceCpdag, SepsetProducer sepsets, Knowledge knowledge) {
         graph.reorientAllWith(Endpoint.CIRCLE);
 
@@ -1829,6 +2116,10 @@ public final class GraphUtils {
 
     /**
      * Orients according to background knowledge
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param variables a {@link java.util.List} object
      */
     public static void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -1870,6 +2161,14 @@ public final class GraphUtils {
         }
     }
 
+    /**
+     * <p>trimGraph.</p>
+     *
+     * @param targets       a {@link java.util.List} object
+     * @param graph         a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param trimmingStyle a int
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph trimGraph(List<Node> targets, Graph graph, int trimmingStyle) {
         switch (trimmingStyle) {
             case 1:
@@ -1956,22 +2255,49 @@ public final class GraphUtils {
         return _graph;
     }
 
+    /**
+     * The counts of different types of edges.
+     */
     private static class Counts {
 
+        /**
+         * The counts.
+         */
         private final int[][] counts;
 
+        /**
+         * Constructs a new Counts.
+         */
         public Counts() {
             this.counts = new int[8][6];
         }
 
+        /**
+         * Increments the count for the given edge type.
+         *
+         * @param m a int
+         * @param n a int
+         */
         public void increment(int m, int n) {
             this.counts[m][n]++;
         }
 
+        /**
+         * Returns the count for the given edge type.
+         *
+         * @param m a int
+         * @param n a int
+         * @return a int
+         */
         public int getCount(int m, int n) {
             return this.counts[m][n];
         }
 
+        /**
+         * Adds the counts of another Counts object to this one.
+         *
+         * @param counts2 a {@link edu.cmu.tetrad.graph.GraphUtils.Counts} object
+         */
         public void addAll(Counts counts2) {
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 6; j++) {
@@ -1980,47 +2306,125 @@ public final class GraphUtils {
             }
         }
 
+        /**
+         * Returns the counts.
+         *
+         * @return a int[][]
+         */
         public int[][] countArray() {
             return this.counts;
         }
     }
 
+    /**
+     * Graph comparison.
+     */
     public static class GraphComparison {
 
+        /**
+         * Counts.
+         */
         private final int[][] counts;
+
+        /**
+         * Adjacency false negatives.
+         */
         private final int adjFn;
+
+        /**
+         * Adjacency false positives.
+         */
         private final int adjFp;
+
+        /**
+         * Adjacency correct.
+         */
         private final int adjCorrect;
-        private final int arrowptFn;
-        private final int arrowptFp;
-        private final int arrowptCorrect;
 
+        /**
+         * Arrowhead false negatives.
+         */
+        private final int ahdFn;
+
+        /**
+         * Arrowhead false positives.
+         */
+        private final int ahdFp;
+
+        /**
+         * Arrowhead correct.
+         */
+        private final int ahdCorrect;
+
+        /**
+         * Adjacency precision.
+         */
         private final double adjPrec;
-        private final double adjRec;
-        private final double arrowptPrec;
-        private final double arrowptRec;
 
+        /**
+         * Adjacency recall.
+         */
+        private final double adjRec;
+
+        /**
+         * Arrowhead precision.
+         */
+        private final double ahdPrec;
+
+        /**
+         * Arrowhead recall.
+         */
+        private final double ahdRec;
+
+        /**
+         * Structural Hamming distance.
+         */
         private final int shd;
 
+        /**
+         * Edges added.
+         */
         private final List<Edge> edgesAdded;
+
+        /**
+         * Edges removed.
+         */
         private final List<Edge> edgesRemoved;
 
-        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int arrowptFn, int arrowptFp,
-                               int arrowptCorrect, double adjPrec, double adjRec, double arrowptPrec,
-                               double arrowptRec, int shd,
+        /**
+         * Constructs a new GraphComparison.
+         *
+         * @param adjFn        a int
+         * @param adjFp        a int
+         * @param adjCorrect   a int
+         * @param ahdFn        a int
+         * @param ahdFp        a int
+         * @param ahdCorrect   a int
+         * @param adjPrec      a double
+         * @param adjRec       a double
+         * @param ahdPrec      a double
+         * @param ahdRec       a double
+         * @param shd          a int
+         * @param edgesAdded   a {@link java.util.List} object
+         * @param edgesRemoved a {@link java.util.List} object
+         * @param counts       a int[][]
+         */
+        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int ahdFn, int ahdFp,
+                               int ahdCorrect, double adjPrec, double adjRec, double ahdPrec,
+                               double ahdRec, int shd,
                                List<Edge> edgesAdded, List<Edge> edgesRemoved,
                                int[][] counts) {
             this.adjFn = adjFn;
             this.adjFp = adjFp;
             this.adjCorrect = adjCorrect;
-            this.arrowptFn = arrowptFn;
-            this.arrowptFp = arrowptFp;
-            this.arrowptCorrect = arrowptCorrect;
+            this.ahdFn = ahdFn;
+            this.ahdFp = ahdFp;
+            this.ahdCorrect = ahdCorrect;
 
             this.adjPrec = adjPrec;
             this.adjRec = adjRec;
-            this.arrowptPrec = arrowptPrec;
-            this.arrowptRec = arrowptRec;
+            this.ahdPrec = ahdPrec;
+            this.ahdRec = ahdRec;
 
             this.shd = shd;
             this.edgesAdded = edgesAdded;
@@ -2029,74 +2433,171 @@ public final class GraphUtils {
             this.counts = counts;
         }
 
+        /**
+         * Returns the adjacency false negatives.
+         *
+         * @return the adjacency false negatives.
+         */
         public int getAdjFn() {
             return this.adjFn;
         }
 
+        /**
+         * Returns the adjacency false positives.
+         *
+         * @return the adjacency false positives.
+         */
         public int getAdjFp() {
             return this.adjFp;
         }
 
+        /**
+         * Returns the adjacency correct.
+         *
+         * @return the adjacency correct.
+         */
         public int getAdjCor() {
             return this.adjCorrect;
         }
 
+        /**
+         * Returns the arrowhead false negatives.
+         *
+         * @return the arrowhead false negatives.
+         */
         public int getAhdFn() {
-            return this.arrowptFn;
+            return this.ahdFn;
         }
 
+        /**
+         * Returns the arrowhead false positives.
+         *
+         * @return the arrowhead false positives.
+         */
         public int getAhdFp() {
-            return this.arrowptFp;
+            return this.ahdFp;
         }
 
+        /**
+         * Returns the arrowhead correct.
+         *
+         * @return the arrowhead correct.
+         */
         public int getAhdCor() {
-            return this.arrowptCorrect;
+            return this.ahdCorrect;
         }
 
+        /**
+         * Returns the adjacency precision.
+         *
+         * @return the adjacency precision.
+         */
         public int getShd() {
             return this.shd;
         }
 
+        /**
+         * Returns the edges added.
+         *
+         * @return the edges added.
+         */
         public List<Edge> getEdgesAdded() {
             return this.edgesAdded;
         }
 
+        /**
+         * Returns the edges removed.
+         *
+         * @return the edges removed.
+         */
         public List<Edge> getEdgesRemoved() {
             return this.edgesRemoved;
         }
 
+        /**
+         * Returns the adjaency precision.
+         *
+         * @return the adjacency precision.
+         */
         public double getAdjPrec() {
             return this.adjPrec;
         }
 
+        /**
+         * Returns the adjacency recall.
+         *
+         * @return the adjacency recall.
+         */
         public double getAdjRec() {
             return this.adjRec;
         }
 
+        /**
+         * Returns the arrowhead precision.
+         *
+         * @return the arrowhead precision.
+         */
         public double getAhdPrec() {
-            return this.arrowptPrec;
+            return this.ahdPrec;
         }
 
+        /**
+         * Returns the arrowhead recall.
+         *
+         * @return the arrowhead recall.
+         */
         public double getAhdRec() {
-            return this.arrowptRec;
+            return this.ahdRec;
         }
 
+        /**
+         * Returns the counts.
+         *
+         * @return the counts.
+         */
         public int[][] getCounts() {
             return this.counts;
         }
     }
 
+    /**
+     * Two-cycle errors.
+     */
     public static class TwoCycleErrors {
+
+        /**
+         * The number of correct edges.
+         */
         public int twoCycCor;
+
+        /**
+         * The number of false negatives.
+         */
         public int twoCycFn;
+
+        /**
+         * The number of false positives.
+         */
         public int twoCycFp;
 
+        /**
+         * Constructs a new TwoCycleErrors.
+         *
+         * @param twoCycCor the number of correct edges.
+         * @param twoCycFn  the number of false negatives.
+         * @param twoCycFp  the number of false positives.
+         */
         public TwoCycleErrors(int twoCycCor, int twoCycFn, int twoCycFp) {
             this.twoCycCor = twoCycCor;
             this.twoCycFn = twoCycFn;
             this.twoCycFp = twoCycFp;
         }
 
+        /**
+         * Returns a string representation of this object.
+         *
+         * @return a string representation of this object.
+         */
         public String toString() {
             return "2c cor = " + this.twoCycCor + "\t" + "2c fn = " + this.twoCycFn + "\t" + "2c fp = " + this.twoCycFp;
         }

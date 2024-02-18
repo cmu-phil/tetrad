@@ -23,6 +23,8 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NamingProtocol;
 
+import java.io.Serial;
+
 /**
  * Base class for variable specifications for DataSet. These objects govern the types of values which may be recorded in
  * a Column of data and provide information about the interpretation of these values. Variables of every type must
@@ -31,9 +33,11 @@ import edu.cmu.tetrad.util.NamingProtocol;
  *
  * @author Willie Wheeler 7/99
  * @author josephramsey modifications 12/00
+ * @version $Id: $Id
  */
 public abstract class AbstractVariable implements Variable {
 
+    @Serial
     private static final long serialVersionUID = 23L;
 
     /**
@@ -62,16 +66,22 @@ public abstract class AbstractVariable implements Variable {
     }
 
     /**
+     * <p>getMissingValueMarker.</p>
+     *
      * @return the missing value marker as an Object.
      */
     public abstract Object getMissingValueMarker();
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Tests whether the given value is the missing data marker.
      */
     public abstract boolean isMissingValue(Object value);
 
     /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
      * @return the name of this variable.
      */
     public final String getName() {
@@ -79,6 +89,8 @@ public abstract class AbstractVariable implements Variable {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of this variable.
      */
     public final void setName(String name) {
@@ -96,33 +108,31 @@ public abstract class AbstractVariable implements Variable {
     }
 
     /**
-     * Checks to see whether the passed value is an acceptable value for
-     * this variable. For AbstractVariable, this method always
-     * returns true. Subclasses should override
-     * checkValue() in order to provide for subclass-specific value
-     * checking. The value should pass the test if it can be converted into an equivalent object of the correct class
-     * type (see
-     * getValueClass()) for this variable; otherwise, it should fail. In
-     * general, checkValue() should not fail a value for simply not being an instance of a particular class.
-     * Since this method is not
-     * static, subclasses may (but need not) provide for
-     * instance-specific value checking.
-     *
-     * @param value a value
-     * @return true if the value is an acceptable value for
-     * this variable, and false otherwise
+     * {@inheritDoc}
+     * <p>
+     * Checks to see whether the passed value is an acceptable value for this variable. For AbstractVariable, this
+     * method always returns true. Subclasses should override checkValue() in order to provide for subclass-specific
+     * value checking. The value should pass the test if it can be converted into an equivalent object of the correct
+     * class type (see getValueClass()) for this variable; otherwise, it should fail. In general, checkValue() should
+     * not fail a value for simply not being an instance of a particular class. Since this method is not static,
+     * subclasses may (but need not) provide for instance-specific value checking.
      */
     public boolean checkValue(Object value) {
         return true;
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a String representation of this variable. Specifically, the name of the variable is returned.
      */
     public String toString() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public abstract Node like(String name);
 
 //    @Override

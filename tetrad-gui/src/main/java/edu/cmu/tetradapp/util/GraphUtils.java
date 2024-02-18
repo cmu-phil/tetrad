@@ -13,8 +13,16 @@ import java.util.List;
  * Created by jdramsey on 12/8/15.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class GraphUtils {
+    /**
+     * <p>makeRandomGraph.</p>
+     *
+     * @param graph      a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public static Graph makeRandomGraph(Graph graph, Parameters parameters) {
         int newGraphNumEdges = parameters.getInt("newGraphNumEdges", 3);
         boolean connected = parameters.getBoolean("randomGraphConnected", false);

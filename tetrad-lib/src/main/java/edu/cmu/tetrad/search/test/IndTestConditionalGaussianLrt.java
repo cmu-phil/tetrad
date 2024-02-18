@@ -44,6 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Assumes a conditional Gaussian model and uses a likelihood ratio test.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class IndTestConditionalGaussianLrt implements IndependenceTest {
     // The data set.
@@ -84,16 +85,21 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * @throws javax.help.UnsupportedOperationException Method not implemented
+     * {@inheritDoc}
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns and independence result that states whether x _||_y | z and what the p-value of the test is.
      *
-     * @return an independence result (see)
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
@@ -175,9 +181,9 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true if y is determined the variable in z.
-     *
-     * @return True, if so.
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
@@ -193,9 +199,9 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the significance level.
-     *
-     * @param alpha This level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -221,9 +227,9 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns true iff verbose output should be printed.
-     *
-     * @return This.
      */
     @Override
     public boolean isVerbose() {
@@ -231,9 +237,9 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether verbose output should be printed.
-     *
-     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

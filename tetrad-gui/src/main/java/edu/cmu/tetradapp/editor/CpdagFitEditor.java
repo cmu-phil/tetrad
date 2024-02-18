@@ -25,30 +25,32 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetradapp.model.CPDAGFitModel;
+import edu.cmu.tetradapp.model.CpdagFitModel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
 /**
- * Provides a little display/editor for notes in the session workbench. This may be elaborated in the future to allow
- * marked up text.
+ * Displays a CpdagFitModel object as a JTable.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
-public class CPDAGFitEditor extends JPanel {
+public class CpdagFitEditor extends JPanel {
 
     /**
-     * The model for the note.
+     * The model to display.
      */
-    private final CPDAGFitModel comparison;
+    private final CpdagFitModel comparison;
 
 
     /**
      * Constructs the editor given the model
+     *
+     * @param comparison a {@link CpdagFitModel} object
      */
-    public CPDAGFitEditor(CPDAGFitModel comparison) {
+    public CpdagFitEditor(CpdagFitModel comparison) {
         this.comparison = comparison;
         setup();
     }

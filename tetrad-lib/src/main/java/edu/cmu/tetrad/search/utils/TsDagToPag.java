@@ -36,6 +36,7 @@ import java.util.List;
  * Finds the PAG to which a DAG belongs, for a time series model.
  *
  * @author danielmalinsky
+ * @version $Id: $Id
  * @see Fci
  * @see DagToPag
  */
@@ -65,6 +66,8 @@ public final class TsDagToPag {
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
+     *
+     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public TsDagToPag(Graph dag) {
         this.dag = dag;
@@ -102,6 +105,15 @@ public final class TsDagToPag {
 
     }
 
+    /**
+     * <p>existsInducingPathInto.</p>
+     *
+     * @param x         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @return a boolean
+     */
     public static boolean existsInducingPathInto(Node x, Node y, Graph graph, Knowledge knowledge) {
         if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
         if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
@@ -121,6 +133,18 @@ public final class TsDagToPag {
         return false;
     }
 
+    /**
+     * <p>existsInducingPathVisitts.</p>
+     *
+     * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param a         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param b         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y         a {@link edu.cmu.tetrad.graph.Node} object
+     * @param path      a {@link java.util.LinkedList} object
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @return a boolean
+     */
     public static boolean existsInducingPathVisitts(Graph graph, Node a, Node b, Node x, Node y,
                                                     LinkedList<Node> path, Knowledge knowledge) {
         if (path.contains(b)) {
@@ -155,6 +179,11 @@ public final class TsDagToPag {
         return false;
     }
 
+    /**
+     * <p>convert.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph convert() {
         this.logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
 //        System.out.println("Knowledge is = " + knowledge);
@@ -192,10 +221,20 @@ public final class TsDagToPag {
         return graph;
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -205,6 +244,8 @@ public final class TsDagToPag {
     }
 
     /**
+     * <p>isCompleteRuleSetUsed.</p>
+     *
      * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
      * should be used. False by default.
      */
@@ -213,6 +254,8 @@ public final class TsDagToPag {
     }
 
     /**
+     * <p>Setter for the field <code>completeRuleSetUsed</code>.</p>
+     *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
@@ -222,31 +265,63 @@ public final class TsDagToPag {
 
     /**
      * True iff verbose output should be printed.
+     *
+     * @return a boolean
      */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * <p>Setter for the field <code>verbose</code>.</p>
+     *
+     * @param verbose a boolean
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * <p>Getter for the field <code>maxPathLength</code>.</p>
+     *
+     * @return a int
+     */
     public int getMaxPathLength() {
         return this.maxPathLength;
     }
 
+    /**
+     * <p>Setter for the field <code>maxPathLength</code>.</p>
+     *
+     * @param maxPathLength a int
+     */
     public void setMaxPathLength(int maxPathLength) {
         this.maxPathLength = maxPathLength;
     }
 
+    /**
+     * <p>Getter for the field <code>truePag</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getTruePag() {
         return this.truePag;
     }
 
+    /**
+     * <p>Setter for the field <code>truePag</code>.</p>
+     *
+     * @param truePag a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public void setTruePag(Graph truePag) {
         this.truePag = truePag;
     }
 
+    /**
+     * <p>Setter for the field <code>doDiscriminatingPathRule</code>.</p>
+     *
+     * @param doDiscriminatingPathRule a boolean
+     */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }

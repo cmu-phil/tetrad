@@ -33,6 +33,7 @@ import java.nio.channels.FileChannel;
  * Jul 13, 2015 10:44:10 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class DataUtility {
 
@@ -40,14 +41,19 @@ public class DataUtility {
 
     private static final byte CARRIAGE_RETURN = '\r';
 
+    /**
+     * <p>Constructor for DataUtility.</p>
+     */
     private DataUtility() {
     }
 
     /**
+     * <p>countColumn.</p>
+     *
      * @param file      dataset
      * @param delimiter a single character used to separate the data
      * @return the number of column of the first line in the file.
-     * @throws IOException
+     * @throws java.io.IOException if any.
      */
     public static int countColumn(File file, char delimiter) throws IOException {
         int count = 0;
@@ -83,9 +89,11 @@ public class DataUtility {
     }
 
     /**
+     * <p>countLine.</p>
+     *
      * @param file dataset
      * @return the number of lines that contain data.
-     * @throws IOException
+     * @throws java.io.IOException if any.
      */
     public static int countLine(File file) throws IOException {
         int count = 0;

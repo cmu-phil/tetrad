@@ -32,30 +32,52 @@ import edu.cmu.tetrad.graph.Node;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Serial;
 import java.util.*;
 
 /**
  * Stores a list of independence facts.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class IndependenceFactsModel implements KnowledgeBoxInput {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The independence facts.
+     */
     private IndependenceFacts facts = new IndependenceFacts();
+
+    /**
+     * The name of the model.
+     */
     private String name = "";
 
+    /**
+     * <p>Constructor for IndependenceFactsModel.</p>
+     */
     public IndependenceFactsModel() {
         // do nothing.
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
      */
     public static Knowledge serializableInstance() {
         return new Knowledge();
     }
 
+    /**
+     * <p>loadFacts.</p>
+     *
+     * @param reader a {@link java.io.Reader} object
+     * @return a {@link edu.cmu.tetradapp.model.IndependenceFactsModel} object
+     * @throws java.io.IOException if any.
+     */
     public static IndependenceFactsModel loadFacts(Reader reader) throws IOException {
         IndependenceFactsModel facts = new IndependenceFactsModel();
         Set<String> names = new HashSet<>();
@@ -91,47 +113,100 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
         return facts;
     }
 
+    /**
+     * <p>add.</p>
+     *
+     * @param fact a {@link edu.cmu.tetrad.graph.IndependenceFact} object
+     */
     public void add(IndependenceFact fact) {
         this.facts.add(fact);
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return this.facts.toString();
     }
 
+    /**
+     * <p>remove.</p>
+     *
+     * @param fact a {@link edu.cmu.tetrad.graph.IndependenceFact} object
+     */
     public void remove(IndependenceFact fact) {
         this.facts.remove(fact);
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * <p>Getter for the field <code>facts</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.IndependenceFacts} object
+     */
     public IndependenceFacts getFacts() {
         return this.facts;
     }
 
+    /**
+     * <p>Setter for the field <code>facts</code>.</p>
+     *
+     * @param facts a {@link edu.cmu.tetrad.data.IndependenceFacts} object
+     */
     public void setFacts(IndependenceFacts facts) {
         if (facts == null) throw new NullPointerException("FActs is null.");
         this.facts = facts;
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return null;
     }
 
+    /**
+     * <p>getResultGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getResultGraph() {
         return null;
     }
 
+    /**
+     * <p>getVariables.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Node> getVariables() {
         return this.facts.getVariables();
     }
 
+    /**
+     * <p>getVariableNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> getVariableNames() {
         return this.facts.getVariableNames();
     }

@@ -54,6 +54,12 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
     private BayesEstimatorNodeEditingTable editingTable;
     private boolean enableEditing = true;
 
+    /**
+     * <p>Constructor for EMBayesEstimatorEditorWizard.</p>
+     *
+     * @param bayesIm   a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public EMBayesEstimatorEditorWizard(BayesIm bayesIm,
                                         GraphWorkbench workbench) {
         if (bayesIm == null) {
@@ -209,10 +215,20 @@ final class EMBayesEstimatorEditorWizard extends JPanel {
         return this.workbench;
     }
 
+    /**
+     * <p>isEnableEditing.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEnableEditing() {
         return this.enableEditing;
     }
 
+    /**
+     * <p>enableEditing.</p>
+     *
+     * @param enableEditing a boolean
+     */
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         if (this.workbench != null) {

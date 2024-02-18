@@ -30,6 +30,7 @@ import org.apache.commons.math3.util.FastMath;
  * jdramsey@andrew.cmu.edu&gt; 0
  *
  * @author Unknown, but thanks
+ * @version $Id: $Id
  */
 @SuppressWarnings({"ConstantConditions", "WeakerAccess", "UnusedDeclaration"})
 public class ProbUtils {
@@ -315,6 +316,7 @@ public class ProbUtils {
      * one.  It was created by cutting and pasting from the PDF version of the book and then converting C syntax to
      * Java. The static double array above goes with this. Converted to Java by Frank Wimberly
      *
+     * @param xx a double
      * @return the value ln[?(xx)] for xx &gt; 0
      */
     public static double lngamma(double xx) {
@@ -342,6 +344,10 @@ public class ProbUtils {
 
     /**
      * Calculates the log beta function of p and q.
+     *
+     * @param p a double
+     * @param q a double
+     * @return a double
      */
     public static double logbeta(double p, double q) {
         return (ProbUtils.lngamma(p) + ProbUtils.lngamma(q) - ProbUtils.lngamma(p + q));
@@ -523,6 +529,11 @@ public class ProbUtils {
 
     /**
      * Binomial cumulative distribution function.
+     *
+     * @param k a int
+     * @param n a int
+     * @param p a double
+     * @return a double
      */
     public static double binomialCdf(int k, int n, double p) {
 
@@ -550,6 +561,9 @@ public class ProbUtils {
 
     /**
      * Cauchy CDF
+     *
+     * @param x a double
+     * @return a double
      */
     public static double cauchyCdf(double x) {
         return (FastMath.atan(x) + FastMath.PI / 2) / FastMath.PI;
@@ -557,6 +571,11 @@ public class ProbUtils {
 
     /**
      * F CDF.
+     *
+     * @param x   a double
+     * @param df1 a double
+     * @param df2 a double
+     * @return a double
      */
     public static double fCdf(double x, double df1, double df2) {
         return (1.0 - ProbUtils.betaCdf(df2 / (df2 + df1 * x), 0.5 * df2, 0.5 * df1));
@@ -650,6 +669,10 @@ public class ProbUtils {
 
     /**
      * compute complementary gamma cdf by its continued fraction expansion
+     *
+     * @param a a double
+     * @param x a double
+     * @return a double
      */
     @SuppressWarnings("WeakerAccess")
     public static double gammaCdf(double a, double x) {
@@ -671,12 +694,26 @@ public class ProbUtils {
         }
     }
 
+    /**
+     * <p>chisqCdf.</p>
+     *
+     * @param x  a double
+     * @param df a double
+     * @return a double
+     */
     public static double chisqCdf(double x, double df) {
         return Probability.chiSquare(df, x);
 //
 //        return gammaCdf(0.5 * df, 0.5 * x);
     }
 
+    /**
+     * <p>poissonCdf.</p>
+     *
+     * @param k a int
+     * @param y a double
+     * @return a double
+     */
     @SuppressWarnings("SuspiciousNameCombination")
     public static double poissonCdf(int k, double y) {
 
@@ -697,6 +734,10 @@ public class ProbUtils {
 
     /**
      * CACM Algorithm 395, by G. W. Hill
+     *
+     * @param x  a double
+     * @param df a double
+     * @return a double
      */
     public static double tCdf(double x, double df) {
 
@@ -792,6 +833,14 @@ public class ProbUtils {
         return cdf;
     }
 
+    /**
+     * <p>betaQuantile.</p>
+     *
+     * @param alpha a double
+     * @param p     a double
+     * @param q     a double
+     * @return a double
+     */
     @SuppressWarnings({"SameParameterValue", "WeakerAccess"})
     public static double betaQuantile(double alpha, double p, double q) {
 
@@ -960,6 +1009,14 @@ public class ProbUtils {
         } while (true);
     }
 
+    /**
+     * <p>binomialQuantile.</p>
+     *
+     * @param x a double
+     * @param n a int
+     * @param p a double
+     * @return a int
+     */
     @SuppressWarnings("UnusedAssignment")
     public static int binomialQuantile(double x, int n, double p) {
 
@@ -1024,10 +1081,23 @@ public class ProbUtils {
         return (k2);
     }
 
+    /**
+     * <p>cauchyQuantile.</p>
+     *
+     * @param x a double
+     * @return a double
+     */
     public static double cauchyQuantile(double x) {
         return FastMath.tan(FastMath.PI * (x - 0.5));
     }
 
+    /**
+     * <p>chisqQuantile.</p>
+     *
+     * @param p a double
+     * @param v a double
+     * @return a double
+     */
     @SuppressWarnings("UnusedAssignment")
     public static double chisqQuantile(double p, double v) {
 
@@ -1142,6 +1212,14 @@ public class ProbUtils {
     // checking transcriptions.  Functions abs,alog and sqrt are used.
     //
 
+    /**
+     * <p>fQuantile.</p>
+     *
+     * @param p   a double
+     * @param df1 a double
+     * @param df2 a double
+     * @return a double
+     */
     public static double fQuantile(double p, double df1, double df2) {
 
         double dx;
@@ -1155,10 +1233,23 @@ public class ProbUtils {
         }
     }
 
+    /**
+     * <p>gammaQuantile.</p>
+     *
+     * @param a a double
+     * @param p a double
+     * @return a double
+     */
     public static double gammaQuantile(double a, double p) {
         return (0.5 * ProbUtils.chisqQuantile(p, 2.0 * a));
     }
 
+    /**
+     * <p>normalQuantile.</p>
+     *
+     * @param p a double
+     * @return a double
+     */
     public static double normalQuantile(double p) {
 
         double q;
@@ -1190,6 +1281,13 @@ public class ProbUtils {
         return (ppn);
     }
 
+    /**
+     * <p>poissonQuantile.</p>
+     *
+     * @param x a double
+     * @param l a double
+     * @return a int
+     */
     @SuppressWarnings("UnusedAssignment")
     public static int poissonQuantile(double x, double l) {
 
@@ -1251,6 +1349,10 @@ public class ProbUtils {
 
     /**
      * CACM Algorithm 396, by G. W. Hill
+     *
+     * @param pp a double
+     * @param n  a double
+     * @return a double
      */
     public static double tQuantile(double pp, double n) {
 
@@ -1318,6 +1420,14 @@ public class ProbUtils {
         return sq;
     }
 
+    /**
+     * <p>betaPdf.</p>
+     *
+     * @param x a double
+     * @param a a double
+     * @param b a double
+     * @return a double
+     */
     public static double betaPdf(double x, double a, double b) {
 
         if ((x <= 0.0) || (x >= 1.0)) {
@@ -1328,6 +1438,14 @@ public class ProbUtils {
         }
     }
 
+    /**
+     * <p>binomialPmf.</p>
+     *
+     * @param k a int
+     * @param n a int
+     * @param p a double
+     * @return a double
+     */
     public static double binomialPmf(int k, int n, double p) {
 
         if (p == 0.0) {
@@ -1343,14 +1461,35 @@ public class ProbUtils {
         }
     }
 
+    /**
+     * <p>cauchyPdf.</p>
+     *
+     * @param x a double
+     * @return a double
+     */
     public static double cauchyPdf(double x) {
         return ProbUtils.tPdf(x, 1.0);
     }
 
+    /**
+     * <p>chisqPdf.</p>
+     *
+     * @param x a double
+     * @param v a double
+     * @return a double
+     */
     public static double chisqPdf(double x, double v) {
         return (0.5 * ProbUtils.gammaPdf(0.5 * x, 0.5 * v));
     }
 
+    /**
+     * <p>fPdf.</p>
+     *
+     * @param x a double
+     * @param a a double
+     * @param b a double
+     * @return a double
+     */
     public static double fPdf(double x, double a, double b) {
 
         if (x <= 0.0) {
@@ -1362,6 +1501,13 @@ public class ProbUtils {
         }
     }
 
+    /**
+     * <p>gammaPdf.</p>
+     *
+     * @param x a double
+     * @param a a double
+     * @return a double
+     */
     public static double gammaPdf(double x, double a) {
 
         if (x <= 0.0) {
@@ -1371,10 +1517,23 @@ public class ProbUtils {
         }
     }
 
+    /**
+     * <p>normalPdf.</p>
+     *
+     * @param x a double
+     * @return a double
+     */
     public static double normalPdf(double x) {
         return (FastMath.exp(-0.5 * x * x) / FastMath.sqrt(2.0 * FastMath.PI));
     }
 
+    /**
+     * <p>poissonPmf.</p>
+     *
+     * @param k      a int
+     * @param lambda a double
+     * @return a double
+     */
     public static double poissonPmf(int k, double lambda) {
 
         if (lambda == 0.0) {
@@ -1386,6 +1545,13 @@ public class ProbUtils {
         }
     }
 
+    /**
+     * <p>tPdf.</p>
+     *
+     * @param x a double
+     * @param a a double
+     * @return a double
+     */
     @SuppressWarnings("SameParameterValue")
     public static double tPdf(double x, double a) {
 
@@ -1394,11 +1560,22 @@ public class ProbUtils {
                 0.5 * (a + 1) * FastMath.log(1.0 + x * x / a)));
     }
 
+    /**
+     * <p>uniformSeeds.</p>
+     *
+     * @param a a long
+     * @param b a long
+     */
     public static void uniformSeeds(long a, long b) {
         ProbUtils.seedi = a & ProbUtils.MASK;
         ProbUtils.seedj = b & ProbUtils.MASK;
     }
 
+    /**
+     * <p>uniformRand.</p>
+     *
+     * @return a double
+     */
     public static double uniformRand() {
 
         ProbUtils.seedi = (ProbUtils.seedi * 69069 + 23606797) & ProbUtils.MASK;
@@ -1409,6 +1586,12 @@ public class ProbUtils {
         return ((double) ((ProbUtils.seedi + ProbUtils.seedj) & ProbUtils.MASK) * FastMath.pow(2.0, -32.0));
     }
 
+    /**
+     * <p>bernoulliRand.</p>
+     *
+     * @param p a double
+     * @return a int
+     */
     public static int bernoulliRand(double p) {
 
         return (ProbUtils.uniformRand() <= p) ? 1 : 0;
@@ -1416,6 +1599,9 @@ public class ProbUtils {
 
     /**
      * Poisson random generator from Numerical Recipes
+     *
+     * @param xm a double
+     * @return a int
      */
     public static int poissonRand(double xm) {
 
@@ -1457,6 +1643,10 @@ public class ProbUtils {
 
     /**
      * Binomial random generator from Numerical Recipes
+     *
+     * @param n  a int
+     * @param pp a double
+     * @return a int
      */
     public static int binomialRand(int n, double pp) {
 
@@ -1533,6 +1723,8 @@ public class ProbUtils {
 
     /**
      * Normal random generator
+     *
+     * @return a double
      */
     public static double normalRand() {
 
@@ -1559,6 +1751,8 @@ public class ProbUtils {
 
     /**
      * Cauchy random generator.
+     *
+     * @return a double
      */
     public static double cauchyRand() {
 
@@ -1577,6 +1771,9 @@ public class ProbUtils {
 
     /**
      * Gamma random generator.
+     *
+     * @param a a double
+     * @return a double
      */
     public static double gammaRand(double a) {
 
@@ -1655,6 +1852,9 @@ public class ProbUtils {
 
     /**
      * Chi square random generator.
+     *
+     * @param df a double
+     * @return a double
      */
     public static double chisqRand(double df) {
         return (2.0 * ProbUtils.gammaRand(df / 2.0));
@@ -1662,6 +1862,9 @@ public class ProbUtils {
 
     /**
      * T distribution random generator.
+     *
+     * @param df a double
+     * @return a double
      */
     public static double tRand(double df) {
         return (ProbUtils.normalRand() / FastMath.sqrt(ProbUtils.chisqRand(df) / df));
@@ -1669,6 +1872,10 @@ public class ProbUtils {
 
     /**
      * Beta distribution random generator.
+     *
+     * @param a a double
+     * @param b a double
+     * @return a double
      */
     public static double betaRand(double a, double b) {
 
@@ -1683,6 +1890,10 @@ public class ProbUtils {
 
     /**
      * F distribution random generator.
+     *
+     * @param ndf a double
+     * @param ddf a double
+     * @return a double
      */
     public static double fRand(double ndf, double ddf) {
         return ((ddf * ProbUtils.chisqRand(ndf)) / (ndf * ProbUtils.chisqRand(ddf)));
@@ -1695,9 +1906,8 @@ public class ProbUtils {
      * @param ah upper bound 1
      * @param ak upper bound 1
      * @param r  correlatiohn
-     * @return Prob(x1 &amp; le ; ah, x2 &amp; le ; ak)
+     * @return a double
      */
-
     public static double biNormalCdf(double ah, double ak, double r) {
         return ProbUtils.biNormalCdf2(-ah, -ak, r);
     }
@@ -1862,8 +2072,10 @@ public class ProbUtils {
      * (1992), pp. 141-149. http://www.math.wsu.edu/faculty/genz/homepage Warning: this method has the side effect of
      * changing the order of the elements in the arrays given as input. --November 3st 2003, Ricardo Silva
      *
-     * @param a lower bounds (use Double.NEGATIVE_INFINITY if necessary)
-     * @param b upper bounds (use Double.POSITIVE_INFINITY if necessary)
+     * @param a   lower bounds (use Double.NEGATIVE_INFINITY if necessary)
+     * @param b   upper bounds (use Double.POSITIVE_INFINITY if necessary)
+     * @param cov an array of {@link double} objects
+     * @return a double
      */
     public static double multinormalProb(double[] a, double[] b,
                                          double[][] cov) {

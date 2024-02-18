@@ -29,11 +29,15 @@ import java.io.IOException;
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
+ * @version $Id: $Id
  */
 public class SymMatrixF extends LTMatrixF {
 
     /**
      * Creates a symmetric matrix with <code>nrows</code> rows.
+     *
+     * @param mname a {@link java.lang.String} object
+     * @param nrows a int
      */
     public SymMatrixF(String mname, int nrows) {
         super(mname, nrows);
@@ -41,6 +45,9 @@ public class SymMatrixF extends LTMatrixF {
 
     /**
      * Creates a symmetric matrix reading it from file <code>fname</code>.
+     *
+     * @param fname a {@link java.lang.String} object
+     * @throws java.io.IOException if any.
      */
     public SymMatrixF(String fname) throws IOException {
         super(fname);
@@ -49,6 +56,10 @@ public class SymMatrixF extends LTMatrixF {
     /**
      * Sets the value of element (<code>row</code>,<code>col</code>) to
      * <code>x</code>
+     *
+     * @param row a int
+     * @param col a int
+     * @param x   a double
      */
     public void setValue(int row, int col, double x) {
         if (row >= col) {
@@ -59,6 +70,8 @@ public class SymMatrixF extends LTMatrixF {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the value of element (<code>row</code>,<code>col</code>) to
      * <code>x</code>
      */
@@ -71,6 +84,8 @@ public class SymMatrixF extends LTMatrixF {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the value of element at (<code>row</code>,<code>col</code>)
      */
     public float getValue(int row, int col) {
@@ -80,6 +95,8 @@ public class SymMatrixF extends LTMatrixF {
 
     /**
      * Returns a specially formatted string with all the contents of this matrix
+     *
+     * @return a {@link java.lang.String} object
      */
     public String toString() {
         String s = this.getClass().getName() + " " + this.name + "\n" + this.n +

@@ -25,6 +25,7 @@ import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.util.FastMath;
 
+import java.io.Serial;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,6 +33,7 @@ import java.util.List;
  * Represents a constant expression, that is an expression that always evaluates to the same value.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class ConstantExpression implements Expression {
     /**
@@ -42,6 +44,7 @@ public class ConstantExpression implements Expression {
      * Constant expression for e.
      */
     public static final ConstantExpression E = new ConstantExpression(FastMath.E, "E");// "e");
+    @Serial
     private static final long serialVersionUID = 23L;
     /**
      * THe value of the expression.
@@ -57,6 +60,8 @@ public class ConstantExpression implements Expression {
 
     /**
      * Constructs the constant expression given the value to use.
+     *
+     * @param value a double
      */
     public ConstantExpression(double value) {
         this.value = value;
@@ -74,6 +79,11 @@ public class ConstantExpression implements Expression {
         this.name = name;
     }
 
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.calculator.expression.ConstantExpression} object
+     */
     public static ConstantExpression serializableInstance() {
         return new ConstantExpression(1.2);
     }
@@ -82,6 +92,8 @@ public class ConstantExpression implements Expression {
 
 
     /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
      * @return the name of the constant or null if there isn't one.
      */
     public String getName() {
@@ -89,24 +101,44 @@ public class ConstantExpression implements Expression {
     }
 
     /**
-     * @return the constant value.
+     * {@inheritDoc}
      */
     public double evaluate(Context context) {
         return this.value;
     }
 
+    /**
+     * <p>getToken.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getToken() {
         return "";
     }
 
+    /**
+     * <p>getPosition.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.calculator.expression.ExpressionDescriptor.Position} object
+     */
     public ExpressionDescriptor.Position getPosition() {
         return ExpressionDescriptor.Position.NEITHER;
     }
 
+    /**
+     * <p>getExpressions.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<Expression> getExpressions() {
         return Collections.emptyList();
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         if (this.name == null) {
             return Double.toString(this.value);
@@ -115,11 +147,17 @@ public class ConstantExpression implements Expression {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public RealDistribution getRealDistribution(Context context) {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public IntegerDistribution getIntegerDistribution(Context context) {
         return null;
     }

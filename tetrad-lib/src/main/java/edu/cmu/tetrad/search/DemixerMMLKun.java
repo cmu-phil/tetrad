@@ -20,15 +20,26 @@ import java.util.List;
 
 /**
  * Created by user on 2/27/18.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
 public class DemixerMMLKun {
 
     private final double minWeight;
 
+    /**
+     * <p>Constructor for DemixerMMLKun.</p>
+     */
     public DemixerMMLKun() {
         minWeight = 1e-3;
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         DataSet dataSet;
 

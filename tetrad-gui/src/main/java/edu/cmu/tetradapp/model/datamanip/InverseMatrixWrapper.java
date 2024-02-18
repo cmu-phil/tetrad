@@ -32,12 +32,16 @@ import edu.cmu.tetradapp.model.PcRunner;
  * Splits continuous data sets by collinear columns.
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class InverseMatrixWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
      * Splits the given data set by collinear columns.
+     *
+     * @param wrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public InverseMatrixWrapper(DataWrapper wrapper, Parameters params) {
         if (wrapper == null) {
@@ -74,6 +78,7 @@ public class InverseMatrixWrapper extends DataWrapper {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.PcRunner} object
      * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {

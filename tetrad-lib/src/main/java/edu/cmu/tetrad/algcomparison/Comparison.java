@@ -52,7 +52,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
 /**
@@ -61,29 +60,102 @@ import java.util.concurrent.ForkJoinPool;
  *
  * @author josephramsey
  * @author danielmalinsky
+ * @version $Id: $Id
  */
 public class Comparison {
 
+    /**
+     * Whether to parallelize the comparison.
+     */
     private boolean parallelized = false;
+
+    /**
+     * The graph type used.
+     */
     private boolean[] graphTypeUsed;
+
+    /**
+     * The output stream.
+     */
     private PrintStream out;
+
+    /**
+     * Whether the tables should be tab-delimited.
+     */
     private boolean tabDelimitedTables;
+
+    /**
+     * Whether to save the graphs.
+     */
     private boolean saveGraphs;
+
+    /**
+     * Whether to show the simulation indices.
+     */
     private boolean showSimulationIndices;
+
+    /**
+     * Whether to show the algorithm indices.
+     */
     private boolean showAlgorithmIndices;
+
+    /**
+     * Whether to show the utility calculations.
+     */
     private boolean showUtilities;
+
+    /**
+     * Whether to sort by utility.
+     */
     private boolean sortByUtility;
+
+    /**
+     * The data path.
+     */
     private String dataPath;
+
+    /**
+     * The results path.
+     */
     private String resultsPath;
+
+    /**
+     * Whether to save the data.
+     */
     private boolean saveData = false;
+
+    /**
+     * Whether to save the CPDAGs.
+     */
     private boolean saveCPDAGs = false;
+
+    /**
+     * Whether to save the PAGs.
+     */
     private boolean savePags = false;
+
+    /**
+     * The comparison graph type.
+     */
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
 
+    /**
+     * <p>Setter for the field <code>parallelized</code>.</p>
+     *
+     * @param parallelized a boolean
+     */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
     }
 
+    /**
+     * <p>compareFromFiles.</p>
+     *
+     * @param filePath   a {@link java.lang.String} object
+     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public void compareFromFiles(String filePath, Algorithms algorithms, Statistics statistics, Parameters parameters) {
         compareFromFiles(filePath, filePath, algorithms, statistics, parameters);
     }
@@ -94,6 +166,8 @@ public class Comparison {
      * @param dataPath    Path to the directory where data and graph files have been saved.
      * @param resultsPath Path to the file where the results should be stored.
      * @param algorithms  The list of algorithms to be compared.
+     * @param statistics  a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters) {
@@ -132,12 +206,31 @@ public class Comparison {
         compareFromSimulations(resultsPath, simulations, algorithms, statistics, parameters);
     }
 
+    /**
+     * <p>generateReportFromExternalAlgorithms.</p>
+     *
+     * @param dataPath    a {@link java.lang.String} object
+     * @param resultsPath a {@link java.lang.String} object
+     * @param algorithms  a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics  a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters) {
         generateReportFromExternalAlgorithms(dataPath, resultsPath, "Comparison.txt", algorithms,
                 statistics, parameters);
     }
 
+    /**
+     * <p>generateReportFromExternalAlgorithms.</p>
+     *
+     * @param dataPath       a {@link java.lang.String} object
+     * @param resultsPath    a {@link java.lang.String} object
+     * @param outputFileName a {@link java.lang.String} object
+     * @param algorithms     a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics     a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, String outputFileName, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters) {
 
@@ -178,6 +271,15 @@ public class Comparison {
         compareFromSimulations(this.resultsPath, simulations, outputFileName, algorithms, statistics, parameters);
     }
 
+    /**
+     * <p>compareFromSimulations.</p>
+     *
+     * @param resultsPath a {@link java.lang.String} object
+     * @param simulations a {@link edu.cmu.tetrad.algcomparison.simulation.Simulations} object
+     * @param algorithms  a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics  a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters) {
         compareFromSimulations(resultsPath, simulations, "Comparison.txt", algorithms, statistics, parameters);
@@ -186,10 +288,12 @@ public class Comparison {
     /**
      * Compares algorithms.
      *
-     * @param resultsPath Path to the file where the output should be printed.
-     * @param simulations The list of simulationWrapper that is used to generate graphs and data for the comparison.
-     * @param algorithms  The list of algorithms to be compared.
-     * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
+     * @param resultsPath    Path to the file where the output should be printed.
+     * @param simulations    The list of simulationWrapper that is used to generate graphs and data for the comparison.
+     * @param algorithms     The list of algorithms to be compared.
+     * @param statistics     The list of statistics on which to compare the algorithm, and their utility weights.
+     * @param outputFileName a {@link java.lang.String} object
+     * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters) {
@@ -282,8 +386,7 @@ public class Comparison {
                             + " / " + simulationWrapper.getDescription());
                 }
 
-                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
-                    ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
                     external.setSimIndex(simulationWrappers.indexOf(external.getSimulation()));
                 }
 
@@ -654,7 +757,9 @@ public class Comparison {
     }
 
     /**
+     * <p>configuration.</p>
      *
+     * @param path a {@link java.lang.String} object
      */
     public void configuration(String path) {
         try {
@@ -912,36 +1017,58 @@ public class Comparison {
             }
         }
 
-        if (parallelized) {
-//            int parallelism = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
-            ForkJoinPool pool = (ForkJoinPool) Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        ForkJoinPool pool = new ForkJoinPool(parallelism);
+
+        try {
             pool.invokeAll(tasks);
-            pool.shutdown();
-        } else {
-            for (Callable<Boolean> task : tasks) {
-                task.call();
-            }
+        } catch (Exception e) {
+            Thread.currentThread().interrupt();
+            throw  e;
         }
+
         return allStats;
     }
 
+    /**
+     * <p>isShowSimulationIndices.</p>
+     *
+     * @return a boolean
+     */
     public boolean isShowSimulationIndices() {
         return this.showSimulationIndices;
     }
 
+    /**
+     * <p>Setter for the field <code>showSimulationIndices</code>.</p>
+     *
+     * @param showSimulationIndices a boolean
+     */
     public void setShowSimulationIndices(boolean showSimulationIndices) {
         this.showSimulationIndices = showSimulationIndices;
     }
 
+    /**
+     * <p>isShowAlgorithmIndices.</p>
+     *
+     * @return a boolean
+     */
     public boolean isShowAlgorithmIndices() {
         return this.showAlgorithmIndices;
     }
 
+    /**
+     * <p>Setter for the field <code>showAlgorithmIndices</code>.</p>
+     *
+     * @param showAlgorithmIndices a boolean
+     */
     public void setShowAlgorithmIndices(boolean showAlgorithmIndices) {
         this.showAlgorithmIndices = showAlgorithmIndices;
     }
 
     /**
+     * <p>isShowUtilities.</p>
+     *
      * @return True iff a column of utilities marked "W" should be shown in the output.
      */
     public boolean isShowUtilities() {
@@ -949,6 +1076,8 @@ public class Comparison {
     }
 
     /**
+     * <p>Setter for the field <code>showUtilities</code>.</p>
+     *
      * @param showUtilities True iff a column of utilities marked "W" should be shown in the output.
      */
     public void setShowUtilities(boolean showUtilities) {
@@ -956,6 +1085,8 @@ public class Comparison {
     }
 
     /**
+     * <p>isSortByUtility.</p>
+     *
      * @return True iff the output should be sorted by utility.
      */
     public boolean isSortByUtility() {
@@ -963,6 +1094,8 @@ public class Comparison {
     }
 
     /**
+     * <p>Setter for the field <code>sortByUtility</code>.</p>
+     *
      * @param sortByUtility true iff the output should be sorted by utility.
      */
     public void setSortByUtility(boolean sortByUtility) {
@@ -970,6 +1103,8 @@ public class Comparison {
     }
 
     /**
+     * <p>isSaveCPDAGs.</p>
+     *
      * @return True if CPDAGs should be saved out.
      */
     public boolean isSaveCPDAGs() {
@@ -977,6 +1112,8 @@ public class Comparison {
     }
 
     /**
+     * <p>Setter for the field <code>saveCPDAGs</code>.</p>
+     *
      * @param saveCPDAGs True if CPDAGs should be saved out.
      */
     public void setSaveCPDAGs(boolean saveCPDAGs) {
@@ -984,28 +1121,44 @@ public class Comparison {
     }
 
     /**
+     * <p>isSavePags.</p>
+     *
      * @return True if CPDAGs should be saved out.
      */
     public boolean isSavePags() {
         return this.savePags;
     }
 
+    /**
+     * <p>Setter for the field <code>savePags</code>.</p>
+     *
+     * @param savePags a boolean
+     */
     public void setSavePags(boolean savePags) {
         this.savePags = savePags;
     }
 
     /**
+     * <p>isSaveData.</p>
+     *
      * @return True if CPDAGs should be saved out.
      */
     public boolean isSaveData() {
         return saveData;
     }
 
+    /**
+     * <p>Setter for the field <code>saveData</code>.</p>
+     *
+     * @param saveData a boolean
+     */
     public void setSaveData(boolean saveData) {
         this.saveData = saveData;
     }
 
     /**
+     * <p>isTabDelimitedTables.</p>
+     *
      * @return True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public boolean isTabDelimitedTables() {
@@ -1013,6 +1166,8 @@ public class Comparison {
     }
 
     /**
+     * <p>Setter for the field <code>tabDelimitedTables</code>.</p>
+     *
      * @param tabDelimitedTables True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public void setTabDelimitedTables(boolean tabDelimitedTables) {
@@ -1020,6 +1175,8 @@ public class Comparison {
     }
 
     /**
+     * <p>isSaveGraphs.</p>
+     *
      * @return True if all graphs should be saved to files.
      */
     public boolean isSaveGraphs() {
@@ -1027,6 +1184,8 @@ public class Comparison {
     }
 
     /**
+     * <p>Setter for the field <code>saveGraphs</code>.</p>
+     *
      * @param saveGraphs True if all graphs should be saved to files.
      */
     public void setSaveGraphs(boolean saveGraphs) {
@@ -1035,6 +1194,8 @@ public class Comparison {
 
     /**
      * The type of graph the results are compared to.
+     *
+     * @return a {@link edu.cmu.tetrad.algcomparison.Comparison.ComparisonGraph} object
      */
     public ComparisonGraph getComparisonGraph() {
         return this.comparisonGraph;
@@ -1042,6 +1203,8 @@ public class Comparison {
 
     /**
      * The type of graph the results are compared to.
+     *
+     * @param comparisonGraph a {@link edu.cmu.tetrad.algcomparison.Comparison.ComparisonGraph} object
      */
     public void setComparisonGraph(ComparisonGraph comparisonGraph) {
         if (comparisonGraph == null) {
@@ -1124,8 +1287,7 @@ public class Comparison {
                 ((HasKnowledge) algorithm).setKnowledge(((HasKnowledge) simulation).getKnowledge());
             }
 
-            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
-                ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
                 external.setSimulation(simulationWrapper.getSimulation());
                 external.setPath(this.resultsPath);
                 external.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
@@ -1173,8 +1335,7 @@ public class Comparison {
             graphOut = GraphUtils.replaceNodes(graphOut, trueGraph.getNodes());
         }
 
-        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
-            ExternalAlgorithm extAlg = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm extAlg) {
             extAlg.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
             extAlg.setSimulation(simulationWrapper.getSimulation());
             extAlg.setPath(this.resultsPath);
@@ -1633,19 +1794,52 @@ public class Comparison {
         }
     }
 
+    /**
+     * An enum of comparison graphs types.
+     */
     public enum ComparisonGraph {
-        true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
+
+        /**
+         * Constant for the true DAG.
+         */
+        true_DAG,
+
+        /**
+         * Constant for the CPDAG of the true DAG.
+         */
+        CPDAG_of_the_true_DAG,
+
+        /**
+         * Constant for the PAG of the true DAG.
+         */
+        PAG_of_the_true_DAG
     }
 
     private enum Mode {
         Average, StandardDeviation, MinValue, MaxValue, MedianValue
     }
 
+    /**
+     * An algorithm wrapper.
+     */
     private static class AlgorithmWrapper implements Algorithm {
 
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The algorithm.
+         */
         private final Algorithm algorithm;
+
+        /**
+         * The parameters.
+         */
         private final Parameters parameters;
+
+        /**
+         * The overridden parameters.
+         */
         private final List<String> overriddenParameters = new ArrayList<>();
 
         public AlgorithmWrapper(Algorithm algorithm, Parameters parameters) {
@@ -1668,7 +1862,7 @@ public class Comparison {
             StringBuilder description = new StringBuilder();
             description.append(this.algorithm.getDescription());
 
-            if (this.overriddenParameters.size() > 0) {
+            if (!this.overriddenParameters.isEmpty()) {
                 for (String name : new ArrayList<>(this.overriddenParameters)) {
                     description.append(", ").append(name).append(" = ").append(this.parameters.get(name));
                 }
@@ -1707,8 +1901,17 @@ public class Comparison {
 
     private static class AlgorithmSimulationWrapper implements Algorithm {
 
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The simulation wrapper.
+         */
         private final SimulationWrapper simulationWrapper;
+
+        /**
+         * The algorithm wrapper.
+         */
         private final AlgorithmWrapper algorithmWrapper;
 
         public AlgorithmSimulationWrapper(AlgorithmWrapper algorithm, SimulationWrapper simulation) {
@@ -1716,26 +1919,54 @@ public class Comparison {
             this.simulationWrapper = simulation;
         }
 
+        /**
+         * <p>search.</p>
+         *
+         * @param DataModel  a {@link edu.cmu.tetrad.data.DataModel} object
+         * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+         * @return a {@link edu.cmu.tetrad.graph.Graph} object
+         */
         @Override
         public Graph search(DataModel DataModel, Parameters parameters) {
             return this.algorithmWrapper.getAlgorithm().search(DataModel, parameters);
         }
 
+        /**
+         * <p>getComparisonGraph.</p>
+         *
+         * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+         * @return a {@link edu.cmu.tetrad.graph.Graph} object
+         */
         @Override
         public Graph getComparisonGraph(Graph graph) {
             return this.algorithmWrapper.getComparisonGraph(graph);
         }
 
+        /**
+         * <p>getDescription.</p>
+         *
+         * @return a {@link java.lang.String} object
+         */
         @Override
         public String getDescription() {
             throw new IllegalArgumentException();
         }
 
+        /**
+         * <p>getDataType.</p>
+         *
+         * @return a {@link edu.cmu.tetrad.data.DataType} object
+         */
         @Override
         public DataType getDataType() {
             return this.algorithmWrapper.getDataType();
         }
 
+        /**
+         * <p>getParameters.</p>
+         *
+         * @return a {@link java.util.List} object
+         */
         @Override
         public List<String> getParameters() {
             List<String> params = new ArrayList<>(this.simulationWrapper.getParameters());
@@ -1743,22 +1974,52 @@ public class Comparison {
             return params;
         }
 
+        /**
+         * <p>getAlgorithmWrapper.</p>
+         *
+         * @return a simulation wrapper
+         */
         public SimulationWrapper getSimulationWrapper() {
             return this.simulationWrapper;
         }
 
+        /**
+         * <p>getAlgorithmWrapper.</p>
+         *
+         * @return an algorithm wrapper
+         */
         public AlgorithmWrapper getAlgorithmWrapper() {
             return this.algorithmWrapper;
         }
     }
 
     private static class SimulationWrapper implements Simulation {
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The simulation.
+         */
         private final Simulation simulation;
+
+        /**
+         * The graphs.
+         */
         private List<Graph> graphs;
+
+        /**
+         * The data models.
+         */
         private List<DataModel> dataModels;
+
+        /**
+         * The parameters.
+         */
         private Parameters parameters;
 
+        /**
+         * {@inheritDoc}
+         */
         public SimulationWrapper(Simulation simulation, Parameters parameters) {
             this.simulation = simulation;
 
@@ -1767,6 +2028,9 @@ public class Comparison {
             this.parameters = new Parameters(parameters);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void createData(Parameters parameters, boolean newModel) {
             if (newModel) {
@@ -1780,6 +2044,9 @@ public class Comparison {
             }
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int getNumDataModels() {
             if (this.dataModels == null) {
@@ -1788,6 +2055,9 @@ public class Comparison {
             return this.dataModels.size();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Graph getTrueGraph(int index) {
             if (this.graphs.get(index) == null) {
@@ -1797,30 +2067,48 @@ public class Comparison {
             }
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public synchronized DataModel getDataModel(int index) {
             return this.dataModels.get(index);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public DataType getDataType() {
             return this.simulation.getDataType();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String getDescription() {
             return this.simulation.getDescription();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public List<String> getParameters() {
             return this.simulation.getParameters();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public void setParameters(Parameters parameters) {
             this.parameters = new Parameters(parameters);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public void setValue(String name, Object value) {
             if (!(value instanceof Number)) {
                 throw new IllegalArgumentException();
@@ -1829,6 +2117,9 @@ public class Comparison {
             this.parameters.set(name, value);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public Object getValue(String name) {
             Object[] values = this.parameters.getValues(name);
 
@@ -1839,22 +2130,54 @@ public class Comparison {
             return values[0];
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public Simulation getSimulation() {
             return this.simulation;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         public Parameters getSimulationSpecificParameters() {
             return this.parameters;
         }
     }
 
+    /**
+     * A run.
+     */
     private static class Run {
 
+        /**
+         * The algorithm simulation index.
+         */
         private final int algSimIndex;
+
+        /**
+         * The run index.
+         */
         private final int runIndex;
+
+        /**
+         * The index.
+         */
         private final int index;
+
+        /**
+         * The wrapper.
+         */
         private final AlgorithmSimulationWrapper wrapper;
 
+        /**
+         * Constructs a new run.
+         *
+         * @param algSimIndex the algorithm simulation index
+         * @param runIndex    the run index
+         * @param index       the index
+         * @param wrapper     the wrapper
+         */
         public Run(int algSimIndex, int runIndex, int index, AlgorithmSimulationWrapper wrapper) {
             this.runIndex = runIndex;
             this.algSimIndex = algSimIndex;
@@ -1862,34 +2185,100 @@ public class Comparison {
             this.wrapper = wrapper;
         }
 
+        /**
+         * <p>Getter for the field <code>algSimIndex</code>.</p>
+         *
+         * @return the algorithm simulation index
+         */
         public int getAlgSimIndex() {
             return this.algSimIndex;
         }
 
+        /**
+         * <p>Getter for the field <code>runIndex</code>.</p>
+         *
+         * @return the run index
+         */
         public int getRunIndex() {
             return this.runIndex;
         }
 
+        /**
+         * <p>Getter for the field <code>index</code>.</p>
+         *
+         * @return the index
+         */
         public int getIndex() {
             return this.index;
         }
 
+        /**
+         * <p>Getter for the field <code>wrapper</code>.</p>
+         *
+         * @return the wrapper
+         */
         public AlgorithmSimulationWrapper getWrapper() {
             return this.wrapper;
         }
     }
 
+    /**
+     * A task for running an algorithm.
+     */
     private class AlgorithmTask implements Callable<Boolean> {
 
+        /**
+         * The algorithm simulation wrappers.
+         */
         private final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
+
+        /**
+         * The algorithm wrappers.
+         */
         private final List<AlgorithmWrapper> algorithmWrappers;
+
+        /**
+         * The simulation wrappers.
+         */
         private final List<SimulationWrapper> simulationWrappers;
+
+        /**
+         * The statistics.
+         */
         private final Statistics statistics;
+
+        /**
+         * The number of graph types.
+         */
         private final int numGraphTypes;
+
+        /**
+         * The statistics.
+         */
         private final double[][][][] allStats;
+
+        /**
+         * The run.
+         */
         private final Run run;
+
+        /**
+         * The standard output.
+         */
         private final PrintStream stdout;
 
+        /**
+         * Constructs a new algorithm task.
+         *
+         * @param algorithmSimulationWrappers the algorithm simulation wrappers
+         * @param algorithmWrappers           the algorithm wrappers
+         * @param simulationWrappers          the simulation wrappers
+         * @param statistics                  the statistics
+         * @param numGraphTypes               the number of graph types
+         * @param allStats                    the statistics
+         * @param run                         the run
+         * @param stdout                      the standard output
+         */
         public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
                              List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
                              Statistics statistics, int numGraphTypes, double[][][][] allStats, Run run, PrintStream stdout) {
@@ -1903,6 +2292,12 @@ public class Comparison {
             this.stdout = stdout;
         }
 
+        /**
+         * Does a run.
+         *
+         * @return true.
+         * @throws java.lang.Exception if any.
+         */
         @Override
         public Boolean call() throws Exception {
             doRun(this.algorithmSimulationWrappers, this.algorithmWrappers,

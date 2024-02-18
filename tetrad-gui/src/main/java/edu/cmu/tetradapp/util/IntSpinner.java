@@ -31,12 +31,13 @@ import java.util.Objects;
  * given).
  *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
 public class IntSpinner extends JSpinner {
 
 
     /**
-     * The eidtor
+     * The editor
      */
     private final IntTextField editor;
 
@@ -106,6 +107,11 @@ public class IntSpinner extends JSpinner {
         return new Dimension(dim.width + 2, dim.height + 2);
     }
 
+    /**
+     * <p>Setter for the field <code>min</code>.</p>
+     *
+     * @param min a {@link java.lang.Integer} object
+     */
     public void setMin(Integer min) {
         if (!Objects.equals(this.min, min)) {
             this.min = min;
@@ -118,6 +124,8 @@ public class IntSpinner extends JSpinner {
 
     /**
      * Sets the max value for the spinner.
+     *
+     * @param max a {@link java.lang.Integer} object
      */
     public void setMax(Integer max) {
         if (!Objects.equals(this.max, max)) {
@@ -129,10 +137,18 @@ public class IntSpinner extends JSpinner {
         }
     }
 
+    /**
+     * <p>Setter for the field <code>filter</code>.</p>
+     *
+     * @param filter a {@link edu.cmu.tetradapp.util.IntSpinner.Filter} object
+     */
     public void setFilter(Filter filter) {
         this.filter = filter;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setValue(Object object) {
         if (object == null) {
             throw new NullPointerException();
@@ -155,8 +171,18 @@ public class IntSpinner extends JSpinner {
         return this.filter.filter((Integer) getValue(), value);
     }
 
+    /**
+     * Interface for filtering values.
+     */
     public interface Filter {
 
+        /**
+         * <p>filter.</p>
+         *
+         * @param oldValue a int
+         * @param newValue a int
+         * @return a int
+         */
         int filter(int oldValue, int newValue);
 
     }

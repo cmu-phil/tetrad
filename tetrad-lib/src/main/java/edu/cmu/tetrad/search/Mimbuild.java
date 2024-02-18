@@ -59,6 +59,7 @@ import java.util.List;
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see Bpc
  * @see Fofc
  * @see #getLatentsCov()
@@ -189,6 +190,8 @@ public class Mimbuild {
     }
 
     /**
+     * <p>Getter for the field <code>minimum</code>.</p>
+     *
      * @return The minimum function (Fgsl) value achieved.
      */
     public double getMinimum() {
@@ -196,6 +199,8 @@ public class Mimbuild {
     }
 
     /**
+     * <p>Getter for the field <code>pValue</code>.</p>
+     *
      * @return The p value of the optimization.
      */
     public double getpValue() {
@@ -448,11 +453,18 @@ public class Mimbuild {
 
     /**
      * jf Clusters smaller than this size will be tossed out.
+     *
+     * @return a int
      */
     public int getMinClusterSize() {
         return this.minClusterSize;
     }
 
+    /**
+     * <p>Setter for the field <code>minClusterSize</code>.</p>
+     *
+     * @param minClusterSize a int
+     */
     public void setMinClusterSize(int minClusterSize) {
         if (minClusterSize < 3)
             throw new IllegalArgumentException("Minimum cluster size must be >= 3: " + minClusterSize);
@@ -511,6 +523,11 @@ public class Mimbuild {
         return sum;
     }
 
+    /**
+     * <p>Setter for the field <code>seed</code>.</p>
+     *
+     * @param seed a long
+     */
     public void setSeed(long seed) {
         this.seed = seed;
     }

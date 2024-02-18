@@ -29,6 +29,7 @@ import java.util.StringTokenizer;
  * one or more search methods of that instance.
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class LTestBoolSearch {
     static int ngenes = 6;
@@ -36,6 +37,11 @@ public class LTestBoolSearch {
 
     static int[][] cases = new int[LTestBoolSearch.ntimes][LTestBoolSearch.ngenes];
 
+    /**
+     * <p>main.</p>
+     *
+     * @param argv an array of {@link java.lang.String} objects
+     */
     public static void main(String[] argv) {
 
         String fileName = argv[0];

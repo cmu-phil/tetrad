@@ -62,9 +62,24 @@ import java.util.Set;
  * @author clarkglymour
  * @author jijizhang
  * @author josephramsey
+ * @version $Id: $Id
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
  * @see FciOrient
  * @see Pc
  * @see Fas
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
+ * @see FciOrient
  * @see FciOrient
  * @see Knowledge
  */

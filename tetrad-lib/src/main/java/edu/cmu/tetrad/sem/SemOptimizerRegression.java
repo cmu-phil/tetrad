@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -36,9 +37,15 @@ import java.util.List;
  * Optimizes a DAG SEM by regressing each varaible onto its parents using a linear regression.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class SemOptimizerRegression implements SemOptimizer {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The number of restarts.
+     */
     private int numRestarts = 1;
 
     /**
@@ -49,6 +56,8 @@ public class SemOptimizerRegression implements SemOptimizer {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.sem.SemOptimizerRegression} object
      */
     public static SemOptimizerRegression serializableInstance() {
         return new SemOptimizerRegression();
@@ -81,6 +90,8 @@ public class SemOptimizerRegression implements SemOptimizer {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Fit the freeParameters by doing local regressions.
      */
     public void optimize(SemIm semIm) {
@@ -134,16 +145,27 @@ public class SemOptimizerRegression implements SemOptimizer {
         TetradLogger.getInstance().log("optimization", "FML = " + semIm.getScore());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setNumRestarts(int numRestarts) {
         this.numRestarts = numRestarts;
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String toString() {
         return "Sem Optimizer Regression";
     }

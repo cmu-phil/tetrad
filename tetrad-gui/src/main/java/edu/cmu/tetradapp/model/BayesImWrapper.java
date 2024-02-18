@@ -41,20 +41,31 @@ import java.util.List;
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class BayesImWrapper implements SessionModel, Memorable {
 
     @Serial
     private static final long serialVersionUID = 23L;
-    // The number of models in the simulation.
+    /**
+     * The number of models in the simulation.
+     */
     private int numModels = 1;
-    // The index of the model to be used.
+    /**
+     * The index of the model to be used.
+     */
     private int modelIndex;
-    // The name of the model source.
+    /**
+     * The name of the model source.
+     */
     private String modelSourceName;
-    // The name of the Bayes IM.
+    /**
+     * The name of the Bayes IM.
+     */
     private String name;
-    // The Bayes IM.
+    /**
+     * The Bayes IM.
+     */
     private List<BayesIm> bayesIms;
 
     //===========================CONSTRUCTORS===========================//
@@ -148,6 +159,12 @@ public class BayesImWrapper implements SessionModel, Memorable {
         setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
     }
 
+    /**
+     * <p>Constructor for BayesImWrapper.</p>
+     *
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.ApproximateUpdaterWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public BayesImWrapper(ApproximateUpdaterWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
@@ -155,6 +172,12 @@ public class BayesImWrapper implements SessionModel, Memorable {
         setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
     }
 
+    /**
+     * <p>Constructor for BayesImWrapper.</p>
+     *
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public BayesImWrapper(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
@@ -190,6 +213,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
      * @see TetradSerializableUtils
      */
     public static BayesImWrapper serializableInstance() {
@@ -235,9 +259,9 @@ public class BayesImWrapper implements SessionModel, Memorable {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the name of the BayesIm.
-     *
-     * @param name the name of the BayesIm
      */
     public void setName(String name) {
         this.name = name;
@@ -329,6 +353,10 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
     @Serial
     private void readObject(ObjectInputStream s)

@@ -30,18 +30,32 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
 /**
+ * <p>CpdagFromDagGraphWrapper class.</p>
+ *
  * @author Tyler Gibson
+ * @version $Id: $Id
  */
-public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
+public class CpdagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
     private static final long serialVersionUID = 23L;
 
 
-    public CPDAGFromDagGraphWrapper(GraphSource source, Parameters parameters) {
+    /**
+     * <p>Constructor for CpdagFromDagGraphWrapper.</p>
+     *
+     * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
+    public CpdagFromDagGraphWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
-    public CPDAGFromDagGraphWrapper(Graph graph) {
+    /**
+     * <p>Constructor for CpdagFromDagGraphWrapper.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
+    public CpdagFromDagGraphWrapper(Graph graph) {
         super(new EdgeListGraph());
 
         // make sure the given graph is a dag.
@@ -51,24 +65,32 @@ public class CPDAGFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-        Graph CPDAG = CPDAGFromDagGraphWrapper.getCPDAG(new EdgeListGraph(graph));
-        setGraph(CPDAG);
+        Graph cpdag = CpdagFromDagGraphWrapper.getCpdag(new EdgeListGraph(graph));
+        setGraph(cpdag);
 
-        TetradLogger.getInstance().log("info", "\nGenerating CPDAG from DAG.");
-        TetradLogger.getInstance().log("CPDAG", CPDAG + "");
+        TetradLogger.getInstance().log("info", "\nGenerating cpdag from DAG.");
+        TetradLogger.getInstance().log("cpdag", cpdag + "");
     }
 
-    public static CPDAGFromDagGraphWrapper serializableInstance() {
-        return new CPDAGFromDagGraphWrapper(EdgeListGraph.serializableInstance());
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link CpdagFromDagGraphWrapper} object
+     */
+    public static CpdagFromDagGraphWrapper serializableInstance() {
+        return new CpdagFromDagGraphWrapper(EdgeListGraph.serializableInstance());
     }
 
     //======================== Private Method ======================//
 
 
-    private static Graph getCPDAG(Graph graph) {
+    private static Graph getCpdag(Graph graph) {
         return GraphTransforms.cpdagForDag(graph);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean allowRandomGraph() {
         return false;

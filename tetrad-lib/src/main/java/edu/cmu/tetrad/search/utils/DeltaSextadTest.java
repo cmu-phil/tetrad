@@ -37,6 +37,7 @@ import java.util.Set;
  * Research 19, 80-92 and Bollen and Ting, Confirmatory Tetrad Analysis.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class DeltaSextadTest {
     private static final long serialVersionUID = 23L;
@@ -367,11 +368,10 @@ public class DeltaSextadTest {
         }
 
         public boolean equals(Object o) {
-            if (!(o instanceof Sigma)) {
+            if (!(o instanceof Sigma _o)) {
                 throw new IllegalArgumentException();
             }
 
-            Sigma _o = (Sigma) o;
             return (_o.getA() == (getA()) && _o.getB() == (getB())) || (_o.getB() == (getA()) && _o.getA() == (getB()));
         }
 

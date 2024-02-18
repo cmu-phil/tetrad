@@ -35,6 +35,7 @@ import java.util.Set;
  *
  * @author William Taysom
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class ModificationRegistery {
     private static final Set<Object> EDITED_MODELS = new HashSet<>();
@@ -43,6 +44,9 @@ public final class ModificationRegistery {
 
     /**
      * Registers an editor which could modify model.
+     *
+     * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param editor      a {@link javax.swing.JComponent} object
      */
     public static void registerEditor(SessionNode sessionNode,
                                       JComponent editor) {
@@ -77,12 +81,20 @@ public final class ModificationRegistery {
     }
 
     /**
+     * <p>modelHasChanged.</p>
+     *
+     * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
      * @return true if an editor has registered that model has changed.
      */
     public static boolean modelHasChanged(SessionNode sessionNode) {
         return ModificationRegistery.EDITED_MODELS.contains(sessionNode);
     }
 
+    /**
+     * <p>unregisterEditor.</p>
+     *
+     * @param editor a {@link javax.swing.JComponent} object
+     */
     public static void unregisterEditor(JComponent editor) {
         if (editor instanceof DelegatesEditing) {
             editor = ((DelegatesEditing) editor).getEditDelegate();
@@ -97,6 +109,8 @@ public final class ModificationRegistery {
 
     /**
      * Removes the given session node from the list of sessions nodes for which changes have been made.
+     *
+     * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
      */
     public static void unregisterSessionNode(SessionNode sessionNode) {
         ModificationRegistery.EDITED_MODELS.remove(sessionNode);

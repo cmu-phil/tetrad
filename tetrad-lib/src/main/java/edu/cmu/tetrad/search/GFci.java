@@ -60,6 +60,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @author Juan Miguel Ogarrio
  * @author peterspirtes
  * @author josephramsey
+ * @version $Id: $Id
  * @see Fci
  * @see FciOrient
  * @see GraspFci
@@ -93,6 +94,7 @@ public final class GFci implements IGraphSearch {
     private boolean doDiscriminatingPathRule = true;
     // The depth of the search for the possible m-sep search.
     private int depth = -1;
+    private int numThreads = 1;
 
 
     /**
@@ -130,6 +132,7 @@ public final class GFci implements IGraphSearch {
         fges.setFaithfulnessAssumed(this.faithfulnessAssumed);
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
+        fges.setNumThreads(numThreads);
         graph = fges.search();
 
         Knowledge knowledge2 = new Knowledge(knowledge);
@@ -274,5 +277,15 @@ public final class GFci implements IGraphSearch {
         this.depth = depth;
     }
 
-
+    /**
+     * Sets the number of threads to use in the search.
+     *
+     * @param numThreads The number of threads to use. Must be at least 1.
+     */
+    public void setNumThreads(int numThreads) {
+        if (numThreads < 1) {
+            throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
+        }
+        this.numThreads = numThreads;
+    }
 }

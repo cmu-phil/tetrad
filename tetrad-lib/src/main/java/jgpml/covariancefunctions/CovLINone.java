@@ -41,8 +41,10 @@ import static jgpml.covariancefunctions.MatrixOperations.sumRows;
  * where the P matrix is t2 times the unit matrix. The second term plays the role of the bias. The hyperparameter is:
  * <p>
  * [ log(sqrt(t2)) ]
+ *
+ * @author josephramsey
+ * @version $Id: $Id
  */
-
 public class CovLINone implements CovarianceFunction {
 
     /**
@@ -53,6 +55,8 @@ public class CovLINone implements CovarianceFunction {
 
     /**
      * Main method for testing purposes
+     *
+     * @param args an array of {@link java.lang.String} objects
      */
     public static void main(String[] args) {
         CovLINone cf = new CovLINone();
@@ -87,11 +91,9 @@ public class CovLINone implements CovarianceFunction {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Compute covariance matrix of a dataset X
-     *
-     * @param loghyper column <code>Matrix</code> of hyperparameters
-     * @param X        input dataset
-     * @return K covariance <code>Matrix</code>
      */
     public Matrix compute(Matrix loghyper, Matrix X) {
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
@@ -104,12 +106,9 @@ public class CovLINone implements CovarianceFunction {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Compute compute test set covariances
-     *
-     * @param loghyper column <code>Matrix</code> of hyperparameters
-     * @param X        input dataset
-     * @param Xstar    test set
-     * @return [K(Xstar, Xstar) K(X,Xstar)]
      */
     public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar) {
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
@@ -128,13 +127,10 @@ public class CovLINone implements CovarianceFunction {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
      * <code>idx</code>
-     *
-     * @param loghyper hyperparameters
-     * @param X        input dataset
-     * @param index    hyperparameter index
-     * @return <code>Matrix</code> of derivatives
      */
     public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index) {
 

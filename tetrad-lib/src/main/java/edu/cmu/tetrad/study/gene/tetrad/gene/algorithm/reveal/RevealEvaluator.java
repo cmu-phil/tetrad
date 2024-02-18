@@ -31,6 +31,7 @@ import org.apache.commons.math3.util.FastMath;
  * Fuhrman and Somogyi, Pacific Symposium on Biocomputing 3:18-29 (1998).
  *
  * @author Frank Wimberly
+ * @version $Id: $Id
  */
 public class RevealEvaluator {
     private int ngenes;   //The number of genes
@@ -38,6 +39,11 @@ public class RevealEvaluator {
 
     private int[][] cases = new int[this.ntimes][this.ngenes];
 
+    /**
+     * <p>Constructor for RevealEvaluator.</p>
+     *
+     * @param cases an array of {@link int} objects
+     */
     public RevealEvaluator(int[][] cases) {
 
         this.ntimes = cases.length;
@@ -50,6 +56,11 @@ public class RevealEvaluator {
      * This method computes the cross tablulation (table) of values of a gene and its possible parent.  This should help
      * evaluate whether the two are related by a canalyzing function.  The third argument is the time lag between cause
      * and effect, as usual.
+     *
+     * @param child  a int
+     * @param parent a int
+     * @param lag    a int
+     * @return an array of {@link int} objects
      */
     public int[][] crossTab(int child, int parent, int lag) {
         int[][] ns = new int[2][2];
@@ -73,6 +84,11 @@ public class RevealEvaluator {
      * This method computes the mutual information between a gene and a set of presumptive causes (other genes).  There
      * must be at least one cause but there may be only one.  The third argument is the time lag between the cause(s)
      * and the effect.  See Fig. 5 in the Liang et al. paper.
+     *
+     * @param child   a int
+     * @param parents an array of {@link int} objects
+     * @param lag     a int
+     * @return a double
      */
     public double mutualInformation(int child, int[] parents, int lag) {
 
@@ -129,6 +145,9 @@ public class RevealEvaluator {
     /**
      * This method computes the entropy of a binary signal stored in an int array.  It assume that the values in the
      * array are 0's and 1's. (Actually 1's may be replaced by any nonzero value)  See page 20 of the Liang paper.
+     *
+     * @param x an array of {@link int} objects
+     * @return a double
      */
     public double entropy(int[] x) {
         double h = 0.0;
@@ -157,6 +176,10 @@ public class RevealEvaluator {
      * used by the mutualInformation method (viz).  This method computes the entropy of a gene's binarized expressions
      * from a point in time until the end of the data signal.  This is useful in the normalization of the mutual
      * information.
+     *
+     * @param g   a int
+     * @param lag a int
+     * @return a double
      */
     public double entropy(int g, int lag) {
         double h = 0.0;
@@ -184,6 +207,10 @@ public class RevealEvaluator {
     /**
      * This method computes the joint entropy of two arrays. The values stored in those arrays are assumed to be
      * restricted to {0,1}.
+     *
+     * @param x an array of {@link int} objects
+     * @param y an array of {@link int} objects
+     * @return a double
      */
     public double jointEntropy(int[] x, int[] y) {
         double h = 0.0;
@@ -239,6 +266,13 @@ public class RevealEvaluator {
         return h;
     }
 
+    /**
+     * <p>jointEntropy.</p>
+     *
+     * @param x an array of {@link int} objects
+     * @param y an array of {@link int} objects
+     * @return a double
+     */
     public double jointEntropy(int[] x, int[][] y) {
         double h = 0.0;
         int m = y.length;
@@ -296,6 +330,10 @@ public class RevealEvaluator {
     /**
      * Computes a byte vector which corresponds to the argument ind.  rep[0] is the high order bit. E.g.  if n=3 and
      * ind=6 the vector will be (1, 1, 0).
+     *
+     * @param ind a int
+     * @param n   a int
+     * @return an array of {@link byte} objects
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];

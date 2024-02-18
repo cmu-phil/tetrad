@@ -49,6 +49,7 @@ import java.util.*;
  *
  * @author josephramsey
  * @author Augustus Mayo.
+ * @version $Id: $Id
  */
 public class IndTestMultinomialLogisticRegressionWald implements IndependenceTest {
     private final DataSet originalData;
@@ -62,6 +63,13 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     private double lastP;
     private boolean verbose;
 
+    /**
+     * <p>Constructor for IndTestMultinomialLogisticRegressionWald.</p>
+     *
+     * @param data         a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param alpha        a double
+     * @param preferLinear a boolean
+     */
     public IndTestMultinomialLogisticRegressionWald(DataSet data, double alpha, boolean preferLinear) {
         if (!(alpha >= 0 && alpha <= 1)) {
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
@@ -86,16 +94,19 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
     /**
-     * @return an Independence test for a subset of the searchVariables.
+     * {@inheritDoc}
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * @return true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are searchVariables in the list returned by
-     * getVariableNames().
+     * {@inheritDoc}
+     *
+     * @param x a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
@@ -358,6 +369,8 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
     /**
+     * <p>getPValue.</p>
+     *
      * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
      * not meaningful for tis test.
      */
@@ -366,6 +379,8 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
     /**
+     * <p>getVariables.</p>
+     *
      * @return the list of searchVariables over which this independence checker is capable of determinining independence
      * relations.
      */
@@ -375,32 +390,43 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
 
     /**
-     * @return true if y is determined the variable in z.
+     * {@inheritDoc}
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
     }
 
     /**
+     * <p>Getter for the field <code>alpha</code>.</p>
+     *
      * @return the significance level of the independence test.
-     * @throws UnsupportedOperationException if there is no significance level.
+     * @throws java.lang.UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
         return this.alpha; //STUB
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets the significance level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
+    /**
+     * <p>getData.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
+     */
     public DataSet getData() {
         return this.originalData;
     }
 
     /**
+     * <p>toString.</p>
+     *
      * @return a string representation of this test.
      */
     public String toString() {
@@ -408,11 +434,17 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         return "Multinomial Logistic Regression, alpha = " + nf.format(getAlpha());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

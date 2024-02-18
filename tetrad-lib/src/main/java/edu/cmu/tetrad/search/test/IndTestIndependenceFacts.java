@@ -39,6 +39,7 @@ import java.util.Set;
  * Checks conditional independence against a list of conditional independence facts, manually entered.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class IndTestIndependenceFacts implements IndependenceTest {
 
@@ -56,16 +57,21 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Not implemented.
+     * {@inheritDoc}
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Checks independence by looking up facts in the list of facts supplied in the constructor.
      *
-     * @return the independence result.
+     * @param x   a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y   a {@link edu.cmu.tetrad.graph.Node} object
+     * @param __z a {@link java.util.Set} object
+     * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> __z) {
@@ -109,10 +115,9 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the node with the given name.
-     *
-     * @param name The name of the node,
-     * @return The node.
      */
     public Node getVariable(String name) {
         if (name == null) throw new NullPointerException();
@@ -129,13 +134,16 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException Method not implemented.
+     * {@inheritDoc}
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Method not implmeented.");
     }
 
     /**
+     * <p>getAlpha.</p>
+     *
+     * @return a double
      * @throws java.lang.UnsupportedOperationException Method not implemented.
      */
     public double getAlpha() {
@@ -143,7 +151,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     /**
-     * @throws java.lang.UnsupportedOperationException Method not implemented.
+     * {@inheritDoc}
      */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
@@ -168,9 +176,9 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Sets whether verbose output is to be printed.
-     *
-     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

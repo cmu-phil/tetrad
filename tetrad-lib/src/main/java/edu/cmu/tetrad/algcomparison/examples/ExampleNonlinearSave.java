@@ -31,8 +31,14 @@ import edu.cmu.tetrad.util.Parameters;
  * An example script to save out data files and graphs from a simulation.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ExampleNonlinearSave {
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 

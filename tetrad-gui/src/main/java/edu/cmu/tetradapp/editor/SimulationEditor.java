@@ -38,6 +38,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,20 +52,42 @@ import java.util.prefs.Preferences;
  *
  * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public final class SimulationEditor extends JPanel implements KnowledgeEditable, PropertyChangeListener {
 
+    @Serial
     private static final long serialVersionUID = -8424284512836439370L;
 
+    /**
+     * The tabbed pane containing the simulation editor's tabs.
+     */
     final JTabbedPane tabbedPane = new JTabbedPane();
 
+    /**
+     * The simulation being edited.
+     */
     private final Simulation simulation;
+
+    /**
+     * The data editor.
+     */
     private final DataEditor dataEditor;
+
+    /**
+     * The simulation graph editor.
+     */
     private final SimulationGraphEditor simulationGraphEditor;
+
+    /**
+     * The parameter tab.
+     */
     private final ParameterTab parameterTab;
 
     /**
      * Constructs the data editor with an empty list of data displays.
+     *
+     * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
      */
     public SimulationEditor(Simulation simulation) {
         this.simulation = simulation;
@@ -176,6 +199,9 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         };
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         switch (evt.getPropertyName()) {
@@ -199,21 +225,33 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getSourceGraph() {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getVarNames() {
         return null;

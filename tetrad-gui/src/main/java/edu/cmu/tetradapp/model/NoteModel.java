@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.StyledDocument;
+import java.io.Serial;
 
 /**
  * Provides a simple model for notes that the user may want to add to the session. Notes are stored as styled documents,
@@ -34,13 +35,27 @@ import javax.swing.text.StyledDocument;
  * that maybe someday the name of the node can be displayed in the interface. That day is not this day.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class NoteModel implements SessionModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The note.
+     */
     private StyledDocument note = new DefaultStyledDocument();
+
+    /**
+     * The name of the note.
+     */
     private String name;
 
+    /**
+     * <p>Constructor for NoteModel.</p>
+     *
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public NoteModel(Parameters parameters) {
 
     }
@@ -48,24 +63,43 @@ public class NoteModel implements SessionModel {
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.NoteModel} object
      * @see TetradSerializableUtils
      */
     public static NoteModel serializableInstance() {
         return new NoteModel(new Parameters());
     }
 
+    /**
+     * <p>Getter for the field <code>note</code>.</p>
+     *
+     * @return a {@link javax.swing.text.StyledDocument} object
+     */
     public StyledDocument getNote() {
         return this.note;
     }
 
+    /**
+     * <p>Setter for the field <code>note</code>.</p>
+     *
+     * @param note a {@link javax.swing.text.StyledDocument} object
+     */
     public void setNote(StyledDocument note) {
         this.note = note;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }

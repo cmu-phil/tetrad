@@ -33,6 +33,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.util.List;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -44,6 +45,7 @@ import java.util.prefs.Preferences;
  * @author Aaron Powell
  * @author josephramsey
  * @author Willie Wheeler
+ * @version $Id: $Id
  * @see DisplayNode
  * @see DisplayEdge
  */
@@ -63,6 +65,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * The mode in which the user is permitted to select workbench items or move nodes.
      */
     public static final int ADD_EDGE = 2;
+    @Serial
     private static final long serialVersionUID = 6718395673225983249L;
 
     // =========================PRIVATE FIELDS=============================//
@@ -169,6 +172,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private KeyEventDispatcher controlDispatcher;
 
+    /**
+     * The current displayed mouseover equation label. Null if none is displayed. Used for removing the label.
+     */
     private Point currentMouseLocation;
 
     /**
@@ -177,10 +183,19 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private boolean enableEditing = true;
 
+    /**
+     * Whether to do pag coloring.
+     */
     private boolean doPagColoring = false;
 
+    /**
+     * The graph to be used for sampling.
+     */
     private Graph samplingGraph;
 
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
 
     // ==============================CONSTRUCTOR============================//
@@ -339,6 +354,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
+     * <p>Getter for the field <code>graph</code>.</p>
+     *
      * @return the Graph this workbench displays.
      */
     public final Graph getGraph() {
@@ -396,6 +413,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
+     * <p>getSelectedComponents.</p>
+     *
      * @return the currently selected nodes as a vector.
      */
     public final List<Component> getSelectedComponents() {
@@ -414,6 +433,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
+     * <p>getModelEdge.</p>
+     *
      * @param displayEdge Ibid.
      * @return the model edge for the given display edge.
      */
@@ -512,10 +533,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         this.allowEdgeReorientations = allowEdgeReorientations;
     }
 
+    /**
+     * <p>Getter for the field <code>samplingGraph</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public final Graph getSamplingGraph() {
         return samplingGraph;
     }
 
+    /**
+     * <p>Setter for the field <code>samplingGraph</code>.</p>
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public final void setSamplingGraph(Graph graph) {
         samplingGraph = graph;
     }
@@ -557,6 +588,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     /**
      * Node tooltip to show the node attributes - Added by Kong
+     *
+     * @param modelNode   a {@link edu.cmu.tetrad.graph.Node} object
+     * @param toolTipText a {@link java.lang.String} object
      */
     public final void setNodeToolTip(Node modelNode, String toolTipText) {
         if (modelNode == null) {
@@ -572,6 +606,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     /**
      * Edge tooltip to show the edge type and probabilities - Added by Zhou
+     *
+     * @param modelEdge   a {@link edu.cmu.tetrad.graph.Edge} object
+     * @param toolTipText a {@link java.lang.String} object
      */
     public final void setEdgeToolTip(Edge modelEdge, String toolTipText) {
         if (modelEdge == null) {
@@ -589,7 +626,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Sets the label for a node to a particular JComponent. The label will be displayed slightly off to the right of
      * the node.
      *
-     * @param label Ibid.
+     * @param label     Ibid.
+     * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
+     * @param x         a int
+     * @param y         a int
      */
     public final void setNodeLabel(Node modelNode, JComponent label, int x, int y) {
         if (modelNode == null) {
@@ -662,10 +702,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         getDisplayToLabels().remove(displayEdge);
     }
 
+    /**
+     * <p>Getter for the field <code>modelEdgesToDisplay</code>.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public final Map<Edge, Object> getModelEdgesToDisplay() {
         return this.modelEdgesToDisplay;
     }
 
+    /**
+     * <p>Getter for the field <code>modelNodesToDisplay</code>.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public final Map<Node, Object> getModelNodesToDisplay() {
         return this.modelNodesToDisplay;
     }
@@ -676,6 +726,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     /**
      * Selects the editor node corresponding to the given model node.
+     *
+     * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
      */
     public final void selectNode(Node modelNode) {
         if (!isAllowNodeEdgeSelection()) {
@@ -691,6 +743,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     /**
      * Selects the editor edge corresponding to the given model edge.
+     *
+     * @param modelEdge a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public final void selectEdge(Edge modelEdge) {
         IDisplayEdge graphEdge = (IDisplayEdge) getModelEdgesToDisplay().get(modelEdge);
@@ -756,6 +810,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Paints the background of the workbench.
      */
     public final void paint(Graphics g) {
@@ -784,15 +840,26 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
     }
 
+    /**
+     * <p>getBackground.</p>
+     *
+     * @return a {@link java.awt.Color} object
+     */
     public Color getBackground() {
         return super.getBackground();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setBackground(Color color) {
         super.setBackground(color);
         repaint();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void layoutByGraph(Graph layoutGraph) {
         LayoutUtil.arrangeBySourceGraph(this.graph, layoutGraph);
 
@@ -815,14 +882,29 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         // setGraphWithoutNotify(graph);
     }
 
+    /**
+     * <p>Getter for the field <code>knowledge</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * <p>Setter for the field <code>knowledge</code>.</p>
+     *
+     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
+    /**
+     * <p>getSourceGraph.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getSourceGraph() {
         return getGraph();
     }
@@ -836,6 +918,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         repaint();
     }
 
+    /**
+     * <p>getVisibleRect.</p>
+     *
+     * @return a {@link java.awt.Rectangle} object
+     */
     public Rectangle getVisibleRect() {
         List<Node> nodes = this.graph.getNodes();
 
@@ -858,6 +945,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         // return super.getVisibleRect();
     }
 
+    /**
+     * <p>scrollNodesToVisible.</p>
+     *
+     * @param nodes a {@link java.util.List} object
+     */
     public void scrollNodesToVisible(List<Node> nodes) {
         if (nodes == null || nodes.isEmpty()) {
             return;
@@ -875,24 +967,53 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         scrollRectToVisible(rect);
     }
 
+    /**
+     * <p>getComponent.</p>
+     *
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a {@link java.awt.Component} object
+     */
     public Component getComponent(Edge edge) {
         return (DisplayEdge) this.modelEdgesToDisplay.get(edge);
     }
 
+    /**
+     * <p>getComponent.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link java.awt.Component} object
+     */
     public Component getComponent(Node node) {
         return (DisplayNode) this.modelNodesToDisplay.get(node);
     }
 
+    /**
+     * <p>getNewModelNode.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
+     */
     public abstract Node getNewModelNode();
 
+    /**
+     * {@inheritDoc}
+     */
     public abstract DisplayNode getNewDisplayNode(Node modelNode);
 
+    /**
+     * {@inheritDoc}
+     */
     public abstract IDisplayEdge getNewDisplayEdge(Edge modelEdge);
 
+    /**
+     * {@inheritDoc}
+     */
     public abstract Edge getNewModelEdge(Node node1, Node node2);
 
     // ============================PRIVATE METHODS=========================//
 
+    /**
+     * {@inheritDoc}
+     */
     public abstract IDisplayEdge getNewTrackingEdge(DisplayNode displayNode, Point mouseLoc);
 
     /**
@@ -2365,19 +2486,39 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         return true;
     }
 
+    /**
+     * <p>isEnableEditing.</p>
+     *
+     * @return a boolean
+     */
     public boolean isEnableEditing() {
         return this.enableEditing;
     }
 
+    /**
+     * <p>enableEditing.</p>
+     *
+     * @param enableEditing a boolean
+     */
     public void enableEditing(boolean enableEditing) {
         this.enableEditing = enableEditing;
         setEnabled(enableEditing);
     }
 
+    /**
+     * <p>isDoPagColoring.</p>
+     *
+     * @return a boolean
+     */
     public boolean isDoPagColoring() {
         return this.doPagColoring;
     }
 
+    /**
+     * <p>Setter for the field <code>doPagColoring</code>.</p>
+     *
+     * @param doPagColoring a boolean
+     */
     public void setDoPagColoring(boolean doPagColoring) {
         this.doPagColoring = doPagColoring;
         if (doPagColoring) {
@@ -2423,6 +2564,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         return this.nodeEdgeErrorsReported;
     }
 
+    /**
+     * <p>Setter for the field <code>nodeEdgeErrorsReported</code>.</p>
+     */
     protected void setNodeEdgeErrorsReported() {
         this.nodeEdgeErrorsReported = true;
     }
@@ -2431,6 +2575,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         return this.rightClickPopupAllowed;
     }
 
+    /**
+     * <p>Setter for the field <code>rightClickPopupAllowed</code>.</p>
+     *
+     * @param rightClickPopupAllowed a boolean
+     */
     protected void setRightClickPopupAllowed(boolean rightClickPopupAllowed) {
         this.rightClickPopupAllowed = rightClickPopupAllowed;
     }

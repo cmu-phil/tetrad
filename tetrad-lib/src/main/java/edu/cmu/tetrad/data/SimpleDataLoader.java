@@ -1,14 +1,15 @@
 package edu.cmu.tetrad.data;
 
-import com.google.gson.Gson;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.pitt.dbmi.data.reader.ContinuousData;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.*;
+import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -18,6 +19,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/**
+ * <p>SimpleDataLoader class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class SimpleDataLoader {
 
     /**
@@ -31,7 +38,7 @@ public class SimpleDataLoader {
      * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
      * @param excludeFirstColumn If the first column should be excluded from the data.
      * @return The loaded DataSet.
-     * @throws IOException If an error occurred in reading the file.
+     * @throws java.io.IOException If an error occurred in reading the file.
      */
     // From SimpleDataLoader
     @NotNull
@@ -70,7 +77,7 @@ public class SimpleDataLoader {
      * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
      * @param excludeFirstColumn If the first columns should be excluded from the data.
      * @return The loaded DataSet.
-     * @throws IOException If an error occurred in reading the file.
+     * @throws java.io.IOException If an error occurred in reading the file.
      */
     // From SimpleDataLoader
     @NotNull
@@ -111,7 +118,7 @@ public class SimpleDataLoader {
      * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
      * @param excludeFirstColumn If the first columns should be excluded from the data set.
      * @return The loaded DataSet.
-     * @throws IOException If an error occurred in reading the file.
+     * @throws java.io.IOException If an error occurred in reading the file.
      */
     // From SimpleDataLoader
     @NotNull
@@ -135,7 +142,7 @@ public class SimpleDataLoader {
 
         Data data = dataReader.read(dataColumns, hasHeader);
 
-        if (data != null){
+        if (data != null) {
             DataModel dataModel = DataConvertUtils.toDataModel(data);
             dataModel.setName(file.getName());
             return (DataSet) dataModel;
@@ -159,6 +166,13 @@ public class SimpleDataLoader {
      * CovarianceMatrix dataSet = DataLoader.loadCovMatrix(
      *                           new FileReader(file), " \t", "//");
      * </pre> The initial "/covariance" is optional.
+     *
+     * @param chars              an array of {@link char} objects
+     * @param commentMarker      a {@link java.lang.String} object
+     * @param delimiterType      a {@link edu.cmu.tetrad.data.DelimiterType} object
+     * @param quoteChar          a char
+     * @param missingValueMarker a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
     public static ICovarianceMatrix loadCovarianceMatrix(char[] chars, String commentMarker,
                                                          DelimiterType delimiterType,
@@ -186,7 +200,8 @@ public class SimpleDataLoader {
      * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
      * @param quoteCharacter     The quote character, e.g., '\"'.
      * @param missingValueMarker The missing value marker as a string--e.g., "NA".
-     * @throws IOException if the file cannot be read.
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @throws java.io.IOException if the file cannot be read.
      */
     public static ICovarianceMatrix loadCovarianceMatrix(File file, String commentMarker,
                                                          DelimiterType delimiter,
@@ -327,6 +342,9 @@ public class SimpleDataLoader {
 
     /**
      * Returns the datamodel case to DataSet if it is discrete.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataModel} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet getDiscreteDataSet(DataModel dataSet) {
         if (!(dataSet instanceof DataSet) || !dataSet.isDiscrete()) {
@@ -338,6 +356,9 @@ public class SimpleDataLoader {
 
     /**
      * Returns the datamodel case to DataSet if it is continuous.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataModel} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet getContinuousDataSet(DataModel dataSet) {
         if (!(dataSet instanceof DataSet) || !dataSet.isContinuous()) {
@@ -349,6 +370,9 @@ public class SimpleDataLoader {
 
     /**
      * Returns the datamodel case to DataSet if it is mixed.
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataModel} object
+     * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet getMixedDataSet(DataModel dataSet) {
         if (!(dataSet instanceof DataSet)) {
@@ -362,6 +386,10 @@ public class SimpleDataLoader {
     /**
      * Returns the model cast to ICovarianceMatrix if already a covariance matric, or else returns the covariance matrix
      * for a dataset.
+     *
+     * @param dataModel             a {@link edu.cmu.tetrad.data.DataModel} object
+     * @param precomputeCovariances a boolean
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      */
     public static ICovarianceMatrix getCovarianceMatrix(DataModel dataModel, boolean precomputeCovariances) {
         if (dataModel == null) {
@@ -378,6 +406,13 @@ public class SimpleDataLoader {
         }
     }
 
+    /**
+     * <p>getCovarianceMatrix.</p>
+     *
+     * @param dataSet               a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param precomputeCovariances a boolean
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     @NotNull
     public static ICovarianceMatrix getCovarianceMatrix(DataSet dataSet, boolean precomputeCovariances) {
         if (precomputeCovariances) {
@@ -387,6 +422,12 @@ public class SimpleDataLoader {
         }
     }
 
+    /**
+     * <p>getCorrelationMatrix.</p>
+     *
+     * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     */
     @NotNull
     public static ICovarianceMatrix getCorrelationMatrix(DataSet dataSet) {
         return new CorrelationMatrix(dataSet);
@@ -398,6 +439,8 @@ public class SimpleDataLoader {
      * @param file          The text file to load the data from.
      * @param delimiter     One of the options in the Delimiter enum--e.g., Delimiter.TAB.
      * @param commentMarker The comment marker as a string--e.g., "//".
+     * @return a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @throws java.io.IOException if any.
      */
     public static Knowledge loadKnowledge(File file, DelimiterType delimiter, String commentMarker) throws IOException {
         FileReader reader = new FileReader(file);

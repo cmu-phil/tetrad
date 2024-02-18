@@ -33,6 +33,7 @@ import java.rmi.MarshalledObject;
  * Holds a graph for purposes of layout out another graph later on.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class LayoutSelection implements Transferable {
 
@@ -49,6 +50,8 @@ public class LayoutSelection implements Transferable {
 
     /**
      * Constructs a new selection with the given list of session nodes.
+     *
+     * @param layoutGraph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public LayoutSelection(Graph layoutGraph) {
         if (layoutGraph == null) {
@@ -66,13 +69,7 @@ public class LayoutSelection implements Transferable {
     }
 
     /**
-     * @param flavor the requested flavor for the data
-     * @return an object which represents the data to be transferred.  The class of the object returned is defined by
-     * the representation class of the flavor.
-     * @throws java.io.IOException                              if the data is no longer available in the requested
-     *                                                          flavor.
-     * @throws java.awt.datatransfer.UnsupportedFlavorException if the requested data flavor is not supported.
-     * @see java.awt.datatransfer.DataFlavor#getRepresentationClass
+     * {@inheritDoc}
      */
     public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
@@ -84,14 +81,15 @@ public class LayoutSelection implements Transferable {
     }
 
     /**
-     * @param flavor the requested flavor for the data
-     * @return whether or not the specified data flavor is supported for this object.
+     * {@inheritDoc}
      */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);
     }
 
     /**
+     * <p>getTransferDataFlavors.</p>
+     *
      * @return an array of DataFlavor objects indicating the flavors the data can be provided in.  The array should be
      * ordered according to preference for providing the data (from most richly descriptive to least descriptive).
      */

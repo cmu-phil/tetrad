@@ -18,6 +18,7 @@ import java.util.List;
  * Jul 23, 2018 4:05:07 PM
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
+ * @version $Id: $Id
  */
 public class HideShowNoConnectionNodesAction extends AbstractAction implements ClipboardOwner {
 
@@ -28,6 +29,11 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
      */
     private final GraphWorkbench workbench;
 
+    /**
+     * <p>Constructor for HideShowNoConnectionNodesAction.</p>
+     *
+     * @param workbench a {@link edu.cmu.tetradapp.workbench.GraphWorkbench} object
+     */
     public HideShowNoConnectionNodesAction(GraphWorkbench workbench) {
         super("Hide/Show No Connections Node");
 
@@ -39,6 +45,9 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         Graph graph = this.workbench.getGraph();
@@ -53,6 +62,9 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
 

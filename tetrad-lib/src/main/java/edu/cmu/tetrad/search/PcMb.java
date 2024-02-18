@@ -43,6 +43,7 @@ import java.util.*;
  * tiers.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see FgesMb
  * @see Knowledge
  */
@@ -103,6 +104,16 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.variables = test.getVariables();
     }
 
+    private static boolean isArrowheadAllowed1(Node from, Node to,
+                                               Knowledge knowledge) {
+        if (knowledge == null) {
+            return true;
+        }
+
+        return !knowledge.isRequired(to.toString(), from.toString()) &&
+                !knowledge.isForbidden(from.toString(), to.toString());
+    }
+
     /**
      * Sets whether cycles should be prevented, using a cycle checker.
      *
@@ -116,6 +127,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * Searches for the MB CPDAG for the given targets.
      *
      * @param targets The targets variable.
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search(List<Node> targets) {
         long start = MillisecondTimes.timeMillis();
@@ -430,10 +442,9 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Returns the Markov blanket variables (not the Markov blanket DAG).
-     *
-     * @param target The target variable.
-     * @return This list.
      */
     public Set<Node> findMb(Node target) {
         Graph graph = search(Collections.singletonList(target));
@@ -450,7 +461,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     public IndependenceTest getTest() {
         return this.test;
     }
-
 
     /**
      * Returns The knowledge used in search.
@@ -470,17 +480,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
-
-    private static boolean isArrowheadAllowed1(Node from, Node to,
-                                               Knowledge knowledge) {
-        if (knowledge == null) {
-            return true;
-        }
-
-        return !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
-    }
-
 
     private Set<Node> getA() {
         return this.a;
@@ -802,10 +801,20 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                 PcMb.isArrowheadAllowed1(z, y, knowledge);
     }
 
+    /**
+     * <p>Setter for the field <code>variables</code>.</p>
+     *
+     * @param variables a {@link java.util.List} object
+     */
     public void setVariables(List<Node> variables) {
         this.variables = variables;
     }
 
+    /**
+     * <p>Setter for the field <code>findMb</code>.</p>
+     *
+     * @param findMb a boolean
+     */
     public void setFindMb(boolean findMb) {
         this.findMb = findMb;
     }

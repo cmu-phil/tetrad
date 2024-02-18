@@ -36,6 +36,10 @@ final class BayesImDistanceFunction {
 
     /**
      * The static distance method's arguments are the two BayesIM's whose BayesPm's are "equal".
+     *
+     * @param firstBn  a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @param secondBn a {@link edu.cmu.tetrad.bayes.BayesIm} object
+     * @return a double
      */
     public static double distance(BayesIm firstBn, BayesIm secondBn) {
         if (!firstBn.getBayesPm().equals(secondBn.getBayesPm())) {

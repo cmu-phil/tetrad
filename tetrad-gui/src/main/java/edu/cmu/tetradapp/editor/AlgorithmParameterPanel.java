@@ -38,6 +38,7 @@ import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
@@ -49,13 +50,21 @@ import java.util.stream.Stream;
  * Dec 4, 2017 5:05:42 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class AlgorithmParameterPanel extends JPanel {
 
+    @Serial
     private static final long serialVersionUID = 274638263704283474L;
 
+    /**
+     * The main panel.
+     */
     protected final JPanel mainPanel = new JPanel();
 
+    /**
+     * <p>Constructor for AlgorithmParameterPanel.</p>
+     */
     public AlgorithmParameterPanel() {
         initComponents();
     }
@@ -67,6 +76,11 @@ public class AlgorithmParameterPanel extends JPanel {
         add(this.mainPanel, BorderLayout.NORTH);
     }
 
+    /**
+     * <p>addToPanel.</p>
+     *
+     * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     */
     public void addToPanel(GeneralAlgorithmRunner algorithmRunner) {
         this.mainPanel.removeAll();
 
@@ -165,6 +179,12 @@ public class AlgorithmParameterPanel extends JPanel {
 
     }
 
+    /**
+     * <p>toArray.</p>
+     *
+     * @param parameterComponents a {@link java.util.Map} object
+     * @return an array of {@link javax.swing.Box} objects
+     */
     protected Box[] toArray(Map<String, Box> parameterComponents) {
         ParamDescriptions paramDescs = ParamDescriptions.getInstance();
 
@@ -182,6 +202,13 @@ public class AlgorithmParameterPanel extends JPanel {
                 .toArray(Box[]::new);
     }
 
+    /**
+     * <p>createParameterComponents.</p>
+     *
+     * @param params     a {@link java.util.Set} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @return a {@link java.util.Map} object
+     */
     protected Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
         ParamDescriptions paramDescs = ParamDescriptions.getInstance();
         return params.stream()
@@ -194,6 +221,14 @@ public class AlgorithmParameterPanel extends JPanel {
                         TreeMap::new));
     }
 
+    /**
+     * <p>createParameterComponent.</p>
+     *
+     * @param parameter  a {@link java.lang.String} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param paramDesc  a {@link edu.cmu.tetrad.util.ParamDescription} object
+     * @return a {@link javax.swing.Box} object
+     */
     protected Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
         JComponent component;
         Object defaultValue = paramDesc.getDefaultValue();
@@ -231,6 +266,14 @@ public class AlgorithmParameterPanel extends JPanel {
         return paramRow;
     }
 
+    /**
+     * <p>createSubPanel.</p>
+     *
+     * @param title      a {@link java.lang.String} object
+     * @param params     a {@link java.util.Set} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @return a {@link javax.swing.JPanel} object
+     */
     protected JPanel createSubPanel(String title, Set<String> params, Parameters parameters) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder(title));
@@ -250,6 +293,16 @@ public class AlgorithmParameterPanel extends JPanel {
         return panel;
     }
 
+    /**
+     * <p>getDoubleField.</p>
+     *
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a double
+     * @param lowerBound   a double
+     * @param upperBound   a double
+     * @return a {@link edu.cmu.tetradapp.util.DoubleTextField} object
+     */
     protected DoubleTextField getDoubleField(String parameter, Parameters parameters,
                                              double defaultValue, double lowerBound, double upperBound) {
         DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
@@ -280,6 +333,16 @@ public class AlgorithmParameterPanel extends JPanel {
         return field;
     }
 
+    /**
+     * <p>getIntTextField.</p>
+     *
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a int
+     * @param lowerBound   a double
+     * @param upperBound   a double
+     * @return a {@link edu.cmu.tetradapp.util.IntTextField} object
+     */
     protected IntTextField getIntTextField(String parameter, Parameters parameters,
                                            int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
@@ -309,6 +372,16 @@ public class AlgorithmParameterPanel extends JPanel {
         return field;
     }
 
+    /**
+     * <p>getLongTextField.</p>
+     *
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a long
+     * @param lowerBound   a long
+     * @param upperBound   a long
+     * @return a {@link edu.cmu.tetradapp.util.LongTextField} object
+     */
     protected LongTextField getLongTextField(String parameter, Parameters parameters,
                                              long defaultValue, long lowerBound, long upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
@@ -339,6 +412,15 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     // Zhou's new implementation with yes/no radio buttons
+
+    /**
+     * <p>getBooleanSelectionBox.</p>
+     *
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a boolean
+     * @return a {@link javax.swing.Box} object
+     */
     protected Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
 
@@ -382,6 +464,14 @@ public class AlgorithmParameterPanel extends JPanel {
         return selectionBox;
     }
 
+    /**
+     * <p>getStringField.</p>
+     *
+     * @param parameter    a {@link java.lang.String} object
+     * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param defaultValue a {@link java.lang.String} object
+     * @return a {@link edu.cmu.tetradapp.util.StringTextField} object
+     */
     protected StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
         StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 

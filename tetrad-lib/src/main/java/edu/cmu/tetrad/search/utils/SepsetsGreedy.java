@@ -41,6 +41,7 @@ import java.util.Set;
  * i or k, or null if none is found.
  *
  * @author josephramsey
+ * @version $Id: $Id
  * @see SepsetProducer
  * @see SepsetMap
  */
@@ -53,6 +54,15 @@ public class SepsetsGreedy implements SepsetProducer {
     private IndependenceResult result;
     private Knowledge knowledge = new Knowledge();
 
+    /**
+     * <p>Constructor for SepsetsGreedy.</p>
+     *
+     * @param graph            a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param independenceTest a {@link edu.cmu.tetrad.search.IndependenceTest} object
+     * @param extraSepsets     a {@link edu.cmu.tetrad.search.utils.SepsetMap} object
+     * @param depth            a int
+     * @param knowledge        a {@link edu.cmu.tetrad.data.Knowledge} object
+     */
     public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth, Knowledge knowledge) {
         this.graph = graph;
         this.independenceTest = independenceTest;
@@ -65,17 +75,25 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Pick out the sepset from among adj(i) or adj(k) with the highest score value.
      */
     public Set<Node> getSepset(Node i, Node k) {
         return getSepsetGreedy(i, k);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
         Set<Node> set = getSepsetGreedy(i, k);
         return set != null && !set.contains(j);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isIndependent(Node a, Node b, Set<Node> c) {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
@@ -83,26 +101,45 @@ public class SepsetsGreedy implements SepsetProducer {
         return result.isIndependent();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getScore() {
         return -(result.getPValue() - this.independenceTest.getAlpha());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Node> getVariables() {
         return this.independenceTest.getVariables();
     }
 
+    /**
+     * <p>isVerbose.</p>
+     *
+     * @return a boolean
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setVerbose(boolean verbose) {
         independenceTest.setVerbose(verbose);
         this.verbose = verbose;
     }
 
+    /**
+     * <p>getDag.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     */
     public Graph getDag() {
         if (this.independenceTest instanceof MsepTest) {
             return ((MsepTest) this.independenceTest).getGraph();
@@ -111,6 +148,11 @@ public class SepsetsGreedy implements SepsetProducer {
         }
     }
 
+    /**
+     * <p>Setter for the field <code>depth</code>.</p>
+     *
+     * @param depth a int
+     */
     public void setDepth(int depth) {
         this.depth = depth;
     }

@@ -39,20 +39,54 @@ import java.util.List;
  * throw an exception.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class Edge implements TetradSerializable, Comparable<Edge> {
     @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The first node.
+     */
     private final Node node1;
+
+    /**
+     * The second node.
+     */
     private final Node node2;
+
+    /**
+     * The endpoint at the first node.
+     */
     private Endpoint endpoint1;
+
+    /**
+     * The endpoint at the second node.
+     */
     private Endpoint endpoint2;
-    // Usual coloring--set to something else for a special line color.
+    /**
+     * Usual coloring--set to something else for a special line color.
+     */
     private transient Color lineColor;
+    /**
+     * Whether the edge is bold.
+     */
     private boolean bold = false;
+    /**
+     * Whether the edge is highlighted.
+     */
     private boolean highlighted = false;
+    /**
+     * The properties.
+     */
     private List<Property> properties = new ArrayList<>();
+    /**
+     * The edge type probabilities.
+     */
     private List<EdgeTypeProbability> edgeTypeProbabilities = new ArrayList<>();
+    /**
+     * The probability.
+     */
     private double probability;
 
     /**
@@ -88,6 +122,11 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
     // =========================CONSTRUCTORS============================//
 
+    /**
+     * <p>Constructor for Edge.</p>
+     *
+     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
+     */
     public Edge(Edge edge) {
         this(edge.node1, edge.node2, edge.endpoint1, edge.endpoint2);
         this.lineColor = edge.getLineColor();
@@ -100,6 +139,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Edge} object
      */
     public static Edge serializableInstance() {
         return new Edge(GraphNode.serializableInstance(), GraphNode.serializableInstance(), Endpoint.ARROW,
@@ -107,6 +148,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
+     * <p>Getter for the field <code>node1</code>.</p>
+     *
      * @return the A node.
      */
     public final Node getNode1() {
@@ -116,6 +159,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     // ==========================PUBLIC METHODS===========================//
 
     /**
+     * <p>Getter for the field <code>node2</code>.</p>
+     *
      * @return the B node.
      */
     public final Node getNode2() {
@@ -123,30 +168,47 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
+     * <p>Getter for the field <code>endpoint1</code>.</p>
+     *
      * @return the endpoint of the edge at the A node.
      */
     public final Endpoint getEndpoint1() {
         return this.endpoint1;
     }
 
+    /**
+     * <p>Setter for the field <code>endpoint1</code>.</p>
+     *
+     * @param e a {@link edu.cmu.tetrad.graph.Endpoint} object
+     */
     public final void setEndpoint1(Endpoint e) {
         this.endpoint1 = e;
     }
 
     /**
+     * <p>Getter for the field <code>endpoint2</code>.</p>
+     *
      * @return the endpoint of the edge at the B node.
      */
     public final Endpoint getEndpoint2() {
         return this.endpoint2;
     }
 
+    /**
+     * <p>Setter for the field <code>endpoint2</code>.</p>
+     *
+     * @param e a {@link edu.cmu.tetrad.graph.Endpoint} object
+     */
     public final void setEndpoint2(Endpoint e) {
         this.endpoint2 = e;
     }
 
     /**
+     * <p>getProximalEndpoint.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      * @return the endpoint nearest to the given node.
-     * @throws IllegalArgumentException if the given node is not along the edge.
+     * @throws java.lang.IllegalArgumentException if the given node is not along the edge.
      */
     public final Endpoint getProximalEndpoint(Node node) {
         if (this.node1 == node) {
@@ -159,8 +221,11 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
+     * <p>getDistalEndpoint.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      * @return the endpoint furthest from the given node.
-     * @throws IllegalArgumentException if the given node is not along the edge.
+     * @throws java.lang.IllegalArgumentException if the given node is not along the edge.
      */
     public final Endpoint getDistalEndpoint(Node node) {
         if (this.node1 == node) {
@@ -175,6 +240,9 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     /**
      * Traverses the edge in an undirected fashion--given one node along the edge, returns the node at the opposite end
      * of the edge.
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
+     * @return a {@link edu.cmu.tetrad.graph.Node} object
      */
     public final Node getDistalNode(Node node) {
         if (this.node1 == node) {
@@ -189,6 +257,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
+     * <p>isDirected.</p>
+     *
      * @return true just in case this edge is directed.
      */
     public boolean isDirected() {
@@ -196,6 +266,9 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
+     * <p>pointsTowards.</p>
+     *
+     * @param node a {@link edu.cmu.tetrad.graph.Node} object
      * @return true just in case the edge is pointing toward the given node-- that is, x --&gt; node or x o--&gt; node.
      */
     public boolean pointsTowards(Node node) {
@@ -205,6 +278,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
+     * <p>reverse.</p>
+     *
      * @return the edge with endpoints reversed.
      */
     public Edge reverse() {
@@ -213,6 +288,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
     /**
      * Produces a string representation of the edge.
+     *
+     * @return a {@link java.lang.String} object
      */
     public final String toString() {
         StringBuilder buf = new StringBuilder();
@@ -318,11 +395,18 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         return buf.toString();
     }
 
+    /**
+     * <p>hashCode.</p>
+     *
+     * @return a int
+     */
     public final int hashCode() {
         return node1.hashCode() + node2.hashCode();
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Two edges are equal just in case they connect the same nodes and have the same endpoints proximal to each node.
      */
     public final boolean equals(Object o) {
@@ -349,6 +433,12 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         return equals1 || equals2;
     }
 
+    /**
+     * <p>compareTo.</p>
+     *
+     * @param _edge a {@link edu.cmu.tetrad.graph.Edge} object
+     * @return a int
+     */
     public int compareTo(Edge _edge) {
         int comp1 = getNode1().compareTo(_edge.getNode1());
 
@@ -372,7 +462,12 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.)
+     *
+     * @param s a {@link java.io.ObjectInputStream} object
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
@@ -393,51 +488,123 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         }
     }
 
+    /**
+     * <p>isNull.</p>
+     *
+     * @return a boolean
+     */
     public boolean isNull() {
         return this.endpoint1 == Endpoint.NULL && this.endpoint2 == Endpoint.NULL;
     }
 
+    /**
+     * <p>Getter for the field <code>lineColor</code>.</p>
+     *
+     * @return a {@link java.awt.Color} object
+     */
     public Color getLineColor() {
         return this.lineColor;
     }
 
+    /**
+     * <p>addProperty.</p>
+     *
+     * @param property a {@link edu.cmu.tetrad.graph.Edge.Property} object
+     */
     public void addProperty(Property property) {
         if (!this.properties.contains(property)) {
             this.properties.add(property);
         }
     }
 
+    /**
+     * <p>Getter for the field <code>properties</code>.</p>
+     *
+     * @return a {@link java.util.ArrayList} object
+     */
     public ArrayList<Property> getProperties() {
         return new ArrayList<>(this.properties);
     }
 
+    /**
+     * <p>addEdgeTypeProbability.</p>
+     *
+     * @param prob a {@link edu.cmu.tetrad.graph.EdgeTypeProbability} object
+     */
     public void addEdgeTypeProbability(EdgeTypeProbability prob) {
         if (!this.edgeTypeProbabilities.contains(prob)) {
             this.edgeTypeProbabilities.add(prob);
         }
     }
 
+    /**
+     * <p>Getter for the field <code>edgeTypeProbabilities</code>.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<EdgeTypeProbability> getEdgeTypeProbabilities() {
         return this.edgeTypeProbabilities;
     }
 
+    /**
+     * <p>Getter for the field <code>probability</code>.</p>
+     *
+     * @return a double
+     */
     public double getProbability() {
         return probability;
     }
 
+    /**
+     * <p>Setter for the field <code>probability</code>.</p>
+     *
+     * @param probability a double
+     */
     public void setProbability(double probability) {
         this.probability = probability;
     }
 
+    /**
+     * <p>isHighlighted.</p>
+     *
+     * @return a boolean
+     */
     public boolean isHighlighted() {
         return highlighted;
     }
 
+    /**
+     * <p>Setter for the field <code>highlighted</code>.</p>
+     *
+     * @param highlighted a boolean
+     */
     public void setHighlighted(boolean highlighted) {
         this.highlighted = highlighted;
     }
 
+    /**
+     * A property of an edge.
+     */
     public enum Property {
-        dd, nl, pd, pl
+
+        /**
+         * Definitely direct.
+         */
+        dd,
+
+        /**
+         * No latent confounder.
+         */
+        nl,
+
+        /**
+         * Possibly direct.
+         */
+        pd,
+
+        /**
+         * Possible latent confounder.
+         */
+        pl
     }
 }

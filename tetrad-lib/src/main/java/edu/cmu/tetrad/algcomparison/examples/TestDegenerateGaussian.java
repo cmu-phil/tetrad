@@ -37,8 +37,14 @@ import edu.cmu.tetrad.util.Parameters;
  * Test the degenerate Gaussian score.
  *
  * @author bandrews
+ * @version $Id: $Id
  */
 public class TestDegenerateGaussian {
+    /**
+     * <p>main.</p>
+     *
+     * @param args a {@link java.lang.String} object
+     */
     public static void main(String... args) {
         Parameters parameters = new Parameters();
         parameters.set("numRuns", 3);

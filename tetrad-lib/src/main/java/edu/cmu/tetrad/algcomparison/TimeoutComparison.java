@@ -57,27 +57,105 @@ import java.util.concurrent.*;
  * Nov 14, 2017 12:00:31 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
+ * @version $Id: $Id
  */
 public class TimeoutComparison {
 
+    /**
+     * The date format.
+     */
     private static final DateFormat DF = new SimpleDateFormat("EEE, MMMM dd, yyyy hh:mm:ss a");
+
+    /**
+     * The graph type used.
+     */
     private boolean[] graphTypeUsed;
+
+    /**
+     * The out.
+     */
     private PrintStream out;
+
+    /**
+     * Whether to output the tables in tab-delimited format.
+     */
     private boolean tabDelimitedTables;
+
+    /**
+     * Whether to save the graphs.
+     */
     private boolean saveGraphs;
+
+    /**
+     * Whether to copy the data (or using the original).
+     */
     private boolean copyData;
+
+    /**
+     * Whether to show the simulation indices.
+     */
     private boolean showSimulationIndices;
+
+    /**
+     * Whether to show the algorithm indices.
+     */
     private boolean showAlgorithmIndices;
+
+    /**
+     * Whether to show the utilities.
+     */
     private boolean showUtilities;
+
+    /**
+     * Whether to sort by utility.
+     */
     private boolean sortByUtility;
+
+    /**
+     * The data path.
+     */
     private String dataPath;
+
+    /**
+     * The results path.
+     */
     private String resultsPath;
+
+    /**
+     * Whether to parallelize the process.
+     */
     private boolean parallelized = true;
+
+    /**
+     * Whether to save CPDAGs.
+     */
     private boolean saveCPDAGs;
+
+    /**
+     * Whether to save PAGs.
+     */
     private boolean savePags;
+
+    /**
+     * The directories for the saved graphs.
+     */
     private ArrayList<String> dirs;
+
+    /**
+     * The comparison graph.
+     */
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
 
+    /**
+     * <p>compareFromFiles.</p>
+     *
+     * @param filePath   a {@link java.lang.String} object
+     * @param algorithms a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout    a long
+     * @param unit       a {@link java.util.concurrent.TimeUnit} object
+     */
     public void compareFromFiles(String filePath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
         compareFromFiles(filePath, filePath, algorithms, statistics, parameters, timeout, unit);
@@ -91,6 +169,8 @@ public class TimeoutComparison {
      * @param algorithms  The list of algorithms to be compared.
      * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
      * @param parameters  The list of parameters and their values.
+     * @param timeout     a long
+     * @param unit        a {@link java.util.concurrent.TimeUnit} object
      */
     public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
                                  Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
@@ -132,12 +212,35 @@ public class TimeoutComparison {
         compareFromSimulations(this.resultsPath, simulations, algorithms, statistics, parameters, timeout, unit);
     }
 
+    /**
+     * <p>generateReportFromExternalAlgorithms.</p>
+     *
+     * @param dataPath    a {@link java.lang.String} object
+     * @param resultsPath a {@link java.lang.String} object
+     * @param algorithms  a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics  a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout     a long
+     * @param unit        a {@link java.util.concurrent.TimeUnit} object
+     */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
         generateReportFromExternalAlgorithms(dataPath, resultsPath, "Comparison.txt", algorithms,
                 statistics, parameters, timeout, unit);
     }
 
+    /**
+     * <p>generateReportFromExternalAlgorithms.</p>
+     *
+     * @param dataPath       a {@link java.lang.String} object
+     * @param resultsPath    a {@link java.lang.String} object
+     * @param outputFileName a {@link java.lang.String} object
+     * @param algorithms     a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics     a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout        a long
+     * @param unit           a {@link java.util.concurrent.TimeUnit} object
+     */
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, String outputFileName, Algorithms algorithms,
                                                      Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
 
@@ -181,6 +284,17 @@ public class TimeoutComparison {
         compareFromSimulations(this.resultsPath, simulations, outputFileName, algorithms, statistics, parameters, timeout, unit);
     }
 
+    /**
+     * <p>compareFromSimulations.</p>
+     *
+     * @param resultsPath a {@link java.lang.String} object
+     * @param simulations a {@link edu.cmu.tetrad.algcomparison.simulation.Simulations} object
+     * @param algorithms  a {@link edu.cmu.tetrad.algcomparison.algorithm.Algorithms} object
+     * @param statistics  a {@link edu.cmu.tetrad.algcomparison.statistic.Statistics} object
+     * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout     a long
+     * @param unit        a {@link java.util.concurrent.TimeUnit} object
+     */
     public void compareFromSimulations(String resultsPath, Simulations simulations, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
         compareFromSimulations(resultsPath, simulations, "Comparison.txt", algorithms, statistics, parameters, timeout, unit);
@@ -189,10 +303,14 @@ public class TimeoutComparison {
     /**
      * Compares algorithms.
      *
-     * @param resultsPath Path to the file where the output should be printed.
-     * @param simulations The list of simulationWrapper that is used to generate graphs and data for the comparison.
-     * @param algorithms  The list of algorithms to be compared.
-     * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
+     * @param resultsPath    Path to the file where the output should be printed.
+     * @param simulations    The list of simulationWrapper that is used to generate graphs and data for the comparison.
+     * @param algorithms     The list of algorithms to be compared.
+     * @param statistics     The list of statistics on which to compare the algorithm, and their utility weights.
+     * @param outputFileName a {@link java.lang.String} object
+     * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param timeout        a long
+     * @param unit           a {@link java.util.concurrent.TimeUnit} object
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
@@ -281,8 +399,7 @@ public class TimeoutComparison {
                             + " / " + simulationWrapper.getDescription());
                 }
 
-                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
-                    ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+                if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
                     external.setSimIndex(simulationWrappers.indexOf(external.getSimulation()));
                 }
 
@@ -517,7 +634,9 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>configuration.</p>
      *
+     * @param path a {@link java.lang.String} object
      */
     public void configuration(String path) {
         try {
@@ -778,7 +897,7 @@ public class TimeoutComparison {
             }
         }
 
-        ExecutorService pool = Executors.newSingleThreadExecutor();
+        ForkJoinPool pool = new ForkJoinPool(1);
         tasks.forEach(task -> {
             Future<Void> future = pool.submit(task);
             try {
@@ -798,6 +917,7 @@ public class TimeoutComparison {
                 }
             }
         });
+
         shutdownAndAwaitTermination(pool);
 
         return allStats;
@@ -807,7 +927,7 @@ public class TimeoutComparison {
         return TimeoutComparison.DF.format(new Date(MillisecondTimes.timeMillis()));
     }
 
-    private void shutdownAndAwaitTermination(ExecutorService pool) {
+    private void shutdownAndAwaitTermination(ForkJoinPool pool) {
         pool.shutdown(); // Disable new tasks from being submitted
         try {
             // Wait a while for existing tasks to terminate
@@ -826,23 +946,45 @@ public class TimeoutComparison {
         }
     }
 
+    /**
+     * <p>isShowSimulationIndices.</p>
+     *
+     * @return a boolean
+     */
     public boolean isShowSimulationIndices() {
         return this.showSimulationIndices;
     }
 
+    /**
+     * <p>Setter for the field <code>showSimulationIndices</code>.</p>
+     *
+     * @param showSimulationIndices a boolean
+     */
     public void setShowSimulationIndices(boolean showSimulationIndices) {
         this.showSimulationIndices = showSimulationIndices;
     }
 
+    /**
+     * <p>isShowAlgorithmIndices.</p>
+     *
+     * @return a boolean
+     */
     public boolean isShowAlgorithmIndices() {
         return this.showAlgorithmIndices;
     }
 
+    /**
+     * <p>Setter for the field <code>showAlgorithmIndices</code>.</p>
+     *
+     * @param showAlgorithmIndices a boolean
+     */
     public void setShowAlgorithmIndices(boolean showAlgorithmIndices) {
         this.showAlgorithmIndices = showAlgorithmIndices;
     }
 
     /**
+     * <p>isShowUtilities.</p>
+     *
      * @return True iff a column of utilities marked "W" should be shown in the output.
      */
     public boolean isShowUtilities() {
@@ -850,6 +992,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>showUtilities</code>.</p>
+     *
      * @param showUtilities True iff a column of utilities marked "W" should be shown in the output.
      */
     public void setShowUtilities(boolean showUtilities) {
@@ -857,6 +1001,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>isSortByUtility.</p>
+     *
      * @return True iff the output should be sorted by utility.
      */
     public boolean isSortByUtility() {
@@ -864,21 +1010,35 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>sortByUtility</code>.</p>
+     *
      * @param sortByUtility true iff the output should be sorted by utility.
      */
     public void setSortByUtility(boolean sortByUtility) {
         this.sortByUtility = sortByUtility;
     }
 
+    /**
+     * <p>isParallelized.</p>
+     *
+     * @return a boolean
+     */
     public boolean isParallelized() {
         return this.parallelized;
     }
 
+    /**
+     * <p>Setter for the field <code>parallelized</code>.</p>
+     *
+     * @param parallelized a boolean
+     */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
     }
 
     /**
+     * <p>isSaveCPDAGs.</p>
+     *
      * @return True if CPDAGs should be saved out.
      */
     public boolean isSaveCPDAGs() {
@@ -886,6 +1046,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>saveCPDAGs</code>.</p>
+     *
      * @param saveCPDAGs True if CPDAGs should be saved out.
      */
     public void setSaveCPDAGs(boolean saveCPDAGs) {
@@ -893,6 +1055,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>isSavePags.</p>
+     *
      * @return True if patterns should be saved out.
      */
     public boolean isSavePags() {
@@ -900,6 +1064,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>savePags</code>.</p>
+     *
      * @param savePags True if patterns should be saved out.
      */
     public void setSavePags(boolean savePags) {
@@ -907,6 +1073,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>isTabDelimitedTables.</p>
+     *
      * @return True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public boolean isTabDelimitedTables() {
@@ -914,6 +1082,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>tabDelimitedTables</code>.</p>
+     *
      * @param tabDelimitedTables True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public void setTabDelimitedTables(boolean tabDelimitedTables) {
@@ -921,6 +1091,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>isSaveGraphs.</p>
+     *
      * @return True if all graphs should be saved to files.
      */
     public boolean isSaveGraphs() {
@@ -928,6 +1100,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>saveGraphs</code>.</p>
+     *
      * @param saveGraphs True if all graphs should be saved to files.
      */
     public void setSaveGraphs(boolean saveGraphs) {
@@ -935,6 +1109,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>isCopyData.</p>
+     *
      * @return True if data should be copied before analyzing it.
      */
     public boolean isCopyData() {
@@ -942,6 +1118,8 @@ public class TimeoutComparison {
     }
 
     /**
+     * <p>Setter for the field <code>copyData</code>.</p>
+     *
      * @param copyData True if data should be copied before analyzing it.
      */
     public void setCopyData(boolean copyData) {
@@ -950,6 +1128,8 @@ public class TimeoutComparison {
 
     /**
      * The type of graph the results are compared to.
+     *
+     * @return a {@link edu.cmu.tetrad.algcomparison.TimeoutComparison.ComparisonGraph} object
      */
     public ComparisonGraph getComparisonGraph() {
         return this.comparisonGraph;
@@ -957,6 +1137,8 @@ public class TimeoutComparison {
 
     /**
      * The type of graph the results are compared to.
+     *
+     * @param comparisonGraph a {@link edu.cmu.tetrad.algcomparison.TimeoutComparison.ComparisonGraph} object
      */
     public void setComparisonGraph(ComparisonGraph comparisonGraph) {
         if (comparisonGraph == null) {
@@ -1037,8 +1219,7 @@ public class TimeoutComparison {
                 ((HasKnowledge) algorithm).setKnowledge(((HasKnowledge) simulation).getKnowledge());
             }
 
-            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
-                ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+            if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm external) {
                 external.setSimulation(simulationWrapper.getSimulation());
                 external.setPath(this.resultsPath);
                 external.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
@@ -1086,8 +1267,7 @@ public class TimeoutComparison {
             out = GraphUtils.replaceNodes(out, trueGraph.getNodes());
         }
 
-        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
-            ExternalAlgorithm extAlg = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
+        if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm extAlg) {
             extAlg.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
             extAlg.setSimulation(simulationWrapper.getSimulation());
             extAlg.setPath(this.resultsPath);
@@ -1525,8 +1705,23 @@ public class TimeoutComparison {
         }
     }
 
+    /**
+     * An enum of graph types to compare.
+     */
     public enum ComparisonGraph {
-        true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
+
+        /**
+         * The true dag.
+         */
+        true_DAG,
+        /**
+         * The cpdag of the true dag.
+         */
+        CPDAG_of_the_true_DAG,
+        /**
+         * The pag of the true dag.
+         */
+        PAG_of_the_true_DAG
     }
 
     private enum Mode {
@@ -1535,9 +1730,22 @@ public class TimeoutComparison {
 
     private static class AlgorithmWrapper implements Algorithm {
 
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The algorithm to be wrapped.
+         */
         private final Algorithm algorithm;
+
+        /**
+         * The parameters for the algorithm.
+         */
         private final Parameters parameters;
+
+        /**
+         * The parameters that have been overridden.
+         */
         private final List<String> overriddenParameters = new ArrayList<>();
 
         public AlgorithmWrapper(Algorithm algorithm, Parameters parameters) {
@@ -1597,11 +1805,27 @@ public class TimeoutComparison {
         }
     }
 
+    /**
+     * A wrapper for an algorithm and a simulation.
+     */
     private static class AlgorithmSimulationWrapper implements Algorithm {
 
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The simulation to be wrapped.
+         */
         private final SimulationWrapper simulationWrapper;
+
+        /**
+         * The algorithm to be wrapped.
+         */
         private final AlgorithmWrapper algorithmWrapper;
+
+        /**
+         * The parameters for the algorithm and simulation.
+         */
         List<String> parameters = new ArrayList<>();
 
         public AlgorithmSimulationWrapper(AlgorithmWrapper algorithm, SimulationWrapper simulation) {
@@ -1647,12 +1871,32 @@ public class TimeoutComparison {
         }
     }
 
+    /**
+     * A wrapper for a simulation.
+     */
     private static class SimulationWrapper implements Simulation {
 
+        @Serial
         private static final long serialVersionUID = 23L;
+
+        /**
+         * The simulation to be wrapped.
+         */
         private final Simulation simulation;
+
+        /**
+         * The list of graphs.
+         */
         private List<Graph> graphs;
+
+        /**
+         * The list of data models.
+         */
         private List<DataModel> dataModels;
+
+        /**
+         * The parameters for the simulation.
+         */
         private Parameters parameters;
 
         public SimulationWrapper(Simulation simulation, Parameters parameters) {
@@ -1739,42 +1983,29 @@ public class TimeoutComparison {
         }
     }
 
-    private class AlgorithmTask implements Callable<Void> {
+    /**
+     * A wrapper for a run.
+     */
+    private static class Run {
 
-        private final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
-        private final List<AlgorithmWrapper> algorithmWrappers;
-        private final List<SimulationWrapper> simulationWrappers;
-        private final Statistics statistics;
-        private final int numGraphTypes;
-        private final double[][][][] allStats;
-        private final Run run;
-
-        public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
-                             List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
-                             Statistics statistics, int numGraphTypes, double[][][][] allStats, Run run) {
-            this.algorithmSimulationWrappers = algorithmSimulationWrappers;
-            this.simulationWrappers = simulationWrappers;
-            this.algorithmWrappers = algorithmWrappers;
-            this.statistics = statistics;
-            this.numGraphTypes = numGraphTypes;
-            this.allStats = allStats;
-            this.run = run;
-        }
-
-        @Override
-        public Void call() throws Exception {
-            doRun(this.algorithmSimulationWrappers, this.algorithmWrappers,
-                    this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run);
-            return null;
-        }
-
-    }
-
-    private class Run {
-
+        /**
+         * The index of the algorithm-simulation wrapper to be used.
+         */
         private final int algSimIndex;
+
+        /**
+         * The index of the run to be used.
+         */
         private final int runIndex;
+
+        /**
+         * The index to be used.
+         */
         private final int index;
+
+        /**
+         * The algorithm-simulation wrapper to be used.
+         */
         private final AlgorithmSimulationWrapper wrapper;
 
         public Run(int algSimIndex, int runIndex, int index, AlgorithmSimulationWrapper wrapper) {
@@ -1799,6 +2030,66 @@ public class TimeoutComparison {
         public AlgorithmSimulationWrapper getWrapper() {
             return this.wrapper;
         }
+    }
+
+    /**
+     * A wrapper for a simulation and an algorithm.
+     */
+    private class AlgorithmTask implements Callable<Void> {
+        /**
+         * The algorithm-simulation wrappers to be used.
+         */
+        private final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
+
+        /**
+         * The algorithm wrappers to be used.
+         */
+        private final List<AlgorithmWrapper> algorithmWrappers;
+
+        /**
+         * The simulation wrappers to be used.
+         */
+        private final List<SimulationWrapper> simulationWrappers;
+
+        /**
+         * The statistics to be used.
+         */
+        private final Statistics statistics;
+
+        /**
+         * The number of graph types to be used.
+         */
+        private final int numGraphTypes;
+
+        /**
+         * The array of statistics to be used.
+         */
+        private final double[][][][] allStats;
+
+        /**
+         * The run to be used.
+         */
+        private final Run run;
+
+        public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
+                             List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
+                             Statistics statistics, int numGraphTypes, double[][][][] allStats, Run run) {
+            this.algorithmSimulationWrappers = algorithmSimulationWrappers;
+            this.simulationWrappers = simulationWrappers;
+            this.algorithmWrappers = algorithmWrappers;
+            this.statistics = statistics;
+            this.numGraphTypes = numGraphTypes;
+            this.allStats = allStats;
+            this.run = run;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            doRun(this.algorithmSimulationWrappers, this.algorithmWrappers,
+                    this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run);
+            return null;
+        }
+
     }
 
 }

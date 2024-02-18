@@ -16,9 +16,9 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +31,7 @@ import static edu.cmu.tetrad.util.Params.*;
  * (randomly). This cannot given multiple values.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 @Bootstrapping
 @edu.cmu.tetrad.annotation.Algorithm(
@@ -40,18 +41,49 @@ import static edu.cmu.tetrad.util.Params.*;
         dataType = DataType.Continuous
 )
 public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The independence test to use.
+     */
     private IndependenceWrapper test;
+
+    /**
+     * The score to use.
+     */
     private ScoreWrapper score;
+
+    /**
+     * The external graph.
+     */
     private Graph externalGraph;
+
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * The algorithm.
+     */
     private Algorithm algorithm;
 
     // Don't delete.
+
+    /**
+     * <p>Constructor for Fask.</p>
+     */
     public Fask() {
 
     }
 
+    /**
+     * <p>Constructor for Fask.</p>
+     *
+     * @param test  a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
+     * @param score a {@link edu.cmu.tetrad.algcomparison.score.ScoreWrapper} object
+     */
     public Fask(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
@@ -61,6 +93,9 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         return search.search();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         DataSet _data = (DataSet) dataSet;
@@ -131,21 +166,25 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data,
-                    fask, parameters.getInt(NUMBER_RESAMPLING),
-                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(this.knowledge);
-            search.setParameters(parameters);
+                    fask,
+                    knowledge, parameters);
+
             search.setVerbose(parameters.getBoolean(VERBOSE));
             return search.search();
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         if (this.test != null) {
@@ -157,11 +196,17 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
@@ -182,36 +227,57 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         return parameters;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setExternalGraph(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;

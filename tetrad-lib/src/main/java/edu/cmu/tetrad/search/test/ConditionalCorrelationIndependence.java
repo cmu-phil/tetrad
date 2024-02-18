@@ -50,6 +50,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * We use Nadaraya-Watson kernel regression, though we further restrict the sample size to nearby points.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public final class ConditionalCorrelationIndependence {
 
@@ -115,6 +116,9 @@ public final class ConditionalCorrelationIndependence {
     /**
      * Returns the p-value of the test, x _||_ y | z. Can be compared to alpha.
      *
+     * @param x  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param y  a {@link edu.cmu.tetrad.graph.Node} object
+     * @param _z a {@link java.util.Set} object
      * @return This p-value.
      */
     public double isIndependent(Node x, Node y, Set<Node> _z) {
@@ -153,6 +157,9 @@ public final class ConditionalCorrelationIndependence {
     /**
      * Calculates the residuals of x regressed nonparametrically onto z. Left public so it can be accessed separately.
      *
+     * @param x    a {@link edu.cmu.tetrad.graph.Node} object
+     * @param z    a {@link java.util.List} object
+     * @param rows a {@link java.util.List} object
      * @return a double[2][] array. The first double[] array contains the residuals for x, and the second double[] array
      * contains the residuals for y.
      */
@@ -564,15 +571,39 @@ public final class ConditionalCorrelationIndependence {
      *
      * @see ConditionalCorrelationIndependence
      */
-    public enum Kernel {Epinechnikov, Gaussian}
+    public enum Kernel {
+
+        /**
+         * The Epinechnikov kernel.
+         */
+        Epinechnikov,
+
+        /**
+         * The Gaussian kernel.
+         */
+        Gaussian
+    }
 
     /**
      * Gives a choice of basis functions to use for judgments of independence for conditional correlation independence.
      *
      * @see ConditionalCorrelationIndependence
      */
-    public enum Basis {Polynomial, Cosine}
+    public enum Basis {
+
+        /**
+         * Polynomial basis.
+         */
+        Polynomial,
+
+        /**
+         * Cosine basis.
+         */
+        Cosine
+    }
 }
+
+
 
 
 

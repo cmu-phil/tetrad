@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,16 +45,23 @@ import java.util.Map;
  * Holds a list of graphs.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshallable, DoNotAddOldModel {
+    @Serial
     private static final long serialVersionUID = 23L;
+
+    /**
+     * The graphs and their scores.
+     */
     private final Map<Graph, Double> graphsToScores;
+
     /**
      * Transient graph scorer, null if non exists (or needs to be refreshed).
      */
     private final transient DagScorer graphScorer;
     /**
-     * @serial Can be null.
+     * The name of the set of graphs.
      */
     private String name;
     /**
@@ -68,6 +76,12 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         this.graphScorer = null;
     }
 
+    /**
+     * <p>Constructor for ScoredGraphsWrapper.</p>
+     *
+     * @param graph  a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param scorer a {@link edu.cmu.tetrad.search.utils.DagScorer} object
+     */
     public ScoredGraphsWrapper(Graph graph, DagScorer scorer) {
         List<Graph> dags = GraphTransforms.generateCpdagDags(graph, true);
         this.graphsToScores = new HashMap<>();
@@ -94,18 +108,42 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         log();
     }
 
+    /**
+     * <p>Constructor for ScoredGraphsWrapper.</p>
+     *
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.DagWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ScoredGraphsWrapper(DagWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
+    /**
+     * <p>Constructor for ScoredGraphsWrapper.</p>
+     *
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.GraphWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ScoredGraphsWrapper(GraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
+    /**
+     * <p>Constructor for ScoredGraphsWrapper.</p>
+     *
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.SemGraphWrapper} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ScoredGraphsWrapper(SemGraphWrapper wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
 
+    /**
+     * <p>Constructor for ScoredGraphsWrapper.</p>
+     *
+     * @param wrapper    a {@link edu.cmu.tetradapp.model.PcRunner} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public ScoredGraphsWrapper(PcRunner wrapper, Parameters parameters) {
         this(wrapper.getGraph(), null);
     }
@@ -113,6 +151,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
+     * @return a {@link edu.cmu.tetradapp.model.ScoredGraphsWrapper} object
      * @see TetradSerializableUtils
      */
     public static ScoredGraphsWrapper serializableInstance() {
@@ -121,6 +160,11 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
 
     //==============================PUBLIC METHODS======================//
 
+    /**
+     * <p>Getter for the field <code>graphsToScores</code>.</p>
+     *
+     * @return a {@link java.util.Map} object
+     */
     public Map<Graph, Double> getGraphsToScores() {
         Map<Graph, Double> _graphsToScores = new LinkedHashMap<>();
 
@@ -132,10 +176,18 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     }
 
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -164,7 +216,12 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
      * help.
+     *
+     * @param s The object input stream.
+     * @throws IOException            If any.
+     * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -172,6 +229,8 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
 
     /**
      * May be null; a selected graph must be set.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph getGraph() {
         return this.selectedGraph;
@@ -179,6 +238,8 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
 
     /**
      * May be null; a selected graph must be set.
+     *
+     * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph getSelectedGraph() {
         return this.selectedGraph;
@@ -186,6 +247,8 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
 
     /**
      * Sets a selected graph. Must be one of the graphs in <code>getGraphToScore().keySet</code>.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public void setSelectedGraph(Graph graph) {
         if (!this.graphsToScores.containsKey(graph)) {
@@ -195,6 +258,11 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         this.selectedGraph = graph;
     }
 
+    /**
+     * <p>Getter for the field <code>graphScorer</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.search.utils.DagScorer} object
+     */
     public DagScorer getGraphScorer() {
         return this.graphScorer;
     }

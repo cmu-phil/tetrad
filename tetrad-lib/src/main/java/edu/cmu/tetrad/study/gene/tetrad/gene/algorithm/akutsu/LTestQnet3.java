@@ -28,7 +28,18 @@ import java.io.*;
 import java.text.NumberFormat;
 import java.util.StringTokenizer;
 
+/**
+ * <p>LTestQnet3 class.</p>
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class LTestQnet3 {
+    /**
+     * <p>main.</p>
+     *
+     * @param argv an array of {@link java.lang.String} objects
+     */
     public static void main(String[] argv) {
 
         String fileName = argv[0];

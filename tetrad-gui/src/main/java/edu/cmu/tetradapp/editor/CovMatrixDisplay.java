@@ -34,16 +34,34 @@ import java.beans.PropertyChangeSupport;
  * Presents a covariance matrix as a JTable.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CovMatrixDisplay extends JPanel implements DataModelContainer {
+
+    /**
+     * The JTable that displays the data.
+     */
     private final CovMatrixJTable covMatrixJTable;
+
+    /**
+     * The label for the display.
+     */
     private final JLabel label;
+
+    /**
+     * The restore button.
+     */
     private final JButton restoreButton;
+
+    /**
+     * The property change support.
+     */
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /**
      * Construct a new JTable for the given CovarianceMatrix.
      *
+     * @param covMatrix a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
      * @see edu.cmu.tetrad.data.CovarianceMatrix
      */
     public CovMatrixDisplay(ICovarianceMatrix covMatrix) {
@@ -103,14 +121,29 @@ public class CovMatrixDisplay extends JPanel implements DataModelContainer {
         this.restoreButton.addActionListener(e -> getCovMatrixJTable().restore());
     }
 
+    /**
+     * <p>getDataModel.</p>
+     *
+     * @return a {@link edu.cmu.tetrad.data.DataModel} object
+     */
     public DataModel getDataModel() {
         return getCovMatrixJTable().getDataModel();
     }
 
+    /**
+     * <p>Getter for the field <code>covMatrixJTable</code>.</p>
+     *
+     * @return a {@link edu.cmu.tetradapp.editor.CovMatrixJTable} object
+     */
     public CovMatrixJTable getCovMatrixJTable() {
         return this.covMatrixJTable;
     }
 
+    /**
+     * <p>propertyChange.</p>
+     *
+     * @param evt a {@link java.beans.PropertyChangeEvent} object
+     */
     public void propertyChange(PropertyChangeEvent evt) {
         this.pcs.firePropertyChange(evt);
     }

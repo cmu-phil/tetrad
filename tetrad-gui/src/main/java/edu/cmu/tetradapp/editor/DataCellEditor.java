@@ -84,6 +84,8 @@ class DataCellEditor extends DefaultCellEditor {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Forwards the message from the <code>CellEditor</code> to the
      * <code>delegate</code>.
      *

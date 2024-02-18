@@ -28,8 +28,12 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * distribution.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public interface RandomDistribution extends TetradSerializable {
+    /**
+     * Constant <code>serialVersionUID=23L</code>
+     */
     long serialVersionUID = 23L;
 
     /**

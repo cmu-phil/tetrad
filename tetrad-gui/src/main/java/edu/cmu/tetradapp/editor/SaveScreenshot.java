@@ -48,6 +48,13 @@ class SaveScreenshot extends AbstractAction {
      */
     private final boolean editorWindowUsed;
 
+    /**
+     * <p>Constructor for SaveScreenshot.</p>
+     *
+     * @param comp             a {@link javax.swing.JComponent} object
+     * @param editorWindowUsed a boolean
+     * @param title            a {@link java.lang.String} object
+     */
     public SaveScreenshot(JComponent comp, boolean editorWindowUsed,
                           String title) {
         super(title);
@@ -61,6 +68,8 @@ class SaveScreenshot extends AbstractAction {
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
      * Performs the action of loading a session from a file.
      */
     public void actionPerformed(ActionEvent e) {

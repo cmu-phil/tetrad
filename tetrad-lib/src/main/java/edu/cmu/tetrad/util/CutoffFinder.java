@@ -27,6 +27,7 @@ package edu.cmu.tetrad.util;
  * origin.
  *
  * @author josephramsey
+ * @version $Id: $Id
  */
 public class CutoffFinder {
 
