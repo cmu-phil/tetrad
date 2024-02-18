@@ -449,13 +449,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public boolean isAdjacentTo(Node node1, Node node2) {
-        if (node1 == null || node2 == null || this.edgeLists.get(node1) == null || this.edgeLists.get(node2) == null) {
+        if (!this.edgeLists.containsKey(node1) || !this.edgeLists.containsKey(node2)) {
             return false;
         }
 
-        // Trying to fix a concurency problem.
         for (Edge edge : this.edgeLists.get(node1)) {
-            if (Edges.traverse(node1, edge) == node2 && Edges.traverse(node2, edge) == node1) {
+            if (Edges.traverse(node1, edge) == node2) {
                 return true;
             }
         }

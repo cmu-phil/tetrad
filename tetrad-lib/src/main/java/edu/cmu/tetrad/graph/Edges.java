@@ -161,11 +161,11 @@ public final class Edges {
     }
 
     /**
-     * <p>traverse.</p>
+     * If node is one endpoint of edge, returns the other endpoint.
      *
-     * @param node a {@link edu.cmu.tetrad.graph.Node} object
-     * @param edge a {@link edu.cmu.tetrad.graph.Edge} object
-     * @return the node opposite the given node along the given edge.
+     * @param node The one endpoint.
+     * @param edge The edge
+     * @return The other endpoint.
      */
     public static Node traverse(Node node, Edge edge) {
         if (node == null) {

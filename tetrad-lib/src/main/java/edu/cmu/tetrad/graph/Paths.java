@@ -37,6 +37,14 @@ public class Paths implements TetradSerializable {
         this.graph = graph;
     }
 
+    /**
+     * Adds a node to a set within the given map. If there is no set associated with the specified node,
+     * a new set is created and added to the map.
+     *
+     * @param previous The map containing sets of nodes.
+     * @param b The node to be added to the set.
+     * @param c The node associated with the set in the map.
+     */
     private static void addToSet(Map<Node, Set<Node>> previous, Node b, Node c) {
         previous.computeIfAbsent(c, k -> new HashSet<>());
         Set<Node> list = previous.get(c);
@@ -79,8 +87,10 @@ public class Paths implements TetradSerializable {
      * <p>makeValidOrder.</p>
      *
      * @param order a {@link java.util.List} object
+     * @throws IllegalArgumentException if the graph, at some point in the process, does not have a valid sink, for
+     *                                  instance if it has a directed cycle or a non-chordal undirected cycle.
      */
-    public void makeValidOrder(List<Node> order) {
+    public void makeValidOrder(List<Node> order) throws IllegalArgumentException {
         List<Node> initialOrder = new ArrayList<>(order);
         Graph _graph = new EdgeListGraph(this.graph);
 
@@ -92,7 +102,8 @@ public class Paths implements TetradSerializable {
             Node x;
             do {
                 if (itr.hasNext()) x = itr.next();
-                else throw new IllegalArgumentException("This graph has a cycle.");
+                else throw new IllegalArgumentException("The remaining graph does not have valid sink; there " +
+                        "could be a directed cycle or a non-chordal undirected cycle.");
             } while (invalidSink(x, _graph));
             order.add(x);
             _graph.removeNode(x);
@@ -102,6 +113,13 @@ public class Paths implements TetradSerializable {
         Collections.reverse(order);
     }
 
+    /**
+     * Returns true if x is an invalid sink in the given graph.
+     *
+     * @param x     The node
+     * @param graph The graph.
+     * @return True if x is an invalid sink in the given graph.
+     */
     private boolean invalidSink(Node x, Graph graph) {
         LinkedList<Node> neighbors = new LinkedList<>();
 
@@ -141,8 +159,8 @@ public class Paths implements TetradSerializable {
             Graph cpdag = GraphTransforms.cpdagForDag(dag);
             return g.equals(cpdag);
         } catch (Exception e) {
-
             // There was no valid sink.
+            System.out.println(e.getMessage());
             return false;
         }
     }
@@ -150,7 +168,7 @@ public class Paths implements TetradSerializable {
     /**
      * Generates a directed acyclic graph (DAG) based on the given list of nodes using Raskutti and Uhler's method.
      *
-     * @param pi a list of nodes representing the set of vertices in the graph
+     * @param pi   a list of nodes representing the set of vertices in the graph
      * @param msep the MsepTest instance for determining d-separation relationships
      * @return a Graph object representing the generated DAG.
      */
@@ -208,6 +226,11 @@ public class Paths implements TetradSerializable {
     }
 
 
+    /**
+     * Returns a set of all maximum cliques in the graph.
+     *
+     * @return a set of sets of nodes representing the maximum cliques in the graph
+     */
     public Set<Set<Node>> maxCliques() {
         int[][] graph = new int[this.graph.getNumNodes()][this.graph.getNumNodes()];
         List<Node> nodes = this.graph.getNodes();
@@ -253,9 +276,9 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>connectedComponents.</p>
+     * Returns a list of connected components in the graph.
      *
-     * @return the connected components of the given graph, as a list of lists of nodes.
+     * @return A list of connected components, where each component is represented as a list of nodes.
      */
     public List<List<Node>> connectedComponents() {
         List<List<Node>> components = new LinkedList<>();
@@ -273,12 +296,12 @@ public class Paths implements TetradSerializable {
 
 
     /**
-     * <p>directedPathsFromTo.</p>
+     * Finds all directed paths from node1 to node2 with a maximum length.
      *
-     * @param node1     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param node2     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param maxLength a int
-     * @return a {@link java.util.List} object
+     * @param node1    the starting node
+     * @param node2    the destination node
+     * @param maxLength the maximum length of the paths
+     * @return a list of lists containing the directed paths from node1 to node2
      */
     public List<List<Node>> directedPathsFromTo(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();
@@ -478,12 +501,12 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>treks.</p>
+     * Finds all treks from node1 to node2 with a maximum length.
      *
-     * @param node1     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param node2     a {@link edu.cmu.tetrad.graph.Node} object
-     * @param maxLength a int
-     * @return a {@link java.util.List} object
+     * @param node1      the starting node
+     * @param node2      the destination node
+     * @param maxLength  the maximum length of the treks
+     * @return a list of lists of nodes representing each trek from node1 to node2
      */
     public List<List<Node>> treks(Node node1, Node node2, int maxLength) {
         List<List<Node>> paths = new LinkedList<>();

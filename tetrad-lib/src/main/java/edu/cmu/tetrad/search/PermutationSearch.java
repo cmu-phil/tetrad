@@ -76,11 +76,11 @@ public class PermutationSearch {
     // TO DO: moved to a better place like GraphUtils
 
     /**
-     * Construct a graph given a specification of the parents for each node.
+     * Constructs a graph given a specification of the parents for each node.
      *
      * @param nodes     The nodes.
      * @param parents   A map from each node to its parents.
-     * @param knowledge the knoweldge to use to construct the graph.
+     * @param knowledge the knowledge to use to construct the graph.
      * @param cpDag     Whether a CPDAG is wanted, if false, a DAG.
      * @return The construted graph.
      */
