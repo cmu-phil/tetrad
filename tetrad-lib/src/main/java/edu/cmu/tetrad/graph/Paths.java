@@ -84,13 +84,12 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * <p>makeValidOrder.</p>
+     * Reorders the given order into a valid causal order for either a DAG or a CPDAG. (bryanandrews)
      *
-     * @param order a {@link java.util.List} object
-     * @throws IllegalArgumentException if the graph, at some point in the process, does not have a valid sink, for
-     *                                  instance if it has a directed cycle or a non-chordal undirected cycle.
+     * @param order Variables in the order will be kept as close to this initial order as possible, either the forward
+     *              order or the reverse order, depending on the next parameter.
      */
-    public void makeValidOrder(List<Node> order) throws IllegalArgumentException {
+    public void makeValidOrder(List<Node> order) {
         List<Node> initialOrder = new ArrayList<>(order);
         Graph _graph = new EdgeListGraph(this.graph);
 
@@ -114,11 +113,12 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Returns true if x is an invalid sink in the given graph.
+     * The variable x is a valid sink if it has no children and its neighbors x--z form a clique; otherwise it is an
+     * invalid sink.
      *
-     * @param x     The node
-     * @param graph The graph.
-     * @return True if x is an invalid sink in the given graph.
+     * @param x     The node to test.
+     * @param graph The graph to test.
+     * @return true if invalid, false if valid.
      */
     private boolean invalidSink(Node x, Graph graph) {
         LinkedList<Node> neighbors = new LinkedList<>();
@@ -168,7 +168,7 @@ public class Paths implements TetradSerializable {
     /**
      * Generates a directed acyclic graph (DAG) based on the given list of nodes using Raskutti and Uhler's method.
      *
-     * @param pi   a list of nodes representing the set of vertices in the graph
+     * @param pi a list of nodes representing the set of vertices in the graph
      * @param msep the MsepTest instance for determining d-separation relationships
      * @return a Graph object representing the generated DAG.
      */

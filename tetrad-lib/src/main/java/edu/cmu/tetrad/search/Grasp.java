@@ -108,6 +108,7 @@ public class Grasp {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
+        this.useRaskuttiUhler = true;
     }
 
     /**
