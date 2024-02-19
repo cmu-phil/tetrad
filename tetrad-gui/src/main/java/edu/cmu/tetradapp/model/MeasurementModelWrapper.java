@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
-import edu.cmu.tetrad.session.ParamsResettable;
+import edu.cmu.tetradapp.session2.session.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;
@@ -97,7 +97,7 @@ public final class MeasurementModelWrapper implements ParamsResettable,
     /**
      * <p>Constructor for MeasurementModelWrapper.</p>
      *
-     * @param knowledgeInput a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
+     * @param knowledgeInput a {@link KnowledgeBoxInput} object
      * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public MeasurementModelWrapper(KnowledgeBoxInput knowledgeInput, Parameters params) {

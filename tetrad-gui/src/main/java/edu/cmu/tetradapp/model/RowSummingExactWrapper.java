@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetradapp.session2.session.session.SessionModel;
 import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;

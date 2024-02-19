@@ -21,7 +21,7 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.Session;
+import edu.cmu.tetradapp.session2.session.session.Session;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.EditorWindow;
 import edu.cmu.tetradapp.model.SessionWrapper;

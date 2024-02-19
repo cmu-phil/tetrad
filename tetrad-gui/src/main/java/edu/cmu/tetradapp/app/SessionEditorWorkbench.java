@@ -21,10 +21,11 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.session.*;
 import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.session.session.*;
+import edu.cmu.tetradapp.session2.session.session.*;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.IDisplayEdge;
@@ -223,7 +224,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     /**
      * <p>Getter for the field <code>simulationStudy</code>.</p>
      *
-     * @return a {@link edu.cmu.tetrad.session.SimulationStudy} object
+     * @return a {@link SimulationStudy} object
      */
     public SimulationStudy getSimulationStudy() {
         if (this.simulationStudy == null) {

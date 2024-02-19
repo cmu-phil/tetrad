@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.util;
 
-import edu.cmu.tetrad.session.Session;
+import edu.cmu.tetradapp.session2.session.session.Session;
 
 /**
  * Indirect control for the desktop to avoid package cycles. The reference to the desktop is set using the

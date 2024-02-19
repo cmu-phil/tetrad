@@ -22,7 +22,6 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.*;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.EditorWindow;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
@@ -30,6 +29,8 @@ import edu.cmu.tetradapp.editor.ParameterEditor;
 import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.UnlistedSessionModel;
+import edu.cmu.tetradapp.session.session.*;
+import edu.cmu.tetradapp.session2.session.session.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -59,8 +60,8 @@ import java.util.Set;
  * @version $Id: $Id
  * @see SessionEditorWorkbench
  * @see edu.cmu.tetrad.graph.Edge
- * @see edu.cmu.tetrad.session.SessionNode
- * @see edu.cmu.tetrad.session.Session
+ * @see SessionNode
+ * @see Session
  */
 public final class SessionEditorNode extends DisplayNode {
 
@@ -93,7 +94,7 @@ public final class SessionEditorNode extends DisplayNode {
      * Wraps the given SessionNodeWrapper as a SessionEditorNode.
      *
      * @param modelNode       a {@link edu.cmu.tetradapp.model.SessionNodeWrapper} object
-     * @param simulationStudy a {@link edu.cmu.tetrad.session.SimulationStudy} object
+     * @param simulationStudy a {@link SimulationStudy} object
      */
     public SessionEditorNode(SessionNodeWrapper modelNode, SimulationStudy simulationStudy) {
         setModelNode(modelNode);
@@ -961,7 +962,7 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * <p>determineTheModelClass.</p>
      *
-     * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param sessionNode a {@link SessionNode} object
      * @return the model class, or null if no model class was determined.
      */
     public Class determineTheModelClass(SessionNode sessionNode) {
@@ -1121,7 +1122,7 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * <p>getSessionNode.</p>
      *
-     * @return a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return a {@link SessionNode} object
      */
     public SessionNode getSessionNode() {
         SessionNodeWrapper wrapper = (SessionNodeWrapper) this.getModelNode();

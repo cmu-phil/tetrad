@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetradapp.session2.session.session.SessionModel;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;

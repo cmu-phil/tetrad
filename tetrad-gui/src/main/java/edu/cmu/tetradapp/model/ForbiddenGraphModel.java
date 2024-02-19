@@ -21,7 +21,6 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -216,7 +215,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
     /**
      * <p>Constructor for ForbiddenGraphModel.</p>
      *
-     * @param input  a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
+     * @param input  a {@link KnowledgeBoxInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public ForbiddenGraphModel(KnowledgeBoxInput input, Parameters params) {
@@ -227,7 +226,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      * Constructor from dataWrapper edge
      *
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param input  a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
+     * @param input  a {@link KnowledgeBoxInput} object
      */
     public ForbiddenGraphModel(Parameters params, KnowledgeBoxInput input) {
         super(new KnowledgeBoxInput[]{input}, params);

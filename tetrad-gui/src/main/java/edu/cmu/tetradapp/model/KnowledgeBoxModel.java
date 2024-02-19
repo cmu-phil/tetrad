@@ -21,14 +21,13 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.data.KnowledgeTransferable;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.session.ParamsResettable;
-import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetradapp.session2.session.session.ParamsResettable;
+import edu.cmu.tetradapp.session2.session.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -98,7 +97,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     /**
      * Constructor from dataWrapper edge
      *
-     * @param inputs an array of {@link edu.cmu.tetrad.data.KnowledgeBoxInput} objects
+     * @param inputs an array of {@link KnowledgeBoxInput} objects
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public KnowledgeBoxModel(KnowledgeBoxInput[] inputs, Parameters params) {

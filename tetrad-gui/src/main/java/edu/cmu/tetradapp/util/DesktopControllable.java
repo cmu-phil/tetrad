@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.util;
 
-import edu.cmu.tetrad.session.Session;
+import edu.cmu.tetradapp.session2.session.session.Session;
 
 /**
  * Interface for desktop controller methods, to allow app components to control the desktop without a package cycle. See
@@ -61,7 +61,7 @@ public interface DesktopControllable {
      * <p>getSessionByName.</p>
      *
      * @param name a {@link java.lang.String} object
-     * @return a {@link edu.cmu.tetrad.session.Session} object
+     * @return a {@link Session} object
      */
     Session getSessionByName(String name);
 

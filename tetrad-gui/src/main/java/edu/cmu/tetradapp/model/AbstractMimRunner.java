@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.ParamsResettable;
+import edu.cmu.tetradapp.session2.session.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;

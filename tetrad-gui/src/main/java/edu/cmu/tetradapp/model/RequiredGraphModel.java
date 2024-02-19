@@ -21,7 +21,6 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
@@ -212,7 +211,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
     /**
      * <p>Constructor for RequiredGraphModel.</p>
      *
-     * @param input  a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
+     * @param input  a {@link KnowledgeBoxInput} object
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public RequiredGraphModel(KnowledgeBoxInput input, Parameters params) {
@@ -223,7 +222,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
      * Constructor from dataWrapper edge
      *
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
-     * @param input  a {@link edu.cmu.tetrad.data.KnowledgeBoxInput} object
+     * @param input  a {@link KnowledgeBoxInput} object
      */
     public RequiredGraphModel(Parameters params, KnowledgeBoxInput input) {
         super(new KnowledgeBoxInput[]{input}, params);

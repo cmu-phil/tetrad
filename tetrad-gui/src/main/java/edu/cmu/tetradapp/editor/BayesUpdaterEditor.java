@@ -22,7 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.DelegatesEditing;
+import edu.cmu.tetradapp.session2.session.session.DelegatesEditing;
 import edu.cmu.tetradapp.model.*;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
