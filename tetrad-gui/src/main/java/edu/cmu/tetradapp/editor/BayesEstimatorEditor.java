@@ -171,13 +171,14 @@ public class BayesEstimatorEditor extends JPanel {
         StringBuilder buf = new StringBuilder();
         BayesProperties.LikelihoodRet ret = properties.getLikelihoodRatioP(graph);
         NumberFormat nf = new DecimalFormat("0.00");
-        buf.append("\nP-value = ").append(nf.format(ret.p));
+        buf.append("P-value = ").append(nf.format(ret.p));
 //        buf.append("\nP-value = ").append(properties.getVuongP());
         buf.append("\nDf = ").append(nf.format(ret.dof));
         buf.append("\nChi square = ").append(nf.format(ret.chiSq));
         buf.append("\nBIC score = ").append(nf.format(ret.bic));
 
-        buf.append("\n\nH0: Complete graph.");
+        buf.append("\n\nH0: Given model");
+        buf.append("\nH1: Complete model");
 
         JTextArea modelParametersText = new JTextArea();
         modelParametersText.setText(buf.toString());

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
@@ -29,63 +28,51 @@ import edu.cmu.tetradapp.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.io.Serial;
+
 /**
- * <p>CpdagFromDagGraphWrapper class.</p>
+ * Picks a DAG from the given graph.
  *
  * @author Tyler Gibson
  * @version $Id: $Id
  */
-public class CpdagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
+public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldModel {
+    @Serial
     private static final long serialVersionUID = 23L;
 
-
     /**
-     * <p>Constructor for CpdagFromDagGraphWrapper.</p>
+     * <p>Constructor for DagFromCPDAGWrapper.</p>
      *
      * @param source     a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public CpdagFromDagGraphWrapper(GraphSource source, Parameters parameters) {
+    public DagFromCPDAGWrapper(GraphSource source, Parameters parameters) {
         this(source.getGraph());
     }
 
 
     /**
-     * <p>Constructor for CpdagFromDagGraphWrapper.</p>
+     * <p>Constructor for DagFromCPDAGWrapper.</p>
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public CpdagFromDagGraphWrapper(Graph graph) {
-        super(new EdgeListGraph());
-
-        // make sure the given graph is a dag.
-        try {
-            new Dag(graph);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("The source graph is not a DAG.");
-        }
-
-        Graph cpdag = CpdagFromDagGraphWrapper.getCpdag(new EdgeListGraph(graph));
-        setGraph(cpdag);
-
-        TetradLogger.getInstance().log("info", "\nGenerating cpdag from DAG.");
-        TetradLogger.getInstance().log("cpdag", cpdag + "");
+    public DagFromCPDAGWrapper(Graph graph) {
+        super(DagFromCPDAGWrapper.getGraph(graph), "Choose DAG in CPDAG.");
+        TetradLogger.getInstance().log("graph", getGraph() + "");
     }
+
+    private static Graph getGraph(Graph graph) {
+        return GraphTransforms.dagFromCpdag(graph, null);
+    }
+
 
     /**
      * <p>serializableInstance.</p>
      *
-     * @return a {@link CpdagFromDagGraphWrapper} object
+     * @return a {@link DagFromCPDAGWrapper} object
      */
-    public static CpdagFromDagGraphWrapper serializableInstance() {
-        return new CpdagFromDagGraphWrapper(EdgeListGraph.serializableInstance());
-    }
-
-    //======================== Private Method ======================//
-
-
-    private static Graph getCpdag(Graph graph) {
-        return GraphTransforms.cpdagForDag(graph);
+    public static DagFromCPDAGWrapper serializableInstance() {
+        return new DagFromCPDAGWrapper(EdgeListGraph.serializableInstance());
     }
 
     /**
@@ -96,6 +83,7 @@ public class CpdagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
         return false;
     }
 }
+
 
 
 

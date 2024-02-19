@@ -238,9 +238,9 @@ public class SemPmWrapper implements SessionModel {
     /**
      * <p>Constructor for SemPmWrapper.</p>
      *
-     * @param wrapper a {@link DagFromCpdagWrapper} object
+     * @param wrapper a {@link DagFromCPDAGWrapper} object
      */
-    public SemPmWrapper(DagFromCpdagWrapper wrapper) {
+    public SemPmWrapper(DagFromCPDAGWrapper wrapper) {
         this(new EdgeListGraph(wrapper.getGraph()));
     }
 

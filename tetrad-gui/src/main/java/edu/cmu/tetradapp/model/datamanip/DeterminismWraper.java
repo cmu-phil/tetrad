@@ -21,7 +21,7 @@ import java.io.Serial;
  * @author Zhou Yuan zhy19@pitt.edu
  * @version $Id: $Id
  */
-public class DeterminismWrapper extends DataWrapper {
+public class DeterminismWraper extends DataWrapper {
     @Serial
     private static final long serialVersionUID = -5573234622763285581L;
 
@@ -31,7 +31,7 @@ public class DeterminismWrapper extends DataWrapper {
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param params      a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public DeterminismWrapper(DataWrapper dataWrapper, Parameters params) {
+    public DeterminismWraper(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
             throw new NullPointerException("The given data must not be null");
         }
