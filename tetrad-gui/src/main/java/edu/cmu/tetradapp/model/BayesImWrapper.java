@@ -104,7 +104,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * @param simulation the simulation
      */
     public BayesImWrapper(Simulation simulation) {
-        List<BayesIm> bayesIms = null;
+        List<BayesIm> bayesIms;
 
         if (simulation == null) {
             throw new NullPointerException("The Simulation box does not contain a simulation.");
@@ -137,7 +137,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * Constructs a new BayesImWrapper for a RowSummingExactUpdaterWrapper.
      *
      * @param wrapper    the wrapper
-     * @param parameters the parameters
+     * @param parameters the parameters, unused but the field is required.
      */
     public BayesImWrapper(RowSummingExactWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
@@ -150,7 +150,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * Constructs a new BayesImWrapper for a CptInvariantUpdaterWrapper.
      *
      * @param wrapper    the wrapper
-     * @param parameters the parameters
+     * @param parameters the parameters, unused but the field is required.
      */
     public BayesImWrapper(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
@@ -160,10 +160,11 @@ public class BayesImWrapper implements SessionModel, Memorable {
     }
 
     /**
-     * <p>Constructor for BayesImWrapper.</p>
+     * Constructs a new BayesImWrapper with the provided ApproximateUpdaterWrapper and Parameters.
      *
-     * @param wrapper    a {@link edu.cmu.tetradapp.model.ApproximateUpdaterWrapper} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @param wrapper    The ApproximateUpdaterWrapper to be wrapped.
+     * @param parameters The Parameters for the BayesImWrapper.
+     * @throws NullPointerException if wrapper is null.
      */
     public BayesImWrapper(ApproximateUpdaterWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
