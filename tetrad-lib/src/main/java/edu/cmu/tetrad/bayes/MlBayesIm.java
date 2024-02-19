@@ -238,7 +238,7 @@ public final class MlBayesIm implements BayesIm {
             if (i == strong) {
                 row[i] = 1.0;
             } else {
-                row[i] = RandomUtil.getInstance().nextDouble() * 0.1;
+                row[i] = RandomUtil.getInstance().nextDouble() * 0.3;
             }
 
             sum += row[i];
