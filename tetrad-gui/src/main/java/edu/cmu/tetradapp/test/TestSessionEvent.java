@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.test;
 
-import edu.cmu.tetradapp.session.session.*;
 import edu.cmu.tetradapp.session2.session.session.*;
 import org.junit.Test;
 
