@@ -57,7 +57,7 @@ public class BayesEstimatorWrapper implements SessionModel {
     private final DataWrapper dataWrapper;
 
     /**
-     * ' The estimated Bayes Im.
+     * ' The estimated Bayes IM.
      */
     private final List<BayesIm> bayesIms = new ArrayList<>();
 
@@ -67,7 +67,7 @@ public class BayesEstimatorWrapper implements SessionModel {
     private String name;
 
     /**
-     * The estimated Bayes Im.
+     * The estimated Bayes IM.
      */
     private BayesIm bayesIm;
 
@@ -213,44 +213,44 @@ public class BayesEstimatorWrapper implements SessionModel {
     }
 
     /**
-     * <p>Getter for the field <code>numModels</code>.</p>
+     * Returns the number of models.
      *
-     * @return a int
+     * @return the number of models.
      */
     public int getNumModels() {
         return this.numModels;
     }
 
     /**
-     * <p>Setter for the field <code>numModels</code>.</p>
+     * Sets the number of models.
      *
-     * @param numModels a int
+     * @param numModels the number of models to be set.
      */
     public void setNumModels(int numModels) {
         this.numModels = numModels;
     }
 
     /**
-     * <p>Getter for the field <code>modelIndex</code>.</p>
+     * Retrieves the model index.
      *
-     * @return a int
+     * @return the model index
      */
     public int getModelIndex() {
         return this.modelIndex;
     }
 
     /**
-     * <p>Setter for the field <code>modelIndex</code>.</p>
+     * Sets the model index.
      *
-     * @param modelIndex a int
+     * @param modelIndex the index of the model to be set.
      */
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
         this.bayesIm = this.bayesIms.get(modelIndex);
 
-        DataModel dataModel = this.dataWrapper.getDataModelList();
+        DataModelList dataModel = this.dataWrapper.getDataModelList();
 
-        this.dataSet = (DataSet) ((DataModelList) dataModel).get(modelIndex);
+        this.dataSet = (DataSet) dataModel.get(modelIndex);
 
     }
 
@@ -262,12 +262,13 @@ public class BayesEstimatorWrapper implements SessionModel {
      * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
+     * help.)
      *
      * @param s a {@link java.io.ObjectInputStream} object
      * @throws IOException            If any.
      * @throws ClassNotFoundException If any.
      */
+    @Serial
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -285,10 +286,9 @@ public class BayesEstimatorWrapper implements SessionModel {
     private void estimate(DataSet dataSet, BayesPm bayesPm) {
         Graph graph = bayesPm.getDag();
 
-        for (Object o : graph.getNodes()) {
-            Node node = (Node) o;
+        for (Node node : graph.getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
-                throw new IllegalArgumentException("Estimation of Bayes IM's "
+                throw new IllegalArgumentException("Estimation of Bayes IMs "
                         + "with latents is not supported.");
             }
         }
@@ -301,7 +301,6 @@ public class BayesEstimatorWrapper implements SessionModel {
             MlBayesEstimator estimator = new MlBayesEstimator();
             this.bayesIm = estimator.estimate(bayesPm, dataSet);
         } catch (ArrayIndexOutOfBoundsException e) {
-            e.printStackTrace();
             throw new RuntimeException("Value assignments between Bayes PM "
                     + "and discrete data set do not match.");
         }

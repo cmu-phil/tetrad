@@ -92,26 +92,14 @@ public final class BayesProperties {
 
         this.dataSet = dataSet;
 
-        int[][] data;
         if (dataSet instanceof BoxDataSet) {
             DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
-
             this.variables = dataSet.getVariables();
-
             VerticalIntDataBox box = new VerticalIntDataBox(dataBox);
-
             box.getVariableVectors();
         } else {
-            data = new int[dataSet.getNumColumns()][];
             this.variables = dataSet.getVariables();
 
-            for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                data[j] = new int[dataSet.getNumRows()];
-
-                for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    data[j][i] = dataSet.getInt(i, j);
-                }
-            }
         }
         this.sampleSize = dataSet.getNumRows();
 
@@ -126,18 +114,9 @@ public final class BayesProperties {
         }
     }
 
-    private static int getRowIndex(int[] dim, int[] values) {
-        int rowIndex = 0;
-        for (int i = 0; i < dim.length; i++) {
-            rowIndex *= dim[i];
-            rowIndex += values[i];
-        }
-        return rowIndex;
-    }
-
     /**
-     * Calculates the p-value of the graph with respect to the given data, against
-     * the complete model as an alternative.
+     * Calculates the p-value of the graph with respect to the given data, against the complete model as an
+     * alternative.
      *
      * @param graph0 The model to test.
      * @return The p-value.
@@ -148,12 +127,12 @@ public final class BayesProperties {
         Ret r1 = getLikelihood(graph1);
         Ret r0 = getLikelihood(graph0);
 
-        this.likelihood = r0.getLik();
+        this.likelihood = r0.lik();
 
-        double lDiff = r0.getLik() - r1.getLik();
+        double lDiff = r0.lik() - r1.lik();
         System.out.println("lDiff = " + lDiff);
 
-        int nDiff = r0.getDof() - r1.getDof();
+        int nDiff = r0.dof() - r1.dof();
         System.out.println("nDiff = " + nDiff);
 
         double chisq = 2.0 * lDiff;
@@ -162,7 +141,7 @@ public final class BayesProperties {
         this.dof = nDiff;
 
         int N = this.dataSet.getNumRows();
-        this.bic = 2 * r0.getLik() - r0.getDof() * FastMath.log(N);
+        this.bic = 2 * r0.lik() - r0.dof() * FastMath.log(N);
         System.out.println("bic = " + this.bic);
 
         System.out.println("chisq = " + chisq);
@@ -242,22 +221,6 @@ public final class BayesProperties {
         return null;
     }
 
-    private int getDof(Graph graph) {
-        graph = GraphUtils.replaceNodes(graph, this.dataSet.getVariables());
-        BayesPm pm = new BayesPm(graph);
-        BayesIm im = new MlBayesEstimator().estimate(pm, this.dataSet);
-
-        int numParams = 0;
-
-        for (int j = 0; j < im.getNumNodes(); j++) {
-            int numColumns = im.getNumColumns(j);
-            int numRows = im.getNumRows(j);
-            numParams += (numColumns - 1) * numRows;
-        }
-
-        return numParams;
-    }
-
     private Ret getLikelihood(Graph graph) {
         double lik = 0.0;
         int dof = 0;
@@ -274,31 +237,11 @@ public final class BayesProperties {
             }
 
             Ret ret = getLikelihoodNode(i, z);
-            lik += ret.getLik();
-            dof += ret.getDof();
+            lik += ret.lik();
+            dof += ret.dof();
         }
 
         return new Ret(lik, dof);
-    }
-
-    private int getDof2(Graph graph) {
-        int dof = 0;
-
-        for (Node node : graph.getNodes()) {
-            List<Node> parents = new ArrayList<>(graph.getParents(node));
-
-            int i = this.variables.indexOf(getVariable(node.getName()));
-
-            int[] z = new int[parents.size()];
-
-            for (int j = 0; j < parents.size(); j++) {
-                z[j] = this.variables.indexOf(getVariable(parents.get(j).getName()));
-            }
-
-            dof += getDofNode(i, z);
-        }
-
-        return dof;
     }
 
     private Ret getLikelihoodNode(int node, int[] parents) {
@@ -310,28 +253,6 @@ public final class BayesProperties {
         return new Ret(lik, dof);
     }
 
-    private double getDofNode(int node, int[] parents) {
-
-        // Number of categories for node.
-        int c = this.numCategories[node];
-
-        // Numbers of categories of parents.
-        int[] dims = new int[parents.length];
-
-        for (int p = 0; p < parents.length; p++) {
-            dims[p] = this.numCategories[parents[p]];
-        }
-
-        // Number of parent states.
-        int r = 1;
-
-        for (int p = 0; p < parents.length; p++) {
-            r *= dims[p];
-        }
-
-        return r * c;
-    }
-
     private DiscreteVariable getVariable(int i) {
         if (this.variables.get(i) instanceof DiscreteVariable) {
             return (DiscreteVariable) this.variables.get(i);
@@ -341,41 +262,38 @@ public final class BayesProperties {
     }
 
     /**
-     * Returns the likelihood ratio test statistic for the given graph and its degrees of freedom.
-     */
-    private static class Ret {
-        private final double lik;
-        private final int dof;
-
+         * Returns the likelihood ratio test statistic for the given graph and its degrees of freedom.
+         */
+        private record Ret(double lik, int dof) {
         /**
          * Constructs a new Ret object.
          *
          * @param lik The likelihood.
          * @param dof The degrees of freedom.
          */
-        public Ret(double lik, int dof) {
-            this.lik = lik;
-            this.dof = dof;
+        private Ret {
         }
 
-        /**
-         * Returns the likelihood.
-         *
-         * @return The likelihood.
-         */
-        public double getLik() {
-            return this.lik;
-        }
+            /**
+             * Returns the likelihood.
+             *
+             * @return The likelihood.
+             */
+            @Override
+            public double lik() {
+                return this.lik;
+            }
 
-        /**
-         * Returns the degrees of freedom.
-         *
-         * @return The degrees of freedom.
-         */
-        public int getDof() {
-            return this.dof;
+            /**
+             * Returns the degrees of freedom.
+             *
+             * @return The degrees of freedom.
+             */
+            @Override
+            public int dof() {
+                return this.dof;
+            }
         }
-    }
 
     /**
      * Returns the number of categories for the given variable.
