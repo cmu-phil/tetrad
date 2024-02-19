@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
@@ -31,35 +31,34 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class Type8 implements SessionModel, TetradSerializableExcluded {
+public class Type12 implements SessionModel, TetradSerializableExcluded {
     private static final long serialVersionUID = 23L;
 
     /**
-     * <p>Constructor for Type8.</p>
+     * <p>Constructor for Type12.</p>
      *
-     * @param model1     a {@link Type7} object
+     * @param a          a {@link Type11} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public Type8(Type7 model1, Parameters parameters) {
+    public Type12(Type11 a, Parameters parameters) {
     }
 
     /**
-     * <p>Constructor for Type8.</p>
+     * <p>Constructor for Type12.</p>
      *
-     * @param model1     a {@link Type7} object
-     * @param model2     a {@link Type9} object
+     * @param a          a {@link Type12} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public Type8(Type7 model1, Type9 model2, Parameters parameters) {
+    public Type12(Type12 a, Parameters parameters) {
     }
 
     /**
      * <p>serializableInstance.</p>
      *
-     * @return a {@link Type8} object
+     * @return a {@link Type12} object
      */
-    public static Type8 serializableInstance() {
-        return new Type8(Type7.serializableInstance(), new Parameters());
+    public static Type12 serializableInstance() {
+        return new Type12(Type11.serializableInstance(), new Parameters());
     }
 
     /**
@@ -80,7 +79,6 @@ public class Type8 implements SessionModel, TetradSerializableExcluded {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 }
-
 
 
 

@@ -19,25 +19,48 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
 
 
 /**
- * Interface indicating that a class can be executed as an algorithm.
+ * Indicates that a model could not be created. As to which model it was, call the getModelClass() method.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-public interface Executable {
-//    @SuppressWarnings("UnusedDeclaration")
-//    long serialVersionUID = 23L;
+public class CouldNotCreateModelException extends Exception {
 
     /**
-     * Executes the algorithm.
-     *
-     * @throws java.lang.Exception if execution is stopped at some point by an exception.
+     * The class of the model that could not be created.
      */
-    void execute() throws Exception;
+    private final Class modelClass;
+
+    /**
+     * <p>Constructor for CouldNotCreateModelException.</p>
+     *
+     * @param modelClass a {@link java.lang.Class} object
+     */
+    public CouldNotCreateModelException(Class modelClass) {
+        this.modelClass = modelClass;
+    }
+
+    /**
+     * <p>Getter for the field <code>modelClass</code>.</p>
+     *
+     * @return a {@link java.lang.Class} object
+     */
+    public Class getModelClass() {
+        return this.modelClass;
+    }
+
+    /**
+     * <p>getMessage.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
+    public String getMessage() {
+        return "Couldn't create that model; perhaps one of its parents is missing.";
+    }
 }
 
 

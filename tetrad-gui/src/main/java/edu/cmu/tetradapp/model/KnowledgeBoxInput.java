@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.VariableSource;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetradapp.session2.session.session.SessionModel;
+import edu.cmu.tetradapp.session.SessionModel;
 
 
 /**

@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
@@ -31,35 +31,27 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class Type5 implements SessionModel, TetradSerializableExcluded {
+public class Type10 implements SessionModel, TetradSerializableExcluded {
     private static final long serialVersionUID = 23L;
 
     /**
-     * It should not be possible to constuct Type5, because it contains two arguments of the same type. There is in
-     * principle no way to decide which argument should be passed in which position.
+     * <p>Constructor for Type10.</p>
      *
-     * @param model1     a {@link Type1} object
-     * @param model2     a {@link Type1} object
+     * @param model1     a {@link Type6} object
+     * @param model2     a {@link Type6} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public Type5(Type1 model1, Type1 model2, Parameters parameters) {
+    public Type10(Type6 model1, Type6 model2, Parameters parameters) {
     }
 
     /**
      * <p>serializableInstance.</p>
      *
-     * @return a {@link Type5} object
+     * @return a {@link Type10} object
      */
-    public static Type5 serializableInstance() {
-        return new Type5(Type1.serializableInstance(),
-                Type1.serializableInstance(), new Parameters());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean equals(Object o) {
-        return (o instanceof Type5);
+    public static Type10 serializableInstance() {
+        return new Type10(Type6.serializableInstance(),
+                Type6.serializableInstance(), new Parameters());
     }
 
     /**

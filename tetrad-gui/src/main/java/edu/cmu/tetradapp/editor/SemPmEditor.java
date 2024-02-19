@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.ParamType;
 import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetradapp.session2.session.session.DelegatesEditing;
+import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.SemPmWrapper;

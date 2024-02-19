@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.classify.ClassifierBayesUpdaterDiscrete;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetradapp.session2.session.session.SessionModel;
+import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;

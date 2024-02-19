@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetradapp.session2.session.session.Session;
+import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;

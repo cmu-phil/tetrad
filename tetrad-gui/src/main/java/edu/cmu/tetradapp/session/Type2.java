@@ -19,24 +19,65 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
 
-import javax.swing.*;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 
 /**
- * An interface for editors that delegate their editing responsibilities.
+ * A sample class to be wrapped in a SessionNode as a model.
  *
- * @author William Taysom -- Jun 14, 2003
+ * @author josephramsey
  * @version $Id: $Id
  */
-public interface DelegatesEditing {
+public class Type2 implements SessionModel, TetradSerializableExcluded {
+    private static final long serialVersionUID = 23L;
+
     /**
-     * <p>getEditDelegate.</p>
+     * A sample constructor that takes Model 2 and Type3 as parent. The session node wrapping this should allow parent
+     * session nodes to be added that wrap either Type2 or Type3 and when parents of both types are added it should
+     * allow a model of type Type1 to be created. SessionNodes wrapping models of other types should not be addable as
+     * parents.
      *
-     * @return a {@link javax.swing.JComponent} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    JComponent getEditDelegate();
+    public Type2(Parameters parameters) {
+    }
+
+    /**
+     * <p>serializableInstance.</p>
+     *
+     * @return a {@link Type2} object
+     */
+    public static Type2 serializableInstance() {
+        return new Type2(new Parameters());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equals(Object o) {
+        return (o instanceof Type2);
+    }
+
+    /**
+     * <p>getName.</p>
+     *
+     * @return the name of the session model.
+     */
+    public String getName() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Sets the name of the session model.
+     */
+    public void setName(String name) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 }
 
 

@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
@@ -31,24 +31,37 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class Type7 implements SessionModel, TetradSerializableExcluded {
+public class Type1 implements SessionModel, TetradSerializableExcluded {
     private static final long serialVersionUID = 23L;
 
     /**
-     * <p>Constructor for Type7.</p>
+     * A sample constructor that takes Model 2 and Type3 as parent. The session node wrapping this should allow parent
+     * session nodes to be added that wrap either Type2 or Type3 and when parents of both types are added it should
+     * allow a model of type Type1 to be created. SessionNodes wrapping models of other types should not be addable as
+     * parents.
      *
+     * @param model1     a {@link Type2} object
+     * @param model2     a {@link Type3} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public Type7(Parameters parameters) {
+    public Type1(Type2 model1, Type3 model2, Parameters parameters) {
     }
 
     /**
      * <p>serializableInstance.</p>
      *
-     * @return a {@link Type7} object
+     * @return a {@link Type1} object
      */
-    public static Type7 serializableInstance() {
-        return new Type7(new Parameters());
+    public static Type1 serializableInstance() {
+        return new Type1(Type2.serializableInstance(),
+                Type3.serializableInstance(), new Parameters());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equals(Object o) {
+        return (o instanceof Type1);
     }
 
     /**
@@ -69,7 +82,6 @@ public class Type7 implements SessionModel, TetradSerializableExcluded {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 }
-
 
 
 

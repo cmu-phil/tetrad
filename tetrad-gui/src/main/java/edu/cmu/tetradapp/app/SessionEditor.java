@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetradapp.session2.session.session.Session;
+import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.editor.SaveComponentImage;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;

@@ -1,4 +1,4 @@
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
 
 import java.util.Map;
 

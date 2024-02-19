@@ -29,7 +29,7 @@ import edu.cmu.tetrad.study.gene.tetradapp.model.MeasurementSimulatorParams;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.dist.Distribution;
-import edu.cmu.tetradapp.session2.session.session.SessionModel;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

@@ -19,35 +19,66 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
+
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 
 /**
- * Tags models whose parameters can be reset.
+ * A sample class to be wrapped in a SessionNode as a model.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-public interface ParamsResettable {
-    /**
-     * Constant <code>serialVersionUID=23L</code>
-     */
-    long serialVersionUID = 23L;
+public class Type5 implements SessionModel, TetradSerializableExcluded {
+    private static final long serialVersionUID = 23L;
 
     /**
-     * In some cases (for instance, algorithm runners), cloned session models need to have the object-identically same
-     * parameter objects as before cloning. This method lets Tetrad set that automatically.
+     * It should not be possible to constuct Type5, because it contains two arguments of the same type. There is in
+     * principle no way to decide which argument should be passed in which position.
      *
-     * @param params a {@link java.lang.Object} object
+     * @param model1     a {@link Type1} object
+     * @param model2     a {@link Type1} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    void resetParams(Object params);
+    public Type5(Type1 model1, Type1 model2, Parameters parameters) {
+    }
 
     /**
-     * <p>getResettableParams.</p>
+     * <p>serializableInstance.</p>
      *
-     * @return the parameter object of a non-cloned model so that it can be set on the cloned model.
+     * @return a {@link Type5} object
      */
-    Object getResettableParams();
+    public static Type5 serializableInstance() {
+        return new Type5(Type1.serializableInstance(),
+                Type1.serializableInstance(), new Parameters());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equals(Object o) {
+        return (o instanceof Type5);
+    }
+
+    /**
+     * <p>getName.</p>
+     *
+     * @return the name of the session model.
+     */
+    public String getName() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Sets the name of the session model.
+     */
+    public void setName(String name) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 }
 
 

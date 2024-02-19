@@ -19,65 +19,40 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
 
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradSerializableExcluded;
-
+import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * A sample class to be wrapped in a SessionNode as a model.
+ * Interface implemented by all session models in Tetrad. Note that every class C that implements SessionModel MUST be
+ * accompanied by a unit test that ensures (1) that C can serialized out and loaded back in, passing a roundtrip test
+ * (C.equals(save(load(C))), and (2) that sample models from every published version of Tetrad in which C has changed
+ * will load correctly.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-public class Type12 implements SessionModel, TetradSerializableExcluded {
-    private static final long serialVersionUID = 23L;
-
+public interface SessionModel extends TetradSerializable {
     /**
-     * <p>Constructor for Type12.</p>
-     *
-     * @param a          a {@link Type11} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * Constant <code>serialVersionUID=23L</code>
      */
-    public Type12(Type11 a, Parameters parameters) {
-    }
-
-    /**
-     * <p>Constructor for Type12.</p>
-     *
-     * @param a          a {@link Type12} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
-     */
-    public Type12(Type12 a, Parameters parameters) {
-    }
-
-    /**
-     * <p>serializableInstance.</p>
-     *
-     * @return a {@link Type12} object
-     */
-    public static Type12 serializableInstance() {
-        return new Type12(Type11.serializableInstance(), new Parameters());
-    }
+    long serialVersionUID = 23L;
 
     /**
      * <p>getName.</p>
      *
      * @return the name of the session model.
      */
-    public String getName() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    String getName();
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets the name of the session model.
+     *
+     * @param name the name of the session model.
      */
-    public void setName(String name) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
+    void setName(String name);
+
+
 }
 
 

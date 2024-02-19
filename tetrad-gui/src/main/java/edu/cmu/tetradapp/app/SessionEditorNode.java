@@ -29,7 +29,7 @@ import edu.cmu.tetradapp.editor.ParameterEditor;
 import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.UnlistedSessionModel;
-import edu.cmu.tetradapp.session2.session.session.*;
+import edu.cmu.tetradapp.session.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayNode;

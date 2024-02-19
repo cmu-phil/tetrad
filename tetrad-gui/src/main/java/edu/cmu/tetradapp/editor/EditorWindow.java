@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.session2.session.session.ModificationRegistery;
+import edu.cmu.tetradapp.session.ModificationRegistery;
 import edu.cmu.tetradapp.util.EditorWindowIndirectRef;
 import edu.cmu.tetradapp.util.FinalizingEditor;
 import org.apache.commons.math3.util.FastMath;

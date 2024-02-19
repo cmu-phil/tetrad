@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
@@ -31,37 +31,41 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class Type1 implements SessionModel, TetradSerializableExcluded {
+public class Type4 implements SessionModel, TetradSerializableExcluded {
     private static final long serialVersionUID = 23L;
 
     /**
-     * A sample constructor that takes Model 2 and Type3 as parent. The session node wrapping this should allow parent
-     * session nodes to be added that wrap either Type2 or Type3 and when parents of both types are added it should
-     * allow a model of type Type1 to be created. SessionNodes wrapping models of other types should not be addable as
-     * parents.
+     * It should be possible to construct a Type4-model with a Type1-node as parent.
      *
-     * @param model1     a {@link Type2} object
-     * @param model2     a {@link Type3} object
+     * @param model1     a {@link Type1} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public Type1(Type2 model1, Type3 model2, Parameters parameters) {
+    public Type4(Type1 model1, Parameters parameters) {
+    }
+
+    /**
+     * It should be possible to construct a Type4-model with both Type2 and Type2-nodes as parents.
+     *
+     * @param model1 a {@link Type2} object
+     * @param model2 a {@link Type3} object
+     */
+    public Type4(Type2 model1, Type3 model2) {
     }
 
     /**
      * <p>serializableInstance.</p>
      *
-     * @return a {@link Type1} object
+     * @return a {@link Type4} object
      */
-    public static Type1 serializableInstance() {
-        return new Type1(Type2.serializableInstance(),
-                Type3.serializableInstance(), new Parameters());
+    public static Type4 serializableInstance() {
+        return new Type4(Type1.serializableInstance(), new Parameters());
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean equals(Object o) {
-        return (o instanceof Type1);
+        return (o instanceof Type4);
     }
 
     /**
@@ -79,7 +83,7 @@ public class Type1 implements SessionModel, TetradSerializableExcluded {
      * Sets the name of the session model.
      */
     public void setName(String name) {
-        //To change body of implemented methods use File | Settings | File Templates.
+
     }
 }
 

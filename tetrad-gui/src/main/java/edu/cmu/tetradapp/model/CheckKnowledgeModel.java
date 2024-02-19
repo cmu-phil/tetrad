@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.CheckKnowledge;
-import edu.cmu.tetradapp.session2.session.session.SessionModel;
+import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;

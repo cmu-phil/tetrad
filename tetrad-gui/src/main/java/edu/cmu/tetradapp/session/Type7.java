@@ -19,49 +19,57 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
+
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 
 /**
- * Indicates that a model could not be created. As to which model it was, call the getModelClass() method.
+ * A sample class to be wrapped in a SessionNode as a model.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-public class CouldNotCreateModelException extends Exception {
+public class Type7 implements SessionModel, TetradSerializableExcluded {
+    private static final long serialVersionUID = 23L;
 
     /**
-     * The class of the model that could not be created.
-     */
-    private final Class modelClass;
-
-    /**
-     * <p>Constructor for CouldNotCreateModelException.</p>
+     * <p>Constructor for Type7.</p>
      *
-     * @param modelClass a {@link java.lang.Class} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public CouldNotCreateModelException(Class modelClass) {
-        this.modelClass = modelClass;
+    public Type7(Parameters parameters) {
     }
 
     /**
-     * <p>Getter for the field <code>modelClass</code>.</p>
+     * <p>serializableInstance.</p>
      *
-     * @return a {@link java.lang.Class} object
+     * @return a {@link Type7} object
      */
-    public Class getModelClass() {
-        return this.modelClass;
+    public static Type7 serializableInstance() {
+        return new Type7(new Parameters());
     }
 
     /**
-     * <p>getMessage.</p>
+     * <p>getName.</p>
      *
-     * @return a {@link java.lang.String} object
+     * @return the name of the session model.
      */
-    public String getMessage() {
-        return "Couldn't create that model; perhaps one of its parents is missing.";
+    public String getName() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Sets the name of the session model.
+     */
+    public void setName(String name) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }
+
 
 
 

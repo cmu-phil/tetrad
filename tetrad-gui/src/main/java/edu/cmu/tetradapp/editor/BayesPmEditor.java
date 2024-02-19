@@ -21,7 +21,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetradapp.session2.session.session.DelegatesEditing;
+import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetradapp.model.BayesPmWrapper;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 

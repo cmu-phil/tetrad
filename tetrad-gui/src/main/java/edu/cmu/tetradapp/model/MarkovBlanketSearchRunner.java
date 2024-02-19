@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetradapp.session2.session.session.Executable;
+import edu.cmu.tetradapp.session.Executable;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.List;

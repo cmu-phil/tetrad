@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.test;
 
-import edu.cmu.tetradapp.session2.session.session.*;
+import edu.cmu.tetradapp.session.*;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

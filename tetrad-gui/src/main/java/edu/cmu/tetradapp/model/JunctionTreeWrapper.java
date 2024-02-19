@@ -21,7 +21,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetradapp.session2.session.session.SessionModel;
+import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;

@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetradapp.session2.session.session.SessionNode;
+import edu.cmu.tetradapp.session.SessionNode;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;

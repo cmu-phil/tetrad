@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
@@ -31,41 +31,24 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class Type3 implements SessionModel, TetradSerializableExcluded {
+public class Type11 implements SessionModel, TetradSerializableExcluded {
     private static final long serialVersionUID = 23L;
 
     /**
-     * It should be possible to construct a Type3-model with a Type1-node as parent.
+     * <p>Constructor for Type11.</p>
      *
-     * @param model1     a {@link Type2} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public Type3(Type2 model1, Parameters parameters) {
-    }
-
-    /**
-     * It should also be possible to construct a Type3-model with two parents: a Type1-node and a Type2-node.
-     *
-     * @param model1 a {@link Type2} object
-     * @param model2 a {@link Type4} object
-     */
-    public Type3(Type2 model1, Type4 model2) {
+    public Type11(Parameters parameters) {
     }
 
     /**
      * <p>serializableInstance.</p>
      *
-     * @return a {@link Type3} object
+     * @return a {@link Type11} object
      */
-    public static Type3 serializableInstance() {
-        return new Type3(Type2.serializableInstance(), new Parameters());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean equals(Object o) {
-        return (o instanceof Type3);
+    public static Type11 serializableInstance() {
+        return new Type11(new Parameters());
     }
 
     /**

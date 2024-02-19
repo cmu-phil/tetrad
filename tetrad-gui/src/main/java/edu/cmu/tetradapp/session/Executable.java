@@ -19,40 +19,25 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
 
-import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * Interface implemented by all session models in Tetrad. Note that every class C that implements SessionModel MUST be
- * accompanied by a unit test that ensures (1) that C can serialized out and loaded back in, passing a roundtrip test
- * (C.equals(save(load(C))), and (2) that sample models from every published version of Tetrad in which C has changed
- * will load correctly.
+ * Interface indicating that a class can be executed as an algorithm.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-public interface SessionModel extends TetradSerializable {
-    /**
-     * Constant <code>serialVersionUID=23L</code>
-     */
-    long serialVersionUID = 23L;
+public interface Executable {
+//    @SuppressWarnings("UnusedDeclaration")
+//    long serialVersionUID = 23L;
 
     /**
-     * <p>getName.</p>
+     * Executes the algorithm.
      *
-     * @return the name of the session model.
+     * @throws java.lang.Exception if execution is stopped at some point by an exception.
      */
-    String getName();
-
-    /**
-     * Sets the name of the session model.
-     *
-     * @param name the name of the session model.
-     */
-    void setName(String name);
-
-
+    void execute() throws Exception;
 }
 
 

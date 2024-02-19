@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
@@ -31,41 +31,35 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class Type4 implements SessionModel, TetradSerializableExcluded {
+public class Type8 implements SessionModel, TetradSerializableExcluded {
     private static final long serialVersionUID = 23L;
 
     /**
-     * It should be possible to construct a Type4-model with a Type1-node as parent.
+     * <p>Constructor for Type8.</p>
      *
-     * @param model1     a {@link Type1} object
+     * @param model1     a {@link Type7} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public Type4(Type1 model1, Parameters parameters) {
+    public Type8(Type7 model1, Parameters parameters) {
     }
 
     /**
-     * It should be possible to construct a Type4-model with both Type2 and Type2-nodes as parents.
+     * <p>Constructor for Type8.</p>
      *
-     * @param model1 a {@link Type2} object
-     * @param model2 a {@link Type3} object
+     * @param model1     a {@link Type7} object
+     * @param model2     a {@link Type9} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public Type4(Type2 model1, Type3 model2) {
+    public Type8(Type7 model1, Type9 model2, Parameters parameters) {
     }
 
     /**
      * <p>serializableInstance.</p>
      *
-     * @return a {@link Type4} object
+     * @return a {@link Type8} object
      */
-    public static Type4 serializableInstance() {
-        return new Type4(Type1.serializableInstance(), new Parameters());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean equals(Object o) {
-        return (o instanceof Type4);
+    public static Type8 serializableInstance() {
+        return new Type8(Type7.serializableInstance(), new Parameters());
     }
 
     /**
@@ -83,9 +77,10 @@ public class Type4 implements SessionModel, TetradSerializableExcluded {
      * Sets the name of the session model.
      */
     public void setName(String name) {
-
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }
+
 
 
 

@@ -19,58 +19,24 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
 
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradSerializableExcluded;
+import javax.swing.*;
 
 
 /**
- * A sample class to be wrapped in a SessionNode as a model.
+ * An interface for editors that delegate their editing responsibilities.
  *
- * @author josephramsey
+ * @author William Taysom -- Jun 14, 2003
  * @version $Id: $Id
  */
-public class Type10 implements SessionModel, TetradSerializableExcluded {
-    private static final long serialVersionUID = 23L;
-
+public interface DelegatesEditing {
     /**
-     * <p>Constructor for Type10.</p>
+     * <p>getEditDelegate.</p>
      *
-     * @param model1     a {@link Type6} object
-     * @param model2     a {@link Type6} object
-     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
+     * @return a {@link javax.swing.JComponent} object
      */
-    public Type10(Type6 model1, Type6 model2, Parameters parameters) {
-    }
-
-    /**
-     * <p>serializableInstance.</p>
-     *
-     * @return a {@link Type10} object
-     */
-    public static Type10 serializableInstance() {
-        return new Type10(Type6.serializableInstance(),
-                Type6.serializableInstance(), new Parameters());
-    }
-
-    /**
-     * <p>getName.</p>
-     *
-     * @return the name of the session model.
-     */
-    public String getName() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the name of the session model.
-     */
-    public void setName(String name) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
+    JComponent getEditDelegate();
 }
 
 

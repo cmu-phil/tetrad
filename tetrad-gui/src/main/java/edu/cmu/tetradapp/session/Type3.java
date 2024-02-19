@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetradapp.session2.session.session;
+package edu.cmu.tetradapp.session;
 
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
@@ -31,27 +31,41 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
  * @author josephramsey
  * @version $Id: $Id
  */
-public class Type6 implements SessionModel, TetradSerializableExcluded {
+public class Type3 implements SessionModel, TetradSerializableExcluded {
     private static final long serialVersionUID = 23L;
 
     /**
-     * <p>Constructor for Type6.</p>
+     * It should be possible to construct a Type3-model with a Type1-node as parent.
      *
-     * @param model1     a {@link Type7} object
-     * @param model2     a {@link Type8} object
+     * @param model1     a {@link Type2} object
      * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public Type6(Type7 model1, Type8 model2, Parameters parameters) {
+    public Type3(Type2 model1, Parameters parameters) {
+    }
+
+    /**
+     * It should also be possible to construct a Type3-model with two parents: a Type1-node and a Type2-node.
+     *
+     * @param model1 a {@link Type2} object
+     * @param model2 a {@link Type4} object
+     */
+    public Type3(Type2 model1, Type4 model2) {
     }
 
     /**
      * <p>serializableInstance.</p>
      *
-     * @return a {@link Type6} object
+     * @return a {@link Type3} object
      */
-    public static Type6 serializableInstance() {
-        return new Type6(Type7.serializableInstance(),
-                Type8.serializableInstance(), new Parameters());
+    public static Type3 serializableInstance() {
+        return new Type3(Type2.serializableInstance(), new Parameters());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equals(Object o) {
+        return (o instanceof Type3);
     }
 
     /**
