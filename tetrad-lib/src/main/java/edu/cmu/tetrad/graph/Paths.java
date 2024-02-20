@@ -52,6 +52,23 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Get the prefix for a list of nodes up to a specified index.
+     *
+     * @param pi The list of nodes.
+     * @param i  The index up to which to include nodes in the prefix.
+     * @return A set of nodes representing the prefix.
+     */
+    private static Set<Node> getPrefix(List<Node> pi, int i) {
+        Set<Node> prefix = new HashSet<>();
+
+        for (int j = 0; j < i; j++) {
+            prefix.add(pi.get(j));
+        }
+
+        return prefix;
+    }
+
+    /**
      * Returns a valid causal order for either a DAG or a CPDAG. (bryanandrews)
      *
      * @param initialOrder Variables in the order will be kept as close to this initial order as possible, either the
@@ -207,24 +224,6 @@ public class Paths implements TetradSerializable {
 
         return parents;
     }
-
-    /**
-     * Get the prefix for a list of nodes up to a specified index.
-     *
-     * @param pi The list of nodes.
-     * @param i  The index up to which to include nodes in the prefix.
-     * @return A set of nodes representing the prefix.
-     */
-    private static Set<Node> getPrefix(List<Node> pi, int i) {
-        Set<Node> prefix = new HashSet<>();
-
-        for (int j = 0; j < i; j++) {
-            prefix.add(pi.get(j));
-        }
-
-        return prefix;
-    }
-
 
     /**
      * Returns a set of all maximum cliques in the graph.

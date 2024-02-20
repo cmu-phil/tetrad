@@ -53,12 +53,6 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
     // The static ForkJoinPool instance.
     private final ForkJoinPool pool;
-
-    {
-        int parallelism = Runtime.getRuntime().availableProcessors();
-        pool = new ForkJoinPool(parallelism);
-    }
-
     // The minimum number of operations to do before parallelizing.
     private final int minChunk = 100;
     // A utility map to help with orientation.
@@ -126,20 +120,21 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     private Map<OrderedPair<Node>, Set<Arrow>> lookupArrows;
     // Map from variables to their column indices in the data set.
     private ConcurrentMap<Node, Integer> hashIndices;
-
-
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
     // Where printed output is sent.
     private PrintStream out = System.out;
-
-
     // A initial adjacencies graph.
     private Graph adjacencies;
     // True if it is assumed that zero effect adjacencies are not in the graph.
     private boolean faithfulnessAssumed = false;
     // Graph input by user as super-structure to search over
     private Graph graphToOrient;
+
+    {
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        pool = new ForkJoinPool(parallelism);
+    }
 
     /**
      * The data set must either be all continuous or all discrete.

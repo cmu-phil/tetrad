@@ -35,6 +35,14 @@ import java.util.concurrent.Future;
  */
 public class GeneralResamplingSearch {
     /**
+     * The list of returns graphs.
+     */
+    private final List<Graph> graphs = Collections.synchronizedList(new ArrayList<>());
+    /**
+     * The pool of threads to use for bootstrapping.
+     */
+    private final ForkJoinPool pool;
+    /**
      * The number of resamples to take.
      */
     private int numberOfResamples = 1;
@@ -58,14 +66,6 @@ public class GeneralResamplingSearch {
      * The parameters for the search.
      */
     private Parameters parameters;
-    /**
-     * The list of returns graphs.
-     */
-    private final List<Graph> graphs = Collections.synchronizedList(new ArrayList<>());
-    /**
-     * The pool of threads to use for bootstrapping.
-     */
-    private final ForkJoinPool pool;
     /**
      * The algorithm to use for the search, for single-data set algorithms.
      */
