@@ -176,6 +176,7 @@ public final class Fask implements IGraphSearch {
     // The graph resulting from search.
     private Graph graph;
     private long seed = -1;
+    private boolean verbose = false;
 
     /**
      * Constructor.
@@ -449,7 +450,7 @@ public final class Fask implements IGraphSearch {
 
         TetradLogger.getInstance().forceLogMessage("");
 
-        GraphSearchUtils.pcOrientbk(this.knowledge, G, G.getNodes());
+        GraphSearchUtils.pcOrientbk(this.knowledge, G, G.getNodes(), verbose);
 
         Graph graph = new EdgeListGraph(G.getNodes());
 
@@ -920,6 +921,10 @@ public final class Fask implements IGraphSearch {
      */
     public void setSeed(long seed) {
         this.seed = seed;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     /**

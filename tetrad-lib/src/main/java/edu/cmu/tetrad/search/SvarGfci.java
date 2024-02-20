@@ -105,8 +105,10 @@ public final class SvarGfci implements IGraphSearch {
      * @return a PAG.
      */
     public Graph search() {
-        TetradLogger.getInstance().forceLogMessage("Starting svarGFCI algorithm.");
-        TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting svarGFCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
+        }
 
         this.graph = new EdgeListGraph(independenceTest.getVariables());
 

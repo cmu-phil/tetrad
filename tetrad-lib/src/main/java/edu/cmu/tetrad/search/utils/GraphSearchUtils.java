@@ -50,12 +50,16 @@ public final class GraphSearchUtils {
     /**
      * Orients according to background knowledge.
      *
-     * @param bk    a {@link edu.cmu.tetrad.data.Knowledge} object
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param nodes a {@link java.util.List} object
+     * @param bk      a {@link Knowledge} object
+     * @param graph   a {@link Graph} object
+     * @param nodes   a {@link List} object
+     * @param verbose Whether to print verbose output.
      */
-    public static void pcOrientbk(Knowledge bk, Graph graph, List<Node> nodes) {
-        TetradLogger.getInstance().forceLogMessage("Staring BK Orientation.");
+    public static void pcOrientbk(Knowledge bk, Graph graph, List<Node> nodes, boolean verbose) {
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting BK Orientation.");
+        }
+
         for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
@@ -99,7 +103,9 @@ public final class GraphSearchUtils {
             TetradLogger.getInstance().forceLogMessage(message);
         }
 
-        TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
+        }
     }
 
     /**

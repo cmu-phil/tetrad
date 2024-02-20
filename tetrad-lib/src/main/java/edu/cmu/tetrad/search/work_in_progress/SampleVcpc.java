@@ -356,8 +356,11 @@ public final class SampleVcpc implements IGraphSearch {
      */
     public Graph search() {
 
-        TetradLogger.getInstance().forceLogMessage("Starting VCCPC algorithm");
-        TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting VCCPC algorithm");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
+
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
@@ -380,7 +383,7 @@ public final class SampleVcpc implements IGraphSearch {
             if (this.verbose) {
                 System.out.println("CPC orientation...");
             }
-            GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, allNodes);
+            GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, allNodes, verbose);
             orientUnshieldedTriples(this.knowledge, getIndependenceTest(), getDepth());
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
             MeekRules meekRules = new MeekRules();
@@ -738,19 +741,15 @@ public final class SampleVcpc implements IGraphSearch {
         System.out.println("# of Apparent Nonadj: " + this.apparentlyNonadjacencies.size());
         System.out.println("# of Definite Nonadj: " + this.definitelyNonadjacencies.size());
 
-        TetradLogger.getInstance().forceLogMessage("\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
+            TetradLogger.getInstance().forceLogMessage("\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
+            TetradLogger.getInstance().forceLogMessage("Disambiguated CPDAGs: " + CPDAGs);
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().forceLogMessage("Finishing CPC algorithm.");
+            logTriples();
+        }
 
-        TetradLogger.getInstance().forceLogMessage("\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
-
-        TetradLogger.getInstance().forceLogMessage("Disambiguated CPDAGs: " + CPDAGs);
-
-        TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        TetradLogger.getInstance().forceLogMessage("Finishing CPC algorithm.");
-
-        logTriples();
-
-        TetradLogger.getInstance().flush();
-//        SearchGraphUtils.verifySepsetIntegrity(Map<Edge, List<Node>>, graph);
         return this.graph;
     }
 
@@ -805,23 +804,26 @@ public final class SampleVcpc implements IGraphSearch {
     }
 
     private void logTriples() {
-        TetradLogger.getInstance().forceLogMessage("\nCollider triples:");
+        if (verbose) {
 
-        for (Triple triple : this.colliderTriples) {
-            TetradLogger.getInstance().forceLogMessage("Collider: " + triple);
-        }
+            TetradLogger.getInstance().forceLogMessage("\nCollider triples:");
 
-        TetradLogger.getInstance().forceLogMessage("\nNoncollider triples:");
+            for (Triple triple : this.colliderTriples) {
+                TetradLogger.getInstance().forceLogMessage("Collider: " + triple);
+            }
 
-        for (Triple triple : this.noncolliderTriples) {
-            TetradLogger.getInstance().forceLogMessage("Noncollider: " + triple);
-        }
+            TetradLogger.getInstance().forceLogMessage("\nNoncollider triples:");
 
-        TetradLogger.getInstance().forceLogMessage("\nAmbiguous triples (i.e. list of triples for which " +
-                "\nthere is ambiguous data about whether they are colliders or not):");
+            for (Triple triple : this.noncolliderTriples) {
+                TetradLogger.getInstance().forceLogMessage("Noncollider: " + triple);
+            }
 
-        for (Triple triple : getAmbiguousTriples()) {
-            TetradLogger.getInstance().forceLogMessage("Ambiguous: " + triple);
+            TetradLogger.getInstance().forceLogMessage("\nAmbiguous triples (i.e. list of triples for which " +
+                    "\nthere is ambiguous data about whether they are colliders or not):");
+
+            for (Triple triple : getAmbiguousTriples()) {
+                TetradLogger.getInstance().forceLogMessage("Ambiguous: " + triple);
+            }
         }
     }
 

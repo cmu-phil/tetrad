@@ -327,8 +327,9 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
 
-        TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.flush();
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+        }
 
         return graph;
 

@@ -243,11 +243,11 @@ public class Kpc implements IGraphSearch {
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
 
-        TetradLogger.getInstance().forceLogMessage("Starting kPC algorithm");
-        String message = "Independence test = " + getIndependenceTest() + ".";
-        TetradLogger.getInstance().forceLogMessage(message);
-
-//        this.logger.log("info", "Variables " + independenceTest.getVariable());
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting kPC algorithm");
+            String message = "Independence test = " + getIndependenceTest() + ".";
+            TetradLogger.getInstance().forceLogMessage(message);
+        }
 
         long startTime = MillisecondTimes.timeMillis();
 
@@ -272,7 +272,7 @@ public class Kpc implements IGraphSearch {
 
         enumerateTriples();
 
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes, verbose);
         GraphSearchUtils.orientCollidersUsingSepsets(this.sepset, this.knowledge, this.graph, this.verbose, true);
         MeekRules rules = new MeekRules();
         rules.setMeekPreventCycles(this.meekPreventCycles);
@@ -281,9 +281,10 @@ public class Kpc implements IGraphSearch {
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
-        TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        TetradLogger.getInstance().forceLogMessage("Finishing PC Algorithm.");
-        this.logger.flush();
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().forceLogMessage("Finishing PC Algorithm.");
+        }
 
         return this.graph;
     }

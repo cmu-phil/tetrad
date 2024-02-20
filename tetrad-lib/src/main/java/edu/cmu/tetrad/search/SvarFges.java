@@ -202,8 +202,9 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
 
-        TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.flush();
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+        }
 
         // The final totalScore after search.
 

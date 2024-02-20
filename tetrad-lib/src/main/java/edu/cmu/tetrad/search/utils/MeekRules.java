@@ -82,7 +82,9 @@ public class MeekRules {
         // The initial list of nodes to visit.
         Set<Node> visited = new HashSet<>();
 
-        TetradLogger.getInstance().forceLogMessage("Starting Orientation Step D.");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting Orientation Step D.");
+        }
 
         if (this.revertToUnshieldedColliders) {
             revertToUnshieldedColliders(graph.getNodes(), graph, visited);
@@ -110,7 +112,9 @@ public class MeekRules {
             }
         }
 
-        TetradLogger.getInstance().forceLogMessage("Finishing Orientation Step D.");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Finishing Orientation Step D.");
+        }
 
         return visited;
     }

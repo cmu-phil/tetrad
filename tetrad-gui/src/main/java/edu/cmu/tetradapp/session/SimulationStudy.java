@@ -179,7 +179,8 @@ public final class SimulationStudy {
 
         TetradLogger.getInstance().forceLogMessage("\n\n===FINISHING SIMULATION STUDY===");
         long time2 = MillisecondTimes.timeMillis();
-        TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (time2 - time1) / 1000. + " s");
+
+        System.out.println("Elapsed time = " + (time2 - time1) / 1000. + " s");
     }
 
     /**

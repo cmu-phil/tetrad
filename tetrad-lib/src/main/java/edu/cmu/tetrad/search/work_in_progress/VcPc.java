@@ -335,9 +335,13 @@ public final class VcPc implements IGraphSearch {
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search() {
-        TetradLogger.getInstance().forceLogMessage("Starting VCCPC algorithm");
         IndependenceTest independenceTest = getIndependenceTest();
-        TetradLogger.getInstance().forceLogMessage("Independence test = " + independenceTest + ".");
+
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting VCCPC algorithm");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + independenceTest + ".");
+        }
+
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
@@ -361,7 +365,7 @@ public final class VcPc implements IGraphSearch {
         if (this.verbose) {
             System.out.println("CPC orientation...");
         }
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, allNodes);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, allNodes, verbose);
         orientUnshieldedTriples(this.knowledge, independenceTest, getDepth());
         MeekRules meekRules = new MeekRules();
 
@@ -540,14 +544,13 @@ public final class VcPc implements IGraphSearch {
         System.out.println("# of Apparent Nonadj: " + this.apparentlyNonadjacencies.size());
         System.out.println("# of Definite Nonadj: " + this.definitelyNonadjacencies.size());
 
-        TetradLogger.getInstance().forceLogMessage("\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
-        TetradLogger.getInstance().forceLogMessage("\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
-        //        TetradLogger.getInstance().log("CPDAG", "Disambiguated CPDAGs: " + CPDAG);
-        TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        TetradLogger.getInstance().forceLogMessage("Finishing CPC algorithm.");
-        //        logTriples();
-        TetradLogger.getInstance().flush();
-//        SearchGraphUtils.verifySepsetIntegrity(Map<Edge, List<Node>>, graph);
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
+            TetradLogger.getInstance().forceLogMessage("\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().forceLogMessage("Finishing CPC algorithm.");
+        }
+
         return this.graph;
     }
 

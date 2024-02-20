@@ -286,7 +286,7 @@ public final class PcCommon implements IGraphSearch {
         if (this.graph.paths().existsDirectedCycle())
             throw new IllegalArgumentException("Graph is cyclic after sepsets!");
 
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes, verbose);
 
         if (this.colliderDiscovery == ColliderDiscovery.FAS_SEPSETS) {
             orientCollidersUsingSepsets(sepsets, this.knowledge, this.graph, this.verbose, this.conflictRule);
@@ -465,25 +465,28 @@ public final class PcCommon implements IGraphSearch {
     }
 
     private void logTriples() {
-        forceLogMessage("\nCollider triples:", verbose);
+        if (verbose) {
+            forceLogMessage("\nCollider triples:", verbose);
 
-        for (Triple triple : this.colliderTriples) {
-            forceLogMessage("Collider: " + triple, verbose);
-        }
+            for (Triple triple : this.colliderTriples) {
+                forceLogMessage("Collider: " + triple, verbose);
+            }
 
-        forceLogMessage("\nNoncollider triples:", verbose);
+            forceLogMessage("\nNoncollider triples:", verbose);
 
-        for (Triple triple : this.noncolliderTriples) {
-            forceLogMessage("Noncollider: " + triple, verbose);
-        }
+            for (Triple triple : this.noncolliderTriples) {
+                forceLogMessage("Noncollider: " + triple, verbose);
+            }
 
-        forceLogMessage("""
+            forceLogMessage("""
 
-                Ambiguous triples (i.e. list of triples for which\s
-                there is ambiguous data about whether they are colliderDiscovery or not):""", verbose);
+                    Ambiguous triples (i.e. list of triples for which\s
+                    there is ambiguous data about whether they are colliderDiscovery or not):""", verbose);
 
-        for (Triple triple : getAmbiguousTriples()) {
-            forceLogMessage("Ambiguous: " + triple, verbose);
+            for (Triple triple : getAmbiguousTriples()) {
+                forceLogMessage("Ambiguous: " + triple, verbose);
+            }
+
         }
     }
 

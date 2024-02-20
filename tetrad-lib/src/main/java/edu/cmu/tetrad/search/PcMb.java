@@ -79,6 +79,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     private boolean meekPreventCycles;
     // True if the search should return the MB, not the MB CPDAG.
     private boolean findMb = false;
+    private boolean verbose = false;
 
     /**
      * Constructs a new search.
@@ -255,7 +256,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
 
         TetradLogger.getInstance().forceLogMessage("BEGINNING step 4 (PC Orient).");
 
-        GraphSearchUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
+        GraphSearchUtils.pcOrientbk(this.knowledge, graph, graph.getNodes(), verbose);
 
         List<Node> _visited = new LinkedList<>(getA());
         orientUnshieldedTriples(this.knowledge, graph, getDepth(), _visited);
@@ -821,6 +822,10 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      */
     public void setFindMb(boolean findMb) {
         this.findMb = findMb;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
 

@@ -281,8 +281,12 @@ public final class VcPcAlt implements IGraphSearch {
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search() {
-        TetradLogger.getInstance().forceLogMessage("Starting VCCPC algorithm");
-        TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting VCCPC algorithm");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
+
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
@@ -307,7 +311,7 @@ public final class VcPcAlt implements IGraphSearch {
             if (this.verbose) {
                 System.out.println("CPC orientation...");
             }
-            GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, allNodes);
+            GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, allNodes, verbose);
             orientUnshieldedTriples(this.knowledge, getIndependenceTest(), getDepth());
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
             MeekRules meekRules = new MeekRules();
@@ -502,10 +506,11 @@ public final class VcPcAlt implements IGraphSearch {
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
-        TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        TetradLogger.getInstance().forceLogMessage("Finishing CPC algorithm.");
-
-        logTriples();
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().forceLogMessage("Finishing CPC algorithm.");
+            logTriples();
+        }
 
         TetradLogger.getInstance().flush();
         return this.graph;
@@ -539,23 +544,25 @@ public final class VcPcAlt implements IGraphSearch {
     }
 
     private void logTriples() {
-        TetradLogger.getInstance().forceLogMessage("\nCollider triples:");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("\nCollider triples:");
 
-        for (Triple triple : this.colliderTriples) {
-            TetradLogger.getInstance().forceLogMessage("Collider: " + triple);
-        }
+            for (Triple triple : this.colliderTriples) {
+                TetradLogger.getInstance().forceLogMessage("Collider: " + triple);
+            }
 
-        TetradLogger.getInstance().forceLogMessage("\nNoncollider triples:");
+            TetradLogger.getInstance().forceLogMessage("\nNoncollider triples:");
 
-        for (Triple triple : this.noncolliderTriples) {
-            TetradLogger.getInstance().forceLogMessage("Noncollider: " + triple);
-        }
+            for (Triple triple : this.noncolliderTriples) {
+                TetradLogger.getInstance().forceLogMessage("Noncollider: " + triple);
+            }
 
-        TetradLogger.getInstance().forceLogMessage("\nAmbiguous triples (i.e. list of triples for which " +
-                "\nthere is ambiguous data about whether they are colliders or not):");
+            TetradLogger.getInstance().forceLogMessage("\nAmbiguous triples (i.e. list of triples for which " +
+                    "\nthere is ambiguous data about whether they are colliders or not):");
 
-        for (Triple triple : getAmbiguousTriples()) {
-            TetradLogger.getInstance().forceLogMessage("Ambiguous: " + triple);
+            for (Triple triple : getAmbiguousTriples()) {
+                TetradLogger.getInstance().forceLogMessage("Ambiguous: " + triple);
+            }
         }
     }
 
