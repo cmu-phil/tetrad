@@ -52,7 +52,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         this.data = data;
         this.numOfRows = data.length;
         this.numOfCols = data[0].length;
-        this.numOfThreads = numOfThreads;
+        this.numOfThreads = (numOfThreads > this.numOfCols) ? this.numOfCols : numOfThreads;
     }
 
     /**
@@ -63,7 +63,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         double[] covarianceMatrix = new double[(this.numOfCols * (this.numOfCols + 1)) / 2];
         double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
+        ForkJoinPool pool = ForkJoinPool.commonPool();
         pool.invoke(new MeanAction(means, this.data, 0, this.numOfCols - 1));
         pool.invoke(new CovarianceLowerTriangleAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
         pool.shutdown();
@@ -79,21 +79,10 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         double[][] covarianceMatrix = new double[this.numOfCols][this.numOfCols];
         double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
-
-        try {
-            pool.invoke(new MeanAction(means, this.data, 0, this.numOfCols - 1));
-            pool.invoke(new CovarianceAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
-        } catch (Exception e) {
-            Thread.currentThread().interrupt();
-            pool.shutdownNow();
-            throw e;
-        }
-
-        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
-            Thread.currentThread().interrupt();
-            throw new IllegalArgumentException("Processing timed out.");
-        }
+        ForkJoinPool pool = ForkJoinPool.commonPool();
+        pool.invoke(new MeanAction(means, this.data, 0, this.numOfCols - 1));
+        pool.invoke(new CovarianceAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
+        pool.shutdown();
 
         return covarianceMatrix;
     }
