@@ -270,38 +270,6 @@ class GeneralizedExpressionEditor extends JComponent {
             }
         });
 
-        class ColorThread extends Thread {
-            private boolean stop;
-
-            @Override
-            public void run() {
-                if (Thread.currentThread().isInterrupted()) return;
-
-                StyledDocument document = (StyledDocument) expressionTextPane.getDocument();
-
-                Style red = expressionTextPane.addStyle("Red", null);
-                StyleConstants.setForeground(red, Color.RED);
-
-                Style black = expressionTextPane.addStyle("Black", null);
-                StyleConstants.setForeground(black, Color.BLACK);
-
-                while (!stop) {
-                    if (MillisecondTimes.timeMillis() < recolorTime) {
-                        continue;
-                    }
-
-                    if (color == Color.RED) {
-                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Red"), true);
-                    } else if (color == Color.BLACK) {
-                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Black"), true);
-                    }
-                }
-            }
-
-            public void scheduleStop() {
-                stop = true;
-            }
-        }
 
         ColorThread thread = new ColorThread();
         thread.start();
@@ -481,39 +449,6 @@ class GeneralizedExpressionEditor extends JComponent {
                 GeneralizedExpressionEditor.this.listen();
             }
         });
-
-        class ColorThread extends Thread {
-            private boolean stop;
-
-            @Override
-            public void run() {
-                StyledDocument document = (StyledDocument) expressionTextPane.getDocument();
-
-                Style red = expressionTextPane.addStyle("Red", null);
-                StyleConstants.setForeground(red, Color.RED);
-
-                Style black = expressionTextPane.addStyle("Black", null);
-                StyleConstants.setForeground(black, Color.BLACK);
-
-                while (!stop) {
-                    if (Thread.currentThread().isInterrupted()) return;
-
-                    if (MillisecondTimes.timeMillis() < recolorTime) {
-                        continue;
-                    }
-
-                    if (color == Color.RED) {
-                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Red"), true);
-                    } else if (color == Color.BLACK) {
-                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Black"), true);
-                    }
-                }
-            }
-
-            public void scheduleStop() {
-                stop = true;
-            }
-        }
 
         ColorThread thread = new ColorThread();
         thread.start();
@@ -771,6 +706,40 @@ class GeneralizedExpressionEditor extends JComponent {
 
         return expressionsMap;
     }
+
+    private class ColorThread extends Thread {
+        private boolean stop;
+
+        @Override
+        public void run() {
+            if (Thread.currentThread().isInterrupted()) return;
+
+            StyledDocument document = (StyledDocument) expressionTextPane.getDocument();
+
+            Style red = expressionTextPane.addStyle("Red", null);
+            StyleConstants.setForeground(red, Color.RED);
+
+            Style black = expressionTextPane.addStyle("Black", null);
+            StyleConstants.setForeground(black, Color.BLACK);
+
+            while (!stop) {
+                if (MillisecondTimes.timeMillis() < recolorTime) {
+                    continue;
+                }
+
+                if (color == Color.RED) {
+                    document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Red"), true);
+                } else if (color == Color.BLACK) {
+                    document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Black"), true);
+                }
+            }
+        }
+
+        public void scheduleStop() {
+            stop = true;
+        }
+    }
+
 }
 
 
