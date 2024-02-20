@@ -160,9 +160,9 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
 
     //============================== private methods ============================//
     private void log(BayesIm im) {
-        TetradLogger.getInstance().log("info",
-                "Maximum likelihood Bayes IM: Observed Variables Only");
-        TetradLogger.getInstance().log("im", im.toString());
+        TetradLogger.getInstance().forceLogMessage("Maximum likelihood Bayes IM: Observed Variables Only");
+        String message = im.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**

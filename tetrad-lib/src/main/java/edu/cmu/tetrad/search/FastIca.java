@@ -270,7 +270,7 @@ public class FastIca {
      */
     public void setMaxIterations(int maxIterations) {
         if (maxIterations < 1) {
-            TetradLogger.getInstance().log("info", "maxIterations should be positive.");
+            TetradLogger.getInstance().forceLogMessage("maxIterations should be positive.");
         }
 
         this.maxIterations = maxIterations;
@@ -283,7 +283,7 @@ public class FastIca {
      */
     public void setTolerance(double tolerance) {
         if (!(tolerance > 0)) {
-            TetradLogger.getInstance().log("info", "Tolerance should be positive.");
+            TetradLogger.getInstance().forceLogMessage("Tolerance should be positive.");
         }
 
         this.tolerance = tolerance;
@@ -319,8 +319,8 @@ public class FastIca {
         int p = this.X.getNumRows();
 
         if (this.numComponents > min(n, p)) {
-            TetradLogger.getInstance().log("info", "Requested number of components is too large.");
-            TetradLogger.getInstance().log("info", "Reset to " + min(n, p));
+            TetradLogger.getInstance().forceLogMessage("Requested number of components is too large.");
+            TetradLogger.getInstance().forceLogMessage("Reset to " + min(n, p));
             this.numComponents = min(n, p);
         }
 
@@ -336,7 +336,7 @@ public class FastIca {
         }
 
         if (this.verbose) {
-            TetradLogger.getInstance().log("info", "Centering");
+            TetradLogger.getInstance().forceLogMessage("Centering");
         }
 
         center(this.X);
@@ -346,7 +346,7 @@ public class FastIca {
         }
 
         if (this.verbose) {
-            TetradLogger.getInstance().log("info", "Whitening");
+            TetradLogger.getInstance().forceLogMessage("Whitening");
         }
 
         // Whiten.
@@ -389,18 +389,18 @@ public class FastIca {
                                 double tolerance, int function, double alpha,
                                 int maxIterations, boolean verbose, Matrix wInit) {
         if (verbose && function == FastIca.LOGCOSH) {
-            TetradLogger.getInstance().log("info", "Deflation FastIca using lgcosh approx. to neg-entropy function");
+            TetradLogger.getInstance().forceLogMessage("Deflation FastIca using lgcosh approx. to neg-entropy function");
         }
 
         if (verbose && function == FastIca.EXP) {
-            TetradLogger.getInstance().log("info", "Deflation FastIca using exponential approx. to neg-entropy function");
+            TetradLogger.getInstance().forceLogMessage("Deflation FastIca using exponential approx. to neg-entropy function");
         }
 
         Matrix W = new Matrix(X.getNumRows(), X.getNumRows());
 
         for (int i = 0; i < X.getNumRows(); i++) {
             if (verbose) {
-                TetradLogger.getInstance().log("fastIcaDetails", "Component " + (i + 1));
+                TetradLogger.getInstance().forceLogMessage("Component " + (i + 1));
             }
 
             Vector w = wInit.getRow(i);
@@ -491,7 +491,7 @@ public class FastIca {
                 _tolerance = abs(abs(_tolerance) - 1.0);
 
                 if (verbose) {
-                    TetradLogger.getInstance().log("fastIcaDetails", "Iteration " + it + " tol = " + _tolerance);
+                    TetradLogger.getInstance().forceLogMessage("Iteration " + it + " tol = " + _tolerance);
                 }
 
                 w = w1;
@@ -558,7 +558,7 @@ public class FastIca {
         int it = 0;
 
         if (verbose) {
-            TetradLogger.getInstance().log("info", "Symmetric FastICA using logcosh approx. to neg-entropy function");
+            TetradLogger.getInstance().forceLogMessage("Symmetric FastICA using logcosh approx. to neg-entropy function");
         }
 
         while (_tolerance > tolerance && it < maxIterations) {
@@ -615,7 +615,7 @@ public class FastIca {
             W = W1;
 
             if (verbose) {
-                TetradLogger.getInstance().log("fastIcaDetails", "Iteration " + (it + 1) + " tol = " + _tolerance);
+                TetradLogger.getInstance().forceLogMessage("Iteration " + (it + 1) + " tol = " + _tolerance);
             }
 
             it++;

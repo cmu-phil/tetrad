@@ -210,8 +210,8 @@ public class DirichletEstimatorWrapper implements SessionModel {
     }
 
     private void log(DirichletBayesIm im) {
-        TetradLogger.getInstance().log("info", "Estimated Dirichlet Bayes IM");
-        TetradLogger.getInstance().log("im", "" + im);
+        TetradLogger.getInstance().forceLogMessage("Estimated Dirichlet Bayes IM");
+        TetradLogger.getInstance().forceLogMessage("" + im);
         TetradLogger.getInstance().reset();
     }
 

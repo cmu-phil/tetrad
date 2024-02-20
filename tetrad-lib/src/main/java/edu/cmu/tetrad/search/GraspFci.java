@@ -124,8 +124,8 @@ public final class GraspFci implements IGraphSearch {
             throw new NullPointerException("Nodes from test were null.");
         }
 
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + this.independenceTest + ".");
+        TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
+        TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
 
         // The PAG being constructed.
         // Run GRaSP to get a CPDAG (like GFCI with FGES)...

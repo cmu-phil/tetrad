@@ -59,7 +59,8 @@ public class RemoveNullEdgesGraphWrapper extends GraphWrapper implements DoNotAd
      */
     public RemoveNullEdgesGraphWrapper(Graph graph) {
         super(GraphSampling.createGraphWithoutNullEdges(graph), "Remove Null Edges from Boostrapping");
-        TetradLogger.getInstance().log("graph", getGraph() + "");
+        String message = getGraph() + "";
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
 

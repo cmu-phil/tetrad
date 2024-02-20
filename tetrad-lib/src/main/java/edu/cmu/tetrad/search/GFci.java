@@ -121,8 +121,8 @@ public final class GFci implements IGraphSearch {
         this.independenceTest.setVerbose(verbose);
         List<Node> nodes = getIndependenceTest().getVariables();
 
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
+        TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
 
         Graph graph;
 

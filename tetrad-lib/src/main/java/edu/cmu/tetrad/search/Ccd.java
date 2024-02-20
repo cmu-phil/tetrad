@@ -233,7 +233,7 @@ public final class Ccd implements IGraphSearch {
     }
 
     private void stepC(Graph psi, SepsetProducer sepsets) {
-        TetradLogger.getInstance().log("info", "\nStep C");
+        TetradLogger.getInstance().forceLogMessage("\nStep C");
 
         EDGE:
         for (Edge edge : psi.getEdges()) {
@@ -342,7 +342,7 @@ public final class Ccd implements IGraphSearch {
     }
 
     private void stepE(Map<Triple, Set<Node>> supSepset, Graph psi) {
-        TetradLogger.getInstance().log("info", "\nStep E");
+        TetradLogger.getInstance().forceLogMessage("\nStep E");
 
         for (Triple triple : psi.getDottedUnderlines()) {
             Node a = triple.getX();

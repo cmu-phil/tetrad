@@ -171,7 +171,7 @@ public class SemOptimizerEm implements SemOptimizer {
         SemIm _sem = semIm;
 
         for (int count = 0; count < this.numRestarts; count++) {
-            TetradLogger.getInstance().log("details", "Trial " + (count + 1));
+            TetradLogger.getInstance().forceLogMessage("Trial " + (count + 1));
             SemIm _sem2 = new SemIm(semIm);
 
             List<Parameter> freeParameters = _sem2.getFreeParameters();
@@ -191,7 +191,7 @@ public class SemOptimizerEm implements SemOptimizer {
             optimize2(_sem2);
 
             double chisq = _sem2.getChiSquare();
-            TetradLogger.getInstance().log("details", "chisq = " + chisq);
+            TetradLogger.getInstance().forceLogMessage("chisq = " + chisq);
 
             if (chisq < min) {
                 min = chisq;

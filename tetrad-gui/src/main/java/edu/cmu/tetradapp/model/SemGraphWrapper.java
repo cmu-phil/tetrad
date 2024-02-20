@@ -373,8 +373,9 @@ public class SemGraphWrapper implements GraphSource,
 
     // ============================PRIVATE METHODS========================//
     private void log() {
-        TetradLogger.getInstance().log("info", "Structural Equation Model (SEM) Graph");
-        TetradLogger.getInstance().log("graph", "" + getGraph());
+        TetradLogger.getInstance().forceLogMessage("Structural Equation Model (SEM) Graph");
+        String message = "" + getGraph();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**

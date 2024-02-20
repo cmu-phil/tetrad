@@ -236,11 +236,15 @@ public class SemEstimatorWrapper implements SessionModel {
 
     //=============================== Private methods =======================//
     private void log() {
-        TetradLogger.getInstance().log("info", "SEM Estimator:");
-        TetradLogger.getInstance().log("im", "" + getEstimatedSemIm());
-        TetradLogger.getInstance().log("details", "ChiSq = " + getEstimatedSemIm().getChiSquare());
-        TetradLogger.getInstance().log("details", "DOF = " + getEstimatedSemIm().getSemPm().getDof());
-        TetradLogger.getInstance().log("details", "P = " + getEstimatedSemIm().getPValue());
+        TetradLogger.getInstance().forceLogMessage("SEM Estimator:");
+        String message3 = "" + getEstimatedSemIm();
+        TetradLogger.getInstance().forceLogMessage(message3);
+        String message2 = "ChiSq = " + getEstimatedSemIm().getChiSquare();
+        TetradLogger.getInstance().forceLogMessage(message2);
+        String message1 = "DOF = " + getEstimatedSemIm().getSemPm().getDof();
+        TetradLogger.getInstance().forceLogMessage(message1);
+        String message = "P = " + getEstimatedSemIm().getPValue();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**

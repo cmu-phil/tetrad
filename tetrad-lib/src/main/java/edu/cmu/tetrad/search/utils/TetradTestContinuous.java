@@ -573,7 +573,7 @@ public final class TetradTestContinuous implements TetradTest {
         this.deltaTest.calcChiSquare(new Tetrad(ci, cj, ck, cl));
         this.prob[0] = this.deltaTest.getPValue();
 
-        TetradLogger.getInstance().log("tetrads", new Tetrad(this.variables.get(i),
+        TetradLogger.getInstance().forceLogMessage(new Tetrad(this.variables.get(i),
                 this.variables.get(j), this.variables.get(k), this.variables.get(l))
                 + " = 0, p = " + this.prob[0]);
 

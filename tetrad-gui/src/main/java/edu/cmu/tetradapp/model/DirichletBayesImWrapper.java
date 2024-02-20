@@ -216,7 +216,8 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
     }
 
     private void log(DirichletBayesIm im) {
-        TetradLogger.getInstance().log("info", "Dirichlet Bayes IM");
-        TetradLogger.getInstance().log("im", im.toString());
+        TetradLogger.getInstance().forceLogMessage("Dirichlet Bayes IM");
+        String message = im.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 }

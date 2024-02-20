@@ -261,10 +261,11 @@ public final class ClassifierBayesUpdaterDiscrete implements ClassifierDiscrete,
             //combinations of values of the variables do not occur in the
             //training dataset.  If that happens skip the case.
             if (estimatedValue < 0) {
-                TetradLogger.getInstance().log("details", "Case " + i + " does not return valid marginal.");
+                TetradLogger.getInstance().forceLogMessage("Case " + i + " does not return valid marginal.");
 
                 for (int m = 0; m < nvars; m++) {
-                    TetradLogger.getInstance().log("details", "  " + selectedData.getDouble(i, m));
+                    String message = "  " + selectedData.getDouble(i, m);
+                    TetradLogger.getInstance().forceLogMessage(message);
                 }
 
                 estimatedValues[i] = DiscreteVariable.MISSING_VALUE;

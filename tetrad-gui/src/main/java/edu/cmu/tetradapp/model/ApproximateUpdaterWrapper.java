@@ -169,15 +169,15 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
         if (node != null) {
             NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-            TetradLogger.getInstance().log("info", "\nApproximate Updater");
+            TetradLogger.getInstance().forceLogMessage("\nApproximate Updater");
 
             String nodeName = node.getName();
             int nodeIndex = bayesIm.getNodeIndex(bayesIm.getNode(nodeName));
             double[] priors = getBayesUpdater().calculatePriorMarginals(nodeIndex);
             double[] marginals = getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
 
-            TetradLogger.getInstance().log("details", "\nVariable = " + nodeName);
-            TetradLogger.getInstance().log("details", "\nEvidence:");
+            TetradLogger.getInstance().forceLogMessage("\nVariable = " + nodeName);
+            TetradLogger.getInstance().forceLogMessage("\nEvidence:");
             Evidence evidence = (Evidence) getParams().get("evidence", null);
             Proposition proposition = evidence.getProposition();
 
@@ -186,15 +186,16 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
                 int category = proposition.getSingleCategory(i);
 
                 if (category != -1) {
-                    TetradLogger.getInstance().log("details", "\t" + variable + " = " + category);
+                    TetradLogger.getInstance().forceLogMessage("\t" + variable + " = " + category);
                 }
             }
 
-            TetradLogger.getInstance().log("details", "\nCat.\tPrior\tMarginal");
+            TetradLogger.getInstance().forceLogMessage("\nCat.\tPrior\tMarginal");
 
             for (int i = 0; i < priors.length; i++) {
-                TetradLogger.getInstance().log("details", category(evidence, nodeName, i) + "\t"
-                        + nf.format(priors[i]) + "\t" + nf.format(marginals[i]));
+                String message = category(evidence, nodeName, i) + "\t"
+                        + nf.format(priors[i]) + "\t" + nf.format(marginals[i]);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
         TetradLogger.getInstance().reset();

@@ -125,7 +125,7 @@ public class BossLingam {
             }
         }
 
-        TetradLogger.getInstance().log("graph", "Returning: " + toOrient);
+        TetradLogger.getInstance().forceLogMessage("Returning: " + toOrient);
         return toOrient;
     }
 

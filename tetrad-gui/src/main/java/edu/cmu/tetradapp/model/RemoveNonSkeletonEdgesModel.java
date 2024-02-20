@@ -249,14 +249,15 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
 
         createKnowledge(params);
 
-        TetradLogger.getInstance().log("info", "Knowledge");
+        TetradLogger.getInstance().forceLogMessage("Knowledge");
 
         // This is a conundrum. At this point I dont know whether I am in a
         // simulation or not. If in a simulation, I should print the knowledge.
         // If not, I should wait for resetParams to be called. For now I'm
         // printing the knowledge if it's not empty.
         if (!((Knowledge) params.get("knowledge", new Knowledge())).isEmpty()) {
-            TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge()).toString());
+            String message = params.get("knowledge", new Knowledge()).toString();
+            TetradLogger.getInstance().forceLogMessage(message);
         }
     }
 

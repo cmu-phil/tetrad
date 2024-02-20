@@ -648,11 +648,13 @@ public final class ResolveSepsetsDci {
 //        boolean independent = c < allPValues.size() - 2;
 
         if (independent) {
-            TetradLogger.getInstance().log("independence", "***FDR judges " + LogUtilsSearch.independenceFact(x, y, condSet) + " independent");
+            String message = "***FDR judges " + LogUtilsSearch.independenceFact(x, y, condSet) + " independent";
+            TetradLogger.getInstance().forceLogMessage(message);
         } else {
-            TetradLogger.getInstance().log("independence", "###FDR judges " + LogUtilsSearch.independenceFact(x, y, condSet) + " dependent");
+            String message = "###FDR judges " + LogUtilsSearch.independenceFact(x, y, condSet) + " dependent";
+            TetradLogger.getInstance().forceLogMessage(message);
         }
-        TetradLogger.getInstance().log("independence", "c = " + c);
+        TetradLogger.getInstance().forceLogMessage("c = " + c);
 
         return independent;
     }
@@ -698,11 +700,13 @@ public final class ResolveSepsetsDci {
         boolean independent = c < allPValues.size() / 2;
 
         if (independent) {
-            TetradLogger.getInstance().log("independence", "***Majority = " + LogUtilsSearch.independenceFact(x, y, condSet) + " independent");
+            String message = "***Majority = " + LogUtilsSearch.independenceFact(x, y, condSet) + " independent";
+            TetradLogger.getInstance().forceLogMessage(message);
         } else {
-            TetradLogger.getInstance().log("independence", "###Majority = " + LogUtilsSearch.independenceFact(x, y, condSet) + " dependent");
+            String message = "###Majority = " + LogUtilsSearch.independenceFact(x, y, condSet) + " dependent";
+            TetradLogger.getInstance().forceLogMessage(message);
         }
-        TetradLogger.getInstance().log("independence", "c = " + c);
+        TetradLogger.getInstance().forceLogMessage("c = " + c);
 
         return independent;
     }

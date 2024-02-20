@@ -554,8 +554,9 @@ public class BayesPmWrapper implements SessionModel {
 
     //================================= Private Methods ==================================//
     private void log(BayesPm pm) {
-        TetradLogger.getInstance().log("info", "Bayes Parametric Model (Bayes PM)");
-        TetradLogger.getInstance().log("pm", pm.toString());
+        TetradLogger.getInstance().forceLogMessage("Bayes Parametric Model (Bayes PM)");
+        String message = pm.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
 
     }
 

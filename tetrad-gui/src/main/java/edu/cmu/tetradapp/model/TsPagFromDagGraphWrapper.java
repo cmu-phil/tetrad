@@ -70,8 +70,8 @@ public class TsPagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOl
         Graph pag = p.convert();
         setGraph(pag);
 
-        TetradLogger.getInstance().log("info", "\nGenerating allow_latent_common_causes from DAG.");
-        TetradLogger.getInstance().log("CPDAG", pag + "");
+        TetradLogger.getInstance().forceLogMessage("\nGenerating allow_latent_common_causes from DAG.");
+        TetradLogger.getInstance().forceLogMessage(pag + "");
     }
 
     /**

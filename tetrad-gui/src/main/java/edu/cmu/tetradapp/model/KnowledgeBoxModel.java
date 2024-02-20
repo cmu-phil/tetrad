@@ -155,7 +155,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
             params.set("__myKnowledge", this.knowledge);
         }
 
-        TetradLogger.getInstance().log("info", "Knowledge");
+        TetradLogger.getInstance().forceLogMessage("Knowledge");
     }
 
     /**

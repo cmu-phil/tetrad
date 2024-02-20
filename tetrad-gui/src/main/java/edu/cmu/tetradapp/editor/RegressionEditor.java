@@ -90,7 +90,8 @@ public class RegressionEditor extends JPanel {
         JButton executeButton = new JButton("Execute");
         executeButton.addActionListener(e -> {
             runRegression();
-            TetradLogger.getInstance().log("result", RegressionEditor.this.reportText.getText());
+            String message = RegressionEditor.this.reportText.getText();
+            TetradLogger.getInstance().forceLogMessage(message);
         });
 
         this.workbench = new GraphWorkbench(outGraph);

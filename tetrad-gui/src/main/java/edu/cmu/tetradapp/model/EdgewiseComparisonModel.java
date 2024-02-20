@@ -104,7 +104,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
             this.targetGraph = model2.getGraph();
         }
 
-        TetradLogger.getInstance().log("info", "Graph Comparison");
+        TetradLogger.getInstance().forceLogMessage("Graph Comparison");
 
     }
 

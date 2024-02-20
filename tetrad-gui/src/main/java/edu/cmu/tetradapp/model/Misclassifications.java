@@ -107,7 +107,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
             this.targetGraph = model2.getGraph();
         }
 
-        TetradLogger.getInstance().log("info", "Graph Comparison");
+        TetradLogger.getInstance().forceLogMessage("Graph Comparison");
 
     }
 

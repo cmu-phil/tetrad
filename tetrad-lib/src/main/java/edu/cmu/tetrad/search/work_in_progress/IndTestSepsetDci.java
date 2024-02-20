@@ -137,7 +137,8 @@ public class IndTestSepsetDci implements IndependenceTest {
                     final double pValue = 1.0;
 
                     if (this.verbose) {
-                        TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(x, y, z, pValue));
+                        String message = LogUtilsSearch.independenceFactMsg(x, y, z, pValue);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     }
                     independent = true;
                     break;

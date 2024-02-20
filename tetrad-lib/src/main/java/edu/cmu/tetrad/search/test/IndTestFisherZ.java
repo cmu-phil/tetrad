@@ -622,7 +622,7 @@ public final class IndTestFisherZ implements IndependenceTest, RowsSettable {
 
             sb.append(" SSE = ").append(NumberFormatUtil.getInstance().getNumberFormat().format(SSE));
 
-            TetradLogger.getInstance().log("independencies", sb.toString());
+            TetradLogger.getInstance().forceLogMessage(sb.toString());
             System.out.println(sb);
         }
 

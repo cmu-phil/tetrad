@@ -84,8 +84,8 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
         if (this.numRestarts < 1) this.numRestarts = 1;
 
-        TetradLogger.getInstance().log("info", "Trying EM...");
-        TetradLogger.getInstance().log("info", "Trying scattershot...");
+        TetradLogger.getInstance().forceLogMessage("Trying EM...");
+        TetradLogger.getInstance().forceLogMessage("Trying scattershot...");
 
         double min = Double.POSITIVE_INFINITY;
         SemIm _sem = null;
@@ -93,8 +93,8 @@ public class SemOptimizerScattershot implements SemOptimizer {
         // With local search on points in the width 1 iteration, multiple iterations of the whole search
         // doesn't seem necessary.
         for (int i = 0; i < this.numRestarts + 1; i++) {
-            TetradLogger.getInstance().log("details", "Trial " + (i + 1));
-//            System.out.println("Trial " + (i + 1));
+            TetradLogger.getInstance().forceLogMessage("Trial " + (i + 1));
+            //            System.out.println("Trial " + (i + 1));
             SemIm _sem2 = new SemIm(semIm);
             optimize2(_sem2);
             double chisq = _sem2.getChiSquare();
@@ -230,7 +230,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
             if (f < fP) {
                 System.arraycopy(pTemp, 0, p, 0, pTemp.length);
-                TetradLogger.getInstance().log("optimization", "Cube width = " + width + " FML = " + f);
+                TetradLogger.getInstance().forceLogMessage("Cube width = " + width + " FML = " + f);
                 return true;
             }
         }
@@ -265,7 +265,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
             if (f < fP) {
                 System.arraycopy(pTemp, 0, p, 0, pTemp.length);
-                TetradLogger.getInstance().log("optimization", "Cube width = " + 0.2 + " FML = " + f);
+                TetradLogger.getInstance().forceLogMessage("Cube width = " + 0.2 + " FML = " + f);
                 return true;
             }
         }

@@ -181,8 +181,8 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
 
 
     private void log() {
-        TetradLogger.getInstance().log("info", "Directed Acyclic Graph (DAG)");
-        TetradLogger.getInstance().log("graph", this.graph + "");
+        TetradLogger.getInstance().forceLogMessage("Directed Acyclic Graph (DAG)");
+        TetradLogger.getInstance().forceLogMessage(this.graph + "");
     }
 
     /**

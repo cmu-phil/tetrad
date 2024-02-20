@@ -188,8 +188,9 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
     //======================= Private methods ====================//
 
     private void log(GeneralizedSemIm im) {
-        TetradLogger.getInstance().log("info", "Generalized SEM IM");
-        TetradLogger.getInstance().log("im", im.toString());
+        TetradLogger.getInstance().forceLogMessage("Generalized SEM IM");
+        String message = im.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**

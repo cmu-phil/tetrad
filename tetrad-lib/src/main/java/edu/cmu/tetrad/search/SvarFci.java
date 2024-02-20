@@ -138,8 +138,8 @@ public final class SvarFci implements IGraphSearch {
      * @see IFas
      */
     public Graph search(IFas fas) {
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
+        TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
@@ -182,7 +182,7 @@ public final class SvarFci implements IGraphSearch {
         //fciOrientbk(getKnowledge(), graph, independenceTest.getVariable());    - Robert Tillman 2008
 
         long time6 = MillisecondTimes.timeMillis();
-        this.logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
+        TetradLogger.getInstance().forceLogMessage("Step CI C: " + (time6 - time5) / 1000. + "s");
 
         SvarFciOrient fciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
 

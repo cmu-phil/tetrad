@@ -243,8 +243,9 @@ public class Kpc implements IGraphSearch {
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
 
-        this.logger.log("info", "Starting kPC algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        TetradLogger.getInstance().forceLogMessage("Starting kPC algorithm");
+        String message = "Independence test = " + getIndependenceTest() + ".";
+        TetradLogger.getInstance().forceLogMessage(message);
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
@@ -280,8 +281,8 @@ public class Kpc implements IGraphSearch {
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.log("info", "Finishing PC Algorithm.");
+        TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+        TetradLogger.getInstance().forceLogMessage("Finishing PC Algorithm.");
         this.logger.flush();
 
         return this.graph;

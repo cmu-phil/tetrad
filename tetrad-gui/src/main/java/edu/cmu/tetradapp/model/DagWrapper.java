@@ -286,8 +286,9 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
 
     //============================PRIVATE METHODS========================//
     private void log() {
-        TetradLogger.getInstance().log("info", "Directed Acyclic Graph (DAG)");
-        TetradLogger.getInstance().log("graph", getGraph() + "");
+        TetradLogger.getInstance().forceLogMessage("Directed Acyclic Graph (DAG)");
+        String message = getGraph() + "";
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**

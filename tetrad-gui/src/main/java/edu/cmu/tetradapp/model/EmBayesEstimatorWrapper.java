@@ -99,8 +99,8 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
             throw new RuntimeException(
                     "Please specify the search tolerance first.");
         }
-        TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM:");
-        TetradLogger.getInstance().log("im", "" + this.estimateBayesIm);
+        TetradLogger.getInstance().forceLogMessage("EM-Estimated Bayes IM:");
+        TetradLogger.getInstance().forceLogMessage("" + this.estimateBayesIm);
     }
 
     /**

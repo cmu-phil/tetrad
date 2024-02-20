@@ -338,9 +338,10 @@ public class SemPmWrapper implements SessionModel {
 
     //======================= Private methods ====================//
     private void log(int i, SemPm pm) {
-        TetradLogger.getInstance().log("info", "Linear Structural Equation Parametric Model (SEM PM)");
-        TetradLogger.getInstance().log("info", "PM # " + (i + 1));
-        TetradLogger.getInstance().log("pm", pm.toString());
+        TetradLogger.getInstance().forceLogMessage("Linear Structural Equation Parametric Model (SEM PM)");
+        TetradLogger.getInstance().forceLogMessage("PM # " + (i + 1));
+        String message = pm.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**

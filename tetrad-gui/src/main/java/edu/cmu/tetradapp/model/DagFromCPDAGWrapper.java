@@ -58,7 +58,8 @@ public class DagFromCPDAGWrapper extends GraphWrapper implements DoNotAddOldMode
      */
     public DagFromCPDAGWrapper(Graph graph) {
         super(DagFromCPDAGWrapper.getGraph(graph), "Choose DAG in CPDAG.");
-        TetradLogger.getInstance().log("graph", getGraph() + "");
+        String message = getGraph() + "";
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     private static Graph getGraph(Graph graph) {

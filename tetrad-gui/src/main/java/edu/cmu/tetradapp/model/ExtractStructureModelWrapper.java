@@ -82,7 +82,7 @@ public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotA
         LayoutUtil.fruchtermanReingoldLayout(graph3);
         setGraph(graph3);
 
-        TetradLogger.getInstance().log("info", "\nGenerating CPDAG from DAG.");
+        TetradLogger.getInstance().forceLogMessage("\nGenerating CPDAG from DAG.");
     }
 
     /**

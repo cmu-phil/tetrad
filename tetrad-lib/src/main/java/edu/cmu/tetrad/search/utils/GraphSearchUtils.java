@@ -55,7 +55,7 @@ public final class GraphSearchUtils {
      * @param nodes a {@link java.util.List} object
      */
     public static void pcOrientbk(Knowledge bk, Graph graph, List<Node> nodes) {
-        TetradLogger.getInstance().log("details", "Staring BK Orientation.");
+        TetradLogger.getInstance().forceLogMessage("Staring BK Orientation.");
         for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
@@ -95,10 +95,11 @@ public final class GraphSearchUtils {
             graph.removeEdges(from, to);
             graph.addDirectedEdge(from, to);
 
-            TetradLogger.getInstance().log("knowledgeOrientations", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
+            TetradLogger.getInstance().forceLogMessage(message);
         }
 
-        TetradLogger.getInstance().log("details", "Finishing BK Orientation.");
+        TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
     }
 
     /**
@@ -111,7 +112,7 @@ public final class GraphSearchUtils {
      * @param graph     a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static void pcdOrientC(IndependenceTest test, Knowledge knowledge, Graph graph) {
-        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
+        TetradLogger.getInstance().forceLogMessage("Starting Collider Orientation:");
 
         List<Node> nodes = graph.getNodes();
 
@@ -173,11 +174,12 @@ public final class GraphSearchUtils {
                 graph.setEndpoint(z, y, Endpoint.ARROW);
 
                 System.out.println(LogUtilsSearch.colliderOrientedMsg(x, y, z) + " sepset = " + sepset);
-                TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(x, y, z));
+                String message = LogUtilsSearch.colliderOrientedMsg(x, y, z);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
 
-        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
+        TetradLogger.getInstance().forceLogMessage("Finishing Collider Orientation.");
     }
 
     private static Set<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining, IndependenceTest independenceTest) {
@@ -222,7 +224,7 @@ public final class GraphSearchUtils {
      */
     public static void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose,
                                                    boolean enforceCpdag) {
-        TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
+        TetradLogger.getInstance().forceLogMessage("Starting Collider Orientation:");
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
@@ -271,13 +273,14 @@ public final class GraphSearchUtils {
                         graph.addDirectedEdge(a, b);
                         graph.addDirectedEdge(c, b);
 
-                        TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset));
+                        String message = LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     }
                 }
             }
         }
 
-        TetradLogger.getInstance().log("details", "Finishing Collider Orientation.");
+        TetradLogger.getInstance().forceLogMessage("Finishing Collider Orientation.");
 
     }
 
@@ -778,7 +781,7 @@ public final class GraphSearchUtils {
 
         List<Node> _nodes = new ArrayList<>(graph.getAdjacentNodes(x));
         _nodes.remove(z);
-        TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
+        TetradLogger.getInstance().forceLogMessage("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
         int _depth = depth;
         if (_depth == -1) {
@@ -809,7 +812,7 @@ public final class GraphSearchUtils {
 
         _nodes = new ArrayList<>(graph.getAdjacentNodes(z));
         _nodes.remove(x);
-        TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
+        TetradLogger.getInstance().forceLogMessage("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
         _depth = FastMath.min(_depth, _nodes.size());
 

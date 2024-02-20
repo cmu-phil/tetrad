@@ -241,9 +241,10 @@ public class SemImWrapper implements SessionModel {
 
     //======================== Private methods =======================//
     private void log(int i, SemIm pm) {
-        TetradLogger.getInstance().log("info", "Linear SEM IM");
-        TetradLogger.getInstance().log("info", "IM # " + (i + 1));
-        TetradLogger.getInstance().log("im", pm.toString());
+        TetradLogger.getInstance().forceLogMessage("Linear SEM IM");
+        TetradLogger.getInstance().forceLogMessage("IM # " + (i + 1));
+        String message = pm.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**

@@ -152,8 +152,8 @@ public final class Rfci implements IGraphSearch {
         long beginTime = MillisecondTimes.timeMillis();
         independenceTest.setVerbose(verbose);
 
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
+        TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
 
         setMaxPathLength(this.maxPathLength);
 
@@ -184,11 +184,11 @@ public final class Rfci implements IGraphSearch {
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
 
-        this.logger.log("graph", "Returning graph: " + this.graph);
+        TetradLogger.getInstance().forceLogMessage("Returning graph: " + this.graph);
         long stop2 = MillisecondTimes.timeMillis();
 
-        this.logger.log("info", "Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
-        this.logger.log("info", "Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
+        TetradLogger.getInstance().forceLogMessage("Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
+        TetradLogger.getInstance().forceLogMessage("Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
 
         return this.graph;
     }

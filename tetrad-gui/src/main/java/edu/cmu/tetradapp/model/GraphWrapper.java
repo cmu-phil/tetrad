@@ -136,7 +136,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      * @param message a {@link java.lang.String} object
      */
     public GraphWrapper(Graph graph, String message) {
-        TetradLogger.getInstance().log("info", message);
+        TetradLogger.getInstance().forceLogMessage(message);
 
         if (graph == null) {
             throw new NullPointerException("Graph must not be null.");

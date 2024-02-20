@@ -279,8 +279,9 @@ public class BayesEstimatorWrapper implements SessionModel {
     }
 
     private void log(BayesIm im) {
-        TetradLogger.getInstance().log("info", "ML estimated Bayes IM.");
-        TetradLogger.getInstance().log("im", im.toString());
+        TetradLogger.getInstance().forceLogMessage("ML estimated Bayes IM.");
+        String message = im.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     private void estimate(DataSet dataSet, BayesPm bayesPm) {

@@ -273,8 +273,8 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     }
 
     private void log() {
-        TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM");
-        TetradLogger.getInstance().log("im", "" + this.estimatedBayesIm);
+        TetradLogger.getInstance().forceLogMessage("EM-Estimated Bayes IM");
+        TetradLogger.getInstance().forceLogMessage("" + this.estimatedBayesIm);
     }
 }
 

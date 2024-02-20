@@ -143,7 +143,7 @@ public final class Bpc {
     public Graph search() {
         long start = MillisecondTimes.timeMillis();
 
-        TetradLogger.getInstance().log("info", "BPC alpha = " + this.alpha + " test = " + this.sigTestType);
+        TetradLogger.getInstance().forceLogMessage("BPC alpha = " + this.alpha + " test = " + this.sigTestType);
         List<Node> variables = this.tetradTest.getVariables();
 
         List<int[]> clustering = findMeasurementPattern(variables);
@@ -166,7 +166,7 @@ public final class Bpc {
         long stop = MillisecondTimes.timeMillis();
         long elapsed = stop - start;
 
-        TetradLogger.getInstance().log("elapsed", "Elapsed " + elapsed + " ms");
+        TetradLogger.getInstance().forceLogMessage("Elapsed " + elapsed + " ms");
 
         Set<List<Integer>> _clustering = new HashSet<>();
 

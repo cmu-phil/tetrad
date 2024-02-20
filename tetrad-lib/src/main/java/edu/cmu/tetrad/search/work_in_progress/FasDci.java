@@ -155,7 +155,7 @@ public class FasDci {
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
     public SepsetMapDci search() {
-        this.logger.log("info", "Starting Fast Adjacency Search (DCI).");
+        TetradLogger.getInstance().forceLogMessage("Starting Fast Adjacency Search (DCI).");
         // Remove edges forbidden both ways.
         Set<Edge> edges = this.graph.getEdges();
 
@@ -169,8 +169,8 @@ public class FasDci {
                     this.knowledge.isForbidden(name2, name1)) {
                 this.graph.removeEdge(_edge);
 
-                this.logger.log("edgeRemoved", "Removed " + _edge + " because it was " +
-                        "forbidden by background knowledge.");
+                TetradLogger.getInstance().forceLogMessage("Removed " + _edge + " because it was " +
+                                "forbidden by background knowledge.");
 
             }
         }
@@ -194,7 +194,7 @@ public class FasDci {
 
 //        verifySepsetIntegrity(sepset);
 
-        this.logger.log("info", "Finishing Fast Adjacency Search.");
+        TetradLogger.getInstance().forceLogMessage("Finishing Fast Adjacency Search.");
 
         return sepset;
     }

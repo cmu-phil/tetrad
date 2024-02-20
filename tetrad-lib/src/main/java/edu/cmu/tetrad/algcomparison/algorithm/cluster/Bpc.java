@@ -106,7 +106,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
 
                 ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
 
-                TetradLogger.getInstance().log("details", "Latent covs = \n" + latentsCov);
+                TetradLogger.getInstance().forceLogMessage("Latent covs = \n" + latentsCov);
 
                 Graph fullGraph = mimbuild.getFullGraph();
                 LayoutUtil.defaultLayout(fullGraph);
