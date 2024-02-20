@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.app;
 
+import edu.cmu.tetradapp.model.KnowledgeBoxInput;
 import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Version;
@@ -125,6 +126,7 @@ final class LoadSessionAction extends AbstractAction {
                         try {
                             sessionWrapper = (SessionWrapper) objIn.readObject();
                         } catch (ClassNotFoundException e1) {
+
                             throw e1;
                         } catch (Exception e2) {
                             e2.printStackTrace();
@@ -181,68 +183,17 @@ final class LoadSessionAction extends AbstractAction {
             super(in);
         }
 
-//        protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
-//            try {
-//                ObjectStreamClass resultClassDescriptor = super.readClassDescriptor(); // initially stream descriptor
-//                Class<?> localClass = Class.forName(resolveClass(resultClassDescriptor).getName());
-//                ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);
-//                if (localClass.isAssignableFrom(TetradSerializable.class)) { // only if class implements serializable
-//                    long localSUID = localClassDescriptor.getSerialVersionUID();
-//                    long streamSUID = resultClassDescriptor.getSerialVersionUID();
-//                    if (streamSUID != localSUID) { // check for serialVersionUID mismatch.
-//                        return localClassDescriptor; // Use local class descriptor for deserialization
-//                    }
-//                }
-//                return localClassDescriptor;
-//            } catch (ClassNotFoundException e) {
-//                TetradLogger.getInstance().forceLogMessage("Couldn't deserialize. Reason = " + e.getMessage());
-//                throw e;
-//            }
-//        }
-
-//        public Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-//            System.out.println(desc.getName());
-//            String replace = desc.getName();
-//            System.out.println("Desc.getName() = " + replace);
-//
-//            if (desc.getName().contains("tetrad.session")) {
-//                replace = desc.getName().replace("tetrad.session", "tetradapp.session");
-//            }
-//
-//            if (desc.getName().contains("CPDAG")) {
-//                replace = desc.getName().replace("CPDAG", "Cpdag");
-//            }
-//
-////            if (desc.getName().equals("edu.cmu.tetradapp.model.DagFromCPDAGWrapper")) {
-////                return DagFromCpdagWrapper.class;
-////            }
-//
-//            System.out.println("Replacing with: " + replace);
-//
-//            Class<?> aClass = Class.forName(replace);
-//
-//            System.out.println("Resolved class = " + aClass);
-//
-//            return aClass;
-//        }
-
         public Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
             String remappedClassName = mapToCurrentPackageName(desc.getName());
             return Class.forName(remappedClassName);
         }
 
         private String mapToCurrentPackageName(String originalClassName) {
+
             // Implement this function to correctly map obsolete class names to their current counterparts
             // The following lines are just examples, should be adapted according to the actual class name changes in your codebase
-            if (originalClassName  .contains("tetrad.session"))
+            if (originalClassName.contains("tetrad.session"))
                 return originalClassName.replace("tetrad.session", "tetradapp.session");
-
-//            if (originalClassName.contains("CPDAG"))
-//                return originalClassName.replace("CPDAG", "Cpdag");
-
-//            if (originalClassName.contains("DeterminismWraper")) {
-//                return originalClassName.replaceAll("DeterminismWrapper", "DeterminismWrapper");
-//            }
 
             // If no special mapping is needed, return the original class name
             return originalClassName;
