@@ -559,19 +559,13 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Creates a model of the given class using models of the parent SessionNodes as constructor arguments. If no
-     * appropriate constructor is available, no model is created, and the method returns false. If the attempt to
-     * construct a model using reflection fails, the stack trace is printed to System.err and an
-     * IllegalArgumentException is thrown. t
+     * Creates a model based on the specified model class and simulation flag.
      *
-     * @param modelClass a {@link java.lang.Class} object
-     * @param simulation a boolean
-     * @throws java.lang.RuntimeException if the attempt to construct the model throws either an IllegalAccessException,
-     *                                    an InstantiationException, or an InvocationTargetException. In this case, a
-     *                                    stack trace is printed to System.err.
-     * @throws java.lang.Exception        if any.
+     * @param modelClass the class representing the model to be created
+     * @param simulation a flag indicating if the model should be created for simulation
+     * @throws Exception if the model class is not among the possible model classes or if the model cannot be created
      */
-    public void createModel(Class modelClass, boolean simulation)
+    public void createModel(Class<?> modelClass, boolean simulation)
             throws Exception {
         if (!Arrays.asList(this.modelClasses).contains(modelClass)) {
             throw new IllegalArgumentException("Class not among possible "

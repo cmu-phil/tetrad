@@ -45,6 +45,20 @@ public class TestSession {
      */
     private String eventId;
 
+    /**
+     * Sets up the initial session for testing purposes.
+     *
+     * The setUp method initializes the session with a specified name to be used for testing.
+     *
+     * Usage:
+     *   setUp();
+     *
+     * Example:
+     *   setUp();
+     *
+     * Note:
+     *   This method should be called before performing tests on the session.
+     */
     public void setUp() {
         this.session = new Session("Test");
     }
@@ -72,7 +86,7 @@ public class TestSession {
         assertTrue(this.session.getNodes().contains(node3));
         this.session.removeNode(node2);
         assertEquals(2, this.session.getNodes().size());
-        assertTrue(!this.session.getNodes().contains(node2));
+        assertFalse(this.session.getNodes().contains(node2));
         this.session.clearNodes();
         assertEquals(0, this.session.getNodes().size());
     }
@@ -191,7 +205,6 @@ public class TestSession {
             this.session.removeNode(node2);
             assertEquals("nodeRemoved", getEventId());
         } catch (Exception e) {
-            e.printStackTrace();
             fail(e.getMessage());
         }
     }
@@ -211,7 +224,7 @@ public class TestSession {
      * few classes and try serializing those.)
      */
 //    @Test
-    public void rtestSerialization() {
+    public void testSerialization() {
         setUp();
         final boolean simulation = true;
 
@@ -233,7 +246,7 @@ public class TestSession {
             node3.createModel(Type8.class, simulation);
             node1.createModel(Type6.class, simulation);
         } catch (Exception e) {
-            fail("Model not created.");
+            fail("Model not created: " + e.getMessage());
         }
 
         try {
