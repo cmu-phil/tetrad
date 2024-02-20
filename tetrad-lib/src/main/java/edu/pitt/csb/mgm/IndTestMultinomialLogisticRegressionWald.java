@@ -239,9 +239,11 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
                     this.lastP = p;
 
                     if (independent) {
-                        TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(x, y, z, p));
+                        String message = LogUtilsSearch.independenceFactMsg(x, y, z, p);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     } else {
-                        TetradLogger.getInstance().log("dependencies", LogUtilsSearch.dependenceFactMsg(x, y, z, p));
+                        String message = LogUtilsSearch.dependenceFactMsg(x, y, z, p);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     }
 
                     return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);

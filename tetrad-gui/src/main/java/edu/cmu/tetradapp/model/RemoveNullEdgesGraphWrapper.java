@@ -23,10 +23,10 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.GraphSampling;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
 /**
  * <p>The bootstrapping API will generate graphs will "null edges"--that is, edges that aren't in the compositite graph
@@ -59,7 +59,8 @@ public class RemoveNullEdgesGraphWrapper extends GraphWrapper implements DoNotAd
      */
     public RemoveNullEdgesGraphWrapper(Graph graph) {
         super(GraphSampling.createGraphWithoutNullEdges(graph), "Remove Null Edges from Boostrapping");
-        TetradLogger.getInstance().log("graph", getGraph() + "");
+        String message = getGraph() + "";
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
 

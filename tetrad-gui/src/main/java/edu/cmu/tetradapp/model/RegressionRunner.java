@@ -152,12 +152,13 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
         this.targetName = null;
         this.regressorNames = new ArrayList<>();
 
-        TetradLogger.getInstance().log("info", "Linear Regression");
+        TetradLogger.getInstance().forceLogMessage("Linear Regression");
 
         if (this.result == null) {
-            TetradLogger.getInstance().log("info", "Please double click this regression node to run the regession.");
+            TetradLogger.getInstance().forceLogMessage("Please double click this regression node to run the regession.");
         } else {
-            TetradLogger.getInstance().log("result", "\n" + this.result.getResultsTable().toString());
+            String message = "\n" + this.result.getResultsTable().toString();
+            TetradLogger.getInstance().forceLogMessage(message);
         }
     }
 

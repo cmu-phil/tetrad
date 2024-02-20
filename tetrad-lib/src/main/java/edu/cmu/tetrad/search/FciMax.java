@@ -28,7 +28,10 @@ import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.search.utils.SepsetsSet;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.SublistGenerator;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -142,8 +145,11 @@ public final class FciMax implements IGraphSearch {
         long start = MillisecondTimes.timeMillis();
 
         Fas fas = new Fas(getIndependenceTest());
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting FCI-Max algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);

@@ -170,8 +170,11 @@ public final class Fci implements IGraphSearch {
         long start = MillisecondTimes.timeMillis();
 
         Fas fas = new Fas(getIndependenceTest());
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);

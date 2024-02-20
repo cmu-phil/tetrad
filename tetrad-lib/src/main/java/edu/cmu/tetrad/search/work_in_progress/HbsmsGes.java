@@ -288,9 +288,10 @@ public final class HbsmsGes implements Hbsms {
     }
 
     private double fes(Graph graph, double score) {
-        TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
+        TetradLogger.getInstance().forceLogMessage("** FORWARD EQUIVALENCE SEARCH");
         double bestScore = score;
-        TetradLogger.getInstance().log("info", "Initial Score = " + this.nf.format(bestScore));
+        String message = "Initial Score = " + this.nf.format(bestScore);
+        TetradLogger.getInstance().forceLogMessage(message);
 
         Node x, y;
         Set<Node> t = new HashSet<>();
@@ -336,8 +337,8 @@ public final class HbsmsGes implements Hbsms {
 
                         double evalScore = scoreGraph(graph2).getScore();
 
-                        TetradLogger.getInstance().log("edgeEvaluations", "Trying to add " + _x + "-->" + _y + " evalScore = " +
-                                evalScore);
+                        TetradLogger.getInstance().forceLogMessage("Trying to add " + _x + "-->" + _y + " evalScore = " +
+                                                evalScore);
 
                         if (!(evalScore > bestScore && evalScore > score)) {
                             continue;
@@ -371,8 +372,9 @@ public final class HbsmsGes implements Hbsms {
     }
 
     private void bes(Graph graph, double initialScore) {
-        TetradLogger.getInstance().log("info", "** BACKWARD ELIMINATION SEARCH");
-        TetradLogger.getInstance().log("info", "Initial Score = " + this.nf.format(initialScore));
+        TetradLogger.getInstance().forceLogMessage("** BACKWARD ELIMINATION SEARCH");
+        String message = "Initial Score = " + this.nf.format(initialScore);
+        TetradLogger.getInstance().forceLogMessage(message);
         double bestScore = initialScore;
         Node x, y;
         Set<Node> t = new HashSet<>();
@@ -460,8 +462,9 @@ public final class HbsmsGes implements Hbsms {
             graph.removeEdge(t, y);
             graph.addDirectedEdge(t, y);
 
-            TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                    graph.getEdge(t, y));
+            String message = "--- Directing " + oldEdge + " to " +
+                    graph.getEdge(t, y);
+            TetradLogger.getInstance().forceLogMessage(message);
         }
     }
 
@@ -477,8 +480,9 @@ public final class HbsmsGes implements Hbsms {
                 graph.addDirectedEdge(x, h);
 
                 Edge oldEdge = graph.getEdge(x, h);
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(x, h));
+                String message = "--- Directing " + oldEdge + " to " +
+                        graph.getEdge(x, h);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
 
             if (Edges.isUndirectedEdge(graph.getEdge(y, h))) {
@@ -486,8 +490,9 @@ public final class HbsmsGes implements Hbsms {
                 graph.addDirectedEdge(y, h);
 
                 Edge oldEdge = graph.getEdge(y, h);
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(y, h));
+                String message = "--- Directing " + oldEdge + " to " +
+                        graph.getEdge(y, h);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
     }
@@ -509,8 +514,9 @@ public final class HbsmsGes implements Hbsms {
             graph.removeEdge(t, y);
             graph.addDirectedEdge(t, y);
 
-            TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                    graph.getEdge(t, y));
+            String message = "--- Directing " + oldEdge + " to " +
+                    graph.getEdge(t, y);
+            TetradLogger.getInstance().forceLogMessage(message);
         }
     }
 
@@ -534,8 +540,9 @@ public final class HbsmsGes implements Hbsms {
                 graph.addDirectedEdge(x, h);
 
                 Edge oldEdge = graph.getEdge(x, h);
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(x, h));
+                String message = "--- Directing " + oldEdge + " to " +
+                        graph.getEdge(x, h);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
 
             if (Edges.isUndirectedEdge(graph.getEdge(y, h))) {
@@ -543,8 +550,9 @@ public final class HbsmsGes implements Hbsms {
                 graph.addDirectedEdge(y, h);
 
                 Edge oldEdge = graph.getEdge(y, h);
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(y, h));
+                String message = "--- Directing " + oldEdge + " to " +
+                        graph.getEdge(y, h);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
     }
@@ -622,7 +630,7 @@ public final class HbsmsGes implements Hbsms {
         addRequiredEdges(graph);
         pdagWithBk(graph, getKnowledge());
 
-        TetradLogger.getInstance().log("rebuiltCPDAGs", "Rebuilt CPDAG = " + graph);
+        TetradLogger.getInstance().forceLogMessage("Rebuilt CPDAG = " + graph);
     }
 
     /**

@@ -10,7 +10,9 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.RecursiveTask;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static org.apache.commons.math3.util.FastMath.min;
@@ -483,40 +485,56 @@ public class Bes {
      */
     public static class Arrow implements Comparable<Arrow> {
 
-        /** The bump. */
+        /**
+         * The bump.
+         */
         private final double bump;
 
-        /** The first node. */
+        /**
+         * The first node.
+         */
         private final Node a;
 
-        /** The second node. */
+        /**
+         * The second node.
+         */
         private final Node b;
 
-        /** The set of nodes that are in H or T. */
+        /**
+         * The set of nodes that are in H or T.
+         */
         private final Set<Node> hOrT;
 
-        /** The set of nodes that are in NaYX. */
+        /**
+         * The set of nodes that are in NaYX.
+         */
         private final Set<Node> naYX;
 
-        /** The index of the arrow. */
+        /**
+         * The index of the arrow.
+         */
         private final Set<Node> parents;
 
-        /** The index of the arrow. */
+        /**
+         * The index of the arrow.
+         */
         private final int index;
 
-        /** The set of nodes that are in TNeighbors. */
+        /**
+         * The set of nodes that are in TNeighbors.
+         */
         private Set<Node> TNeighbors;
 
         /**
          * Constructs an arrow.
          *
-         * @param bump The bump.
-         * @param a The first node.
-         * @param b The second node.
-         * @param hOrT The set of nodes that are in H or T.
-         * @param naYX The set of nodes that are in NaYX.
+         * @param bump    The bump.
+         * @param a       The first node.
+         * @param b       The second node.
+         * @param hOrT    The set of nodes that are in H or T.
+         * @param naYX    The set of nodes that are in NaYX.
          * @param parents The set of nodes that are in TNeighbors.
-         * @param index The index of the arrow.
+         * @param index   The index of the arrow.
          */
         Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> capTorH, Set<Node> naYX, Set<Node> parents, int index) {
             this.bump = bump;
@@ -575,12 +593,12 @@ public class Bes {
         }
 
         /**
-         * Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
-         * to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
-         * bump), we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
-         * The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
-         * same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
-         * not equal to zero by keeping a list. This last part is commened out by default.
+         * Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares to
+         * zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same bump), we
+         * need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables. The
+         * fastest way to do this is using a hash code, though it's still possible for two Arrows to have the same hash
+         * code but not be equal. If we're paranoid, in this case we calculate a determinate comparison not equal to
+         * zero by keeping a list. This last part is commened out by default.
          */
         public int compareTo(@NotNull Arrow arrow) {
 

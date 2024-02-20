@@ -97,7 +97,7 @@ public class FasFdr implements IFas {
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
     public Graph search() {
-        this.logger.log("info", "Starting Fast Adjacency Search.");
+        TetradLogger.getInstance().forceLogMessage("Starting Fast Adjacency Search.");
         this.graph.removeEdges(this.graph.getEdges());
 
         this.sepset = new SepsetMap();
@@ -150,7 +150,7 @@ public class FasFdr implements IFas {
             }
         }
 
-        this.logger.log("info", "Finishing Fast Adjacency Search.");
+        TetradLogger.getInstance().forceLogMessage("Finishing Fast Adjacency Search.");
 
         return this.graph;
     }
@@ -377,8 +377,9 @@ public class FasFdr implements IFas {
 
         if (this.knowledge.isForbidden(name1, name2) &&
                 this.knowledge.isForbidden(name2, name1)) {
-            this.logger.log("edgeRemoved", "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
-                    "forbidden by background knowledge.");
+            String message = "Removed " + Edges.undirectedEdge(x, y) + " because it was " +
+                    "forbidden by background knowledge.";
+            TetradLogger.getInstance().forceLogMessage(message);
 
             return true;
         }

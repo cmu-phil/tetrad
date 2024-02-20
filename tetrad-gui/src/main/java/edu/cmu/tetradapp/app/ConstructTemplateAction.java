@@ -23,9 +23,9 @@ package edu.cmu.tetradapp.app;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.SessionNode;
 import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.session.SessionNode;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
@@ -161,7 +161,7 @@ final class ConstructTemplateAction extends AbstractAction {
                     "Next button type must be a " + "non-null string.");
         }
 
-        Class[] modelClasses = ConstructTemplateAction.getModelClasses(nextButtonType);
+        Class<?>[] modelClasses = ConstructTemplateAction.getModelClasses(nextButtonType);
         SessionNode newNode
                 = new SessionNode(nextButtonType, name, modelClasses);
         SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
@@ -173,7 +173,7 @@ final class ConstructTemplateAction extends AbstractAction {
      * @return the model classes associated with the given button type.
      * @throws NullPointerException if no classes are stored for the given type.
      */
-    private static Class[] getModelClasses(String nextButtonType) {
+    private static Class<?>[] getModelClasses(String nextButtonType) {
         TetradApplicationConfig tetradConfig = TetradApplicationConfig.getInstance();
         SessionNodeConfig config = tetradConfig.getSessionNodeConfig(nextButtonType);
         if (config == null) {

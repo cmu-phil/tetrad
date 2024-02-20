@@ -99,9 +99,11 @@ public final class IndTestMulti implements IndependenceTest {
         boolean independent = ResolveSepsets.isIndependentPooled(this.method, this.independenceTests, x, y, z);
 
         if (independent) {
-            TetradLogger.getInstance().log("independencies", "In aggregate independent: " + LogUtilsSearch.independenceFact(x, y, z));
+            String message = "In aggregate independent: " + LogUtilsSearch.independenceFact(x, y, z);
+            TetradLogger.getInstance().forceLogMessage(message);
         } else {
-            TetradLogger.getInstance().log("dependencies", "In aggregate dependent: " + LogUtilsSearch.independenceFact(x, y, z));
+            String message = "In aggregate dependent: " + LogUtilsSearch.independenceFact(x, y, z);
+            TetradLogger.getInstance().forceLogMessage(message);
         }
 
         IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent,

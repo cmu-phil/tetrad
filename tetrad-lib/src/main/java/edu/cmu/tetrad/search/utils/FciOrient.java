@@ -232,7 +232,10 @@ public final class FciOrient {
      * @return The oriented graph.
      */
     public Graph orient(Graph graph) {
-        this.logger.forceLogMessage("Starting FCI algorithm.");
+        if (verbose) {
+            this.logger.forceLogMessage("Starting FCI orientation.");
+        }
+
         ruleR0(graph);
 
         if (this.verbose) {

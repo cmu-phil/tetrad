@@ -24,9 +24,9 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
 /**
  * Picks a DAG from the given graph.
@@ -56,7 +56,8 @@ public class BidirectedToUndirectedWrapper extends GraphWrapper implements DoNot
      */
     public BidirectedToUndirectedWrapper(Graph graph) {
         super(GraphUtils.bidirectedToUndirected(graph), "Make Bidirected Edges Undirected");
-        TetradLogger.getInstance().log("graph", getGraph() + "");
+        String message = getGraph() + "";
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
 

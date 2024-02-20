@@ -22,7 +22,6 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.DirichletBayesIm;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
@@ -217,7 +216,8 @@ public class DirichletBayesImWrapper implements KnowledgeBoxInput {
     }
 
     private void log(DirichletBayesIm im) {
-        TetradLogger.getInstance().log("info", "Dirichlet Bayes IM");
-        TetradLogger.getInstance().log("im", im.toString());
+        TetradLogger.getInstance().forceLogMessage("Dirichlet Bayes IM");
+        String message = im.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 }

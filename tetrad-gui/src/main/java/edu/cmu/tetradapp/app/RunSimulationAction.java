@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.session.SessionNode;
+import edu.cmu.tetradapp.session.SessionNode;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
@@ -103,7 +103,7 @@ class RunSimulationAction extends AbstractAction {
 
 
     private SessionEditorWorkbench getWorkbench() {
-        final Class c = SessionEditorWorkbench.class;
+        final Class<?> c = SessionEditorWorkbench.class;
         Container container = SwingUtilities.getAncestorOfClass(c, this.sessionEditorNode);
         return (SessionEditorWorkbench) container;
     }

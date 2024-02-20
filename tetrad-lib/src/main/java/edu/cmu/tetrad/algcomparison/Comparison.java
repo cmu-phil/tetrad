@@ -1024,7 +1024,7 @@ public class Comparison {
             pool.invokeAll(tasks);
         } catch (Exception e) {
             Thread.currentThread().interrupt();
-            throw  e;
+            throw e;
         }
 
         return allStats;

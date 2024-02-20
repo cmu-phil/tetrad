@@ -335,12 +335,12 @@ public final class HbsmsBeam implements Hbsms {
 
                     if (getKnowledge().isRequired(edge.getNode1().getName(), edge.getNode2().getName())) {
                         System.out.println("Not removing " + edge + " because it is required.");
-                        TetradLogger.getInstance().log("details", "Not removing " + edge + " because it is required.");
+                        TetradLogger.getInstance().forceLogMessage("Not removing " + edge + " because it is required.");
                         continue;
                     }
 
                     System.out.println("Removing edge " + edge + " because it has p = " + p);
-                    TetradLogger.getInstance().log("details", "Removing edge " + edge + " because it has p = " + p);
+                    TetradLogger.getInstance().forceLogMessage("Removing edge " + edge + " because it has p = " + p);
                     graph.removeEdge(edge);
                     changed = true;
                 }
@@ -591,7 +591,8 @@ public final class HbsmsBeam implements Hbsms {
             if (!graph.paths().isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdge(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
-                TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
+                String message = "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
         for (Iterator<KnowledgeEdge> it =
@@ -615,7 +616,8 @@ public final class HbsmsBeam implements Hbsms {
                 if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                     graph.removeEdges(nodeA, nodeB);
                     graph.addDirectedEdge(nodeB, nodeA);
-                    TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                    String message = "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA);
+                    TetradLogger.getInstance().forceLogMessage(message);
                 }
             }
         }

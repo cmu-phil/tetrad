@@ -21,17 +21,16 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.data.KnowledgeTransferable;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.session.ParamsResettable;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.ParamsResettable;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.Serial;
 import java.util.*;
@@ -98,7 +97,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     /**
      * Constructor from dataWrapper edge
      *
-     * @param inputs an array of {@link edu.cmu.tetrad.data.KnowledgeBoxInput} objects
+     * @param inputs an array of {@link KnowledgeBoxInput} objects
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public KnowledgeBoxModel(KnowledgeBoxInput[] inputs, Parameters params) {
@@ -156,7 +155,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
             params.set("__myKnowledge", this.knowledge);
         }
 
-        TetradLogger.getInstance().log("info", "Knowledge");
+        TetradLogger.getInstance().forceLogMessage("Knowledge");
     }
 
     /**

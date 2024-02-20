@@ -26,10 +26,10 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -104,7 +104,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
             this.targetGraph = model2.getGraph();
         }
 
-        TetradLogger.getInstance().log("info", "Graph Comparison");
+        TetradLogger.getInstance().forceLogMessage("Graph Comparison");
 
     }
 

@@ -47,6 +47,7 @@ public final class MaxP {
     private boolean useHeuristic;
     private int maxPathLength = 3;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+    private boolean verbose = false;
 
     /**
      * Constructor.
@@ -266,7 +267,7 @@ public final class MaxP {
     private void orientCollider(Graph graph, Node a, Node b, Node c, PcCommon.ConflictRule conflictRule) {
         if (this.knowledge.isForbidden(a.getName(), b.getName())) return;
         if (this.knowledge.isForbidden(c.getName(), b.getName())) return;
-        PcCommon.orientCollider(a, b, c, conflictRule, graph);
+        PcCommon.orientCollider(a, b, c, conflictRule, graph, this.verbose);
     }
 
     // Returns true if there is an undirected path from x to either y or z within the given number of steps.
@@ -309,6 +310,10 @@ public final class MaxP {
         }
 
         return false;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }
 

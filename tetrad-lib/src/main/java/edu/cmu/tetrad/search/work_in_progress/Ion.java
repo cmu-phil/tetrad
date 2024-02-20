@@ -208,9 +208,9 @@ public class Ion {
     public List<Graph> search() {
 
         long start = MillisecondTimes.timeMillis();
-        TetradLogger.getInstance().log("info", "Starting ION Search.");
+        TetradLogger.getInstance().forceLogMessage("Starting ION Search.");
         logGraphs("\nInitial Pags: ", this.input);
-        TetradLogger.getInstance().log("info", "Transfering local information.");
+        TetradLogger.getInstance().forceLogMessage("Transfering local information.");
         long steps = MillisecondTimes.timeMillis();
 
         /*
@@ -232,7 +232,8 @@ public class Ion {
         for (NodePair pair : nonIntersection(graph)) {
             graph.addEdge(new Edge(pair.getFirst(), pair.getSecond(), Endpoint.CIRCLE, Endpoint.CIRCLE));
         }
-        TetradLogger.getInstance().log("info", "Steps 1-2: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
+        String message3 = "Steps 1-2: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
+        TetradLogger.getInstance().forceLogMessage(message3);
         System.out.println("step2");
         System.out.println(graph);
 
@@ -269,14 +270,14 @@ public class Ion {
         // iterates over path length, then adjacencies
         for (int l = pl; l < numNodes; l++) {
             if (this.pathLengthSearch) {
-                TetradLogger.getInstance().log("info", "Braching over path lengths: " + l + " of " + (numNodes - 1));
+                TetradLogger.getInstance().forceLogMessage("Braching over path lengths: " + l + " of " + (numNodes - 1));
             }
             int seps = this.separations.size();
             final int currentSep = 1;
             int numAdjacencies = this.separations.size();
             for (IonIndependenceFacts fact : this.separations) {
                 if (this.doAdjacencySearch) {
-                    TetradLogger.getInstance().log("info", "Braching over path nonadjacencies: " + currentSep + " of " + numAdjacencies);
+                    TetradLogger.getInstance().forceLogMessage("Braching over path nonadjacencies: " + currentSep + " of " + numAdjacencies);
                 }
                 seps--;
                 // uses two queues to keep up with which PAGs are being iterated and which have been
@@ -472,7 +473,8 @@ public class Ion {
                 }
             }
         }
-        TetradLogger.getInstance().log("info", "Step 3: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
+        String message2 = "Step 3: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
+        TetradLogger.getInstance().forceLogMessage(message2);
         Queue<Graph> step3Pags = new LinkedList<>(step3PagsSet);
 
         /*
@@ -549,7 +551,8 @@ public class Ion {
         outputPags = removeMoreSpecific(outputPags);
 //        outputPags = applyKnowledge(outputPags);
 
-        TetradLogger.getInstance().log("info", "Step 4: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
+        String message1 = "Step 4: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
+        TetradLogger.getInstance().forceLogMessage(message1);
 
         /*
          * Step 5
@@ -592,7 +595,8 @@ public class Ion {
         outputSet = checkPaths(outputSet);
 
         this.output.addAll(outputSet);
-        TetradLogger.getInstance().log("info", "Step 5: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
+        String message = "Step 5: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
+        TetradLogger.getInstance().forceLogMessage(message);
         this.runtime = ((MillisecondTimes.timeMillis() - start) / 1000.);
         logGraphs("\nReturning output (" + this.output.size() + " Graphs):", this.output);
         double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -704,10 +708,11 @@ public class Ion {
      */
     private void logGraphs(String message, List<? extends Graph> graphs) {
         if (message != null) {
-            TetradLogger.getInstance().log("graph", message);
+            TetradLogger.getInstance().forceLogMessage(message);
         }
         for (Graph graph : graphs) {
-            TetradLogger.getInstance().log("graph", graph.toString());
+            String message1 = graph.toString();
+            TetradLogger.getInstance().forceLogMessage(message1);
         }
     }
 

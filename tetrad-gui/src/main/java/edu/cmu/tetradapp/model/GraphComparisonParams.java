@@ -27,8 +27,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.ExecutionRestarter;
-import edu.cmu.tetrad.session.SessionAdapter;
+import edu.cmu.tetradapp.session.ExecutionRestarter;
+import edu.cmu.tetradapp.session.SessionAdapter;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

@@ -538,8 +538,9 @@ public class MarkovCheckEditor extends JPanel {
 
     private void setTest() {
         IndependenceTestModel selectedItem = (IndependenceTestModel) indTestJComboBox.getSelectedItem();
+
         Class<IndependenceWrapper> clazz = (selectedItem == null) ? null
-                : selectedItem.getIndependenceTest().clazz();
+                : (Class<IndependenceWrapper>) selectedItem.getIndependenceTest().clazz();
         IndependenceTest independenceTest;
 
         if (clazz != null) {

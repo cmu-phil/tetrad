@@ -91,7 +91,7 @@ public class LogUtilsSearch {
      * @return a {@link java.lang.String} object
      */
     public static String colliderOrientedMsg(Node x, Node y, Node z, Set<Node> sepset) {
-        return "Orienting collider: " + x.getName() + " *-&gt; " +
+        return "Orienting collider: " + x.getName() + " *-> " +
                 y.getName() + " <-* " + z.getName() + "\t(Sepset = " + sepset +
                 ")";
     }

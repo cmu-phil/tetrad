@@ -274,7 +274,7 @@ public final class IndTestChiSquare implements IndependenceTest, RowsSettable {
 
             sb.append("}");
 
-            TetradLogger.getInstance().log("independencies", sb.toString());
+            TetradLogger.getInstance().forceLogMessage(sb.toString());
         }
 
         return countDetermined;

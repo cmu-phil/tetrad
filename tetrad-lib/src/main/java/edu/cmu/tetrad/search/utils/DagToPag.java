@@ -107,7 +107,7 @@ public final class DagToPag {
      * @return Returns the converted PAG.
      */
     public Graph convert() {
-        this.logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
+        TetradLogger.getInstance().forceLogMessage("Starting DAG to PAG_of_the_true_DAG.");
 
         if (history.get(dag) != null) return history.get(dag);
 

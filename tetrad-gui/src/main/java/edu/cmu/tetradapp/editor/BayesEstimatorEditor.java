@@ -37,10 +37,10 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 /**
- * An editor for Bayes net instantiated models. Assumes that the workbench and parameterized model have been established
- * (that is, that the nodes have been identified and named and that the number and names of the values for the nodes
- * have been specified) and allows the user to set conditional probabilities of node values given combinations of parent
- * values.
+ * An editor for Bayes net instantiated models. Assumes that the workbench and parameterized model have been
+ * established. (That is, that the nodes have been identified and named that the number and names of the values for the
+ * nodes have been specified). It Also allows the user to set conditional probabilities of node values given
+ * combinations of parent values.
  *
  * @author Aaron Powers
  * @author josephramsey
@@ -125,9 +125,9 @@ public class BayesEstimatorEditor extends JPanel {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the name of this editor.
+     * Sets the name of this component.
+     *
+     * @param name the string that is to be this component's name
      */
     public void setName(String name) {
         String oldName = getName();
@@ -171,13 +171,13 @@ public class BayesEstimatorEditor extends JPanel {
         StringBuilder buf = new StringBuilder();
         BayesProperties.LikelihoodRet ret = properties.getLikelihoodRatioP(graph);
         NumberFormat nf = new DecimalFormat("0.00");
-        buf.append("\nP-value = ").append(nf.format(ret.p));
-//        buf.append("\nP-value = ").append(properties.getVuongP());
+        buf.append("P-value = ").append(nf.format(ret.p));
         buf.append("\nDf = ").append(nf.format(ret.dof));
         buf.append("\nChi square = ").append(nf.format(ret.chiSq));
         buf.append("\nBIC score = ").append(nf.format(ret.bic));
 
-        buf.append("\n\nH0: Complete graph.");
+        buf.append("\n\nH0: Given model");
+        buf.append("\nH1: Complete model");
 
         JTextArea modelParametersText = new JTextArea();
         modelParametersText.setText(buf.toString());
@@ -209,7 +209,6 @@ public class BayesEstimatorEditor extends JPanel {
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         menuBar.add(file);
-//        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         panel.add(menuBar, BorderLayout.NORTH);
 

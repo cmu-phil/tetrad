@@ -55,7 +55,7 @@ public class DecompressibleInputStream extends ObjectInputStream {
     @Override
     protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
         ObjectStreamClass resultClassDescriptor = super.readClassDescriptor(); // initially streams descriptor
-        Class localClass; // the class in the local JVM that this descriptor represents.
+        Class<?> localClass; // the class in the local JVM that this descriptor represents.
         try {
             localClass = Class.forName(resultClassDescriptor.getName());
         } catch (ClassNotFoundException e) {

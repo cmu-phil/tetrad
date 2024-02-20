@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
@@ -215,7 +214,8 @@ public class StandardizedSemImWrapper implements KnowledgeBoxInput {
     }
 
     private void log(StandardizedSemIm pm) {
-        TetradLogger.getInstance().log("info", "Standardized SEM IM");
-        TetradLogger.getInstance().log("im", pm.toString());
+        TetradLogger.getInstance().forceLogMessage("Standardized SEM IM");
+        String message = pm.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 }

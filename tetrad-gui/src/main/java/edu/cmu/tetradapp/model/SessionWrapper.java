@@ -22,12 +22,12 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.session.Session;
-import edu.cmu.tetrad.session.SessionAdapter;
-import edu.cmu.tetrad.session.SessionEvent;
-import edu.cmu.tetrad.session.SessionNode;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.Session;
+import edu.cmu.tetradapp.session.SessionAdapter;
+import edu.cmu.tetradapp.session.SessionEvent;
+import edu.cmu.tetradapp.session.SessionNode;
 import edu.cmu.tetradapp.util.SessionWrapperIndirectRef;
 
 import javax.swing.*;
@@ -45,7 +45,7 @@ import java.util.*;
  *
  * @author josephramsey
  * @version $Id: $Id
- * @see edu.cmu.tetrad.session.Session
+ * @see Session
  * @see edu.cmu.tetrad.graph.Graph
  */
 public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndirectRef {
@@ -86,7 +86,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     /**
      * Constructs a new session with the given name.
      *
-     * @param session a {@link edu.cmu.tetrad.session.Session} object
+     * @param session a {@link Session} object
      */
     public SessionWrapper(Session session) {
         if (session == null) {

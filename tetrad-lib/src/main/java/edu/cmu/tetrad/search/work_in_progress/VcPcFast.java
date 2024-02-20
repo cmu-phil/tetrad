@@ -323,15 +323,17 @@ public final class VcPcFast implements IGraphSearch {
      * @return a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public Graph search() {
-        this.logger.log("info", "Starting VCCPC algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting VCCPC algorithm");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
+
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
         VcFas fas = new VcFas(getIndependenceTest());
         this.definitelyNonadjacencies = new HashSet<>();
-
-//        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
         long startTime = MillisecondTimes.timeMillis();
 
@@ -351,7 +353,7 @@ public final class VcPcFast implements IGraphSearch {
         if (this.verbose) {
             System.out.println("CPC orientation...");
         }
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, allNodes);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, allNodes, verbose);
         orientUnshieldedTriples(this.knowledge, getIndependenceTest(), getDepth());
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
         MeekRules meekRules = new MeekRules();
@@ -538,12 +540,13 @@ public final class VcPcFast implements IGraphSearch {
         System.out.println("# of Apparent Nonadj: " + this.apparentlyNonadjacencies.size());
         System.out.println("# of Definite Nonadj: " + this.definitelyNonadjacencies.size());
 
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
+            TetradLogger.getInstance().forceLogMessage("\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().forceLogMessage("Finishing CPC algorithm.");
+        }
 
-        TetradLogger.getInstance().log("apparentlyNonadjacencies", "\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
-        TetradLogger.getInstance().log("definitelyNonadjacencies", "\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
-        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
-        TetradLogger.getInstance().flush();
         return this.graph;
     }
 
@@ -576,7 +579,7 @@ public final class VcPcFast implements IGraphSearch {
 
     private void orientUnshieldedTriples(Knowledge knowledge,
                                          IndependenceTest test, int depth) {
-        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
+        TetradLogger.getInstance().forceLogMessage("Starting Collider Orientation:");
 
 //        System.out.println("orientUnshieldedTriples 1");
 
@@ -611,7 +614,8 @@ public final class VcPcFast implements IGraphSearch {
                         this.graph.setEndpoint(x, y, Endpoint.ARROW);
                         this.graph.setEndpoint(z, y, Endpoint.ARROW);
 
-                        TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(x, y, z));
+                        String message = LogUtilsSearch.colliderOrientedMsg(x, y, z);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     }
 
                     this.colliderTriples.add(new Triple(x, y, z));
@@ -627,7 +631,7 @@ public final class VcPcFast implements IGraphSearch {
             }
         }
 
-        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
+        TetradLogger.getInstance().forceLogMessage("Finishing Collider Orientation.");
     }
 
     /**
@@ -663,7 +667,7 @@ public final class VcPcFast implements IGraphSearch {
 
 
         _nodes.remove(z);
-        TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
+        TetradLogger.getInstance().forceLogMessage("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
         int _depth = depth;
         if (_depth == -1) {
@@ -704,7 +708,7 @@ public final class VcPcFast implements IGraphSearch {
 
             _nodes = new ArrayList<>(graph.getAdjacentNodes(z));
             _nodes.remove(x);
-            TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
+            TetradLogger.getInstance().forceLogMessage("Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
             _depth = depth;
             if (_depth == -1) {

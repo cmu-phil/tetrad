@@ -597,7 +597,7 @@ public class TestFges {
             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
             fges.setVerbose(true);
-            fges.setNumThreads(10);
+            fges.setNumThreads(1);
             Graph CPDAG1 = fges.search();
             Graph CPDAG2 = GraphTransforms.cpdagForDag(dag);
             assertEquals(CPDAG2, CPDAG1);

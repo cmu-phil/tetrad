@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.session.SessionNode;
+import edu.cmu.tetradapp.session.SessionNode;
 
 import javax.swing.*;
 import javax.swing.event.TreeModelListener;
@@ -96,7 +96,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
      *
      * @return a {@link java.lang.Class} object
      */
-    public Class getSelectedModel() {
+    public Class<?> getSelectedModel() {
         TreePath path = this.tree.getSelectionPath();
 
         if (path == null) {
@@ -159,7 +159,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
     private String getModelTypeFromSessionNode(SessionNode sessionNode, ChooserTreeModel model) {
 
         // Assumes the tree will always be of depth 2.
-        Class clazz = sessionNode.getLastModelClass();
+        Class<?> clazz = sessionNode.getLastModelClass();
         Object root = model.getRoot();
 
         for (int i = 0; i < model.getChildCount(root); i++) {
@@ -204,7 +204,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         JButton info = new JButton("Help");
 
         info.addActionListener(e -> {
-            Class model = getSelectedModel();
+            Class<?> model = getSelectedModel();
             if (model == null) {
                 JOptionPane.showMessageDialog(this, "No node selected. Select" +
                         " a node to get help for it.");
@@ -236,9 +236,9 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
     private static class ModelWrapper {
 
         private final String name;
-        private final Class model;
+        private final Class<?> model;
 
-        public ModelWrapper(String name, Class model) {
+        public ModelWrapper(String name, Class<?> model) {
             this.name = name;
             this.model = model;
         }

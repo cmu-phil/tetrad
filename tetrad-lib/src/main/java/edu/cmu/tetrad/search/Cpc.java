@@ -105,8 +105,12 @@ public final class Cpc implements IGraphSearch {
      * @return The e-pattern for the search, which is a graphical representation of a set of possible CPDAGs.
      */
     public Graph search() {
-        this.logger.log("info", "Starting CPC algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting CPC algorithm");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
+
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
@@ -147,8 +151,10 @@ public final class Cpc implements IGraphSearch {
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
-        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+            TetradLogger.getInstance().forceLogMessage("Finishing CPC algorithm.");
+        }
 
         this.colliderTriples = search.getColliderTriples();
         this.noncolliderTriples = search.getNoncolliderTriples();
@@ -315,23 +321,25 @@ public final class Cpc implements IGraphSearch {
 
 
     private void logTriples() {
-        TetradLogger.getInstance().log("info", "\nCollider triples:");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("\nCollider triples:");
 
-        for (Triple triple : this.colliderTriples) {
-            TetradLogger.getInstance().log("info", "Collider: " + triple);
-        }
+            for (Triple triple : this.colliderTriples) {
+                TetradLogger.getInstance().forceLogMessage("Collider: " + triple);
+            }
 
-        TetradLogger.getInstance().log("info", "\nNoncollider triples:");
+            TetradLogger.getInstance().forceLogMessage("\nNoncollider triples:");
 
-        for (Triple triple : this.noncolliderTriples) {
-            TetradLogger.getInstance().log("info", "Noncollider: " + triple);
-        }
+            for (Triple triple : this.noncolliderTriples) {
+                TetradLogger.getInstance().forceLogMessage("Noncollider: " + triple);
+            }
 
-        TetradLogger.getInstance().log("info", "\nAmbiguous triples (i.e. list of triples for which " +
-                "\nthere is ambiguous data about whether they are colliders or not):");
+            TetradLogger.getInstance().forceLogMessage("\nAmbiguous triples (i.e. list of triples for which " +
+                    "\nthere is ambiguous data about whether they are colliders or not):");
 
-        for (Triple triple : getAmbiguousTriples()) {
-            TetradLogger.getInstance().log("info", "Ambiguous: " + triple);
+            for (Triple triple : getAmbiguousTriples()) {
+                TetradLogger.getInstance().forceLogMessage("Ambiguous: " + triple);
+            }
         }
     }
 }

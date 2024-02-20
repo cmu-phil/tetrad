@@ -54,8 +54,6 @@ public final class SimulationUtils {
                 return new ConditionalGaussianSimulation(randomGraph);
             case SimulationTypes.TIME_SERIES:
                 return new TimeSeriesSemSimulation(randomGraph);
-            case SimulationTypes.BOOLEAN_GLASS_SIMULATION:
-                return new BooleanGlassSimulation(randomGraph);
             default:
                 throw new IllegalArgumentException(
                         String.format("Unknown simulation type %s.", simulationType));

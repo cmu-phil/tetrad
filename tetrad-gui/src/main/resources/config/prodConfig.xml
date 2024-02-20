@@ -78,7 +78,7 @@
                     <event id="info" description="Information" default="on"/>
                     <event id="graph" description="Graph" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.DagFromCpdagWrapper
+                <model-class>edu.cmu.tetradapp.model.DagFromCPDAGWrapper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.GraphEditor</editor-class>
             </model>
@@ -109,7 +109,7 @@
                     <event id="info" description="Information" default="on"/>
                     <event id="cpdag" description="CPDAG" default="on"/>
                 </logger>
-                <model-class>edu.cmu.tetradapp.model.CpdagFromDagGraphWrapper
+                <model-class>edu.cmu.tetradapp.model.CPDAGFromDagGraphWrapper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.GraphEditor
                 </editor-class>
@@ -352,7 +352,7 @@
                     <event id="data" description="Data"/>
                 </logger>
                 <model-class>
-                    edu.cmu.tetradapp.model.datamanip.DeterminismWrapper
+                    edu.cmu.tetradapp.model.datamanip.DeterminismWraper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
                 <params-editor-class>
@@ -1124,7 +1124,7 @@
             </model>
             <model name="Model Fit" acronym="Model Fit"
                    help="Model Fit" category="Simulation-Algorithm Comparisons">
-                <model-class>edu.cmu.tetradapp.model.CpdagFitModel
+                <model-class>edu.cmu.tetradapp.model.CPDAGFitModel
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.CpdagFitEditor</editor-class>
             </model>

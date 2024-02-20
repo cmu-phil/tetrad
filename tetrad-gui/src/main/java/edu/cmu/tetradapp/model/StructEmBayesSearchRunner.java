@@ -26,10 +26,10 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.FactoredBayesStructuralEM;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -273,8 +273,8 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     }
 
     private void log() {
-        TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM");
-        TetradLogger.getInstance().log("im", "" + this.estimatedBayesIm);
+        TetradLogger.getInstance().forceLogMessage("EM-Estimated Bayes IM");
+        TetradLogger.getInstance().forceLogMessage("" + this.estimatedBayesIm);
     }
 }
 

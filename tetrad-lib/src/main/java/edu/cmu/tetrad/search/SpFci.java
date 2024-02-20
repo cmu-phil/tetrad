@@ -117,8 +117,10 @@ public final class SpFci implements IGraphSearch {
     public Graph search() {
         List<Node> nodes = getIndependenceTest().getVariables();
 
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting SP-FCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         this.graph = new EdgeListGraph(nodes);
 
@@ -330,7 +332,7 @@ public final class SpFci implements IGraphSearch {
      */
     private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         if (verbose) {
-            this.logger.log("info", "Starting BK Orientation.");
+            TetradLogger.getInstance().forceLogMessage("Starting BK Orientation.");
         }
 
         for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -350,7 +352,8 @@ public final class SpFci implements IGraphSearch {
 
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
+            TetradLogger.getInstance().forceLogMessage(message);
         }
 
         for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
@@ -370,11 +373,12 @@ public final class SpFci implements IGraphSearch {
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
+            TetradLogger.getInstance().forceLogMessage(message);
         }
 
         if (verbose) {
-            this.logger.log("info", "Finishing BK Orientation.");
+            TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
         }
     }
 

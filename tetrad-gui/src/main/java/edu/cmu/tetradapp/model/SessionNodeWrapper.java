@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.session.SessionNode;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionNode;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -34,7 +34,7 @@ import java.io.ObjectInputStream;
  *
  * @author josephramsey
  * @version $Id: $Id
- * @see edu.cmu.tetrad.session.SessionNode
+ * @see SessionNode
  * @see edu.cmu.tetrad.graph.GraphNode
  * @see SessionWrapper
  */
@@ -62,7 +62,7 @@ public class SessionNodeWrapper extends GraphNode {
      * Wraps the given SessionNode as a SessionNodeWrapper for use in a SessionWrapper. The name of the SessionNode is
      * used as the name of the SessionNodeWrapper. A button type may optionally be set.
      *
-     * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param sessionNode a {@link SessionNode} object
      */
     public SessionNodeWrapper(SessionNode sessionNode) {
         super(sessionNode.getDisplayName());

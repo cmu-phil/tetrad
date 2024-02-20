@@ -22,9 +22,9 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;
@@ -82,7 +82,7 @@ public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotA
         LayoutUtil.fruchtermanReingoldLayout(graph3);
         setGraph(graph3);
 
-        TetradLogger.getInstance().log("info", "\nGenerating CPDAG from DAG.");
+        TetradLogger.getInstance().forceLogMessage("\nGenerating CPDAG from DAG.");
     }
 
     /**

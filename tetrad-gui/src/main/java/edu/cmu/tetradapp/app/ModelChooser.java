@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.session.SessionNode;
+import edu.cmu.tetradapp.session.SessionNode;
 
 import java.util.List;
 
@@ -55,7 +55,7 @@ public interface ModelChooser {
      *
      * @return the model class that was selected or null if nothing was selected.
      */
-    Class getSelectedModel();
+    Class<?> getSelectedModel();
 
     /**
      * <p>setModelConfigs.</p>

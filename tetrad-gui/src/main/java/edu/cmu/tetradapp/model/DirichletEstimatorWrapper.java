@@ -25,10 +25,10 @@ import edu.cmu.tetrad.bayes.DirichletEstimator;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -210,8 +210,8 @@ public class DirichletEstimatorWrapper implements SessionModel {
     }
 
     private void log(DirichletBayesIm im) {
-        TetradLogger.getInstance().log("info", "Estimated Dirichlet Bayes IM");
-        TetradLogger.getInstance().log("im", "" + im);
+        TetradLogger.getInstance().forceLogMessage("Estimated Dirichlet Bayes IM");
+        TetradLogger.getInstance().forceLogMessage("" + im);
         TetradLogger.getInstance().reset();
     }
 

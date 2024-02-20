@@ -104,5 +104,4 @@ public class IndependenceTestModel implements Serializable, Comparable<Independe
     public String getDescription() {
         return this.description;
     }
-
 }

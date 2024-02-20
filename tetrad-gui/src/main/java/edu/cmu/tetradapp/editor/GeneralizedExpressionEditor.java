@@ -49,86 +49,71 @@ import java.util.prefs.Preferences;
  */
 class GeneralizedExpressionEditor extends JComponent {
     /**
-     * The color that selected text is being rendered. Either black or red.
-     */
-    private Color color = Color.BLACK;
-
-    /**
-     * The start index of selected text.
-     */
-    private int start;
-
-    /**
-     * The width of the selected text.
-     */
-    private int stringWidth;
-
-    /**
-     * The time that the selectded text should be colored. (Must do this all indirectly using a thread because we cannot
-     * listen to the text pane.
-     */
-    private long recolorTime = MillisecondTimes.timeMillis();
-
-    /**
      * The text pane in which parsed text is rendered, typed, and colored.
      */
     private final JTextPane expressionTextPane;
-
     /**
      * The generalized SEM PM that's being edited.
      */
     private final GeneralizedSemPm semPm;
-
-    /**
-     * The latest parser that was used to parse the expression in <code>expressionTextPane</code>. Needed to get the
-     * most up to date list of parameters.
-     */
-    private ExpressionParser latestParser;
-
-    /**
-     * The node that's being edited, if a node is being edited; otherwise null.
-     */
-    private Node node;
-
     /**
      * The error node for <code>node</code>.
      */
     private final Node errorNode;
-
-    /**
-     * The parameter that's being edited, if a parameter is being edited; otherwise null.
-     */
-    private String parameter;
-
     /**
      * A display showing the equation or distribution that would result from taking the most recent parsable text from
      * <code>expressionTextPane</code>, writing the variable in front of it with = or ~, and appending the error term
-     * if
-     * it's not already in the expression.
+     * if it's not in the expression.
      */
     private final JTextArea resultTextPane;
-
-    /**
-     * The string described for <code>resultTextPane</code>, without the "variable =" or "parameter ~".
-     */
-    private String expressionString;
-
     /**
      * If a node is being edited, this is the list of variables other than the node and its parents.
      */
     private final Set<String> otherVariables;
-
     /**
      * A label listing the parameters referenced by <code>expressionText</code>, according to the latest parser. This
      * list changes as the expression is edited.
      */
     private final JLabel referencedParametersLabel;
-
     /**
      * A checkbox that, if selected, causes the error term to be automatically added to the expression if it's not
      * already there.
      */
     private final JCheckBox errorTermCheckBox;
+    /**
+     * The color that selected text is being rendered. Either black or red.
+     */
+    private Color color = Color.BLACK;
+    /**
+     * The start index of selected text.
+     */
+    private int start;
+    /**
+     * The width of the selected text.
+     */
+    private int stringWidth;
+    /**
+     * The time that the selected text should be colored. (Must do this all indirectly using a thread because we cannot
+     * listen to the text pane.)
+     */
+    private long recolorTime = MillisecondTimes.timeMillis();
+    /**
+     * The latest parser that was used to parse the expression in <code>expressionTextPane</code>. Needed to get the
+     * most up-to-date list of parameters.
+     */
+    private ExpressionParser latestParser;
+    /**
+     * The node that's being edited if a node is being edited; otherwise null.
+     */
+    private Node node;
+    /**
+     * The parameter that's being edited, if a parameter is being edited; otherwise null.
+     */
+    private String parameter;
+    /**
+     * The string described for <code>resultTextPane</code>, without the "variable =" or "parameter ~".
+     */
+    private String expressionString;
 
     //============================================CONSTRUCTORS==================================================//
 
@@ -271,38 +256,6 @@ class GeneralizedExpressionEditor extends JComponent {
             }
         });
 
-        class ColorThread extends Thread {
-            private boolean stop;
-
-            @Override
-            public void run() {
-                if (Thread.currentThread().isInterrupted()) return;
-                
-                StyledDocument document = (StyledDocument) expressionTextPane.getDocument();
-
-                Style red = expressionTextPane.addStyle("Red", null);
-                StyleConstants.setForeground(red, Color.RED);
-
-                Style black = expressionTextPane.addStyle("Black", null);
-                StyleConstants.setForeground(black, Color.BLACK);
-
-                while (!stop) {
-                    if (MillisecondTimes.timeMillis() < recolorTime) {
-                        continue;
-                    }
-
-                    if (color == Color.RED) {
-                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Red"), true);
-                    } else if (color == Color.BLACK) {
-                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Black"), true);
-                    }
-                }
-            }
-
-            public void scheduleStop() {
-                stop = true;
-            }
-        }
 
         ColorThread thread = new ColorThread();
         thread.start();
@@ -331,29 +284,6 @@ class GeneralizedExpressionEditor extends JComponent {
 
         this.setFocusCycleRoot(true);
         expressionTextPane.grabFocus();
-    }
-
-    @NotNull
-    private JButton getjButton(JComboBox<String> expressionsBox, Map<String, String> expressionsMap) {
-        JButton insertButton = new JButton("Insert");
-
-        insertButton.addActionListener(actionEvent -> {
-            String token = (String) expressionsBox.getSelectedItem();
-            String signature;
-
-            if ("-New Parameter-".equals(token)) {
-                signature = GeneralizedExpressionEditor.this.nextParameterName();
-            } else {
-                signature = expressionsMap.get(token);
-            }
-
-            while (signature.contains("%")) {
-                signature = signature.replaceFirst("%", GeneralizedExpressionEditor.this.nextParameterName());
-            }
-
-            expressionTextPane.replaceSelection(signature);
-        });
-        return insertButton;
     }
 
     /**
@@ -483,39 +413,6 @@ class GeneralizedExpressionEditor extends JComponent {
             }
         });
 
-        class ColorThread extends Thread {
-            private boolean stop;
-
-            @Override
-            public void run() {
-                StyledDocument document = (StyledDocument) expressionTextPane.getDocument();
-
-                Style red = expressionTextPane.addStyle("Red", null);
-                StyleConstants.setForeground(red, Color.RED);
-
-                Style black = expressionTextPane.addStyle("Black", null);
-                StyleConstants.setForeground(black, Color.BLACK);
-
-                while (!stop) {
-                    if (Thread.currentThread().isInterrupted()) return;
-                    
-                    if (MillisecondTimes.timeMillis() < recolorTime) {
-                        continue;
-                    }
-
-                    if (color == Color.RED) {
-                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Red"), true);
-                    } else if (color == Color.BLACK) {
-                        document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Black"), true);
-                    }
-                }
-            }
-
-            public void scheduleStop() {
-                stop = true;
-            }
-        }
-
         ColorThread thread = new ColorThread();
         thread.start();
 
@@ -530,20 +427,43 @@ class GeneralizedExpressionEditor extends JComponent {
         expressionTextPane.grabFocus();
     }
 
+    @NotNull
+    private JButton getjButton(JComboBox<String> expressionsBox, Map<String, String> expressionsMap) {
+        JButton insertButton = new JButton("Insert");
+
+        insertButton.addActionListener(actionEvent -> {
+            String token = (String) expressionsBox.getSelectedItem();
+            String signature;
+
+            if ("-New Parameter-".equals(token)) {
+                signature = GeneralizedExpressionEditor.this.nextParameterName();
+            } else {
+                signature = expressionsMap.get(token);
+            }
+
+            while (signature.contains("%")) {
+                signature = signature.replaceFirst("%", GeneralizedExpressionEditor.this.nextParameterName());
+            }
+
+            expressionTextPane.replaceSelection(signature);
+        });
+        return insertButton;
+    }
+
     //==================================================PUBLIC METHODS==========================================//
 
     /**
      * <p>Getter for the field <code>expressionString</code>.</p>
      *
      * @return the expression string (that is, the edited string, with error term appended if necessary, without
-     * "variable = " or "parameter ~". This is the final product of the editing.
+     * "variable =" or "parameter ~". This is the final product of the editing.)
      */
     public String getExpressionString() {
         return expressionString;
     }
 
     /**
-     * @return the next parameter in the sequence base1, base2,... that's not already being used by the SEM PM.
+     * @return the next parameter in the sequence base1, base2,...the SEM PM has not used that.
      */
     private String nextParameterName() {
         Set<String> parameters = semPm.getParameters();
@@ -680,11 +600,7 @@ class GeneralizedExpressionEditor extends JComponent {
 
         List<String> parametersList = new ArrayList<>(parameters);
         StringBuilder buf = new StringBuilder();
-        Result result = new Result(parametersList, buf);
-        return result;
-    }
-
-    private record Result(List<String> parametersList, StringBuilder buf) {
+        return new Result(parametersList, buf);
     }
 
     private String[] getExpressionTokens(GeneralizedSemPm semPm, Node node, Map<String, String> expressionsMap) {
@@ -705,7 +621,7 @@ class GeneralizedExpressionEditor extends JComponent {
 
     private Map<String, String> getExpressionMap(GeneralizedSemPm semPm, Node node) {
         // These are the expressions the user can choose from. The display form is on the left, and the template
-        // form is on the. Obviously you use a % for a new parameter. In case you want to change it.
+        // form is on the right. You use a % for a new parameter. In case you want to change it.
         String[][] expressions = {
                 {"+", " + "},
                 {"-", " - "},
@@ -773,6 +689,43 @@ class GeneralizedExpressionEditor extends JComponent {
 
         return expressionsMap;
     }
+
+    private record Result(List<String> parametersList, StringBuilder buf) {
+    }
+
+    private class ColorThread extends Thread {
+        private boolean stop;
+
+        @Override
+        public void run() {
+            if (Thread.currentThread().isInterrupted()) return;
+
+            StyledDocument document = (StyledDocument) expressionTextPane.getDocument();
+
+            Style red = expressionTextPane.addStyle("Red", null);
+            StyleConstants.setForeground(red, Color.RED);
+
+            Style black = expressionTextPane.addStyle("Black", null);
+            StyleConstants.setForeground(black, Color.BLACK);
+
+            while (!stop) {
+                if (MillisecondTimes.timeMillis() < recolorTime) {
+                    continue;
+                }
+
+                if (color == Color.RED) {
+                    document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Red"), true);
+                } else if (color == Color.BLACK) {
+                    document.setCharacterAttributes(start, stringWidth, expressionTextPane.getStyle("Black"), true);
+                }
+            }
+        }
+
+        public void scheduleStop() {
+            stop = true;
+        }
+    }
+
 }
 
 

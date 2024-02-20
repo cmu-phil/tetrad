@@ -53,12 +53,6 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
     // The static ForkJoinPool instance.
     private final ForkJoinPool pool;
-
-    {
-        int parallelism = Runtime.getRuntime().availableProcessors();
-        pool = new ForkJoinPool(parallelism);
-    }
-
     // The minimum number of operations to do before parallelizing.
     private final int minChunk = 100;
     // A utility map to help with orientation.
@@ -126,20 +120,21 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     private Map<OrderedPair<Node>, Set<Arrow>> lookupArrows;
     // Map from variables to their column indices in the data set.
     private ConcurrentMap<Node, Integer> hashIndices;
-
-
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
     // Where printed output is sent.
     private PrintStream out = System.out;
-
-
     // A initial adjacencies graph.
     private Graph adjacencies;
     // True if it is assumed that zero effect adjacencies are not in the graph.
     private boolean faithfulnessAssumed = false;
     // Graph input by user as super-structure to search over
     private Graph graphToOrient;
+
+    {
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        pool = new ForkJoinPool(parallelism);
+    }
 
     /**
      * The data set must either be all continuous or all discrete.
@@ -332,8 +327,9 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
 
-        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.flush();
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+        }
 
         return graph;
 
@@ -685,7 +681,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
      * @param graph The graph in the state prior to the forward equivalence search.
      */
     private void fes(Graph graph) {
-        TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
+        TetradLogger.getInstance().forceLogMessage("** FORWARD EQUIVALENCE SEARCH");
 
         while (!this.sortedArrows.isEmpty()) {
             Arrow arrow = this.sortedArrows.first();
@@ -750,7 +746,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
      * @param graph The graph in the state after the forward equivalence search.
      */
     private void bes(Graph graph) {
-        TetradLogger.getInstance().log("info", "** BACKWARD EQUIVALENCE SEARCH");
+        TetradLogger.getInstance().forceLogMessage("** BACKWARD EQUIVALENCE SEARCH");
 
         initializeArrowsBackward(graph);
 
@@ -1107,8 +1103,9 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
         if (this.log) {
             String label = this.trueGraph != null && trueEdge != null ? "*" : "";
-            TetradLogger.getInstance().log("insertedEdges", graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
-                    " " + t + " " + bump + " " + label);
+            String message = graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
+                    " " + t + " " + bump + " " + label;
+            TetradLogger.getInstance().forceLogMessage(message);
         }
 
         int numEdges = graph.getNumEdges();
@@ -1129,8 +1126,9 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
             graph.addDirectedEdge(_t, y);
 
             if (this.log && this.verbose) {
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(_t, y));
+                String message = "--- Directing " + oldEdge + " to " +
+                        graph.getEdge(_t, y);
+                TetradLogger.getInstance().forceLogMessage(message);
                 this.out.println("--- Directing " + oldEdge + " to " +
                         graph.getEdge(_t, y));
             }
@@ -1158,8 +1156,9 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         if (this.log) {
             Edge oldEdge = graph.getEdge(x, y);
             String label = this.trueGraph != null && trueEdge != null ? "*" : "";
-            TetradLogger.getInstance().log("deletedEdges", (graph.getNumEdges() - 1) + ". DELETE " + oldEdge +
-                    " " + subset + " (" + bump + ") " + label);
+            String message = (graph.getNumEdges() - 1) + ". DELETE " + oldEdge +
+                    " " + subset + " (" + bump + ") " + label;
+            TetradLogger.getInstance().forceLogMessage(message);
             this.out.println((graph.getNumEdges()) + ". DELETE " + oldEdge +
                     " " + subset + " (" + bump + ") " + label);
         }
@@ -1171,8 +1170,9 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
             graph.addDirectedEdge(y, h);
 
             if (this.log) {
-                TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                        graph.getEdge(y, h));
+                String message = "--- Directing " + oldEdge + " to " +
+                        graph.getEdge(y, h);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
 
             if (this.verbose) {
@@ -1194,8 +1194,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
                 graph.addDirectedEdge(x, h);
 
                 if (this.log) {
-                    TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldEdge + " to " +
-                            edge);
+                    TetradLogger.getInstance().forceLogMessage("--- Directing " + oldEdge + " to " +
+                                        edge);
                 }
 
                 if (this.verbose) {
@@ -1254,7 +1254,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
             if (!graph.paths().isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdges(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
-                TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
+                String message = "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
         for (Edge edge : graph.getEdges()) {
@@ -1269,7 +1270,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
                     if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
-                        TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                        String message = "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     }
                 }
 
@@ -1277,7 +1279,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
                     if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
-                        TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                        String message = "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     }
                 }
             } else if (this.knowledge.isForbidden(B, A)) {
@@ -1288,14 +1291,16 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
                     if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
-                        TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                        String message = "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     }
                 }
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
                     if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
-                        TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                        String message = "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     }
                 }
             }
@@ -1363,8 +1368,8 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         visited.addAll(reorientNode(graph, x));
         visited.addAll(reorientNode(graph, y));
 
-        if (TetradLogger.getInstance().isEventActive("rebuiltCPDAGs")) {
-            TetradLogger.getInstance().log("rebuiltCPDAGs", "Rebuilt CPDAG = " + graph);
+        if (true) {
+            TetradLogger.getInstance().forceLogMessage("Rebuilt CPDAG = " + graph);
         }
 
         return visited;

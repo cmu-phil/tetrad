@@ -105,8 +105,10 @@ public final class SvarGfci implements IGraphSearch {
      * @return a PAG.
      */
     public Graph search() {
-        this.logger.log("info", "Starting svarGFCI algorithm.");
-        this.logger.log("info", "Independence test = " + this.independenceTest + ".");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting svarGFCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
+        }
 
         this.graph = new EdgeListGraph(independenceTest.getVariables());
 
@@ -302,7 +304,7 @@ public final class SvarGfci implements IGraphSearch {
      */
     private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         if (verbose) {
-            this.logger.log("info", "Starting BK Orientation.");
+            TetradLogger.getInstance().forceLogMessage("Starting BK Orientation.");
         }
 
         for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -324,7 +326,8 @@ public final class SvarGfci implements IGraphSearch {
             // Orient to*-&gt;from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             graph.setEndpoint(from, to, Endpoint.CIRCLE);
-            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
+            TetradLogger.getInstance().forceLogMessage(message);
         }
 
         for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
@@ -344,11 +347,12 @@ public final class SvarGfci implements IGraphSearch {
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
+            TetradLogger.getInstance().forceLogMessage(message);
         }
 
         if (verbose) {
-            this.logger.log("info", "Finishing BK Orientation.");
+            TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
         }
     }
 

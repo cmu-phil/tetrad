@@ -21,8 +21,8 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.session.SessionNode;
 import edu.cmu.tetradapp.model.UnlistedSessionModel;
+import edu.cmu.tetradapp.session.SessionNode;
 
 import javax.swing.*;
 import java.awt.*;
@@ -94,9 +94,9 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
     /**
      * <p>getSelectedModel.</p>
      *
-     * @return a {@link java.lang.Class} object
+     * @return a {@link java.lang.Class<?>} object
      */
-    public Class getSelectedModel() {
+    public Class<?> getSelectedModel() {
         ClassWrapper wrapper = (ClassWrapper) this.modelClassesBox.getSelectedItem();
         return wrapper.getWrappedClass();
     }
@@ -108,7 +108,7 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         List<ClassWrapper> wrapperList = new LinkedList<>();
 
         for (SessionNodeModelConfig config : configs) {
-            Class modelClass = config.getModel();
+            Class<?> modelClass = config.getModel();
             if (!(UnlistedSessionModel.class.isAssignableFrom(modelClass))) {
                 wrapperList.add(new ClassWrapper(modelClass, config.getName()));
             }
@@ -199,15 +199,15 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
      * Basic wrapper class.
      */
     private static final class ClassWrapper {
-        private final Class wrappedClass;
+        private final Class<?> wrappedClass;
         private final String name;
 
-        public ClassWrapper(Class wrappedClass, String name) {
+        public ClassWrapper(Class<?> wrappedClass, String name) {
             this.wrappedClass = wrappedClass;
             this.name = name;
         }
 
-        public Class getWrappedClass() {
+        public Class<?> getWrappedClass() {
             return this.wrappedClass;
         }
 

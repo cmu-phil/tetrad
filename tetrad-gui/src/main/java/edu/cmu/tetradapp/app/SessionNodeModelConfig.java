@@ -51,11 +51,11 @@ public interface SessionNodeModelConfig {
 
 
     /**
-     * <p>getModel.</p>
+     * Returns the model class associated with the configuration.
      *
-     * @return the <code>Class</code> that represents the model.
+     * @return the model class
      */
-    Class getModel();
+    Class<?> getModel();
 
 
     /**

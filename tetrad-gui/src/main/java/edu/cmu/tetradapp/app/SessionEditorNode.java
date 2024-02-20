@@ -22,7 +22,6 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.*;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.EditorWindow;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
@@ -30,6 +29,7 @@ import edu.cmu.tetradapp.editor.ParameterEditor;
 import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.UnlistedSessionModel;
+import edu.cmu.tetradapp.session.*;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -59,8 +59,8 @@ import java.util.Set;
  * @version $Id: $Id
  * @see SessionEditorWorkbench
  * @see edu.cmu.tetrad.graph.Edge
- * @see edu.cmu.tetrad.session.SessionNode
- * @see edu.cmu.tetrad.session.Session
+ * @see SessionNode
+ * @see Session
  */
 public final class SessionEditorNode extends DisplayNode {
 
@@ -93,7 +93,7 @@ public final class SessionEditorNode extends DisplayNode {
      * Wraps the given SessionNodeWrapper as a SessionEditorNode.
      *
      * @param modelNode       a {@link edu.cmu.tetradapp.model.SessionNodeWrapper} object
-     * @param simulationStudy a {@link edu.cmu.tetrad.session.SimulationStudy} object
+     * @param simulationStudy a {@link SimulationStudy} object
      */
     public SessionEditorNode(SessionNodeWrapper modelNode, SimulationStudy simulationStudy) {
         setModelNode(modelNode);
@@ -149,7 +149,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         if (nodeName != null) {
             String baseName = SessionEditorNode.extractBase(nodeName);
-            Class[] newModelClasses = SessionEditorNode.modelClasses(baseName);
+            Class<?>[] newModelClasses = SessionEditorNode.modelClasses(baseName);
 
             if (newModelClasses != null) {
                 sessionNode.setModelClasses(newModelClasses);
@@ -722,7 +722,7 @@ public final class SessionEditorNode extends DisplayNode {
         this.popup.add(createModel);
 
         SessionModel model = getSessionNode().getModel();
-        Class modelClass = (model == null)
+        Class<?> modelClass = (model == null)
                 ? determineTheModelClass(getSessionNode())
                 : model.getClass();
         if (getSessionNode().existsParameterizedConstructor(modelClass)) {
@@ -774,7 +774,7 @@ public final class SessionEditorNode extends DisplayNode {
         return this.popup;
     }
 
-    private ParameterEditor getParameterEditor(Class modelClass) {
+    private ParameterEditor getParameterEditor(Class<?> modelClass) {
         SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
         return modelConfig.getParameterEditorInstance();
     }
@@ -926,7 +926,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
 
         SessionNode sessionNode = getSessionNode();
-        Class modelClass = determineTheModelClass(sessionNode);
+        Class<?> modelClass = determineTheModelClass(sessionNode);
 
         if (modelClass == null && !simulation) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
@@ -961,10 +961,10 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * <p>determineTheModelClass.</p>
      *
-     * @param sessionNode a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @param sessionNode a {@link SessionNode} object
      * @return the model class, or null if no model class was determined.
      */
-    public Class determineTheModelClass(SessionNode sessionNode) {
+    public Class<?> determineTheModelClass(SessionNode sessionNode) {
 
         // The config file lists which model classes the node can be
         // associated with, based on the node's type.
@@ -987,11 +987,11 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * @return the selected model class, or null if no model class was selected.
      */
-    private Class getModelClassFromUser(Class[] modelClasses) {
+    private Class<?> getModelClassFromUser(Class[] modelClasses) {
 
         // Count the number of model classes that can be listed for the user;
         // if there's only one, don't ask the user for input.
-        List<Class> reducedList = new LinkedList<>();
+        List<Class<?>> reducedList = new LinkedList<>();
 
         for (Class modelClass : modelClasses) {
             if (!(UnlistedSessionModel.class.isAssignableFrom(modelClass))) {
@@ -1021,11 +1021,11 @@ public final class SessionEditorNode extends DisplayNode {
         }
     }
 
-    private void showInfoBoxForModel(SessionNode sessionNode, Class[] modelClasses) {
+    private void showInfoBoxForModel(SessionNode sessionNode, Class<?>[] modelClasses) {
 
         // Count the number of model classes that can be listed for the user;
         // if there's only one, don't ask the user for input.
-        List<Class> reducedList = new LinkedList<>();
+        List<Class<?>> reducedList = new LinkedList<>();
 
         for (Class modelClass : modelClasses) {
             if (!(UnlistedSessionModel.class.isAssignableFrom(modelClass))) {
@@ -1074,7 +1074,7 @@ public final class SessionEditorNode extends DisplayNode {
      * @param parentModels an array of {@link java.lang.Object} objects
      * @return a boolean
      */
-    public boolean editParameters(Class modelClass, Parameters params,
+    public boolean editParameters(Class<?> modelClass, Parameters params,
                                   Object[] parentModels) {
         if (parentModels == null) {
             throw new NullPointerException("Parent models array is null.");
@@ -1121,7 +1121,7 @@ public final class SessionEditorNode extends DisplayNode {
     /**
      * <p>getSessionNode.</p>
      *
-     * @return a {@link edu.cmu.tetrad.session.SessionNode} object
+     * @return a {@link SessionNode} object
      */
     public SessionNode getSessionNode() {
         SessionNodeWrapper wrapper = (SessionNodeWrapper) this.getModelNode();
@@ -1140,7 +1140,7 @@ public final class SessionEditorNode extends DisplayNode {
      */
     private void createParamObjects(SessionEditorNode sessionEditorNode) {
         SessionNode sessionNode = sessionEditorNode.getSessionNode();
-        Class[] modelClasses = sessionNode.getModelClasses();
+        Class<?>[] modelClasses = sessionNode.getModelClasses();
         for (Class clazz : modelClasses) {
             // A parameter class might exist if this session was read
             // in from a file.

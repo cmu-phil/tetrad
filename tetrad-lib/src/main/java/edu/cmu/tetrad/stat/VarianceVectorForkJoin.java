@@ -60,20 +60,10 @@ public class VarianceVectorForkJoin implements Variance {
     public float[] compute(boolean biasCorrected) {
         float[] means = new float[this.numOfCols];
 
-        ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
-
-        try {
-            pool.invoke(new MeanAction(this.data, means, 0, this.numOfCols - 1));
-            pool.invoke(new VarianceAction(this.data, means, biasCorrected, 0, this.numOfCols - 1));
-        } catch (Exception e) {
-            Thread.currentThread().interrupt();
-            throw e;
-        }
-
-        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Processing timed out.");
-        }
+        ForkJoinPool pool = ForkJoinPool.commonPool();
+        pool.invoke(new MeanAction(this.data, means, 0, this.numOfCols - 1));
+        pool.invoke(new VarianceAction(this.data, means, biasCorrected, 0, this.numOfCols - 1));
+        pool.shutdown();
 
         return means;
     }

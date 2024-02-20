@@ -99,9 +99,10 @@ public final class Cfci implements IGraphSearch {
      */
     public Graph search() {
         long beginTime = MillisecondTimes.timeMillis();
+
         if (this.verbose) {
-            this.logger.log("info", "Starting FCI algorithm.");
-            this.logger.log("info", "Independence test = " + this.independenceTest + ".");
+            TetradLogger.getInstance().forceLogMessage("Starting CFCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
         }
 
         setMaxReachablePathLength(this.maxReachablePathLength);
@@ -131,7 +132,7 @@ public final class Cfci implements IGraphSearch {
             long time2 = MillisecondTimes.timeMillis();
 
             if (this.verbose) {
-                this.logger.log("info", "Step C: " + (time2 - time1) / 1000. + "s");
+                TetradLogger.getInstance().forceLogMessage("Step C: " + (time2 - time1) / 1000. + "s");
             }
 
             // Step FCI D.
@@ -147,7 +148,7 @@ public final class Cfci implements IGraphSearch {
             long time4 = MillisecondTimes.timeMillis();
 
             if (this.verbose) {
-                this.logger.log("info", "Step D: " + (time4 - time3) / 1000. + "s");
+                TetradLogger.getInstance().forceLogMessage("Step D: " + (time4 - time3) / 1000. + "s");
             }
 
             // Reorient all edges as o-o.
@@ -162,7 +163,7 @@ public final class Cfci implements IGraphSearch {
         long time6 = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
-            this.logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
+            TetradLogger.getInstance().forceLogMessage("Step CI C: " + (time6 - time5) / 1000. + "s");
         }
 
         // Step CI D. (Zhang's step F4.)
@@ -182,7 +183,7 @@ public final class Cfci implements IGraphSearch {
         this.elapsedTime = endTime - beginTime;
 
         if (this.verbose) {
-            this.logger.log("graph", "Returning graph: " + this.graph);
+            TetradLogger.getInstance().forceLogMessage("Returning graph: " + this.graph);
         }
 
         return this.graph;
@@ -267,7 +268,7 @@ public final class Cfci implements IGraphSearch {
 
     private void ruleR0(IndependenceTest test, int depth, SepsetMap sepsets) {
         if (this.verbose) {
-            TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
+            TetradLogger.getInstance().forceLogMessage("Starting Collider Orientation:");
         }
 
         this.ambiguousTriples = new HashSet<>();
@@ -300,7 +301,8 @@ public final class Cfci implements IGraphSearch {
                         getGraph().setEndpoint(z, y, Endpoint.ARROW);
 
                         if (this.verbose) {
-                            TetradLogger.getInstance().log("tripleClassifications", "Collider: " + Triple.pathString(this.graph, x, y, z));
+                            String message = "Collider: " + Triple.pathString(this.graph, x, y, z);
+                            TetradLogger.getInstance().forceLogMessage(message);
                         }
                     }
 
@@ -309,14 +311,15 @@ public final class Cfci implements IGraphSearch {
                     this.ambiguousTriples.add(triple);
                     getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     if (this.verbose) {
-                        TetradLogger.getInstance().log("tripleClassifications", "AmbiguousTriples: " + Triple.pathString(this.graph, x, y, z));
+                        String message = "AmbiguousTriples: " + Triple.pathString(this.graph, x, y, z);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     }
                 }
             }
         }
 
         if (this.verbose) {
-            TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
+            TetradLogger.getInstance().forceLogMessage("Finishing Collider Orientation.");
         }
     }
 
@@ -475,7 +478,7 @@ public final class Cfci implements IGraphSearch {
      */
     private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         if (this.verbose) {
-            this.logger.log("info", "Starting BK Orientation.");
+            TetradLogger.getInstance().forceLogMessage("Starting BK Orientation.");
         }
 
         for (Iterator<KnowledgeEdge> it =
@@ -498,7 +501,8 @@ public final class Cfci implements IGraphSearch {
             graph.setEndpoint(to, from, Endpoint.ARROW);
 
             if (this.verbose) {
-                this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+                String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
 
@@ -529,12 +533,13 @@ public final class Cfci implements IGraphSearch {
             graph.setEndpoint(from, to, Endpoint.ARROW);
 
             if (this.verbose) {
-                this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+                String message = LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to));
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
 
         if (this.verbose) {
-            this.logger.log("info", "Finishing BK Orientation.");
+            TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
         }
     }
 

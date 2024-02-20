@@ -144,9 +144,11 @@ public final class IndTestRegression implements IndependenceTest {
 
         if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, zList, p));
+                String message = LogUtilsSearch.independenceFactMsg(xVar, yVar, zList, p);
+                TetradLogger.getInstance().forceLogMessage(message);
             } else {
-                TetradLogger.getInstance().log("dependencies", LogUtilsSearch.dependenceFactMsg(xVar, yVar, zList, p));
+                String message = LogUtilsSearch.dependenceFactMsg(xVar, yVar, zList, p);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
 
@@ -271,7 +273,7 @@ public final class IndTestRegression implements IndependenceTest {
 
             sb.append("}");
 
-            TetradLogger.getInstance().log("independencies", sb.toString());
+            TetradLogger.getInstance().forceLogMessage(sb.toString());
         }
 
         return determined;

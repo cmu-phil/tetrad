@@ -21,11 +21,11 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.Session;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.EditorWindow;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
+import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.ui.tool.SessionFileTransferHandler;
 import edu.cmu.tetradapp.util.*;
 import org.apache.commons.math3.util.FastMath;
@@ -642,8 +642,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      * it will display a prompt asking the user whether they would like to disable automatic popups.
      */
     private boolean allowAutomaticLogPopup() {
-        Boolean allowed = TetradLogger.getInstance()
-                .isAutomaticLogDisplayEnabled();
+        Boolean allowed = false;
         // ask the user whether they way the feature etc.
         if (allowed == null) {
             final String message = "<html>Whenever Tetrad's logging features are active any generated log <br>"
@@ -671,10 +670,10 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      */
     private class LoggerListener implements TetradLoggerListener {
 
-        public void configurationActived(TetradLoggerEvent evt) {
+        public void configurationActivated(TetradLoggerEvent evt) {
             TetradLoggerConfig config = evt.getTetradLoggerConfig();
             // if logging is actually turned on, then open display.
-            if (TetradLogger.getInstance().isLogging() && config.isActive()
+            if (TetradLogger.getInstance().isLogging() && config.active()
                     && TetradLogger.getInstance().isDisplayLogEnabled()) {
                 // if the log display isn't already up, open it.
                 if (!isDisplayLogging() && allowAutomaticLogPopup()) {
@@ -683,7 +682,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             }
         }
 
-        public void configurationDeactived(TetradLoggerEvent evt) {
+        public void configurationDeactivated(TetradLoggerEvent evt) {
             // do nothing.
         }
 

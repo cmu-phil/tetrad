@@ -26,11 +26,11 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.bayes.MlBayesImObs;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Memorable;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -160,9 +160,9 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
 
     //============================== private methods ============================//
     private void log(BayesIm im) {
-        TetradLogger.getInstance().log("info",
-                "Maximum likelihood Bayes IM: Observed Variables Only");
-        TetradLogger.getInstance().log("im", im.toString());
+        TetradLogger.getInstance().forceLogMessage("Maximum likelihood Bayes IM: Observed Variables Only");
+        String message = im.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**

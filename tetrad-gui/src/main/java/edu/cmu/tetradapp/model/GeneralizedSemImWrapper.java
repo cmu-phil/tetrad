@@ -21,7 +21,6 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
@@ -212,8 +211,9 @@ public class GeneralizedSemImWrapper implements KnowledgeBoxInput {
 
     //======================= Private methods ====================//
     private void log(GeneralizedSemIm im) {
-        TetradLogger.getInstance().log("info", "Generalized SEM IM");
-        TetradLogger.getInstance().log("im", im.toString());
+        TetradLogger.getInstance().forceLogMessage("Generalized SEM IM");
+        String message = im.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**

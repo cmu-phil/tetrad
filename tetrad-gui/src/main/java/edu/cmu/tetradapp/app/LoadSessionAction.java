@@ -21,12 +21,11 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.session.Session;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
+import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
@@ -126,6 +125,7 @@ final class LoadSessionAction extends AbstractAction {
                         try {
                             sessionWrapper = (SessionWrapper) objIn.readObject();
                         } catch (ClassNotFoundException e1) {
+
                             throw e1;
                         } catch (Exception e2) {
                             e2.printStackTrace();
@@ -182,25 +182,20 @@ final class LoadSessionAction extends AbstractAction {
             super(in);
         }
 
-        protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
-            ObjectStreamClass resultClassDescriptor = super.readClassDescriptor(); // initially streams descriptor
-            Class localClass; // the class in the local JVM that this descriptor represents.
-            try {
-                localClass = Class.forName(resultClassDescriptor.getName());
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-                TetradLogger.getInstance().forceLogMessage("No local class for " + resultClassDescriptor.getName());
-                return resultClassDescriptor;
-            }
-            ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);
-            if (localClassDescriptor != null) { // only if class implements serializable
-                long localSUID = localClassDescriptor.getSerialVersionUID();
-                long streamSUID = resultClassDescriptor.getSerialVersionUID();
-                if (streamSUID != localSUID) { // check for serialVersionUID mismatch.
-                    resultClassDescriptor = localClassDescriptor; // Use local class descriptor for deserialization
-                }
-            }
-            return resultClassDescriptor;
+        public Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+            String remappedClassName = mapToCurrentPackageName(desc.getName());
+            return Class.forName(remappedClassName);
+        }
+
+        private String mapToCurrentPackageName(String originalClassName) {
+
+            // Implement this function to correctly map obsolete class names to their current counterparts
+            // The following lines are just examples, should be adapted according to the actual class name changes in your codebase
+            if (originalClassName.contains("tetrad.session"))
+                return originalClassName.replace("tetrad.session", "tetradapp.session");
+
+            // If no special mapping is needed, return the original class name
+            return originalClassName;
         }
     }
 }

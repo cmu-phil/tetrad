@@ -188,7 +188,7 @@ public class SimpleDataLoader {
         ICovarianceMatrix covarianceMatrix = doCovariancePass(reader2, commentMarker,
                 delimiterType, quoteChar, missingValueMarker);
 
-        TetradLogger.getInstance().log("info", "\nData set loaded!");
+        TetradLogger.getInstance().forceLogMessage("\nData set loaded!");
         return covarianceMatrix;
     }
 
@@ -214,7 +214,7 @@ public class SimpleDataLoader {
             ICovarianceMatrix covarianceMatrix = doCovariancePass(reader, commentMarker,
                     delimiter, quoteCharacter, missingValueMarker);
 
-            TetradLogger.getInstance().log("info", "\nCovariance matrix loaded!");
+            TetradLogger.getInstance().forceLogMessage("\nCovariance matrix loaded!");
             return covarianceMatrix;
         } catch (FileNotFoundException e) {
             throw e;
@@ -229,13 +229,13 @@ public class SimpleDataLoader {
 
     private static ICovarianceMatrix doCovariancePass(Reader reader, String commentMarker, DelimiterType delimiterType,
                                                       char quoteChar, String missingValueMarker) {
-        TetradLogger.getInstance().log("info", "\nDATA LOADING PARAMETERS:");
-        TetradLogger.getInstance().log("info", "File type = COVARIANCE");
-        TetradLogger.getInstance().log("info", "Comment marker = " + commentMarker);
-        TetradLogger.getInstance().log("info", "Delimiter type = " + delimiterType);
-        TetradLogger.getInstance().log("info", "Quote char = " + quoteChar);
-        TetradLogger.getInstance().log("info", "Missing value marker = " + missingValueMarker);
-        TetradLogger.getInstance().log("info", "--------------------");
+        TetradLogger.getInstance().forceLogMessage("\nDATA LOADING PARAMETERS:");
+        TetradLogger.getInstance().forceLogMessage("File type = COVARIANCE");
+        TetradLogger.getInstance().forceLogMessage("Comment marker = " + commentMarker);
+        TetradLogger.getInstance().forceLogMessage("Delimiter type = " + delimiterType);
+        TetradLogger.getInstance().forceLogMessage("Quote char = " + quoteChar);
+        TetradLogger.getInstance().forceLogMessage("Missing value marker = " + missingValueMarker);
+        TetradLogger.getInstance().forceLogMessage("--------------------");
 
         Lineizer lineizer = new Lineizer(reader, commentMarker);
 
@@ -280,7 +280,7 @@ public class SimpleDataLoader {
             String _token = st.nextToken();
 
             if ("".equals(_token)) {
-                TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a variable name--ignoring.");
+                TetradLogger.getInstance().forceLogMessage("Parsed an empty token for a variable name--ignoring.");
                 continue;
             }
 
@@ -289,10 +289,10 @@ public class SimpleDataLoader {
 
         String[] varNames = vars.toArray(new String[0]);
 
-        TetradLogger.getInstance().log("info", "Variables:");
+        TetradLogger.getInstance().forceLogMessage("Variables:");
 
         for (String varName : varNames) {
-            TetradLogger.getInstance().log("info", varName + " --> Continuous");
+            TetradLogger.getInstance().forceLogMessage(varName + " --> Continuous");
         }
 
         // Read br covariances.
@@ -311,8 +311,8 @@ public class SimpleDataLoader {
                 String literal = st.nextToken();
 
                 if ("".equals(literal)) {
-                    TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a "
-                            + "covariance value--ignoring.");
+                    TetradLogger.getInstance().forceLogMessage("Parsed an empty token for a "
+                                        + "covariance value--ignoring.");
                     continue;
                 }
 
@@ -336,7 +336,7 @@ public class SimpleDataLoader {
 
         covarianceMatrix.setKnowledge(knowledge);
 
-        TetradLogger.getInstance().log("info", "\nData set loaded!");
+        TetradLogger.getInstance().forceLogMessage("\nData set loaded!");
         return covarianceMatrix;
     }
 
@@ -475,7 +475,7 @@ public class SimpleDataLoader {
             firstLine = line;
         }
 
-        TetradLogger.getInstance().log("info", "\nLoading knowledge.");
+        TetradLogger.getInstance().forceLogMessage("\nLoading knowledge.");
 
         SECTIONS:
         while (lineizer.hasMoreLines()) {
@@ -545,7 +545,7 @@ public class SimpleDataLoader {
 
                         knowledge.addToTier(tier, name);
 
-                        TetradLogger.getInstance().log("info", "Adding to tier " + (tier) + " " + name);
+                        TetradLogger.getInstance().forceLogMessage("Adding to tier " + (tier) + " " + name);
                     }
                 }
             } else if ("forbiddengroup".equalsIgnoreCase(line.trim())) {

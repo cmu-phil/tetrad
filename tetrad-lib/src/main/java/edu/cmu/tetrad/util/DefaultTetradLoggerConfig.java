@@ -110,7 +110,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
      *
      * @return a boolean
      */
-    public boolean isActive() {
+    public boolean active() {
         return !active.isEmpty();
     }
 

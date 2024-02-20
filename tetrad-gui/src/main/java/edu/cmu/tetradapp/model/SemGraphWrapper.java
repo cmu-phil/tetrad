@@ -20,13 +20,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
+import edu.cmu.tetradapp.session.SimulationParamsSource;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -374,8 +373,9 @@ public class SemGraphWrapper implements GraphSource,
 
     // ============================PRIVATE METHODS========================//
     private void log() {
-        TetradLogger.getInstance().log("info", "Structural Equation Model (SEM) Graph");
-        TetradLogger.getInstance().log("graph", "" + getGraph());
+        TetradLogger.getInstance().forceLogMessage("Structural Equation Model (SEM) Graph");
+        String message = "" + getGraph();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**

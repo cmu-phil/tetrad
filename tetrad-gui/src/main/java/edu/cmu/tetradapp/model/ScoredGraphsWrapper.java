@@ -25,12 +25,12 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.DagScorer;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -195,16 +195,18 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     //==========================PRIVATE METHODS===========================//
 
     private void log() {
-        TetradLogger.getInstance().log("info", "DAGs in forbid_latent_common_causes");
-        TetradLogger.getInstance().log("selected_graph", "\nSelected Graph\n");
-        TetradLogger.getInstance().log("selected_graph", getGraph() + "");
+        TetradLogger.getInstance().forceLogMessage("DAGs in forbid_latent_common_causes");
+        TetradLogger.getInstance().forceLogMessage("\nSelected Graph\n");
+        String message1 = getGraph() + "";
+        TetradLogger.getInstance().forceLogMessage(message1);
 
-        TetradLogger.getInstance().log("all_graphs", "\nAll Graphs:\n");
+        TetradLogger.getInstance().forceLogMessage("\nAll Graphs:\n");
         int index = 0;
 
         for (Graph graph : this.graphsToScores.keySet()) {
-            TetradLogger.getInstance().log("all_graphs", "\nGraph #" + (++index));
-            TetradLogger.getInstance().log("all_graphs", graph + "");
+            String message = "\nGraph #" + (++index);
+            TetradLogger.getInstance().forceLogMessage(message);
+            TetradLogger.getInstance().forceLogMessage(graph + "");
         }
     }
 

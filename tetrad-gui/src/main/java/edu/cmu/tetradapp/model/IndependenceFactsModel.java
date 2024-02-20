@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.IndependenceFact;

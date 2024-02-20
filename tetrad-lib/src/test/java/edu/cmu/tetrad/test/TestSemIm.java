@@ -230,7 +230,6 @@ public class TestSemIm {
 
         DataSet dataSet = semIm.simulateData(500, false);
 
-        Matrix data = dataSet.getDoubleData();
         ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
         double[][] a = cov.getMatrix().toArray();
 

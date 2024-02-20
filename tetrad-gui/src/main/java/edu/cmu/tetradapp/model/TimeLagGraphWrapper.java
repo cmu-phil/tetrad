@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -182,8 +181,8 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
 
 
     private void log() {
-        TetradLogger.getInstance().log("info", "Directed Acyclic Graph (DAG)");
-        TetradLogger.getInstance().log("graph", this.graph + "");
+        TetradLogger.getInstance().forceLogMessage("Directed Acyclic Graph (DAG)");
+        TetradLogger.getInstance().forceLogMessage(this.graph + "");
     }
 
     /**

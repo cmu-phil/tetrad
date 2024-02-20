@@ -142,7 +142,8 @@ public class SemOptimizerRegression implements SemOptimizer {
             semIm.setParamValue(n, n, varry);
         }
 
-        TetradLogger.getInstance().log("optimization", "FML = " + semIm.getScore());
+        String message = "FML = " + semIm.getScore();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**

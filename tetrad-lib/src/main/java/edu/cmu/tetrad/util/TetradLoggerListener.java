@@ -36,7 +36,7 @@ public interface TetradLoggerListener {
      *
      * @param evt a {@link edu.cmu.tetrad.util.TetradLoggerEvent} object
      */
-    void configurationActived(TetradLoggerEvent evt);
+    void configurationActivated(TetradLoggerEvent evt);
 
 
     /**
@@ -45,7 +45,7 @@ public interface TetradLoggerListener {
      *
      * @param evt a {@link edu.cmu.tetrad.util.TetradLoggerEvent} object
      */
-    void configurationDeactived(TetradLoggerEvent evt);
+    void configurationDeactivated(TetradLoggerEvent evt);
 
 
 }

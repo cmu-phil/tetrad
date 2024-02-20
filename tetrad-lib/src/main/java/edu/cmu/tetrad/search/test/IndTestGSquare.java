@@ -287,7 +287,7 @@ public final class IndTestGSquare implements IndependenceTest, RowsSettable {
 
             sb.append("}");
 
-            TetradLogger.getInstance().log("independencies", sb.toString());
+            TetradLogger.getInstance().forceLogMessage(sb.toString());
         }
 
         return determined;

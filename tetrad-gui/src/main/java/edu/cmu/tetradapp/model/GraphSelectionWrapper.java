@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -118,7 +117,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      */
     public GraphSelectionWrapper(Graph graphs, Parameters params, String message) {
         this(graphs, params);
-        TetradLogger.getInstance().log("info", message);
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**
@@ -963,7 +962,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     }
 
     private void log() {
-        TetradLogger.getInstance().log("info", "General Graph");
+        TetradLogger.getInstance().forceLogMessage("General Graph");
     }
 
     private Set<Edge> getEdgesFromPath(List<Node> path, Graph graph) {

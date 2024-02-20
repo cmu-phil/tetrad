@@ -79,6 +79,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     private boolean meekPreventCycles;
     // True if the search should return the MB, not the MB CPDAG.
     private boolean findMb = false;
+    private boolean verbose = false;
 
     /**
      * Constructs a new search.
@@ -141,13 +142,13 @@ public final class PcMb implements IMbSearch, IGraphSearch {
 
         this.targets = targets;
 
-        this.logger.log("info", "Target = " + targets);
+        TetradLogger.getInstance().forceLogMessage("Target = " + targets);
 
         // Some statistics.
         this.maxRemainingAtDepth = new int[20];
         Arrays.fill(this.maxRemainingAtDepth, -1);
 
-        this.logger.log("info", "targets = " + getTargets());
+        TetradLogger.getInstance().forceLogMessage("targets = " + getTargets());
 
         Graph graph = new EdgeListGraph();
 
@@ -162,7 +163,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.a = new HashSet<>();
 
         // Step 1. Get associates for the targets.
-        this.logger.log("info", "BEGINNING step 1 (prune targets).");
+        TetradLogger.getInstance().forceLogMessage("BEGINNING step 1 (prune targets).");
 
         for (Node target : getTargets()) {
             if (target == null) throw new NullPointerException("Target not specified");
@@ -170,15 +171,15 @@ public final class PcMb implements IMbSearch, IGraphSearch {
             graph.addNode(target);
             constructFan(target, graph);
 
-            this.logger.log("graph", "After step 1 (prune targets)" + graph);
-            this.logger.log("graph", "After step 1 (prune targets)" + graph);
+            TetradLogger.getInstance().forceLogMessage("After step 1 (prune targets)" + graph);
+            TetradLogger.getInstance().forceLogMessage("After step 1 (prune targets)" + graph);
         }
 
         // Step 2. Get associates for each variable adjacent to the targets,
         // removing edges based on those associates where possible. After this
         // step, adjacencies to the targets are parents or children of the targets.
         // Call this set PC.
-        this.logger.log("info", "BEGINNING step 2 (prune PC).");
+        TetradLogger.getInstance().forceLogMessage("BEGINNING step 2 (prune PC).");
 
 //        variables = graph.getNodes();
 
@@ -231,13 +232,13 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                     }
                 }
 
-                this.logger.log("graph", "After step 2 (prune PC)" + graph);
+                TetradLogger.getInstance().forceLogMessage("After step 2 (prune PC)" + graph);
 
                 // Step 3. Get associates for each node now two links away from the
                 // targets, removing edges based on those associates where possible.
                 // After this step, adjacencies to adjacencies of the targets are parents
                 // or children of adjacencies to the targets. Call this set PCPC.
-                this.logger.log("info", "BEGINNING step 3 (prune PCPC).");
+                TetradLogger.getInstance().forceLogMessage("BEGINNING step 3 (prune PCPC).");
 
                 for (Node v : graph.getAdjacentNodes(target)) {
                     for (Node w : graph.getAdjacentNodes(v)) {
@@ -251,11 +252,11 @@ public final class PcMb implements IMbSearch, IGraphSearch {
             }
         }
 
-        this.logger.log("graph", "After step 3 (prune PCPC)" + graph);
+        TetradLogger.getInstance().forceLogMessage("After step 3 (prune PCPC)" + graph);
 
-        this.logger.log("info", "BEGINNING step 4 (PC Orient).");
+        TetradLogger.getInstance().forceLogMessage("BEGINNING step 4 (PC Orient).");
 
-        GraphSearchUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
+        GraphSearchUtils.pcOrientbk(this.knowledge, graph, graph.getNodes(), verbose);
 
         List<Node> _visited = new LinkedList<>(getA());
         orientUnshieldedTriples(this.knowledge, graph, getDepth(), _visited);
@@ -265,9 +266,9 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         meekRules.setKnowledge(this.knowledge);
         meekRules.orientImplied(graph);
 
-        this.logger.log("graph", "After step 4 (PC Orient)" + graph);
+        TetradLogger.getInstance().forceLogMessage("After step 4 (PC Orient)" + graph);
 
-        this.logger.log("info", "BEGINNING step 5 (Trim graph to {T} U PC U " +
+        TetradLogger.getInstance().forceLogMessage("BEGINNING step 5 (Trim graph to {T} U PC U " +
                 "{Parents(Children(T))}).");
 
         if (findMb) {
@@ -303,7 +304,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
             }
         }
 
-        this.logger.log("graph", "After step 6 (Remove edges among P and P of C)" + graph);
+        TetradLogger.getInstance().forceLogMessage("After step 6 (Remove edges among P and P of C)" + graph);
 
         finishUp(start, graph);
 
@@ -536,7 +537,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param depth The maximum number of conditioning variables.
      */
     private void prune(Node node, Graph graph, int depth) {
-        this.logger.log("pruning", "Trying to remove edges adjacent to node " + node +
+        TetradLogger.getInstance().forceLogMessage("Trying to remove edges adjacent to node " + node +
                 ", depth = " + depth + ".");
 
         // Otherwise, try removing all other edges adjacent node. Return
@@ -587,8 +588,9 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         double seconds = this.elapsedTime / 1000d;
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        this.logger.log("info", "PC-MB took " + nf.format(seconds) + " seconds.");
-        this.logger.log("info", "Number of independence tests performed = " +
+        String message = "PC-MB took " + nf.format(seconds) + " seconds.";
+        TetradLogger.getInstance().forceLogMessage(message);
+        TetradLogger.getInstance().forceLogMessage("Number of independence tests performed = " +
                 getNumIndependenceTests());
 
         this.resultGraph = graph;
@@ -617,7 +619,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     private void orientUnshieldedTriples(Knowledge knowledge, Graph graph, int depth, List<Node> nodes) {
-        this.logger.log("info", "Starting Collider Orientation:");
+        TetradLogger.getInstance().forceLogMessage("Starting Collider Orientation:");
 
         this.ambiguousTriples = new HashSet<>();
 
@@ -653,20 +655,23 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                     if (colliderAllowed(x, y, z, knowledge)) {
                         graph.setEndpoint(x, y, Endpoint.ARROW);
                         graph.setEndpoint(z, y, Endpoint.ARROW);
-                        this.logger.log("tripleClassifications", "Collider oriented: " + Triple.pathString(graph, x, y, z));
+                        String message = "Collider oriented: " + Triple.pathString(graph, x, y, z);
+                        TetradLogger.getInstance().forceLogMessage(message);
                     }
                 } else if (type == TripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
                     graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-                    this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
+                    String message = "tripleClassifications: " + Triple.pathString(graph, x, y, z);
+                    TetradLogger.getInstance().forceLogMessage(message);
                 } else {
-                    this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
+                    String message = "tripleClassifications: " + Triple.pathString(graph, x, y, z);
+                    TetradLogger.getInstance().forceLogMessage(message);
                 }
             }
         }
 
-        this.logger.log("info", "Finishing Collider Orientation.");
+        TetradLogger.getInstance().forceLogMessage("Finishing Collider Orientation.");
     }
 
     private TripleType getTripleType(Graph graph, Node x, Node y, Node z, int depth) {
@@ -817,6 +822,10 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      */
     public void setFindMb(boolean findMb) {
         this.findMb = findMb;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
 

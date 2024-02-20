@@ -26,10 +26,10 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.EmBayesEstimator;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -99,8 +99,8 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
             throw new RuntimeException(
                     "Please specify the search tolerance first.");
         }
-        TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM:");
-        TetradLogger.getInstance().log("im", "" + this.estimateBayesIm);
+        TetradLogger.getInstance().forceLogMessage("EM-Estimated Bayes IM:");
+        TetradLogger.getInstance().forceLogMessage("" + this.estimateBayesIm);
     }
 
     /**

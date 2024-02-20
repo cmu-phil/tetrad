@@ -26,10 +26,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -241,9 +241,10 @@ public class SemImWrapper implements SessionModel {
 
     //======================== Private methods =======================//
     private void log(int i, SemIm pm) {
-        TetradLogger.getInstance().log("info", "Linear SEM IM");
-        TetradLogger.getInstance().log("info", "IM # " + (i + 1));
-        TetradLogger.getInstance().log("im", pm.toString());
+        TetradLogger.getInstance().forceLogMessage("Linear SEM IM");
+        TetradLogger.getInstance().forceLogMessage("IM # " + (i + 1));
+        String message = pm.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**

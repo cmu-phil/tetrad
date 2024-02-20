@@ -24,11 +24,11 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
+import edu.cmu.tetradapp.session.SessionModel;
+import edu.cmu.tetradapp.session.SimulationParamsSource;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -164,7 +164,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
         newExecution();
 
-        TetradLogger.getInstance().log("info", "Graph Comparison");
+        TetradLogger.getInstance().forceLogMessage("Graph Comparison");
     }
 
     private void newExecution() {

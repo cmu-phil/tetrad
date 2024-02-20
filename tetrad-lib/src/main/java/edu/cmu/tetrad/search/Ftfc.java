@@ -925,8 +925,8 @@ public class Ftfc {
 
     private void log(String s, boolean toLog) {
         if (toLog) {
-            TetradLogger.getInstance().log("info", s);
-//            System.out.println(s);
+            TetradLogger.getInstance().forceLogMessage(s);
+            //            System.out.println(s);
         }
     }
 

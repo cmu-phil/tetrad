@@ -21,7 +21,6 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.simulation.GeneralSemSimulation;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
@@ -460,8 +459,9 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
 
     //======================= Private methods ====================//
     private void log(GeneralizedSemPm pm) {
-        TetradLogger.getInstance().log("info", "Generalized Structural Equation Parameter Model (Generalized SEM PM)");
-        TetradLogger.getInstance().log("pm", pm.toString());
+        TetradLogger.getInstance().forceLogMessage("Generalized Structural Equation Parameter Model (Generalized SEM PM)");
+        String message = pm.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**

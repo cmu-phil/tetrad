@@ -146,12 +146,12 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         targetName = null;
         regressorNames = new ArrayList<>();
 
-        TetradLogger.getInstance().log("info", "Linear Regression");
+        TetradLogger.getInstance().forceLogMessage("Linear Regression");
 
         if (result == null) {
-            TetradLogger.getInstance().log("info", "Please double click this regression node to run the regession.");
+            TetradLogger.getInstance().forceLogMessage("Please double click this regression node to run the regession.");
         } else {
-            TetradLogger.getInstance().log("result", report);
+            TetradLogger.getInstance().forceLogMessage(report);
         }
     }
 

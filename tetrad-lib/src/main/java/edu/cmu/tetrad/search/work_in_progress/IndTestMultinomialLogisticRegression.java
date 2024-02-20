@@ -289,9 +289,11 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
         if (this.verbose) {
             if (indep) {
-                TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(x, y, z, p));
+                String message = LogUtilsSearch.independenceFactMsg(x, y, z, p);
+                TetradLogger.getInstance().forceLogMessage(message);
             } else {
-                TetradLogger.getInstance().log("dependencies", LogUtilsSearch.dependenceFactMsg(x, y, z, p));
+                String message = LogUtilsSearch.dependenceFactMsg(x, y, z, p);
+                TetradLogger.getInstance().forceLogMessage(message);
             }
         }
 

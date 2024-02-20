@@ -48,7 +48,7 @@ public interface TetradLoggerConfig extends TetradSerializable {
      *
      * @return - true iff its active.
      */
-    boolean isActive();
+    boolean active();
 
 
     /**

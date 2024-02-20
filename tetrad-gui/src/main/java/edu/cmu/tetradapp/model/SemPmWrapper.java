@@ -25,10 +25,10 @@ import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -238,9 +238,9 @@ public class SemPmWrapper implements SessionModel {
     /**
      * <p>Constructor for SemPmWrapper.</p>
      *
-     * @param wrapper a {@link DagFromCpdagWrapper} object
+     * @param wrapper a {@link DagFromCPDAGWrapper} object
      */
-    public SemPmWrapper(DagFromCpdagWrapper wrapper) {
+    public SemPmWrapper(DagFromCPDAGWrapper wrapper) {
         this(new EdgeListGraph(wrapper.getGraph()));
     }
 
@@ -338,9 +338,10 @@ public class SemPmWrapper implements SessionModel {
 
     //======================= Private methods ====================//
     private void log(int i, SemPm pm) {
-        TetradLogger.getInstance().log("info", "Linear Structural Equation Parametric Model (SEM PM)");
-        TetradLogger.getInstance().log("info", "PM # " + (i + 1));
-        TetradLogger.getInstance().log("pm", pm.toString());
+        TetradLogger.getInstance().forceLogMessage("Linear Structural Equation Parametric Model (SEM PM)");
+        TetradLogger.getInstance().forceLogMessage("PM # " + (i + 1));
+        String message = pm.toString();
+        TetradLogger.getInstance().forceLogMessage(message);
     }
 
     /**
