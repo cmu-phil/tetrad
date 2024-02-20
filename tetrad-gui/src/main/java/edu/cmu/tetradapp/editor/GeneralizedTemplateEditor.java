@@ -76,6 +76,10 @@ class GeneralizedTemplateEditor extends JComponent {
      */
     private final StringTextField startsWithField;
     /**
+     * The box in which labels for each equation are rendered.
+     */
+    private final Box equationsBox;
+    /**
      * The color that selected text is being rendered. Either black or red.
      */
     private Color color = Color.BLACK;
@@ -97,10 +101,6 @@ class GeneralizedTemplateEditor extends JComponent {
      * most up-to-date list of parameters.
      */
     private ExpressionParser latestParser;
-    /**
-     * The box in which labels for each equation are rendered.
-     */
-    private final Box equationsBox;
 
     //=============================================CONSTRUCTORS================================================//
 

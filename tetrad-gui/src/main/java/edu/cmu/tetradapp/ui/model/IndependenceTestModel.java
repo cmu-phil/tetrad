@@ -20,7 +20,6 @@ package edu.cmu.tetradapp.ui.model;
 
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.IndependenceTestDescriptions;
 
 import java.io.Serial;
