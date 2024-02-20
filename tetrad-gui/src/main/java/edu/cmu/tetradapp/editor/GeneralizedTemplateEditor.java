@@ -150,23 +150,21 @@ class GeneralizedTemplateEditor extends JComponent {
 
         JButton insertButton = new JButton("Insert");
 
-        insertButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                String token = (String) expressionsBox.getSelectedItem();
-                String signature;
+        insertButton.addActionListener(actionEvent -> {
+            String token = (String) expressionsBox.getSelectedItem();
+            String signature;
 
-                if ("-New Parameter-".equals(token)) {
-                    signature = nextParameterName("b");
-                } else {
-                    signature = expressionsMap.get(token);
-                }
-
-                while (signature.contains("%")) {
-                    signature = signature.replaceFirst("%", nextParameterName("b"));
-                }
-
-                GeneralizedTemplateEditor.this.expressionTextPane.replaceSelection(signature);
+            if ("-New Parameter-".equals(token)) {
+                signature = nextParameterName("b");
+            } else {
+                signature = expressionsMap.get(token);
             }
+
+            while (signature.contains("%")) {
+                signature = signature.replaceFirst("%", nextParameterName("b"));
+            }
+
+            GeneralizedTemplateEditor.this.expressionTextPane.replaceSelection(signature);
         });
 
         this.combo.addItem("Variables");
@@ -279,42 +277,40 @@ class GeneralizedTemplateEditor extends JComponent {
 
         this.startsWithField = new StringTextField("", 6);
 
-        this.startsWithField.setFilter(new StringTextField.Filter() {
-            public String filter(String value, String oldValue) {
-                String item = (String) GeneralizedTemplateEditor.this.combo.getSelectedItem();
+        this.startsWithField.setFilter((value, oldValue) -> {
+            String item = (String) GeneralizedTemplateEditor.this.combo.getSelectedItem();
 
-                if ("Variables".equals(item)) {
-                    String variablesTemplate = getSemPm().getVariablesTemplate();
-                    setParseText(variablesTemplate);
+            if ("Variables".equals(item)) {
+                String variablesTemplate = getSemPm().getVariablesTemplate();
+                setParseText(variablesTemplate);
 //                    updateEquationsDisplay();
-                } else if ("Errors".equals(item)) {
-                    String errorsTemplate = getSemPm().getErrorsTemplate();
-                    setParseText(errorsTemplate);
+            } else if ("Errors".equals(item)) {
+                String errorsTemplate = getSemPm().getErrorsTemplate();
+                setParseText(errorsTemplate);
 //                    updateEquationsDisplay();
-                } else if ("Parameter Initializations".equals(item)) {
-                    String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                    String template = getSemPm().getStartsWithParameterTemplate(startsWith);
-                    if (template == null) {
-                        template = getSemPm().getParametersTemplate();
-                    }
-
-                    setParseText(template);
-//                    updateEquationsDisplay();
-                } else if ("Estimation Starting Values".equals(item)) {
-                    String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                    String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
-                    if (template == null) {
-                        template = getSemPm().getParametersEstimationInitializationTemplate();
-                    }
-
-                    setParseText(template);
-//                    updateEquationsDisplay();
-                } else {
-                    throw new IllegalStateException("Unrecognized Combo Box Item: " + item);
+            } else if ("Parameter Initializations".equals(item)) {
+                String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
+                String template = getSemPm().getStartsWithParameterTemplate(startsWith);
+                if (template == null) {
+                    template = getSemPm().getParametersTemplate();
                 }
 
-                return value;
+                setParseText(template);
+//                    updateEquationsDisplay();
+            } else if ("Estimation Starting Values".equals(item)) {
+                String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
+                String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
+                if (template == null) {
+                    template = getSemPm().getParametersEstimationInitializationTemplate();
+                }
+
+                setParseText(template);
+//                    updateEquationsDisplay();
+            } else {
+                throw new IllegalStateException("Unrecognized Combo Box Item: " + item);
             }
+
+            return value;
         });
 
         Box b = Box.createVerticalBox();
@@ -361,42 +357,7 @@ class GeneralizedTemplateEditor extends JComponent {
         setLayout(new BorderLayout());
         add(b, BorderLayout.CENTER);
 
-        class ColorThread extends Thread {
-            private boolean stop;
 
-            @Override
-            public void run() {
-                StyledDocument document = (StyledDocument) GeneralizedTemplateEditor.this.expressionTextPane.getDocument();
-
-                Style red = GeneralizedTemplateEditor.this.expressionTextPane.addStyle("Red", null);
-                StyleConstants.setForeground(red, Color.RED);
-
-                Style black = GeneralizedTemplateEditor.this.expressionTextPane.addStyle("Black", null);
-                StyleConstants.setForeground(black, Color.BLACK);
-
-                while (!this.stop) {
-                    if (MillisecondTimes.timeMillis() < GeneralizedTemplateEditor.this.recolorTime) {
-                        continue;
-                    }
-
-                    if (GeneralizedTemplateEditor.this.color.equals(Color.RED)) {
-                        document.setCharacterAttributes(GeneralizedTemplateEditor.this.start, GeneralizedTemplateEditor.this.stringWidth, GeneralizedTemplateEditor.this.expressionTextPane.getStyle("Red"), true);
-                    } else if (GeneralizedTemplateEditor.this.color == Color.BLACK) {
-                        document.setCharacterAttributes(GeneralizedTemplateEditor.this.start, GeneralizedTemplateEditor.this.stringWidth, GeneralizedTemplateEditor.this.expressionTextPane.getStyle("Black"), true);
-                    }
-
-                    try {
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            public void scheduleStop() {
-                this.stop = true;
-            }
-        }
 
         this.expressionTextDoc.addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent documentEvent) {
@@ -412,7 +373,7 @@ class GeneralizedTemplateEditor extends JComponent {
             }
         });
 
-        ColorThread thread = new ColorThread();
+        ColorThread thread = new ColorThread(expressionTextPane, this);
         thread.start();
 
         addAncestorListener(new AncestorListener() {
@@ -841,6 +802,50 @@ class GeneralizedTemplateEditor extends JComponent {
         }
 
         this.latestParser = parser;
+    }
+
+    static class ColorThread extends Thread {
+        private final JTextPane expressionTextPane;
+        private final GeneralizedTemplateEditor templateEditor;
+        private boolean stop;
+
+        public ColorThread(JTextPane expressionTextPane, GeneralizedTemplateEditor templateEditor) {
+            this.expressionTextPane = expressionTextPane;
+            this.templateEditor = templateEditor;
+        }
+
+        @Override
+        public void run() {
+            StyledDocument document = (StyledDocument) expressionTextPane.getDocument();
+
+            Style red = expressionTextPane.addStyle("Red", null);
+            StyleConstants.setForeground(red, Color.RED);
+
+            Style black = expressionTextPane.addStyle("Black", null);
+            StyleConstants.setForeground(black, Color.BLACK);
+
+            while (!this.stop) {
+                if (MillisecondTimes.timeMillis() < templateEditor.recolorTime) {
+                    continue;
+                }
+
+                if (templateEditor.color.equals(Color.RED)) {
+                    document.setCharacterAttributes(templateEditor.start, templateEditor.stringWidth, templateEditor.expressionTextPane.getStyle("Red"), true);
+                } else if (templateEditor.color == Color.BLACK) {
+                    document.setCharacterAttributes(templateEditor.start, templateEditor.stringWidth, templateEditor.expressionTextPane.getStyle("Black"), true);
+                }
+
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public void scheduleStop() {
+            this.stop = true;
+        }
     }
 }
 
