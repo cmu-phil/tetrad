@@ -328,7 +328,7 @@ public class TetradLogger {
      * @param message a {@link java.lang.String} object
      */
     public void forceLogMessage(String message) {
-        System.out.println(message);
+//        System.out.println(message);
 
         if (this.logging) {
             if (this.config == null) {
