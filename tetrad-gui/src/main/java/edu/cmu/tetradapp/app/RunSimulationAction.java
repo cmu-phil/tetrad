@@ -103,7 +103,7 @@ class RunSimulationAction extends AbstractAction {
 
 
     private SessionEditorWorkbench getWorkbench() {
-        final Class c = SessionEditorWorkbench.class;
+        final Class<?> c = SessionEditorWorkbench.class;
         Container container = SwingUtilities.getAncestorOfClass(c, this.sessionEditorNode);
         return (SessionEditorWorkbench) container;
     }

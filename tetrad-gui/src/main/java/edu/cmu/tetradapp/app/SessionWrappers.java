@@ -97,7 +97,7 @@ final class SessionWrappers {
                     "Next button type must be a " + "non-null string.");
         }
 
-        Class[] modelClasses = SessionWrappers.getModelClasses(nextButtonType);
+        Class<?>[] modelClasses = SessionWrappers.getModelClasses(nextButtonType);
         SessionNode newNode =
                 new SessionNode(nextButtonType, name, modelClasses);
         SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
@@ -109,7 +109,7 @@ final class SessionWrappers {
      * @return the model classes associated with the given button type.
      * @throws NullPointerException if no classes are stored for the given type.
      */
-    private static Class[] getModelClasses(String nextButtonType) {
+    private static Class<?>[] getModelClasses(String nextButtonType) {
         TetradApplicationConfig config = TetradApplicationConfig.getInstance();
         SessionNodeConfig nodeConfig = config.getSessionNodeConfig(nextButtonType);
         if (nodeConfig == null) {

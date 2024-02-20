@@ -55,7 +55,7 @@ public interface ModelChooser {
      *
      * @return the model class that was selected or null if nothing was selected.
      */
-    Class getSelectedModel();
+    Class<?> getSelectedModel();
 
     /**
      * <p>setModelConfigs.</p>

@@ -54,7 +54,7 @@ public class TetradApplicationConfig {
     /**
      * A map from model classes to the configurations that handle them.
      */
-    private final Map<Class, SessionNodeConfig> classMap = new HashMap<>();
+    private final Map<Class<?>, SessionNodeConfig> classMap = new HashMap<>();
 
     /**
      * Constructs the configuration.
@@ -88,8 +88,8 @@ public class TetradApplicationConfig {
             Document doc = builder.build(stream);
             this.configs = TetradApplicationConfig.buildConfiguration(doc.getRootElement());
             for (SessionNodeConfig config : this.configs.values()) {
-                Class[] models = config.getModels();
-                for (Class model : models) {
+                Class<?>[] models = config.getModels();
+                for (Class<?> model : models) {
                     if (this.classMap.containsKey(model)) {
                         throw new IllegalStateException("Model " + model + " has two configurations");
                     }
@@ -130,12 +130,12 @@ public class TetradApplicationConfig {
                 } else if ("display-component".equals(child.getQualifiedName())) {
                     String image = child.getAttributeValue("image");
                     String value = TetradApplicationConfig.getValue(child);
-                    Class compClass = value == null ? null : TetradApplicationConfig.loadClass(loader, value);
+                    Class<?> compClass = value == null ? null : TetradApplicationConfig.loadClass(loader, value);
                     nodeConfig.setDisplayComp(image, compClass);
                 } else if ("model-chooser".equals(child.getQualifiedName())) {
                     String title = child.getAttributeValue("title");
                     String value = TetradApplicationConfig.getValue(child);
-                    Class chooserClass = value == null ? null : TetradApplicationConfig.loadClass(loader, value);
+                    Class<?> chooserClass = value == null ? null : TetradApplicationConfig.loadClass(loader, value);
                     nodeConfig.setChooser(title, chooserClass);
                 } else if ("node-specific-message".equals(child.getQualifiedName())) {
                     nodeConfig.setNodeSpecificMessage(child.getValue());
@@ -172,10 +172,10 @@ public class TetradApplicationConfig {
             String acronym = model.getAttributeValue("acronym");
             String help = model.getAttributeValue("help");
             String category = model.getAttributeValue("category");
-            Class modelClass = null;
-            Class editorClass = null;
-            Class paramsClass = null;
-            Class paramsEditorClass = null;
+            Class<?> modelClass = null;
+            Class<?> editorClass = null;
+            Class<?> paramsClass = null;
+            Class<?> paramsEditorClass = null;
             TetradLoggerConfig loggerConfig = null;
             Elements elements = model.getChildElements();
             for (int k = 0; k < elements.size(); k++) {
@@ -235,7 +235,7 @@ public class TetradApplicationConfig {
      * Creates the display comp from an image/comp class. If the not null then it is given as an argument to the
      * constructor of the given class. IF the givne comp is null then the default is used.
      */
-    private static SessionDisplayComp createDisplayComp(String image, Class compClass) {
+    private static SessionDisplayComp createDisplayComp(String image, Class<?> compClass) {
         if (compClass == null) {
             return new StdDisplayComp(image);
         }
@@ -250,7 +250,7 @@ public class TetradApplicationConfig {
         }
     }
 
-    private static Class loadClass(ClassLoader loader, String className) {
+    private static Class<?> loadClass(ClassLoader loader, String className) {
         try {
             return loader.loadClass(className.trim());
         } catch (ClassNotFoundException e) {
@@ -298,13 +298,13 @@ public class TetradApplicationConfig {
         return builder.toString().trim();
     }
 
-    private static boolean matches(Class[] params, Object[] arguments) {
+    private static boolean matches(Class<?>[] params, Object[] arguments) {
         if (params.length != arguments.length) {
             return false;
         }
 
         for (int i = 0; i < params.length; i++) {
-            Class param = params[i];
+            Class<?> param = params[i];
             if (!param.isInstance(arguments[i])) {
                 return false;
             }
@@ -327,10 +327,10 @@ public class TetradApplicationConfig {
     /**
      * <p>getSessionNodeConfig.</p>
      *
-     * @param model a {@link java.lang.Class} object
+     * @param model a {@link java.lang.Class<?>} object
      * @return the <code>SessionNodeConfig</code> that the given model is part of.
      */
-    public SessionNodeConfig getSessionNodeConfig(Class model) {
+    public SessionNodeConfig getSessionNodeConfig(Class<?> model) {
         return this.classMap.get(model);
     }
 
@@ -352,14 +352,14 @@ public class TetradApplicationConfig {
         /**
          * ALl the config info of the configuration.
          */
-        private final Map<Class, SessionNodeModelConfig> modelMap = new HashMap<>();
+        private final Map<Class<?>, SessionNodeModelConfig> modelMap = new HashMap<>();
         private final String id;
         private List<SessionNodeModelConfig> models;
         private String image;
-        private Class compClass;
+        private Class<?> compClass;
         private String nodeSpecificMessage;
         private String chooserTitle;
-        private Class chooserClass;
+        private Class<?> chooserClass;
 
         public DefaultNodeConfig(String id) {
             if (id == null) {
@@ -368,12 +368,12 @@ public class TetradApplicationConfig {
             this.id = id;
         }
 
-        public SessionNodeModelConfig getModelConfig(Class model) {
+        public SessionNodeModelConfig getModelConfig(Class<?> model) {
             return this.modelMap.get(model);
         }
 
-        public Class[] getModels() {
-            Class[] modelClasses = new Class[this.models.size()];
+        public Class<?>[] getModels() {
+            Class<?>[] modelClasses = new Class[this.models.size()];
             for (int i = 0; i < this.models.size(); i++) {
                 modelClasses[i] = this.models.get(i).getModel();
             }
@@ -404,16 +404,16 @@ public class TetradApplicationConfig {
                 }
             }
 
-            Class[] consistentClasses = sessionNode.getConsistentModelClasses(false);
+            Class<?>[] consistentClasses = sessionNode.getConsistentModelClasses(false);
 
             List<SessionNodeModelConfig> filteredModels = new ArrayList<>();
 
             for (SessionNodeModelConfig config : this.models) {
-                Class clazz = config.getModel();
+                Class<?> clazz = config.getModel();
 
                 boolean exists = false;
 
-                for (Class clazz2 : consistentClasses) {
+                for (Class<?> clazz2 : consistentClasses) {
                     if (clazz.equals(clazz2)) {
                         exists = true;
                         break;
@@ -437,7 +437,7 @@ public class TetradApplicationConfig {
             return TetradApplicationConfig.createDisplayComp(this.image, this.compClass);
         }
 
-        private void setChooser(String title, Class chooserClass) {
+        private void setChooser(String title, Class<?> chooserClass) {
             if (title == null) {
                 throw new NullPointerException("The chooser title must not be null");
             }
@@ -445,7 +445,7 @@ public class TetradApplicationConfig {
             this.chooserClass = chooserClass;
         }
 
-        private void setDisplayComp(String image, Class comp) {
+        private void setDisplayComp(String image, Class<?> comp) {
             if (image == null && comp == null) {
                 throw new NullPointerException("Must have an image or a display component class defined");
             }
@@ -466,15 +466,15 @@ public class TetradApplicationConfig {
      */
     private static class DefaultModelConfig implements SessionNodeModelConfig {
 
-        private final Class model;
-        private final Class paramsEditor;
-        private final Class editor;
+        private final Class<?> model;
+        private final Class<?> paramsEditor;
+        private final Class<?> editor;
         private final String name;
         private final String acronym;
         private final String help;
         private final String category;
 
-        public DefaultModelConfig(Class model, Class params, Class paramsEditor, Class editor,
+        public DefaultModelConfig(Class<?> model, Class<?> params, Class<?> paramsEditor, Class<?> editor,
                                   String name, String acronym, String help, String category
         ) {
             if (model == null || editor == null || name == null || acronym == null) {
@@ -497,7 +497,7 @@ public class TetradApplicationConfig {
             return this.category;
         }
 
-        public Class getModel() {
+        public Class<?> getModel() {
             return this.model;
         }
 

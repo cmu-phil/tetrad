@@ -110,7 +110,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * @return the model classes associated with the given button type.
      * @throws NullPointerException if no classes are stored for the given type.
      */
-    private static Class[] getModelClasses(String nextButtonType) {
+    private static Class<?>[] getModelClasses(String nextButtonType) {
         TetradApplicationConfig config = TetradApplicationConfig.getInstance();
         SessionNodeConfig nodeConfig = config.getSessionNodeConfig(nextButtonType);
 
@@ -163,7 +163,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         }
 
         String name = SessionEditorWorkbench.nextUniqueName(this.nextButtonType, getGraph());
-        Class[] modelClasses = SessionEditorWorkbench.getModelClasses(this.nextButtonType);
+        Class<?>[] modelClasses = SessionEditorWorkbench.getModelClasses(this.nextButtonType);
         SessionNode newNode
                 = new SessionNode(this.nextButtonType, name, modelClasses);
 
@@ -241,11 +241,9 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Sets the String label of the next node to be created by the
-     * <code>getNewModelNode</code> method. This label must be in the key set of
-     * the <code>modelClassesMap</code> map and must be mapped there to a Class[] array.
+     * Sets the type of the next button.
      *
-     * @param nextButtonType a {@link java.lang.String} object
+     * @param nextButtonType the type of the next button
      */
     public void setNextButtonType(String nextButtonType) {
         this.nextButtonType = nextButtonType;

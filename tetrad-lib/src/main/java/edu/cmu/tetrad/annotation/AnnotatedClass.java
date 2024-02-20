@@ -23,13 +23,11 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 
 /**
- * Annotated class.
+ * AnnotatedClass represents a class with its associated annotation.
  *
- * @param <T>        annotation type
- * @param clazz      class
- * @param annotation annotation
+ * @param <T> the type of the annotation
  */
-public record AnnotatedClass<T extends Annotation>(Class clazz, T annotation) implements Serializable {
+public record AnnotatedClass<T extends Annotation>(Class<?> clazz, T annotation) implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 5060798016477163171L;
@@ -49,7 +47,7 @@ public record AnnotatedClass<T extends Annotation>(Class clazz, T annotation) im
      * @return class
      */
     @Override
-    public Class clazz() {
+    public Class<?> clazz() {
         return this.clazz;
     }
 

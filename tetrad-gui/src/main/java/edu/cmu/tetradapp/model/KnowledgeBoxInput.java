@@ -34,6 +34,11 @@ import edu.cmu.tetradapp.session.SessionModel;
  */
 public interface KnowledgeBoxInput extends SessionModel, VariableSource {
 
+    /**
+     * The serialVersionUID is a special field that determines the version of the serialized object. It is used during deserialization to verify that the sender and receiver of a
+     * serialized object have loaded classes for that object that are compatible with respect to serialization. If the receiver has a different serialVersionUID than that of the serialized
+     * object, then deserialization will result in an InvalidClassException. Additionally, serialization will ignore any fields of a class that are declared as transient or static
+     */
     long serialVersionUID = 23L;
 
     /**

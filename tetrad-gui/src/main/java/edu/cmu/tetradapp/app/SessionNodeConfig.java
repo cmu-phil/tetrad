@@ -36,10 +36,10 @@ public interface SessionNodeConfig {
     /**
      * <p>getModelConfig.</p>
      *
-     * @param model a {@link java.lang.Class} object
+     * @param model a {@link java.lang.Class<?>} object
      * @return the model confif for the model with the given class or null if there isn't one.
      */
-    SessionNodeModelConfig getModelConfig(Class model);
+    SessionNodeModelConfig getModelConfig(Class<?> model);
 
 
     /**
@@ -47,7 +47,7 @@ public interface SessionNodeConfig {
      *
      * @return all the models for this node.
      */
-    Class[] getModels();
+    Class<?>[] getModels();
 
 
     /**
