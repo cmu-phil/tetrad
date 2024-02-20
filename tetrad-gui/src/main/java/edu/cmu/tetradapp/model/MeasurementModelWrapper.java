@@ -21,13 +21,16 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.Clusters;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
-import edu.cmu.tetradapp.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.session.ParamsResettable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

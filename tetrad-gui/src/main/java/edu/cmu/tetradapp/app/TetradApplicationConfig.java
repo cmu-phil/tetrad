@@ -20,11 +20,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetradapp.session.SessionNode;
 import edu.cmu.tetrad.util.DefaultTetradLoggerConfig;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradLoggerConfig;
 import edu.cmu.tetradapp.editor.ParameterEditor;
+import edu.cmu.tetradapp.session.SessionNode;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;

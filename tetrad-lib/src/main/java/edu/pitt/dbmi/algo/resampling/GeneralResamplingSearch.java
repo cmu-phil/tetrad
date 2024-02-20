@@ -110,7 +110,7 @@ public class GeneralResamplingSearch {
     /**
      * Constructor for a single data set algorithm.
      *
-     * @param data the data set.
+     * @param data      the data set.
      * @param algorithm the algorithm.
      */
     public GeneralResamplingSearch(DataSet data, Algorithm algorithm) {

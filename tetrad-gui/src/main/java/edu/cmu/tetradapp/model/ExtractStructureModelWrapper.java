@@ -22,9 +22,9 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetradapp.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;

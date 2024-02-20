@@ -21,11 +21,11 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.EditorWindow;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
+import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.ui.tool.SessionFileTransferHandler;
 import edu.cmu.tetradapp.util.*;
 import org.apache.commons.math3.util.FastMath;

@@ -24,11 +24,11 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.session.DoNotAddOldModel;
 import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetradapp.session.SimulationParamsSource;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

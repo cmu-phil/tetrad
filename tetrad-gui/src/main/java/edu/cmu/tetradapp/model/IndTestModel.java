@@ -22,9 +22,9 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.Serial;
 import java.util.ArrayList;

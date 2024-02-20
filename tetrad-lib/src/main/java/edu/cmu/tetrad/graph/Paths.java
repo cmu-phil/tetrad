@@ -38,12 +38,12 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Adds a node to a set within the given map. If there is no set associated with the specified node,
-     * a new set is created and added to the map.
+     * Adds a node to a set within the given map. If there is no set associated with the specified node, a new set is
+     * created and added to the map.
      *
      * @param previous The map containing sets of nodes.
-     * @param b The node to be added to the set.
-     * @param c The node associated with the set in the map.
+     * @param b        The node to be added to the set.
+     * @param c        The node associated with the set in the map.
      */
     private static void addToSet(Map<Node, Set<Node>> previous, Node b, Node c) {
         previous.computeIfAbsent(c, k -> new HashSet<>());
@@ -168,7 +168,7 @@ public class Paths implements TetradSerializable {
     /**
      * Generates a directed acyclic graph (DAG) based on the given list of nodes using Raskutti and Uhler's method.
      *
-     * @param pi a list of nodes representing the set of vertices in the graph
+     * @param pi   a list of nodes representing the set of vertices in the graph
      * @param msep the MsepTest instance for determining d-separation relationships
      * @return a Graph object representing the generated DAG.
      */
@@ -298,8 +298,8 @@ public class Paths implements TetradSerializable {
     /**
      * Finds all directed paths from node1 to node2 with a maximum length.
      *
-     * @param node1    the starting node
-     * @param node2    the destination node
+     * @param node1     the starting node
+     * @param node2     the destination node
      * @param maxLength the maximum length of the paths
      * @return a list of lists containing the directed paths from node1 to node2
      */
@@ -503,9 +503,9 @@ public class Paths implements TetradSerializable {
     /**
      * Finds all treks from node1 to node2 with a maximum length.
      *
-     * @param node1      the starting node
-     * @param node2      the destination node
-     * @param maxLength  the maximum length of the treks
+     * @param node1     the starting node
+     * @param node2     the destination node
+     * @param maxLength the maximum length of the treks
      * @return a list of lists of nodes representing each trek from node1 to node2
      */
     public List<List<Node>> treks(Node node1, Node node2, int maxLength) {

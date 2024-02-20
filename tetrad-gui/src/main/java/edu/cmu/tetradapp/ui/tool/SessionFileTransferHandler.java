@@ -18,7 +18,6 @@
  */
 package edu.cmu.tetradapp.ui.tool;
 
-import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
@@ -27,6 +26,7 @@ import edu.cmu.tetradapp.app.SessionEditor;
 import edu.cmu.tetradapp.app.SessionEditorWorkbench;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
+import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.util.DesktopController;
 
 import javax.swing.*;

@@ -42,11 +42,11 @@ import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TsUtils;
-import edu.cmu.tetradapp.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Unmarshallable;
+import edu.cmu.tetradapp.session.ParamsResettable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

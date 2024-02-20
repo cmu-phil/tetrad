@@ -455,7 +455,7 @@ public class Grasp {
             }
 
             for (Node x : parents) {
-                if (Thread.currentThread().isInterrupted())  {
+                if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
 

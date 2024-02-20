@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The UniformityTest class provides methods to calculate the p-value of a list of points
- * using the Kolmogorov-Smirnov test and determine if the distribution is uniform.
+ * The UniformityTest class provides methods to calculate the p-value of a list of points using the Kolmogorov-Smirnov
+ * test and determine if the distribution is uniform.
  *
  * @author josephramsey
  */
@@ -57,9 +57,9 @@ public class UniformityTest {
     }
 
     /**
-     * The main method of the UniformityTest class.
-     * It calculates the p-value of a list of points using the Kolmogorov-Smirnov test
-     * and checks the p-value against a significance level to determine if the distribution is uniform.
+     * The main method of the UniformityTest class. It calculates the p-value of a list of points using the
+     * Kolmogorov-Smirnov test and checks the p-value against a significance level to determine if the distribution is
+     * uniform.
      *
      * @param args The command-line arguments passed to the program.
      */

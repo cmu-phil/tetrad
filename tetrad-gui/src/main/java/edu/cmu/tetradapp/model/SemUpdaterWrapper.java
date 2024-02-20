@@ -22,8 +22,8 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.sem.SemUpdater;
-import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

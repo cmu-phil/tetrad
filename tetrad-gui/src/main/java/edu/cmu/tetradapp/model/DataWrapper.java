@@ -26,9 +26,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.session.DoNotAddOldModel;
 import edu.cmu.tetradapp.session.SimulationParamsSource;
-import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

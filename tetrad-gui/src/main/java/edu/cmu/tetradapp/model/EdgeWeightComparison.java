@@ -22,11 +22,11 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.Serial;
 import java.text.NumberFormat;

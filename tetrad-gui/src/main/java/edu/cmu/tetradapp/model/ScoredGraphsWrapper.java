@@ -25,12 +25,12 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.utils.DagScorer;
-import edu.cmu.tetradapp.session.DoNotAddOldModel;
-import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetrad.util.Unmarshallable;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

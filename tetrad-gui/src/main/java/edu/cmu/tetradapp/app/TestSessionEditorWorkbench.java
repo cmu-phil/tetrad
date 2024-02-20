@@ -21,8 +21,8 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.session.Session;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;

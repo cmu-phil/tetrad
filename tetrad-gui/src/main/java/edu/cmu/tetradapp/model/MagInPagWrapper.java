@@ -24,9 +24,9 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetradapp.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
 
 /**
  * Picks a DAG from the given graph.

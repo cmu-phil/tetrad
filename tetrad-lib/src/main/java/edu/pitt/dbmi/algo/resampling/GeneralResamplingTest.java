@@ -48,9 +48,9 @@ public class GeneralResamplingTest {
     /**
      * Constructor for single data set algorithms.
      *
-     * @param data      the data set.
-     * @param algorithm the algorithm.
-     * @param knowledge the knowledge.
+     * @param data       the data set.
+     * @param algorithm  the algorithm.
+     * @param knowledge  the knowledge.
      * @param parameters the parameters.
      */
     public GeneralResamplingTest(DataSet data, Algorithm algorithm, Knowledge knowledge, Parameters parameters) {
@@ -67,10 +67,10 @@ public class GeneralResamplingTest {
     /**
      * Constructor for multiple data set algorithms.
      *
-     * @param dataSets  the data sets.
+     * @param dataSets              the data sets.
      * @param multiDataSetAlgorithm the algorithm.
-     * @param knowledge the knowledge.
-     * @param parameters the parameters.
+     * @param knowledge             the knowledge.
+     * @param parameters            the parameters.
      */
     public GeneralResamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm,
                                  Knowledge knowledge, Parameters parameters) {

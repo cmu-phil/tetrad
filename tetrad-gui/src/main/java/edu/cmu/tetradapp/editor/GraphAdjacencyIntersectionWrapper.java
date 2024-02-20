@@ -22,12 +22,12 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetradapp.session.DoNotAddOldModel;
-import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphSource;
+import edu.cmu.tetradapp.session.DoNotAddOldModel;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.Serial;
 import java.util.ArrayList;

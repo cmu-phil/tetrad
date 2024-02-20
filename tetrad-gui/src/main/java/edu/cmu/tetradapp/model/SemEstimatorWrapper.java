@@ -26,8 +26,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import javax.swing.*;
 import java.io.IOException;

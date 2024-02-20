@@ -21,8 +21,8 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetradapp.session.SessionNode;
 import edu.cmu.tetradapp.model.UnlistedSessionModel;
+import edu.cmu.tetradapp.session.SessionNode;
 
 import javax.swing.*;
 import java.awt.*;

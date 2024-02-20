@@ -29,8 +29,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.session.SessionModel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

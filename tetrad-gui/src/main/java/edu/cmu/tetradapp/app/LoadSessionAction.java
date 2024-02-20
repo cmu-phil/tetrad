@@ -21,12 +21,11 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetradapp.model.KnowledgeBoxInput;
-import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Version;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
+import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
 

@@ -103,8 +103,7 @@ class GeneralizedExpressionEditor extends JComponent {
     /**
      * A display showing the equation or distribution that would result from taking the most recent parsable text from
      * <code>expressionTextPane</code>, writing the variable in front of it with = or ~, and appending the error term
-     * if
-     * it's not already in the expression.
+     * if it's not already in the expression.
      */
     private final JTextArea resultTextPane;
 
@@ -277,7 +276,7 @@ class GeneralizedExpressionEditor extends JComponent {
             @Override
             public void run() {
                 if (Thread.currentThread().isInterrupted()) return;
-                
+
                 StyledDocument document = (StyledDocument) expressionTextPane.getDocument();
 
                 Style red = expressionTextPane.addStyle("Red", null);
@@ -498,7 +497,7 @@ class GeneralizedExpressionEditor extends JComponent {
 
                 while (!stop) {
                     if (Thread.currentThread().isInterrupted()) return;
-                    
+
                     if (MillisecondTimes.timeMillis() < recolorTime) {
                         continue;
                     }

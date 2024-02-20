@@ -262,9 +262,9 @@ public final class BayesProperties {
     }
 
     /**
-         * Returns the likelihood ratio test statistic for the given graph and its degrees of freedom.
-         */
-        private record Ret(double lik, int dof) {
+     * Returns the likelihood ratio test statistic for the given graph and its degrees of freedom.
+     */
+    private record Ret(double lik, int dof) {
         /**
          * Constructs a new Ret object.
          *
@@ -274,26 +274,26 @@ public final class BayesProperties {
         private Ret {
         }
 
-            /**
-             * Returns the likelihood.
-             *
-             * @return The likelihood.
-             */
-            @Override
-            public double lik() {
-                return this.lik;
-            }
-
-            /**
-             * Returns the degrees of freedom.
-             *
-             * @return The degrees of freedom.
-             */
-            @Override
-            public int dof() {
-                return this.dof;
-            }
+        /**
+         * Returns the likelihood.
+         *
+         * @return The likelihood.
+         */
+        @Override
+        public double lik() {
+            return this.lik;
         }
+
+        /**
+         * Returns the degrees of freedom.
+         *
+         * @return The degrees of freedom.
+         */
+        @Override
+        public int dof() {
+            return this.dof;
+        }
+    }
 
     /**
      * Returns the number of categories for the given variable.

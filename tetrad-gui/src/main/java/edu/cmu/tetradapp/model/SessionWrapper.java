@@ -22,12 +22,12 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.session.Session;
 import edu.cmu.tetradapp.session.SessionAdapter;
 import edu.cmu.tetradapp.session.SessionEvent;
 import edu.cmu.tetradapp.session.SessionNode;
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.SessionWrapperIndirectRef;
 
 import javax.swing.*;
