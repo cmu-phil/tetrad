@@ -145,8 +145,11 @@ public final class FciMax implements IGraphSearch {
         long start = MillisecondTimes.timeMillis();
 
         Fas fas = new Fas(getIndependenceTest());
-        TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
-        TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting FCI-Max algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);

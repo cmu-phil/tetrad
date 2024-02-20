@@ -100,7 +100,7 @@ public final class Cfci implements IGraphSearch {
     public Graph search() {
         long beginTime = MillisecondTimes.timeMillis();
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Starting CFCI algorithm.");
             TetradLogger.getInstance().forceLogMessage("Independence test = " + this.independenceTest + ".");
         }
 

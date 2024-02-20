@@ -117,8 +117,10 @@ public final class BFci implements IGraphSearch {
 
         List<Node> nodes = getIndependenceTest().getVariables();
 
-        TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
-        TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting BFCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         // BOSS CPDAG learning step
         Boss subAlg = new Boss(this.score);

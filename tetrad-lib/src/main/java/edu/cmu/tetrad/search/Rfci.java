@@ -152,8 +152,10 @@ public final class Rfci implements IGraphSearch {
         long beginTime = MillisecondTimes.timeMillis();
         independenceTest.setVerbose(verbose);
 
-        TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
-        TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting RFCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         setMaxPathLength(this.maxPathLength);
 

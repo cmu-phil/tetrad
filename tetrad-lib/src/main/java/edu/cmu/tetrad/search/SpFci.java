@@ -117,8 +117,10 @@ public final class SpFci implements IGraphSearch {
     public Graph search() {
         List<Node> nodes = getIndependenceTest().getVariables();
 
-        TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
-        TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting SP-FCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         this.graph = new EdgeListGraph(nodes);
 

@@ -138,8 +138,11 @@ public final class SvarFci implements IGraphSearch {
      * @see IFas
      */
     public Graph search(IFas fas) {
-        TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
-        TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting SVar-FCI algorithm.");
+            TetradLogger.getInstance().forceLogMessage("Independence test = " + getIndependenceTest() + ".");
+        }
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);

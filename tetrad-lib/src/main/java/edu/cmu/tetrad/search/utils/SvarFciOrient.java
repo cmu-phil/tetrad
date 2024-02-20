@@ -95,7 +95,9 @@ public final class SvarFciOrient {
      */
     public Graph orient(Graph graph) {
 
-        TetradLogger.getInstance().forceLogMessage("Starting FCI algorithm.");
+        if (verbose) {
+            TetradLogger.getInstance().forceLogMessage("Starting SVar-FCI orientation.");
+        }
 
         ruleR0(graph);
 
