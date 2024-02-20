@@ -27,7 +27,9 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
 import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.StringTextField;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -39,6 +41,7 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Serial;
 import java.text.ParseException;
 import java.util.List;
 import java.util.*;
@@ -50,6 +53,7 @@ import java.util.*;
  */
 class GeneralizedTemplateEditor extends JComponent {
 
+    @Serial
     private static final long serialVersionUID = 3455126100397759982L;
     /**
      * The text pane in which parsed text is rendered, typed, and colored.
@@ -68,7 +72,7 @@ class GeneralizedTemplateEditor extends JComponent {
      */
     private final JComboBox<String> combo = new JComboBox<>();
     /**
-     * The field that indicates what names of variables or parameters should start with in order to be changed.
+     * The field that indicates what names of variables or parameters should start with to be changed.
      */
     private final StringTextField startsWithField;
     /**
@@ -84,19 +88,19 @@ class GeneralizedTemplateEditor extends JComponent {
      */
     private int stringWidth;
     /**
-     * The time that the selectded text should be colored. (Must do this all indirectly using a thread because we cannot
-     * saveTemplate to the text pane.
+     * The time that the selected text should be colored. (Must do this all indirectly using a thread because we cannot
+     * saveTemplate to the text pane.)
      */
     private long recolorTime = MillisecondTimes.timeMillis();
     /**
      * The latest parser that was used to parse the expression in <code>expressionTextPane</code>. Needed to get the
-     * most up to date list of parameters.
+     * most up-to-date list of parameters.
      */
     private ExpressionParser latestParser;
     /**
      * The box in which labels for each equation are rendered.
      */
-    private Box equationsBox = Box.createVerticalBox();
+    private final Box equationsBox;
 
     //=============================================CONSTRUCTORS================================================//
 
@@ -137,26 +141,7 @@ class GeneralizedTemplateEditor extends JComponent {
         JComboBox<String> expressionsBox = new JComboBox<>(expressionTokens);
         expressionsBox.setMaximumSize(expressionsBox.getPreferredSize());
 
-        JButton insertButton = new JButton("Insert");
-
-        insertButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                String token = (String) expressionsBox.getSelectedItem();
-                String signature;
-
-                if ("-New Parameter-".equals(token)) {
-                    signature = nextParameterName("b");
-                } else {
-                    signature = expressionsMap.get(token);
-                }
-
-                while (signature.contains("%")) {
-                    signature = signature.replaceFirst("%", nextParameterName("b"));
-                }
-
-                GeneralizedTemplateEditor.this.expressionTextPane.replaceSelection(signature);
-            }
-        });
+        JButton insertButton = getjButton(expressionsBox, expressionsMap);
 
         this.combo.addItem("Variables");
         this.combo.addItem("Errors");
@@ -170,7 +155,7 @@ class GeneralizedTemplateEditor extends JComponent {
         this.combo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JComboBox source = (JComboBox) e.getSource();
+                JComboBox<?> source = (JComboBox<?>) e.getSource();
                 String item = (String) source.getSelectedItem();
 
                 if ("Variables".equals(item)) {
@@ -205,105 +190,44 @@ class GeneralizedTemplateEditor extends JComponent {
             }
         });
 
-        JButton applyButton = new JButton("APPLY");
-
-        applyButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                applyChanges();
-                updateEquationsDisplay();
-
-                if ("Variables".equals(GeneralizedTemplateEditor.this.combo.getSelectedItem())) {
-                    String template = GeneralizedTemplateEditor.this.expressionTextPane.getText();
-
-                    try {
-                        getSemPm().setVariablesTemplate(template);
-                    } catch (ParseException e) {
-                        //
-                    }
-                } else if ("Errors".equals(GeneralizedTemplateEditor.this.combo.getSelectedItem())) {
-                    String template = GeneralizedTemplateEditor.this.expressionTextPane.getText();
-
-                    try {
-                        getSemPm().setErrorsTemplate(template);
-                    } catch (ParseException e) {
-                        //
-                    }
-                } else if ("Parameter Initializations".equals(GeneralizedTemplateEditor.this.combo.getSelectedItem())) {
-                    String template = GeneralizedTemplateEditor.this.expressionTextPane.getText();
-
-                    try {
-                        getSemPm().setParametersTemplate(template);
-
-                        String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-
-                        getSemPm().setStartsWithParametersTemplate(startsWith, template);
-                    } catch (ParseException e) {
-                        //
-                    }
-                } else if ("Estimation Starting Values".equals(GeneralizedTemplateEditor.this.combo.getSelectedItem())) {
-                    String template = GeneralizedTemplateEditor.this.expressionTextPane.getText();
-
-                    try {
-                        getSemPm().setParametersEstimationInitializationTemplate(template);
-
-                        String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-
-                        getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWith, template);
-                    } catch (ParseException e) {
-                        //
-                    }
-                }
-
-            }
-        });
+        JButton applyButton = getjButton();
 
         JButton saveTemplate = new JButton("Save Template");
 
-        saveTemplate.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                listen();
-            }
-        });
+        saveTemplate.addActionListener(e -> listen());
 
         this.startsWithField = new StringTextField("", 6);
 
-        this.startsWithField.setFilter(new StringTextField.Filter() {
-            public String filter(String value, String oldValue) {
-                String item = (String) GeneralizedTemplateEditor.this.combo.getSelectedItem();
+        this.startsWithField.setFilter((value, oldValue) -> {
+            String item = (String) GeneralizedTemplateEditor.this.combo.getSelectedItem();
 
-                if ("Variables".equals(item)) {
-                    String variablesTemplate = getSemPm().getVariablesTemplate();
-                    setParseText(variablesTemplate);
-//                    updateEquationsDisplay();
-                } else if ("Errors".equals(item)) {
-                    String errorsTemplate = getSemPm().getErrorsTemplate();
-                    setParseText(errorsTemplate);
-//                    updateEquationsDisplay();
-                } else if ("Parameter Initializations".equals(item)) {
-                    String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                    String template = getSemPm().getStartsWithParameterTemplate(startsWith);
-                    if (template == null) {
-                        template = getSemPm().getParametersTemplate();
-                    }
-
-                    setParseText(template);
-//                    updateEquationsDisplay();
-                } else if ("Estimation Starting Values".equals(item)) {
-                    String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                    String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
-                    if (template == null) {
-                        template = getSemPm().getParametersEstimationInitializationTemplate();
-                    }
-
-                    setParseText(template);
-//                    updateEquationsDisplay();
-                } else {
-                    throw new IllegalStateException("Unrecognized Combo Box Item: " + item);
+            if ("Variables".equals(item)) {
+                String variablesTemplate = getSemPm().getVariablesTemplate();
+                setParseText(variablesTemplate);
+            } else if ("Errors".equals(item)) {
+                String errorsTemplate = getSemPm().getErrorsTemplate();
+                setParseText(errorsTemplate);
+            } else if ("Parameter Initializations".equals(item)) {
+                String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
+                String template = getSemPm().getStartsWithParameterTemplate(startsWith);
+                if (template == null) {
+                    template = getSemPm().getParametersTemplate();
                 }
 
-                return value;
+                setParseText(template);
+            } else if ("Estimation Starting Values".equals(item)) {
+                String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
+                String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
+                if (template == null) {
+                    template = getSemPm().getParametersEstimationInitializationTemplate();
+                }
+
+                setParseText(template);
+            } else {
+                throw new IllegalStateException("Unrecognized Combo Box Item: " + item);
             }
+
+            return value;
         });
 
         Box b = Box.createVerticalBox();
@@ -370,7 +294,7 @@ class GeneralizedTemplateEditor extends JComponent {
 
         addAncestorListener(new AncestorListener() {
             public void ancestorAdded(AncestorEvent event) {
-                //To change body of implemented methods use File | Settings | File Templates.
+                //To change the body of implemented methods, use File | Settings | File Templates.
             }
 
             public void ancestorRemoved(AncestorEvent event) {
@@ -378,7 +302,7 @@ class GeneralizedTemplateEditor extends JComponent {
             }
 
             public void ancestorMoved(AncestorEvent event) {
-                //To change body of implemented methods use File | Settings | File Templates.
+                //To change the body of implemented methods, use File | Settings | File Templates.
             }
         });
 
@@ -398,6 +322,83 @@ class GeneralizedTemplateEditor extends JComponent {
         });
 
         setFocusCycleRoot(true);
+    }
+
+    @NotNull
+    private JButton getjButton() {
+        JButton applyButton = new JButton("APPLY");
+
+        applyButton.addActionListener(actionEvent -> {
+            applyChanges();
+            updateEquationsDisplay();
+
+            if ("Variables".equals(GeneralizedTemplateEditor.this.combo.getSelectedItem())) {
+                String template = GeneralizedTemplateEditor.this.expressionTextPane.getText();
+
+                try {
+                    getSemPm().setVariablesTemplate(template);
+                } catch (ParseException e) {
+                    //
+                }
+            } else if ("Errors".equals(GeneralizedTemplateEditor.this.combo.getSelectedItem())) {
+                String template = GeneralizedTemplateEditor.this.expressionTextPane.getText();
+
+                try {
+                    getSemPm().setErrorsTemplate(template);
+                } catch (ParseException e) {
+                    //
+                }
+            } else if ("Parameter Initializations".equals(GeneralizedTemplateEditor.this.combo.getSelectedItem())) {
+                String template = GeneralizedTemplateEditor.this.expressionTextPane.getText();
+
+                try {
+                    getSemPm().setParametersTemplate(template);
+
+                    String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
+
+                    getSemPm().setStartsWithParametersTemplate(startsWith, template);
+                } catch (ParseException e) {
+                    //
+                }
+            } else if ("Estimation Starting Values".equals(GeneralizedTemplateEditor.this.combo.getSelectedItem())) {
+                String template = GeneralizedTemplateEditor.this.expressionTextPane.getText();
+
+                try {
+                    getSemPm().setParametersEstimationInitializationTemplate(template);
+
+                    String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
+
+                    getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWith, template);
+                } catch (ParseException e) {
+                    //
+                }
+            }
+
+        });
+        return applyButton;
+    }
+
+    @NotNull
+    private JButton getjButton(JComboBox<String> expressionsBox, Map<String, String> expressionsMap) {
+        JButton insertButton = new JButton("Insert");
+
+        insertButton.addActionListener(actionEvent -> {
+            String token = (String) expressionsBox.getSelectedItem();
+            String signature;
+
+            if ("-New Parameter-".equals(token)) {
+                signature = nextParameterName("b");
+            } else {
+                signature = expressionsMap.get(token);
+            }
+
+            while (signature.contains("%")) {
+                signature = signature.replaceFirst("%", nextParameterName("b"));
+            }
+
+            GeneralizedTemplateEditor.this.expressionTextPane.replaceSelection(signature);
+        });
+        return insertButton;
     }
 
     //==================================================PRIVATE METHODS=========================================//
@@ -423,7 +424,7 @@ class GeneralizedTemplateEditor extends JComponent {
         };
 
         // These are the expressions the user can choose from. The display form is on the left, and the template
-        // form is on the. Obviously you use a % for a new parameter. In case you want to change it.
+        // form is on the right. You use a % for a new parameter. In case you want to change it.
         String[][] expressions = {
                 {"+", " + "},
                 {"-", " - "},
@@ -561,14 +562,12 @@ class GeneralizedTemplateEditor extends JComponent {
             this.expressionTextDoc.remove(0, this.expressionTextPane.getText().length());
             this.expressionTextDoc.insertString(0, text, null);
         } catch (BadLocationException e) {
-            e.printStackTrace();
+            TetradLogger.getInstance().forceLogMessage(e.getMessage());
             throw new RuntimeException(e);
         }
     }
 
     private void applyChanges() {
-        List<Node> nodes = new ArrayList<>();
-        List<String> parameters = new ArrayList<>();
         String startWith = this.startsWithField.getText();
 
         if ("Variables".equals(this.combo.getSelectedItem())) {
@@ -577,7 +576,7 @@ class GeneralizedTemplateEditor extends JComponent {
                     continue;
                 }
 
-                String formula = "";
+                String formula;
 
                 try {
                     formula = TemplateExpander.getInstance().expandTemplate(this.expressionTextPane.getText(),
@@ -593,10 +592,8 @@ class GeneralizedTemplateEditor extends JComponent {
                 try {
                     getSemPm().setNodeExpression(node, formula);
                 } catch (ParseException e) {
-                    continue;
+                    System.out.println(e.getMessage());
                 }
-
-                nodes.add(node);
             }
         } else if ("Errors".equals(this.combo.getSelectedItem())) {
             for (Node node : getSemPm().getErrorNodes()) {
@@ -604,7 +601,7 @@ class GeneralizedTemplateEditor extends JComponent {
                     continue;
                 }
 
-                String formula = "";
+                String formula;
 
                 try {
                     formula = TemplateExpander.getInstance().expandTemplate(this.expressionTextPane.getText(),
@@ -620,17 +617,15 @@ class GeneralizedTemplateEditor extends JComponent {
                 try {
                     getSemPm().setNodeExpression(node, formula);
                 } catch (ParseException e) {
-                    continue;
+                    System.out.println(e.getMessage());
                 }
-
-                nodes.add(node);
             }
         } else if ("Parameter Initializations".equals(this.combo.getSelectedItem())) {
             List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
             Collections.sort(_parameters);
 
             for (String parameter : _parameters) {
-                String formula = "";
+                String formula;
 
                 try {
                     formula = TemplateExpander.getInstance().expandTemplate(this.expressionTextPane.getText(),
@@ -647,17 +642,15 @@ class GeneralizedTemplateEditor extends JComponent {
                     getSemPm().setParameterExpression(parameter, formula);
                     getSemPm().setParameterExpression(startWith, parameter, formula);
                 } catch (ParseException e) {
-                    continue;
+                    System.out.println(e.getMessage());
                 }
-
-                parameters.add(parameter);
             }
         } else if ("Estimation Starting Values".equals(this.combo.getSelectedItem())) {
             List<String> _parameters = new ArrayList<>(getSemPm().getParameters());
             Collections.sort(_parameters);
 
             for (String parameter : _parameters) {
-                String formula = "";
+                String formula;
 
                 try {
                     formula = TemplateExpander.getInstance().expandTemplate(this.expressionTextPane.getText(),
@@ -674,10 +667,8 @@ class GeneralizedTemplateEditor extends JComponent {
                     getSemPm().setParameterEstimationInitializationExpression(parameter, formula);
                     getSemPm().setParameterEstimationInitializationExpression(startWith, parameter, formula);
                 } catch (ParseException e) {
-                    continue;
+                    System.out.println(e.getMessage());
                 }
-
-                parameters.add(parameter);
             }
         }
 
@@ -756,7 +747,7 @@ class GeneralizedTemplateEditor extends JComponent {
         ExpressionParser parser = new ExpressionParser();
 
         try {
-            if (!"".equals(expressionString.trim())) {
+            if (!expressionString.trim().isEmpty()) {
                 parser.parseExpression(expressionString);
             }
 
@@ -767,24 +758,18 @@ class GeneralizedTemplateEditor extends JComponent {
 
             String startsWithText = this.startsWithField.getValue().trim();
 
-            if ("Variables".equals(this.combo.getSelectedItem())) {
-                if (!"".equals(expressionString.trim())) {
-//                    getSemPm().setVariablesTemplate(expressionString);
+            if (!"Variables".equals(this.combo.getSelectedItem())) {
+                if (!"Errors".equals(this.combo.getSelectedItem())) {
+                    if ("Parameter Initializations".equals(this.combo.getSelectedItem())) {
+                        if (!startsWithText.trim().isEmpty()) {
+                            getSemPm().setStartsWithParametersTemplate(startsWithText, expressionString);
+                        }
+                    } else if ("Estimation Starting Values".equals(this.combo.getSelectedItem())) {
+                        if (!startsWithText.trim().isEmpty()) {
+                            getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWithText, expressionString);
+                        }
+                    }
                 }
-            } else if ("Errors".equals(this.combo.getSelectedItem())) {
-                if (!"".equals(expressionString.trim())) {
-//                    getSemPm().setErrorsTemplate(expressionString);
-                }
-            } else if ("Parameter Initializations".equals(this.combo.getSelectedItem())) {
-                if (!"".equals(startsWithText.trim())) {
-                    getSemPm().setStartsWithParametersTemplate(startsWithText, expressionString);
-                }
-//                getSemPm().setParametersTemplate(expressionString);
-            } else if ("Estimation Starting Values".equals(this.combo.getSelectedItem())) {
-                if (!"".equals(startsWithText.trim())) {
-                    getSemPm().setStartsWithParametersEstimationInitializaationTemplate(startsWithText, expressionString);
-                }
-//                getSemPm().setParametersEstimationInitializationTemplate(expressionString);
             }
         } catch (ParseException e) {
             this.color = Color.RED;
@@ -830,7 +815,7 @@ class GeneralizedTemplateEditor extends JComponent {
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    System.out.println(e.getMessage());
                 }
             }
         }
