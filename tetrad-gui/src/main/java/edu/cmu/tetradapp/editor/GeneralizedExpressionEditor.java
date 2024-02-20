@@ -64,8 +64,8 @@ class GeneralizedExpressionEditor extends JComponent {
     private int stringWidth;
 
     /**
-     * The time that the selectded text should be colored. (Must do this all indirectly using a thread because we cannot
-     * listen to the text pane.
+     * The time that the selected text should be colored. (Must do this all indirectly using a thread because we cannot
+     * listen to the text pane.)
      */
     private long recolorTime = MillisecondTimes.timeMillis();
 
@@ -81,12 +81,12 @@ class GeneralizedExpressionEditor extends JComponent {
 
     /**
      * The latest parser that was used to parse the expression in <code>expressionTextPane</code>. Needed to get the
-     * most up to date list of parameters.
+     * most up-to-date list of parameters.
      */
     private ExpressionParser latestParser;
 
     /**
-     * The node that's being edited, if a node is being edited; otherwise null.
+     * The node that's being edited if a node is being edited; otherwise null.
      */
     private Node node;
 
@@ -103,7 +103,7 @@ class GeneralizedExpressionEditor extends JComponent {
     /**
      * A display showing the equation or distribution that would result from taking the most recent parsable text from
      * <code>expressionTextPane</code>, writing the variable in front of it with = or ~, and appending the error term
-     * if it's not already in the expression.
+     * if it's not in the expression.
      */
     private final JTextArea resultTextPane;
 
@@ -535,14 +535,14 @@ class GeneralizedExpressionEditor extends JComponent {
      * <p>Getter for the field <code>expressionString</code>.</p>
      *
      * @return the expression string (that is, the edited string, with error term appended if necessary, without
-     * "variable = " or "parameter ~". This is the final product of the editing.
+     * "variable =" or "parameter ~". This is the final product of the editing.)
      */
     public String getExpressionString() {
         return expressionString;
     }
 
     /**
-     * @return the next parameter in the sequence base1, base2,... that's not already being used by the SEM PM.
+     * @return the next parameter in the sequence base1, base2,...the SEM PM has not used that.
      */
     private String nextParameterName() {
         Set<String> parameters = semPm.getParameters();
@@ -679,8 +679,7 @@ class GeneralizedExpressionEditor extends JComponent {
 
         List<String> parametersList = new ArrayList<>(parameters);
         StringBuilder buf = new StringBuilder();
-        Result result = new Result(parametersList, buf);
-        return result;
+        return new Result(parametersList, buf);
     }
 
     private record Result(List<String> parametersList, StringBuilder buf) {
@@ -704,7 +703,7 @@ class GeneralizedExpressionEditor extends JComponent {
 
     private Map<String, String> getExpressionMap(GeneralizedSemPm semPm, Node node) {
         // These are the expressions the user can choose from. The display form is on the left, and the template
-        // form is on the. Obviously you use a % for a new parameter. In case you want to change it.
+        // form is on the right. You use a % for a new parameter. In case you want to change it.
         String[][] expressions = {
                 {"+", " + "},
                 {"-", " - "},
