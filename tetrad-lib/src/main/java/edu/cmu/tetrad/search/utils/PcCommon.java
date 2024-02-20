@@ -522,9 +522,8 @@ public final class PcCommon implements IGraphSearch {
                 if (isColliderSepset(y, sepsetsxz)) {
                     if (colliderAllowed(x, y, z, knowledge)) {
                         PcCommon.orientCollider(x, y, z, this.conflictRule, this.graph, verbose);
+                        this.colliderTriples.add(new Triple(x, y, z));
                     }
-
-                    this.colliderTriples.add(new Triple(x, y, z));
                 } else if (isNoncolliderSepset(y, sepsetsxz)) {
                     this.noncolliderTriples.add(new Triple(x, y, z));
                 } else {
@@ -670,6 +669,7 @@ public final class PcCommon implements IGraphSearch {
                                 System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
                             }
 
+                            colliderTriples.add(new Triple(a, b, c));
                             forceLogMessage(LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset), verbose);
                         }
                     }
