@@ -47,7 +47,7 @@ import java.util.List;
  * @author Erin Korber (added remove latents functionality July 2004)
  * @version $Id: $Id
  */
-public final class CpdagFitModel implements SessionModel {
+public final class CPDAGFitModel implements SessionModel {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -98,7 +98,7 @@ public final class CpdagFitModel implements SessionModel {
      * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
      * @param params          a {@link edu.cmu.tetrad.util.Parameters} object
      */
-    public CpdagFitModel(Simulation simulation, GeneralAlgorithmRunner algorithmRunner, Parameters params) {
+    public CPDAGFitModel(Simulation simulation, GeneralAlgorithmRunner algorithmRunner, Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
         }

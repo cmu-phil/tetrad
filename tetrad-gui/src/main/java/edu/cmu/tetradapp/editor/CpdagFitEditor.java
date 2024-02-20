@@ -25,7 +25,7 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetradapp.model.CpdagFitModel;
+import edu.cmu.tetradapp.model.CPDAGFitModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,15 +42,15 @@ public class CpdagFitEditor extends JPanel {
     /**
      * The model to display.
      */
-    private final CpdagFitModel comparison;
+    private final CPDAGFitModel comparison;
 
 
     /**
      * Constructs the editor given the model
      *
-     * @param comparison a {@link CpdagFitModel} object
+     * @param comparison a {@link CPDAGFitModel} object
      */
-    public CpdagFitEditor(CpdagFitModel comparison) {
+    public CpdagFitEditor(CPDAGFitModel comparison) {
         this.comparison = comparison;
         setup();
     }
