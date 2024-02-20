@@ -41,7 +41,15 @@ public class CovariancesDoubleForkJoin {
      */
     public CovariancesDoubleForkJoin(double[][] data, boolean biasCorrected) {
         this.numOfCols = data[0].length;
-        RealCovarianceMatrixForkJoin cov = new RealCovarianceMatrixForkJoin(data, 10 * Runtime.getRuntime().availableProcessors());
+        int numThreads = Runtime.getRuntime().availableProcessors();
+
+        // On a small machine, we use fewer threads to avoid fork-join out of memory error.
+        // josephramsey 2024-2-19
+        if (Runtime.getRuntime().availableProcessors() <= 8) {
+            numThreads /= 2;
+        }
+
+        RealCovarianceMatrixForkJoin cov = new RealCovarianceMatrixForkJoin(data, numThreads);
         this.covariances = cov.compute(biasCorrected);
     }
 

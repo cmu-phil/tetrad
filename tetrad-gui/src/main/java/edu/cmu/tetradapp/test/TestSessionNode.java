@@ -35,13 +35,18 @@ import static org.junit.Assert.*;
 
 /**
  * <p>Tests the operation of the session node. The session node needs to be able
- * to:&gt; 0 <ul> <li>Add and remove parents or children without violating the constraint that the set of models for the
+ * to:&gt; 0
+ * <ul>
+ * <li>Add and remove parents or children without violating the constraint that the set of models for the
  * parents of a node at any time should be a subset of the set of objects needed to constuct an object of the given
  * model class for some constructor of the model class. Note that in adding parents or children, the lists of parents or
- * children of other nodes need to be adjusted and kept in sync. <li>Create a new model given the parents of the node,
+ * children of other nodes need to be adjusted and kept in sync.
+ * <li>Create a new model given the parents of the node,
  * provided the models of the node's parents can be mapped unambiguously onto the objects required for some constructor
- * of the model class. <li>Fire events to listeners when any of the following happens: (a) parents are added or removed;
+ * of the model class.
+ * <li>Fire events to listeners when any of the following happens: (a) parents are added or removed;
  * (b) models are created or destroyed. The adding and removing of listeners must also be tested.
+ * </ul>
  *
  * @author josephramsey
  */
@@ -279,6 +284,8 @@ public class TestSessionNode {
     /**
      * Tests whether the consistent model classes are calculated correctly. Note that this method should not return
      * anything but null unless all of the parent classes have models in them.
+     *
+     * @throws Exception if something goes wrong.
      */
 //    @Test
     public void testGetConsistentModelClasses() throws Exception {

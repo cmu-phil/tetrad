@@ -45,6 +45,9 @@ public class TestSession {
      */
     private String eventId;
 
+    /**
+     * Sets up the test fixture.
+     */
     public void setUp() {
         this.session = new Session("Test");
     }

@@ -52,7 +52,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         this.data = data;
         this.numOfRows = data.length;
         this.numOfCols = data[0].length;
-        this.numOfThreads = Math.min(numOfThreads, this.numOfCols);
+        this.numOfThreads = numOfThreads;
     }
 
     /**

@@ -274,42 +274,54 @@ public class TestSessionSupport {
     }
 
     /**
-     * Helps to determine whether an event was received.
+     * Checks if event 1 has been received.
+     *
+     * @return true if event 1 has been received, false otherwise
      */
     public boolean isEvent1Received() {
         return this.event1Received;
     }
 
     /**
-     * Set in the test adapater to help determine whether an event was received.
+     * Sets the flag indicating whether event 1 has been received.
+     *
+     * @param event1Received the flag value to set
      */
     public void setEvent1Received(boolean event1Received) {
         this.event1Received = event1Received;
     }
 
     /**
-     * Helps to determine whether an event was received.
+     * Returns whether event 2 has been received.
+     *
+     * @return {@code true} if event 2 has been received; {@code false} otherwise
      */
     public boolean isEvent2Received() {
         return this.event2Received;
     }
 
     /**
-     * Set in the test adapater to help determine whether an event was received.
+     * Sets the flag indicating whether event 2 has been received.
+     *
+     * @param event2Received the flag value to set
      */
     public void setEvent2Received(boolean event2Received) {
         this.event2Received = event2Received;
     }
 
     /**
-     * Returns the test node, node1.
+     * Retrieves the node1 object.
+     *
+     * @return The node1 object.
      */
     public SessionNode getNode1() {
         return this.node1;
     }
 
     /**
-     * Returns the test node, node2.
+     * Retrieves the node2 object.
+     *
+     * @return The node2 object.
      */
     public SessionNode getNode2() {
         return this.node2;
