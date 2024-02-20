@@ -8,18 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>UniformityTest class.</p>
+ * The UniformityTest class provides methods to calculate the p-value of a list of points
+ * using the Kolmogorov-Smirnov test and determine if the distribution is uniform.
  *
  * @author josephramsey
- * @version $Id: $Id
  */
 public class UniformityTest {
 
     /**
-     * <p>getPValue.</p>
+     * Calculates the p-value of a list of points using the Kolmogorov-Smirnov test.
      *
-     * @param points a {@link java.util.List} object
-     * @return a double
+     * @param points A list of double values representing the data points.
+     * @return The p-value of the test.
      */
     public static double getPValue(List<Double> points) {
 
@@ -31,12 +31,12 @@ public class UniformityTest {
     }
 
     /**
-     * <p>getPValue.</p>
+     * Calculates the p-value of a list of points using the Kolmogorov-Smirnov test.
      *
-     * @param points a {@link java.util.List} object
-     * @param min    a double
-     * @param max    a double
-     * @return a double
+     * @param points A list of double values representing the data points.
+     * @param min    The minimum value of the data range.
+     * @param max    The maximum value of the data range.
+     * @return The p-value of the Kolmogorov-Smirnov test.
      */
     public static double getPValue(List<Double> points, double min, double max) {
 
@@ -50,16 +50,18 @@ public class UniformityTest {
             KolmogorovSmirnovTest test = new KolmogorovSmirnovTest();
             return test.kolmogorovSmirnovTest(distribution, data);
         } catch (NumberIsTooLargeException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             return Double.NaN;
         }
 
     }
 
     /**
-     * <p>main.</p>
+     * The main method of the UniformityTest class.
+     * It calculates the p-value of a list of points using the Kolmogorov-Smirnov test
+     * and checks the p-value against a significance level to determine if the distribution is uniform.
      *
-     * @param args an array of {@link java.lang.String} objects
+     * @param args The command-line arguments passed to the program.
      */
     public static void main(String[] args) {
         // Generate a list of points (sample data)
