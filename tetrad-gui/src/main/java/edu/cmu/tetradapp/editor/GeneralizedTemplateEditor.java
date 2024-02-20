@@ -51,63 +51,52 @@ import java.util.*;
 class GeneralizedTemplateEditor extends JComponent {
 
     private static final long serialVersionUID = 3455126100397759982L;
-
+    /**
+     * The text pane in which parsed text is rendered, typed, and colored.
+     */
+    private final JTextPane expressionTextPane;
+    /**
+     * The document for the expression text pane that holds the parsed text.
+     */
+    private final DefaultStyledDocument expressionTextDoc;
+    /**
+     * g The generalized SEM PM that's being edited.
+     */
+    private final GeneralizedSemPm semPm;
+    /**
+     *
+     */
+    private final JComboBox<String> combo = new JComboBox<>();
+    /**
+     * The field that indicates what names of variables or parameters should start with in order to be changed.
+     */
+    private final StringTextField startsWithField;
     /**
      * The color that selected text is being rendered. Either black or red.
      */
     private Color color = Color.BLACK;
-
     /**
      * The start index of selected text.
      */
     private int start;
-
     /**
      * The width of the selected text.
      */
     private int stringWidth;
-
     /**
      * The time that the selectded text should be colored. (Must do this all indirectly using a thread because we cannot
      * saveTemplate to the text pane.
      */
     private long recolorTime = MillisecondTimes.timeMillis();
-
-    /**
-     * The text pane in which parsed text is rendered, typed, and colored.
-     */
-    private final JTextPane expressionTextPane;
-
-    /**
-     * The document for the expression text pane that holds the parsed text.
-     */
-    private final DefaultStyledDocument expressionTextDoc;
-
-    /**
-     * g The generalized SEM PM that's being edited.
-     */
-    private final GeneralizedSemPm semPm;
-
     /**
      * The latest parser that was used to parse the expression in <code>expressionTextPane</code>. Needed to get the
      * most up to date list of parameters.
      */
     private ExpressionParser latestParser;
-
     /**
      * The box in which labels for each equation are rendered.
      */
     private Box equationsBox = Box.createVerticalBox();
-
-    /**
-     *
-     */
-    private final JComboBox<String> combo = new JComboBox<>();
-
-    /**
-     * The field that indicates what names of variables or parameters should start with in order to be changed.
-     */
-    private final StringTextField startsWithField;
 
     //=============================================CONSTRUCTORS================================================//
 
@@ -150,21 +139,23 @@ class GeneralizedTemplateEditor extends JComponent {
 
         JButton insertButton = new JButton("Insert");
 
-        insertButton.addActionListener(actionEvent -> {
-            String token = (String) expressionsBox.getSelectedItem();
-            String signature;
+        insertButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                String token = (String) expressionsBox.getSelectedItem();
+                String signature;
 
-            if ("-New Parameter-".equals(token)) {
-                signature = nextParameterName("b");
-            } else {
-                signature = expressionsMap.get(token);
+                if ("-New Parameter-".equals(token)) {
+                    signature = nextParameterName("b");
+                } else {
+                    signature = expressionsMap.get(token);
+                }
+
+                while (signature.contains("%")) {
+                    signature = signature.replaceFirst("%", nextParameterName("b"));
+                }
+
+                GeneralizedTemplateEditor.this.expressionTextPane.replaceSelection(signature);
             }
-
-            while (signature.contains("%")) {
-                signature = signature.replaceFirst("%", nextParameterName("b"));
-            }
-
-            GeneralizedTemplateEditor.this.expressionTextPane.replaceSelection(signature);
         });
 
         this.combo.addItem("Variables");
@@ -277,40 +268,42 @@ class GeneralizedTemplateEditor extends JComponent {
 
         this.startsWithField = new StringTextField("", 6);
 
-        this.startsWithField.setFilter((value, oldValue) -> {
-            String item = (String) GeneralizedTemplateEditor.this.combo.getSelectedItem();
+        this.startsWithField.setFilter(new StringTextField.Filter() {
+            public String filter(String value, String oldValue) {
+                String item = (String) GeneralizedTemplateEditor.this.combo.getSelectedItem();
 
-            if ("Variables".equals(item)) {
-                String variablesTemplate = getSemPm().getVariablesTemplate();
-                setParseText(variablesTemplate);
+                if ("Variables".equals(item)) {
+                    String variablesTemplate = getSemPm().getVariablesTemplate();
+                    setParseText(variablesTemplate);
 //                    updateEquationsDisplay();
-            } else if ("Errors".equals(item)) {
-                String errorsTemplate = getSemPm().getErrorsTemplate();
-                setParseText(errorsTemplate);
+                } else if ("Errors".equals(item)) {
+                    String errorsTemplate = getSemPm().getErrorsTemplate();
+                    setParseText(errorsTemplate);
 //                    updateEquationsDisplay();
-            } else if ("Parameter Initializations".equals(item)) {
-                String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                String template = getSemPm().getStartsWithParameterTemplate(startsWith);
-                if (template == null) {
-                    template = getSemPm().getParametersTemplate();
+                } else if ("Parameter Initializations".equals(item)) {
+                    String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
+                    String template = getSemPm().getStartsWithParameterTemplate(startsWith);
+                    if (template == null) {
+                        template = getSemPm().getParametersTemplate();
+                    }
+
+                    setParseText(template);
+//                    updateEquationsDisplay();
+                } else if ("Estimation Starting Values".equals(item)) {
+                    String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
+                    String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
+                    if (template == null) {
+                        template = getSemPm().getParametersEstimationInitializationTemplate();
+                    }
+
+                    setParseText(template);
+//                    updateEquationsDisplay();
+                } else {
+                    throw new IllegalStateException("Unrecognized Combo Box Item: " + item);
                 }
 
-                setParseText(template);
-//                    updateEquationsDisplay();
-            } else if ("Estimation Starting Values".equals(item)) {
-                String startsWith = GeneralizedTemplateEditor.this.startsWithField.getText();
-                String template = getSemPm().getStartsWithParameterEstimationInitializatonTemplate(startsWith);
-                if (template == null) {
-                    template = getSemPm().getParametersEstimationInitializationTemplate();
-                }
-
-                setParseText(template);
-//                    updateEquationsDisplay();
-            } else {
-                throw new IllegalStateException("Unrecognized Combo Box Item: " + item);
+                return value;
             }
-
-            return value;
         });
 
         Box b = Box.createVerticalBox();
@@ -356,7 +349,6 @@ class GeneralizedTemplateEditor extends JComponent {
 
         setLayout(new BorderLayout());
         add(b, BorderLayout.CENTER);
-
 
 
         this.expressionTextDoc.addDocumentListener(new DocumentListener() {
@@ -804,7 +796,7 @@ class GeneralizedTemplateEditor extends JComponent {
         this.latestParser = parser;
     }
 
-    static class ColorThread extends Thread {
+    private static class ColorThread extends Thread {
         private final JTextPane expressionTextPane;
         private final GeneralizedTemplateEditor templateEditor;
         private boolean stop;
