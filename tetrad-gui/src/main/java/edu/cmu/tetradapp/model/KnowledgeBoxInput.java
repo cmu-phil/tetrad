@@ -33,22 +33,20 @@ import edu.cmu.tetradapp.session.SessionModel;
  * @version $Id: $Id
  */
 public interface KnowledgeBoxInput extends SessionModel, VariableSource {
-    /**
-     * Constant <code>serialVersionUID=23L</code>
-     */
+
     long serialVersionUID = 23L;
 
     /**
-     * <p>getSourceGraph.</p>
+     * Retrieves the source graph.
      *
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return the source graph for the knowledge box input
      */
     Graph getSourceGraph();
 
     /**
-     * <p>getResultGraph.</p>
+     * Retrieves the result graph.
      *
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @return the result graph for the knowledge box input
      */
     Graph getResultGraph();
 }
