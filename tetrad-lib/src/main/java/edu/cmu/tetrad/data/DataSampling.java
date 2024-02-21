@@ -76,7 +76,7 @@ public final class DataSampling {
         int sampleSize = (int) (dataSet.getNumRows() * (parameters.getInt(Params.PERCENT_RESAMPLE_SIZE) / 100.0));
         boolean isResamplingWithReplacement = parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT);
         int[] selectedColumns = IntStream.range(0, dataSet.getNumColumns()).toArray();  // select all data columns
-        for (int i = 0; i < parameters.getInt(Params.NUMBER_RESAMPLING); i++) {
+        for (int i = 0; i < parameters.getInt(Params.NUMBER_RESAMPLING) && !Thread.currentThread().isInterrupted(); i++) {
             // select data rows to create new dataset
             int[] selectedRows = isResamplingWithReplacement
                     ? getRowIndexesWithReplacement(dataSet, sampleSize, randomGenerator)
