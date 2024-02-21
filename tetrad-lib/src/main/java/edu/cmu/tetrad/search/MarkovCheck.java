@@ -27,15 +27,15 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
 /**
- * Checks whether a graph is locally Markov or locally Faithful given a data set. First, a list of m-separation
- * predictions are made for each pair of variables in the graph given the parents of one of the variables. One list (for
- * local Markov) is for where the m-separation holds and another list (for local Faithfulness) where the m-separation
- * does not hold. Then the predictions are tested against the data set using the independence test. For the Markov test,
- * since an independence test yielding p-values should be Uniform under the null hypothesis, these p-values are tested
- * for Uniformity using the Kolmogorov-Smirnov test. Also, a fraction of dependent judgments is returned, which should
- * equal the alpha level of the independence test if the test is Uniform under the null hypothesis. For the Faithfulness
- * test, the p-values are tested for Uniformity using the Kolmogorov-Smirnov test; these should be dependent. Also, a
- * fraction of dependent judgments is returned, which should be maximal.
+ * Checks whether a graph is Markov given a data set. First, a list of m-separation predictions are made for each pair
+ * of variables in the graph given the parents of one of the variables. One list (for Markov) is for where the
+ * m-separation holds and another list (for dependency checks) where the m-separation does not hold. Then the
+ * predictions are tested against the data set using the independence test. For the Markov test, since an independence
+ * test yielding p-values should be Uniform under the null hypothesis, these p-values are tested for Uniformity using
+ * the Kolmogorov-Smirnov test. Also, a fraction of dependent judgments is returned, which should equal the alpha level
+ * of the independence test if the test is Uniform under the null hypothesis. For the Faithfulness test, the p-values
+ * are tested for Uniformity using the Kolmogorov-Smirnov test; these should be dependent. Also, a fraction of dependent
+ * judgments is returned, which should be maximal.
  * <p>
  * Knowledge may be supplied to the Markov check. This knowledge is used to specify independence and conditioning
  * ranges. For facts of the form X _||_ Y | Z, X and Y should be in the last tier of the knowledge, and Z should be in
@@ -45,53 +45,101 @@ import java.util.concurrent.Future;
  * @version $Id: $Id
  */
 public class MarkovCheck {
-    // The graph.
+    /**
+     * The graph.
+     */
     private final Graph graph;
-    // The independence test.
+    /**
+     * The independence test.
+     */
     private final IndependenceTest independenceTest;
-    // The results of the Markov check for the independent case.
+    /**
+     * The results of the Markov check for the independent case.
+     */
     private final List<IndependenceResult> resultsIndep = new ArrayList<>();
-    // The results of the Markov check for the dependent case.
+    /**
+     * The results of the Markov check for the dependent case.
+     */
     private final List<IndependenceResult> resultsDep = new ArrayList<>();
-    // The type of conditioning sets to use in the Markov check.
+    /**
+     * The type of conditioning sets to use in the Markov check.
+     */
     private ConditioningSetType setType;
-    // True if the checks should be parallelized. (Not always a good idea.)
+    /**
+     * True if the checks should be parallelized. (Not always a good idea.)
+     */
     private boolean parallelized = false;
-    // The fraction of dependent judgments for the independent case.
+    /**
+     * The fraction of dependent judgments for the independent case.
+     */
     private double fractionDependentIndep = Double.NaN;
-    // The fraction of dependent judgments for the dependent case.
+    /**
+     * The fraction of dependent judgments for the dependent case.
+     */
     private double fractionDependentDep = Double.NaN;
-    // The Kolmogorov-Smirnov p-value for the independent case.
+    /**
+     * The Kolmogorov-Smirnov p-value for the independent case.
+     */
     private double ksPValueIndep = Double.NaN;
-    // The Kolmogorov-Smirnov p-value for the dependent case.
+    /**
+     * The Kolmogorov-Smirnov p-value for the dependent case.
+     */
     private double ksPValueDep = Double.NaN;
-    // The Anderson-Darling A^2 statistic for the independent case.
+    /**
+     * The Anderson-Darling A^2 statistic for the independent case.
+     */
     private double aSquaredIndep = Double.NaN;
-    // The Anderson-Darling A^2 statistic for the dependent case.
+    /**
+     * The Anderson-Darling A^2 statistic for the dependent case.
+     */
     private double aSquaredDep = Double.NaN;
-    // The Anderson-Darling A^2* statistic for the independent case.
+    /**
+     * The Anderson-Darling A^2* statistic for the independent case.
+     */
     private double aSquaredStarIndep = Double.NaN;
-    // The Anderson-Darling A^2* statistic for the dependent case.
+    /**
+     * The Anderson-Darling A^2* statistic for the dependent case.
+     */
     private double aSquaredStarDep = Double.NaN;
-    // The Anderson-Darling p-value for the independent case.
+    /**
+     * The Anderson-Darling p-value for the independent case.
+     */
     private double andersonDarlingPIndep = Double.NaN;
-    // The Anderson-Darling p-value for the dependent case.
+    /**
+     * The Anderson-Darling p-value for the dependent case.
+     */
     private double andersonDarlingPDep = Double.NaN;
-    // The Binomial p-value for the independent case.
+    /**
+     * The Binomial p-value for the independent case.
+     */
     private double binomialPIndep = Double.NaN;
-    // The Binomial p-value for the dependent case.
+    /**
+     * The Binomial p-value for the dependent case.
+     */
     private double binomialPDep = Double.NaN;
-    // The percentage of all samples to use when resampling for each conditional independence test.
+    /**
+     * The percentage of all samples to use when resampling for each conditional independence test.
+     */
     private double percentResample = 0.5;
-    // The number of tests for the independent case.
+    /**
+     * The number of tests for the independent case.
+     */
     private int numTestsIndep = 0;
-    // The number of tests for the dependent case.
+    /**
+     * The number of tests for the dependent case.
+     */
     private int numTestsDep = 0;
-    // A knowledge object to specify independence and conditioning ranges. Empty by default.
+    /**
+     * A knowledge object to specify independence and conditioning ranges. Empty by default.
+     */
     private Knowledge knowledge = new Knowledge();
-    // For X _||_ Y | Z, X and Y must come from this set if knowledge is used.
+    /**
+     * For X _||_ Y | Z, X and Y must come from this set if knowledge is used.
+     */
     private List<Node> independenceNodes;
-    // For X _||_ Y | Z, the nodes in Z must come from this set if knowledge is used.
+    /**
+     * For X _||_ Y | Z, the nodes in Z must come from this set if knowledge is used.
+     */
     private List<Node> conditioningNodes;
 
     /**
@@ -182,10 +230,10 @@ public class MarkovCheck {
     }
 
     /**
-     * Generates all results, for both the local Markov and local Faithfulness checks, for each node in the graph given
-     * the parents of that node. These results are stored in the resultsIndep and resultsDep lists. This should be
-     * called before any of the result methods. Note that only results for X _||_ Y | Z1,...,Zn are generated, where X
-     * and Y are in the independenceNodes list and Z1,...,Zn are in the conditioningNodes list.
+     * Generates all results, for both the Markov and dependency checks, for each node in the graph given the parents of
+     * that node. These results are stored in the resultsIndep and resultsDep lists. This should be called before any of
+     * the result methods. Note that only results for X _||_ Y | Z1,...,Zn are generated, where X and Y are in the
+     * independenceNodes list and Z1,...,Zn are in the conditioningNodes list.
      *
      * @see #getResults(boolean)
      */
@@ -300,11 +348,11 @@ public class MarkovCheck {
     }
 
     /**
-     * After the generateResults method has been called, this method returns the results for the local Markov or local
-     * Faithfulness check, depending on the value of the indep parameter.
+     * After the generateResults method has been called, this method returns the results for the Markov or dependency
+     * check, depending on the value of the indep parameter.
      *
-     * @param indep True for the local Markov results, false for the local Faithfulness results.
-     * @return The results for the local Markov or local Faithfulness check.
+     * @param indep True for the Markov results, false for the dependency results.
+     * @return The results for the Markov or dependency check.
      */
     public List<IndependenceResult> getResults(boolean indep) {
         if (indep) {
@@ -333,7 +381,7 @@ public class MarkovCheck {
     /**
      * Returns the fraction of dependent judgments for the given list of results.
      *
-     * @param indep True for the local Markov results, false for the local Faithfulness results.
+     * @param indep True for the Markov results, false for the dependency results.
      * @return The fraction of dependent judgments for this condition.
      */
     public double getFractionDependent(boolean indep) {
@@ -347,7 +395,7 @@ public class MarkovCheck {
     /**
      * Returns the Kolmorogov-Smirnov p-value for the given list of results.
      *
-     * @param indep True for the local Markov results, false for the local Faithfulness results.
+     * @param indep True for the Markov results, false for the dependency results.
      * @return The Kolmorogov-Smirnov p-value for this condition.
      */
     public double getKsPValue(boolean indep) {
@@ -837,7 +885,7 @@ public class MarkovCheck {
     }
 
     /**
-     * Generates the results for the given set of independence facts, for both the local Markov and local Faithfulness
+     * Generates the results for the given set of independence facts, for both the Markov and dependency checks.
      *
      * @param msep  The set of m-separation facts.
      * @param mconn The set of m-connection facts.
