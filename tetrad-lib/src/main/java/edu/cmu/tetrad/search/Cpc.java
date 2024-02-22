@@ -54,7 +54,7 @@ import java.util.Set;
  * ambiguous triple whether it should be a collider or a noncollider and then run the Meek rules given the result of
  * these decisions.</p>
  *
- * <p>See setter methods for "knobs" you can turn to control the output of PC and their defaults.</p> *
+ * <p>See setter methods for "knobs" you can turn to control the output of PC and their defaults.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.</p>
@@ -113,8 +113,8 @@ public final class Cpc implements IGraphSearch {
      */
     private boolean meekPreventCycles = true;
     /**
-     * The `conflictRule` variable represents the conflict rule used for resolving collider orientation conflicts during the search.
-     * It is an enum value defined in the `PcCommon` class.
+     * The `conflictRule` variable represents the conflict rule used for resolving collider orientation conflicts during
+     * the search. It is an enum value defined in the `PcCommon` class.
      *
      * @see PcCommon.ConflictRule
      */
@@ -124,8 +124,8 @@ public final class Cpc implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
-     * This variable represents the type of PC heuristic used in the search algorithm.
-     * The default value is PcCommon.PcHeuristicType.NONE.
+     * This variable represents the type of PC heuristic used in the search algorithm. The default value is
+     * PcCommon.PcHeuristicType.NONE.
      *
      * @see PcCommon.PcHeuristicType
      */
