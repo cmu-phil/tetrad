@@ -32,7 +32,7 @@ import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Translates a version of the FastICA algorithm used in R from Fortran into Java for use in Tetrad. This can be used in
- * various algorithms that assume linearity and non-gaussianity, as for example LiNGAM and LiNG-D. There is one
+ * various algorithms that assume linearity and non-Gaussianity as for example, LiNGAM and LiNG-D. There is one
  * difference from the R, in that in R FastICA can operate over complex numbers, whereas here it is restricted to real
  * numbers. A useful reference is this:
  * <p>
@@ -98,7 +98,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * First, the data is centered by subtracting the mean of each column of the data matrix X.
  * <p>
- * The data matrix is then `whitened' by projecting the data onto it's principle component directions i.e. X -&gt; XK
+ * The data matrix is then `whitened' by projecting the data onto its principle-component directions--i.e., X -&gt; XK
  * where K is a pre-whitening matrix. The user can specify the number of components.
  * <p>
  * The ICA algorithm then estimates a matrix W s.t XKW = S . W is chosen to maximize the neg-entropy approximation under
