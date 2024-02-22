@@ -35,7 +35,7 @@ import java.util.concurrent.Future;
  * the Kolmogorov-Smirnov test. Also, a fraction of dependent judgments is returned, which should equal the alpha level
  * of the independence test if the test is Uniform under the null hypothesis. For the Faithfulness test, the p-values
  * are tested for Uniformity using the Kolmogorov-Smirnov test; these should be dependent. Also, a fraction of dependent
- * judgments is returned, which should be maximal.
+ * judgments is returned.
  * <p>
  * Knowledge may be supplied to the Markov check. This knowledge is used to specify independence and conditioning
  * ranges. For facts of the form X _||_ Y | Z, X and Y should be in the last tier of the knowledge, and Z should be in
@@ -953,7 +953,7 @@ public class MarkovCheck {
     /**
      * Stores the set of m-separation facts and the set of m-connection facts for a graph, for the global check.
      */
-    public static class AllSubsetsIndependenceFacts {
+    public static final class AllSubsetsIndependenceFacts {
 
         /**
          * {@link Set} of m-separation facts.
