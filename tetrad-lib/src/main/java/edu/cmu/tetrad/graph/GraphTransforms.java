@@ -64,13 +64,12 @@ public class GraphTransforms {
         return dag;
     }
 
-    // Zhang 2008 Theorem 2
-
     /**
-     * <p>pagToMag.</p>
+     * Transforms a partially ancestral graph (PAG) into a maximally ancestral graph (MAG) using Zhang's 2008 Theorem
+     * 2.
      *
-     * @param pag a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param pag The partially ancestral graph to transform.
+     * @return The maximally ancestral graph obtained from the PAG.
      */
     public static Graph pagToMag(Graph pag) {
         Graph mag = new EdgeListGraph(pag.getNodes());
@@ -151,11 +150,12 @@ public class GraphTransforms {
     }
 
     /**
-     * <p>getDagsInCpdagMeek.</p>
+     * Retrieves a list of directed acyclic graphs (DAGs) within the given completed partially directed acyclic graph
+     * (CPDAG) using the Meek rules.
      *
-     * @param cpdag     a {@link edu.cmu.tetrad.graph.Graph} object
-     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
-     * @return a {@link java.util.List} object
+     * @param cpdag     The completed partially directed acyclic graph (CPDAG) from which to retrieve the DAGs.
+     * @param knowledge The knowledge available to check if a potential DAG violates any constraints.
+     * @return A {@link List} of {@link Graph} objects representing the DAGs within the CPDAG.
      */
     public static List<Graph> getDagsInCpdagMeek(Graph cpdag, Knowledge knowledge) {
         DagInCpcagIterator iterator = new DagInCpcagIterator(cpdag, knowledge);
@@ -179,10 +179,10 @@ public class GraphTransforms {
     }
 
     /**
-     * <p>getAllGraphsByDirectingUndirectedEdges.</p>
+     * Returns a list of all possible graphs obtained by directing undirected edges in the given graph.
      *
-     * @param skeleton a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return a {@link java.util.List} object
+     * @param skeleton the graph to transform
+     * @return a list of all possible graphs obtained by directing undirected edges
      */
     public static List<Graph> getAllGraphsByDirectingUndirectedEdges(Graph skeleton) {
         List<Graph> graphs = new ArrayList<>();
@@ -233,10 +233,10 @@ public class GraphTransforms {
     }
 
     /**
-     * <p>cpdagForDag.</p>
+     * Returns the completed partially directed acyclic graph (CPDAG) for a given directed acyclic graph (DAG).
      *
-     * @param dag a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param dag The input DAG.
+     * @return The CPDAG resulting from applying Meek Rules to the input DAG.
      */
     public static Graph cpdagForDag(Graph dag) {
         Graph cpdag = new EdgeListGraph(dag);
@@ -247,16 +247,23 @@ public class GraphTransforms {
     }
 
     /**
-     * <p>dagToPag.</p>
+     * Converts a Directed Acyclic Graph (DAG) to a Partial Ancestral Graph (PAG) using the DagToPag algorithm.
      *
-     * @param trueGraph a {@link edu.cmu.tetrad.graph.Graph} object
-     * @return a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param trueGraph The input DAG to be converted.
+     * @return The resulting PAG obtained from the input DAG.
      */
     @NotNull
     public static Graph dagToPag(Graph trueGraph) {
         return new DagToPag(trueGraph).convert();
     }
 
+    /**
+     * Directs an edge between two nodes in a graph.
+     *
+     * @param a     the start node of the edge
+     * @param c     the end node of the edge
+     * @param graph the graph in which the edge needs to be directed
+     */
     private static void direct(Node a, Node c, Graph graph) {
         Edge before = graph.getEdge(a, c);
         Edge after = Edges.directedEdge(a, c);
