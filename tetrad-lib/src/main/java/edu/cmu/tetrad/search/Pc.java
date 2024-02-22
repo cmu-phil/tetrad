@@ -191,6 +191,11 @@ public class Pc implements IGraphSearch {
         return this.graph;
     }
 
+    /**
+     * Retrieves an instance of the {@link PcCommon} class with the specified configurations.
+     *
+     * @return The {@link PcCommon} instance.
+     */
     @NotNull
     private PcCommon getPcCommon() {
         PcCommon search = new PcCommon(independenceTest);
