@@ -46,7 +46,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * </ol>
  * <p>
  * The optional BES step is needed for correctness, though with large
- * models is has very little effect on the output, since nearly all edges
+ * models this has very little effect on the output, since nearly all edges
  * are already oriented, so a parameter is included to turn that step off.
  * <p>
  * Knowledge can be used with this search. If tiered knowledge is used,
@@ -365,6 +365,16 @@ public class Boss implements SuborderSearch {
         this.useDataOrder = useDataOrder;
     }
 
+    /**
+     * This method asynchronously performs a better mutation operation on the given suborder of nodes. It takes a prefix
+     * of nodes that must precede the suborder, a suborder of nodes to be ordered, and a node to be moved in the
+     * suborder. It returns true if the suborder was modified and false otherwise.
+     *
+     * @param prefix   The list of nodes that must precede the suborder.
+     * @param suborder The list of nodes to be ordered.
+     * @param x        The node to be moved in the suborder.
+     * @return true if the suborder was modified, false otherwise.
+     */
     private boolean betterMutationAsync(List<Node> prefix, List<Node> suborder, Node x) {
         List<Callable<Void>> tasks = new ArrayList<>();
 
@@ -433,6 +443,14 @@ public class Boss implements SuborderSearch {
         return true;
     }
 
+    /**
+     * Reorders a suborder of nodes in a more optimal way.
+     *
+     * @param prefix   The list of nodes that must precede the suborder.
+     * @param suborder The list of nodes to be ordered.
+     * @param x        The node to be moved in the suborder.
+     * @return true if the suborder was modified, false otherwise.
+     */
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
         ListIterator<Node> itr = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
@@ -491,6 +509,12 @@ public class Boss implements SuborderSearch {
         return true;
     }
 
+    /**
+     * Runs the Backward Equivalence Search from GES.
+     *
+     * @param prefix   The list of nodes that must precede the suborder.
+     * @param suborder The list of nodes to be ordered.
+     */
     private void bes(List<Node> prefix, List<Node> suborder) {
         List<Node> all = new ArrayList<>(prefix);
         all.addAll(suborder);
@@ -500,6 +524,14 @@ public class Boss implements SuborderSearch {
         graph.paths().makeValidOrder(suborder);
     }
 
+    /**
+     * Updates the suborder of variables by adding each variable from the suborder to the prefix and computing the
+     * score.
+     *
+     * @param prefix   The list of variables that must precede the suborder.
+     * @param suborder The list of variables to be ordered.
+     * @return The score after updating the suborder.
+     */
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
 
@@ -515,6 +547,11 @@ public class Boss implements SuborderSearch {
         return score;
     }
 
+    /**
+     * Makes the given knowledge order valid by rearranging the elements in the order list.
+     *
+     * @param order The list of nodes representing the knowledge order.
+     */
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (this.knowledge.isEmpty()) return;
 
@@ -554,6 +591,9 @@ public class Boss implements SuborderSearch {
 
     // alter this code so that it roughly obeys tiers.
 
+    /**
+     * This class represents a callable task for computing the score for a given set of variables.
+     */
     private static class Trace implements Callable<Void> {
         private final GrowShrinkTree gst;
         private final Set<Node> all;
