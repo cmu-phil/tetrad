@@ -8,25 +8,29 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>CompositeIndependenceTest class.</p>
+ * Represents a composite independence test that combines multiple independence tests together.
  *
  * @author josephramsey
- * @version $Id: $Id
  */
 public class CompositeIndependenceTest implements IndependenceTest {
     private final IndependenceTest[] independenceTests;
 
     /**
-     * <p>Constructor for CompositeIndependenceTest.</p>
+     * Represents a composite independence test that combines multiple independence tests together.
      *
-     * @param independenceTests an array of {@link edu.cmu.tetrad.search.IndependenceTest} objects
+     * @param independenceTests an array of IndependenceTest objects to be combined
      */
     public CompositeIndependenceTest(IndependenceTest[] independenceTests) {
         this.independenceTests = independenceTests;
     }
 
     /**
-     * {@inheritDoc}
+     * Checks the independence between two nodes, given a set of conditioning nodes.
+     *
+     * @param x The first node.
+     * @param y The second node.
+     * @param z The set of conditioning nodes.
+     * @return The result of the independence test.
      */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
@@ -34,7 +38,9 @@ public class CompositeIndependenceTest implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the variables associated with this IndependenceTest.
+     *
+     * @return a List of Node objects representing the variables associated with this IndependenceTest.
      */
     @Override
     public List<Node> getVariables() {
@@ -42,7 +48,9 @@ public class CompositeIndependenceTest implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Retrieves the DataModel associated with this object.
+     *
+     * @return the DataModel associated with this object.
      */
     @Override
     public DataModel getData() {
@@ -50,7 +58,9 @@ public class CompositeIndependenceTest implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns true if the test prints verbose output.
+     *
+     * @return True if the test is set to print verbose output, false otherwise.
      */
     @Override
     public boolean isVerbose() {
@@ -58,7 +68,9 @@ public class CompositeIndependenceTest implements IndependenceTest {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets whether this test will print verbose output.
+     *
+     * @param verbose True, if verbose output should be printed. False otherwise.
      */
     @Override
     public void setVerbose(boolean verbose) {

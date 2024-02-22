@@ -97,7 +97,6 @@ public final class BFci implements IGraphSearch {
     private boolean verbose;
     /**
      * The number of times to restart the search.
-     *
      * <p>
      * The search algorithm may converge to a suboptimal solution. To mitigate this, the algorithm can be restart
      * multiple times with different initial conditions. The {@code numStarts} variable represents the number of times
