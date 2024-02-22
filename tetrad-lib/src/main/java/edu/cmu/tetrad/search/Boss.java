@@ -72,40 +72,72 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * @see Knowledge
  */
 public class Boss implements SuborderSearch {
-    // The score.
+    /**
+     * The score.
+     */
     private final Score score;
-    // The variables.
+    /**
+     * The variables.
+     */
     private final List<Node> variables;
-    // The parents.
+    /**
+     * The parents.
+     */
     private final Map<Node, Set<Node>> parents;
-    // The grow-shrink trees.
+    /**
+     * The grow-shrink trees.
+     */
     private Map<Node, GrowShrinkTree> gsts;
-    // The set of all variables.
+    /**
+     * The set of all variables.
+     */
     private Set<Node> all;
-    // The pool for parallelism.
+    /**
+     * The pool for parallelism.
+     */
     private ForkJoinPool pool;
-    // The knowledge.
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The BES algorithm.
+    /**
+     * The BES algorithm.
+     */
     private BesPermutation bes = null;
-    // The number of random starts to use.
+    /**
+     * The number of random starts to use.
+     */
     private int numStarts = 1;
-    // True if the order of the variables in the data should be used for an initial best-order search, false if a random
-    // permutation should be used. (Subsequence automatic best order runs will use random permutations.) This is
-    // included so that the algorithm will be capable of outputting the same results with the same data without any
-    // randomness.
+    /**
+     * True if the order of the variables in the data should be used for an initial best-order search, false if a random
+     * permutation should be used. (Subsequence automatic best order runs will use random permutations.) This is
+     * included so that the algorithm will be capable of outputting the same results with the same data without any
+     * randomness.
+     */
     private boolean useDataOrder = true;
-    // True if the grow-shrink trees should be reset after each best-mutation step.
+    /**
+     * True if the grow-shrink trees should be reset after each best-mutation step.
+     */
     private boolean resetAfterBM = false;
-    // True if the grow-shrink trees should be reset after each restart.
+    /**
+     * True if the grow-shrink trees should be reset after each restart.
+     */
     private boolean resetAfterRS = true;
-    // The number of threads to use.
+    /**
+     * The number of threads to use.
+     */
     private int numThreads = 1;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private List<Double> bics;
-    // The BIC scores.
+    /**
+     * The BIC scores.
+     */
     private List<Double> times;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose = false;
 
 
@@ -124,8 +156,6 @@ public class Boss implements SuborderSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Searches a suborder of the variables. The prefix is the set of variables that must precede the suborder. The
      * suborder is the set of variables to be ordered. The gsts is a map from variables to GrowShrinkTrees, which are
      * used to cache scores for the variables. The searchSuborder method will update the suborder to be the best
@@ -145,9 +175,7 @@ public class Boss implements SuborderSearch {
         double score, bestScore = Double.NEGATIVE_INFINITY;
         boolean improved;
 
-//        if (this.numThreads > 1) this.pool = new ForkJoinPool(this.numThreads);
-//        else this.pool = ForkJoinPool.commonPool();
-        this.pool = new ForkJoinPool(this.numThreads);//  ForkJoin.getInstance().newPool(this.numThreads);
+        this.pool = new ForkJoinPool(this.numThreads);
 
         for (int i = 0; i < this.numStarts; i++) {
 
@@ -226,8 +254,6 @@ public class Boss implements SuborderSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Sets the knowledge to be used for the search.
      */
     @Override
@@ -286,8 +312,6 @@ public class Boss implements SuborderSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns the variables.
      */
     @Override
@@ -296,8 +320,6 @@ public class Boss implements SuborderSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns the map from nodes to the sets of their parents.
      */
     @Override
@@ -306,8 +328,6 @@ public class Boss implements SuborderSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Returns the score being used for the search.
      */
     @Override
