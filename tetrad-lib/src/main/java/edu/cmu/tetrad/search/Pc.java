@@ -39,9 +39,9 @@ import java.util.Set;
 /**
  * Implements the Peter/Clark (PC) algorithm, which uses conditional independence testing as an oracle to first of all
  * remove extraneous edges from a complete graph, then to orient the unshielded colliders in the graph, and finally to
- * make any additional orientations that are capable of avoiding additional unshielded colliders in the graph. A
- * version of this algorithm was proposed earlier than this, but the standard reference for the algorithm is in Chapter
- * 6 of the following book:
+ * make any additional orientations that are capable of avoiding additional unshielded colliders in the graph. A version
+ * of this algorithm was proposed earlier than this, but the standard reference for the algorithm is in Chapter 6 of the
+ * following book:
  * <p>
  * Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT press.
  * <p>
@@ -404,8 +404,8 @@ public class Pc implements IGraphSearch {
      * Sets whether the max-p heuristic should be used for collider discovery. Default is true. See the following
      * reference for this:
      * <p>
-     * Ramsey, J. (2016). Improving the accuracy and scalability of the pc algorithm by maximizing p-value. arXiv preprint
-     * arXiv:1610.00378.
+     * Ramsey, J. (2016). Improving the accuracy and scalability of the pc algorithm by maximizing p-value. arXiv
+     * preprint arXiv:1610.00378.
      *
      * @param useMaxPHeuristic True, if so.
      */
