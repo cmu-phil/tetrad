@@ -357,8 +357,11 @@ public class FastIca {
         Matrix U = new Matrix(s.getU().getData());
 
         for (int i = 0; i < D.getNumRows(); i++) {
-            D.set(i, i, 1.0 / FastMath.sqrt(D.get(i, i)));
+//            D.set(i, i, 1.0 / FastMath.sqrt(D.get(i, i)));
+            D.set(i, i, 1.0 / (D.get(i, i)));
         }
+
+        cov.sqrt();
 
         Matrix K = D.times(U.transpose());
 //        K = K.scalarMult(-1); // This SVD gives -U from R's SVD.

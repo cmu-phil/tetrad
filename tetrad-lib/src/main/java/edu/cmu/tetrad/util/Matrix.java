@@ -546,9 +546,9 @@ public class Matrix implements TetradSerializable {
     }
 
     /**
-     * <p>sqrt.</p>
+     * Calculates the square root of the matrix using Singular Value Decomposition.
      *
-     * @return a {@link edu.cmu.tetrad.util.Matrix} object
+     * @return The square root of the matrix as a new Matrix object.
      */
     public Matrix sqrt() {
         SingularValueDecomposition svd = new SingularValueDecomposition(this.apacheData);
