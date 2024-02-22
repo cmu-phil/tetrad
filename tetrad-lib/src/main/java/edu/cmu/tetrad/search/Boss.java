@@ -14,27 +14,21 @@ import java.util.concurrent.ForkJoinPool;
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
- * Implements Best Order Score Search (BOSS). The following references are relevant:
+ * Implements Best Order Score Search (BOSS). The reference is this:
  * <p>
- * Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations of the sparsest permutation algorithm.
- * In Uncertainty in Artificial Intelligence (pp. 1052-1062). PMLR.
- * <p>
- * Teyssier, M., &amp; Koller, D. (2012). Ordering-based search: A simple and effective algorithm for learning Bayesian
- * networks. arXiv preprint arXiv:1207.1429.
- * <p>
- * Solus, L., Wang, Y., &amp; Uhler, C. (2021). Consistency guarantees for greedy permutation-based causal inference
- * algorithms. Biometrika, 108(4), 795-814.
+ * Andrews, B., Ramsey, J., Sanchez Romero, R., Camchong, J., & Kummerfeld, E. (2024). Fast Scalable and Accurate
+ * Discovery of DAGs Using the Best Order Score Search and Grow Shrink Trees. Advances in Neural Information Processing
+ * Systems, 36.
  * <p>
  * The BOSS algorithm is based on the idea that implied DAGs for permutations are most optimal in their BIC scores when
- * the variables in the permutations are ordered causally--that is, so that that causes in the models come before
- * effects in a topological order.
+ * the variables in the permutations are ordered so that that causes in the models come before effects for some DAG in
+ * the true Markov equivalence class.
  * <p>
  * This algorithm is implemented as a "plugin-in" algorithm to a PermutationSearch object (see), which deals with
  * certain details of knowledge handling that are common to different permutation searches.
  * <p>
  * BOSS, like GRaSP (see), is characterized by high adjacency and orientation precision (especially) and recall for
- * moderate sample sizes. BOSS scales up currently further than GRaSP to larger variable sets and denser graphs and so
- * is currently preferable from a practical standpoint, though performance is essentially identical.
+ * moderate sample sizes.
  * <p>
  * The algorithm works as follows:
  * <ol>
@@ -56,13 +50,10 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * However, knowledge of required and forbidden edges is correctly implemented
  * for arbitrary such knowledge.
  * <p>
- * A parameter is included to restart the search a certain number of time.
+ * A parameter is included to restart the search a certain number of times.
  * The idea is that the goal is to optimize a BIC score, so if several runs
  * are done of the algorithm for the same data, the model with the highest
  * BIC score should be returned and the others ignored.
- * <p>
- * This class is meant to be used in the context of the PermutationSearch
- * class (see).
  *
  * @author bryanandrews
  * @author josephramsey
