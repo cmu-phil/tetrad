@@ -160,6 +160,10 @@ public class Boss implements SuborderSearch {
      * suborder is the set of variables to be ordered. The gsts is a map from variables to GrowShrinkTrees, which are
      * used to cache scores for the variables. The searchSuborder method will update the suborder to be the best
      * ordering found.
+     *
+     * @param prefix   The prefix of the suborder.
+     * @param suborder The suborder.
+     * @param gsts     The GrowShrinkTree being used to do caching of scores.
      */
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
