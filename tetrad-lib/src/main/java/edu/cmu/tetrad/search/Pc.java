@@ -64,33 +64,61 @@ import java.util.Set;
  * @see Knowledge
  */
 public class Pc implements IGraphSearch {
-    // The oracle for conditional independence facts.
+    /**
+     * The oracle for conditional independence facts.
+     */
     private final IndependenceTest independenceTest;
-    // The logger.
+    /**
+     * The logger.
+     */
     private final TetradLogger logger = TetradLogger.getInstance();
-    // The knowledge specification.
+    /**
+     * The knowledge specification.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The sepset map from the most recent search.
+    /**
+     * The sepset map from the most recent search.
+     */
     private SepsetMap sepsets;
-    // The depth of the search.
+    /**
+     * The depth of the search.
+     */
     private int depth = 1000;
-    // The graph from the most recent search.
+    /**
+     * The graph from the most recent search.
+     */
     private Graph graph;
-    // The elapsed time of the most recent search.
+    /**
+     * The elapsed time of the most recent search.
+     */
     private long elapsedTime;
-    // The number of independence tests performed in the most recent search.
+    /**
+     * The number of independence tests performed in the most recent search.
+     */
     private int numIndependenceTests;
-    // Whether the search is verbose.
+    /**
+     * Whether the search is verbose.
+     */
     private boolean verbose = false;
-    // The rule to use for resolving collider orientation conflicts.
+    /**
+     * The rule to use for resolving collider orientation conflicts.
+     */
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
-    // Whether the stable adjacency search should be used.
+    /**
+     * Whether the stable adjacency search should be used.
+     */
     private boolean stable = true;
-    // Whether cycles should be checked in the Meek rules.
+    /**
+     * Whether cycles should be checked in the Meek rules.
+     */
     private boolean meekPreventCycles = true;
-    // Whether the max-p heuristic should be used for collider discovery.
+    /**
+     * Whether the max-p heuristic should be used for collider discovery.
+     */
     private boolean useMaxPHeuristic = false;
-    // The PC heuristic type.
+    /**
+     * The PC heuristic type.
+     */
     private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
 
     /**
@@ -109,8 +137,6 @@ public class Pc implements IGraphSearch {
 
 
     /**
-     * {@inheritDoc}
-     * <p>
      * Runs PC starting with a complete graph over all nodes of the given conditional independence test, using the given
      * independence test and knowledge and returns the resultant graph. The returned graph will be a CPDAG if the
      * independence information is consistent with the hypothesis that there are no latent common causes. It may,
