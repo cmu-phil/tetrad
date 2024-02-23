@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.search.MixtureModel;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
 
@@ -99,7 +98,7 @@ public class Demixer {
      * Runs the E-M algorithm iteratively until the weights array converges. Returns a MixtureModel object containing
      * the final values of the means, covariance matrices, weights, and gammas arrays.
      *
-     * @return a {@link edu.cmu.tetrad.search.MixtureModel} object
+     * @return a {@link MixtureModel} object
      */
     public MixtureModel demix() {
         double[] tempWeights = new double[numClusters];
