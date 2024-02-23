@@ -258,6 +258,10 @@ public class TetradLogger {
      */
     public void forceLogMessage(String message) {
         if (this.logging) {
+            if (!this.writers.containsKey(System.out)) {
+                System.out.println(message);
+            }
+
             if (this.config == null) {
                 this.fireActivated(new EmptyConfig(true));
             }

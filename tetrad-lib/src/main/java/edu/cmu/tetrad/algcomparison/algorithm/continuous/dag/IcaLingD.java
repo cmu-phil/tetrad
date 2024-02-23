@@ -7,10 +7,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.Serial;
@@ -62,19 +59,27 @@ public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
 
             int count = 0;
 
+            Graph outGraph = null;
+            TetradLogger.getInstance().forceLogMessage("STABLE MODELS:\n");
+
             for (Matrix bHat : bHats) {
                 TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count));
-                Graph graph = edu.cmu.tetrad.search.IcaLingD.makeGraph(bHat, dataSet.getVariables());
-                TetradLogger.getInstance().forceLogMessage(bHat.toString());
-                TetradLogger.getInstance().forceLogMessage(graph.toString());
-                TetradLogger.getInstance().forceLogMessage("Stable = " + edu.cmu.tetrad.search.IcaLingD.isStable(bHat));
+                boolean stable = edu.cmu.tetrad.search.IcaLingD.isStable(bHat);
+
+                if (stable) {
+                    Graph graph = edu.cmu.tetrad.search.IcaLingD.makeGraph(bHat, dataSet.getVariables());
+                    TetradLogger.getInstance().forceLogMessage(bHat.toString());
+                    TetradLogger.getInstance().forceLogMessage(graph.toString());
+
+                    if (outGraph == null) outGraph = graph;
+                }
             }
 
-            if (!bHats.isEmpty()) {
-                return edu.cmu.tetrad.search.IcaLingD.makeGraph(bHats.get(0), dataSet.getVariables());
-            } else {
-                throw new IllegalArgumentException("LiNG-D couldn't find a model.");
+            if (outGraph == null) {
+                TetradLogger.getInstance().forceLogMessage("## There were no stable models.##");
             }
+
+            return outGraph;
         } else {
             IcaLingD algorithm = new IcaLingD();
 

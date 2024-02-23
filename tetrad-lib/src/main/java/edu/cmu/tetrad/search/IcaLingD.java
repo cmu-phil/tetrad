@@ -215,8 +215,6 @@ public class IcaLingD {
             double imagEigenvalue = imagEigenvalues[i];
             double modulus = sqrt(pow(realEigenvalue, 2) + pow(imagEigenvalue, 2));
 
-            System.out.println("Modulus for eigenvalue " + (i + 1) + " = " + modulus);
-
             if (modulus >= 1.0) {
                 return false;
             }
