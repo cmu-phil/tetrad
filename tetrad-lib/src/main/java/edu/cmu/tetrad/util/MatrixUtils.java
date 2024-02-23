@@ -374,18 +374,6 @@ public final class MatrixUtils {
         return new Matrix(m).trace();
     }
 
-    //Returns the sum of all values in a double matrix.
-
-    /**
-     * <p>zSum.</p>
-     *
-     * @param m an array of {@link double} objects
-     * @return a double
-     */
-    public static double zSum(double[][] m) {
-        return new Matrix(m).zSum();
-    }
-
     /**
      * <p>identity.</p>
      *

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.data;
 
-import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -77,10 +76,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * legitimate covariance matrix.
      */
     private Matrix matrix;
-    /**
-     * The covariance matrix.
-     */
-    private DoubleMatrix2D matrixC;
     /**
      * The list of selected variables.
      */
@@ -881,11 +876,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         if (getVariables() == null) {
             throw new NullPointerException();
-        }
-
-        if (matrixC != null) {
-            matrix = new Matrix(matrixC.toArray());
-            matrixC = null;
         }
 
         if (knowledge == null) {
