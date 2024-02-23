@@ -63,27 +63,49 @@ import java.util.*;
  * @see Knowledge
  */
 public class Fas implements IFas {
-    // The test to be used for conditional independence tests.
+    /**
+     * The test to be used for conditional independence tests.
+     */
     private final IndependenceTest test;
-    // The logger.
+    /**
+     * The logger.
+     */
     private final TetradLogger logger = TetradLogger.getInstance();
-    // The knowledge.
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The number of independence tests that were done.
+    /**
+     * The number of independence tests that were done.
+     */
     private int numIndependenceTests;
-    // The sepsets that were discovered in the search.
+    /**
+     * The sepsets that were discovered in the search.
+     */
     private SepsetMap sepset = new SepsetMap();
-    // The heuristic to use.
+    /**
+     * The heuristic to use.
+     */
     private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
-    // The depth of the search.
+    /**
+     * The depth of the search.
+     */
     private int depth = 1000;
-    // Whether the stable adjacency search should be used.
+    /**
+     * Whether the stable adjacency search should be used.
+     */
     private boolean stable = true;
-    // The elapsed time of the search.
+    /**
+     * The elapsed time of the search.
+     */
     private long elapsedTime = 0L;
-    // Whether verbose output should be printed.
+    /**
+     * Whether verbose output should be printed.
+     */
     private PrintStream out = System.out;
-    // Whether verbose output should be printed.
+    /**
+     * Whether verbose output should be printed.
+     */
     private boolean verbose = false;
 
     /**
@@ -97,9 +119,14 @@ public class Fas implements IFas {
 
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Runs the search and returns the resulting (undirected) graph.
+     * Performs a search to discover all adjacencies in the graph. The procedure is to remove edges in the graph which
+     * connect pairs of variables that are independent, conditional on some other set of variables in the graph (the
+     * "sepset"). These edges are removed in tiers. First, edges which are independent conditional on zero other
+     * variables are removed, then edges which are independent conditional on one other variable are removed, then two,
+     * then three, and so on, until no more edges can be removed from the graph. The edges which remain in the graph
+     * after this procedure are the adjacencies in the data.
+     *
+     * @return An undirected graph that summarizes the conditional independencies that obtain in the data.
      */
     @Override
     public Graph search() {
@@ -173,9 +200,7 @@ public class Fas implements IFas {
         }
 
         for (Edge edge : new ArrayList<>(edges)) {
-            if (scores.get(edge) != null && scores.get(edge) < 0
-                    || (this.knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())
-                    && (this.knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())))) {
+            if (scores.get(edge) != null && scores.get(edge) < 0 || (this.knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName()) && (this.knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())))) {
                 edges.remove(edge);
                 adjacencies.get(edge.getNode1()).remove(edge.getNode2());
                 adjacencies.get(edge.getNode2()).remove(edge.getNode1());
@@ -232,26 +257,23 @@ public class Fas implements IFas {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the depth of the search, which is the maximum number of variables that ben be conditioned on in any
-     * conditional independence test.
+     * Sets the maximum depth for the search.
+     *
+     * @param depth The maximum depth to set.
+     * @throws IllegalArgumentException if the depth is less than -1.
      */
     public void setDepth(int depth) {
         if (depth < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0.");
+            throw new IllegalArgumentException("Depth must be -1 (unlimited) or >= 0.");
         }
 
         this.depth = depth;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets the knowledge to be used in the search.
+     * Sets the knowledge for this object.
      *
-     * @see Knowledge
+     * @param knowledge The knowledge object to set.
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
@@ -277,9 +299,9 @@ public class Fas implements IFas {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Sets whether verbose output should be printed.
+     * Sets the verbose mode.
+     *
+     * @param verbose true if verbose mode is enabled, false otherwise.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -295,9 +317,9 @@ public class Fas implements IFas {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the nodes from the test.
+     * Retrieves the list of nodes in the graph.
+     *
+     * @return A List of Node objects representing the nodes in the graph.
      */
     @Override
     public List<Node> getNodes() {
@@ -305,9 +327,10 @@ public class Fas implements IFas {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * There are no ambiguous triples for this search, for any nodes.
+     * Retrieves the list of ambiguous triples involving the given node.
+     *
+     * @param node The node for which to retrieve the ambiguous triples.
+     * @return A list of Triple objects representing the ambiguous triples involving the node.
      */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
@@ -315,7 +338,9 @@ public class Fas implements IFas {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the PrintStream to be used for output.
+     *
+     * @param out the PrintStream to be used for output
      */
     @Override
     public void setOut(PrintStream out) {
@@ -323,11 +348,9 @@ public class Fas implements IFas {
     }
 
     /**
-     * <p>setPcHeuristicType.</p>
+     * Sets the type of heuristic to be used in the PC algorithm.
      *
-     * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search). Default is
-     *                    PcHeuristicType.NONE.
-     * @see PcCommon.PcHeuristicType
+     * @param pcHeuristic The type of heuristic to be used.
      */
     public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristic) {
         this.heuristic = pcHeuristic;
@@ -348,6 +371,12 @@ public class Fas implements IFas {
 
     //==============================PRIVATE METHODS======================/
 
+    /**
+     * Calculates the maximum free degree among the nodes in the given adjacency map.
+     *
+     * @param adjacencies A map containing nodes as keys and sets of adjacent nodes as values.
+     * @return The maximum free degree among the nodes.
+     */
     private int freeDegree(Map<Node, Set<Node>> adjacencies) {
         int max = 0;
 
@@ -367,6 +396,16 @@ public class Fas implements IFas {
         return max;
     }
 
+    /**
+     * Searches for adjacencies at a given depth in the graph.
+     *
+     * @param scores      The map of scores for each edge.
+     * @param edges       The list of edges to search over.
+     * @param test        The independence test to use.
+     * @param adjacencies The map of nodes and their adjacent nodes.
+     * @param depth       The maximum depth to search.
+     * @return true if there are adjacencies at the given depth, false otherwise.
+     */
     private boolean searchAtDepth(Map<Edge, Double> scores, List<Edge> edges, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
 
         for (Edge edge : edges) {
@@ -384,6 +423,17 @@ public class Fas implements IFas {
         return freeDegree(adjacencies) > depth;
     }
 
+    /**
+     * Checks if there is an adjacency between two nodes on a side.
+     *
+     * @param scores      The map of scores for each edge.
+     * @param test        The independence test to use.
+     * @param adjacencies The map of nodes and their adjacent nodes.
+     * @param depth       The maximum depth to search for adjacencies.
+     * @param x           The first node.
+     * @param y           The second node.
+     * @return True if there is an adjacency between x and y at the given depth, false otherwise.
+     */
     private boolean checkSide(Map<Edge, Double> scores, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth, Node x, Node y) {
         if (!adjacencies.get(x).contains(y)) return false;
 
@@ -439,8 +489,17 @@ public class Fas implements IFas {
         return false;
     }
 
-    private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       Knowledge knowledge, Node y) {
+    /**
+     * Returns a list of nodes that are possible parents of a given node, based on the adjacency list of the given node,
+     * the knowledge object, and another node.
+     *
+     * @param x         The node for which to find possible parents.
+     * @param adjx      The adjacency list of the node x.
+     * @param knowledge The knowledge object that provides information about conditional independencies.
+     * @param y         Another node in the graph.
+     * @return A list of nodes that are possible parents of the node x.
+     */
+    private List<Node> possibleParents(Node x, List<Node> adjx, Knowledge knowledge, Node y) {
         List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
@@ -457,6 +516,14 @@ public class Fas implements IFas {
         return possibleParents;
     }
 
+    /**
+     * Determines if a given node is a possible parent of another node based on the provided knowledge.
+     *
+     * @param z         The first node.
+     * @param x         The second node.
+     * @param knowledge The knowledge object that provides information about conditional independencies.
+     * @return True if the node z is a possible parent of node x, false otherwise.
+     */
     private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
