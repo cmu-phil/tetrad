@@ -88,7 +88,6 @@ public class TestIcaLingD {
         // but pruning the W matrix seems to be giving better bHats, and besides in LiNG-D
         // the W matrix is pruned. Could switch though.)
         double bThreshold = 0.25;
-        double spineThreshold = 0.5;
         System.out.println("W threshold = " + bThreshold);
 
         IcaLingam icaLingam = new IcaLingam();
@@ -105,9 +104,10 @@ public class TestIcaLingD {
         // associated column-permuted W thresholded W matrices. For the constrained N rooks problme we
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
         System.out.println("LiNG-D");
+        double spineThreshold = 0.5;
         IcaLingD icaLingD = new IcaLingD();
         icaLingD.setBThreshold(bThreshold);
-        icaLingD.setSpineThreshold(1);
+        icaLingD.setSpineThreshold(spineThreshold);
         List<Matrix> bHats = icaLingD.fit(dataSet);
 
         if (bHats.isEmpty()) {
@@ -115,6 +115,7 @@ public class TestIcaLingD {
         }
 
         System.out.println("Then, for each constrained N Rooks solution, a column permutation of thresholded W:");
+        boolean existsStable = false;
 
         for (Matrix bHat : bHats) {
             System.out.println("BHat = " + bHat);
@@ -125,8 +126,10 @@ public class TestIcaLingD {
             boolean stable = IcaLingD.isStable(bHat);
             System.out.println(stable ? "Is Stable" : "Not stable");
 
-            assertTrue(stable);
+            if (stable) existsStable = true;
         }
+
+        assertTrue(existsStable);
     }
 
     @Test

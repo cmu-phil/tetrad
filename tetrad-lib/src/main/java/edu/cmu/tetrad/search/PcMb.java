@@ -824,6 +824,11 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.findMb = findMb;
     }
 
+    /**
+     * Sets the verbosity level of the search.
+     *
+     * @param verbose true if verbose output should be enabled, false otherwise
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
