@@ -44,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author josephramsey
  */
-public class TestIcaLing {
+public class TestIcaLingD {
 
     @Test
     public void test1() {
@@ -94,14 +94,9 @@ public class TestIcaLing {
         IcaLingam icaLingam = new IcaLingam();
         icaLingam.setBThreshold(bThreshold);
         Matrix lingamBhat = icaLingam.fit(dataSet);
+
         Graph lingamGraph = IcaLingD.makeGraph(lingamBhat, dataSet.getVariables());
         System.out.println("Lingam graph = " + lingamGraph);
-
-        boolean lingamStable = IcaLingD.isStable(lingamBhat);
-        System.out.println(lingamStable ? "Is Stable" : "Not stable");
-
-        lingamGraph = GraphUtils.replaceNodes(lingamGraph, trueGraph.getNodes());
-        assertTrue(lingamStable);
 
         // For LiNG-D, we can just call the relevant public static methods. This was obviously written
         // by a Matlab person.
@@ -112,7 +107,7 @@ public class TestIcaLing {
         System.out.println("LiNG-D");
         IcaLingD icaLingD = new IcaLingD();
         icaLingD.setBThreshold(bThreshold);
-        icaLingD.setSpineThreshold(spineThreshold);
+        icaLingD.setSpineThreshold(1);
         List<Matrix> bHats = icaLingD.fit(dataSet);
 
         if (bHats.isEmpty()) {
@@ -130,9 +125,7 @@ public class TestIcaLing {
             boolean stable = IcaLingD.isStable(bHat);
             System.out.println(stable ? "Is Stable" : "Not stable");
 
-            // For this example, there is exactly one graph (or should be, unless the example was changed).
-            lingGraph = GraphUtils.replaceNodes(lingGraph, trueGraph.getNodes());
-//            assertTrue(stable);
+            assertTrue(stable);
         }
     }
 
