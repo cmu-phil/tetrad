@@ -112,8 +112,6 @@ public class PermutationSearch {
         return getGraph(nodes, parents, null, cpDag);
     }
 
-    // TO DO: moved to a better place like GraphUtils
-
     /**
      * Constructs a graph given a specification of the parents for each node.
      *
@@ -140,8 +138,6 @@ public class PermutationSearch {
 
         return graph;
     }
-
-    // TO DO: moved to a better place like GraphUtils
 
     /**
      * Performe the search and return a CPDAG.
