@@ -80,62 +80,153 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Knowledge
  */
 public final class FgesMb implements DagScorer {
-    //===internal===//
+    /**
+     * Represents an empty set of nodes. This set is a final variable and cannot be modified.
+     */
     private final Set<Node> emptySet = new HashSet<>();
+    /**
+     * This variable represents an array of integers called count. It is a private final field, meaning it cannot be
+     * changed after initialization.
+     * <p>
+     * The array count has a length of 1, indicating that it can hold one integer value. It is initialized with a
+     * default value of 0. The index of the array is 0 and can be accessed using count[0].
+     */
     private final int[] count = new int[1];
+    /**
+     * Represents the depth of a variable. The depth determines how deep the variable is nested within the code
+     * structure.
+     */
     private final int depth = 10000;
-    //The top n graphs found by the algorithm, where n is numPatternsToStore.
+    /**
+     * The top n graphs found by the algorithm, where n is numPatternsToStore.
+     */
     private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
-    // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
+    /**
+     * Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
+     */
     private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
+    /**
+     * The logger variable is an instance of the TetradLogger class, which is used for logging purposes in the
+     * software.
+     * <p>
+     * TetradLogger is a utility class for logging various messages during the execution of the software. It provides
+     * methods for logging different levels of messages, including debug, info, warning, and error messages.
+     * <p>
+     * By using the logger variable, you can log messages to the console or any other configured output destination.
+     * <p>
+     * Example usage: logger.debug("This is a debug message"); logger.info("This is an info message");
+     * logger.warning("This is a warning message"); logger.error("This is an error message");
+     * <p>
+     * Note: This documentation assumes that the TetradLogger.getInstance() method returns a valid instance of the
+     * TetradLogger class.
+     */
     private final TetradLogger logger = TetradLogger.getInstance();
+    /**
+     * A private final Map representing the arrow configurations for each Edge. The map is implemented using
+     * ConcurrentHashMap to provide thread-safe access to the map. The map contains Edge objects as keys and ArrowConfig
+     * objects as values.
+     */
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
     List<Node> targets = new ArrayList<>();
-    // The number of times the forward phase is iterated to expand to new adjacencies.
+    /**
+     * The number of times the forward phase is iterated to expand to new adjacencies.
+     */
     private int numExpansions = 2;
-    // The style of trimming to use.
+    /**
+     * The style of trimming to use.
+     */
     private int trimmingStyle = 3; // default MB trimming.
-    // Bounds the degree of the graph.
+    /**
+     * Bounds the degree of the graph.
+     */
     private int maxDegree = -1;
-    // Whether one-edge faithfulness is assumed (less general but faster).
+    /**
+     * Whether one-edge faithfulness is assumed (less general but faster).
+     */
     private boolean faithfulnessAssumed = false;
-    // The knowledge to use in the search.
+    /**
+     * The knowledge to use in the search.
+     */
     private Knowledge knowledge = new Knowledge();
-    // True, if FGES should run in a single thread, no if parallelized.
+    /**
+     * True, if FGES should run in a single thread, no if parallelized.
+     */
     private boolean parallelized = false;
-    // The variables to use in the search.
+    /**
+     * The variables to use in the search.
+     */
     private List<Node> variables;
-    // The initial graph.
+    /**
+     * The initial graph.
+     */
     private Graph initialGraph;
-    // The graph to which the search is bound.
+    /**
+     * The graph to which the search is bound.
+     */
     private Graph boundGraph = null;
-    // The elapsed time of the search.
+    /**
+     * The elapsed time of the search.
+     */
     private long elapsedTime;
-    // The score of the graph.
+    /**
+     * The score of the graph.
+     */
     private Score score;
-    // Whether verbose output should be produced.
+    /**
+     * Whether verbose output should be produced.
+     */
     private boolean verbose = false;
-    // Whether verbose output should be produced for the Meek rules.
+    /**
+     * Whether verbose output should be produced for the Meek rules.
+     */
     private boolean meekVerbose = false;
-    // Map from variables to their column indices in the data set.
+    /**
+     * Map from variables to their column indices in the data set.
+     */
     private ConcurrentMap<Node, Integer> hashIndices;
-    // A graph where X--Y means that X and Y have non-zero total effect on one another.
+    /**
+     * A graph where X--Y means that X and Y have non-zero total effect on one another.
+     */
     private Graph effectEdgesGraph;
-    // Where printed output is sent.
+    /**
+     * Where printed output is sent.
+     */
     private PrintStream out = System.out;
-    // The graph being constructed.
+    /**
+     * The graph being constructed.
+     */
     private Graph graph;
-    // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
-    // The ordering doesn't matter; it just has to be transitive.
+    /**
+     * Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows. The ordering
+     * doesn't matter; it just has to be transitive.
+     */
     private int arrowIndex = 0;
-    // The score of the model.
+    /**
+     * The score of the model.
+     */
     private double modelScore;
-    // Internal.
+    /**
+     * The mode determines the behavior of the software in certain situations. It is an internal parameter and should
+     * not be modified directly.
+     * <p>
+     * Possible values are: - allowUnfaithfulness: This mode allows the software to assume one-edge faithfulness,
+     * meaning that if two variables are unconditionally dependent, there is an edge between them in the graph.
+     * <p>
+     * - heuristicSpeedup: This mode enables a heuristic speedup during the search. It may sacrifice some accuracy for
+     * faster execution.
+     * <p>
+     * - coverNoncolliders: This mode ensures that the software includes all noncolliders, which are nonadjacent
+     * variables that are indirectly connected through a collider (a node with two incoming edges).
+     */
     private Mode mode = Mode.heuristicSpeedup;
-    // True if the first step of adding an edge to an empty graph should be scored in both directions
-    // for each edge with the maximum score chosen.
+    /**
+     * True if the first step of adding an edge to an empty graph should be scored in both directions for each edge with
+     * the maximum score chosen.
+     */
     private boolean symmetricFirstStep = false;
-    // The list of all targets.
+    /**
+     * The list of all targets.
+     */
     private ArrayList<Node> allTargets;
 
     /**
@@ -155,7 +246,13 @@ public final class FgesMb implements DagScorer {
         this.graph = new EdgeListGraph(getVariables());
     }
 
-    // Used to find semidirected paths for cycle checking.
+    /**
+     * Traverses a semi-directed graph and returns the connected node based on the given edge.
+     *
+     * @param node The starting node of the traversal.
+     * @param edge The edge connecting the nodes.
+     * @return The connected node if the traversal is possible, otherwise null.
+     */
     private static Node traverseSemiDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
@@ -171,9 +268,12 @@ public final class FgesMb implements DagScorer {
     }
 
     /**
-     * <p>Setter for the field <code>trimmingStyle</code>.</p>
+     * Sets the trimming style for the algorithm.
      *
-     * @param trimmingStyle a int
+     * @param trimmingStyle The trimming style to be set. It represents how edges are trimmed during the search. The
+     *                      valid values are: - 0: No trimming. All edges are considered during the search. - 1: Forward
+     *                      trimming. Edges are trimmed only during the forward search phase. - 2: Backward trimming.
+     *                      Edges are trimmed only during the backward search phase.
      */
     public void setTrimmingStyle(int trimmingStyle) {
         this.trimmingStyle = trimmingStyle;
@@ -249,6 +349,13 @@ public final class FgesMb implements DagScorer {
         return graph;
     }
 
+    /**
+     * Performs a loop of operations for the FgesMb algorithm. The loop consists of the following steps: 1. Adds
+     * required edges to the graph. 2. Initializes effect edges based on the variables. 3. Sets the mode to
+     * heuristicSpeedup. 4. Performs forward equivalence search (fes). 5. Performs backward equivalence search (bes). 6.
+     * Sets the mode to coverNoncolliders. 7. Performs fes again. 8. Performs bes again. 9. If faithfulnessAssumed is
+     * false, sets the mode to allowUnfaithfulness and performs fes and bes again.
+     */
     private void doLoop() {
         addRequiredEdges(graph);
 
@@ -314,7 +421,10 @@ public final class FgesMb implements DagScorer {
     }
 
     /**
-     * {@inheritDoc}
+     * Scores the given directed acyclic graph (DAG).
+     *
+     * @param dag The directed acyclic graph to be scored. Must be of type {@link Graph}.
+     * @return The score of the DAG.
      */
     public double scoreDag(Graph dag) {
         return scoreDag(dag, false);
@@ -341,9 +451,9 @@ public final class FgesMb implements DagScorer {
     }
 
     /**
-     * <p>Getter for the field <code>out</code>.</p>
+     * Returns the output stream associated with this object.
      *
-     * @return the output stream that output (except for log output) should be sent to.
+     * @return the output stream
      */
     public PrintStream getOut() {
         return out;
@@ -411,7 +521,13 @@ public final class FgesMb implements DagScorer {
         return modelScore;
     }
 
-    //Sets the discrete scoring function to use.
+    /**
+     * Sets the score and initializes the variables and indexing. The score represents a set of musical notes. The
+     * variables are the measured nodes in the score. The indexing is used for efficient retrieval of nodes based on
+     * their properties. The maxDegree represents the maximum number of simultaneous notes in the score.
+     *
+     * @param score the score to set
+     */
     private void setScore(Score score) {
         this.score = score;
 
@@ -428,12 +544,23 @@ public final class FgesMb implements DagScorer {
         this.maxDegree = this.score.getMaxDegree();
     }
 
+    /**
+     * Calculates the size of each chunk for parallel processing.
+     *
+     * @param n The total number of elements to be processed.
+     * @return The size of each chunk for parallel processing.
+     */
     private int getChunkSize(int n) {
         int chunk = n / Runtime.getRuntime().availableProcessors();
         if (chunk < 100) chunk = 100;
         return chunk;
     }
 
+    /**
+     * Initializes the effect edges graph with the given list of nodes.
+     *
+     * @param nodes The list of nodes to initialize the effect edges graph with
+     */
     private void initializeEffectEdges(final List<Node> nodes) {
         long start = MillisecondTimes.timeMillis();
         this.effectEdgesGraph = new EdgeListGraph(nodes);
@@ -474,6 +601,25 @@ public final class FgesMb implements DagScorer {
         }
     }
 
+    /**
+     * Executes the forward elimination step in the FES algorithm.
+     * <p>
+     * This method performs the forward elimination step in the FES algorithm, which eliminates arrows from the graph
+     * according to specific criteria. The method iterates through the sorted arrows and checks if each arrow meets the
+     * elimination criteria. If an arrow does not meet the criteria, it is skipped. If an arrow meets all the criteria,
+     * it is used to insert a new arrow into the graph and update the set of arrows to be processed. The method
+     * continues this process until there are no more sorted arrows to be processed.
+     * <p>
+     * The criteria for arrow elimination are as follows: - Both nodes of the arrow must be part of the set of target
+     * variables. - The nodes must not be adjacent in the graph. - The degree of both nodes must be within the maximum
+     * degree limit. - The NaYX (neighbors of either X or Y) of the arrow must match the current NaYX of X and Y. - The
+     * set of t-neighbors (common neighbors) of X and Y must match the current set of t-neighbors of the arrow. - The
+     * set of parent nodes of Y must match the parent nodes of the arrow. - The insertion of the new arrow must be valid
+     * according to certain criteria.
+     * <p>
+     * This method does not return any values. It updates the graph by inserting new arrows and updating the set of
+     * arrows to be processed.
+     */
     private void fes() {
         int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
@@ -530,6 +676,14 @@ public final class FgesMb implements DagScorer {
         }
     }
 
+    /**
+     * Executes the BES algorithm to calculate the optimal score for a given graph and set of variables.
+     * <p>
+     * This method creates a new instance of the Bes class, sets the depth, verbose, and knowledge parameters, and then
+     * invokes the bes() method of the Bes instance to calculate the optimal score.
+     *
+     * @see Bes
+     */
     private void bes() {
         Bes bes = new Bes(score);
         bes.setDepth(depth);
@@ -538,12 +692,20 @@ public final class FgesMb implements DagScorer {
         bes.bes(graph, variables);
     }
 
-    // Returns true if knowledge is not empty.
+    /**
+     * Checks if knowledge exists.
+     *
+     * @return true if knowledge exists, false otherwise.
+     */
     private boolean existsKnowledge() {
         return !knowledge.isEmpty();
     }
 
-    // Calculates new arrows based on changes in the graph for the forward search.
+    /**
+     * Reevaluates the forward arrows for a set of nodes.
+     *
+     * @param nodes the set of nodes for which to reevaluate the forward arrows
+     */
     private void reevaluateForward(final Set<Node> nodes) {
         class AdjTask implements Callable<Boolean> {
 
@@ -634,7 +796,12 @@ public final class FgesMb implements DagScorer {
         }
     }
 
-    // Calculates the new arrows for an a->b edge.
+    /**
+     * Calculates the forward arrows between two nodes.
+     *
+     * @param a The source node.
+     * @param b The target node.
+     */
     private void calculateArrowsForward(Node a, Node b) {
         if (boundGraph != null && !boundGraph.isAdjacentTo(a, b)) {
             return;
@@ -752,20 +919,42 @@ public final class FgesMb implements DagScorer {
         }
     }
 
+    /**
+     * Adds an arrow from node 'a' to node 'b' in a directed graph.
+     *
+     * @param a          The starting node of the arrow.
+     * @param b          The ending node of the arrow.
+     * @param hOrT       The set of nodes representing either head nodes or tail nodes.
+     * @param TNeighbors The set of nodes representing neighbors of tail nodes.
+     * @param naYX       The set of nodes representing all nodes with incoming or outgoing edges.
+     * @param parents    The set of nodes representing the parents of a node.
+     * @param bump       The value to adjust the curvature of the arrow.
+     */
     private void addArrowForward(Node a, Node b, Set<Node> hOrT, Set<Node> TNeighbors, Set<Node> naYX,
                                  Set<Node> parents, double bump) {
         Arrow arrow = new Arrow(bump, a, b, hOrT, TNeighbors, naYX, parents, arrowIndex++);
         sortedArrows.add(arrow);
-//        System.out.println(arrow);
     }
 
+    /**
+     * Returns a set of nodes that are adjacent to both x and y.
+     *
+     * @param x the first node
+     * @param y the second node
+     * @return a set of common adjacent nodes
+     */
     private Set<Node> getCommonAdjacents(Node x, Node y) {
         Set<Node> adj = new HashSet<>(graph.getAdjacentNodes(x));
         adj.retainAll(graph.getAdjacentNodes(y));
         return adj;
     }
 
-    // Get all adj that are connected to Y by an undirected edge and not adjacent to X.
+    /**
+     * Get all adj that are connected to Y by an undirected edge and not adjacent to X.
+     *
+     * @param x The first node
+     * @param y The second node
+     */
     private List<Node> getTNeighbors(Node x, Node y) {
         List<Edge> yEdges = graph.getEdges(y);
         List<Node> tNeighbors = new ArrayList<>();
@@ -787,7 +976,17 @@ public final class FgesMb implements DagScorer {
         return tNeighbors;
     }
 
-    // Evaluate the Insert(X, Y, TNeighbors) operator (Definition 12 from Chickering, 2002).
+    /**
+     * Evaluate the Insert(X, Y, TNeighbors) operator (Definition 12 from Chickering, 2002).
+     *
+     * @param x           The source node to be inserted.
+     * @param y           The target node to be inserted.
+     * @param T           The set of nodes to be inserted.
+     * @param naYX        The set of nodes excluding y and x.
+     * @param parents     The set of parent nodes of x and y.
+     * @param hashIndices The map of node and its index.
+     * @return The evaluation score after inserting nodes into the graph.
+     */
     private double insertEval(Node x, Node y, Set<Node> T, Set<Node> naYX, Set<Node> parents,
                               Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(naYX);
@@ -797,7 +996,15 @@ public final class FgesMb implements DagScorer {
         return scoreGraphChange(x, y, set, hashIndices);
     }
 
-    // Do an actual insertion. (Definition 12 from Chickering, 2002).
+    /**
+     * Inserts an edge between two nodes in the graph and updates the set T, the number of edges and optionally logs the
+     * operation. (Definition 12 from Chickering, 2002).
+     *
+     * @param x    the starting node of the edge
+     * @param y    the ending node of the edge
+     * @param T    the set of nodes to update
+     * @param bump the value to bump
+     */
     private void insert(Node x, Node y, Set<Node> T, double bump) {
         graph.addDirectedEdge(x, y);
 
@@ -828,8 +1035,16 @@ public final class FgesMb implements DagScorer {
         }
     }
 
-    // Test if the candidate insertion is a valid operation
-    // (Theorem 15 from Chickering, 2002).
+    /**
+     * Checks if inserting node x into node y is valid based on the given sets of nodes. (Theorem 15 from Chickering,
+     * 2002).
+     *
+     * @param x    the node being inserted
+     * @param y    the node in which x is being inserted
+     * @param T    a set of nodes
+     * @param naYX a set of nodes
+     * @return true if the insert is valid, false otherwise
+     */
     private boolean validInsert(Node x, Node y, Set<Node> T, Set<Node> naYX) {
         boolean violatesKnowledge = false;
 
@@ -852,7 +1067,11 @@ public final class FgesMb implements DagScorer {
                 && !violatesKnowledge;
     }
 
-    // Adds edges required by knowledge.
+    /**
+     * Adds required edges to the given graph based on knowledge information.
+     *
+     * @param graph The graph to add required edges to
+     */
     private void addRequiredEdges(Graph graph) {
         if (!existsKnowledge()) {
             return;
@@ -934,9 +1153,13 @@ public final class FgesMb implements DagScorer {
         }
     }
 
-    // Use background knowledge to decide if an insert or delete operation does not orient edges in a forbidden
-    // direction according to prior knowledge. If some orientation is forbidden in the subset, the whole subset is
-    // forbidden.
+    /**
+     * Checks if any node in the given subset is forbidden by knowledge.
+     *
+     * @param y      the node for which the knowledge is being checked
+     * @param subset the subset of nodes to check against the knowledge
+     * @return true if any node in the subset is forbidden by the knowledge, false otherwise
+     */
     private boolean invalidSetByKnowledge(Node y, Set<Node> subset) {
         for (Node node : subset) {
             if (getKnowledge().isForbidden(node.getName(), y.getName())) {
@@ -946,8 +1169,13 @@ public final class FgesMb implements DagScorer {
         return false;
     }
 
-    // Find all adj that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
-    // directed edge).
+    /**
+     * Returns the nodes adjacent to node y and also adjacent to node x.
+     *
+     * @param x the first node
+     * @param y the second node
+     * @return the set of nodes adjacent to both node x and node y
+     */
     private Set<Node> getNaYX(Node x, Node y) {
         List<Node> adj = graph.getAdjacentNodes(y);
         Set<Node> nayx = new HashSet<>();
@@ -969,7 +1197,12 @@ public final class FgesMb implements DagScorer {
         return nayx;
     }
 
-    // Returns true iif the given set forms a clique in the given graph.
+    /**
+     * Determines whether the given set of nodes forms a clique in a graph.
+     *
+     * @param nodes the set of nodes to be checked for clique
+     * @return true if the nodes form a clique, false otherwise
+     */
     private boolean isClique(Set<Node> nodes) {
         List<Node> _nodes = new ArrayList<>(nodes);
         for (int i = 0; i < _nodes.size(); i++) {
@@ -983,7 +1216,15 @@ public final class FgesMb implements DagScorer {
         return true;
     }
 
-    // Returns true iff every semidirected path contains an element of cond.
+    /**
+     * Checks if there is a semidirected path from the 'from' Node to the 'to' Node satisfying the given condition.
+     *
+     * @param from The starting Node.
+     * @param to   The ending Node.
+     * @param cond The Set of Nodes representing the condition.
+     * @return True if there is a semidirected path from 'from' to 'to' satisfying the condition, false otherwise.
+     * @throws IllegalArgumentException If 'from' and 'to' Nodes are the same.
+     */
     private boolean semidirectedPathCondition(Node from, Node to, Set<Node> cond) {
         if (from == to) throw new IllegalArgumentException();
 
@@ -1022,7 +1263,11 @@ public final class FgesMb implements DagScorer {
         return true;
     }
 
-    // Runs Meek rules on just the changed adj.
+    /**
+     * Reverts the current graph to a special version called CPDAG (completed partially directed acyclic graph).
+     *
+     * @return a set of nodes that represents the CPDAG version of the graph
+     */
     private Set<Node> revertToCPDAG() {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
@@ -1031,7 +1276,11 @@ public final class FgesMb implements DagScorer {
         return rules.orientImplied(graph);
     }
 
-    // Maps adj to their indices for quick lookup.
+    /**
+     * Builds an indexing for the given list of nodes.
+     *
+     * @param nodes the list of nodes to be indexed
+     */
     private void buildIndexing(List<Node> nodes) {
         this.hashIndices = new ConcurrentHashMap<>();
 
@@ -1042,12 +1291,16 @@ public final class FgesMb implements DagScorer {
         }
     }
 
+    /**
+     * Calculates the score of a directed acyclic graph (DAG).
+     *
+     * @param dag          the DAG to calculate the score for
+     * @param recordScores a flag indicating whether to record the scores in the nodes and graph attributes
+     * @return the score of the DAG
+     */
     private double scoreDag(Graph dag, boolean recordScores) {
         if (score instanceof GraphScore) return 0.0;
         dag = GraphUtils.replaceNodes(dag, getVariables());
-
-        // We will switch to using the score of the FGES search.
-//        Score score = this.score.defaultScore();
 
         double _score = 0;
 
@@ -1077,6 +1330,16 @@ public final class FgesMb implements DagScorer {
         return _score;
     }
 
+    /**
+     * Calculates the change in score for the graph when a new edge is added between two nodes.
+     *
+     * @param x           the first node
+     * @param y           the second node
+     * @param parents     the set of parent nodes for the second node
+     * @param hashIndices a mapping of nodes to their corresponding indices
+     * @return the change in score for the graph
+     * @throws IllegalArgumentException if x and y are the same node, or if y is already a parent of x
+     */
     private double scoreGraphChange(Node x, Node y, Set<Node> parents,
                                     Map<Node, Integer> hashIndices) {
         int xIndex = hashIndices.get(x);
@@ -1100,32 +1363,38 @@ public final class FgesMb implements DagScorer {
         return score.localScoreDiff(xIndex, yIndex, parentIndices);
     }
 
+    /**
+     * Retrieves the list of variables.
+     *
+     * @return The list of variables.
+     */
     private List<Node> getVariables() {
         return variables;
     }
 
     /**
-     * <p>Setter for the field <code>parallelized</code>.</p>
+     * Sets the parallelized flag of the object.
      *
-     * @param parallelized a boolean
+     * @param parallelized the value indicating whether the object should be parallelized
      */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
     }
 
     /**
-     * <p>Setter for the field <code>initialGraph</code>.</p>
+     * Sets the initial graph for the software.
      *
-     * @param initialGraph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param initialGraph the initial graph to be set
      */
     public void setInitialGraph(Graph initialGraph) {
         this.initialGraph = initialGraph;
     }
 
     /**
-     * <p>Setter for the field <code>numExpansions</code>.</p>
+     * Sets the number of expansions for a given object.
      *
-     * @param numExpansions a int
+     * @param numExpansions the number of expansions to set. Must be at least 1.
+     * @throws IllegalArgumentException if the number of expansions is less than 1.
      */
     public void setNumExpansions(int numExpansions) {
         if (numExpansions < 1) throw new IllegalArgumentException("Number of expansions must be at least 1.");
@@ -1133,13 +1402,48 @@ public final class FgesMb implements DagScorer {
     }
 
     /**
-     * Internal.
+     * This is an enumeration class that represents different modes. The modes are used for certain functionalities
+     * within the application. Each mode has a unique behavior and purpose.
+     *
+     * <p>The available modes are:</p>
+     * <ul>
+     *   <li>allowUnfaithfulness - Represents the mode that allows unfaithfulness in calculations.</li>
+     *   <li>heuristicSpeedup - Represents the mode that enables a heuristic speedup algorithm.</li>
+     *   <li>coverNoncolliders - Represents the mode that covers noncolliders in the calculations.</li>
+     * </ul>
+     *
+     * <p>Usage:</p>
+     * <p>
+     * Each mode can be used individually or in combination with other modes.
+     * To specify a mode, use the syntax {@code Mode.<MODE_NAME>}.
+     * The modes can be passed as arguments or used within conditional statements to control the flow of the application.
+     * </p>
+     *
+     * <p>Example Usage:</p>
+     * <pre>{@code
+     * Mode mode = Mode.allowUnfaithfulness;
+     *
+     * if (mode == Mode.heuristicSpeedup) {
+     *     // Perform heuristic speedup algorithm
+     * } else if (mode == Mode.coverNoncolliders) {
+     *     // Cover noncolliders in calculations
+     * } else {
+     *     // Perform default behavior
+     * }
+     * }</pre>
      */
     private enum Mode {
         allowUnfaithfulness, heuristicSpeedup, coverNoncolliders
     }
 
+    /**
+     * This private static class represents the configuration of arrows in a graph. Each object of this class contains
+     * the following fields: - T: a set of nodes representing the target nodes of the arrows. - nayx: a set of nodes
+     * representing the source nodes of the arrows. - parents: a set of nodes representing the parent nodes of the
+     * arrows.
+     */
     private static class ArrowConfig {
+
         private Set<Node> T;
         private Set<Node> nayx;
         private Set<Node> parents;
