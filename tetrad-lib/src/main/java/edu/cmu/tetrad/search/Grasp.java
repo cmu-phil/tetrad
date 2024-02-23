@@ -25,8 +25,8 @@ import static java.util.Collections.shuffle;
  * In Uncertainty in Artificial Intelligence (pp. 1052-1062). PMLR.
  * <p>
  * GRaSP can use either a score or an independence test; you can provide both, though if you do you need to use the
- * parameters to choose which one will be used. The score options is more scalable and accurate, though the independence
- * option is perhaps a little easier ot deal with theoretically and are useful for generating unit test results.
+ * parameters to choose which one will be used. The score option is more scalable and accurate, though the independence
+ * option is perhaps a little easier ot deal with theoretically and is useful for generating unit test results.
  * <p>
  * As shown the reference above, GRaSP generates results for the linear, Gaussian case for N = 1000 with precisions for
  * adjacencies and arrowheads near 1 and recalls of about 0.85, when the linear, Gaussian BIC score is used with a

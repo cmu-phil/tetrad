@@ -44,7 +44,7 @@ import java.util.Set;
  * learned; other algorithms are available to do that (see, e.g., FgesMb, PcMb).
  * <p>
  * We include GrowShrink in our algorithm suite mainly because it is a CMU algorithm (see the above reference). Markov
- * blanket search has been explored in some detail in the literature and several algorithms are available. See for
+ * blanket search has been explored in some detail in the literature, and several algorithms are available. See for
  * instance the BNLEARN package in R:
  *
  * <a href="https://www.bnlearn.com/">https://www.bnlearn.com</a>
@@ -77,9 +77,10 @@ public class GrowShrink implements IMbSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Finds the Markov blanket of the given target.
+     * Finds the Markov blanket (MB) for a given target node.
+     *
+     * @param target the target node for which the MB is to be found
+     * @return the set of nodes that form the Markov blanket for the target node
      */
     public Set<Node> findMb(Node target) {
         Set<Node> blanket = new HashSet<>();
