@@ -11,6 +11,7 @@ package edu.cmu.tetrad.search;
  *
  * @author josephramsey
  * @version $Id: $Id
+ * @see MarkovCheck
  */
 public enum ConditioningSetType {
 
