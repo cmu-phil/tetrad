@@ -64,61 +64,115 @@ import java.util.concurrent.*;
  */
 public final class SvarFges implements IGraphSearch, DagScorer {
 
-    // The number of threads to use.
+    /**
+     * The number of threads to use.
+     */
     final int maxThreads = Runtime.getRuntime().availableProcessors();
-    // The logger for this class. The config needs to be set.
+    /**
+     * The logger for this class. The config needs to be set.
+     */
     private final TetradLogger logger = TetradLogger.getInstance();
-    // The top n graphs found by the algorithm, where n is numCPDAGsToStore.
+    /**
+     * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
+     */
     private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
-    // The static ForkJoinPool instance.
+    /**
+     * The static ForkJoinPool instance.
+     */
     private final ForkJoinPool pool = new ForkJoinPool(maxThreads);
-    // The number of graphs searched.
+    /**
+     * The number of graphs searched.
+     */
     private final int[] count = new int[1];
-    // The set of removed edges.
+    /**
+     * The set of removed edges.
+     */
     private final Set<Edge> removedEdges = new HashSet<>();
-    // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
-    // The ordering doesn't matter; it just has to be transitive.
+    /**
+     * Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
+     * The ordering doesn't matter; it just has to be transitive.
+     */
     private int arrowIndex;
-    // Specification of forbidden and required edges.
+    /**
+     * Specification of forbidden and required edges.
+     */
     private Knowledge knowledge = new Knowledge();
-    // List of variables in the data set, in order.
+    /**
+     * List of variables in the data set, in order.
+     */
     private List<Node> variables;
-    // The true graph, if known. If this is provided, asterisks will be printed out next to false positive added edges
-    // (that is, edges added that aren't adjacencies in the true graph).
+    /**
+     * The true graph, if known. If this is provided, asterisks will be printed out next to false positive added edges
+     * (that is, edges added that aren't adjacencies in the true graph).
+     */
     private Graph trueGraph;
-    // An initial graph to start from.
+    /**
+     * An initial graph to start from.
+     */
     private Graph externalGraph;
-    // Elapsed time of the most recent search.
+    /**
+     * Elapsed time of the most recent search.
+     */
     private long elapsedTime;
-    // The totalScore for discrete searches.
+    /**
+     * The totalScore for discrete searches.
+     */
     private Score score;
-    // The number of top CPDAGs to store.
+    /**
+     * The number of top CPDAGs to store.
+     */
     private int numCPDAGsToStore;
-    // True if verbose output should be printed.
+    /**
+     * True if verbose output should be printed.
+     */
     private boolean verbose;
-    // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
+    /**
+     * Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
+     */
     private SortedSet<Arrow> sortedArrows;
-    // Arrows added to sortedArrows for each <i, j>.
+    /**
+     * Arrows added to sortedArrows for each <i, j>.
+     */
     private Map<OrderedPair<Node>, Set<Arrow>> lookupArrows;
-    // A utility map to help with orientation.
+    /**
+     * A utility map to help with orientation.
+     */
     private Map<Node, Set<Node>> neighbors;
-    // Map from variables to their column indices in the data set.
+    /**
+     * Map from variables to their column indices in the data set.
+     */
     private ConcurrentMap<Node, Integer> hashIndices;
-    // A running tally of the total BIC totalScore.
+    /**
+     * A running tally of the total BIC totalScore.
+     */
     private double totalScore;
-    // A graph where X--Y means that X and Y have non-zero total effect on one another.
+    /**
+     * A graph where X--Y means that X and Y have non-zero total effect on one another.
+     */
     private Graph effectEdgesGraph;
-    // Where printed output is sent.
+    /**
+     * Where printed output is sent.
+     */
     private PrintStream out = System.out;
-    // An initial adjacencies graph.
+    /**
+     * An initial adjacencies graph.
+     */
     private Graph adjacencies;
-    // The graph being constructed.
+    /**
+     * The graph being constructed.
+     */
     private Graph graph;
-    // Internal.
+    /**
+     * The mode variable represents the current mode of operation.
+     */
     private Mode mode = Mode.heuristicSpeedup;
-    // True if one-edge faithfulness is assumed. Speeds the algorithm up.
+    /**
+     * True if one-edge faithfulness is assumed. Speeds the algorithm up.
+     */
     private boolean faithfulnessAssumed = false;
-    // Bounds the indegree of the graph.
+    /**
+     * Bounds the indegree of the graph.
+     */
     private int maxIndegree = -1;
 
     /**
@@ -134,7 +188,14 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         this.graph = new EdgeListGraph(getVariables());
     }
 
-    // Used to find semidirected paths for cycle checking.
+    /**
+     * Traverses a semi-directed graph from a given node along a given edge.
+     *
+     * @param node The starting node of the traversal.
+     * @param edge The edge to traverse from the starting node.
+     * @return The destination node of the traversal if the edge is traversable from the starting node,
+     *         or null if the edge is not traversable from the starting node.
+     */
     private static Node traverseSemiDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {

@@ -63,23 +63,37 @@ import java.util.Set;
  * @see Knowledge
  */
 public final class SvarFci implements IGraphSearch {
-    // The independence test to use.
+    /**
+     * The independence test to use.
+     */
     private final IndependenceTest independenceTest;
-    // The logger to use.
-    private final TetradLogger logger = TetradLogger.getInstance();
-    // The PAG being constructed.
+    /**
+     * The PAG being constructed.
+     */
     private Graph graph;
-    // The SepsetMap being constructed.
+    /**
+     * The SepsetMap being constructed.
+     */
     private SepsetMap sepsets;
-    // The background knowledge.
+    /**
+     * The background knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    // flag for the complete rule set, true if it should use the complete rule set, false otherwise.
+    /**
+     * flag for the complete rule set, true if it should use the complete rule set, false otherwise.
+     */
     private boolean completeRuleSetUsed;
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
     private int maxPathLength = -1;
-    // The depth for the fast adjacency search.
+    /**
+     * The depth for the fast adjacency search.
+     */
     private int depth = -1;
-    // True iff verbose output should be printed.
+    /**
+     * True iff verbose output should be printed.
+     */
     private boolean verbose;
 
     /**
@@ -298,9 +312,19 @@ public final class SvarFci implements IGraphSearch {
         return this.independenceTest;
     }
 
-
-    // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
-    // this version removes edges from graph instead of the list of adjacencies
+    /**
+     * Removes similar pairs of nodes based on the given independence test, nodes x and y, and a set of conditioning
+     * nodes.
+     * <p>
+     * removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
+     * <p>
+     * this version removes edges from graph instead of the list of adjacencies
+     *
+     * @param test    The independence test to determine if nodes x and y are independent.
+     * @param x       The first node.
+     * @param y       The second node.
+     * @param condSet The set of conditioning nodes.
+     */
     private void removeSimilarPairs(IndependenceTest test, Node x, Node y, Set<Node> condSet) {
         System.out.println("Entering removeSimilarPairs method...");
         System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
@@ -455,10 +479,10 @@ public final class SvarFci implements IGraphSearch {
     }
 
     /**
-     * <p>getNameNoLag.</p>
+     * Returns the name of the given object without any lagging characters.
      *
-     * @param obj a {@link java.lang.Object} object
-     * @return a {@link java.lang.String} object
+     * @param obj The object to get the name from.
+     * @return The name of the object without any lagging characters.
      */
     public String getNameNoLag(Object obj) {
         String tempS = obj.toString();
