@@ -256,7 +256,7 @@ public final class Fask implements IGraphSearch {
      * @param y         The data for the second variable.
      * @param empirical Whether to use an empirical judgment.
      * @param delta     The delta value for the judgment.
-     * @return The left-right judgment, which is negative if x < y, positive if x > y, and 0 if indeterminate.
+     * @return The left-right judgment, which is negative if x &lt; y, positive if x $gt; y, and 0 if indeterminate.
      */
     public static double faskLeftRightV2(double[] x, double[] y, boolean empirical, double delta) {
         double sx = skewness(x);

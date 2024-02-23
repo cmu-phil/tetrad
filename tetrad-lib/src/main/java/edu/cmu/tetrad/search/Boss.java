@@ -16,7 +16,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 /**
  * Implements Best Order Score Search (BOSS). The reference is this:
  * <p>
- * Andrews, B., Ramsey, J., Sanchez Romero, R., Camchong, J., & Kummerfeld, E. (2024). Fast Scalable and Accurate
+ * Andrews, B., Ramsey, J., Sanchez Romero, R., Camchong, J., &amp; Kummerfeld, E. (2024). Fast Scalable and Accurate
  * Discovery of DAGs Using the Best Order Score Search and Grow Shrink Trees. Advances in Neural Information Processing
  * Systems, 36.
  * <p>
