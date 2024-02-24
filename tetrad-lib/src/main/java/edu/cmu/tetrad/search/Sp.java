@@ -53,15 +53,25 @@ import java.util.*;
  * @see Knowledge
  */
 public class Sp implements SuborderSearch {
-    // The score to use.
+    /**
+     * The score to use.
+     */
     private final Score score;
-    // The variables to search over.
+    /**
+     * The variables to search over.
+     */
     private final List<Node> variables;
-    // The parents of each variable.
+    /**
+     * The parents of each variable.
+     */
     private final Map<Node, Set<Node>> parents;
-    // The GrowShrinkTree for each variable.
+    /**
+     * The GrowShrinkTree for each variable.
+     */
     private Map<Node, GrowShrinkTree> gsts;
-    // The knowledge.
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
 
     /**
@@ -80,9 +90,11 @@ public class Sp implements SuborderSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * This is the method called by PermutationSearch per tier.
+     * Searches for the best suborder of nodes given a prefix and a suborder.
+     *
+     * @param prefix   The prefix of the suborder.
+     * @param suborder The suborder.
+     * @param gsts     The GrowShrinkTree being used to do caching of scores.
      */
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
@@ -123,9 +135,9 @@ public class Sp implements SuborderSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the variables being searched over.
+     * Returns the list of variables associated with this object.
+     *
+     * @return the list of variables.
      */
     @Override
     public List<Node> getVariables() {
@@ -133,9 +145,9 @@ public class Sp implements SuborderSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the parents of each variable.
+     * Retrieves a mapping of nodes to their parent nodes.
+     *
+     * @return the mapping of nodes to their parent nodes.
      */
     @Override
     public Map<Node, Set<Node>> getParents() {
@@ -143,9 +155,9 @@ public class Sp implements SuborderSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Returns the score being used.
+     * Retrieves the score associated with this object.
+     *
+     * @return the score
      */
     @Override
     public Score getScore() {
@@ -153,15 +165,21 @@ public class Sp implements SuborderSearch {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * Set the knowledge to used.
+     * Sets the knowledge associated with this object.
+     *
+     * @param knowledge The knowledge to set.
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
+    /**
+     * Makes the order of nodes valid according to the knowledge rules.
+     * The order list will be sorted based on the knowledge rules if the knowledge is not empty.
+     *
+     * @param order the list of nodes to be sorted
+     */
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (!this.knowledge.isEmpty()) {
             order.sort((a, b) -> {
@@ -173,6 +191,13 @@ public class Sp implements SuborderSearch {
         }
     }
 
+    /**
+     * Checks if the given suborder violates the knowledge rules.
+     *
+     * @param suborder  The suborder to check.
+     * @param required  The mapping of nodes to their required parent nodes.
+     * @return True if the suborder violates the knowledge rules, false otherwise.
+     */
     private boolean violatesKnowledge(List<Node> suborder, Map<Node, Set<Node>> required) {
         for (int i = 0; i < suborder.size(); i++) {
             Node y = suborder.get(i);
@@ -187,7 +212,13 @@ public class Sp implements SuborderSearch {
         return false;
     }
 
-
+    /**
+     * Updates the score of the suborder by adding nodes from the suborder to the prefix one by one and calculating the score.
+     *
+     * @param prefix   The prefix of the suborder.
+     * @param suborder The suborder.
+     * @return The updated score of the suborder.
+     */
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
         Set<Node> all = new HashSet<>(suborder);
@@ -205,8 +236,11 @@ public class Sp implements SuborderSearch {
         return score;
     }
 
-
-    static class SwapIterator implements Iterator<int[]> {
+    /**
+     * SwapIterator is an Iterator implementation that generates all possible swaps between two elements in an array.
+     * It can be used to generate all possible permutations of a given array.
+     */
+    private static class SwapIterator implements Iterator<int[]> {
         private final int n;
         private final int[] perm;
         private final int[] dirs;

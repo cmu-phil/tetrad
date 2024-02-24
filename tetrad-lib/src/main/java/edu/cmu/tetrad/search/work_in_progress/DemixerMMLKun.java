@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.cluster.KMeans;
 import edu.cmu.tetrad.data.BoxDataSet;

@@ -464,6 +464,11 @@ public final class PcCommon implements IGraphSearch {
         return new HashSet<>(this.graph.getEdges());
     }
 
+    /**
+     * Logs the collider triples, noncollider triples, and ambiguous triples (i.e. those triples for which there is
+     * ambiguous data about whether they are colliderDiscovery or not). Only logs the information if verbose is set to
+     * true.
+     */
     private void logTriples() {
         if (verbose) {
             forceLogMessage("\nCollider triples:", verbose);
@@ -490,6 +495,11 @@ public final class PcCommon implements IGraphSearch {
         }
     }
 
+    /**
+     * Orients unshielded triples conservatively based on the given knowledge.
+     *
+     * @param knowledge the knowledge used for orientation
+     */
     private void orientUnshieldedTriplesConservative(Knowledge knowledge) {
         forceLogMessage("Starting Collider Orientation:", verbose);
 
@@ -540,6 +550,14 @@ public final class PcCommon implements IGraphSearch {
         forceLogMessage("Finishing Collider Orientation.", verbose);
     }
 
+    /**
+     * Retrieves the set of separation sets between two nodes in a graph.
+     *
+     * @param i The first node
+     * @param k The second node
+     * @param g The graph
+     * @return The set of separation sets between node i and node k
+     */
     private Set<Set<Node>> getSepsets(Node i, Node k, Graph g) {
         List<Node> adji = new ArrayList<>(g.getAdjacentNodes(i));
         List<Node> adjk = new ArrayList<>(g.getAdjacentNodes(k));
@@ -578,6 +596,13 @@ public final class PcCommon implements IGraphSearch {
         return sepsets;
     }
 
+    /**
+     * Checks if a given node is a collider, according to any of the separation sets.
+     *
+     * @param j       The node to check if it is a collider.
+     * @param sepsets The set of separation sets to check for colliders.
+     * @return True if the node is a collider in any of the separation sets, false otherwise.
+     */
     private boolean isColliderSepset(Node j, Set<Set<Node>> sepsets) {
         if (sepsets.isEmpty()) return false;
 
@@ -588,6 +613,13 @@ public final class PcCommon implements IGraphSearch {
         return true;
     }
 
+    /**
+     * Checks if a given node is a noncollider, according to any of the separation sets.
+     *
+     * @param j       The node to check if it is a noncollider.
+     * @param sepsets The set of separation sets to check for noncolliders.
+     * @return True if the node is a noncollider in all of the separation sets, false otherwise.
+     */
     private boolean isNoncolliderSepset(Node j, Set<Set<Node>> sepsets) {
         if (sepsets.isEmpty()) return false;
 
@@ -598,6 +630,15 @@ public final class PcCommon implements IGraphSearch {
         return true;
     }
 
+    /**
+     * Checks if colliders are allowed based on the given knowledge.
+     *
+     * @param x         The first node.
+     * @param y         The second node.
+     * @param z         The third node.
+     * @param knowledge The knowledge object containing the required and forbidden relationships.
+     * @return True if colliders are allowed based on the given knowledge, false otherwise.
+     */
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         boolean result = true;
         if (knowledge != null) {
@@ -615,6 +656,12 @@ public final class PcCommon implements IGraphSearch {
     /**
      * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-&gt; y &lt;-* z
      * just in case y is in Sepset({x, z}).
+     *
+     * @param set          the sepset map containing the sepsets between nodes
+     * @param knowledge    the knowledge object used for required and forbidden edges
+     * @param graph        the graph containing all the nodes
+     * @param verbose      a flag indicating whether to display verbose output
+     * @param conflictRule the conflict resolution rule to use when orienting colliders
      */
     private void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose,
                                              ConflictRule conflictRule) {
@@ -682,17 +729,14 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * <p>NONE = no heuristic, PC-1 = sort nodes alphabetically; PC-1 = sort edges by p-value; PC-3 = additionally sort
-     * edges in reverse order using p-values of associated independence facts. See this reference:</p>
-     *
-     * <p>Spirtes, P., Glymour, C. N., &amp; Scheines, R. (2000). Causation, prediction, and search. MIT press.</p>
+     * The PC heuristic type, where this is taken from Causation, Prediction, and Search.
+     * <p>
+     * NONE = no heuristic, PC-1 = sort nodes alphabetically; PC-1 = sort edges by p-value; PC-3 = additionally sort
+     * edges in reverse order using p-values of associated independence facts. See this reference:
+     * <p>
+     * Spirtes, P., Glymour, C. N., &amp; Scheines, R. (2000). Causation, prediction, and search. MIT press.
      */
     public enum PcHeuristicType {
-
-        /**
-         * No heuristic.
-         */
-        NONE,
 
         /**
          * Sort nodes alphabetically.
@@ -707,7 +751,13 @@ public final class PcCommon implements IGraphSearch {
         /**
          * Sort edges in reverse order using p-values of associated independence facts.
          */
-        HEURISTIC_3
+        HEURISTIC_3,
+
+        /**
+         * No heuristic.
+         */
+        NONE
+
     }
 
     /**
@@ -749,19 +799,20 @@ public final class PcCommon implements IGraphSearch {
     public enum ColliderDiscovery {
 
         /**
-         * FAS with sepsets reasoning.
-         */
-        FAS_SEPSETS,
-
-        /**
          * FAS with conservative reasoning.
          */
         CONSERVATIVE,
 
         /**
+         * FAS with sepsets reasoning.
+         */
+        FAS_SEPSETS,
+
+        /**
          * FAS with Max P reasoning.
          */
         MAX_P
+
     }
 
     /**
@@ -776,11 +827,6 @@ public final class PcCommon implements IGraphSearch {
     public enum ConflictRule {
 
         /**
-         * When there is a conflict, keep the orientation that has already been made.
-         */
-        PRIORITIZE_EXISTING,
-
-        /**
          * When there is a conflict, orient a bidirected edge.
          */
         ORIENT_BIDIRECTED,
@@ -788,7 +834,13 @@ public final class PcCommon implements IGraphSearch {
         /**
          * When there is a conflict, use the new orientation.
          */
-        OVERWRITE_EXISTING
+        OVERWRITE_EXISTING,
+
+        /**
+         * When there is a conflict, keep the orientation that has already been made.
+         */
+        PRIORITIZE_EXISTING
+
     }
 }
 

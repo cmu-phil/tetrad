@@ -55,6 +55,8 @@ import java.util.List;
  * <p>
  * A suitable clustering for Mimbuild may be obtained using the BPC or FOFC algorithm (see).
  * <p>
+ * This algorithm is described in Spirtes et al., Causation, Prediction, and Search.
+ * <p>
  * This class is configured to respect the knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
  *

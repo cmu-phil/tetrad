@@ -53,29 +53,48 @@ import java.util.List;
  * @see Mimbuild
  */
 public class MimbuildTrek {
-    // The clustering from BPC or equivalent. Small clusters are removed.
+    /**
+     * The clustering from BPC or equivalent. Small clusters are removed.
+     */
     private List<List<Node>> clustering;
-    // The graph over the latents.
+    /**
+     * The graph over the latents.
+     */
     private Graph structureGraph;
-    // The alpha level used for CPC
-    private double alpha = 0.001;
-    // Background knowledge for CPC.
+    /**
+     * The alpha level used for CPC
+     */
+    private double alpha;
+    /**
+     * Background knowledge for CPC.
+     */
     private Knowledge knowledge = new Knowledge();
-    // The estimated covariance matrix over the latents.
+    /**
+     * The estimated covariance matrix over the latents.
+     */
     private ICovarianceMatrix latentsCov;
-    // The minimum function (Fgsl) value achieved.
+    /**
+     * The minimum function (Fgsl) value achieved.
+     */
     private double minimum;
-    // The p value of the optimization.
+    /**
+     * The p value of the optimization.
+     */
     private double pValue;
-    // The latents.
+    /**
+     * The latents.
+     */
     private List<Node> latents;
-    // The minimum cluster size.
+    /**
+     * The minimum cluster size.
+     */
     private int minClusterSize = 3;
 
     /**
      * Empty constructor.
      */
     public MimbuildTrek() {
+        alpha = 0.001;
     }
 
     /**
@@ -218,7 +237,12 @@ public class MimbuildTrek {
         if (epsilon < 0) throw new IllegalArgumentException("Epsilon mut be >= 0: " + epsilon);
     }
 
-
+    /**
+     * Defines latent nodes based on the given names.
+     *
+     * @param names A list of names for the latent nodes.
+     * @return A list of Node objects representing the defined latent nodes.
+     */
     private List<Node> defineLatents(List<String> names) {
         List<Node> latents = new ArrayList<>();
 
@@ -231,6 +255,13 @@ public class MimbuildTrek {
         return latents;
     }
 
+    /**
+     * Removes small clusters from a clustering structure.
+     *
+     * @param latents     The list of latent nodes.
+     * @param clustering  The clustering structure.
+     * @param minimumSize The minimum size of clusters to retain.
+     */
     private void removeSmallClusters(List<Node> latents, List<List<Node>> clustering, int minimumSize) {
         for (int i = new ArrayList<>(latents).size() - 1; i >= 0; i--) {
             if (clustering.get(i).size() < minimumSize) {
@@ -240,6 +271,14 @@ public class MimbuildTrek {
         }
     }
 
+    /**
+     * Calculate the covariance matrix for latents.
+     *
+     * @param _measurescov The covariance matrix over the measured variables.
+     * @param latents      A list of latent nodes.
+     * @param indicators   A 2D array of indicator nodes.
+     * @return The covariance matrix for latents.
+     */
     private Matrix getCov(ICovarianceMatrix _measurescov, List<Node> latents, Node[][] indicators) {
         if (latents.size() != indicators.length) {
             throw new IllegalArgumentException();
@@ -307,6 +346,15 @@ public class MimbuildTrek {
         return latentscov;
     }
 
+    /**
+     * Optimizes the non-measure variances quickly.
+     *
+     * @param indicators       A 2D array of indicator nodes.
+     * @param measurescov      The covariance matrix over the measured variables.
+     * @param latentscov       The covariance matrix over the latent variables.
+     * @param loadings         A 2D array of loadings.
+     * @param indicatorIndices A 2D array of indicator indices.
+     */
     private void optimizeNonMeasureVariancesQuick(Node[][] indicators, Matrix measurescov, Matrix latentscov,
                                                   double[][] loadings, int[][] indicatorIndices) {
         int count = 0;
@@ -350,6 +398,16 @@ public class MimbuildTrek {
         this.minimum = pair.getValue();
     }
 
+    /**
+     * Optimizes all parameters simultaneously.
+     *
+     * @param indicators       A 2D array of indicator nodes.
+     * @param measurescov      The covariance matrix over the measured variables.
+     * @param latentscov       The covariance matrix over the latent variables.
+     * @param loadings         A 2D array of loadings.
+     * @param indicatorIndices A 2D array of indicator indices.
+     * @param delta            An array of delta values.
+     */
     private void optimizeAllParamsSimultaneously(Node[][] indicators, Matrix measurescov,
                                                  Matrix latentscov, double[][] loadings,
                                                  int[][] indicatorIndices, double[] delta) {
@@ -367,6 +425,15 @@ public class MimbuildTrek {
         this.minimum = pair.getValue();
     }
 
+    /**
+     * Returns an array containing all the parameters required for optimization.
+     *
+     * @param indicators The 2D array of indicator nodes.
+     * @param latentscov The covariance matrix over the latent variables.
+     * @param loadings   The 2D array of loadings.
+     * @param delta      The array of delta values.
+     * @return An array containing all the parameters required for optimization.
+     */
     private double[] getAllParams(Node[][] indicators, Matrix latentscov, double[][] loadings, double[] delta) {
         int count = 0;
 
@@ -412,7 +479,7 @@ public class MimbuildTrek {
     }
 
     /**
-     * jf Clusters smaller than this size will be tossed out.
+     * Clusters smaller than this size will be tossed out.
      *
      * @return a int
      */
@@ -421,9 +488,10 @@ public class MimbuildTrek {
     }
 
     /**
-     * <p>Setter for the field <code>minClusterSize</code>.</p>
+     * Sets the minimum cluster size.
      *
-     * @param minClusterSize a int
+     * @param minClusterSize The minimum cluster size to be set.
+     * @throws IllegalArgumentException If the minimum cluster size is less than 3.
      */
     public void setMinClusterSize(int minClusterSize) {
         if (minClusterSize < 3)
@@ -431,6 +499,16 @@ public class MimbuildTrek {
         this.minClusterSize = minClusterSize;
     }
 
+    /**
+     * Calculates the implied covariance matrix for latent variables based on indicator variables.
+     *
+     * @param indicatorIndices A 2D array of indicator indices.
+     * @param loadings         A 2D array of loadings.
+     * @param cov              The covariance matrix over the measured variables.
+     * @param loadingscov      The covariance matrix over the latent variables.
+     * @param delta            An array of delta values.
+     * @return The implied covariance matrix for the latent variables.
+     */
     private Matrix impliedCovariance(int[][] indicatorIndices, double[][] loadings, Matrix cov, Matrix loadingscov,
                                      double[] delta) {
         Matrix implied = new Matrix(cov.getNumRows(), cov.getNumColumns());
@@ -453,6 +531,16 @@ public class MimbuildTrek {
         return implied;
     }
 
+    /**
+     * Calculates the sum of differences between the covariance matrix and the product of loadings for a given set of
+     * indicator indices, covariance matrix, loadings, and loadings covariance matrix.
+     *
+     * @param indicatorIndices A 2D array of indicator indices.
+     * @param cov              The covariance matrix over the measured variables.
+     * @param loadings         A 2D array of loadings.
+     * @param loadingscov      The covariance matrix over the latent variables.
+     * @return The sum of differences.
+     */
     private double sumOfDifferences(int[][] indicatorIndices, Matrix cov, double[][] loadings, Matrix loadingscov) {
         double sum = 0;
 
@@ -483,6 +571,11 @@ public class MimbuildTrek {
         return sum;
     }
 
+    /**
+     * Private class Function1 implements the MultivariateFunction interface. It represents a function that calculates
+     * the sum of differences between the covariance matrix and the product of loadings for a given set of indicator
+     * indices, covariance matrix, loadings, and loadings covariance matrix.
+     */
     private class Function1 implements MultivariateFunction {
         private final int[][] indicatorIndices;
         private final Matrix measurescov;
@@ -520,6 +613,10 @@ public class MimbuildTrek {
         }
     }
 
+    /**
+     * Private class Function4 implements the MultivariateFunction interface. It is used in the MimbuildTrek class to
+     * perform optimization calculations.
+     */
     private class Function4 implements MultivariateFunction {
         private final int[][] indicatorIndices;
         private final Matrix measurescov;

@@ -63,7 +63,9 @@ public class Cstar {
      */
     private int numSubsamples = 30;
 
-
+    /**
+     * Represents the top bracket size.
+     */
     private int topBracket = 5;
 
     /**
@@ -78,16 +80,18 @@ public class Cstar {
 
     /**
      * The sample style.
+     *
+     * @see SampleStyle
      */
     private SampleStyle sampleStyle = SampleStyle.SUBSAMPLE;
 
     /**
-     * The number of subsamples.
+     * Represents a boolean variable indicating whether verbose output will be printed.
      */
     private boolean verbose;
 
     /**
-     * The number of subsamples.
+     * Represents a file directory used for storing and accessing files.
      */
     private File newDir = null;
 
@@ -152,7 +156,14 @@ public class Cstar {
         return cstar;
     }
 
-    // Meinhausen and Buhlmann per comparison error rate (PCER) bound
+    /**
+     * Calculates the PCER (Per Comparison Error Rate) based on the given parameters. See Meinhausen and Buhlman.
+     *
+     * @param pi The pi value.
+     * @param q  The q value.
+     * @param p  The p value.
+     * @return The calculated PCER value.
+     */
     private static double pcer(double pi, double q, double p) {
         return (1.0 / ((2. * pi - 1.))) * ((q * q) / (p * p));
     }
@@ -526,6 +537,12 @@ public class Cstar {
         return newDir;
     }
 
+    /**
+     * Writes the given DataSet to a file in the specified directory.
+     *
+     * @param dataSet The DataSet to write.
+     * @param dir     The directory where the file will be written.
+     */
     private void writeData(DataSet dataSet, File dir) {
         try {
             PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "data.txt")));
@@ -535,6 +552,15 @@ public class Cstar {
         }
     }
 
+    /**
+     * Reads variables from a file and returns a list of corresponding nodes.
+     *
+     * @param dataSet The data set from which to retrieve the variables.
+     * @param dir     The directory containing the file.
+     * @param s       The name of the file.
+     * @return A list of nodes representing the variables read from the file.
+     * @throws RuntimeException If an error occurs during the file reading process.
+     */
     private List<Node> readVars(DataSet dataSet, File dir, String s) {
         try {
             List<Node> vars = new ArrayList<>();
@@ -555,6 +581,13 @@ public class Cstar {
         }
     }
 
+    /**
+     * Writes the given variables to a file in the specified directory.
+     *
+     * @param vars - List of Node objects representing the variables to be written.
+     * @param dir  - The directory where the file will be written.
+     * @param s    - The name of the file.
+     */
     private void writeVars(List<Node> vars, File dir, String s) {
         try {
             File file = new File(dir, s);
@@ -571,6 +604,17 @@ public class Cstar {
         }
     }
 
+    /**
+     * Calculates the average minimum effect for a given cause and effect node.
+     *
+     * @param possibleCauses  the list of possible cause nodes
+     * @param possibleEffects the list of possible effect nodes
+     * @param allEffects      the list of effect matrices
+     * @param causeNode       the cause node
+     * @param effectNode      the effect node
+     * @return the average minimum effect
+     * @throws NullPointerException if allEffects is null
+     */
     private double avgMinEffect(List<Node> possibleCauses, List<Node> possibleEffects, List<double[][]> allEffects, Node causeNode, Node effectNode) {
         List<Double> f = new ArrayList<>();
 
@@ -639,6 +683,12 @@ public class Cstar {
         return header + table;
     }
 
+    /**
+     * Retrieves a stable pattern graph using the PC algorithm.
+     *
+     * @param sample the dataset to use for the PC algorithm
+     * @return the graph representing the stable pattern
+     */
     private Graph getPatternPcStable(DataSet sample) {
         IndependenceTest test = this.test.getTest(sample, parameters);
         test.setVerbose(false);
@@ -648,6 +698,12 @@ public class Cstar {
         return pc.search();
     }
 
+    /**
+     * Retrieves a pattern graph using the FGES (Fast Greedy Equivalence Search) algorithm.
+     *
+     * @param sample the dataset to use for the FGES algorithm
+     * @return the graph representing the pattern
+     */
     private Graph getPatternFges(DataSet sample) {
         Score score = this.score.getScore(sample, parameters);
         Fges fges = new Fges(score);
@@ -655,6 +711,12 @@ public class Cstar {
         return fges.search();
     }
 
+    /**
+     * Retrieves a pattern graph using the BOSS (Bayesian Optimal Structure Search) algorithm.
+     *
+     * @param sample the dataset to use for the BOSS algorithm
+     * @return the graph representing the pattern
+     */
     private Graph getPatternBoss(DataSet sample) {
         Score score = this.score.getScore(sample, parameters);
         PermutationSearch boss = new PermutationSearch(new Boss(score));
@@ -662,6 +724,13 @@ public class Cstar {
         return boss.search();
     }
 
+    /**
+     * Retrieves a pattern graph using the Restricted BOSS (Bayesian Optimal Structure Search) algorithm.
+     *
+     * @param sample the dataset to use for the Restricted BOSS algorithm
+     * @param data   the dataset containing the variables for replacing the nodes in the resulting graph
+     * @return the graph representing the pattern
+     */
     private Graph getPatternRestrictedBoss(DataSet sample, DataSet data) {
         RestrictedBoss restrictedBoss = new RestrictedBoss(score);
         parameters.set(Params.TRIMMING_STYLE, 1);
@@ -670,6 +739,12 @@ public class Cstar {
         return g;
     }
 
+    /**
+     * Saves a matrix of effects to a file.
+     *
+     * @param effects the matrix of effects to be saved
+     * @param file    the file to save the matrix to
+     */
     private void saveMatrix(double[][] effects, File file) {
         try {
             List<Node> vars = new ArrayList<>();
@@ -684,6 +759,13 @@ public class Cstar {
         }
     }
 
+    /**
+     * Loads a matrix from the specified file.
+     *
+     * @param file The file to load the matrix from.
+     * @return The loaded matrix as a two-dimensional array of doubles.
+     * @throws RuntimeException If an error occurs during the matrix loading process.
+     */
     private double[][] loadMatrix(File file) {
         try {
             DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//",
@@ -694,6 +776,13 @@ public class Cstar {
         }
     }
 
+    /**
+     * Executes a list of Callables that return double[][] arrays and returns a List of the results.
+     *
+     * @param tasks        a List of Callables that return double[][] arrays.
+     * @param parallelized a boolean indicating whether to execute the tasks in parallel.
+     * @return a List of double[][] arrays representing the results of the executed tasks.
+     */
     private List<double[][]> runCallablesDoubleArray(List<Callable<double[][]>> tasks, boolean parallelized) {
         if (tasks.isEmpty()) return new ArrayList<>();
 
@@ -814,54 +903,54 @@ public class Cstar {
         }
 
         /**
-         * <p>getCauseNode.</p>
+         * Returns the cause node associated with this record.
          *
-         * @return a {@link edu.cmu.tetrad.graph.Node} object
+         * @return the cause node
          */
         public Node getCauseNode() {
             return this.causeNode;
         }
 
         /**
-         * <p>getEffectNode.</p>
+         * Retrieves the effect node of the record.
          *
-         * @return a {@link edu.cmu.tetrad.graph.Node} object
+         * @return The effect node.
          */
         public Node getEffectNode() {
             return this.target;
         }
 
         /**
-         * <p>getPi.</p>
+         * Retrieves the value of pi.
          *
-         * @return a double
+         * @return The value of pi.
          */
         public double getPi() {
             return this.pi;
         }
 
         /**
-         * <p>getMinBeta.</p>
+         * Retrieves the minimum effect size (beta) of the target in a record.
          *
-         * @return a double
+         * @return The minimum effect size (beta) of the target.
          */
         double getMinBeta() {
             return this.effect;
         }
 
         /**
-         * <p>getNumCauses.</p>
+         * Retrieves the number of possible causes of the target in a record.
          *
-         * @return a int
+         * @return The number of possible causes of the target.
          */
         public int getNumCauses() {
             return this.numCauses;
         }
 
         /**
-         * <p>getNumEffects.</p>
+         * Retrieves the number of possible effects of the target in a record.
          *
-         * @return a int
+         * @return The number of possible effects of the target.
          */
         public int getNumEffects() {
             return this.numEffects;
@@ -909,36 +998,36 @@ public class Cstar {
         }
 
         /**
-         * <p>getCauseNode.</p>
+         * Retrieves the cause node of a tuple.
          *
-         * @return a {@link edu.cmu.tetrad.graph.Node} object
+         * @return the cause node
          */
         public Node getCauseNode() {
             return this.cause;
         }
 
         /**
-         * <p>getEffectNode.</p>
+         * Retrieves the effect node of a tuple.
          *
-         * @return a {@link edu.cmu.tetrad.graph.Node} object
+         * @return the effect node
          */
         public Node getEffectNode() {
             return this.effect;
         }
 
         /**
-         * <p>getPi.</p>
+         * Returns the value of pi.
          *
-         * @return a double
+         * @return the value of pi
          */
         public double getPi() {
             return this.pi;
         }
 
         /**
-         * <p>getMinBeta.</p>
+         * Returns the minimum effect size of the predictor on the target across subsamples calculated by IDA.
          *
-         * @return a double
+         * @return the minimum effect size of the predictor on the target across subsamples
          */
         public double getMinBeta() {
             return this.minBeta;

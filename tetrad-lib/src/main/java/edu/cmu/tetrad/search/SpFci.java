@@ -70,27 +70,54 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  */
 public final class SpFci implements IGraphSearch {
 
-    // The logger to use.
-    private final TetradLogger logger = TetradLogger.getInstance();
-    // The score.
+    /**
+     * The score.
+     */
     private final Score score;
-    // The conditional independence test.
+    /**
+     * The conditional independence test.
+     */
     private final IndependenceTest independenceTest;
-    // The sample size.
+    /**
+     * The sample size.
+     */
     int sampleSize;
-    // The PAG being constructed.
+    /**
+     * The PAG being constructed.
+     */
     private Graph graph;
-    // The background knowledge.
+    /**
+     * The background knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
-    // Flag for complete rule set, true if you should use complete rule set, false otherwise.
+    /**
+     * Flag for complete rule set, true if you should use complete rule set, false otherwise.
+     */
     private boolean completeRuleSetUsed = true;
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
     private int maxPathLength = -1;
-    // The maxDegree for the fast adjacency search.
+    /**
+     * The maxDegree for the fast adjacency search.
+     */
     private int maxDegree = -1;
-    // True iff verbose output should be printed.
+    /**
+     * True iff verbose output should be printed.
+     */
     private boolean verbose;
+    /**
+     * Represents the depth of the search. The depth indicates the maximum number of variables that can be conditioned
+     * on during the search. A negative depth value (-1 in this case) indicates unlimited depth.
+     */
     private int depth = -1;
+    /**
+     * Represents whether the discriminating path rule is applied during the search.
+     * <p>
+     * By default, the discriminating path rule is enabled.
+     * <p>
+     * Setting this variable to false disables the application of the discriminating path rule.
+     */
     private boolean doDiscriminatingPathRule = true;
 
     /**
@@ -107,7 +134,6 @@ public final class SpFci implements IGraphSearch {
         this.score = score;
         this.independenceTest = test;
     }
-
 
     /**
      * Runs the search and returns the discovered PAG.
@@ -263,7 +289,7 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
-     * Sets the output stream used to print.
+     * Sets the output stream used to print. Unused, but the implementation needs to be here.
      *
      * @param out This print stream.
      */
@@ -290,7 +316,12 @@ public final class SpFci implements IGraphSearch {
     }
 
 
-    // Due to Spirtes.
+    /**
+     * Modifies the graph using the Modified R0 algorithm. (Due to Spirtes.)
+     *
+     * @param fgesGraph The original graph obtained from FGES algorithm.
+     * @param sepsets   The SepsetProducer for computing the separating sets.
+     */
     private void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
         this.graph = new EdgeListGraph(graph);
         this.graph.reorientAllWith(Endpoint.CIRCLE);
@@ -328,7 +359,11 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
-     * Orients according to background knowledge
+     * Orients edges in the graph based on the knowledge.
+     *
+     * @param knowledge  The knowledge containing forbidden and required edges.
+     * @param graph      The graph to orient edges in.
+     * @param variables  The list of variables in the graph.
      */
     private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         if (verbose) {
@@ -381,5 +416,4 @@ public final class SpFci implements IGraphSearch {
             TetradLogger.getInstance().forceLogMessage("Finishing BK Orientation.");
         }
     }
-
 }

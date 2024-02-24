@@ -45,7 +45,7 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * Implements the ICA-LiNG-D algorithm as well as a number of ancillary methods for LiNG-D and LiNGAM. The reference is
+ * Implements the ICA-LiNG-D algorithm as well as a number of ancillary methods for LiNG-D and ICA-LiNGAM. The reference is
  * here:
  * <p>
  * Lacerda, G., Spirtes, P. L., Ramsey, J., &amp; Hoyer, P. O. (2012). Discovering cyclic causal models by independent
@@ -97,9 +97,13 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @see IcaLingam
  */
 public class IcaLingD {
-    // The threshold for the spine of the W matrix.
+    /**
+     * The threshold for the spine of the W matrix.
+     */
     private double spineThreshold = 0.5;
-    // The threshold to use for set small elements to zero in the B Hat matrices.
+    /**
+     * The threshold to use for set small elements to zero in the B Hat matrices.
+     */
     private double bThreshold = 0.1;
 
     /**
@@ -215,8 +219,6 @@ public class IcaLingD {
             double imagEigenvalue = imagEigenvalues[i];
             double modulus = sqrt(pow(realEigenvalue, 2) + pow(imagEigenvalue, 2));
 
-            System.out.println("Modulus for eigenvalue " + (i + 1) + " = " + modulus);
-
             if (modulus >= 1.0) {
                 return false;
             }
@@ -284,6 +286,12 @@ public class IcaLingD {
         return inversePair.getPermutedMatrix();
     }
 
+    /**
+     * Finds a column permutation of the W matrix that maximizes the sum of 1 / |Wii| for diagonal elements Wii in W.
+     *
+     * @param W The W matrix.
+     * @return The model with the strongest diagonal, as a permutation matrix pair.
+     */
     @NotNull
     private static PermutationMatrixPair hungarian(Matrix W) {
         double[][] costMatrix = new double[W.getNumRows()][W.getNumColumns()];
@@ -307,6 +315,15 @@ public class IcaLingD {
         return new PermutationMatrixPair(W, perm, null);
     }
 
+    /**
+     * Generates a list of PermutationMatrixPairs by finding all possible column permutations of the input matrix W.
+     * Each PermutationMatrixPair has a column permutation and the original matrix W.
+     *
+     * @param W                 The input matrix.
+     * @param spineThreshold    The threshold value to determine if a position in W is allowable (abs(W(i, j)) > spineThreshold).
+     *                          Should be a non-negative value.
+     * @return A list of PermutationMatrixPairs.
+     */
     @NotNull
     private static List<PermutationMatrixPair> pairsNRook(Matrix W, double spineThreshold) {
         boolean[][] allowablePositions = new boolean[W.getNumRows()][W.getNumColumns()];
@@ -327,7 +344,13 @@ public class IcaLingD {
         return pairs;
     }
 
-    static int[] inversePermutation(int[] perm) {
+    /**
+     * Calculates the inverse permutation of the given permutation.
+     *
+     * @param perm The permutation array.
+     * @return The inverse permutation array.
+     */
+    private static int[] inversePermutation(int[] perm) {
         int[] inverse = new int[perm.length];
 
         for (int i = 0; i < perm.length; i++) {

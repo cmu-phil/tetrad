@@ -46,7 +46,6 @@ import java.util.*;
 /**
  * Created by ajsedgewick on 7/29/15.
  *
- * @author josephramsey
  * @version $Id: $Id
  */
 public class MixedUtils {
