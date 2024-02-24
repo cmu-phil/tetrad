@@ -23,7 +23,6 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -50,16 +49,19 @@ public final class DataSampling {
      * @return a list of resampled dataset
      */
     public static List<DataSet> createDataSamples(DataSet dataSet, Parameters parameters) {
+        List<DataSet> dataSets = new LinkedList<>();
         // no resampling
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return Collections.singletonList(dataSet);
+            dataSets.add(dataSet);
+        } else {
+            // create new random generator if a seed is given
+            Long seed = parameters.getLong(Params.SEED);
+            RandomGenerator randomGenerator = (seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
+
+            dataSets.addAll(createDataSamples(dataSet, parameters, randomGenerator));
         }
 
-        // create new random generator if a seed is given
-        Long seed = parameters.getLong(Params.SEED);
-        RandomGenerator randomGenerator = (seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
-
-        return createDataSamples(dataSet, parameters, randomGenerator);
+        return dataSets;
     }
 
     /**
