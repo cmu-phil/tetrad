@@ -361,9 +361,9 @@ public final class SpFci implements IGraphSearch {
     /**
      * Orients edges in the graph based on the knowledge.
      *
-     * @param knowledge  The knowledge containing forbidden and required edges.
-     * @param graph      The graph to orient edges in.
-     * @param variables  The list of variables in the graph.
+     * @param knowledge The knowledge containing forbidden and required edges.
+     * @param graph     The graph to orient edges in.
+     * @param variables The list of variables in the graph.
      */
     private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         if (verbose) {

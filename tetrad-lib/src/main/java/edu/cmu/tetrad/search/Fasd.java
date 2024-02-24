@@ -283,10 +283,11 @@ public class Fasd implements IFas {
     }
 
     /**
-     * Searches for adjacencies at depth 0 in the given list of nodes using the provided independence test and adjacencies map.
+     * Searches for adjacencies at depth 0 in the given list of nodes using the provided independence test and
+     * adjacencies map.
      *
-     * @param nodes The list of nodes.
-     * @param test The independence test to use.
+     * @param nodes       The list of nodes.
+     * @param test        The independence test to use.
      * @param adjacencies The map of adjacencies.
      * @return True if there are free degrees in the graph after the search, false otherwise.
      */
@@ -360,8 +361,8 @@ public class Fasd implements IFas {
     /**
      * Calculates the free degree of a graph.
      *
-     * @param nodes        The list of nodes in the graph.
-     * @param adjacencies  The map of adjacencies for each node.
+     * @param nodes       The list of nodes in the graph.
+     * @param adjacencies The map of adjacencies for each node.
      * @return The maximum free degree in the graph.
      */
     private int freeDegree(List<Node> nodes, Map<Node, Set<Node>> adjacencies) {
@@ -407,12 +408,13 @@ public class Fasd implements IFas {
     }
 
     /**
-     * Search for adjacencies at a given depth in the given list of nodes using the provided independence test and adjacencies map.
+     * Search for adjacencies at a given depth in the given list of nodes using the provided independence test and
+     * adjacencies map.
      *
-     * @param nodes The list of nodes.
-     * @param test The independence test to use.
+     * @param nodes       The list of nodes.
+     * @param test        The independence test to use.
      * @param adjacencies The map of adjacencies.
-     * @param depth The depth of the search.
+     * @param depth       The depth of the search.
      * @return True if there are free degrees in the graph after the search, false otherwise.
      */
     private boolean searchAtDepth(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies, int depth) {
@@ -475,8 +477,8 @@ public class Fasd implements IFas {
     /**
      * Returns a list of possible parent nodes for a given node based on the adjacency list and knowledge.
      *
-     * @param x The node for which to find possible parent nodes.
-     * @param adjx The adjacency list of the given node.
+     * @param x         The node for which to find possible parent nodes.
+     * @param adjx      The adjacency list of the given node.
      * @param knowledge The knowledge object containing background knowledge.
      * @return A list of possible parent nodes for the given node.
      */
@@ -497,10 +499,11 @@ public class Fasd implements IFas {
     }
 
     /**
-     * Returns whether a given node 'z' is a possible parent node of node 'x' based on the adjacency list and background knowledge.
+     * Returns whether a given node 'z' is a possible parent node of node 'x' based on the adjacency list and background
+     * knowledge.
      *
-     * @param z The node to check if it is a possible parent of 'x'.
-     * @param x The node for which to find possible parent nodes.
+     * @param z         The node to check if it is a possible parent of 'x'.
+     * @param x         The node for which to find possible parent nodes.
      * @param knowledge The knowledge object containing background knowledge.
      * @return true if 'z' is a possible parent of 'x', false otherwise.
      */

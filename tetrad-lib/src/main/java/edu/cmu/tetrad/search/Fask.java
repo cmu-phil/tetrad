@@ -1026,12 +1026,12 @@ public final class Fask implements IGraphSearch {
     /**
      * Logs the two-cycle information.
      *
-     * @param nf         The number format used to format the result.
-     * @param variables  The list of nodes representing variables.
-     * @param d          The two-dimensional array representing the distances between variables.
-     * @param X          The first variable node.
-     * @param Y          The second variable node.
-     * @param type       The type of two-cycle.
+     * @param nf        The number format used to format the result.
+     * @param variables The list of nodes representing variables.
+     * @param d         The two-dimensional array representing the distances between variables.
+     * @param X         The first variable node.
+     * @param Y         The second variable node.
+     * @param type      The type of two-cycle.
      */
     private void logTwoCycle(NumberFormat nf, List<Node> variables, double[][] d, Node X, Node Y, String type) {
         int i = variables.indexOf(X);

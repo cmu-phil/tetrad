@@ -127,9 +127,8 @@ public final class GraspFci implements IGraphSearch {
      */
     private int nonSingularDepth = 1;
     /**
-     * The seed used for random number generation.
-     * If the seed is not set explicitly, it will be initialized with a value of -1.
-     * The seed is used for producing the same sequence of random numbers every time the program runs.
+     * The seed used for random number generation. If the seed is not set explicitly, it will be initialized with a
+     * value of -1. The seed is used for producing the same sequence of random numbers every time the program runs.
      *
      * @see GraspFci#setSeed(long)
      */

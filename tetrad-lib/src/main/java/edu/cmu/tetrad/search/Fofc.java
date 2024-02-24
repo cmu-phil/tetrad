@@ -228,8 +228,7 @@ public class Fofc {
     }
 
     /**
-     * Returns the index of the variable that occurs most frequently in the given array.
-     * (renjiey).
+     * Returns the index of the variable that occurs most frequently in the given array. (renjiey).
      *
      * @param outliers An array of integers representing variables.
      * @return The index of the most frequently occurring variable.
@@ -262,11 +261,9 @@ public class Fofc {
     }
 
     /**
-     * This is the main function. It removes variables in the data such that the remaining
-     * correlation matrix does not contain extreme value
-     * Inputs: correlation matrix, upper and lower bound for unacceptable correlations
-     * Output: and dynamic array of removed variables
-     * renjiey
+     * This is the main function. It removes variables in the data such that the remaining correlation matrix does not
+     * contain extreme value Inputs: correlation matrix, upper and lower bound for unacceptable correlations Output: and
+     * dynamic array of removed variables renjiey
      */
     private ArrayList<Integer> removeVariables(Matrix correlationMatrix, double lowerBound, double upperBound,
                                                double percentBound) {
@@ -453,7 +450,7 @@ public class Fofc {
      * Combines pure triples with given variables.
      *
      * @param puretriples The set of pure triples.
-     * @param _variables The list of variables.
+     * @param _variables  The list of variables.
      * @return A set of combined clusters.
      */
     private Set<Set<Integer>> combinePuretriples(Set<Set<Integer>> puretriples, List<Integer> _variables) {
@@ -831,7 +828,7 @@ public class Fofc {
      * Adds other variables to the given cluster if they satisfy certain conditions.
      *
      * @param _variables The list of available variables.
-     * @param cluster The current cluster.
+     * @param cluster    The current cluster.
      */
     private void addOtherVariables(List<Integer> _variables, List<Integer> cluster) {
         O:
@@ -870,10 +867,10 @@ public class Fofc {
     /**
      * Determines if adding a new cluster to the existing clusters would result in an insignificant model.
      *
-     * @param clusters   The set of existing clusters.
-     * @param cluster    The new cluster to be added.
-     * @param variable   The list of variables.
-     * @param dataModel  The data model to be used in significance calculations.
+     * @param clusters  The set of existing clusters.
+     * @param cluster   The new cluster to be added.
+     * @param variable  The list of variables.
+     * @param dataModel The data model to be used in significance calculations.
      * @return True if adding the new cluster would result in an insignificant model, false otherwise.
      */
     private boolean modelInsignificantWithNewCluster(Set<List<Integer>> clusters, List<Integer> cluster,
@@ -895,8 +892,8 @@ public class Fofc {
     /**
      * Finds clusters of size 3 3or the quartet-first algorithm.
      *
-     * @param remaining   The list of remaining variables.
-     * @param unionPure   The set of union pure variables.
+     * @param remaining The list of remaining variables.
+     * @param unionPure The set of union pure variables.
      * @return A set of lists of integers representing the mixed clusters.
      */
     private Set<List<Integer>> findMixedClusters(List<Integer> remaining, Set<Integer> unionPure) {

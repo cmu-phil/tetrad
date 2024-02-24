@@ -125,7 +125,7 @@ public class FactorAnalysis {
     /**
      * Calculates the matrix exponentiation of a given matrix with the specified exponent.
      *
-     * @param matrix The matrix to be exponentiated.
+     * @param matrix   The matrix to be exponentiated.
      * @param exponent The exponent to raise the matrix to.
      * @return The result of the matrix exponentiation.
      */

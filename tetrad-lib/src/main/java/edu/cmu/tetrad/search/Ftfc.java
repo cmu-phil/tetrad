@@ -280,7 +280,7 @@ public class Ftfc {
      * Combines pure pentads with variables to create new clusters.
      *
      * @param purePentads The set of pure pentads.
-     * @param _variables The list of variables.
+     * @param _variables  The list of variables.
      * @return The set of combined clusters.
      */
     private Set<List<Integer>> combinePurePentads(Set<List<Integer>> purePentads, List<Integer> _variables) {
@@ -613,7 +613,7 @@ public class Ftfc {
      * Adds other variables to the cluster if they meet certain conditions.
      *
      * @param _variables The list of variables to consider.
-     * @param cluster The current cluster.
+     * @param cluster    The current cluster.
      */
     private void addOtherVariables(List<Integer> _variables, List<Integer> cluster) {
 
@@ -648,9 +648,9 @@ public class Ftfc {
     /**
      * Finds clusters of size 5 for the sextet-first algorithm.
      *
-     * @param clusters   The current set of clusters.
-     * @param remaining  The list of remaining variables.
-     * @param unionPure  The set of variables that have been added to clusters.
+     * @param clusters  The current set of clusters.
+     * @param remaining The list of remaining variables.
+     * @param unionPure The set of variables that have been added to clusters.
      * @return The set of clusters of size 5 found by the algorithm.
      */
     private Set<List<Integer>> findMixedClusters(Set<List<Integer>> clusters, List<Integer> remaining, Set<Integer> unionPure) {
@@ -868,8 +868,7 @@ public class Ftfc {
     }
 
     /**
-     * Constructs a List of six integers representing a sextet.
-     * The six integers must be unique.
+     * Constructs a List of six integers representing a sextet. The six integers must be unique.
      *
      * @param n1 the first integer
      * @param n2 the second integer
@@ -897,8 +896,7 @@ public class Ftfc {
     }
 
     /**
-     * Constructs a List of five integers representing a pentad.
-     * The five integers must be unique.
+     * Constructs a List of five integers representing a pentad. The five integers must be unique.
      *
      * @param n1 the first integer
      * @param n2 the second integer
@@ -944,11 +942,11 @@ public class Ftfc {
     }
 
     /**
-     * Checks if the correlation value between all pairs of variables in a given cluster
-     * is equal to zero for at least 'n' pairs.
+     * Checks if the correlation value between all pairs of variables in a given cluster is equal to zero for at least
+     * 'n' pairs.
      *
      * @param cluster The list of variables in the cluster.
-     * @param n The minimum number of pairs with zero correlation required for the cluster to be considered.
+     * @param n       The minimum number of pairs with zero correlation required for the cluster to be considered.
      * @return True if the cluster meets the requirement, false otherwise.
      */
     private boolean zeroCorr(List<Integer> cluster, int n) {
@@ -1006,8 +1004,8 @@ public class Ftfc {
     }
 
     /**
-     * Converts a set of clusters represented by sets of nodes into a graph representation.
-     * Each cluster is represented by a latent node connected to its member nodes.
+     * Converts a set of clusters represented by sets of nodes into a graph representation. Each cluster is represented
+     * by a latent node connected to its member nodes.
      *
      * @param clusters The set of clusters represented by sets of nodes.
      * @return The graph representation of the clusters.
@@ -1036,8 +1034,8 @@ public class Ftfc {
     }
 
     /**
-     * Converts a set of clusters represented by sets of integer indices into a graph representation.
-     * Each cluster is represented by a latent node connected to its member nodes.
+     * Converts a set of clusters represented by sets of integer indices into a graph representation. Each cluster is
+     * represented by a latent node connected to its member nodes.
      *
      * @param allClusters The set of clusters represented by sets of integer indices.
      * @return The graph representation of the clusters.
@@ -1077,7 +1075,7 @@ public class Ftfc {
     /**
      * Logs the given message if the toLog parameter is true.
      *
-     * @param s The message to be logged.
+     * @param s     The message to be logged.
      * @param toLog Indicates whether the message should be logged or not.
      */
     private void log(String s, boolean toLog) {

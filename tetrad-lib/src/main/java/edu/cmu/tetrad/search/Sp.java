@@ -175,8 +175,8 @@ public class Sp implements SuborderSearch {
     }
 
     /**
-     * Makes the order of nodes valid according to the knowledge rules.
-     * The order list will be sorted based on the knowledge rules if the knowledge is not empty.
+     * Makes the order of nodes valid according to the knowledge rules. The order list will be sorted based on the
+     * knowledge rules if the knowledge is not empty.
      *
      * @param order the list of nodes to be sorted
      */
@@ -194,8 +194,8 @@ public class Sp implements SuborderSearch {
     /**
      * Checks if the given suborder violates the knowledge rules.
      *
-     * @param suborder  The suborder to check.
-     * @param required  The mapping of nodes to their required parent nodes.
+     * @param suborder The suborder to check.
+     * @param required The mapping of nodes to their required parent nodes.
      * @return True if the suborder violates the knowledge rules, false otherwise.
      */
     private boolean violatesKnowledge(List<Node> suborder, Map<Node, Set<Node>> required) {
@@ -213,7 +213,8 @@ public class Sp implements SuborderSearch {
     }
 
     /**
-     * Updates the score of the suborder by adding nodes from the suborder to the prefix one by one and calculating the score.
+     * Updates the score of the suborder by adding nodes from the suborder to the prefix one by one and calculating the
+     * score.
      *
      * @param prefix   The prefix of the suborder.
      * @param suborder The suborder.
@@ -237,8 +238,8 @@ public class Sp implements SuborderSearch {
     }
 
     /**
-     * SwapIterator is an Iterator implementation that generates all possible swaps between two elements in an array.
-     * It can be used to generate all possible permutations of a given array.
+     * SwapIterator is an Iterator implementation that generates all possible swaps between two elements in an array. It
+     * can be used to generate all possible permutations of a given array.
      */
     private static class SwapIterator implements Iterator<int[]> {
         private final int n;

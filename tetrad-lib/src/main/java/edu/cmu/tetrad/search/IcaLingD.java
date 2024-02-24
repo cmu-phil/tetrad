@@ -45,8 +45,8 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * Implements the ICA-LiNG-D algorithm as well as a number of ancillary methods for LiNG-D and ICA-LiNGAM. The reference is
- * here:
+ * Implements the ICA-LiNG-D algorithm as well as a number of ancillary methods for LiNG-D and ICA-LiNGAM. The reference
+ * is here:
  * <p>
  * Lacerda, G., Spirtes, P. L., Ramsey, J., &amp; Hoyer, P. O. (2012). Discovering cyclic causal models by independent
  * components analysis. arXiv preprint arXiv:1206.3273.
@@ -319,9 +319,9 @@ public class IcaLingD {
      * Generates a list of PermutationMatrixPairs by finding all possible column permutations of the input matrix W.
      * Each PermutationMatrixPair has a column permutation and the original matrix W.
      *
-     * @param W                 The input matrix.
-     * @param spineThreshold    The threshold value to determine if a position in W is allowable (abs(W(i, j)) > spineThreshold).
-     *                          Should be a non-negative value.
+     * @param W              The input matrix.
+     * @param spineThreshold The threshold value to determine if a position in W is allowable (abs(W(i, j)) >
+     *                       spineThreshold). Should be a non-negative value.
      * @return A list of PermutationMatrixPairs.
      */
     @NotNull

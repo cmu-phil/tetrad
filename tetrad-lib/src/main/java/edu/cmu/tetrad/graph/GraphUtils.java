@@ -1048,7 +1048,8 @@ public final class GraphUtils {
     }
 
     /**
-     * Generates a textual representation of the edge misclassifications based on the provided counts and number format.
+     * Generates a textual representation of the edge misclassifications based on the provided counts and number
+     * format.
      *
      * @param counts The 2D array representing the counts of edge misclassifications.
      * @param nf     The number format used to format the counts.
@@ -1206,11 +1207,11 @@ public final class GraphUtils {
      * Computes the misclassification counts for each edge in the given graphs.
      *
      * @param leftGraph The left graph.
-     * @param topGraph The top graph.
-     * @param print Whether to print debug information.
-     * @return A 2-dimensional array containing the counts for each misclassification type. The array
-     *         has dimensions [m][n], where m is the number of misclassification types in the left graph
-     *         and n is the number of misclassification types in the top graph.
+     * @param topGraph  The top graph.
+     * @param print     Whether to print debug information.
+     * @return A 2-dimensional array containing the counts for each misclassification type. The array has dimensions
+     * [m][n], where m is the number of misclassification types in the left graph and n is the number of
+     * misclassification types in the top graph.
      */
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
         class CountTask extends RecursiveTask<Counts> {
@@ -1312,13 +1313,9 @@ public final class GraphUtils {
      * Returns the type of an edge based on its properties.
      *
      * @param edgeTop the edge to determine the type of
-     * @return the type of the edge:
-     *         - 0 if the edge is undirected
-     *         - 1 if the edge is nondirected
-     *         - 2 if the edge is partially oriented
-     *         - 3 if the edge is directed
-     *         - 4 if the edge is bidirected
-     *         - 5 if the edge is null or of an unknown type
+     * @return the type of the edge: - 0 if the edge is undirected - 1 if the edge is nondirected - 2 if the edge is
+     * partially oriented - 3 if the edge is directed - 4 if the edge is bidirected - 5 if the edge is null or of an
+     * unknown type
      */
     private static int getTypeTop(Edge edgeTop) {
         if (edgeTop == null) {
@@ -1352,7 +1349,7 @@ public final class GraphUtils {
      * Determines the type of the left edge based on the provided edges.
      *
      * @param edgeLeft the left edge (may be null)
-     * @param edgeTop the top edge (may be null)
+     * @param edgeTop  the top edge (may be null)
      * @return the type of the left edge as an integer
      * @throws IllegalArgumentException if the edge type is unsupported
      */
@@ -1402,8 +1399,8 @@ public final class GraphUtils {
     /**
      * Finds all maximal cliques in a given graph.
      *
-     * @param graph  The graph in which to find the maximal cliques
-     * @param nodes  The list of nodes in the graph
+     * @param graph The graph in which to find the maximal cliques
+     * @param nodes The list of nodes in the graph
      * @return The set of all maximal cliques in the graph
      */
     public static Set<Set<Node>> maximalCliques(Graph graph, List<Node> nodes) {
@@ -1442,7 +1439,7 @@ public final class GraphUtils {
     /**
      * Converts a graph to a textual representation.
      *
-     * @param graph the input graph to be converted
+     * @param graph         the input graph to be converted
      * @param doPagColoring boolean flag indicating whether to add PAG coloring to the graph
      * @return the textual representation of the graph
      */
@@ -1552,8 +1549,8 @@ public final class GraphUtils {
     /**
      * Converts the attributes of a given graph into a text format.
      *
-     * @param graph   the graph whose attributes are to be converted
-     * @param title   the title to be included at the beginning of the converted text
+     * @param graph the graph whose attributes are to be converted
+     * @param title the title to be included at the beginning of the converted text
      * @return the converted attributes in text format, or null if the graph has no attributes
      */
     public static String graphAttributesToText(Graph graph, String title) {
@@ -1613,8 +1610,8 @@ public final class GraphUtils {
     /**
      * Converts the edges of a graph to text representation.
      *
-     * @param graph  The graph whose edges will be converted.
-     * @param title  The title to be included in the text representation. Can be null or empty.
+     * @param graph The graph whose edges will be converted.
+     * @param title The title to be included in the text representation. Can be null or empty.
      * @return The text representation of the graph edges.
      */
     public static String graphEdgesToText(Graph graph, String title) {
@@ -1680,7 +1677,7 @@ public final class GraphUtils {
      * Returns the TwoCycleErrors object that represents errors for direct feedback loops.
      *
      * @param trueGraph The true Graph object.
-     * @param estGraph The estimated Graph object.
+     * @param estGraph  The estimated Graph object.
      * @return The TwoCycleErrors object that represents the adjacency errors.
      */
     public static TwoCycleErrors getTwoCycleErrors(Graph trueGraph, Graph estGraph) {
@@ -1802,8 +1799,8 @@ public final class GraphUtils {
     /**
      * Returns a comparison graph based on the specified parameters.
      *
-     * @param graph   the original graph to compare
-     * @param params  the parameters for comparison
+     * @param graph  the original graph to compare
+     * @param params the parameters for comparison
      * @return the comparison graph based on the specified parameters
      */
     public static Graph getComparisonGraph(Graph graph, Parameters params) {
@@ -1887,9 +1884,9 @@ public final class GraphUtils {
     }
 
     /**
-     * Removes non-skeleton edges from the given graph based on the provided knowledge.
-     * A non-skeleton edge is determined by the name of the nodes. If either node's name starts with "E_",
-     * the edge is considered a skeleton edge and will not be removed.
+     * Removes non-skeleton edges from the given graph based on the provided knowledge. A non-skeleton edge is
+     * determined by the name of the nodes. If either node's name starts with "E_", the edge is considered a skeleton
+     * edge and will not be removed.
      *
      * @param graph     the graph from which to remove non-skeleton edges
      * @param knowledge the knowledge base to check for forbidden edges
@@ -2135,13 +2132,13 @@ public final class GraphUtils {
     }
 
     /**
-     * Applies the GFCI-R0 algorithm to orient edges in a graph based on a reference CPDAG, sepsets, and knowledge.
-     * This method modifies the given graph by changing the orientation of edges. Due to Spirtes.
+     * Applies the GFCI-R0 algorithm to orient edges in a graph based on a reference CPDAG, sepsets, and knowledge. This
+     * method modifies the given graph by changing the orientation of edges. Due to Spirtes.
      *
-     * @param graph             The graph to be modified.
-     * @param referenceCpdag    The reference CPDAG to guide the orientation of edges.
-     * @param sepsets           The sepsets used to determine the orientation of edges.
-     * @param knowledge         The knowledge used to determine the orientation of edges.
+     * @param graph          The graph to be modified.
+     * @param referenceCpdag The reference CPDAG to guide the orientation of edges.
+     * @param sepsets        The sepsets used to determine the orientation of edges.
+     * @param knowledge      The knowledge used to determine the orientation of edges.
      */
     public static void gfciR0(Graph graph, Graph referenceCpdag, SepsetProducer sepsets, Knowledge knowledge) {
         graph.reorientAllWith(Endpoint.CIRCLE);
@@ -2186,9 +2183,9 @@ public final class GraphUtils {
     /**
      * Attempts to orient the edges in the graph based on the given knowledge.
      *
-     * @param knowledge  The knowledge containing the forbidden and required edges to orient.
-     * @param graph      The graph to orient the edges in.
-     * @param variables  The list of nodes representing variables in the graph.
+     * @param knowledge The knowledge containing the forbidden and required edges to orient.
+     * @param graph     The graph to orient the edges in.
+     * @param variables The list of nodes representing variables in the graph.
      */
     public static void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -2233,13 +2230,11 @@ public final class GraphUtils {
     /**
      * Trims the given graph based on the specified trimming style.
      *
-     * @param targets         the list of target nodes to be trimmed
-     * @param graph           the graph to be trimmed
-     * @param trimmingStyle   the style indicating how the graph should be trimmed
-     *                        - 1: No trimming
-     *                        - 2: Trim nodes adjacent to target nodes
-     *                        - 3: Trim nodes in the Markov blanket of target nodes
-     *                        - 4: Trim semidirected arcs adjacent to target nodes
+     * @param targets       the list of target nodes to be trimmed
+     * @param graph         the graph to be trimmed
+     * @param trimmingStyle the style indicating how the graph should be trimmed - 1: No trimming - 2: Trim nodes
+     *                      adjacent to target nodes - 3: Trim nodes in the Markov blanket of target nodes - 4: Trim
+     *                      semidirected arcs adjacent to target nodes
      * @return the trimmed graph
      * @throws IllegalArgumentException if an unknown trimming style is given
      */
@@ -2267,7 +2262,7 @@ public final class GraphUtils {
      * Trims the nodes in the graph that are adjacent to any of the target nodes.
      *
      * @param targets The list of target nodes.
-     * @param graph The graph to be trimmed.
+     * @param graph   The graph to be trimmed.
      * @return The trimmed graph.
      */
     private static Graph trimAdjacentToTarget(List<Node> targets, Graph graph) {
@@ -2293,7 +2288,7 @@ public final class GraphUtils {
      * Trims the Markov blanket graph based on the given target nodes.
      *
      * @param targets the list of target nodes to trim the Markov blanket graph
-     * @param graph the original graph from which the Markov blanket graph is derived
+     * @param graph   the original graph from which the Markov blanket graph is derived
      * @return the trimmed Markov blanket graph
      */
     private static Graph trimMarkovBlanketGraph(List<Node> targets, Graph graph) {
@@ -2328,7 +2323,7 @@ public final class GraphUtils {
      * Trims a semidirected graph by removing nodes that are not reachable from the target nodes.
      *
      * @param targets the list of target nodes
-     * @param graph the original graph to be trimmed
+     * @param graph   the original graph to be trimmed
      * @return a trimmed graph with only the nodes reachable from the target nodes
      */
     private static Graph trimSemidirected(List<Node> targets, Graph graph) {

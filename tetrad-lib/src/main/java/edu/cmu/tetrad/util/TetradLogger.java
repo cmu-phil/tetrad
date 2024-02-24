@@ -107,8 +107,8 @@ public class TetradLogger {
     }
 
     /**
-     * Adds a TetradLoggerListener to the TetradLogger.
-     * The listener will be notified whenever a logger configuration is set or reset.
+     * Adds a TetradLoggerListener to the TetradLogger. The listener will be notified whenever a logger configuration is
+     * set or reset.
      *
      * @param l the TetradLoggerListener to add
      */
@@ -314,8 +314,8 @@ public class TetradLogger {
     }
 
     /**
-     * Sets the next output stream to use it for logging, call <code>removeNextOutputStream</code> to remove it. This will
-     * create the next output file in the output directory and form a stream from it and add it to the logger.
+     * Sets the next output stream to use it for logging, call <code>removeNextOutputStream</code> to remove it. This
+     * will create the next output file in the output directory and form a stream from it and add it to the logger.
      *
      * @throws java.lang.IllegalStateException - Thrown if there is an error setting the stream, the message will state
      *                                         the nature of the error.

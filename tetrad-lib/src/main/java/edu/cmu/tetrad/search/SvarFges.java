@@ -1610,10 +1610,10 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     /**
      * Validates if the delete operation is allowed based on the given parameters.
      *
-     * @param x     the first node involved in the delete operation
-     * @param y     the second node involved in the delete operation
-     * @param H     the set of nodes representing external knowledge
-     * @param naYX  the set of nodes that are neighbors to y and adjacent to x.
+     * @param x    the first node involved in the delete operation
+     * @param y    the second node involved in the delete operation
+     * @param H    the set of nodes representing external knowledge
+     * @param naYX the set of nodes that are neighbors to y and adjacent to x.
      * @return true if the delete operation is valid, false otherwise
      */
     private boolean validDelete(Node x, Node y, Set<Node> H, Set<Node> naYX) {
@@ -1754,8 +1754,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Returns true if a path consisting of undirected and directed edges toward 'to' exists of
-     * length at most 'bound.' Cycle checker in other words.
+     * Returns true if a path consisting of undirected and directed edges toward 'to' exists of length at most 'bound.'
+     * Cycle checker in other words.
      *
      * @param from  the starting node
      * @param to    the target node
@@ -1858,8 +1858,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     /**
      * Adds the given arrow for the adjacency i->j.
      *
-     * @param i The starting node of the arrow.
-     * @param j The ending node of the arrow.
+     * @param i     The starting node of the arrow.
+     * @param j     The ending node of the arrow.
      * @param arrow The arrow to be added.
      */
     private void addLookupArrow(Node i, Node j, Arrow arrow) {
@@ -1876,12 +1876,13 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
 
     /**
-     * Calculates the score graph change given a node, set of parent nodes, another node, and a hash map of node indices.
+     * Calculates the score graph change given a node, set of parent nodes, another node, and a hash map of node
+     * indices.
      *
-     * @param y            the node for which the score graph change is calculated
-     * @param parents      the set of parent nodes
-     * @param x            the other node
-     * @param hashIndices  the hash map containing node indices
+     * @param y           the node for which the score graph change is calculated
+     * @param parents     the set of parent nodes
+     * @param x           the other node
+     * @param hashIndices the hash map containing node indices
      * @return the score graph change as a double value
      */
     private double scoreGraphChange(Node y, Set<Node> parents, Node x, Map<Node, Integer> hashIndices) {
@@ -1905,16 +1906,15 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
 
     /**
-     * Stores the current graph if its total score is high enough to be considered as
-     * one of the top graphs.
-     *
-     * If the number of graphs to store is greater than zero, a copy of the current
-     * graph is added to the list of top graphs along with its `totalScore`. The copy
-     * is created to prevent any subsequent modifications to affect the stored graph.
-     *
-     * If the list of top graphs exceeds the desired number of graphs to store, the
-     * lowest scored graph is removed from the list.
-     *
+     * Stores the current graph if its total score is high enough to be considered as one of the top graphs.
+     * <p>
+     * If the number of graphs to store is greater than zero, a copy of the current graph is added to the list of top
+     * graphs along with its `totalScore`. The copy is created to prevent any subsequent modifications to affect the
+     * stored graph.
+     * <p>
+     * If the list of top graphs exceeds the desired number of graphs to store, the lowest scored graph is removed from
+     * the list.
+     * <p>
      * Note: This method does not return any value.
      */
     private void storeGraph() {
@@ -2068,9 +2068,9 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * The Mode enum represents different modes/options for a particular algorithm.
-     *
-     * It provides several options that can be used to configure the behavior of the algorithm.
-     * Each option has a brief description explaining its purpose.
+     * <p>
+     * It provides several options that can be used to configure the behavior of the algorithm. Each option has a brief
+     * description explaining its purpose.
      */
     private enum Mode {
         /**
@@ -2080,16 +2080,16 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
         /**
          * Represents a mode option for the algorithm.
-         *
+         * <p>
          * This option is used to specify whether to cover noncolliders during the processing or not.
          */
         coverNoncolliders,
 
         /**
          * Represents a heuristic speedup option.
-         *
-         * This option is used to enable or disable a heuristic speedup algorithm in a particular context.
-         * When this option is enabled, the algorithm will attempt to speed up the processing by using heuristics.
+         * <p>
+         * This option is used to enable or disable a heuristic speedup algorithm in a particular context. When this
+         * option is enabled, the algorithm will attempt to speed up the processing by using heuristics.
          *
          * @see Mode#heuristicSpeedup
          */
@@ -2113,12 +2113,12 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         /**
          * Represents an arrow in a graph connecting two nodes.
          *
-         * @param bump    the bump value of the arrow object
-         * @param a       a node object representing the 'a' node of the arrow object
-         * @param b       a node object representing the 'b' node of the arrow object
-         * @param hOrT    a set of nodes associated with H or T for the current arrow object
-         * @param naYX    a set of nodes associated with NaYX for the current arrow object
-         * @param index   the index value of the arrow object
+         * @param bump  the bump value of the arrow object
+         * @param a     a node object representing the 'a' node of the arrow object
+         * @param b     a node object representing the 'b' node of the arrow object
+         * @param hOrT  a set of nodes associated with H or T for the current arrow object
+         * @param naYX  a set of nodes associated with NaYX for the current arrow object
+         * @param index the index value of the arrow object
          */
         public Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> naYX, int index) {
             this.bump = bump;
@@ -2175,11 +2175,12 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
 
         /**
-         * Compares this Arrow object with the specified Arrow object for order. Returns a negative integer, zero, or a positive integer
-         * as this object is less than, equal to, or greater than the specified object.
+         * Compares this Arrow object with the specified Arrow object for order. Returns a negative integer, zero, or a
+         * positive integer as this object is less than, equal to, or greater than the specified object.
          *
          * @param arrow the Arrow object to be compared
-         * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object
+         * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater
+         * than the specified object
          */
         public int compareTo(@NotNull Arrow arrow) {
             int compare = Double.compare(arrow.getBump(), getBump());

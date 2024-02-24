@@ -1684,8 +1684,8 @@ public class Lofs {
     }
 
     /**
-     * This method calculates the score for a given Node and its parents.
-     * The score is calculated based on the specified score type.
+     * This method calculates the score for a given Node and its parents. The score is calculated based on the specified
+     * score type.
      *
      * @param y       The Node for which the score is calculated.
      * @param parents The list of parent Nodes of the given Node.
@@ -1752,7 +1752,7 @@ public class Lofs {
     /**
      * Calculates the mean absolute value of an array of residuals for a given node and its parents.
      *
-     * @param node The node for which residuals are being calculated
+     * @param node    The node for which residuals are being calculated
      * @param parents The list of parent nodes of the given node
      * @return The mean absolute value of the residuals
      */
@@ -1765,7 +1765,7 @@ public class Lofs {
     /**
      * Calculates the unstandardized expected score for a given node and its parents.
      *
-     * @param node The node for which to calculate the unstandardized expected score.
+     * @param node    The node for which to calculate the unstandardized expected score.
      * @param parents The list of parent nodes.
      * @return The unstandardized expected score for the node.
      */
@@ -1795,7 +1795,7 @@ public class Lofs {
     /**
      * Calculates the log-cosh score for a given node and its parents.
      *
-     * @param node The node for which to calculate the score.
+     * @param node    The node for which to calculate the score.
      * @param parents The list of parent nodes of the given node.
      * @return The log-cosh score for the given node and its parents.
      */
@@ -1884,13 +1884,12 @@ public class Lofs {
     }
 
     /**
-     * Calculates the Anderson-Darling test statistic for the probability integral
-     * transform of the residuals using the PASquare method.
+     * Calculates the Anderson-Darling test statistic for the probability integral transform of the residuals using the
+     * PASquare method.
      *
-     * @param node The node whose residuals need to be calculated.
+     * @param node    The node whose residuals need to be calculated.
      * @param parents The list of parent nodes used in the calculation.
-     * @return The Anderson-Darling test statistic for the probability integral
-     *         transform of the residuals.
+     * @return The Anderson-Darling test statistic for the probability integral transform of the residuals.
      */
     private double andersonDarlingPASquare(Node node, List<Node> parents) {
         double[] _f = residuals(node, parents, true);
@@ -1900,7 +1899,7 @@ public class Lofs {
     /**
      * Calculates the entropy of a given node.
      *
-     * @param node the node for which the entropy is to be calculated
+     * @param node    the node for which the entropy is to be calculated
      * @param parents the list of parent nodes
      * @return the entropy value
      */
@@ -1912,8 +1911,8 @@ public class Lofs {
     /**
      * Calculates the p-value for a given node and list of parents.
      *
-     * @param  node     the node for which to calculate the p-value
-     * @param  parents  the list of parents for the node
+     * @param node    the node for which to calculate the p-value
+     * @param parents the list of parents for the node
      * @return the calculated p-value
      */
     private double pValue(Node node, List<Node> parents) {
@@ -1999,7 +1998,7 @@ public class Lofs {
      * Finds a variable node by name from a given list of nodes.
      *
      * @param variables the list of nodes to search through
-     * @param name the name of the variable node to find
+     * @param name      the name of the variable node to find
      * @return the variable node with the specified name, or null if not found
      */
     private Node getVariable(List<Node> variables, String name) {
@@ -2037,8 +2036,8 @@ public class Lofs {
      * Resolves the edge conditionality between two nodes in the graph.
      *
      * @param graph The graph object representing the network.
-     * @param x The first node.
-     * @param y The second node.
+     * @param x     The first node.
+     * @param y     The second node.
      */
     private void resolveEdgeConditional(Graph graph, Node x, Node y) {
         if (this._data == null) {
@@ -2143,8 +2142,8 @@ public class Lofs {
     }
 
     /**
-     * Computes the optimal bandwidth for kernel density estimation using the method suggested by Bowman and Azzalini (1997).
-     * The optimal bandwidth is computed as the geometric mean across variables.
+     * Computes the optimal bandwidth for kernel density estimation using the method suggested by Bowman and Azzalini
+     * (1997). The optimal bandwidth is computed as the geometric mean across variables.
      *
      * @param xCol the input array of values for which the optimal bandwidth needs to be computed
      * @return the optimal bandwidth value
@@ -2191,8 +2190,7 @@ public class Lofs {
     }
 
     /**
-     * This method calculates the value of the kernel function, kernel3, for a given input.
-     * (Triangular.)
+     * This method calculates the value of the kernel function, kernel3, for a given input. (Triangular.)
      *
      * @param z the input value for which the kernel function is to be calculated
      * @return the calculated value of the kernel function
@@ -2214,12 +2212,10 @@ public class Lofs {
     }
 
     /**
-     * Calculates the value of the kernel function, kernel5, for the given input.
-     * (Quartic)
-     *
-     * The kernel function calculates the value based on the input value z. If the absolute value
-     * of z is greater than 1, the function returns 0. Otherwise, it returns the result of the
-     * calculation: (15 / 16)
+     * Calculates the value of the kernel function, kernel5, for the given input. (Quartic)
+     * <p>
+     * The kernel function calculates the value based on the input value z. If the absolute value of z is greater than
+     * 1, the function returns 0. Otherwise, it returns the result of the calculation: (15 / 16)
      *
      * @param z the input parameter
      * @return the result of kernel5 function
@@ -2255,7 +2251,8 @@ public class Lofs {
      * Calculates the value of the kernel8 function for the given input. (Cosine)
      *
      * @param z the input value for the kernel8 function
-     * @return the calculated value of the kernel8 function*/
+     * @return the calculated value of the kernel8 function
+     */
     public double kernel8(double z) {
         if (abs(z) > 1) return 0;
         else return (PI / 4.) * cos((PI / 2.) * z);
@@ -2265,8 +2262,8 @@ public class Lofs {
      * Calculates the distance between two elements from a two-dimensional array.
      *
      * @param yCols a two-dimensional array containing data
-     * @param i the index of the first element
-     * @param j the index of the second element
+     * @param i     the index of the first element
+     * @param j     the index of the second element
      * @return the distance between the two elements
      */
     private double distance(double[][] yCols, int i, int j) {
@@ -2312,8 +2309,8 @@ public class Lofs {
     }
 
     /**
-     * Calculates the difference between the conditional residuals of two arrays, x and y,
-     * based on the Anderson-Darling test.
+     * Calculates the difference between the conditional residuals of two arrays, x and y, based on the Anderson-Darling
+     * test.
      *
      * @param x An array of double values representing the x-coordinates.
      * @param y An array of double values representing the y-coordinates.

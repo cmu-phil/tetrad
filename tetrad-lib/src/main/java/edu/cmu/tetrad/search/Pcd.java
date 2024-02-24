@@ -243,16 +243,13 @@ public class Pcd implements IGraphSearch {
      *
      * @param fas   The IFas instance to use for the search.
      * @param nodes The list of nodes to search for.
-     * @return The resultant graph. The returned graph will be a CPDAG if the
-     *         independence information is consistent with the hypothesis that there
-     *         are no latent common causes. It may, however, contain cycles or
-     *         bidirected edges if this assumption is not born out, either due to
-     *         the actual presence of latent common causes, or due to statistical
-     *         errors in conditional independence judgments.
-     * @throws NullPointerException     If fas is null or if the independence test
-     *                                  is null.
-     * @throws IllegalArgumentException If any of the given nodes is not in the
-     *                                  domain of the independence test provided.
+     * @return The resultant graph. The returned graph will be a CPDAG if the independence information is consistent
+     * with the hypothesis that there are no latent common causes. It may, however, contain cycles or bidirected edges
+     * if this assumption is not born out, either due to the actual presence of latent common causes, or due to
+     * statistical errors in conditional independence judgments.
+     * @throws NullPointerException     If fas is null or if the independence test is null.
+     * @throws IllegalArgumentException If any of the given nodes is not in the domain of the independence test
+     *                                  provided.
      */
     public Graph search(IFas fas, List<Node> nodes) {
 
@@ -396,8 +393,9 @@ public class Pcd implements IGraphSearch {
 
     /**
      * Enumerates the triples in the graph and classifies them as unshielded colliders or unshielded noncolliders.
-     *
-     * The unshielded colliders and unshielded noncolliders are stored in the respective instance variables of the class.
+     * <p>
+     * The unshielded colliders and unshielded noncolliders are stored in the respective instance variables of the
+     * class.
      */
     private void enumerateTriples() {
         this.unshieldedColliders = new HashSet<>();

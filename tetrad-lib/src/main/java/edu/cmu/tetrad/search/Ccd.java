@@ -184,10 +184,10 @@ public final class Ccd implements IGraphSearch {
     /**
      * Performs the node collider algorithm on a given graph.
      *
-     * @param graph         The graph on which to perform the algorithm.
-     * @param colliders     The map to store the colliders and their scores.
-     * @param noncolliders  The map to store the non-colliders and their scores.
-     * @param b             The node to consider as the collider node.
+     * @param graph        The graph on which to perform the algorithm.
+     * @param colliders    The map to store the colliders and their scores.
+     * @param noncolliders The map to store the non-colliders and their scores.
+     * @param b            The node to consider as the collider node.
      */
     private void doNodeCollider(Graph graph, Map<Triple, Double> colliders, Map<Triple, Double> noncolliders, Node b) {
         List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
@@ -258,8 +258,8 @@ public final class Ccd implements IGraphSearch {
     /**
      * Performs step C of the CCD algorithm on the given graph.
      *
-     * @param psi      The graph on which step C is performed.
-     * @param sepsets  The sepsets used for conditional independence tests.
+     * @param psi     The graph on which step C is performed.
+     * @param sepsets The sepsets used for conditional independence tests.
      */
     private void stepC(Graph psi, SepsetProducer sepsets) {
         TetradLogger.getInstance().forceLogMessage("\nStep C");
@@ -318,8 +318,8 @@ public final class Ccd implements IGraphSearch {
     /**
      * Performs step D of the CCD algorithm on the given graph.
      *
-     * @param psi The graph on which step D is performed.
-     * @param sepsets The sepsets used for conditional independence tests.
+     * @param psi        The graph on which step D is performed.
+     * @param sepsets    The sepsets used for conditional independence tests.
      * @param supSepsets The map of sepsets.
      */
     private void stepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) {
@@ -455,9 +455,9 @@ public final class Ccd implements IGraphSearch {
     /**
      * Performs step F of the CCD algorithm on the given graph.
      *
-     * @param psi          The graph on which step F is performed.
-     * @param sepsets      The sepsets used for conditional independence tests.
-     * @param supSepsets   The map of sepsets.
+     * @param psi        The graph on which step F is performed.
+     * @param sepsets    The sepsets used for conditional independence tests.
+     * @param supSepsets The map of sepsets.
      */
     private void stepF(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) {
         for (Triple triple : psi.getDottedUnderlines()) {
@@ -508,7 +508,7 @@ public final class Ccd implements IGraphSearch {
      * Performs the local algorithm for finding the nodes adjacent to a given node in a graph.
      *
      * @param psi The graph in which to perform the local algorithm.
-     * @param x The node for which to find the adjacent nodes.
+     * @param x   The node for which to find the adjacent nodes.
      * @return The list of adjacent nodes to the given node.
      */
     private List<Node> local(Graph psi, Node x) {
@@ -530,8 +530,8 @@ public final class Ccd implements IGraphSearch {
     /**
      * Orients the edges of the graph away from the arrow direction.
      *
-     * @param a The node A.
-     * @param b The node B.
+     * @param a     The node A.
+     * @param b     The node B.
      * @param graph The graph to orient.
      */
     private void orientAwayFromArrow(Node a, Node b, Graph graph) {
@@ -546,9 +546,9 @@ public final class Ccd implements IGraphSearch {
     /**
      * Orients the edges of the graph away from the arrow direction.
      *
-     * @param a The node A.
-     * @param b The node B.
-     * @param c The node C.
+     * @param a     The node A.
+     * @param b     The node B.
+     * @param c     The node C.
      * @param graph The graph to orient.
      * @return True if the edges are successfully oriented away from the arrow direction, otherwise false.
      */

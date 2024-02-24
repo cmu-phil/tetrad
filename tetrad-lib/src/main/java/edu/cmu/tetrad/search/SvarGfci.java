@@ -215,15 +215,14 @@ public final class SvarGfci implements IGraphSearch {
     }
 
     /**
-     * This method chooses the appropriate score for the search algorithm based on the provided data and settings.
-     * The score is chosen as follows:
-     * - If the independence test is of type MsepTest, the score is set to GraphScore using the graph from the independence test.
-     * - If a covariance matrix is available, the score is set to SemBicScore using the covariance matrix. The penalty discount is set to a default value of 2.
-     * - If the data set is continuous, the score is set to SemBicScore using a new CovarianceMatrix created from the data set. The penalty discount is set to a default value of
-     *2.
-     * - If the data set is discrete, the score is set to BdeuScore using the data set. The sample prior is set to a default value of 10 and the structure prior is set to a default
-     * value of 1.
-     * Otherwise, an IllegalArgumentException is thrown since mixed data is not supported.
+     * This method chooses the appropriate score for the search algorithm based on the provided data and settings. The
+     * score is chosen as follows: - If the independence test is of type MsepTest, the score is set to GraphScore using
+     * the graph from the independence test. - If a covariance matrix is available, the score is set to SemBicScore
+     * using the covariance matrix. The penalty discount is set to a default value of 2. - If the data set is
+     * continuous, the score is set to SemBicScore using a new CovarianceMatrix created from the data set. The penalty
+     * discount is set to a default value of 2. - If the data set is discrete, the score is set to BdeuScore using the
+     * data set. The sample prior is set to a default value of 10 and the structure prior is set to a default value of
+     * 1. Otherwise, an IllegalArgumentException is thrown since mixed data is not supported.
      */
     private void chooseScore() {
         // The penalty discount for the GES search. By default, 2.
@@ -313,9 +312,9 @@ public final class SvarGfci implements IGraphSearch {
     /**
      * Orient the edges in the given graph based on the forbidden and required edges from the provided knowledge.
      *
-     * @param knowledge   The knowledge containing the forbidden and required edges.
-     * @param graph       The graph to orient the edges in.
-     * @param variables   The list of variables in the graph.
+     * @param knowledge The knowledge containing the forbidden and required edges.
+     * @param graph     The graph to orient the edges in.
+     * @param variables The list of variables in the graph.
      */
     private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         if (verbose) {

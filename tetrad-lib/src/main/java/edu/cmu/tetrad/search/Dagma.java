@@ -54,13 +54,12 @@ public class Dagma {
      */
     private final double muInit;
     /**
-     * This is a private final instance variable representing the mu factor.
-     * The value of muFactor is used in various calculations.
+     * This is a private final instance variable representing the mu factor. The value of muFactor is used in various
+     * calculations.
      */
     private final double muFactor;
     /**
-     * The number of warm-up iterations for the variable warmIter.
-     * This variable is used for...
+     * The number of warm-up iterations for the variable warmIter. This variable is used for...
      */
     private final int warmIter;
     /**
@@ -262,9 +261,9 @@ public class Dagma {
     /**
      * Evaluate value of the penalized objective function.
      *
-     * @param W The RealMatrix representing the input matrix.
+     * @param W  The RealMatrix representing the input matrix.
      * @param mu The value of mu.
-     * @param s The value of s.
+     * @param s  The value of s.
      * @return The calculated value of _func.
      */
     private double _func(RealMatrix W, double mu, double s) {
@@ -309,11 +308,11 @@ public class Dagma {
     /**
      * Minimizes the objective function using the specified parameters.
      *
-     * @param W       The RealMatrix representing the input matrix.
-     * @param mu      The value of mu.
+     * @param W         The RealMatrix representing the input matrix.
+     * @param mu        The value of mu.
      * @param innerIter The number of inner iterations.
-     * @param s       The value of s.
-     * @param lrAdam  The learning rate for the Adam optimizer.
+     * @param s         The value of s.
+     * @param lrAdam    The learning rate for the Adam optimizer.
      * @return true if the optimization is successful, false otherwise.
      */
     private boolean minimize(RealMatrix W, double mu, int innerIter, double s, double lrAdam) {

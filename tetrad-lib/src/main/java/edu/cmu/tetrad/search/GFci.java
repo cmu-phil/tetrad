@@ -119,8 +119,7 @@ public final class GFci implements IGraphSearch {
      */
     private int depth = -1;
     /**
-     * The number of threads to use in the search.
-     * Must be at least 1.
+     * The number of threads to use in the search. Must be at least 1.
      */
     private int numThreads = 1;
 

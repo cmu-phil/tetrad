@@ -572,7 +572,8 @@ public class FastIca {
      * @param X             The input data matrix with rows representing cases and columns representing variables.
      * @param numComponents The number of components to be extracted.
      * @param tolerance     A positive scalar value indicating the convergence tolerance of the un-mixing matrix.
-     * @param alpha         The alpha constant in the range [1, 2] used in the approximation to neg-entropy when 'fun == "logcosh"'.
+     * @param alpha         The alpha constant in the range [1, 2] used in the approximation to neg-entropy when 'fun ==
+     *                      "logcosh"'.
      * @param maxIterations The maximum number of iterations to allow.
      * @param verbose       A boolean value indicating whether verbose output should be printed.
      * @param wInit         The initial un-mixing matrix of dimension (numComponents, numComponents).

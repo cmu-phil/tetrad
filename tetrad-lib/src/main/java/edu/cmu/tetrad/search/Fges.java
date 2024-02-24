@@ -1411,14 +1411,14 @@ public final class Fges implements IGraphSearch, DagScorer {
         /**
          * Constructs a new instance of the Arrow class with the given parameters.
          *
-         * @param bump       The bump value of the arrow.
-         * @param a          The first node of the arrow.
-         * @param b          The second node of the arrow.
-         * @param hOrT       The set of nodes representing H or T.
-         * @param capTorH    The set of nodes representing Cap or H.
-         * @param naYX       The set of nodes representing Na or YX.
-         * @param parents    The set of parent nodes.
-         * @param index      The index of the arrow.
+         * @param bump    The bump value of the arrow.
+         * @param a       The first node of the arrow.
+         * @param b       The second node of the arrow.
+         * @param hOrT    The set of nodes representing H or T.
+         * @param capTorH The set of nodes representing Cap or H.
+         * @param naYX    The set of nodes representing Na or YX.
+         * @param parents The set of parent nodes.
+         * @param index   The index of the arrow.
          */
         Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> capTorH, Set<Node> naYX, Set<Node> parents, int index) {
             this.bump = bump;
@@ -1477,12 +1477,12 @@ public final class Fges implements IGraphSearch, DagScorer {
         }
 
         /**
-         * Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
-         * to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
-         * bump), we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
-         * The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
-         * same hash code but not be equal. If we're paranoid, in this case, we calculate a determinate comparison
-         * not equal to zero by keeping a list. This last part is commented out by default.
+         * Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares to
+         * zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same bump), we
+         * need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables. The
+         * fastest way to do this is using a hash code, though it's still possible for two Arrows to have the same hash
+         * code but not be equal. If we're paranoid, in this case, we calculate a determinate comparison not equal to
+         * zero by keeping a list. This last part is commented out by default.
          */
         public int compareTo(@NotNull Arrow arrow) {
 
@@ -1543,9 +1543,9 @@ public final class Fges implements IGraphSearch, DagScorer {
 
     /**
      * Represents a pair of evaluation values.
-     *
-     * This class is used to store information about a set of nodes (T) and a bump value (bump).
-     * It is a private static class, meaning it is accessible only within the enclosing class.
+     * <p>
+     * This class is used to store information about a set of nodes (T) and a bump value (bump). It is a private static
+     * class, meaning it is accessible only within the enclosing class.
      */
     private static class EvalPair {
         Set<Node> T;
